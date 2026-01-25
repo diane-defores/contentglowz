@@ -329,27 +329,12 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 										</p>
 									</div>
 								</div>
-								<div className="flex items-center gap-4">
-									<Button
-										onClick={checkApiHealth}
-										variant="outline"
-										size="sm"
-										disabled={isCheckingHealth}
-									>
-										{isCheckingHealth ? (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										) : (
-											<RefreshCw className="mr-2 h-4 w-4" />
-										)}
-										Check Now
-									</Button>
-									{apiStatus === 'healthy' && (
-										<div className="text-right">
-											<div className="text-2xl font-bold text-green-600">{Object.keys(apiAgents).length}</div>
-											<div className="text-xs text-muted-foreground">Active Agents</div>
-										</div>
-									)}
-								</div>
+								{apiStatus === 'healthy' && (
+									<div className="text-right">
+										<div className="text-2xl font-bold text-green-600">{Object.keys(apiAgents).length}</div>
+										<div className="text-xs text-muted-foreground">Active Agents</div>
+									</div>
+								)}
 							</div>
 						</Card>
 					</section>
