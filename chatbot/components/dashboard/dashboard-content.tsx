@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchDashboardData, fetchRepoSummary } from "@/lib/dashboard-data";
 import type { DashboardData } from "@/lib/dashboard-data";
+import { seoApi } from "@/lib/seo-api-client";
 import { analysisCache } from "@/lib/cache";
 
 interface DashboardContentProps {
