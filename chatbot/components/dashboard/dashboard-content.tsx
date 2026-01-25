@@ -46,17 +46,20 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 		setLoading(false);
 	};
 
+	// Track if API has ever been healthy to determine interval
+	const [wasEverHealthy, setWasEverHealthy] = useState(false);
+
 	const checkApiHealth = useCallback(async () => {
-		if (isCheckingHealth) return; // Prevent concurrent checks
+		if (isCheckingHealth) return false; // Prevent concurrent checks
 
 		setIsCheckingHealth(true);
-		setApiStatus('checking');
 		console.log(`[Dashboard] Checking API health...`);
 
 		try {
 			const health = await seoApi.healthCheck();
 			console.log("[Dashboard] API health:", health);
 			setApiStatus('healthy');
+			setWasEverHealthy(true);
 			setApiAgents(health.agents || {});
 			setLastHealthCheck(new Date());
 			setError(null); // Clear any previous error
@@ -70,31 +73,12 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 		} finally {
 			setIsCheckingHealth(false);
 		}
-	}, [isCheckingHealth]);
+	}, []);
 
 	// Auto health check with adaptive interval
 	useEffect(() => {
-		// Start checking immediately
+		// Start checking immediately on mount
 		checkApiHealth();
-
-		// Set up interval based on current status
-		const setupInterval = () => {
-			if (healthCheckIntervalRef.current) {
-				clearInterval(healthCheckIntervalRef.current);
-			}
-
-			const interval = apiStatus === 'healthy'
-				? HEALTH_CHECK_INTERVAL_HEALTHY
-				: HEALTH_CHECK_INTERVAL_UNHEALTHY;
-
-			console.log(`[Dashboard] Setting health check interval to ${interval / 1000}s`);
-
-			healthCheckIntervalRef.current = setInterval(() => {
-				checkApiHealth();
-			}, interval);
-		};
-
-		setupInterval();
 
 		// Cleanup on unmount
 		return () => {
@@ -102,7 +86,36 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 				clearInterval(healthCheckIntervalRef.current);
 			}
 		};
-	}, [apiStatus]); // Re-setup interval when status changes
+	}, []); // Only run once on mount
+
+	// Separate effect for managing the interval based on health status
+	useEffect(() => {
+		// Don't set up interval while checking or if not yet checked
+		if (apiStatus === 'checking' || apiStatus === 'not_checked') {
+			return;
+		}
+
+		// Clear any existing interval
+		if (healthCheckIntervalRef.current) {
+			clearInterval(healthCheckIntervalRef.current);
+		}
+
+		const interval = apiStatus === 'healthy'
+			? HEALTH_CHECK_INTERVAL_HEALTHY
+			: HEALTH_CHECK_INTERVAL_UNHEALTHY;
+
+		console.log(`[Dashboard] API ${apiStatus}, next check in ${interval / 1000}s`);
+
+		healthCheckIntervalRef.current = setInterval(() => {
+			checkApiHealth();
+		}, interval);
+
+		return () => {
+			if (healthCheckIntervalRef.current) {
+				clearInterval(healthCheckIntervalRef.current);
+			}
+		};
+	}, [apiStatus, checkApiHealth]);
 
 	const loadCachedResults = () => {
 		// Load cached analysis results for this repo
@@ -288,8 +301,8 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-4">
 									{/* API Status Indicator */}
-									<div className="flex items-center gap-2" title={`API Status: ${apiStatus}`}>
-										{apiStatus === 'checking' ? (
+									<div className="flex items-center gap-2" title={`API Status: ${apiStatus}${isCheckingHealth ? ' (checking...)' : ''}`}>
+										{isCheckingHealth ? (
 											<Loader2 className="h-5 w-5 animate-spin text-yellow-500" />
 										) : apiStatus === 'healthy' ? (
 											<Circle className="h-5 w-5 fill-green-500 text-green-500" />
@@ -303,14 +316,14 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 										<h2 className="text-xl font-semibold">{summaryData.repoName}</h2>
 										<p className="text-sm text-muted-foreground">{summaryData.repoUrl}</p>
 										<p className="text-xs text-muted-foreground mt-1">
-											API: {apiStatus === 'checking' ? (
+											API: {isCheckingHealth ? (
 												<span className="text-yellow-600">Checking...</span>
 											) : apiStatus === 'healthy' ? (
 												<span className="text-green-600">Connected</span>
 											) : apiStatus === 'unhealthy' ? (
 												<span className="text-red-600">Offline (retrying every 10s)</span>
 											) : (
-												<span className="text-gray-500">Not checked</span>
+												<span className="text-gray-500">Waiting...</span>
 											)}
 											{lastHealthCheck && ` • ${lastHealthCheck.toLocaleTimeString()}`}
 										</p>
