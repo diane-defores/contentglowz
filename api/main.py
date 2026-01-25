@@ -145,16 +145,18 @@ app = FastAPI(
 # ─────────────────────────────────────────────────
 
 # CORS - Allow Next.js frontend to call API
+# Note: FastAPI CORS middleware doesn't support wildcard subdomains (*.vercel.app)
+# Using allow_origin_regex for flexible subdomain matching
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",      # Next.js dev
         "http://localhost:3001",      # Alternative port
-        "https://*.vercel.app",       # Vercel preview/prod
-        "https://*.railway.app",      # Railway preview
+        "http://127.0.0.1:3000",      # Alternative localhost
         "https://bizflowz.com",       # Production domain
         "https://www.bizflowz.com",   # Production domain
     ],
+    allow_origin_regex=r"https://.*\.(vercel\.app|railway\.app|render\.com)$",
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
