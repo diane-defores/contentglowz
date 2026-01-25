@@ -1,19 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AlertCircle, Bot, Download, Loader2, RefreshCw, Settings } from "lucide-react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { AlertCircle, Bot, Circle, Loader2, RefreshCw, Settings } from "lucide-react";
 import Link from "next/link";
-import { AuthorityScoreCard } from "@/components/dashboard/authority-score-card";
-import { AuthorityTrendChart } from "@/components/dashboard/authority-trend-chart";
-import { ContentGapsTable } from "@/components/dashboard/content-gaps-table";
-import { InternalLinkingCard } from "@/components/dashboard/internal-linking-card";
-import { MeshStatsCard } from "@/components/dashboard/mesh-stats-card";
-import { RecommendationsList } from "@/components/dashboard/recommendations-list";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchDashboardData, fetchRepoSummary } from "@/lib/dashboard-data";
-import type { DashboardData } from "@/lib/dashboard-data";
 import { seoApi } from "@/lib/seo-api-client";
 import { analysisCache } from "@/lib/cache";
 
@@ -22,6 +14,11 @@ interface DashboardContentProps {
 	authToken?: string;
 }
 
+// Health check intervals
+const HEALTH_CHECK_INTERVAL_UNHEALTHY = 10000; // 10 seconds when API is down
+const HEALTH_CHECK_INTERVAL_HEALTHY = 300000; // 5 minutes when API is up
+
+type ApiStatus = 'checking' | 'healthy' | 'unhealthy' | 'not_checked';
 
 export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) {
 	const [summaryData, setSummaryData] = useState<any>(null);
@@ -29,8 +26,13 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 	const [runningAnalyses, setRunningAnalyses] = useState<Set<string>>(new Set());
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [apiStatus, setApiStatus] = useState<ApiStatus>('not_checked');
+	const [apiAgents, setApiAgents] = useState<Record<string, string>>({});
+	const [lastHealthCheck, setLastHealthCheck] = useState<Date | null>(null);
+	const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+	const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-	const loadSummaryData = async () => {
+	const loadSummaryData = () => {
 		// Don't call API on load - just set basic info from URL
 		console.log(`[Dashboard] Setting up dashboard for ${repoUrl}`);
 
@@ -40,31 +42,67 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 		setSummaryData({
 			repoName,
 			repoUrl,
-			apiStatus: 'not_checked',
-			agents: {},
-			lastChecked: null,
 		});
 		setLoading(false);
 	};
 
-	const checkApiHealth = async () => {
+	const checkApiHealth = useCallback(async () => {
+		if (isCheckingHealth) return; // Prevent concurrent checks
+
+		setIsCheckingHealth(true);
+		setApiStatus('checking');
 		console.log(`[Dashboard] Checking API health...`);
+
 		try {
 			const health = await seoApi.healthCheck();
 			console.log("[Dashboard] API health:", health);
-			setSummaryData((prev: any) => ({
-				...prev,
-				apiStatus: health.status,
-				agents: health.agents,
-				lastChecked: new Date().toISOString(),
-			}));
+			setApiStatus('healthy');
+			setApiAgents(health.agents || {});
+			setLastHealthCheck(new Date());
+			setError(null); // Clear any previous error
 			return true;
 		} catch (err) {
 			console.error("[Dashboard] API health check failed:", err);
-			setError(err instanceof Error ? err.message : "API not available");
+			setApiStatus('unhealthy');
+			setLastHealthCheck(new Date());
+			// Don't set error for background checks - just show red indicator
 			return false;
+		} finally {
+			setIsCheckingHealth(false);
 		}
-	};
+	}, [isCheckingHealth]);
+
+	// Auto health check with adaptive interval
+	useEffect(() => {
+		// Start checking immediately
+		checkApiHealth();
+
+		// Set up interval based on current status
+		const setupInterval = () => {
+			if (healthCheckIntervalRef.current) {
+				clearInterval(healthCheckIntervalRef.current);
+			}
+
+			const interval = apiStatus === 'healthy'
+				? HEALTH_CHECK_INTERVAL_HEALTHY
+				: HEALTH_CHECK_INTERVAL_UNHEALTHY;
+
+			console.log(`[Dashboard] Setting health check interval to ${interval / 1000}s`);
+
+			healthCheckIntervalRef.current = setInterval(() => {
+				checkApiHealth();
+			}, interval);
+		};
+
+		setupInterval();
+
+		// Cleanup on unmount
+		return () => {
+			if (healthCheckIntervalRef.current) {
+				clearInterval(healthCheckIntervalRef.current);
+			}
+		};
+	}, [apiStatus]); // Re-setup interval when status changes
 
 	const loadCachedResults = () => {
 		// Load cached analysis results for this repo
@@ -248,28 +286,53 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 					<section className="space-y-4">
 						<Card className="p-6">
 							<div className="flex items-center justify-between">
-								<div>
-									<h2 className="text-xl font-semibold">{summaryData.repoName}</h2>
-									<p className="text-sm text-muted-foreground">{summaryData.repoUrl}</p>
-									<p className="text-xs text-muted-foreground mt-1">
-										API Status: {summaryData.apiStatus === 'not_checked' ? (
-											<span className="text-yellow-600">Not checked</span>
-										) : summaryData.apiStatus === 'healthy' ? (
-											<span className="text-green-600">Healthy</span>
+								<div className="flex items-center gap-4">
+									{/* API Status Indicator */}
+									<div className="flex items-center gap-2" title={`API Status: ${apiStatus}`}>
+										{apiStatus === 'checking' ? (
+											<Loader2 className="h-5 w-5 animate-spin text-yellow-500" />
+										) : apiStatus === 'healthy' ? (
+											<Circle className="h-5 w-5 fill-green-500 text-green-500" />
+										) : apiStatus === 'unhealthy' ? (
+											<Circle className="h-5 w-5 fill-red-500 text-red-500" />
 										) : (
-											<span className="text-red-600">{summaryData.apiStatus}</span>
+											<Circle className="h-5 w-5 fill-gray-400 text-gray-400" />
 										)}
-										{summaryData.lastChecked && ` • Last checked: ${new Date(summaryData.lastChecked).toLocaleString()}`}
-									</p>
+									</div>
+									<div>
+										<h2 className="text-xl font-semibold">{summaryData.repoName}</h2>
+										<p className="text-sm text-muted-foreground">{summaryData.repoUrl}</p>
+										<p className="text-xs text-muted-foreground mt-1">
+											API: {apiStatus === 'checking' ? (
+												<span className="text-yellow-600">Checking...</span>
+											) : apiStatus === 'healthy' ? (
+												<span className="text-green-600">Connected</span>
+											) : apiStatus === 'unhealthy' ? (
+												<span className="text-red-600">Offline (retrying every 10s)</span>
+											) : (
+												<span className="text-gray-500">Not checked</span>
+											)}
+											{lastHealthCheck && ` • ${lastHealthCheck.toLocaleTimeString()}`}
+										</p>
+									</div>
 								</div>
 								<div className="flex items-center gap-4">
-									<Button onClick={checkApiHealth} variant="outline" size="sm">
-										<RefreshCw className="mr-2 h-4 w-4" />
-										Check API
+									<Button
+										onClick={checkApiHealth}
+										variant="outline"
+										size="sm"
+										disabled={isCheckingHealth}
+									>
+										{isCheckingHealth ? (
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										) : (
+											<RefreshCw className="mr-2 h-4 w-4" />
+										)}
+										Check Now
 									</Button>
-									{summaryData.apiStatus === 'healthy' && (
+									{apiStatus === 'healthy' && (
 										<div className="text-right">
-											<div className="text-2xl font-bold text-green-600">{Object.keys(summaryData.agents || {}).length}</div>
+											<div className="text-2xl font-bold text-green-600">{Object.keys(apiAgents).length}</div>
 											<div className="text-xs text-muted-foreground">Active Agents</div>
 										</div>
 									)}
