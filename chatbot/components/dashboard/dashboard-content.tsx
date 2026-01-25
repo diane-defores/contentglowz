@@ -31,33 +31,38 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 	const [loading, setLoading] = useState(true);
 
 	const loadSummaryData = async () => {
-		setLoading(true);
-		setError(null);
-		console.log(`[Dashboard] Loading summary for ${repoUrl}`);
-		
-		// Set a safety timeout to show an error if the API doesn't respond at all
-		const safetyTimeout = setTimeout(() => {
-			setLoading(prevLoading => {
-				if (prevLoading) {
-					setError("The API is taking a long time to respond. This usually happens when the server is waking up from sleep. Please wait another 30 seconds and try again.");
-					return false;
-				}
-				return prevLoading;
-			});
-		}, 45000);
+		// Don't call API on load - just set basic info from URL
+		console.log(`[Dashboard] Setting up dashboard for ${repoUrl}`);
 
+		// Extract repo name from URL
+		const repoName = repoUrl.split('/').pop() || 'Unknown Repo';
+
+		setSummaryData({
+			repoName,
+			repoUrl,
+			apiStatus: 'not_checked',
+			agents: {},
+			lastChecked: null,
+		});
+		setLoading(false);
+	};
+
+	const checkApiHealth = async () => {
+		console.log(`[Dashboard] Checking API health...`);
 		try {
-			// Load basic repository info (fast)
-			const summary = await fetchRepoSummary(repoUrl);
-			clearTimeout(safetyTimeout);
-			console.log("[Dashboard] Summary loaded:", summary);
-			setSummaryData(summary);
+			const health = await seoApi.healthCheck();
+			console.log("[Dashboard] API health:", health);
+			setSummaryData((prev: any) => ({
+				...prev,
+				apiStatus: health.status,
+				agents: health.agents,
+				lastChecked: new Date().toISOString(),
+			}));
+			return true;
 		} catch (err) {
-			clearTimeout(safetyTimeout);
-			console.error("[Dashboard] Summary load failed:", err);
-			setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-		} finally {
-			setLoading(false);
+			console.error("[Dashboard] API health check failed:", err);
+			setError(err instanceof Error ? err.message : "API not available");
+			return false;
 		}
 	};
 
@@ -145,13 +150,9 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 		}
 	};
 
-	const loadData = () => {
+	useEffect(() => {
 		loadSummaryData();
 		loadCachedResults();
-	};
-
-	useEffect(() => {
-		loadData();
 	}, [repoUrl]);
 
 	// Loading state
@@ -182,37 +183,6 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 		);
 	}
 
-	// Error state
-	if (error) {
-		return (
-			<div className="flex min-h-screen flex-col items-center justify-center p-8">
-				<Card className="max-w-2xl p-8">
-					<div className="flex flex-col items-center gap-4 text-center">
-						<AlertCircle className="h-16 w-16 text-red-500" />
-						<h2 className="text-2xl font-bold">Failed to Load Dashboard</h2>
-						<p className="text-muted-foreground font-mono text-sm bg-muted p-2 rounded">{error}</p>
-						<div className="mt-4 flex gap-3">
-							<Button onClick={loadData} variant="default">
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Try Again
-							</Button>
-							<Button asChild variant="outline">
-								<Link href="/">Back to Chat</Link>
-							</Button>
-						</div>
-						<div className="mt-4 rounded-lg bg-muted p-4 text-left text-sm">
-							<p className="font-semibold">Troubleshooting:</p>
-							<ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
-								<li>The API may take 60-120s to wake up on the free tier</li>
-								<li>Current API URL: <code className="text-xs">{process.env.NEXT_PUBLIC_API_URL || 'https://bizflowz-api.onrender.com'}</code></li>
-								<li>Try clicking "Try Again" after waiting a moment</li>
-							</ul>
-						</div>
-					</div>
-				</Card>
-			</div>
-		);
-	}
 
 	// No data fallback
 	if (!summaryData && !loading && !error) {
@@ -246,18 +216,6 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 									Chatbot
 								</Link>
 							</Button>
-							<Button onClick={loadSummaryData} variant="outline" size="sm">
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Refresh Summary
-							</Button>
-							<Button variant="outline" size="sm">
-								<Download className="mr-2 h-4 w-4" />
-								Export
-							</Button>
-							<Button variant="outline" size="sm">
-								<Settings className="mr-2 h-4 w-4" />
-								Settings
-							</Button>
 							<Button onClick={clearCache} variant="outline" size="sm" title="Clear all cached analysis results">
 								<RefreshCw className="mr-2 h-4 w-4" />
 								Clear Cache
@@ -269,6 +227,22 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 
 			{/* Main Content */}
 			<div className="container mx-auto flex-1 space-y-6 px-4 py-8">
+				{/* Error Banner (non-blocking) */}
+				{error && (
+					<div className="rounded-lg border border-red-200 bg-red-50 p-4">
+						<div className="flex items-center gap-3">
+							<AlertCircle className="h-5 w-5 text-red-500" />
+							<div className="flex-1">
+								<p className="text-sm font-medium text-red-800">API Error</p>
+								<p className="text-sm text-red-600">{error}</p>
+							</div>
+							<Button onClick={() => setError(null)} variant="ghost" size="sm">
+								Dismiss
+							</Button>
+						</div>
+					</div>
+				)}
+
 				{/* Repository Summary */}
 				{summaryData && (
 					<section className="space-y-4">
@@ -278,12 +252,27 @@ export function DashboardContent({ repoUrl, authToken }: DashboardContentProps) 
 									<h2 className="text-xl font-semibold">{summaryData.repoName}</h2>
 									<p className="text-sm text-muted-foreground">{summaryData.repoUrl}</p>
 									<p className="text-xs text-muted-foreground mt-1">
-										API Status: {summaryData.apiStatus} • Last checked: {new Date(summaryData.lastChecked).toLocaleString()}
+										API Status: {summaryData.apiStatus === 'not_checked' ? (
+											<span className="text-yellow-600">Not checked</span>
+										) : summaryData.apiStatus === 'healthy' ? (
+											<span className="text-green-600">Healthy</span>
+										) : (
+											<span className="text-red-600">{summaryData.apiStatus}</span>
+										)}
+										{summaryData.lastChecked && ` • Last checked: ${new Date(summaryData.lastChecked).toLocaleString()}`}
 									</p>
 								</div>
-								<div className="text-right">
-									<div className="text-2xl font-bold text-green-600">{Object.keys(summaryData.agents || {}).length}</div>
-									<div className="text-xs text-muted-foreground">Active Agents</div>
+								<div className="flex items-center gap-4">
+									<Button onClick={checkApiHealth} variant="outline" size="sm">
+										<RefreshCw className="mr-2 h-4 w-4" />
+										Check API
+									</Button>
+									{summaryData.apiStatus === 'healthy' && (
+										<div className="text-right">
+											<div className="text-2xl font-bold text-green-600">{Object.keys(summaryData.agents || {}).length}</div>
+											<div className="text-xs text-muted-foreground">Active Agents</div>
+										</div>
+									)}
 								</div>
 							</div>
 						</Card>
