@@ -1,0 +1,65 @@
+# Flox manifest version managed by Flox CLI
+version = 1
+
+## Install Packages
+[install]
+python311.pkg-path = "python311"
+gcc.pkg-path = "gcc"
+zlib.pkg-path = "zlib"
+
+## Environment Variables
+[vars]
+PROJECT_NAME = "my-robots"
+PYTHONUNBUFFERED = "1"
+
+## Activation Hook - runs when you 'flox activate'
+[hook]
+on-activate = '''
+  echo "🤖 Activating my-robots environment..."
+  
+  # Create venv if it doesn't exist
+  if [ ! -d "$FLOX_ENV_PROJECT/venv" ]; then
+    echo "📦 Creating Python virtual environment..."
+    python3 -m venv "$FLOX_ENV_PROJECT/venv"
+    echo "✅ Virtual environment created"
+  fi
+  
+  # Check if Doppler is configured for this project
+  if doppler configure get project.name >/dev/null 2>&1; then
+    DOPPLER_PROJECT=$(doppler configure get project.name 2>/dev/null)
+    DOPPLER_CONFIG=$(doppler configure get config.name 2>/dev/null)
+    echo "🔐 Doppler configured: $DOPPLER_PROJECT ($DOPPLER_CONFIG)"
+    echo "💡 Use: doppler run -- python main.py"
+  elif [ -f "$FLOX_ENV_PROJECT/.env" ]; then
+    # Fallback to .env if Doppler not configured
+    set -a
+    source "$FLOX_ENV_PROJECT/.env"
+    set +a
+    echo "✅ Environment variables loaded from .env"
+  else
+    echo "⚠️  No Doppler config or .env file found."
+    echo "   Run ./setup.sh to configure secrets"
+  fi
+  
+  echo "💡 Python venv: ./venv/bin/python"
+  echo "💡 With Doppler: doppler run -- python main.py"
+  echo "💡 Without Doppler: python main.py (uses .env)"
+'''
+
+## Profile script
+[profile]
+common = '''
+  # Add venv bin to PATH if venv exists
+  if [ -d "$FLOX_ENV_PROJECT/venv/bin" ]; then
+    export PATH="$FLOX_ENV_PROJECT/venv/bin:$PATH"
+  fi
+'''
+
+## Options
+[options]
+systems = [
+  "aarch64-linux",
+  "x86_64-linux",
+  "aarch64-darwin",
+  "x86_64-darwin",
+]

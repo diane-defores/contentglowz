@@ -1,0 +1,189 @@
+---
+---
+
+<section id="robots" class="robots-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Three Powerful Robots<br/>Working Together</h2>
+      <p>Deploy intelligent automation that scales your content operations</p>
+    </div>
+
+    <div class="robots-grid">
+      <div class="robot-card">
+        <div class="robot-icon">🔍</div>
+        <h3>SEO Robot</h3>
+        <p class="robot-tagline">6-Agent CrewAI System</p>
+        <ul class="robot-features">
+          <li>✓ Research & competitive analysis</li>
+          <li>✓ Topic clustering & topical flow</li>
+          <li>✓ SEO-optimized content creation</li>
+          <li>✓ Schema.org markup generation</li>
+          <li>✓ Technical SEO validation</li>
+        </ul>
+        <div class="robot-tech">
+          <span class="tech-badge">CrewAI</span>
+          <span class="tech-badge">Pydantic</span>
+        </div>
+      </div>
+
+      <div class="robot-card featured">
+        <div class="featured-badge">Most Popular</div>
+        <div class="robot-icon">📧</div>
+        <h3>Newsletter Robot</h3>
+        <p class="robot-tagline">PydanticAI Automation</p>
+        <ul class="robot-features">
+          <li>✓ Exa AI content discovery</li>
+          <li>✓ Intelligent curation & filtering</li>
+          <li>✓ Automated email generation</li>
+          <li>✓ Quality validation (>0.8 score)</li>
+          <li>✓ Scheduled delivery & analytics</li>
+        </ul>
+        <div class="robot-tech">
+          <span class="tech-badge">PydanticAI</span>
+          <span class="tech-badge">Exa AI</span>
+        </div>
+      </div>
+
+      <div class="robot-card">
+        <div class="robot-icon">✍️</div>
+        <h3>Article Robot</h3>
+        <p class="robot-tagline">Competitor Analysis + Generation</p>
+        <ul class="robot-features">
+          <li>✓ Firecrawl web scraping</li>
+          <li>✓ Content gap identification</li>
+          <li>✓ Original article generation</li>
+          <li>✓ Uniqueness >90% guarantee</li>
+          <li>✓ SEO topical alignment</li>
+        </ul>
+        <div class="robot-tech">
+          <span class="tech-badge">CrewAI</span>
+          <span class="tech-badge">Firecrawl</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .robots-section {
+    padding: 6rem 0;
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-light-gray) 100%);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-header h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .section-header p {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+  }
+
+  .robots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .robot-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .robot-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .robot-card.featured {
+    border: 3px solid var(--color-primary);
+    transform: scale(1.05);
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .robot-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .robot-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-dark);
+  }
+
+  .robot-tagline {
+    color: var(--color-primary);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .robot-features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .robot-features li {
+    padding: 0.75rem 0;
+    color: var(--color-dark);
+    border-bottom: 1px solid var(--color-light-gray);
+  }
+
+  .robot-features li:last-child {
+    border-bottom: none;
+  }
+
+  .robot-tech {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tech-badge {
+    background: var(--color-light-gray);
+    color: var(--color-dark);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .section-header h2 {
+      font-size: 2rem;
+    }
+
+    .robot-card.featured {
+      transform: scale(1);
+    }
+  }
+</style>

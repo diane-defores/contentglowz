@@ -1,0 +1,303 @@
+---
+---
+
+<section id="pricing" class="pricing-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Fair Pricing, Unlimited Potential</h2>
+      <p>Choose the plan that fits your automation needs</p>
+    </div>
+
+    <div class="pricing-toggle">
+      <button class="toggle-btn active" data-plan="monthly">Monthly</button>
+      <button class="toggle-btn" data-plan="annual">Annual <span class="save-badge">Save 17%</span></button>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="price">
+          <span class="currency">$</span>
+          <span class="amount monthly">49</span>
+          <span class="amount annual" style="display: none;">41</span>
+          <span class="period">/mo</span>
+        </div>
+        <p class="billing-note monthly">Billed monthly</p>
+        <p class="billing-note annual" style="display: none;">Billed annually ($492/year)</p>
+        
+        <ul class="features">
+          <li>✓ 1 Robot (SEO or Newsletter)</li>
+          <li>✓ 50,000 words/month</li>
+          <li>✓ 500 research credits</li>
+          <li>✓ Basic analytics</li>
+          <li>✓ Email support</li>
+        </ul>
+        <button class="cta-btn">Get Started</button>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="popular-badge">Most Popular</div>
+        <h3>Professional</h3>
+        <div class="price">
+          <span class="currency">$</span>
+          <span class="amount monthly">149</span>
+          <span class="amount annual" style="display: none;">124</span>
+          <span class="period">/mo</span>
+        </div>
+        <p class="billing-note monthly">Billed monthly</p>
+        <p class="billing-note annual" style="display: none;">Billed annually ($1,488/year)</p>
+        
+        <ul class="features">
+          <li>✓ All 3 Robots (SEO + Newsletter + Article)</li>
+          <li>✓ 200,000 words/month</li>
+          <li>✓ 2,000 research credits</li>
+          <li>✓ Advanced analytics & monitoring</li>
+          <li>✓ Priority support</li>
+          <li>✓ Custom integrations</li>
+          <li>✓ API access</li>
+        </ul>
+        <button class="cta-btn primary">Get Started</button>
+      </div>
+
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="price">
+          <span class="custom">Custom</span>
+        </div>
+        <p class="billing-note">Tailored to your needs</p>
+        
+        <ul class="features">
+          <li>✓ Unlimited robots & content</li>
+          <li>✓ Unlimited research credits</li>
+          <li>✓ White-label deployment</li>
+          <li>✓ Dedicated infrastructure</li>
+          <li>✓ Custom agent development</li>
+          <li>✓ 24/7 premium support</li>
+          <li>✓ SLA guarantee</li>
+        </ul>
+        <button class="cta-btn">Contact Sales</button>
+      </div>
+    </div>
+
+    <p class="pricing-note">All plans include free updates, security patches, and all API costs covered</p>
+  </div>
+</section>
+
+<style>
+  .pricing-section {
+    padding: 6rem 0;
+    background: linear-gradient(180deg, var(--color-light-gray) 0%, #ffffff 100%);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .section-header h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .section-header p {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+  }
+
+  .pricing-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .toggle-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    background: white;
+    color: var(--color-gray);
+    transition: all 0.3s ease;
+  }
+
+  .toggle-btn.active {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .save-badge {
+    background: var(--color-accent);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .pricing-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .pricing-card.featured {
+    border: 3px solid var(--color-primary);
+    transform: scale(1.05);
+  }
+
+  .popular-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .pricing-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-gray);
+  }
+
+  .amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--color-dark);
+  }
+
+  .period {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+    margin-left: 0.25rem;
+  }
+
+  .custom {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--color-dark);
+  }
+
+  .billing-note {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .features li {
+    padding: 0.75rem 0;
+    color: var(--color-dark);
+    border-bottom: 1px solid var(--color-light-gray);
+  }
+
+  .features li:last-child {
+    border-bottom: none;
+  }
+
+  .cta-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    background: var(--color-light-gray);
+    color: var(--color-dark);
+    transition: all 0.3s ease;
+  }
+
+  .cta-btn:hover {
+    background: var(--color-dark);
+    color: white;
+  }
+
+  .cta-btn.primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+  }
+
+  .cta-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .pricing-note {
+    text-align: center;
+    color: var(--color-gray);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .section-header h2 {
+      font-size: 2rem;
+    }
+
+    .pricing-card.featured {
+      transform: scale(1);
+    }
+  }
+</style>
+
+<script>
+  const toggleButtons = document.querySelectorAll('.toggle-btn');
+  const monthlyPrices = document.querySelectorAll('.monthly');
+  const annualPrices = document.querySelectorAll('.annual');
+
+  toggleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      const plan = btn.dataset.plan;
+      if (plan === 'monthly') {
+        monthlyPrices.forEach(el => el.style.display = '');
+        annualPrices.forEach(el => el.style.display = 'none');
+      } else {
+        monthlyPrices.forEach(el => el.style.display = 'none');
+        annualPrices.forEach(el => el.style.display = '');
+      }
+    });
+  });
+</script>

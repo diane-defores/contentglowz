@@ -1,0 +1,213 @@
+---
+---
+
+<section id="faq" class="faq-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Frequently Asked Questions</h2>
+      <p>Everything you need to know about the robot suite</p>
+    </div>
+
+    <div class="faq-grid">
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>What frameworks power these robots?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>SEO Robot and Article Robot use CrewAI for multi-agent orchestration. Newsletter Robot uses PydanticAI for structured data validation. All robots leverage Pydantic schemas for quality control.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Can I customize the robots for my specific needs?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>Yes! Professional and Enterprise plans include API access and custom integrations. Enterprise customers get dedicated custom agent development tailored to their workflows.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>How does the SEO Robot ensure topical consistency?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>The SEO Robot analyzes your existing content to build a topic mesh, ensuring new articles maintain topical flow and internal linking consistency. It uses NetworkX for graph-based topic modeling.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>What's the quality guarantee for generated content?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>All content passes strict Pydantic validation. Article Robot guarantees >90% uniqueness and >0.85 relevance. Newsletter Robot filters content with >0.8 relevance scores. Automated retry logic ensures quality.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>How does Newsletter Robot find relevant content?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>It uses Exa AI's neural search and content extraction APIs. Results are filtered by relevance score (>0.7 threshold), deduplicated, and validated against Pydantic schemas before curation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>What's included in "all API costs covered"?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>We cover OpenAI/Anthropic LLM costs, Exa AI search credits, and Firecrawl scraping within your plan limits. No surprise bills for API usage.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>Can I deploy these robots on my own infrastructure?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>Enterprise customers get white-label deployment options and dedicated infrastructure. Professional plan includes API access for custom integrations with your existing systems.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          <span>How fast is content generation?</span>
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-answer">
+          <p>SEO Robot and Article Robot generate articles in <15 minutes. Newsletter Robot curates and sends in <5 minutes. Blacksmith CI/CD provides 2x faster builds vs standard GitHub Actions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    padding: 6rem 0;
+    background: var(--color-light-gray);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-header h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .section-header p {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+  }
+
+  .faq-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .faq-item:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .faq-question {
+    width: 100%;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .faq-question:hover {
+    color: var(--color-primary);
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    transition: transform 0.3s ease;
+  }
+
+  .faq-item.active .icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+
+  .faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .faq-answer p {
+    color: var(--color-gray);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .section-header h2 {
+      font-size: 2rem;
+    }
+
+    .faq-question {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  const faqItems = document.querySelectorAll('.faq-item');
+  
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+    
+    question?.addEventListener('click', () => {
+      const isActive = item.classList.contains('active');
+      
+      // Close all items
+      faqItems.forEach(i => i.classList.remove('active'));
+      
+      // Open clicked item if it wasn't active
+      if (!isActive) {
+        item.classList.add('active');
+      }
+    });
+  });
+</script>

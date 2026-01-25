@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: bizflowz-api
+    env: python
+    region: frankfurt  # EU region for better performance
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      # Add your API keys via Render dashboard:
+      # RECOMMENDED:
+      # - OPENROUTER_API_KEY (50-90% cheaper than direct APIs)
+      # REQUIRED:
+      # - GROQ_API_KEY (fallback)
+      # - EXA_API_KEY
+      # - FIRECRAWL_API_KEY
+      # - YDC_API_KEY (You.com for STORM)
+      # OPTIONAL:
+      # - OPENAI_API_KEY (only if not using OpenRouter)
+      # - ANTHROPIC_API_KEY (only if not using OpenRouter)
+      # - DOPPLER_TOKEN (if using Doppler)
+    autoDeploy: true
+    
+  # Optional: Add PostgreSQL database (expires after 30 days on free tier)
+  # - type: pstgrSQL
+  #   name: bizflowz-db
+  #   plan: free
+  #   databaseName: bizflowz
+  #   databaseUser: bizflowz_user

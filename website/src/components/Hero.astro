@@ -1,0 +1,195 @@
+---
+---
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Your Robots <span class="gradient-text rotating-words">
+          <span class="word active">write</span>
+          <span class="word">research</span>
+          <span class="word">analyze</span>
+          <span class="word">optimize</span>
+        </span>, you scale.
+      </h1>
+      <p class="hero-subtitle">
+        Deploy intelligent AI robots that automate SEO optimization, newsletter curation, and content generation. 
+        Built with CrewAI and PydanticAI for enterprise-grade automation.
+      </p>
+      <div class="hero-cta">
+        <a href="#pricing" class="btn-primary">Start Building</a>
+        <a href="#features" class="btn-secondary">See How It Works</a>
+      </div>
+      <div class="social-proof">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p>"The most powerful automation suite I've ever used. It actually delivers."</p>
+        <div class="author">
+          <strong>Alex Chen</strong> - Tech Startup Founder
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: 10rem 0 6rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    position: relative;
+    height: 1.2em;
+  }
+
+  .rotating-words {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .word {
+    position: absolute;
+    opacity: 0;
+    animation: rotateWord 12s linear infinite;
+  }
+
+  .word:nth-child(1) { animation-delay: 0s; }
+  .word:nth-child(2) { animation-delay: 3s; }
+  .word:nth-child(3) { animation-delay: 6s; }
+  .word:nth-child(4) { animation-delay: 9s; }
+
+  @keyframes rotateWord {
+    0% { opacity: 0; transform: translateY(20px); }
+    2% { opacity: 1; transform: translateY(0); }
+    23% { opacity: 1; transform: translateY(0); }
+    25% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 0; }
+  }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--color-primary);
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid var(--color-primary);
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .social-proof {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .stars {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .social-proof p {
+    font-style: italic;
+    color: var(--color-dark);
+    margin-bottom: 1rem;
+  }
+
+  .author {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 8rem 0 4rem;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-cta {
+      flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+    }
+  }
+</style>
