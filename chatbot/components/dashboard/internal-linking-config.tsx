@@ -21,6 +21,7 @@ type InternalLinkingConfig = {
   personalizationLevel: 'basic' | 'intermediate' | 'advanced' | 'full';
   conversionFocus: number;
   businessObjectives: string[];
+  strategyType: 'balanced' | 'seo_focused' | 'conversion_focused' | 'custom';
   targetAuthority: number;
   targetConversionRate: number;
   priorityPages: string[];

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Link, Settings, Zap, TrendingUp, Target } from 'lucide-react';
 import { InternalLinkingConfigModal } from '@/components/dashboard/internal-linking-config';
-import { useInternalLinking } from '@/lib/hooks/use-internal-linking';
+import { useInternalLinking } from '@/hooks/use-internal-linking';
 
 type InternalLinkingCardProps = {
   repoUrl: string;
@@ -132,7 +132,12 @@ export function InternalLinkingCard({ repoUrl, authToken }: InternalLinkingCardP
         config={config}
         onConfigChange={setConfig}
         onSave={() => {
-          generateLinkingStrategy(config);
+          generateLinkingStrategy(repoUrl, config.strategyType, {
+            targetAuthority: config.targetAuthority,
+            targetConversionRate: config.targetConversionRate,
+            priorityPages: config.priorityPages,
+            excludedPages: config.excludedPages,
+          });
           setConfigOpen(false);
         }}
       />

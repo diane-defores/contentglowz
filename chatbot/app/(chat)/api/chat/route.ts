@@ -224,11 +224,11 @@ export async function POST(request: Request) {
      * - Custom data parts for artifacts and suggestions
      */
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
+      execute: async ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
-          messages: convertToModelMessages(uiMessages),
+          messages: await convertToModelMessages(uiMessages),
           // Limit tool call chains to prevent infinite loops
           stopWhen: stepCountIs(5),
           // Reasoning model doesn't use tools - it focuses on chain-of-thought
@@ -260,9 +260,9 @@ export async function POST(request: Request) {
             analyzeMesh: analyzeMeshTool,
             buildMesh: buildMeshTool,
             improveMesh: improveMeshTool,
-            analyzeInternalLinking: analyzeInternalLinking({}),
-            generateInternalLinkingStrategy: generateInternalLinkingStrategy({}),
-            applyInternalLinks: applyInternalLinks({}),
+            analyzeInternalLinking,
+            generateInternalLinkingStrategy,
+            applyInternalLinks,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,

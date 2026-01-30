@@ -118,8 +118,10 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
+# Python lib directories (but not chatbot/lib)
+/lib/
 lib64/
+!chatbot/lib/
 parts/
 sdist/
 var/
