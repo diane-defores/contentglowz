@@ -16,9 +16,9 @@
  */
 import { gateway } from "@ai-sdk/gateway";
 import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
+	customProvider,
+	extractReasoningMiddleware,
+	wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
 
@@ -28,35 +28,35 @@ import { isTestEnvironment } from "../constants";
  * In production, routes through Vercel AI Gateway to xAI Grok models.
  */
 export const myProvider = isTestEnvironment
-  ? (() => {
-      const {
-        artifactModel,
-        chatModel,
-        reasoningModel,
-        titleModel,
-      } = require("./models.mock");
-      return customProvider({
-        languageModels: {
-          "chat-model": chatModel,
-          "chat-model-reasoning": reasoningModel,
-          "title-model": titleModel,
-          "artifact-model": artifactModel,
-        },
-      });
-    })()
-  : customProvider({
-      languageModels: {
-        // Default multimodal chat model with vision capabilities
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
-        // Reasoning model wrapped with middleware to extract chain-of-thought
-        // The <think> tags are parsed out and surfaced to the UI separately
-        "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-        // Lightweight model for generating concise chat titles
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        // Model used for artifact generation and document operations
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
-      },
-    });
+	? (() => {
+			const {
+				artifactModel,
+				chatModel,
+				reasoningModel,
+				titleModel,
+			} = require("./models.mock");
+			return customProvider({
+				languageModels: {
+					"chat-model": chatModel,
+					"chat-model-reasoning": reasoningModel,
+					"title-model": titleModel,
+					"artifact-model": artifactModel,
+				},
+			});
+		})()
+	: customProvider({
+			languageModels: {
+				// Default multimodal chat model with vision capabilities
+				"chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+				// Reasoning model wrapped with middleware to extract chain-of-thought
+				// The <think> tags are parsed out and surfaced to the UI separately
+				"chat-model-reasoning": wrapLanguageModel({
+					model: gateway.languageModel("xai/grok-3-mini"),
+					middleware: extractReasoningMiddleware({ tagName: "think" }),
+				}),
+				// Lightweight model for generating concise chat titles
+				"title-model": gateway.languageModel("xai/grok-2-1212"),
+				// Model used for artifact generation and document operations
+				"artifact-model": gateway.languageModel("xai/grok-2-1212"),
+			},
+		});

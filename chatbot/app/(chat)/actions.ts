@@ -14,16 +14,16 @@ import type { VisibilityType } from "@/components/visibility-selector";
 import { titlePrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import {
-  deleteMessagesByChatIdAfterTimestamp,
-  getMessageById,
-  updateChatVisibilityById,
+	deleteMessagesByChatIdAfterTimestamp,
+	getMessageById,
+	updateChatVisibilityById,
 } from "@/lib/db/queries";
 import { getTextFromMessage } from "@/lib/utils";
 
 /** Persists user's model preference in a cookie for next session */
 export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("chat-model", model);
+	const cookieStore = await cookies();
+	cookieStore.set("chat-model", model);
 }
 
 /**
@@ -31,17 +31,17 @@ export async function saveChatModelAsCookie(model: string) {
  * Called when a new chat is created to provide a meaningful sidebar label.
  */
 export async function generateTitleFromUserMessage({
-  message,
+	message,
 }: {
-  message: UIMessage;
+	message: UIMessage;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel("title-model"),
-    system: titlePrompt,
-    prompt: getTextFromMessage(message),
-  });
+	const { text: title } = await generateText({
+		model: myProvider.languageModel("title-model"),
+		system: titlePrompt,
+		prompt: getTextFromMessage(message),
+	});
 
-  return title;
+	return title;
 }
 
 /**
@@ -50,21 +50,21 @@ export async function generateTitleFromUserMessage({
  * and must be removed before regenerating.
  */
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
+	const [message] = await getMessageById({ id });
 
-  await deleteMessagesByChatIdAfterTimestamp({
-    chatId: message.chatId,
-    timestamp: message.createdAt,
-  });
+	await deleteMessagesByChatIdAfterTimestamp({
+		chatId: message.chatId,
+		timestamp: message.createdAt,
+	});
 }
 
 /** Updates chat visibility (private/public) for sharing */
 export async function updateChatVisibility({
-  chatId,
-  visibility,
+	chatId,
+	visibility,
 }: {
-  chatId: string;
-  visibility: VisibilityType;
+	chatId: string;
+	visibility: VisibilityType;
 }) {
-  await updateChatVisibilityById({ chatId, visibility });
+	await updateChatVisibilityById({ chatId, visibility });
 }

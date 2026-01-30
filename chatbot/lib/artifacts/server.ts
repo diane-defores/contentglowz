@@ -20,34 +20,34 @@ import type { ChatMessage } from "../types";
 
 /** Parameters for saving documents to database */
 export type SaveDocumentProps = {
-  id: string;
-  title: string;
-  kind: ArtifactKind;
-  content: string;
-  userId: string;
+	id: string;
+	title: string;
+	kind: ArtifactKind;
+	content: string;
+	userId: string;
 };
 
 /** Arguments passed to document creation handlers */
 export type CreateDocumentCallbackProps = {
-  id: string;
-  title: string;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+	id: string;
+	title: string;
+	dataStream: UIMessageStreamWriter<ChatMessage>;
+	session: Session;
 };
 
 /** Arguments passed to document update handlers */
 export type UpdateDocumentCallbackProps = {
-  document: Document;
-  description: string;
-  dataStream: UIMessageStreamWriter<ChatMessage>;
-  session: Session;
+	document: Document;
+	description: string;
+	dataStream: UIMessageStreamWriter<ChatMessage>;
+	session: Session;
 };
 
 /** Interface for artifact-specific document handlers */
 export type DocumentHandler<T = ArtifactKind> = {
-  kind: T;
-  onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
-  onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
+	kind: T;
+	onCreateDocument: (args: CreateDocumentCallbackProps) => Promise<void>;
+	onUpdateDocument: (args: UpdateDocumentCallbackProps) => Promise<void>;
 };
 
 /**
@@ -60,53 +60,53 @@ export type DocumentHandler<T = ArtifactKind> = {
  * This ensures all handlers follow the same save pattern.
  */
 export function createDocumentHandler<T extends ArtifactKind>(config: {
-  kind: T;
-  onCreateDocument: (params: CreateDocumentCallbackProps) => Promise<string>;
-  onUpdateDocument: (params: UpdateDocumentCallbackProps) => Promise<string>;
+	kind: T;
+	onCreateDocument: (params: CreateDocumentCallbackProps) => Promise<string>;
+	onUpdateDocument: (params: UpdateDocumentCallbackProps) => Promise<string>;
 }): DocumentHandler<T> {
-  return {
-    kind: config.kind,
-    onCreateDocument: async (args: CreateDocumentCallbackProps) => {
-      const draftContent = await config.onCreateDocument({
-        id: args.id,
-        title: args.title,
-        dataStream: args.dataStream,
-        session: args.session,
-      });
+	return {
+		kind: config.kind,
+		onCreateDocument: async (args: CreateDocumentCallbackProps) => {
+			const draftContent = await config.onCreateDocument({
+				id: args.id,
+				title: args.title,
+				dataStream: args.dataStream,
+				session: args.session,
+			});
 
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.id,
-          title: args.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
+			if (args.session?.user?.id) {
+				await saveDocument({
+					id: args.id,
+					title: args.title,
+					content: draftContent,
+					kind: config.kind,
+					userId: args.session.user.id,
+				});
+			}
 
-      return;
-    },
-    onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
-      const draftContent = await config.onUpdateDocument({
-        document: args.document,
-        description: args.description,
-        dataStream: args.dataStream,
-        session: args.session,
-      });
+			return;
+		},
+		onUpdateDocument: async (args: UpdateDocumentCallbackProps) => {
+			const draftContent = await config.onUpdateDocument({
+				document: args.document,
+				description: args.description,
+				dataStream: args.dataStream,
+				session: args.session,
+			});
 
-      if (args.session?.user?.id) {
-        await saveDocument({
-          id: args.document.id,
-          title: args.document.title,
-          content: draftContent,
-          kind: config.kind,
-          userId: args.session.user.id,
-        });
-      }
+			if (args.session?.user?.id) {
+				await saveDocument({
+					id: args.document.id,
+					title: args.document.title,
+					content: draftContent,
+					kind: config.kind,
+					userId: args.session.user.id,
+				});
+			}
 
-      return;
-    },
-  };
+			return;
+		},
+	};
 }
 
 /**
@@ -115,9 +115,9 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
  * Add new handlers here when adding new artifact types.
  */
 export const documentHandlersByArtifactKind: DocumentHandler[] = [
-  textDocumentHandler,
-  codeDocumentHandler,
-  sheetDocumentHandler,
+	textDocumentHandler,
+	codeDocumentHandler,
+	sheetDocumentHandler,
 ];
 
 /** Supported artifact kinds - add new types here and register a handler */

@@ -21,26 +21,26 @@ export type UserType = "guest" | "regular";
 
 // Extend NextAuth types to include our custom properties
 declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      type: UserType;
-    } & DefaultSession["user"];
-  }
+	interface Session extends DefaultSession {
+		user: {
+			id: string;
+			type: UserType;
+		} & DefaultSession["user"];
+	}
 
-  // biome-ignore lint/nursery/useConsistentTypeDefinitions: "Required"
-  interface User {
-    id?: string;
-    email?: string | null;
-    type: UserType;
-  }
+	// biome-ignore lint/nursery/useConsistentTypeDefinitions: "Required"
+	interface User {
+		id?: string;
+		email?: string | null;
+		type: UserType;
+	}
 }
 
 declare module "next-auth/jwt" {
-  interface JWT extends DefaultJWT {
-    id: string;
-    type: UserType;
-  }
+	interface JWT extends DefaultJWT {
+		id: string;
+		type: UserType;
+	}
 }
 
 /**
@@ -50,71 +50,71 @@ declare module "next-auth/jwt" {
  * to prevent timing attacks that could reveal whether an email exists.
  */
 export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
+	handlers: { GET, POST },
+	auth,
+	signIn,
+	signOut,
 } = NextAuth({
-  ...authConfig,
-  providers: [
-    // Standard email/password authentication
-    Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
+	...authConfig,
+	providers: [
+		// Standard email/password authentication
+		Credentials({
+			credentials: {},
+			async authorize({ email, password }: any) {
+				const users = await getUser(email);
 
-        if (users.length === 0) {
-          // Compare against dummy password to prevent timing attacks
-          // This ensures invalid emails take the same time as invalid passwords
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+				if (users.length === 0) {
+					// Compare against dummy password to prevent timing attacks
+					// This ensures invalid emails take the same time as invalid passwords
+					await compare(password, DUMMY_PASSWORD);
+					return null;
+				}
 
-        const [user] = users;
+				const [user] = users;
 
-        if (!user.password) {
-          // Same timing attack prevention for users without passwords
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+				if (!user.password) {
+					// Same timing attack prevention for users without passwords
+					await compare(password, DUMMY_PASSWORD);
+					return null;
+				}
 
-        const passwordsMatch = await compare(password, user.password);
+				const passwordsMatch = await compare(password, user.password);
 
-        if (!passwordsMatch) {
-          return null;
-        }
+				if (!passwordsMatch) {
+					return null;
+				}
 
-        return { ...user, type: "regular" };
-      },
-    }),
-    // Guest authentication - creates ephemeral user on demand
-    Credentials({
-      id: "guest",
-      credentials: {},
-      async authorize() {
-        const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: "guest" };
-      },
-    }),
-  ],
-  callbacks: {
-    // Persist user info in JWT token
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
-      }
+				return { ...user, type: "regular" };
+			},
+		}),
+		// Guest authentication - creates ephemeral user on demand
+		Credentials({
+			id: "guest",
+			credentials: {},
+			async authorize() {
+				const [guestUser] = await createGuestUser();
+				return { ...guestUser, type: "guest" };
+			},
+		}),
+	],
+	callbacks: {
+		// Persist user info in JWT token
+		jwt({ token, user }) {
+			if (user) {
+				token.id = user.id as string;
+				token.type = user.type;
+			}
 
-      return token;
-    },
-    // Expose user info to session for client-side access
-    session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.type = token.type;
-      }
+			return token;
+		},
+		// Expose user info to session for client-side access
+		session({ session, token }) {
+			if (session.user) {
+				session.user.id = token.id;
+				session.user.type = token.type;
+			}
 
-      return session;
-    },
-  },
+			return session;
+		},
+	},
 });

@@ -17,18 +17,18 @@ import type { UIArtifact } from "@/components/artifact";
 
 /** Default artifact state before any document is opened */
 export const initialArtifactData: UIArtifact = {
-  documentId: "init",
-  content: "",
-  kind: "text",
-  title: "",
-  status: "idle",
-  isVisible: false,
-  boundingBox: {
-    top: 0,
-    left: 0,
-    width: 0,
-    height: 0,
-  },
+	documentId: "init",
+	content: "",
+	kind: "text",
+	title: "",
+	status: "idle",
+	isVisible: false,
+	boundingBox: {
+		top: 0,
+		left: 0,
+		width: 0,
+		height: 0,
+	},
 };
 
 type Selector<T> = (state: UIArtifact) => T;
@@ -39,18 +39,18 @@ type Selector<T> = (state: UIArtifact) => T;
  * to avoid unnecessary re-renders.
  */
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
-  const { data: localArtifact } = useSWR<UIArtifact>("artifact", null, {
-    fallbackData: initialArtifactData,
-  });
+	const { data: localArtifact } = useSWR<UIArtifact>("artifact", null, {
+		fallbackData: initialArtifactData,
+	});
 
-  const selectedValue = useMemo(() => {
-    if (!localArtifact) {
-      return selector(initialArtifactData);
-    }
-    return selector(localArtifact);
-  }, [localArtifact, selector]);
+	const selectedValue = useMemo(() => {
+		if (!localArtifact) {
+			return selector(initialArtifactData);
+		}
+		return selector(localArtifact);
+	}, [localArtifact, selector]);
 
-  return selectedValue;
+	return selectedValue;
 }
 
 /**
@@ -61,62 +61,62 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
  * similar to React's useState pattern.
  */
 export function useArtifact() {
-  const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
-    "artifact",
-    null,
-    {
-      fallbackData: initialArtifactData,
-    }
-  );
+	const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
+		"artifact",
+		null,
+		{
+			fallbackData: initialArtifactData,
+		},
+	);
 
-  const artifact = useMemo(() => {
-    if (!localArtifact) {
-      return initialArtifactData;
-    }
-    return localArtifact;
-  }, [localArtifact]);
+	const artifact = useMemo(() => {
+		if (!localArtifact) {
+			return initialArtifactData;
+		}
+		return localArtifact;
+	}, [localArtifact]);
 
-  /**
-   * Updater function supporting both direct values and functional updates.
-   * Wraps SWR's mutate to provide a familiar React setState API.
-   */
-  const setArtifact = useCallback(
-    (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
-      setLocalArtifact((currentArtifact) => {
-        const artifactToUpdate = currentArtifact || initialArtifactData;
+	/**
+	 * Updater function supporting both direct values and functional updates.
+	 * Wraps SWR's mutate to provide a familiar React setState API.
+	 */
+	const setArtifact = useCallback(
+		(updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
+			setLocalArtifact((currentArtifact) => {
+				const artifactToUpdate = currentArtifact || initialArtifactData;
 
-        if (typeof updaterFn === "function") {
-          return updaterFn(artifactToUpdate);
-        }
+				if (typeof updaterFn === "function") {
+					return updaterFn(artifactToUpdate);
+				}
 
-        return updaterFn;
-      });
-    },
-    [setLocalArtifact]
-  );
+				return updaterFn;
+			});
+		},
+		[setLocalArtifact],
+	);
 
-  /**
-   * Artifact-specific metadata storage.
-   * Each artifact type can store additional metadata (e.g., code outputs, suggestions).
-   * Key is scoped to documentId to isolate metadata between artifacts.
-   */
-  const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
-    useSWR<any>(
-      () =>
-        artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
-      null,
-      {
-        fallbackData: null,
-      }
-    );
+	/**
+	 * Artifact-specific metadata storage.
+	 * Each artifact type can store additional metadata (e.g., code outputs, suggestions).
+	 * Key is scoped to documentId to isolate metadata between artifacts.
+	 */
+	const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
+		useSWR<any>(
+			() =>
+				artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
+			null,
+			{
+				fallbackData: null,
+			},
+		);
 
-  return useMemo(
-    () => ({
-      artifact,
-      setArtifact,
-      metadata: localArtifactMetadata,
-      setMetadata: setLocalArtifactMetadata,
-    }),
-    [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata]
-  );
+	return useMemo(
+		() => ({
+			artifact,
+			setArtifact,
+			metadata: localArtifactMetadata,
+			setMetadata: setLocalArtifactMetadata,
+		}),
+		[artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata],
+	);
 }

@@ -12,7 +12,9 @@ function SimpleLoading() {
 // Client component for dynamic content
 async function DashboardClient({ repoUrl }: { repoUrl: string }) {
 	// Dynamically import to ensure client-side only
-	const { DashboardContent } = await import("@/components/dashboard/dashboard-content");
+	const { DashboardContent } = await import(
+		"@/components/dashboard/dashboard-content"
+	);
 	return <DashboardContent repoUrl={repoUrl} />;
 }
 

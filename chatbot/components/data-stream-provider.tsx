@@ -21,40 +21,40 @@ import { createContext, useContext, useMemo, useState } from "react";
 import type { CustomUIDataTypes } from "@/lib/types";
 
 type DataStreamContextValue = {
-  /** Current buffered data stream parts */
-  dataStream: DataUIPart<CustomUIDataTypes>[];
-  /** Function to update the stream (typically append new parts) */
-  setDataStream: React.Dispatch<
-    React.SetStateAction<DataUIPart<CustomUIDataTypes>[]>
-  >;
+	/** Current buffered data stream parts */
+	dataStream: DataUIPart<CustomUIDataTypes>[];
+	/** Function to update the stream (typically append new parts) */
+	setDataStream: React.Dispatch<
+		React.SetStateAction<DataUIPart<CustomUIDataTypes>[]>
+	>;
 };
 
 const DataStreamContext = createContext<DataStreamContextValue | null>(null);
 
 /** Provider component that manages the data stream state */
 export function DataStreamProvider({
-  children,
+	children,
 }: {
-  children: React.ReactNode;
+	children: React.ReactNode;
 }) {
-  const [dataStream, setDataStream] = useState<DataUIPart<CustomUIDataTypes>[]>(
-    []
-  );
+	const [dataStream, setDataStream] = useState<DataUIPart<CustomUIDataTypes>[]>(
+		[],
+	);
 
-  const value = useMemo(() => ({ dataStream, setDataStream }), [dataStream]);
+	const value = useMemo(() => ({ dataStream, setDataStream }), [dataStream]);
 
-  return (
-    <DataStreamContext.Provider value={value}>
-      {children}
-    </DataStreamContext.Provider>
-  );
+	return (
+		<DataStreamContext.Provider value={value}>
+			{children}
+		</DataStreamContext.Provider>
+	);
 }
 
 /** Hook to access the data stream from any component within the provider */
 export function useDataStream() {
-  const context = useContext(DataStreamContext);
-  if (!context) {
-    throw new Error("useDataStream must be used within a DataStreamProvider");
-  }
-  return context;
+	const context = useContext(DataStreamContext);
+	if (!context) {
+		throw new Error("useDataStream must be used within a DataStreamProvider");
+	}
+	return context;
 }

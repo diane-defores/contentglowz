@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const API_URL = process.env.SEO_API_URL || "https://bizflowz-api.onrender.com";
 
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: Promise<{ path: string[] }> }
+	{ params }: { params: Promise<{ path: string[] }> },
 ) {
 	const { path } = await params;
 	const url = `${API_URL}/${path.join("/")}`;
@@ -21,7 +21,7 @@ export async function GET(
 			const error = await response.text();
 			return NextResponse.json(
 				{ error: error || response.statusText },
-				{ status: response.status }
+				{ status: response.status },
 			);
 		}
 
@@ -30,15 +30,18 @@ export async function GET(
 	} catch (error) {
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
-			{ error: "Failed to connect to SEO API. It may be starting up (30-60s on free tier)." },
-			{ status: 503 }
+			{
+				error:
+					"Failed to connect to SEO API. It may be starting up (30-60s on free tier).",
+			},
+			{ status: 503 },
 		);
 	}
 }
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: Promise<{ path: string[] }> }
+	{ params }: { params: Promise<{ path: string[] }> },
 ) {
 	const { path } = await params;
 	const url = `${API_URL}/${path.join("/")}`;
@@ -59,7 +62,7 @@ export async function POST(
 			const error = await response.text();
 			return NextResponse.json(
 				{ error: error || response.statusText },
-				{ status: response.status }
+				{ status: response.status },
 			);
 		}
 
@@ -68,8 +71,11 @@ export async function POST(
 	} catch (error) {
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
-			{ error: "Failed to connect to SEO API. It may be starting up (30-60s on free tier)." },
-			{ status: 503 }
+			{
+				error:
+					"Failed to connect to SEO API. It may be starting up (30-60s on free tier).",
+			},
+			{ status: 503 },
 		);
 	}
 }

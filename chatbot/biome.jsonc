@@ -1,13 +1,12 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["./node_modules/ultracite/config/biome/next/biome.jsonc"],
-  "files": {
-    "includes": [
-      "**/*",
-      "!!**/components/ui",
-      "!!**/lib/utils.ts",
-      "!!**/hooks/use-mobile.ts"
-    ]
-  },
-
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"extends": ["./node_modules/ultracite/config/biome/next/biome.jsonc"],
+	"files": {
+		"includes": [
+			"**/*",
+			"!!**/components/ui",
+			"!!**/lib/utils.ts",
+			"!!**/hooks/use-mobile.ts"
+		]
+	}
 }
