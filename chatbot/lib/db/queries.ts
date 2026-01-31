@@ -28,6 +28,8 @@ import type { AppUsage } from "../usage";
 import { generateUUID } from "../utils";
 import { getDb } from "./client";
 import {
+	type ActivityLog,
+	activityLog,
 	type AffiliateLink,
 	affiliateLink,
 	type Chat,
@@ -37,6 +39,8 @@ import {
 	type DBMessage,
 	document,
 	message,
+	type Project,
+	project,
 	type Suggestion,
 	stream,
 	suggestion,
@@ -1012,6 +1016,333 @@ export async function deleteCompetitor({ id }: { id: string }) {
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to delete competitor",
+		);
+	}
+}
+
+// ============================================================================
+// Project Queries
+// ============================================================================
+
+/** Gets all projects for a user */
+export async function getProjectsByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<Project[]> {
+	try {
+		return await db
+			.select()
+			.from(project)
+			.where(eq(project.userId, userId))
+			.orderBy(desc(project.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get projects by user id",
+		);
+	}
+}
+
+/** Gets the default project for a user */
+export async function getDefaultProjectByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<Project | null> {
+	try {
+		const [proj] = await db
+			.select()
+			.from(project)
+			.where(and(eq(project.userId, userId), eq(project.isDefault, true)));
+		return proj || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get default project",
+		);
+	}
+}
+
+/** Gets a single project by ID */
+export async function getProjectById({
+	id,
+}: {
+	id: string;
+}): Promise<Project | null> {
+	try {
+		const [proj] = await db.select().from(project).where(eq(project.id, id));
+		return proj || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get project by id",
+		);
+	}
+}
+
+/** Creates a new project */
+export async function createProject({
+	userId,
+	name,
+	url,
+	type,
+	description,
+	isDefault,
+	settings,
+}: {
+	userId: string;
+	name: string;
+	url: string;
+	type?: "github" | "website";
+	description?: string;
+	isDefault?: boolean;
+	settings?: Project["settings"];
+}): Promise<Project> {
+	try {
+		// If this is the default, unset other defaults first
+		if (isDefault) {
+			await db
+				.update(project)
+				.set({ isDefault: false })
+				.where(eq(project.userId, userId));
+		}
+
+		const [created] = await db
+			.insert(project)
+			.values({
+				userId,
+				name,
+				url,
+				type: type || "github",
+				description,
+				isDefault: isDefault || false,
+				settings,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError("bad_request:database", "Failed to create project");
+	}
+}
+
+/** Updates a project */
+export async function updateProject({
+	id,
+	name,
+	url,
+	type,
+	description,
+	isDefault,
+	settings,
+	lastAnalyzedAt,
+}: {
+	id: string;
+	name?: string;
+	url?: string;
+	type?: "github" | "website";
+	description?: string;
+	isDefault?: boolean;
+	settings?: Project["settings"];
+	lastAnalyzedAt?: Date;
+}): Promise<Project> {
+	try {
+		// If setting as default, unset other defaults first
+		if (isDefault) {
+			const [existingProject] = await db
+				.select({ userId: project.userId })
+				.from(project)
+				.where(eq(project.id, id));
+			if (existingProject) {
+				await db
+					.update(project)
+					.set({ isDefault: false })
+					.where(eq(project.userId, existingProject.userId));
+			}
+		}
+
+		const updateData: Record<string, any> = {};
+		if (name !== undefined) updateData.name = name;
+		if (url !== undefined) updateData.url = url;
+		if (type !== undefined) updateData.type = type;
+		if (description !== undefined) updateData.description = description;
+		if (isDefault !== undefined) updateData.isDefault = isDefault;
+		if (settings !== undefined) updateData.settings = settings;
+		if (lastAnalyzedAt !== undefined) updateData.lastAnalyzedAt = lastAnalyzedAt;
+
+		const [updated] = await db
+			.update(project)
+			.set(updateData)
+			.where(eq(project.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError("bad_request:database", "Failed to update project");
+	}
+}
+
+/** Deletes a project */
+export async function deleteProject({ id }: { id: string }) {
+	try {
+		// Delete associated activity logs first
+		await db.delete(activityLog).where(eq(activityLog.projectId, id));
+		await db.delete(project).where(eq(project.id, id));
+	} catch (_error) {
+		throw new ChatSDKError("bad_request:database", "Failed to delete project");
+	}
+}
+
+// ============================================================================
+// Activity Log Queries
+// ============================================================================
+
+/** Gets activity logs for a user with optional filters */
+export async function getActivityLogsByUserId({
+	userId,
+	projectId,
+	robotId,
+	status,
+	limit = 50,
+}: {
+	userId: string;
+	projectId?: string;
+	robotId?: string;
+	status?: ActivityLog["status"];
+	limit?: number;
+}): Promise<ActivityLog[]> {
+	try {
+		const conditions = [eq(activityLog.userId, userId)];
+		if (projectId) conditions.push(eq(activityLog.projectId, projectId));
+		if (robotId) conditions.push(eq(activityLog.robotId, robotId));
+		if (status) conditions.push(eq(activityLog.status, status));
+
+		return await db
+			.select()
+			.from(activityLog)
+			.where(and(...conditions))
+			.orderBy(desc(activityLog.createdAt))
+			.limit(limit);
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get activity logs",
+		);
+	}
+}
+
+/** Gets a single activity log by ID */
+export async function getActivityLogById({
+	id,
+}: {
+	id: string;
+}): Promise<ActivityLog | null> {
+	try {
+		const [log] = await db
+			.select()
+			.from(activityLog)
+			.where(eq(activityLog.id, id));
+		return log || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get activity log by id",
+		);
+	}
+}
+
+/** Creates a new activity log entry */
+export async function createActivityLog({
+	userId,
+	projectId,
+	action,
+	robotId,
+	status,
+	details,
+}: {
+	userId: string;
+	projectId?: string;
+	action: string;
+	robotId?: string;
+	status?: ActivityLog["status"];
+	details?: ActivityLog["details"];
+}): Promise<ActivityLog> {
+	try {
+		const [created] = await db
+			.insert(activityLog)
+			.values({
+				userId,
+				projectId,
+				action,
+				robotId,
+				status: status || "started",
+				details,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create activity log",
+		);
+	}
+}
+
+/** Updates an activity log (typically to mark completion or failure) */
+export async function updateActivityLog({
+	id,
+	status,
+	details,
+	completedAt,
+}: {
+	id: string;
+	status?: ActivityLog["status"];
+	details?: ActivityLog["details"];
+	completedAt?: Date;
+}): Promise<ActivityLog> {
+	try {
+		const updateData: Record<string, any> = {};
+		if (status !== undefined) updateData.status = status;
+		if (details !== undefined) updateData.details = details;
+		if (completedAt !== undefined) updateData.completedAt = completedAt;
+
+		const [updated] = await db
+			.update(activityLog)
+			.set(updateData)
+			.where(eq(activityLog.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update activity log",
+		);
+	}
+}
+
+/** Deletes old activity logs (cleanup) */
+export async function deleteOldActivityLogs({
+	userId,
+	olderThanDays = 30,
+}: {
+	userId: string;
+	olderThanDays?: number;
+}) {
+	try {
+		const cutoffDate = new Date(
+			Date.now() - olderThanDays * 24 * 60 * 60 * 1000,
+		);
+		await db
+			.delete(activityLog)
+			.where(
+				and(
+					eq(activityLog.userId, userId),
+					lt(activityLog.createdAt, cutoffDate),
+				),
+			);
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete old activity logs",
 		);
 	}
 }

@@ -288,3 +288,71 @@ export const competitor = sqliteTable("Competitor", {
 });
 
 export type Competitor = InferSelectModel<typeof competitor>;
+
+/**
+ * Projects/Sites for SEO analysis.
+ * Stores repositories or websites that users want to analyze.
+ */
+export const project = sqliteTable("Project", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	name: text("name").notNull(),
+	url: text("url").notNull(), // GitHub repo URL or website URL
+	type: text("type", { enum: ["github", "website"] })
+		.notNull()
+		.default("github"),
+	description: text("description"),
+	isDefault: integer("isDefault", { mode: "boolean" })
+		.notNull()
+		.default(false),
+	settings: text("settings", { mode: "json" }).$type<{
+		autoAnalyze?: boolean;
+		analyzeInterval?: number; // hours
+		notifications?: boolean;
+	}>(),
+	lastAnalyzedAt: integer("lastAnalyzedAt", { mode: "timestamp" }),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type Project = InferSelectModel<typeof project>;
+
+/**
+ * Activity logs for tracking robot actions and analyses.
+ * Provides audit trail of all operations performed.
+ */
+export const activityLog = sqliteTable("ActivityLog", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId")
+		.references(() => project.id),
+	action: text("action").notNull(), // analyze_mesh, run_robot, check_uptime, etc.
+	robotId: text("robotId"), // seo, newsletter, articles, scheduler
+	status: text("status", { enum: ["started", "running", "completed", "failed"] })
+		.notNull()
+		.default("started"),
+	details: text("details", { mode: "json" }).$type<{
+		input?: Record<string, unknown>;
+		output?: Record<string, unknown>;
+		error?: string;
+		duration?: number; // ms
+		metadata?: Record<string, unknown>;
+	}>(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	completedAt: integer("completedAt", { mode: "timestamp" }),
+});
+
+export type ActivityLog = InferSelectModel<typeof activityLog>;
