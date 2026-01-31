@@ -1,9 +1,11 @@
 "use client";
 
 import {
+	Activity,
 	AlertCircle,
 	Bot,
 	Circle,
+	Cpu,
 	Link as LinkIcon,
 	Loader2,
 	RefreshCw,
@@ -20,6 +22,8 @@ import { analysisCache } from "@/lib/cache";
 import { seoApi } from "@/lib/seo-api-client";
 import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
+import { RobotsTab } from "./robots-tab";
+import { UptimeTab } from "./uptime-tab";
 
 interface DashboardContentProps {
 	repoUrl: string;
@@ -402,6 +406,14 @@ export function DashboardContent({
 							<Bot className="h-4 w-4" />
 							SEO Analysis
 						</TabsTrigger>
+						<TabsTrigger value="robots" className="flex items-center gap-2">
+							<Cpu className="h-4 w-4" />
+							Robots
+						</TabsTrigger>
+						<TabsTrigger value="uptime" className="flex items-center gap-2">
+							<Activity className="h-4 w-4" />
+							Uptime
+						</TabsTrigger>
 						<TabsTrigger value="affiliations" className="flex items-center gap-2">
 							<LinkIcon className="h-4 w-4" />
 							Affiliations
@@ -649,6 +661,16 @@ export function DashboardContent({
 									)}
 							</section>
 						)}
+					</TabsContent>
+
+					{/* Robots Tab */}
+					<TabsContent value="robots">
+						<RobotsTab />
+					</TabsContent>
+
+					{/* Uptime Tab */}
+					<TabsContent value="uptime">
+						<UptimeTab />
 					</TabsContent>
 
 					{/* Affiliations Tab */}
