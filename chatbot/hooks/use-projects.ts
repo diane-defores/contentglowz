@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface Project {
 	id: string;
@@ -24,31 +24,46 @@ export function useProjects() {
 	const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const initializedRef = useRef(false);
 
 	const fetchProjects = useCallback(async () => {
 		setLoading(true);
 		setError(null);
 
 		try {
-			const response = await fetch("/api/projects");
-			if (!response.ok) throw new Error("Failed to fetch projects");
+			// Fetch projects and settings in parallel
+			const [projectsRes, settingsRes] = await Promise.all([
+				fetch("/api/projects"),
+				fetch("/api/settings"),
+			]);
 
-			const data = await response.json();
-			setProjects(data);
+			if (!projectsRes.ok) throw new Error("Failed to fetch projects");
 
-			// Auto-select default project
-			const defaultProject = data.find((p: Project) => p.isDefault);
-			if (defaultProject && !selectedProject) {
-				setSelectedProject(defaultProject);
-			} else if (data.length > 0 && !selectedProject) {
-				setSelectedProject(data[0]);
+			const projectsData = await projectsRes.json();
+			setProjects(projectsData);
+
+			// Get saved default project from settings
+			let savedDefaultProjectId: string | null = null;
+			if (settingsRes.ok) {
+				const settings = await settingsRes.json();
+				savedDefaultProjectId = settings.defaultProjectId;
+			}
+
+			// Auto-select project (priority: saved > isDefault > first)
+			if (!initializedRef.current && projectsData.length > 0) {
+				initializedRef.current = true;
+				const savedProject = savedDefaultProjectId
+					? projectsData.find((p: Project) => p.id === savedDefaultProjectId)
+					: null;
+				const defaultProject = projectsData.find((p: Project) => p.isDefault);
+				setSelectedProject(savedProject || defaultProject || projectsData[0]);
 			}
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to fetch projects");
 		} finally {
 			setLoading(false);
 		}
-	}, [selectedProject]);
+	}, []);
 
 	const createProject = useCallback(
 		async (data: Omit<Project, "id" | "userId" | "createdAt">) => {
@@ -145,8 +160,19 @@ export function useProjects() {
 		[projects, selectedProject]
 	);
 
-	const selectProject = useCallback((project: Project | null) => {
+	const selectProject = useCallback(async (project: Project | null) => {
 		setSelectedProject(project);
+
+		// Persist selection to user settings
+		try {
+			await fetch("/api/settings", {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ defaultProjectId: project?.id || null }),
+			});
+		} catch {
+			// Silently fail - selection still works locally
+		}
 	}, []);
 
 	useEffect(() => {

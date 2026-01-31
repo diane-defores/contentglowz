@@ -27,25 +27,25 @@ interface ServiceConfig {
 
 const DEFAULT_SERVICES: ServiceConfig[] = [
 	{
-		id: "render-api",
-		name: "Render API (Direct)",
-		url: "https://bizflowz-api.onrender.com/health",
-		isExternal: true,
-	},
-	{
-		id: "seo-api-proxy",
-		name: "SEO API (Proxy)",
-		url: "/api/seo/health",
-	},
-	{
-		id: "chatbot",
-		name: "Chatbot (Next.js)",
-		url: "/api/chat",
+		id: "system-health",
+		name: "System Health",
+		url: "/api/health",
 	},
 	{
 		id: "database",
-		name: "Database (Turso)",
+		name: "Database",
 		url: "/api/affiliations",
+	},
+	{
+		id: "seo-api",
+		name: "SEO API",
+		url: "/api/seo/health",
+	},
+	{
+		id: "render-api",
+		name: "Render API",
+		url: "https://bizflowz-api.onrender.com/health",
+		isExternal: true,
 	},
 ];
 
