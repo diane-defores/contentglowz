@@ -25,6 +25,7 @@ import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
 import { ProjectSelector } from "./project-selector";
 import { RobotsTab } from "./robots-tab";
+import { SettingsModal } from "./settings-modal";
 import { UptimeTab } from "./uptime-tab";
 
 interface DashboardContentProps {
@@ -219,6 +220,7 @@ export function DashboardContent({
 									Chatbot
 								</Link>
 							</Button>
+							<SettingsModal />
 							<Button
 								onClick={clearCache}
 								variant="outline"

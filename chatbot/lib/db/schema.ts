@@ -356,3 +356,58 @@ export const activityLog = sqliteTable("ActivityLog", {
 });
 
 export type ActivityLog = InferSelectModel<typeof activityLog>;
+
+/**
+ * User settings and preferences.
+ * Stores global user preferences, API keys, and configuration.
+ */
+export const userSettings = sqliteTable("UserSettings", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.unique()
+		.references(() => user.id),
+	// UI Preferences
+	theme: text("theme", { enum: ["light", "dark", "system"] })
+		.notNull()
+		.default("system"),
+	language: text("language").default("en"),
+	// Notifications
+	emailNotifications: integer("emailNotifications", { mode: "boolean" })
+		.notNull()
+		.default(true),
+	webhookUrl: text("webhookUrl"),
+	// API Keys (encrypted in production)
+	apiKeys: text("apiKeys", { mode: "json" }).$type<{
+		openai?: string;
+		anthropic?: string;
+		exa?: string;
+		firecrawl?: string;
+		serper?: string;
+	}>(),
+	// Dashboard preferences
+	defaultProjectId: text("defaultProjectId"),
+	dashboardLayout: text("dashboardLayout", { mode: "json" }).$type<{
+		defaultTab?: string;
+		collapsedSections?: string[];
+		refreshInterval?: number;
+	}>(),
+	// Robot settings
+	robotSettings: text("robotSettings", { mode: "json" }).$type<{
+		autoRun?: boolean;
+		schedules?: Record<string, string>; // robotId -> cron expression
+		notifications?: Record<string, boolean>; // robotId -> notify on complete
+	}>(),
+	// Timestamps
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type UserSettings = InferSelectModel<typeof userSettings>;

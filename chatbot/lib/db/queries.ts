@@ -46,6 +46,8 @@ import {
 	suggestion,
 	type User,
 	user,
+	type UserSettings,
+	userSettings,
 	vote,
 } from "./schema";
 import { generateHashedPassword } from "./utils";
@@ -1343,6 +1345,134 @@ export async function deleteOldActivityLogs({
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to delete old activity logs",
+		);
+	}
+}
+
+// ============================================================================
+// User Settings Queries
+// ============================================================================
+
+/** Gets user settings, creates default if not exists */
+export async function getUserSettings({
+	userId,
+}: {
+	userId: string;
+}): Promise<UserSettings> {
+	try {
+		const [existing] = await db
+			.select()
+			.from(userSettings)
+			.where(eq(userSettings.userId, userId));
+
+		if (existing) return existing;
+
+		// Create default settings
+		const [created] = await db
+			.insert(userSettings)
+			.values({ userId })
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get user settings",
+		);
+	}
+}
+
+/** Updates user settings */
+export async function updateUserSettings({
+	userId,
+	theme,
+	language,
+	emailNotifications,
+	webhookUrl,
+	apiKeys,
+	defaultProjectId,
+	dashboardLayout,
+	robotSettings,
+}: {
+	userId: string;
+	theme?: UserSettings["theme"];
+	language?: string;
+	emailNotifications?: boolean;
+	webhookUrl?: string | null;
+	apiKeys?: UserSettings["apiKeys"];
+	defaultProjectId?: string | null;
+	dashboardLayout?: UserSettings["dashboardLayout"];
+	robotSettings?: UserSettings["robotSettings"];
+}): Promise<UserSettings> {
+	try {
+		// Ensure settings exist
+		await getUserSettings({ userId });
+
+		const updateData: Record<string, any> = {
+			updatedAt: new Date(),
+		};
+		if (theme !== undefined) updateData.theme = theme;
+		if (language !== undefined) updateData.language = language;
+		if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
+		if (webhookUrl !== undefined) updateData.webhookUrl = webhookUrl;
+		if (apiKeys !== undefined) updateData.apiKeys = apiKeys;
+		if (defaultProjectId !== undefined) updateData.defaultProjectId = defaultProjectId;
+		if (dashboardLayout !== undefined) updateData.dashboardLayout = dashboardLayout;
+		if (robotSettings !== undefined) updateData.robotSettings = robotSettings;
+
+		const [updated] = await db
+			.update(userSettings)
+			.set(updateData)
+			.where(eq(userSettings.userId, userId))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update user settings",
+		);
+	}
+}
+
+/** Updates a single API key */
+export async function updateUserApiKey({
+	userId,
+	provider,
+	apiKey,
+}: {
+	userId: string;
+	provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper";
+	apiKey: string | null;
+}): Promise<UserSettings> {
+	try {
+		const current = await getUserSettings({ userId });
+		const currentKeys = current.apiKeys || {};
+
+		if (apiKey === null) {
+			delete currentKeys[provider];
+		} else {
+			currentKeys[provider] = apiKey;
+		}
+
+		return await updateUserSettings({
+			userId,
+			apiKeys: currentKeys,
+		});
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update API key",
+		);
+	}
+}
+
+/** Deletes user settings (for account cleanup) */
+export async function deleteUserSettings({ userId }: { userId: string }) {
+	try {
+		await db.delete(userSettings).where(eq(userSettings.userId, userId));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete user settings",
 		);
 	}
 }
