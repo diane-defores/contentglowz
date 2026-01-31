@@ -10,7 +10,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -30,37 +29,24 @@ class MarketingStrategistAgent:
     Works between Technical SEO and Editor to ensure business value.
     Reviews content strategy and technical implementation for business impact.
     """
-    
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Marketing Strategist with Groq LLM and marketing tools.
-        
+        Initialize Marketing Strategist with marketing tools.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
-        
+        self.llm_model = llm_model
+
         # Initialize tools
         self.prioritization_matrix = PrioritizationMatrix()
         self.roi_analyzer = ROIAnalyzer()
         self.competitive_positioning = CompetitivePositioning()
         self.marketing_validator = MarketingValidator()
-        
+
         # Create agent
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.5,  # Balanced for strategic thinking
-            max_tokens=4096
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Marketing Strategist CrewAI agent with tools."""
@@ -88,7 +74,7 @@ class MarketingStrategistAgent:
                 self.competitive_positioning.assess_positioning,
                 self.marketing_validator.validate_marketing_fit
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

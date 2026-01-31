@@ -1,8 +1,8 @@
 """Agent dependencies for FastAPI dependency injection
 
 IMPORTANT: Uses lazy imports to avoid loading heavy ML dependencies
-(torch, spacy, langchain_groq) at startup. This allows FastAPI to
-bind to port quickly and pass Render's health check.
+(torch, spacy) at startup. This allows FastAPI to bind to port quickly
+and pass Render's health check.
 """
 
 from functools import lru_cache

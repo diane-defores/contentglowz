@@ -12,7 +12,6 @@ Note: For site-wide health monitoring, see scheduler/site_health_monitor.py
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -32,37 +31,24 @@ class OnPageTechnicalSEOAgent:
     Fourth agent in the SEO content generation pipeline.
     Works with Copywriter output to add technical SEO elements.
     """
-    
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Technical SEO Specialist with Groq LLM and technical tools.
-        
+        Initialize Technical SEO Specialist with technical tools.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
-        
+        self.llm_model = llm_model
+
         # Initialize tools
         self.schema_generator = SchemaGenerator()
         self.metadata_validator = MetadataValidator()
         self.linking_analyzer = InternalLinkingAnalyzer()
         self.onpage_optimizer = OnPageOptimizer()
-        
+
         # Create agent
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.3,  # Lower for technical precision
-            max_tokens=4096
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Technical SEO Specialist CrewAI agent with tools."""
@@ -89,7 +75,7 @@ class OnPageTechnicalSEOAgent:
                 self.linking_analyzer.analyze_internal_links,
                 self.onpage_optimizer.optimize_onpage
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

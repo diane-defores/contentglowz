@@ -11,7 +11,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -31,14 +30,14 @@ class CalendarManagerAgent:
     Analyzes patterns and determines optimal publishing times.
     """
 
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Calendar Manager with Groq LLM and scheduling tools.
+        Initialize Calendar Manager with scheduling tools.
 
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
 
         # Initialize tools
         self.calendar_analyzer = CalendarAnalyzer()
@@ -47,18 +46,6 @@ class CalendarManagerAgent:
 
         # Create agent
         self.agent = self._create_agent()
-
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM"""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-
-        return ChatGroq(
-            model=model,
-            temperature=0.3,  # Lower temperature for consistent scheduling
-            groq_api_key=api_key
-        )
 
     def _create_agent(self) -> Agent:
         """Create the CrewAI Calendar Manager Agent"""
@@ -86,7 +73,7 @@ class CalendarManagerAgent:
                 self.time_optimizer.calculate_optimal_time,
                 self.time_optimizer.generate_calendar_view
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

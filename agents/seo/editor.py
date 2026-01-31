@@ -10,7 +10,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -30,37 +29,24 @@ class EditorAgent:
     Final agent in the SEO content generation pipeline.
     Reviews all previous work and prepares content for publication.
     """
-    
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Editor with Groq LLM and editing tools.
-        
+        Initialize Editor with editing tools.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
-        
+        self.llm_model = llm_model
+
         # Initialize tools
         self.quality_checker = QualityChecker()
         self.consistency_validator = ConsistencyValidator()
         self.markdown_formatter = MarkdownFormatter()
         self.publication_preparer = PublicationPreparer()
-        
+
         # Create agent
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.4,
-            max_tokens=8192
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Editor CrewAI agent with tools."""
@@ -88,7 +74,7 @@ class EditorAgent:
                 self.markdown_formatter.format_markdown,
                 self.publication_preparer.prepare_for_publication
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

@@ -12,7 +12,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -34,15 +33,15 @@ class TechStackAnalyzerAgent:
     Performs self-analysis of the project's tech stack and infrastructure.
     """
 
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768", project_path: str = "/root/my-robots"):
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768", project_path: str = "/root/my-robots"):
         """
-        Initialize Tech Stack Analyzer with Groq LLM and audit tools.
+        Initialize Tech Stack Analyzer with audit tools.
 
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
             project_path: Path to project directory
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
         self.project_path = project_path
 
         # Initialize tools
@@ -53,18 +52,6 @@ class TechStackAnalyzerAgent:
 
         # Create agent
         self.agent = self._create_agent()
-
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM"""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-
-        return ChatGroq(
-            model=model,
-            temperature=0.2,  # Low temperature for analytical consistency
-            groq_api_key=api_key
-        )
 
     def _create_agent(self) -> Agent:
         """Create the CrewAI Tech Stack Analyzer Agent"""
@@ -93,7 +80,7 @@ class TechStackAnalyzerAgent:
                 self.cost_tracker.track_costs,
                 self.cost_tracker.get_cost_summary
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

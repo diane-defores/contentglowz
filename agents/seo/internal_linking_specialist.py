@@ -11,7 +11,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any, Literal
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -35,24 +34,24 @@ load_dotenv()
 class InternalLinkingSpecialistAgent:
     """
     Internal Linking Specialist Agent for SEO and conversion optimization.
-    
-    Mission: Optimize internal linking strategy to maximize both SEO authority 
+
+    Mission: Optimize internal linking strategy to maximize both SEO authority
     and conversion rates through intelligent, personalized linking strategies.
-    
+
     Position in workflow: After Marketing Strategist, before Technical SEO
     Balance: 50% new links + 50% existing optimization
     Focus: 70% conversion optimization, 30% SEO authority
     """
-    
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Internal Linking Specialist with Groq LLM and linking tools.
-        
+        Initialize Internal Linking Specialist with linking tools.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
-        
+        self.llm_model = llm_model
+
         # Core Tool Suites (following existing pattern)
         self.link_analyzer = LinkingAnalyzer()  # SEO-focused analysis
         self.conversion_optimizer = ConversionOptimizer()  # Conversion-focused optimization
@@ -60,26 +59,13 @@ class InternalLinkingSpecialistAgent:
         self.automated_inserter = AutomatedInserter()  # Automatic link insertion
         self.funnel_integrator = FunnelIntegrator()  # Marketing funnel integration
         self.maintenance_tracker = MaintenanceTracker()  # Link health monitoring
-        
+
         # Configuration management
         self.config_manager = ConfigurationManager()
         self.default_config = InternalLinkingConfiguration()
-        
+
         # Create agent
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.7,
-            max_tokens=4096
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Internal Linking Specialist CrewAI agent with tools."""
@@ -108,7 +94,7 @@ class InternalLinkingSpecialistAgent:
                 self.funnel_integrator.map_funnel_touchpoints,
                 self.maintenance_tracker.audit_existing_links
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

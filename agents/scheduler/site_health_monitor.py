@@ -15,7 +15,6 @@ Note: For optimizing NEW content, see seo/on_page_technical_seo.py
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -42,15 +41,15 @@ class SiteHealthMonitorAgent:
     Uses OnPageTechnicalSEOAgent to analyze individual pages during crawls.
     """
 
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768", base_url: str = "http://localhost:3000"):
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768", base_url: str = "http://localhost:3000"):
         """
-        Initialize Site Health Monitor with Groq LLM and audit tools.
+        Initialize Site Health Monitor with audit tools.
 
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
             base_url: Base URL of the site to analyze
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
         self.base_url = base_url
 
         # Initialize site-wide audit tools
@@ -64,18 +63,6 @@ class SiteHealthMonitorAgent:
 
         # Create agent
         self.agent = self._create_agent()
-
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM"""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-
-        return ChatGroq(
-            model=model,
-            temperature=0.2,  # Low temperature for analytical consistency
-            groq_api_key=api_key
-        )
 
     def _create_agent(self) -> Agent:
         """Create the CrewAI Site Health Monitor Agent"""
@@ -104,7 +91,7 @@ class SiteHealthMonitorAgent:
                 self.link_analyzer.analyze_internal_links,
                 self.link_analyzer.find_redirect_chains
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

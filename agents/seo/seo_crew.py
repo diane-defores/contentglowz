@@ -6,7 +6,6 @@ Pipeline: Research → Strategy → Writing → Technical → Marketing → Edit
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew, Process
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 from datetime import datetime

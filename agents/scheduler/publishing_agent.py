@@ -12,7 +12,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -33,14 +32,14 @@ class PublishingAgent:
     Handles all deployment operations and Google integrations.
     """
 
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Publishing Agent with Groq LLM and publishing tools.
+        Initialize Publishing Agent with publishing tools.
 
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
 
         # Initialize tools
         self.git_deployer = GitDeployer()
@@ -49,18 +48,6 @@ class PublishingAgent:
 
         # Create agent
         self.agent = self._create_agent()
-
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM"""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-
-        return ChatGroq(
-            model=model,
-            temperature=0.1,  # Very low temperature for deterministic deployments
-            groq_api_key=api_key
-        )
 
     def _create_agent(self) -> Agent:
         """Create the CrewAI Publishing Agent"""
@@ -91,7 +78,7 @@ class PublishingAgent:
                 self.deployment_monitor.log_deployment,
                 self.deployment_monitor.get_deployment_history
             ],
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )

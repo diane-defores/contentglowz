@@ -14,7 +14,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 import json
@@ -29,7 +28,7 @@ class TopicalMeshArchitect:
     """
     Dedicated agent for topical mesh design and analysis.
     Implements French SEO "Cocon Sémantique" methodology.
-    
+
     Use Cases:
     - Audit existing website topical structure
     - Design new topical mesh campaigns
@@ -37,30 +36,19 @@ class TopicalMeshArchitect:
     - Optimize internal linking for authority flow
     - Benchmark topical authority vs competitors
     """
-    
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768"):
+
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768"):
         """
-        Initialize Topical Mesh Architect with Groq LLM.
-        
+        Initialize Topical Mesh Architect.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
+                      Examples: "groq/llama-3.3-70b-versatile", "openai/gpt-4"
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
         self.mesh_builder = TopicalMeshBuilder()
         self.existing_analyzer = ExistingMeshAnalyzer()
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.4  # Balanced for strategic analysis
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Topical Mesh Architect agent."""
@@ -90,7 +78,7 @@ class TopicalMeshArchitect:
             ),
             verbose=True,
             allow_delegation=False,
-            llm=self.llm
+            llm=self.llm_model  # CrewAI uses LiteLLM internally
         )
     
     def analyze_topical_mesh(

@@ -12,14 +12,7 @@ knowledge-storm>=1.1.0
 
 # LLM Provider - Simplified with OpenRouter
 openai>=1.0.0  # Single package for ALL models via OpenRouter (Groq, GPT-4, Claude, etc.)
-litellm>=1.0.0  # Required by STORM, also supports OpenRouter
-
-# LangChain integrations (required by agents/seo/topical_mesh_architect.py)
-langchain-groq>=0.1.0  # Required for ChatGroq in CrewAI agents
-
-# OLD (commented out - uncomment if rollback needed):
-# groq>=0.4.0  # Not needed - Groq available via OpenRouter!
-# langchain-openai>=0.0.5  # Not needed - using openai SDK directly
+litellm>=1.0.0  # Required by STORM and CrewAI (supports Groq, OpenRouter, etc.)
 
 # Data Collection & Analysis
 exa-py>=1.0.0

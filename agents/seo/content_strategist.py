@@ -20,9 +20,7 @@ from typing import List, Optional, Dict, Any, Union
 # Third-party imports
 from crewai import Agent, Task, Crew
 from crewai.tools import Tool
-from pydantic import SecretStr
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
 
 # Utility imports
 import os
@@ -36,36 +34,6 @@ from .tools.strategy_tools import (
     EditorialCalendarPlanner,
     TopicalMeshBuilder
 )
-
-# LLM Config for Groq
-class LLMConfig:
-    @staticmethod
-    def get_llm(
-        model: str = "mixtral-8x7b-32768",
-        temperature: float = 0.7,
-        max_tokens: int = 4096
-    ) -> ChatGroq:
-        """
-        Get a Groq language model with standard configuration.
-        
-        Args:
-            model: Selected model name
-            temperature: Model creativity
-            max_tokens: Maximum output tokens
-        
-        Returns:
-            Configured ChatGroq model
-        """
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=SecretStr(api_key),
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,35 +55,30 @@ class ContentStrategistAgent:
     """
     
     def __init__(
-        self, 
-        llm_model: str = "mixtral-8x7b-32768", 
+        self,
+        llm_model: str = "groq/mixtral-8x7b-32768",
         verbose: bool = True
     ):
         """
-        Initialize Content Strategist with LLM and strategy tools.
-        
+        Initialize Content Strategist with strategy tools.
+
         Args:
-            llm_model: LLM model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
             verbose: Enable verbose logging
-        
+
         Raises:
-            ValueError: If LLM initialization fails
+            ValueError: If initialization fails
         """
         try:
-            # Use centralized LLM configuration for consistent model selection
-            self.llm = LLMConfig.get_llm(
-                model=llm_model, 
-                temperature=0.7, 
-                max_tokens=4096
-            )
-            
+            self.llm_model = llm_model
+
             # Initialize tools with consistent error handling
             self.cluster_builder = self._safe_tool_init(TopicClusterBuilder)
             self.outline_generator = self._safe_tool_init(OutlineGenerator)
             self.flow_optimizer = self._safe_tool_init(TopicalFlowOptimizer)
             self.calendar_planner = self._safe_tool_init(EditorialCalendarPlanner)
             self.mesh_builder = self._safe_tool_init(TopicalMeshBuilder)
-            
+
             # Create agent with well-defined tools
             self.agent = self._create_agent(verbose)
         except Exception as e:
@@ -201,7 +164,7 @@ class ContentStrategistAgent:
                 "Expert in creating content ecosystems that drive sustainable organic growth."
             ),
             tools=tool_list,
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=verbose,
             allow_delegation=False
         )

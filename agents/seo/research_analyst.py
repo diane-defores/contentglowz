@@ -10,7 +10,6 @@ Responsibilities:
 """
 from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 
@@ -37,39 +36,26 @@ class ResearchAnalystAgent:
     First agent in the SEO content generation pipeline.
     """
     
-    def __init__(self, llm_model: str = "mixtral-8x7b-32768", use_consensus_ai: Optional[bool] = None):
+    def __init__(self, llm_model: str = "groq/mixtral-8x7b-32768", use_consensus_ai: Optional[bool] = None):
         """
-        Initialize Research Analyst with Groq LLM and research tools.
-        
+        Initialize Research Analyst with research tools.
+
         Args:
-            llm_model: Groq model to use (default: mixtral-8x7b-32768)
+            llm_model: LiteLLM model string (default: groq/mixtral-8x7b-32768)
             use_consensus_ai: Whether to use Consensus AI tool (default: from config)
         """
-        self.llm = self._initialize_llm(llm_model)
+        self.llm_model = llm_model
         self.use_consensus_ai = use_consensus_ai if use_consensus_ai is not None else AI_TOOL_SETTINGS.get("use_consensus_ai", False)
-        
+
         # Initialize tools
         self.serp_analyzer = SERPAnalyzer()
         self.trend_monitor = TrendMonitor()
         self.gap_finder = KeywordGapFinder()
         self.pattern_extractor = RankingPatternExtractor()
         self.consensus_researcher = ConsensusResearcher()
-        
+
         # Create agent
         self.agent = self._create_agent()
-    
-    def _initialize_llm(self, model: str) -> ChatGroq:
-        """Initialize Groq LLM with API key."""
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise ValueError("GROQ_API_KEY not found in environment variables")
-        
-        return ChatGroq(
-            api_key=api_key,
-            model=model,
-            temperature=0.7,
-            max_tokens=4096
-        )
     
     def _create_agent(self) -> Agent:
         """Create the Research Analyst CrewAI agent with tools."""
@@ -101,7 +87,7 @@ class ResearchAnalystAgent:
                 "and authority, especially for YMYL (Your Money Your Life) topics."
             ),
             tools=tools,
-            llm=self.llm,
+            llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
             allow_delegation=False
         )
