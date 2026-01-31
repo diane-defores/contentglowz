@@ -18,10 +18,23 @@ export interface UptimeHistory {
 	services: Record<string, boolean>;
 }
 
-const DEFAULT_SERVICES: Omit<ServiceStatus, "status" | "responseTime" | "lastChecked">[] = [
+interface ServiceConfig {
+	id: string;
+	name: string;
+	url: string;
+	isExternal?: boolean; // External URLs need to be proxied to avoid CORS
+}
+
+const DEFAULT_SERVICES: ServiceConfig[] = [
 	{
-		id: "seo-api",
-		name: "SEO API (Render)",
+		id: "render-api",
+		name: "Render API (Direct)",
+		url: "https://bizflowz-api.onrender.com/health",
+		isExternal: true,
+	},
+	{
+		id: "seo-api-proxy",
+		name: "SEO API (Proxy)",
 		url: "/api/seo/health",
 	},
 	{
@@ -47,17 +60,23 @@ export function useUptime() {
 	const [lastFullCheck, setLastFullCheck] = useState<Date | null>(null);
 	const [history, setHistory] = useState<UptimeHistory[]>([]);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const historyRef = useRef<UptimeHistory[]>([]); // Ref to avoid stale closure in callbacks
 
 	const checkService = useCallback(
-		async (service: Omit<ServiceStatus, "status" | "responseTime" | "lastChecked">): Promise<ServiceStatus> => {
+		async (service: ServiceConfig): Promise<ServiceStatus> => {
 			const startTime = Date.now();
 
 			try {
 				const controller = new AbortController();
 				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-				const response = await fetch(service.url, {
-					method: service.url.includes("/api/chat") ? "GET" : "GET",
+				// For external URLs, use the proxy to avoid CORS
+				const fetchUrl = service.isExternal
+					? `/api/health-check?url=${encodeURIComponent(service.url)}`
+					: service.url;
+
+				const response = await fetch(fetchUrl, {
+					method: "GET",
 					signal: controller.signal,
 					headers: {
 						"Cache-Control": "no-cache",
@@ -65,6 +84,25 @@ export function useUptime() {
 				});
 
 				clearTimeout(timeoutId);
+
+				// For proxied requests, parse the response body
+				if (service.isExternal && response.ok) {
+					const data = await response.json();
+					const responseTime = data.responseTime || (Date.now() - startTime);
+					const status: ServiceStatus["status"] =
+						data.ok ? (responseTime > 5000 ? "degraded" : "online") : "offline";
+
+					return {
+						id: service.id,
+						name: service.name,
+						url: service.url,
+						status,
+						responseTime,
+						lastChecked: new Date(),
+						error: data.ok ? undefined : data.error || `HTTP ${data.status}`,
+					};
+				}
+
 				const responseTime = Date.now() - startTime;
 
 				// Consider degraded if response time > 5s
@@ -72,7 +110,9 @@ export function useUptime() {
 					response.ok ? (responseTime > 5000 ? "degraded" : "online") : "offline";
 
 				return {
-					...service,
+					id: service.id,
+					name: service.name,
+					url: service.url,
 					status,
 					responseTime,
 					lastChecked: new Date(),
@@ -80,7 +120,9 @@ export function useUptime() {
 				};
 			} catch (err) {
 				return {
-					...service,
+					id: service.id,
+					name: service.name,
+					url: service.url,
 					status: "offline",
 					responseTime: Date.now() - startTime,
 					lastChecked: new Date(),
@@ -98,9 +140,10 @@ export function useUptime() {
 			DEFAULT_SERVICES.map((service) => checkService(service)),
 		);
 
-		// Calculate uptime percentages based on history
+		// Calculate uptime percentages based on history (use ref to avoid stale closure)
+		const currentHistory = historyRef.current;
 		const updatedResults = results.map((result) => {
-			const serviceHistory = history
+			const serviceHistory = currentHistory
 				.slice(-100) // Last 100 checks
 				.map((h) => h.services[result.id])
 				.filter((v) => v !== undefined);
@@ -123,13 +166,17 @@ export function useUptime() {
 				results.map((r) => [r.id, r.status === "online"]),
 			),
 		};
-		setHistory((prev) => [...prev.slice(-999), historyEntry]);
+		setHistory((prev) => {
+			const newHistory = [...prev.slice(-999), historyEntry];
+			historyRef.current = newHistory; // Keep ref in sync
+			return newHistory;
+		});
 
 		setLoading(false);
 
 		// Return overall health
 		return results.every((r) => r.status === "online");
-	}, [checkService, history]);
+	}, [checkService]);
 
 	const checkSingleService = useCallback(
 		async (serviceId: string) => {
@@ -145,8 +192,9 @@ export function useUptime() {
 
 			const result = await checkService(serviceConfig);
 
+			// Preserve uptime from previous state
 			setServices((prev) =>
-				prev.map((s) => (s.id === serviceId ? result : s)),
+				prev.map((s) => (s.id === serviceId ? { ...result, uptime: s.uptime } : s)),
 			);
 		},
 		[checkService],
