@@ -5,6 +5,7 @@ import {
 	AlertCircle,
 	Bot,
 	Cpu,
+	FileText,
 	Link as LinkIcon,
 	Loader2,
 	RefreshCw,
@@ -19,8 +20,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analysisCache } from "@/lib/cache";
 import { seoApi } from "@/lib/seo-api-client";
+import { ActivityTab } from "./activity-tab";
 import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
+import { ProjectSelector } from "./project-selector";
 import { RobotsTab } from "./robots-tab";
 import { UptimeTab } from "./uptime-tab";
 
@@ -202,9 +205,12 @@ export function DashboardContent({
 			<div className="border-b bg-background">
 				<div className="container mx-auto px-4 py-6">
 					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-						<div>
-							<h1 className="text-3xl font-bold">SEO Dashboard</h1>
-							<p className="text-sm text-muted-foreground">{repoUrl}</p>
+						<div className="flex items-center gap-4">
+							<div>
+								<h1 className="text-3xl font-bold">SEO Dashboard</h1>
+								<p className="text-sm text-muted-foreground">{repoUrl}</p>
+							</div>
+							<ProjectSelector />
 						</div>
 						<div className="flex gap-2">
 							<Button asChild variant="outline" size="sm">
@@ -248,7 +254,7 @@ export function DashboardContent({
 
 				{/* Tabs Navigation */}
 				<Tabs defaultValue="seo" className="space-y-6">
-					<TabsList>
+					<TabsList className="flex-wrap">
 						<TabsTrigger value="seo" className="flex items-center gap-2">
 							<Bot className="h-4 w-4" />
 							SEO Analysis
@@ -256,6 +262,10 @@ export function DashboardContent({
 						<TabsTrigger value="robots" className="flex items-center gap-2">
 							<Cpu className="h-4 w-4" />
 							Robots
+						</TabsTrigger>
+						<TabsTrigger value="activity" className="flex items-center gap-2">
+							<FileText className="h-4 w-4" />
+							Activity
 						</TabsTrigger>
 						<TabsTrigger value="uptime" className="flex items-center gap-2">
 							<Activity className="h-4 w-4" />
@@ -513,6 +523,11 @@ export function DashboardContent({
 					{/* Robots Tab */}
 					<TabsContent value="robots">
 						<RobotsTab />
+					</TabsContent>
+
+					{/* Activity Tab */}
+					<TabsContent value="activity">
+						<ActivityTab />
 					</TabsContent>
 
 					{/* Uptime Tab */}
