@@ -28,8 +28,12 @@ import type { AppUsage } from "../usage";
 import { generateUUID } from "../utils";
 import { getDb } from "./client";
 import {
+	type AffiliateLink,
+	affiliateLink,
 	type Chat,
 	chat,
+	type Competitor,
+	competitor,
 	type DBMessage,
 	document,
 	message,
@@ -695,6 +699,319 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to get stream ids by chat id",
+		);
+	}
+}
+
+// ============================================================================
+// Affiliate Link Queries
+// ============================================================================
+
+/** Gets all affiliate links for a user */
+export async function getAffiliationsByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<AffiliateLink[]> {
+	try {
+		return await db
+			.select()
+			.from(affiliateLink)
+			.where(eq(affiliateLink.userId, userId))
+			.orderBy(desc(affiliateLink.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get affiliate links by user id",
+		);
+	}
+}
+
+/** Gets active affiliate links for a user (for AI tool) */
+export async function getActiveAffiliationsByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<AffiliateLink[]> {
+	try {
+		return await db
+			.select()
+			.from(affiliateLink)
+			.where(
+				and(
+					eq(affiliateLink.userId, userId),
+					eq(affiliateLink.status, "active"),
+				),
+			)
+			.orderBy(desc(affiliateLink.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get active affiliate links",
+		);
+	}
+}
+
+/** Gets a single affiliate link by ID */
+export async function getAffiliationById({
+	id,
+}: {
+	id: string;
+}): Promise<AffiliateLink | null> {
+	try {
+		const [link] = await db
+			.select()
+			.from(affiliateLink)
+			.where(eq(affiliateLink.id, id));
+		return link || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get affiliate link by id",
+		);
+	}
+}
+
+/** Creates a new affiliate link */
+export async function createAffiliation({
+	userId,
+	name,
+	url,
+	category,
+	commission,
+	keywords,
+	status,
+	notes,
+	expiresAt,
+}: {
+	userId: string;
+	name: string;
+	url: string;
+	category?: string;
+	commission?: string;
+	keywords?: string[];
+	status?: "active" | "expired" | "paused";
+	notes?: string;
+	expiresAt?: Date;
+}): Promise<AffiliateLink> {
+	try {
+		const [created] = await db
+			.insert(affiliateLink)
+			.values({
+				userId,
+				name,
+				url,
+				category,
+				commission,
+				keywords,
+				status: status || "active",
+				notes,
+				expiresAt,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create affiliate link",
+		);
+	}
+}
+
+/** Updates an affiliate link */
+export async function updateAffiliation({
+	id,
+	name,
+	url,
+	category,
+	commission,
+	keywords,
+	status,
+	notes,
+	expiresAt,
+}: {
+	id: string;
+	name?: string;
+	url?: string;
+	category?: string;
+	commission?: string;
+	keywords?: string[];
+	status?: "active" | "expired" | "paused";
+	notes?: string;
+	expiresAt?: Date | null;
+}): Promise<AffiliateLink> {
+	try {
+		const updateData: Record<string, any> = {
+			updatedAt: new Date(),
+		};
+		if (name !== undefined) updateData.name = name;
+		if (url !== undefined) updateData.url = url;
+		if (category !== undefined) updateData.category = category;
+		if (commission !== undefined) updateData.commission = commission;
+		if (keywords !== undefined) updateData.keywords = keywords;
+		if (status !== undefined) updateData.status = status;
+		if (notes !== undefined) updateData.notes = notes;
+		if (expiresAt !== undefined) updateData.expiresAt = expiresAt;
+
+		const [updated] = await db
+			.update(affiliateLink)
+			.set(updateData)
+			.where(eq(affiliateLink.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update affiliate link",
+		);
+	}
+}
+
+/** Deletes an affiliate link */
+export async function deleteAffiliation({ id }: { id: string }) {
+	try {
+		await db.delete(affiliateLink).where(eq(affiliateLink.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete affiliate link",
+		);
+	}
+}
+
+// ============================================================================
+// Competitor Queries
+// ============================================================================
+
+/** Gets all competitors for a user */
+export async function getCompetitorsByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<Competitor[]> {
+	try {
+		return await db
+			.select()
+			.from(competitor)
+			.where(eq(competitor.userId, userId))
+			.orderBy(desc(competitor.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get competitors by user id",
+		);
+	}
+}
+
+/** Gets a single competitor by ID */
+export async function getCompetitorById({
+	id,
+}: {
+	id: string;
+}): Promise<Competitor | null> {
+	try {
+		const [comp] = await db
+			.select()
+			.from(competitor)
+			.where(eq(competitor.id, id));
+		return comp || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get competitor by id",
+		);
+	}
+}
+
+/** Creates a new competitor */
+export async function createCompetitor({
+	userId,
+	name,
+	url,
+	niche,
+	priority,
+	notes,
+}: {
+	userId: string;
+	name: string;
+	url: string;
+	niche?: string;
+	priority?: "high" | "medium" | "low";
+	notes?: string;
+}): Promise<Competitor> {
+	try {
+		const [created] = await db
+			.insert(competitor)
+			.values({
+				userId,
+				name,
+				url,
+				niche,
+				priority: priority || "medium",
+				notes,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create competitor",
+		);
+	}
+}
+
+/** Updates a competitor */
+export async function updateCompetitor({
+	id,
+	name,
+	url,
+	niche,
+	priority,
+	notes,
+	lastAnalyzedAt,
+	analysisData,
+}: {
+	id: string;
+	name?: string;
+	url?: string;
+	niche?: string;
+	priority?: "high" | "medium" | "low";
+	notes?: string;
+	lastAnalyzedAt?: Date;
+	analysisData?: Competitor["analysisData"];
+}): Promise<Competitor> {
+	try {
+		const updateData: Record<string, any> = {};
+		if (name !== undefined) updateData.name = name;
+		if (url !== undefined) updateData.url = url;
+		if (niche !== undefined) updateData.niche = niche;
+		if (priority !== undefined) updateData.priority = priority;
+		if (notes !== undefined) updateData.notes = notes;
+		if (lastAnalyzedAt !== undefined) updateData.lastAnalyzedAt = lastAnalyzedAt;
+		if (analysisData !== undefined) updateData.analysisData = analysisData;
+
+		const [updated] = await db
+			.update(competitor)
+			.set(updateData)
+			.where(eq(competitor.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update competitor",
+		);
+	}
+}
+
+/** Deletes a competitor */
+export async function deleteCompetitor({ id }: { id: string }) {
+	try {
+		await db.delete(competitor).where(eq(competitor.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete competitor",
 		);
 	}
 }

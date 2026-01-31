@@ -1,20 +1,27 @@
 {
-	"version": "7",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1768420313378,
-			"tag": "0000_complete_ezekiel_stane",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "6",
-			"when": 1768420408639,
-			"tag": "0001_empty_tempest",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1768420313378,
+      "tag": "0000_complete_ezekiel_stane",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1768420408639,
+      "tag": "0001_empty_tempest",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769840560835,
+      "tag": "0002_fresh_swarm",
+      "breakpoints": true
+    }
+  ]
 }

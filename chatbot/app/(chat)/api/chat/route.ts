@@ -36,6 +36,7 @@ import { myProvider } from "@/lib/ai/providers";
 import { analyzeMeshTool } from "@/lib/ai/tools/analyze-mesh";
 import { buildMeshTool } from "@/lib/ai/tools/build-mesh";
 import { createDocument } from "@/lib/ai/tools/create-document";
+import { createGetAffiliationsTool } from "@/lib/ai/tools/get-affiliations";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { improveMeshTool } from "@/lib/ai/tools/improve-mesh";
 import {
@@ -250,6 +251,7 @@ export async function POST(request: Request) {
 									"analyzeInternalLinking",
 									"generateInternalLinkingStrategy",
 									"applyInternalLinks",
+									"getAffiliations",
 								],
 					// Smooth word-by-word streaming for natural feel
 					experimental_transform: smoothStream({ chunking: "word" }),
@@ -267,6 +269,9 @@ export async function POST(request: Request) {
 						analyzeInternalLinking,
 						generateInternalLinkingStrategy,
 						applyInternalLinks,
+						getAffiliations: createGetAffiliationsTool({
+							userId: session.user.id,
+						}),
 					},
 					experimental_telemetry: {
 						isEnabled: isProductionEnvironment,

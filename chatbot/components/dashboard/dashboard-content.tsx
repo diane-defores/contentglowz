@@ -4,17 +4,22 @@ import {
 	AlertCircle,
 	Bot,
 	Circle,
+	Link as LinkIcon,
 	Loader2,
 	RefreshCw,
 	Settings,
+	Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analysisCache } from "@/lib/cache";
 import { seoApi } from "@/lib/seo-api-client";
+import { AffiliationsTab } from "./affiliations-tab";
+import { CompetitorsTab } from "./competitors-tab";
 
 interface DashboardContentProps {
 	repoUrl: string;
@@ -390,241 +395,272 @@ export function DashboardContent({
 					</section>
 				)}
 
-				{/* Analysis Tools */}
-				<section className="space-y-4">
-					<h2 className="text-2xl font-bold">SEO Analysis Tools</h2>
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						<Card className="p-6">
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<div className="p-2 bg-blue-100 rounded-lg">
-										<Bot className="h-6 w-6 text-blue-600" />
-									</div>
-									<div>
-										<h3 className="font-semibold">Topical Mesh Analysis</h3>
-										<p className="text-sm text-muted-foreground">
-											Analyze content structure and authority
-										</p>
-									</div>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										onClick={() => runAnalysis("mesh")}
-										disabled={runningAnalyses.has("mesh")}
-										className="flex-1"
-									>
-										{runningAnalyses.has("mesh") ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Analyzing...
-											</>
-										) : analysisResults.mesh ? (
-											"Run Analysis"
-										) : (
-											"Run Analysis"
-										)}
-									</Button>
-									{analysisResults.mesh && (
-										<Button
-											onClick={() => runAnalysis("mesh", true)}
-											disabled={runningAnalyses.has("mesh")}
-											variant="outline"
-											size="sm"
-											title="Refresh from server (bypass cache)"
-										>
-											<RefreshCw className="h-4 w-4" />
-										</Button>
-									)}
-								</div>
-								{analysisResults.mesh && (
-									<div className="text-xs text-green-600">
-										✓ Analysis complete (cached)
-									</div>
-								)}
-							</div>
-						</Card>
+				{/* Tabs Navigation */}
+				<Tabs defaultValue="seo" className="space-y-6">
+					<TabsList>
+						<TabsTrigger value="seo" className="flex items-center gap-2">
+							<Bot className="h-4 w-4" />
+							SEO Analysis
+						</TabsTrigger>
+						<TabsTrigger value="affiliations" className="flex items-center gap-2">
+							<LinkIcon className="h-4 w-4" />
+							Affiliations
+						</TabsTrigger>
+						<TabsTrigger value="competitors" className="flex items-center gap-2">
+							<Users className="h-4 w-4" />
+							Competitors
+						</TabsTrigger>
+					</TabsList>
 
-						<Card className="p-6">
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<div className="p-2 bg-purple-100 rounded-lg">
-										<Settings className="h-6 w-6 text-purple-600" />
-									</div>
-									<div>
-										<h3 className="font-semibold">Internal Linking Audit</h3>
-										<p className="text-sm text-muted-foreground">
-											Check link structure and opportunities
-										</p>
-									</div>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										onClick={() => runAnalysis("internal-linking")}
-										disabled={runningAnalyses.has("internal-linking")}
-										className="flex-1"
-									>
-										{runningAnalyses.has("internal-linking") ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Analyzing...
-											</>
-										) : (
-											"Run Analysis"
+					{/* SEO Analysis Tab */}
+					<TabsContent value="seo" className="space-y-6">
+						{/* Analysis Tools */}
+						<section className="space-y-4">
+							<h2 className="text-2xl font-bold">SEO Analysis Tools</h2>
+							<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+								<Card className="p-6">
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-blue-100 rounded-lg">
+												<Bot className="h-6 w-6 text-blue-600" />
+											</div>
+											<div>
+												<h3 className="font-semibold">Topical Mesh Analysis</h3>
+												<p className="text-sm text-muted-foreground">
+													Analyze content structure and authority
+												</p>
+											</div>
+										</div>
+										<div className="flex gap-2">
+											<Button
+												onClick={() => runAnalysis("mesh")}
+												disabled={runningAnalyses.has("mesh")}
+												className="flex-1"
+											>
+												{runningAnalyses.has("mesh") ? (
+													<>
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+														Analyzing...
+													</>
+												) : analysisResults.mesh ? (
+													"Run Analysis"
+												) : (
+													"Run Analysis"
+												)}
+											</Button>
+											{analysisResults.mesh && (
+												<Button
+													onClick={() => runAnalysis("mesh", true)}
+													disabled={runningAnalyses.has("mesh")}
+													variant="outline"
+													size="sm"
+													title="Refresh from server (bypass cache)"
+												>
+													<RefreshCw className="h-4 w-4" />
+												</Button>
+											)}
+										</div>
+										{analysisResults.mesh && (
+											<div className="text-xs text-green-600">
+												✓ Analysis complete (cached)
+											</div>
 										)}
-									</Button>
-									{analysisResults["internal-linking"] && (
-										<Button
-											onClick={() => runAnalysis("internal-linking", true)}
-											disabled={runningAnalyses.has("internal-linking")}
-											variant="outline"
-											size="sm"
-											title="Refresh from server (bypass cache)"
-										>
-											<RefreshCw className="h-4 w-4" />
-										</Button>
-									)}
-								</div>
-								{analysisResults["internal-linking"] && (
-									<div className="text-xs text-green-600">
-										✓ Analysis complete (cached)
 									</div>
-								)}
-							</div>
-						</Card>
+								</Card>
 
-						<Card className="p-6">
-							<div className="space-y-4">
-								<div className="flex items-center gap-3">
-									<div className="p-2 bg-orange-100 rounded-lg">
-										<RefreshCw className="h-6 w-6 text-orange-600" />
-									</div>
-									<div>
-										<h3 className="font-semibold">Competitor Analysis</h3>
-										<p className="text-sm text-muted-foreground">
-											Compare with market leaders
-										</p>
-									</div>
-								</div>
-								<div className="flex gap-2">
-									<Button
-										onClick={() => runAnalysis("competitors")}
-										disabled={runningAnalyses.has("competitors")}
-										className="flex-1"
-									>
-										{runningAnalyses.has("competitors") ? (
-											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Analyzing...
-											</>
-										) : (
-											"Run Analysis"
+								<Card className="p-6">
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-purple-100 rounded-lg">
+												<Settings className="h-6 w-6 text-purple-600" />
+											</div>
+											<div>
+												<h3 className="font-semibold">Internal Linking Audit</h3>
+												<p className="text-sm text-muted-foreground">
+													Check link structure and opportunities
+												</p>
+											</div>
+										</div>
+										<div className="flex gap-2">
+											<Button
+												onClick={() => runAnalysis("internal-linking")}
+												disabled={runningAnalyses.has("internal-linking")}
+												className="flex-1"
+											>
+												{runningAnalyses.has("internal-linking") ? (
+													<>
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+														Analyzing...
+													</>
+												) : (
+													"Run Analysis"
+												)}
+											</Button>
+											{analysisResults["internal-linking"] && (
+												<Button
+													onClick={() => runAnalysis("internal-linking", true)}
+													disabled={runningAnalyses.has("internal-linking")}
+													variant="outline"
+													size="sm"
+													title="Refresh from server (bypass cache)"
+												>
+													<RefreshCw className="h-4 w-4" />
+												</Button>
+											)}
+										</div>
+										{analysisResults["internal-linking"] && (
+											<div className="text-xs text-green-600">
+												✓ Analysis complete (cached)
+											</div>
 										)}
-									</Button>
-									{analysisResults.competitors && (
-										<Button
-											onClick={() => runAnalysis("competitors", true)}
-											disabled={runningAnalyses.has("competitors")}
-											variant="outline"
-											size="sm"
-											title="Refresh from server (bypass cache)"
-										>
-											<RefreshCw className="h-4 w-4" />
-										</Button>
-									)}
-								</div>
-								{analysisResults.competitors && (
-									<div className="text-xs text-green-600">
-										✓ Analysis complete (cached)
 									</div>
-								)}
-							</div>
-						</Card>
-					</div>
-				</section>
+								</Card>
 
-				{/* Analysis Results */}
-				{Object.keys(analysisResults).length > 0 && (
-					<section className="space-y-4">
-						<h2 className="text-2xl font-bold">Analysis Results</h2>
-						{analysisResults.mesh && !analysisResults.mesh.error && (
-							<Card className="p-6">
-								<h3 className="text-lg font-semibold mb-4">
-									Topical Mesh Analysis
-								</h3>
-								<div className="grid gap-4 md:grid-cols-3">
-									<div className="text-center">
-										<div className="text-2xl font-bold text-blue-600">
-											{analysisResults.mesh.authority_score || 0}
+								<Card className="p-6">
+									<div className="space-y-4">
+										<div className="flex items-center gap-3">
+											<div className="p-2 bg-orange-100 rounded-lg">
+												<RefreshCw className="h-6 w-6 text-orange-600" />
+											</div>
+											<div>
+												<h3 className="font-semibold">Competitor Analysis</h3>
+												<p className="text-sm text-muted-foreground">
+													Compare with market leaders
+												</p>
+											</div>
 										</div>
-										<div className="text-sm text-muted-foreground">
-											Authority Score
+										<div className="flex gap-2">
+											<Button
+												onClick={() => runAnalysis("competitors")}
+												disabled={runningAnalyses.has("competitors")}
+												className="flex-1"
+											>
+												{runningAnalyses.has("competitors") ? (
+													<>
+														<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+														Analyzing...
+													</>
+												) : (
+													"Run Analysis"
+												)}
+											</Button>
+											{analysisResults.competitors && (
+												<Button
+													onClick={() => runAnalysis("competitors", true)}
+													disabled={runningAnalyses.has("competitors")}
+													variant="outline"
+													size="sm"
+													title="Refresh from server (bypass cache)"
+												>
+													<RefreshCw className="h-4 w-4" />
+												</Button>
+											)}
 										</div>
+										{analysisResults.competitors && (
+											<div className="text-xs text-green-600">
+												✓ Analysis complete (cached)
+											</div>
+										)}
 									</div>
-									<div className="text-center">
-										<div className="text-2xl font-bold text-green-600">
-											{analysisResults.mesh.total_pages || 0}
+								</Card>
+							</div>
+						</section>
+
+						{/* Analysis Results */}
+						{Object.keys(analysisResults).length > 0 && (
+							<section className="space-y-4">
+								<h2 className="text-2xl font-bold">Analysis Results</h2>
+								{analysisResults.mesh && !analysisResults.mesh.error && (
+									<Card className="p-6">
+										<h3 className="text-lg font-semibold mb-4">
+											Topical Mesh Analysis
+										</h3>
+										<div className="grid gap-4 md:grid-cols-3">
+											<div className="text-center">
+												<div className="text-2xl font-bold text-blue-600">
+													{analysisResults.mesh.authority_score || 0}
+												</div>
+												<div className="text-sm text-muted-foreground">
+													Authority Score
+												</div>
+											</div>
+											<div className="text-center">
+												<div className="text-2xl font-bold text-green-600">
+													{analysisResults.mesh.total_pages || 0}
+												</div>
+												<div className="text-sm text-muted-foreground">
+													Total Pages
+												</div>
+											</div>
+											<div className="text-center">
+												<div className="text-2xl font-bold text-purple-600">
+													{analysisResults.mesh.total_links || 0}
+												</div>
+												<div className="text-sm text-muted-foreground">
+													Total Links
+												</div>
+											</div>
 										</div>
-										<div className="text-sm text-muted-foreground">
-											Total Pages
-										</div>
-									</div>
-									<div className="text-center">
-										<div className="text-2xl font-bold text-purple-600">
-											{analysisResults.mesh.total_links || 0}
-										</div>
-										<div className="text-sm text-muted-foreground">
-											Total Links
-										</div>
-									</div>
-								</div>
-								{analysisResults.mesh.recommendations &&
-									analysisResults.mesh.recommendations.length > 0 && (
-										<div className="mt-4">
-											<h4 className="font-semibold mb-2">
-												Top Recommendations:
-											</h4>
-											<ul className="list-disc list-inside space-y-1 text-sm">
-												{analysisResults.mesh.recommendations
-													.slice(0, 3)
-													.map((rec: any, i: number) => (
-														<li key={i}>{rec.action || rec.title}</li>
-													))}
-											</ul>
-										</div>
+										{analysisResults.mesh.recommendations &&
+											analysisResults.mesh.recommendations.length > 0 && (
+												<div className="mt-4">
+													<h4 className="font-semibold mb-2">
+														Top Recommendations:
+													</h4>
+													<ul className="list-disc list-inside space-y-1 text-sm">
+														{analysisResults.mesh.recommendations
+															.slice(0, 3)
+															.map((rec: any, i: number) => (
+																<li key={i}>{rec.action || rec.title}</li>
+															))}
+													</ul>
+												</div>
+											)}
+									</Card>
+								)}
+
+								{analysisResults["internal-linking"] &&
+									!analysisResults["internal-linking"].error && (
+										<Card className="p-6">
+											<h3 className="text-lg font-semibold mb-4">
+												Internal Linking Analysis
+											</h3>
+											<div className="text-sm text-muted-foreground">
+												Analysis completed.{" "}
+												{analysisResults["internal-linking"].total_opportunities ||
+													0}{" "}
+												linking opportunities found.
+											</div>
+										</Card>
 									)}
-							</Card>
+
+								{analysisResults.competitors &&
+									!analysisResults.competitors.error && (
+										<Card className="p-6">
+											<h3 className="text-lg font-semibold mb-4">
+												Competitor Analysis
+											</h3>
+											<div className="text-sm text-muted-foreground">
+												Analysis completed for{" "}
+												{analysisResults.competitors.competitors?.length || 0}{" "}
+												competitors.
+											</div>
+										</Card>
+									)}
+							</section>
 						)}
+					</TabsContent>
 
-						{analysisResults["internal-linking"] &&
-							!analysisResults["internal-linking"].error && (
-								<Card className="p-6">
-									<h3 className="text-lg font-semibold mb-4">
-										Internal Linking Analysis
-									</h3>
-									<div className="text-sm text-muted-foreground">
-										Analysis completed.{" "}
-										{analysisResults["internal-linking"].total_opportunities ||
-											0}{" "}
-										linking opportunities found.
-									</div>
-								</Card>
-							)}
+					{/* Affiliations Tab */}
+					<TabsContent value="affiliations">
+						<AffiliationsTab />
+					</TabsContent>
 
-						{analysisResults.competitors &&
-							!analysisResults.competitors.error && (
-								<Card className="p-6">
-									<h3 className="text-lg font-semibold mb-4">
-										Competitor Analysis
-									</h3>
-									<div className="text-sm text-muted-foreground">
-										Analysis completed for{" "}
-										{analysisResults.competitors.competitors?.length || 0}{" "}
-										competitors.
-									</div>
-								</Card>
-							)}
-					</section>
-				)}
+					{/* Competitors Tab */}
+					<TabsContent value="competitors">
+						<CompetitorsTab />
+					</TabsContent>
+				</Tabs>
 			</div>
 		</div>
 	);

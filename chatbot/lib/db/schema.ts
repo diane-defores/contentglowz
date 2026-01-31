@@ -221,3 +221,70 @@ export const stream = sqliteTable("Stream", {
 });
 
 export type Stream = InferSelectModel<typeof stream>;
+
+/**
+ * Affiliate links for monetization.
+ * Stores affiliate program information that can be used by AI
+ * to include relevant affiliate links in generated content.
+ */
+export const affiliateLink = sqliteTable("AffiliateLink", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	name: text("name").notNull(),
+	url: text("url").notNull(),
+	category: text("category"), // tech, finance, lifestyle, health, etc.
+	commission: text("commission"), // "5%" or "10€/sale"
+	keywords: text("keywords", { mode: "json" }).$type<string[]>(), // JSON array for AI matching
+	status: text("status", { enum: ["active", "expired", "paused"] })
+		.notNull()
+		.default("active"),
+	notes: text("notes"), // Instructions for AI
+	expiresAt: integer("expiresAt", { mode: "timestamp" }),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type AffiliateLink = InferSelectModel<typeof affiliateLink>;
+
+/**
+ * Competitor tracking for SEO analysis.
+ * Stores competitor URLs and analysis data for competitive intelligence.
+ */
+export const competitor = sqliteTable("Competitor", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	name: text("name").notNull(),
+	url: text("url").notNull(),
+	niche: text("niche"),
+	priority: text("priority", { enum: ["high", "medium", "low"] })
+		.notNull()
+		.default("medium"),
+	notes: text("notes"),
+	lastAnalyzedAt: integer("lastAnalyzedAt", { mode: "timestamp" }),
+	analysisData: text("analysisData", { mode: "json" }).$type<{
+		score?: number;
+		strengths?: string[];
+		weaknesses?: string[];
+		keywords?: string[];
+		contentGaps?: string[];
+	}>(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type Competitor = InferSelectModel<typeof competitor>;

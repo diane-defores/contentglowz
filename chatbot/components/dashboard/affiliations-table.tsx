@@ -1,0 +1,148 @@
+"use client";
+
+import { Edit, ExternalLink, MoreHorizontal, Trash } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { AffiliateLink } from "@/lib/db/schema";
+
+interface AffiliationsTableProps {
+	affiliations: AffiliateLink[];
+	onEdit: (affiliation: AffiliateLink) => void;
+	onDelete: (id: string) => void;
+}
+
+function getStatusColor(status: string) {
+	switch (status) {
+		case "active":
+			return "bg-green-100 text-green-800";
+		case "paused":
+			return "bg-yellow-100 text-yellow-800";
+		case "expired":
+			return "bg-red-100 text-red-800";
+		default:
+			return "bg-gray-100 text-gray-800";
+	}
+}
+
+export function AffiliationsTable({
+	affiliations,
+	onEdit,
+	onDelete,
+}: AffiliationsTableProps) {
+	if (affiliations.length === 0) {
+		return (
+			<div className="text-center py-12 text-muted-foreground">
+				<p>No affiliate links yet.</p>
+				<p className="text-sm">Add your first affiliate link to get started.</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className="overflow-x-auto">
+			<table className="w-full">
+				<thead>
+					<tr className="border-b text-left text-sm text-muted-foreground">
+						<th className="pb-3 font-medium">Name</th>
+						<th className="pb-3 font-medium">Category</th>
+						<th className="pb-3 font-medium">Commission</th>
+						<th className="pb-3 font-medium">Keywords</th>
+						<th className="pb-3 font-medium">Status</th>
+						<th className="pb-3 font-medium">Expires</th>
+						<th className="pb-3 font-medium text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{affiliations.map((affiliation) => (
+						<tr key={affiliation.id} className="border-b">
+							<td className="py-4">
+								<div className="flex items-center gap-2">
+									<span className="font-medium">{affiliation.name}</span>
+									<a
+										href={affiliation.url}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-muted-foreground hover:text-foreground"
+									>
+										<ExternalLink className="h-3 w-3" />
+									</a>
+								</div>
+							</td>
+							<td className="py-4">
+								{affiliation.category ? (
+									<Badge variant="outline">{affiliation.category}</Badge>
+								) : (
+									<span className="text-muted-foreground">-</span>
+								)}
+							</td>
+							<td className="py-4">
+								{affiliation.commission || (
+									<span className="text-muted-foreground">-</span>
+								)}
+							</td>
+							<td className="py-4">
+								<div className="flex flex-wrap gap-1">
+									{affiliation.keywords?.slice(0, 3).map((keyword) => (
+										<Badge key={keyword} variant="secondary" className="text-xs">
+											{keyword}
+										</Badge>
+									))}
+									{affiliation.keywords && affiliation.keywords.length > 3 && (
+										<Badge variant="secondary" className="text-xs">
+											+{affiliation.keywords.length - 3}
+										</Badge>
+									)}
+									{!affiliation.keywords?.length && (
+										<span className="text-muted-foreground">-</span>
+									)}
+								</div>
+							</td>
+							<td className="py-4">
+								<Badge className={getStatusColor(affiliation.status)}>
+									{affiliation.status}
+								</Badge>
+							</td>
+							<td className="py-4">
+								{affiliation.expiresAt ? (
+									<span className="text-sm">
+										{new Date(affiliation.expiresAt).toLocaleDateString()}
+									</span>
+								) : (
+									<span className="text-muted-foreground">-</span>
+								)}
+							</td>
+							<td className="py-4 text-right">
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="ghost" size="sm">
+											<MoreHorizontal className="h-4 w-4" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DropdownMenuItem onClick={() => onEdit(affiliation)}>
+											<Edit className="mr-2 h-4 w-4" />
+											Edit
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => onDelete(affiliation.id)}
+											className="text-red-600"
+										>
+											<Trash className="mr-2 h-4 w-4" />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	);
+}
