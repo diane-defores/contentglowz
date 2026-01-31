@@ -3,9 +3,9 @@ import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 
-config({
-	path: ".env",
-});
+// Load .env first, then .env.local (which overrides)
+config({ path: ".env" });
+config({ path: ".env.local", override: true });
 
 const runMigrate = async () => {
 	if (!process.env.TURSO_DATABASE_URL) {
