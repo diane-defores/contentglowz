@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.SEO_API_URL || "https://bizflowz-api.onrender.com";
+// SEO Robots API - defaults to localhost for local development
+const API_URL = process.env.SEO_API_URL || "http://localhost:8000";
 
 export async function GET(
 	request: NextRequest,
@@ -31,8 +32,7 @@ export async function GET(
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
 			{
-				error:
-					"Failed to connect to SEO API. It may be starting up (30-60s on free tier).",
+				error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents`,
 			},
 			{ status: 503 },
 		);
@@ -72,8 +72,7 @@ export async function POST(
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
 			{
-				error:
-					"Failed to connect to SEO API. It may be starting up (30-60s on free tier).",
+				error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents`,
 			},
 			{ status: 503 },
 		);

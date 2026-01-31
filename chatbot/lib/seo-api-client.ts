@@ -1,12 +1,15 @@
 /**
  * API Client for SEO Robots Backend
  *
- * Connects the Next.js chatbot to the Python FastAPI backend on Render.
- * Provides typed methods to call all SEO agent endpoints.
+ * Connects the Next.js chatbot to the Python FastAPI backend.
+ * Set SEO_API_URL env var to point to your robots server.
+ * Default: localhost:8000 for local development.
  */
 
 const API_URL =
-	process.env.NEXT_PUBLIC_API_URL || "https://bizflowz-api.onrender.com";
+	process.env.NEXT_PUBLIC_API_URL ||
+	process.env.SEO_API_URL ||
+	"http://localhost:8000";
 
 type ApiError = {
 	error: string;

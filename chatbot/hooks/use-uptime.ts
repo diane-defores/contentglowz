@@ -38,14 +38,8 @@ const DEFAULT_SERVICES: ServiceConfig[] = [
 	},
 	{
 		id: "seo-api",
-		name: "SEO API",
+		name: "SEO Robots",
 		url: "/api/seo/health",
-	},
-	{
-		id: "render-api",
-		name: "Render API",
-		url: "https://bizflowz-api.onrender.com/health",
-		isExternal: true,
 	},
 ];
 

@@ -11,10 +11,13 @@ export async function GET(request: NextRequest) {
 	}
 
 	// Whitelist of allowed domains for security
+	// Add your hosting domains here when deploying robots externally
 	const allowedDomains = [
-		"bizflowz-api.onrender.com",
 		"localhost",
 		"127.0.0.1",
+		// Add your server domain when needed, e.g.:
+		// "your-server.hetzner.com",
+		// "your-app.railway.app",
 	];
 
 	try {
