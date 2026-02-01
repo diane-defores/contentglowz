@@ -1,3 +1,4 @@
+import Script from "next/script";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
@@ -81,7 +82,8 @@ export default function RootLayout({
 					<Toaster position="top-center" />
 					<SessionProvider>{children}</SessionProvider>
 				</ThemeProvider>
-			</body>
+			        <Script src="/buildflowz-inspector.js" strategy="afterInteractive" id="buildflowz-inspector" />
+      </body>
 		</html>
 	);
 }
