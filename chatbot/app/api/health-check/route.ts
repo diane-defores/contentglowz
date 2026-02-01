@@ -1,5 +1,3 @@
-"use server";
-
 import { NextRequest, NextResponse } from "next/server";
 
 // Proxy for external health checks to avoid CORS issues
