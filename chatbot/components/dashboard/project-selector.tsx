@@ -34,6 +34,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/components/toast";
 import { type Project, useProjects } from "@/hooks/use-projects";
 
 interface ProjectSelectorProps {
@@ -77,6 +78,10 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 			onProjectChange?.(created);
 			setShowNewDialog(false);
 			setNewProject({ name: "", url: "", type: "github", description: "" });
+			toast({ type: "success", description: `Project "${created.name}" created` });
+		} catch (err) {
+			const message = err instanceof Error ? err.message : "Failed to create project";
+			toast({ type: "error", description: message });
 		} finally {
 			setCreating(false);
 		}

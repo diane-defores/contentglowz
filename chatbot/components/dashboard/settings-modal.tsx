@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, Key, Loader2, Moon, Save, Settings, Sun } from "lucide-react";
+import { Eye, EyeOff, FolderKanban, Key, Loader2, Moon, Save, Settings, Sun } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,7 @@ import {
 	TabsTrigger,
 } from "@/components/ui/tabs";
 import { useSettings } from "@/hooks/use-settings";
+import { SettingsProjectsTab } from "./settings-projects-tab";
 
 const API_KEY_PROVIDERS = [
 	{ id: "openai", name: "OpenAI", placeholder: "sk-..." },
@@ -104,9 +105,13 @@ export function SettingsModal() {
 					</div>
 				) : (
 					<Tabs defaultValue="preferences" className="mt-4">
-						<TabsList className="grid w-full grid-cols-2">
+						<TabsList className="grid w-full grid-cols-3">
 							<TabsTrigger value="preferences">Preferences</TabsTrigger>
 							<TabsTrigger value="api-keys">API Keys</TabsTrigger>
+							<TabsTrigger value="projects">
+								<FolderKanban className="mr-2 h-4 w-4" />
+								Projects
+							</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="preferences" className="space-y-6 pt-4">
@@ -253,6 +258,10 @@ export function SettingsModal() {
 									</div>
 								</div>
 							))}
+						</TabsContent>
+
+						<TabsContent value="projects" className="pt-4">
+							<SettingsProjectsTab />
 						</TabsContent>
 					</Tabs>
 				)}

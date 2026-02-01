@@ -56,6 +56,7 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 				<Chat
 					autoResume={true}
 					id={chat.id}
+					projectId={chat.projectId ?? undefined}
 					initialChatModel={DEFAULT_CHAT_MODEL}
 					initialLastContext={chat.lastContext ?? undefined}
 					initialMessages={uiMessages}
@@ -72,6 +73,7 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 			<Chat
 				autoResume={true}
 				id={chat.id}
+				projectId={chat.projectId ?? undefined}
 				initialChatModel={chatModelFromCookie.value}
 				initialLastContext={chat.lastContext ?? undefined}
 				initialMessages={uiMessages}

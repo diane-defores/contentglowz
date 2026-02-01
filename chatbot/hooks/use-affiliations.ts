@@ -12,9 +12,10 @@ export type AffiliationFormData = {
 	status?: "active" | "expired" | "paused";
 	notes?: string;
 	expiresAt?: string;
+	projectId?: string;
 };
 
-export function useAffiliations() {
+export function useAffiliations(projectId?: string) {
 	const [affiliations, setAffiliations] = useState<AffiliateLink[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,10 @@ export function useAffiliations() {
 		setError(null);
 
 		try {
-			const response = await fetch("/api/affiliations");
+			const url = projectId
+				? `/api/affiliations?projectId=${projectId}`
+				: "/api/affiliations";
+			const response = await fetch(url);
 			if (!response.ok) {
 				throw new Error("Failed to fetch affiliations");
 			}
@@ -37,7 +41,7 @@ export function useAffiliations() {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [projectId]);
 
 	const createAffiliation = useCallback(
 		async (data: AffiliationFormData): Promise<AffiliateLink | null> => {
@@ -47,7 +51,7 @@ export function useAffiliations() {
 				const response = await fetch("/api/affiliations", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data),
+					body: JSON.stringify({ ...data, projectId: data.projectId || projectId }),
 				});
 
 				if (!response.ok) {
@@ -64,7 +68,7 @@ export function useAffiliations() {
 				return null;
 			}
 		},
-		[],
+		[projectId],
 	);
 
 	const updateAffiliation = useCallback(
@@ -124,7 +128,7 @@ export function useAffiliations() {
 
 	useEffect(() => {
 		fetchAffiliations();
-	}, [fetchAffiliations]);
+	}, [fetchAffiliations, projectId]);
 
 	return {
 		affiliations,

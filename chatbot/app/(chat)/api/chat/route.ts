@@ -140,11 +140,13 @@ export async function POST(request: Request) {
 	try {
 		const {
 			id,
+			projectId,
 			message,
 			selectedChatModel,
 			selectedVisibilityType,
 		}: {
 			id: string;
+			projectId?: string;
 			message: ChatMessage;
 			selectedChatModel: ChatModel["id"];
 			selectedVisibilityType: VisibilityType;
@@ -184,6 +186,7 @@ export async function POST(request: Request) {
 			await saveChat({
 				id,
 				userId: session.user.id,
+				projectId,
 				title,
 				visibility: selectedVisibilityType,
 			});

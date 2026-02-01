@@ -9,9 +9,10 @@ export type CompetitorFormData = {
 	niche?: string;
 	priority?: "high" | "medium" | "low";
 	notes?: string;
+	projectId?: string;
 };
 
-export function useCompetitors() {
+export function useCompetitors(projectId?: string) {
 	const [competitors, setCompetitors] = useState<Competitor[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [analyzing, setAnalyzing] = useState<string | null>(null);
@@ -22,7 +23,10 @@ export function useCompetitors() {
 		setError(null);
 
 		try {
-			const response = await fetch("/api/competitors");
+			const url = projectId
+				? `/api/competitors?projectId=${projectId}`
+				: "/api/competitors";
+			const response = await fetch(url);
 			if (!response.ok) {
 				throw new Error("Failed to fetch competitors");
 			}
@@ -35,7 +39,7 @@ export function useCompetitors() {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [projectId]);
 
 	const createCompetitor = useCallback(
 		async (data: CompetitorFormData): Promise<Competitor | null> => {
@@ -45,7 +49,7 @@ export function useCompetitors() {
 				const response = await fetch("/api/competitors", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify(data),
+					body: JSON.stringify({ ...data, projectId: data.projectId || projectId }),
 				});
 
 				if (!response.ok) {
@@ -62,7 +66,7 @@ export function useCompetitors() {
 				return null;
 			}
 		},
-		[],
+		[projectId],
 	);
 
 	const updateCompetitor = useCallback(
@@ -154,7 +158,7 @@ export function useCompetitors() {
 
 	useEffect(() => {
 		fetchCompetitors();
-	}, [fetchCompetitors]);
+	}, [fetchCompetitors, projectId]);
 
 	return {
 		competitors,

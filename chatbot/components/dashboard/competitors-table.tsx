@@ -1,8 +1,10 @@
 "use client";
 
 import {
+	Check,
 	ChevronDown,
 	ChevronRight,
+	Copy,
 	Edit,
 	ExternalLink,
 	Loader2,
@@ -12,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import {
 	Collapsible,
@@ -61,6 +64,18 @@ export function CompetitorsTable({
 	onAnalyze,
 }: CompetitorsTableProps) {
 	const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+	const [copiedId, setCopiedId] = useState<string | null>(null);
+
+	const copyUrl = async (id: string, url: string) => {
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopiedId(id);
+			toast({ type: "success", description: "URL copiée" });
+			setTimeout(() => setCopiedId(null), 2000);
+		} catch {
+			toast({ type: "error", description: "Impossible de copier l'URL" });
+		}
+	};
 
 	const toggleRow = (id: string) => {
 		setExpandedRows((prev) => {
@@ -111,11 +126,26 @@ export function CompetitorsTable({
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2 flex-wrap">
 											<span className="font-medium truncate">{competitor.name}</span>
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													copyUrl(competitor.id, competitor.url);
+												}}
+												className="text-muted-foreground hover:text-foreground shrink-0"
+												title="Copier l'URL"
+											>
+												{copiedId === competitor.id ? (
+													<Check className="h-3 w-3 text-green-500" />
+												) : (
+													<Copy className="h-3 w-3" />
+												)}
+											</button>
 											<a
 												href={competitor.url}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="text-muted-foreground hover:text-foreground shrink-0"
+												title="Ouvrir dans un nouvel onglet"
 											>
 												<ExternalLink className="h-3 w-3" />
 											</a>
@@ -185,16 +215,24 @@ export function CompetitorsTable({
 											</Button>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => copyUrl(competitor.id, competitor.url)}>
+												{copiedId === competitor.id ? (
+													<Check className="mr-2 h-4 w-4 text-green-500" />
+												) : (
+													<Copy className="mr-2 h-4 w-4" />
+												)}
+												Copier l'URL
+											</DropdownMenuItem>
 											<DropdownMenuItem onClick={() => onEdit(competitor)}>
 												<Edit className="mr-2 h-4 w-4" />
-												Edit
+												Modifier
 											</DropdownMenuItem>
 											<DropdownMenuItem
 												onClick={() => onDelete(competitor.id)}
 												className="text-red-600"
 											>
 												<Trash className="mr-2 h-4 w-4" />
-												Delete
+												Supprimer
 											</DropdownMenuItem>
 										</DropdownMenuContent>
 									</DropdownMenu>

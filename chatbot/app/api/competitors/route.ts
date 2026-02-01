@@ -6,7 +6,7 @@ import {
 } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	try {
 		const session = await auth();
 
@@ -14,8 +14,12 @@ export async function GET() {
 			return new ChatSDKError("unauthorized:chat").toResponse();
 		}
 
+		const { searchParams } = new URL(request.url);
+		const projectId = searchParams.get("projectId") || undefined;
+
 		const competitors = await getCompetitorsByUserId({
 			userId: session.user.id,
+			projectId,
 		});
 
 		return NextResponse.json(competitors);
@@ -40,6 +44,7 @@ export async function POST(request: NextRequest) {
 
 		const competitor = await createCompetitor({
 			userId: session.user.id,
+			projectId: body.projectId,
 			name: body.name,
 			url: body.url,
 			niche: body.niche,

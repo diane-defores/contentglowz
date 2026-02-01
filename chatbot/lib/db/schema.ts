@@ -40,6 +40,7 @@ export const chat = sqliteTable("Chat", {
 	userId: text("userId")
 		.notNull()
 		.references(() => user.id),
+	projectId: text("projectId"), // Links to Project.id for scoping robot runs
 	visibility: text("visibility", { enum: ["public", "private"] })
 		.notNull()
 		.default("private"),
@@ -235,6 +236,7 @@ export const affiliateLink = sqliteTable("AffiliateLink", {
 	userId: text("userId")
 		.notNull()
 		.references(() => user.id),
+	projectId: text("projectId"), // Links to Project.id
 	name: text("name").notNull(),
 	url: text("url").notNull(),
 	category: text("category"), // tech, finance, lifestyle, health, etc.
@@ -267,6 +269,7 @@ export const competitor = sqliteTable("Competitor", {
 	userId: text("userId")
 		.notNull()
 		.references(() => user.id),
+	projectId: text("projectId"), // Links to Project.id
 	name: text("name").notNull(),
 	url: text("url").notNull(),
 	niche: text("niche"),

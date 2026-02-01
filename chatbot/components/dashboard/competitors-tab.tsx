@@ -19,7 +19,11 @@ import {
 import { CompetitorFormModal } from "./competitor-form-modal";
 import { CompetitorsTable } from "./competitors-table";
 
-export function CompetitorsTab() {
+interface CompetitorsTabProps {
+	projectId?: string;
+}
+
+export function CompetitorsTab({ projectId }: CompetitorsTabProps) {
 	const {
 		competitors,
 		loading,
@@ -31,7 +35,7 @@ export function CompetitorsTab() {
 		deleteCompetitor,
 		analyzeCompetitor,
 		clearError,
-	} = useCompetitors();
+	} = useCompetitors(projectId);
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingCompetitor, setEditingCompetitor] = useState<Competitor | null>(

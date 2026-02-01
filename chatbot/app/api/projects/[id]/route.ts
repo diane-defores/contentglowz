@@ -1,5 +1,3 @@
-"use server";
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { deleteProject, getProjectById, updateProject } from "@/lib/db/queries";
@@ -64,8 +62,9 @@ export async function PUT(
 
 		return NextResponse.json(updated);
 	} catch (error) {
+		console.error("Failed to update project:", error);
 		return NextResponse.json(
-			{ error: "Failed to update project" },
+			{ error: "Failed to update project", details: error instanceof Error ? error.message : String(error) },
 			{ status: 500 }
 		);
 	}
@@ -95,8 +94,9 @@ export async function DELETE(
 		await deleteProject({ id });
 		return NextResponse.json({ success: true });
 	} catch (error) {
+		console.error("Failed to delete project:", error);
 		return NextResponse.json(
-			{ error: "Failed to delete project" },
+			{ error: "Failed to delete project", details: error instanceof Error ? error.message : String(error) },
 			{ status: 500 }
 		);
 	}

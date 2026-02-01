@@ -1,5 +1,3 @@
-"use server";
-
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { createProject, getProjectsByUserId } from "@/lib/db/queries";
@@ -50,8 +48,9 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json(project, { status: 201 });
 	} catch (error) {
+		console.error("Failed to create project:", error);
 		return NextResponse.json(
-			{ error: "Failed to create project" },
+			{ error: "Failed to create project", details: error instanceof Error ? error.message : String(error) },
 			{ status: 500 }
 		);
 	}

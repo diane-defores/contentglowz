@@ -48,6 +48,7 @@ import type { VisibilityType } from "./visibility-selector";
 
 export function Chat({
 	id,
+	projectId,
 	initialMessages,
 	initialChatModel,
 	initialVisibilityType,
@@ -56,6 +57,7 @@ export function Chat({
 	initialLastContext,
 }: {
 	id: string;
+	projectId?: string;
 	initialMessages: ChatMessage[];
 	initialChatModel: string;
 	initialVisibilityType: VisibilityType;
@@ -125,6 +127,7 @@ export function Chat({
 				return {
 					body: {
 						id: request.id,
+						projectId,
 						message: request.messages.at(-1),
 						selectedChatModel: currentModelIdRef.current,
 						selectedVisibilityType: visibilityType,

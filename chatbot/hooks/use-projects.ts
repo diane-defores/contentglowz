@@ -76,7 +76,10 @@ export function useProjects() {
 					body: JSON.stringify(data),
 				});
 
-				if (!response.ok) throw new Error("Failed to create project");
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
+					throw new Error(errorData.details || errorData.error || "Failed to create project");
+				}
 
 				const created = await response.json();
 				setProjects((prev) => {
@@ -108,7 +111,10 @@ export function useProjects() {
 					body: JSON.stringify(data),
 				});
 
-				if (!response.ok) throw new Error("Failed to update project");
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
+					throw new Error(errorData.details || errorData.error || "Failed to update project");
+				}
 
 				const updated = await response.json();
 				setProjects((prev) =>
@@ -143,7 +149,10 @@ export function useProjects() {
 					method: "DELETE",
 				});
 
-				if (!response.ok) throw new Error("Failed to delete project");
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => ({}));
+					throw new Error(errorData.details || errorData.error || "Failed to delete project");
+				}
 
 				setProjects((prev) => prev.filter((p) => p.id !== id));
 

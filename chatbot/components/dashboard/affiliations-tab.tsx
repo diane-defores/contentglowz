@@ -19,7 +19,11 @@ import {
 import { AffiliationFormModal } from "./affiliation-form-modal";
 import { AffiliationsTable } from "./affiliations-table";
 
-export function AffiliationsTab() {
+interface AffiliationsTabProps {
+	projectId?: string;
+}
+
+export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 	const {
 		affiliations,
 		loading,
@@ -29,7 +33,7 @@ export function AffiliationsTab() {
 		updateAffiliation,
 		deleteAffiliation,
 		clearError,
-	} = useAffiliations();
+	} = useAffiliations(projectId);
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingAffiliation, setEditingAffiliation] =

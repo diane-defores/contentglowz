@@ -119,11 +119,13 @@ export async function createGuestUser() {
 export async function saveChat({
 	id,
 	userId,
+	projectId,
 	title,
 	visibility,
 }: {
 	id: string;
 	userId: string;
+	projectId?: string;
 	title: string;
 	visibility: VisibilityType;
 }) {
@@ -132,6 +134,7 @@ export async function saveChat({
 			id,
 			createdAt: new Date(),
 			userId,
+			projectId,
 			title,
 			visibility,
 		});
@@ -202,11 +205,13 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
  */
 export async function getChatsByUserId({
 	id,
+	projectId,
 	limit,
 	startingAfter,
 	endingBefore,
 }: {
 	id: string;
+	projectId?: string;
 	limit: number;
 	startingAfter: string | null;
 	endingBefore: string | null;
@@ -214,14 +219,18 @@ export async function getChatsByUserId({
 	try {
 		const extendedLimit = limit + 1;
 
+		const baseConditions = projectId
+			? and(eq(chat.userId, id), eq(chat.projectId, projectId))
+			: eq(chat.userId, id);
+
 		const query = (whereCondition?: SQL<any>) =>
 			db
 				.select()
 				.from(chat)
 				.where(
 					whereCondition
-						? and(whereCondition, eq(chat.userId, id))
-						: eq(chat.userId, id),
+						? and(whereCondition, baseConditions)
+						: baseConditions,
 				)
 				.orderBy(desc(chat.createdAt))
 				.limit(extendedLimit);
@@ -713,17 +722,23 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 // Affiliate Link Queries
 // ============================================================================
 
-/** Gets all affiliate links for a user */
+/** Gets all affiliate links for a user, optionally filtered by project */
 export async function getAffiliationsByUserId({
 	userId,
+	projectId,
 }: {
 	userId: string;
+	projectId?: string;
 }): Promise<AffiliateLink[]> {
 	try {
+		const conditions = [eq(affiliateLink.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(affiliateLink.projectId, projectId));
+		}
 		return await db
 			.select()
 			.from(affiliateLink)
-			.where(eq(affiliateLink.userId, userId))
+			.where(and(...conditions))
 			.orderBy(desc(affiliateLink.createdAt));
 	} catch (_error) {
 		throw new ChatSDKError(
@@ -733,22 +748,26 @@ export async function getAffiliationsByUserId({
 	}
 }
 
-/** Gets active affiliate links for a user (for AI tool) */
+/** Gets active affiliate links for a user (for AI tool), optionally filtered by project */
 export async function getActiveAffiliationsByUserId({
 	userId,
+	projectId,
 }: {
 	userId: string;
+	projectId?: string;
 }): Promise<AffiliateLink[]> {
 	try {
+		const conditions = [
+			eq(affiliateLink.userId, userId),
+			eq(affiliateLink.status, "active"),
+		];
+		if (projectId) {
+			conditions.push(eq(affiliateLink.projectId, projectId));
+		}
 		return await db
 			.select()
 			.from(affiliateLink)
-			.where(
-				and(
-					eq(affiliateLink.userId, userId),
-					eq(affiliateLink.status, "active"),
-				),
-			)
+			.where(and(...conditions))
 			.orderBy(desc(affiliateLink.createdAt));
 	} catch (_error) {
 		throw new ChatSDKError(
@@ -781,6 +800,7 @@ export async function getAffiliationById({
 /** Creates a new affiliate link */
 export async function createAffiliation({
 	userId,
+	projectId,
 	name,
 	url,
 	category,
@@ -791,6 +811,7 @@ export async function createAffiliation({
 	expiresAt,
 }: {
 	userId: string;
+	projectId?: string;
 	name: string;
 	url: string;
 	category?: string;
@@ -805,6 +826,7 @@ export async function createAffiliation({
 			.insert(affiliateLink)
 			.values({
 				userId,
+				projectId,
 				name,
 				url,
 				category,
@@ -889,17 +911,23 @@ export async function deleteAffiliation({ id }: { id: string }) {
 // Competitor Queries
 // ============================================================================
 
-/** Gets all competitors for a user */
+/** Gets all competitors for a user, optionally filtered by project */
 export async function getCompetitorsByUserId({
 	userId,
+	projectId,
 }: {
 	userId: string;
+	projectId?: string;
 }): Promise<Competitor[]> {
 	try {
+		const conditions = [eq(competitor.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(competitor.projectId, projectId));
+		}
 		return await db
 			.select()
 			.from(competitor)
-			.where(eq(competitor.userId, userId))
+			.where(and(...conditions))
 			.orderBy(desc(competitor.createdAt));
 	} catch (_error) {
 		throw new ChatSDKError(
@@ -932,6 +960,7 @@ export async function getCompetitorById({
 /** Creates a new competitor */
 export async function createCompetitor({
 	userId,
+	projectId,
 	name,
 	url,
 	niche,
@@ -939,6 +968,7 @@ export async function createCompetitor({
 	notes,
 }: {
 	userId: string;
+	projectId?: string;
 	name: string;
 	url: string;
 	niche?: string;
@@ -950,6 +980,7 @@ export async function createCompetitor({
 			.insert(competitor)
 			.values({
 				userId,
+				projectId,
 				name,
 				url,
 				niche,
