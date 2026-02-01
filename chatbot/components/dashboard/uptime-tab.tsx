@@ -96,7 +96,7 @@ function ServiceCard({ service, onCheck }: ServiceCardProps) {
 				{getStatusBadge(service.status)}
 			</div>
 
-			<div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+			<div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
 				<div>
 					<p className="text-muted-foreground">Response Time</p>
 					<p className="font-medium">{formatResponseTime(service.responseTime)}</p>
@@ -195,38 +195,38 @@ export function UptimeTab() {
 			</div>
 
 			{/* Overall Status Banner */}
-			<Card className="p-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
+			<Card className="p-4 sm:p-6">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div className="flex items-center gap-3 sm:gap-4">
 						{overallStatus === "operational" ? (
-							<CheckCircle className="h-10 w-10 text-green-500" />
+							<CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-500 shrink-0" />
 						) : overallStatus === "degraded" ? (
-							<AlertTriangle className="h-10 w-10 text-yellow-500" />
+							<AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10 text-yellow-500 shrink-0" />
 						) : (
-							<XCircle className="h-10 w-10 text-red-500" />
+							<XCircle className="h-8 w-8 sm:h-10 sm:w-10 text-red-500 shrink-0" />
 						)}
 						<div>
 							<h3
-								className={`text-xl font-semibold ${getOverallStatusColor(overallStatus)}`}
+								className={`text-base sm:text-xl font-semibold ${getOverallStatusColor(overallStatus)}`}
 							>
 								{getOverallStatusLabel(overallStatus)}
 							</h3>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-xs sm:text-sm text-muted-foreground">
 								{onlineCount} of {services.length} services operational
 							</p>
 						</div>
 					</div>
-					<div className="text-right">
-						<div className="text-2xl font-bold">
+					<div className="text-left sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0">
+						<div className="text-xl sm:text-2xl font-bold">
 							{formatResponseTime(averageResponseTime)}
 						</div>
-						<div className="text-sm text-muted-foreground">Avg Response</div>
+						<div className="text-xs sm:text-sm text-muted-foreground">Avg Response</div>
 					</div>
 				</div>
 			</Card>
 
 			{/* Stats */}
-			<div className="grid gap-4 md:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
 				<Card className="p-4">
 					<div className="text-2xl font-bold">{services.length}</div>
 					<div className="text-sm text-muted-foreground">Total Services</div>

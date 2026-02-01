@@ -143,7 +143,7 @@ function RobotCard({ robot, isRunning, onTrigger, onStop }: RobotCardProps) {
 				<CollapsibleContent>
 					<div className="border-t bg-muted/50 p-6">
 						<h4 className="font-medium mb-4">Agents</h4>
-						<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+						<div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 							{robot.agents.map((agent) => (
 								<div
 									key={agent.name}
@@ -227,7 +227,7 @@ export function RobotsTab() {
 			</div>
 
 			{/* Stats */}
-			<div className="grid gap-4 md:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
 				<Card className="p-4">
 					<div className="text-2xl font-bold">{robots.length}</div>
 					<div className="text-sm text-muted-foreground">Total Robots</div>

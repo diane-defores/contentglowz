@@ -200,9 +200,9 @@ export function ActivityTab({ projectId }: ActivityTabProps) {
 						Track all robot actions and analyses
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
 					<Select value={robotFilter} onValueChange={setRobotFilter}>
-						<SelectTrigger className="w-[150px]">
+						<SelectTrigger className="w-full sm:w-[150px]">
 							<SelectValue placeholder="Robot" />
 						</SelectTrigger>
 						<SelectContent>
@@ -214,7 +214,7 @@ export function ActivityTab({ projectId }: ActivityTabProps) {
 						</SelectContent>
 					</Select>
 					<Select value={statusFilter} onValueChange={setStatusFilter}>
-						<SelectTrigger className="w-[130px]">
+						<SelectTrigger className="w-full sm:w-[130px]">
 							<SelectValue placeholder="Status" />
 						</SelectTrigger>
 						<SelectContent>
@@ -224,14 +224,14 @@ export function ActivityTab({ projectId }: ActivityTabProps) {
 							<SelectItem value="failed">Failed</SelectItem>
 						</SelectContent>
 					</Select>
-					<Button onClick={refresh} variant="outline" size="sm">
+					<Button onClick={refresh} variant="outline" size="sm" className="w-full sm:w-auto">
 						<RefreshCw className="h-4 w-4" />
 					</Button>
 				</div>
 			</div>
 
 			{/* Stats */}
-			<div className="grid gap-4 md:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
 				<Card className="p-4">
 					<div className="text-2xl font-bold">{stats.total}</div>
 					<div className="text-sm text-muted-foreground">Total Actions</div>

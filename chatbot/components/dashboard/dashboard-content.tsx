@@ -208,7 +208,7 @@ export function DashboardContent({
 					<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 						<div className="flex items-center gap-4">
 							<div>
-								<h1 className="text-3xl font-bold">SEO Dashboard</h1>
+								<h1 className="text-xl sm:text-2xl md:text-3xl font-bold">SEO Dashboard</h1>
 								<p className="text-sm text-muted-foreground">{repoUrl}</p>
 							</div>
 							<ProjectSelector />
@@ -256,32 +256,37 @@ export function DashboardContent({
 
 				{/* Tabs Navigation */}
 				<Tabs defaultValue="seo" className="space-y-6">
-					<TabsList className="flex-wrap">
-						<TabsTrigger value="seo" className="flex items-center gap-2">
-							<Bot className="h-4 w-4" />
-							SEO Analysis
-						</TabsTrigger>
-						<TabsTrigger value="robots" className="flex items-center gap-2">
-							<Cpu className="h-4 w-4" />
-							Robots
-						</TabsTrigger>
-						<TabsTrigger value="activity" className="flex items-center gap-2">
-							<FileText className="h-4 w-4" />
-							Activity
-						</TabsTrigger>
-						<TabsTrigger value="uptime" className="flex items-center gap-2">
-							<Activity className="h-4 w-4" />
-							Uptime
-						</TabsTrigger>
-						<TabsTrigger value="affiliations" className="flex items-center gap-2">
-							<LinkIcon className="h-4 w-4" />
-							Affiliations
-						</TabsTrigger>
-						<TabsTrigger value="competitors" className="flex items-center gap-2">
-							<Users className="h-4 w-4" />
-							Competitors
-						</TabsTrigger>
-					</TabsList>
+					<div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+						<TabsList className="inline-flex w-max sm:w-auto">
+							<TabsTrigger value="seo" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span className="hidden xs:inline">SEO</span>
+								<span className="xs:hidden">SEO</span>
+							</TabsTrigger>
+							<TabsTrigger value="robots" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<Cpu className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span>Robots</span>
+							</TabsTrigger>
+							<TabsTrigger value="activity" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span>Activity</span>
+							</TabsTrigger>
+							<TabsTrigger value="uptime" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span>Uptime</span>
+							</TabsTrigger>
+							<TabsTrigger value="affiliations" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<LinkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span className="hidden sm:inline">Affiliations</span>
+								<span className="sm:hidden">Affil.</span>
+							</TabsTrigger>
+							<TabsTrigger value="competitors" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-2.5 sm:px-3">
+								<Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+								<span className="hidden sm:inline">Competitors</span>
+								<span className="sm:hidden">Comp.</span>
+							</TabsTrigger>
+						</TabsList>
+					</div>
 
 					{/* SEO Analysis Tab */}
 					<TabsContent value="seo" className="space-y-6">

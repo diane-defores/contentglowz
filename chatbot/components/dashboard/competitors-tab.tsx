@@ -129,9 +129,9 @@ export function CompetitorsTab() {
 			</div>
 
 			{/* Filters */}
-			<div className="flex gap-4">
+			<div className="flex flex-wrap gap-2 sm:gap-4">
 				<Select value={priorityFilter} onValueChange={setPriorityFilter}>
-					<SelectTrigger className="w-[150px]">
+					<SelectTrigger className="w-full sm:w-[150px]">
 						<SelectValue placeholder="Priority" />
 					</SelectTrigger>
 					<SelectContent>
@@ -144,7 +144,7 @@ export function CompetitorsTab() {
 			</div>
 
 			{/* Stats */}
-			<div className="grid gap-4 md:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
 				<Card className="p-4">
 					<div className="text-2xl font-bold">{competitors.length}</div>
 					<div className="text-sm text-muted-foreground">Total Competitors</div>

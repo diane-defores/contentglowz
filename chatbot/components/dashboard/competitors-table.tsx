@@ -96,10 +96,10 @@ export function CompetitorsTable({
 						onOpenChange={() => toggleRow(competitor.id)}
 					>
 						<div className="border rounded-lg">
-							<div className="flex items-center justify-between p-4">
-								<div className="flex items-center gap-4">
+							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-3">
+								<div className="flex items-start sm:items-center gap-3 sm:gap-4">
 									<CollapsibleTrigger asChild>
-										<Button variant="ghost" size="sm" className="p-0 h-auto">
+										<Button variant="ghost" size="sm" className="p-0 h-auto shrink-0">
 											{isExpanded ? (
 												<ChevronDown className="h-4 w-4" />
 											) : (
@@ -108,31 +108,40 @@ export function CompetitorsTable({
 										</Button>
 									</CollapsibleTrigger>
 
-									<div>
-										<div className="flex items-center gap-2">
-											<span className="font-medium">{competitor.name}</span>
+									<div className="min-w-0 flex-1">
+										<div className="flex items-center gap-2 flex-wrap">
+											<span className="font-medium truncate">{competitor.name}</span>
 											<a
 												href={competitor.url}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="text-muted-foreground hover:text-foreground"
+												className="text-muted-foreground hover:text-foreground shrink-0"
 											>
 												<ExternalLink className="h-3 w-3" />
 											</a>
+											<Badge className={`${getPriorityColor(competitor.priority)} sm:hidden`}>
+												{competitor.priority}
+											</Badge>
 										</div>
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-muted-foreground truncate">
 											{competitor.niche || "No niche specified"}
 										</p>
+										{/* Mobile-only: show score inline */}
+										{hasAnalysis && competitor.analysisData?.score && (
+											<div className="sm:hidden mt-1 text-xs text-muted-foreground">
+												Score: <span className={`font-bold ${getScoreColor(competitor.analysisData.score)}`}>{competitor.analysisData.score}</span>
+											</div>
+										)}
 									</div>
 								</div>
 
-								<div className="flex items-center gap-4">
-									<Badge className={getPriorityColor(competitor.priority)}>
+								<div className="flex flex-wrap items-center gap-2 sm:gap-4 pl-7 sm:pl-0">
+									<Badge className={`${getPriorityColor(competitor.priority)} hidden sm:inline-flex`}>
 										{competitor.priority}
 									</Badge>
 
 									{hasAnalysis && competitor.analysisData?.score && (
-										<div className="text-center">
+										<div className="hidden sm:block text-center">
 											<div
 												className={`text-lg font-bold ${getScoreColor(competitor.analysisData.score)}`}
 											>
@@ -142,7 +151,7 @@ export function CompetitorsTable({
 										</div>
 									)}
 
-									<div className="text-sm text-muted-foreground">
+									<div className="hidden md:block text-sm text-muted-foreground">
 										{competitor.lastAnalyzedAt
 											? `Analyzed ${new Date(competitor.lastAnalyzedAt).toLocaleDateString()}`
 											: "Not analyzed"}
@@ -153,15 +162,17 @@ export function CompetitorsTable({
 										disabled={analyzing === competitor.id}
 										variant="outline"
 										size="sm"
+										className="text-xs sm:text-sm"
 									>
 										{analyzing === competitor.id ? (
 											<>
-												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-												Analyzing...
+												<Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+												<span className="hidden sm:inline">Analyzing...</span>
+												<span className="sm:hidden">...</span>
 											</>
 										) : (
 											<>
-												<Search className="mr-2 h-4 w-4" />
+												<Search className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
 												Analyze
 											</>
 										)}

@@ -125,9 +125,9 @@ export function AffiliationsTab() {
 			</div>
 
 			{/* Filters */}
-			<div className="flex gap-4">
+			<div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
 				<Select value={statusFilter} onValueChange={setStatusFilter}>
-					<SelectTrigger className="w-[150px]">
+					<SelectTrigger className="w-full sm:w-[150px]">
 						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent>
@@ -139,7 +139,7 @@ export function AffiliationsTab() {
 				</Select>
 
 				<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-					<SelectTrigger className="w-[150px]">
+					<SelectTrigger className="w-full sm:w-[150px]">
 						<SelectValue placeholder="Category" />
 					</SelectTrigger>
 					<SelectContent>
@@ -154,7 +154,7 @@ export function AffiliationsTab() {
 			</div>
 
 			{/* Stats */}
-			<div className="grid gap-4 md:grid-cols-4">
+			<div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
 				<Card className="p-4">
 					<div className="text-2xl font-bold">{affiliations.length}</div>
 					<div className="text-sm text-muted-foreground">Total Links</div>

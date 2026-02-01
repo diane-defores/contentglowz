@@ -44,7 +44,7 @@ export function ContentGapsTable({ gaps }: ContentGapsTableProps) {
 	};
 
 	return (
-		<Card className="p-6">
+		<Card className="p-4 sm:p-6">
 			<div className="space-y-4">
 				<div>
 					<h3 className="text-lg font-semibold">Content Gaps</h3>
@@ -53,7 +53,40 @@ export function ContentGapsTable({ gaps }: ContentGapsTableProps) {
 					</p>
 				</div>
 
-				<div className="overflow-x-auto">
+				{/* Mobile Card View */}
+				<div className="space-y-3 sm:hidden">
+					{gaps.map((gap, index) => (
+						<div key={index} className="border rounded-lg p-3 space-y-2">
+							<div className="flex items-start justify-between gap-2">
+								<span className="font-medium text-sm">{gap.topic}</span>
+								<Badge
+									variant="secondary"
+									className={`flex shrink-0 items-center gap-1 text-xs ${getPriorityColor(gap.priority)}`}
+								>
+									{getPriorityIcon(gap.priority)}
+									{gap.priority}
+								</Badge>
+							</div>
+							<div className="grid grid-cols-3 gap-2 text-xs">
+								<div>
+									<p className="text-muted-foreground">Competitor</p>
+									<p className="font-semibold">{gap.competitorCoverage}%</p>
+								</div>
+								<div>
+									<p className="text-muted-foreground">Yours</p>
+									<p className="font-semibold">{gap.yourCoverage}%</p>
+								</div>
+								<div>
+									<p className="text-muted-foreground">Impact</p>
+									<p className="font-semibold text-green-600">+{gap.potentialImpact}</p>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+
+				{/* Desktop Table View */}
+				<div className="hidden sm:block overflow-x-auto">
 					<table className="w-full">
 						<thead>
 							<tr className="border-b">

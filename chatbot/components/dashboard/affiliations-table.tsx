@@ -45,82 +45,35 @@ export function AffiliationsTable({
 	}
 
 	return (
-		<div className="overflow-x-auto">
-			<table className="w-full">
-				<thead>
-					<tr className="border-b text-left text-sm text-muted-foreground">
-						<th className="pb-3 font-medium">Name</th>
-						<th className="pb-3 font-medium">Category</th>
-						<th className="pb-3 font-medium">Commission</th>
-						<th className="pb-3 font-medium">Keywords</th>
-						<th className="pb-3 font-medium">Status</th>
-						<th className="pb-3 font-medium">Expires</th>
-						<th className="pb-3 font-medium text-right">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{affiliations.map((affiliation) => (
-						<tr key={affiliation.id} className="border-b">
-							<td className="py-4">
+		<>
+			{/* Mobile Card View */}
+			<div className="space-y-3 sm:hidden">
+				{affiliations.map((affiliation) => (
+					<div key={affiliation.id} className="border rounded-lg p-3 space-y-2">
+						<div className="flex items-start justify-between gap-2">
+							<div className="min-w-0 flex-1">
 								<div className="flex items-center gap-2">
-									<span className="font-medium">{affiliation.name}</span>
+									<span className="font-medium text-sm truncate">{affiliation.name}</span>
 									<a
 										href={affiliation.url}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="text-muted-foreground hover:text-foreground"
+										className="text-muted-foreground hover:text-foreground shrink-0"
 									>
 										<ExternalLink className="h-3 w-3" />
 									</a>
 								</div>
-							</td>
-							<td className="py-4">
-								{affiliation.category ? (
-									<Badge variant="outline">{affiliation.category}</Badge>
-								) : (
-									<span className="text-muted-foreground">-</span>
+								{affiliation.category && (
+									<Badge variant="outline" className="mt-1 text-xs">{affiliation.category}</Badge>
 								)}
-							</td>
-							<td className="py-4">
-								{affiliation.commission || (
-									<span className="text-muted-foreground">-</span>
-								)}
-							</td>
-							<td className="py-4">
-								<div className="flex flex-wrap gap-1">
-									{affiliation.keywords?.slice(0, 3).map((keyword) => (
-										<Badge key={keyword} variant="secondary" className="text-xs">
-											{keyword}
-										</Badge>
-									))}
-									{affiliation.keywords && affiliation.keywords.length > 3 && (
-										<Badge variant="secondary" className="text-xs">
-											+{affiliation.keywords.length - 3}
-										</Badge>
-									)}
-									{!affiliation.keywords?.length && (
-										<span className="text-muted-foreground">-</span>
-									)}
-								</div>
-							</td>
-							<td className="py-4">
-								<Badge className={getStatusColor(affiliation.status)}>
+							</div>
+							<div className="flex items-center gap-2 shrink-0">
+								<Badge className={`text-xs ${getStatusColor(affiliation.status)}`}>
 									{affiliation.status}
 								</Badge>
-							</td>
-							<td className="py-4">
-								{affiliation.expiresAt ? (
-									<span className="text-sm">
-										{new Date(affiliation.expiresAt).toLocaleDateString()}
-									</span>
-								) : (
-									<span className="text-muted-foreground">-</span>
-								)}
-							</td>
-							<td className="py-4 text-right">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="sm">
+										<Button variant="ghost" size="sm" className="h-8 w-8 p-0">
 											<MoreHorizontal className="h-4 w-4" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -138,11 +91,140 @@ export function AffiliationsTable({
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
-							</td>
+							</div>
+						</div>
+						<div className="grid grid-cols-2 gap-2 text-xs">
+							<div>
+								<p className="text-muted-foreground">Commission</p>
+								<p className="font-medium">{affiliation.commission || "-"}</p>
+							</div>
+							<div>
+								<p className="text-muted-foreground">Expires</p>
+								<p className="font-medium">
+									{affiliation.expiresAt
+										? new Date(affiliation.expiresAt).toLocaleDateString()
+										: "-"}
+								</p>
+							</div>
+						</div>
+						{affiliation.keywords && affiliation.keywords.length > 0 && (
+							<div className="flex flex-wrap gap-1">
+								{affiliation.keywords.slice(0, 3).map((keyword) => (
+									<Badge key={keyword} variant="secondary" className="text-xs">
+										{keyword}
+									</Badge>
+								))}
+								{affiliation.keywords.length > 3 && (
+									<Badge variant="secondary" className="text-xs">
+										+{affiliation.keywords.length - 3}
+									</Badge>
+								)}
+							</div>
+						)}
+					</div>
+				))}
+			</div>
+
+			{/* Desktop Table View */}
+			<div className="hidden sm:block overflow-x-auto">
+				<table className="w-full">
+					<thead>
+						<tr className="border-b text-left text-sm text-muted-foreground">
+							<th className="pb-3 font-medium">Name</th>
+							<th className="pb-3 font-medium">Category</th>
+							<th className="pb-3 font-medium">Commission</th>
+							<th className="pb-3 font-medium">Keywords</th>
+							<th className="pb-3 font-medium">Status</th>
+							<th className="pb-3 font-medium">Expires</th>
+							<th className="pb-3 font-medium text-right">Actions</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+					</thead>
+					<tbody>
+						{affiliations.map((affiliation) => (
+							<tr key={affiliation.id} className="border-b">
+								<td className="py-4">
+									<div className="flex items-center gap-2">
+										<span className="font-medium">{affiliation.name}</span>
+										<a
+											href={affiliation.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="text-muted-foreground hover:text-foreground"
+										>
+											<ExternalLink className="h-3 w-3" />
+										</a>
+									</div>
+								</td>
+								<td className="py-4">
+									{affiliation.category ? (
+										<Badge variant="outline">{affiliation.category}</Badge>
+									) : (
+										<span className="text-muted-foreground">-</span>
+									)}
+								</td>
+								<td className="py-4">
+									{affiliation.commission || (
+										<span className="text-muted-foreground">-</span>
+									)}
+								</td>
+								<td className="py-4">
+									<div className="flex flex-wrap gap-1">
+										{affiliation.keywords?.slice(0, 3).map((keyword) => (
+											<Badge key={keyword} variant="secondary" className="text-xs">
+												{keyword}
+											</Badge>
+										))}
+										{affiliation.keywords && affiliation.keywords.length > 3 && (
+											<Badge variant="secondary" className="text-xs">
+												+{affiliation.keywords.length - 3}
+											</Badge>
+										)}
+										{!affiliation.keywords?.length && (
+											<span className="text-muted-foreground">-</span>
+										)}
+									</div>
+								</td>
+								<td className="py-4">
+									<Badge className={getStatusColor(affiliation.status)}>
+										{affiliation.status}
+									</Badge>
+								</td>
+								<td className="py-4">
+									{affiliation.expiresAt ? (
+										<span className="text-sm">
+											{new Date(affiliation.expiresAt).toLocaleDateString()}
+										</span>
+									) : (
+										<span className="text-muted-foreground">-</span>
+									)}
+								</td>
+								<td className="py-4 text-right">
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="sm">
+												<MoreHorizontal className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => onEdit(affiliation)}>
+												<Edit className="mr-2 h-4 w-4" />
+												Edit
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => onDelete(affiliation.id)}
+												className="text-red-600"
+											>
+												<Trash className="mr-2 h-4 w-4" />
+												Delete
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</>
 	);
 }
