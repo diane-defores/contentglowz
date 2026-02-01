@@ -31,13 +31,6 @@ export default async function DashboardPage({
 
 	return (
 		<div className="min-h-screen">
-			{/* Static content - should always show */}
-			<div className="border-b bg-background p-4">
-				<h1 className="text-2xl font-bold">SEO Dashboard</h1>
-				<p className="text-sm text-muted-foreground">Repository: {repoUrl}</p>
-			</div>
-
-			{/* Dynamic content with Suspense */}
 			<Suspense fallback={<SimpleLoading />}>
 				<DashboardClient repoUrl={repoUrl} />
 			</Suspense>
