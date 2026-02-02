@@ -30,7 +30,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/toast";
-import { type Project, useProjects } from "@/hooks/use-projects";
+import { type Project } from "@/hooks/use-projects";
+import { useProjectsContext } from "@/contexts/projects-context";
 
 export function SettingsProjectsTab() {
 	const {
@@ -39,7 +40,7 @@ export function SettingsProjectsTab() {
 		createProject,
 		updateProject,
 		deleteProject,
-	} = useProjects();
+	} = useProjectsContext();
 
 	const [showNewDialog, setShowNewDialog] = useState(false);
 	const [editingProject, setEditingProject] = useState<Project | null>(null);

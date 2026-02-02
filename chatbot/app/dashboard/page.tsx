@@ -15,7 +15,12 @@ async function DashboardClient({ repoUrl }: { repoUrl: string }) {
 	const { DashboardContent } = await import(
 		"@/components/dashboard/dashboard-content"
 	);
-	return <DashboardContent repoUrl={repoUrl} />;
+	const { ProjectsProvider } = await import("@/contexts/projects-context");
+	return (
+		<ProjectsProvider>
+			<DashboardContent repoUrl={repoUrl} />
+		</ProjectsProvider>
+	);
 }
 
 export default async function DashboardPage({

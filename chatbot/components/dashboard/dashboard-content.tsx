@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { analysisCache } from "@/lib/cache";
 import { seoApi } from "@/lib/seo-api-client";
-import { useProjects } from "@/hooks/use-projects";
+import { useProjectsContext } from "@/contexts/projects-context";
 import { ActivityTab } from "./activity-tab";
 import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
@@ -38,7 +38,7 @@ export function DashboardContent({
 	repoUrl,
 	authToken,
 }: DashboardContentProps) {
-	const { selectedProject } = useProjects();
+	const { selectedProject } = useProjectsContext();
 	const [summaryData, setSummaryData] = useState<{ repoName: string; repoUrl: string } | null>(null);
 	const [analysisResults, setAnalysisResults] = useState<Record<string, any>>(
 		{},
@@ -536,7 +536,7 @@ export function DashboardContent({
 
 					{/* Activity Tab */}
 					<TabsContent value="activity">
-						<ActivityTab />
+						<ActivityTab projectId={selectedProject?.id} />
 					</TabsContent>
 
 					{/* Uptime Tab */}

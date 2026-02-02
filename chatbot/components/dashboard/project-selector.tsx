@@ -35,7 +35,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/toast";
-import { type Project, useProjects } from "@/hooks/use-projects";
+import { type Project } from "@/hooks/use-projects";
+import { useProjectsContext } from "@/contexts/projects-context";
 
 interface ProjectSelectorProps {
 	onProjectChange?: (project: Project | null) => void;
@@ -49,7 +50,7 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 		createProject,
 		deleteProject,
 		selectProject,
-	} = useProjects();
+	} = useProjectsContext();
 
 	const [showNewDialog, setShowNewDialog] = useState(false);
 	const [creating, setCreating] = useState(false);
