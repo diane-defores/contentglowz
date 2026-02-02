@@ -30,7 +30,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.routers import mesh_router, research_router, health_router
+from api.routers import mesh_router, research_router, health_router, projects_router
 
 
 # ─────────────────────────────────────────────────
@@ -190,6 +190,7 @@ app.include_router(health_router)
 # Domain routers (with /api prefix)
 app.include_router(mesh_router)
 app.include_router(research_router)
+app.include_router(projects_router)
 
 
 # ─────────────────────────────────────────────────
@@ -210,6 +211,7 @@ if __name__ == "__main__":
     print("   Analyze:    POST http://localhost:8000/api/mesh/analyze")
     print("   Build:      POST http://localhost:8000/api/mesh/build")
     print("   WebSocket:  ws://localhost:8000/api/mesh/analyze-stream")
+    print("   Projects:   POST http://localhost:8000/api/projects/onboard")
     print("\n" + "="*60 + "\n")
     
     uvicorn.run(

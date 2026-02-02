@@ -11,6 +11,13 @@ import re
 from datetime import datetime
 from collections import defaultdict
 
+from api.models.project import (
+    Framework,
+    PackageManager,
+    TechStackDetection,
+    ContentDirectoryConfig,
+)
+
 
 class GitHubRepoAnalyzer:
     """
@@ -497,9 +504,253 @@ class GitHubRepoAnalyzer:
         
         print(f"✅ Coverage: {len(gaps['covered_topics'])}/{len(target_topics)} topics")
         print(f"⚠️ Missing: {len(gaps['missing_topics'])} topics")
-        
+
         return gaps
-    
+
+    def detect_package_manager(self, repo_path: Path) -> PackageManager:
+        """
+        Detect package manager from lock files.
+
+        Args:
+            repo_path: Path to cloned repository
+
+        Returns:
+            Detected PackageManager enum value
+        """
+        # Check for lock files in priority order
+        if (repo_path / "pnpm-lock.yaml").exists():
+            return PackageManager.PNPM
+        elif (repo_path / "yarn.lock").exists():
+            return PackageManager.YARN
+        elif (repo_path / "package-lock.json").exists():
+            return PackageManager.NPM
+        elif (repo_path / "requirements.txt").exists():
+            return PackageManager.PIP
+        elif (repo_path / "Pipfile.lock").exists():
+            return PackageManager.PIP
+
+        return PackageManager.UNKNOWN
+
+    def get_framework_version(
+        self,
+        repo_path: Path,
+        framework: Framework
+    ) -> Optional[str]:
+        """
+        Extract framework version from package.json.
+
+        Args:
+            repo_path: Path to repository
+            framework: Detected framework
+
+        Returns:
+            Version string if found
+        """
+        package_json_path = repo_path / "package.json"
+        if not package_json_path.exists():
+            return None
+
+        try:
+            with open(package_json_path, 'r', encoding='utf-8') as f:
+                pkg = json.load(f)
+
+            deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+
+            # Map framework to package name
+            framework_packages = {
+                Framework.ASTRO: "astro",
+                Framework.NEXTJS: "next",
+                Framework.GATSBY: "gatsby",
+                Framework.NUXT: "nuxt",
+                Framework.HUGO: None,  # Go-based, no package.json
+                Framework.JEKYLL: None,  # Ruby-based, no package.json
+            }
+
+            pkg_name = framework_packages.get(framework)
+            if pkg_name and pkg_name in deps:
+                version = deps[pkg_name]
+                # Clean up version string (remove ^, ~, etc.)
+                return version.lstrip("^~>=<")
+
+        except (json.JSONDecodeError, IOError):
+            pass
+
+        return None
+
+    def detect_framework(self, repo_path: Path) -> Tuple[Framework, float]:
+        """
+        Detect web framework with confidence score.
+
+        Args:
+            repo_path: Path to repository
+
+        Returns:
+            Tuple of (Framework, confidence)
+        """
+        # Check for framework config files (high confidence)
+        if (repo_path / "astro.config.mjs").exists() or (repo_path / "astro.config.js").exists():
+            return (Framework.ASTRO, 0.95)
+        if (repo_path / "astro.config.ts").exists():
+            return (Framework.ASTRO, 0.95)
+        if (repo_path / "next.config.js").exists() or (repo_path / "next.config.mjs").exists():
+            return (Framework.NEXTJS, 0.95)
+        if (repo_path / "next.config.ts").exists():
+            return (Framework.NEXTJS, 0.95)
+        if (repo_path / "gatsby-config.js").exists() or (repo_path / "gatsby-config.ts").exists():
+            return (Framework.GATSBY, 0.95)
+        if (repo_path / "nuxt.config.js").exists() or (repo_path / "nuxt.config.ts").exists():
+            return (Framework.NUXT, 0.95)
+        if (repo_path / "hugo.toml").exists() or (repo_path / "hugo.yaml").exists():
+            return (Framework.HUGO, 0.95)
+        if (repo_path / "config.toml").exists() and (repo_path / "content").exists():
+            # Hugo commonly uses config.toml + content dir
+            return (Framework.HUGO, 0.7)
+        if (repo_path / "_config.yml").exists():
+            return (Framework.JEKYLL, 0.9)
+
+        # Check package.json dependencies (medium confidence)
+        package_json_path = repo_path / "package.json"
+        if package_json_path.exists():
+            try:
+                with open(package_json_path, 'r', encoding='utf-8') as f:
+                    pkg = json.load(f)
+                deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+
+                if "astro" in deps:
+                    return (Framework.ASTRO, 0.85)
+                if "next" in deps:
+                    return (Framework.NEXTJS, 0.85)
+                if "gatsby" in deps:
+                    return (Framework.GATSBY, 0.85)
+                if "nuxt" in deps:
+                    return (Framework.NUXT, 0.85)
+            except (json.JSONDecodeError, IOError):
+                pass
+
+        return (Framework.UNKNOWN, 0.0)
+
+    def suggest_content_directory(
+        self,
+        repo_path: Path,
+        framework: Framework
+    ) -> Optional[str]:
+        """
+        Suggest the best content directory based on framework conventions.
+
+        Args:
+            repo_path: Path to repository
+            framework: Detected framework
+
+        Returns:
+            Suggested content directory path
+        """
+        # Framework-specific conventions
+        framework_conventions = {
+            Framework.ASTRO: ["src/content", "src/pages", "content"],
+            Framework.NEXTJS: ["content", "posts", "pages", "app"],
+            Framework.GATSBY: ["content", "src/pages", "blog"],
+            Framework.NUXT: ["content", "pages"],
+            Framework.HUGO: ["content"],
+            Framework.JEKYLL: ["_posts", "_pages", "docs"],
+        }
+
+        # Check framework-specific dirs first
+        preferred_dirs = framework_conventions.get(framework, [])
+        for dir_name in preferred_dirs:
+            dir_path = repo_path / dir_name
+            if dir_path.exists() and dir_path.is_dir():
+                return dir_name
+
+        # Fall back to generic content directories
+        generic_dirs = ["src/content", "content", "blog", "posts", "articles", "docs", "pages"]
+        for dir_name in generic_dirs:
+            dir_path = repo_path / dir_name
+            if dir_path.exists() and dir_path.is_dir():
+                return dir_name
+
+        return None
+
+    def analyze_for_onboarding(
+        self,
+        repo_url: str,
+        force_reclone: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Comprehensive analysis for project onboarding.
+
+        Clones the repository and performs detection of:
+        - Framework and version
+        - Package manager
+        - Content directories
+        - Content file counts
+
+        Args:
+            repo_url: GitHub repository URL
+            force_reclone: Force re-clone even if exists
+
+        Returns:
+            Dictionary with all detection results
+        """
+        print(f"\n{'='*60}")
+        print(f"🔍 ONBOARDING ANALYSIS")
+        print(f"{'='*60}\n")
+        print(f"Repository: {repo_url}")
+
+        # Clone or update repository
+        repo_path = self.clone_or_update_repo(repo_url, force_update=force_reclone)
+
+        # Detect framework
+        framework, confidence = self.detect_framework(repo_path)
+        framework_version = self.get_framework_version(repo_path, framework)
+
+        # Detect package manager
+        package_manager = self.detect_package_manager(repo_path)
+
+        # Build tech stack detection
+        tech_stack = TechStackDetection(
+            framework=framework,
+            framework_version=framework_version,
+            package_manager=package_manager,
+            confidence=confidence
+        )
+
+        # Find content directories
+        structure = self.analyze_site_structure(repo_path)
+        content_directories = structure.get("content_directories", [])
+
+        # Suggest best content directory
+        suggested_content_dir = self.suggest_content_directory(repo_path, framework)
+
+        # Count content files
+        content_files = self.find_all_content_files(repo_path)
+        total_content_files = len(content_files)
+
+        # Check if framework config exists
+        config_files = structure.get("config_files", [])
+        framework_config_found = len(config_files) > 0
+
+        result = {
+            "repo_path": str(repo_path),
+            "tech_stack": tech_stack,
+            "content_directories": content_directories,
+            "suggested_content_dir": suggested_content_dir,
+            "total_content_files": total_content_files,
+            "framework_config_found": framework_config_found,
+            "analyzed_at": datetime.now().isoformat()
+        }
+
+        print(f"\n{'='*60}")
+        print(f"✅ ONBOARDING ANALYSIS COMPLETE")
+        print(f"{'='*60}")
+        print(f"Framework: {framework.value} (v{framework_version or 'unknown'})")
+        print(f"Package Manager: {package_manager.value}")
+        print(f"Content Directories: {', '.join(content_directories) or 'None found'}")
+        print(f"Suggested: {suggested_content_dir or 'None'}")
+        print(f"Content Files: {total_content_files}")
+        print(f"{'='*60}\n")
+
+        return result
+
     def generate_analysis_report(
         self,
         repo_url: str,
