@@ -32,6 +32,9 @@ python-louvain>=0.16  # Community detection for topical mesh analysis
 jinja2>=3.1.0
 sendgrid>=6.11.0
 
+# Composio - AI Agent Integration (Gmail, Slack, etc.)
+composio-crewai>=0.2.0
+
 # Utilities
 pytest
 pytest-asyncio

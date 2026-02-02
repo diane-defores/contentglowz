@@ -26,9 +26,10 @@ from agents.images.schemas.image_schemas import (
     ResponsiveImageSet,
     ArticleWithImages,
     ImageGenerationResult,
-    ImageType
+    ImageType,
+    OptimizerImageSet
 )
-from agents.images.config.image_config import ImageConfig
+from agents.images.config.image_config import ImageConfig, BUNNY_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,16 @@ class ImageRobotCrew:
         self.data_dir = Path(project_path) / "data" / "images"
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-        logger.info("Image Robot Crew initialized")
+        # Optimizer configuration
+        self._optimizer_config = BUNNY_CONFIG.get("optimizer", {})
+
+        optimizer_status = "enabled" if self._optimizer_config.get("enabled") else "disabled"
+        logger.info(f"Image Robot Crew initialized (Bunny Optimizer: {optimizer_status})")
+
+    @property
+    def optimizer_enabled(self) -> bool:
+        """Check if Bunny Optimizer is enabled."""
+        return self._optimizer_config.get("enabled", False)
 
     def process(
         self,
@@ -173,14 +183,27 @@ class ImageRobotCrew:
             image_results = []
             for i, (image_set, upload_res) in enumerate(zip(image_sets, upload_result.get("results", []))):
                 if upload_res.get("success"):
+                    # Handle both optimizer (responsive_urls with int keys) and legacy (cdn_urls with str keys)
+                    responsive_urls = upload_res.get("responsive_urls", {})
+                    cdn_urls = upload_res.get("cdn_urls", {})
+
+                    # Convert integer width keys to string for consistent handling
+                    if responsive_urls:
+                        normalized_urls = {str(k): v for k, v in responsive_urls.items()}
+                    else:
+                        normalized_urls = cdn_urls
+
+                    # Get primary URL - optimizer uses 'primary_url', legacy uses 'primary_cdn_url'
+                    primary_url = upload_res.get("primary_url") or upload_res.get("primary_cdn_url")
+
                     img_result = ImageGenerationResult(
                         success=True,
                         image_type=image_set.original.image_type,
                         generated=image_set.original,
                         optimized=image_set.variants,
                         cdn_uploads=upload_res.get("upload_results", []),
-                        primary_cdn_url=upload_res.get("primary_cdn_url"),
-                        responsive_urls=upload_res.get("cdn_urls", {}),
+                        primary_cdn_url=primary_url,
+                        responsive_urls=normalized_urls,
                         alt_text=image_set.alt_text,
                         file_name=image_set.file_name
                     )
@@ -214,9 +237,9 @@ class ImageRobotCrew:
                     all_cdn_urls.append(result.primary_cdn_url)
                     all_cdn_urls.extend(result.responsive_urls.values())
 
-            # Calculate total CDN size
+            # Calculate total CDN size (handle both optimizer and legacy modes)
             total_cdn_size_kb = sum(
-                upload_res.get("total_size_kb", 0)
+                upload_res.get("total_size_kb", upload_res.get("file_size_kb", 0))
                 for upload_res in upload_result.get("results", [])
                 if upload_res.get("success")
             )

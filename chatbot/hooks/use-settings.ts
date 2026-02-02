@@ -15,6 +15,9 @@ export interface UserSettings {
 		exa?: string | null;
 		firecrawl?: string | null;
 		serper?: string | null;
+		bunnyStorage?: string | null;
+		bunnyCdn?: string | null;
+		bunnyCdnHostname?: string | null;
 	} | null;
 	defaultProjectId: string | null;
 	dashboardLayout: {
@@ -89,7 +92,7 @@ export function useSettings() {
 	);
 
 	const updateApiKey = useCallback(
-		async (provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper", apiKey: string | null) => {
+		async (provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
 			setError(null);
 			setSaving(true);
 

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useRobots, type Robot } from "@/hooks/use-robots";
 import { SEODeploymentPanel } from "./seo-deployment-panel";
+import { ImageRobotPanel } from "./image-robot-panel";
 
 function getStatusColor(status: string) {
 	switch (status) {
@@ -145,6 +146,8 @@ function RobotCard({ robot, isRunning, onTrigger, onStop }: RobotCardProps) {
 					<div className="border-t bg-muted/50 p-6">
 						{robot.id === "seo" ? (
 							<SEODeploymentPanel />
+						) : robot.id === "images" ? (
+							<ImageRobotPanel />
 						) : (
 							<>
 								<h4 className="font-medium mb-4">Agents</h4>

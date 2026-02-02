@@ -62,7 +62,56 @@ Discover how to build production-ready AI agents and multi-agent systems. Our co
 
 ---
 
-## 🏗️ Multi-Agent Architecture
+## 🤖 Complete Robot Systems
+
+Our platform includes five specialized robot systems, each with dedicated AI agents:
+
+### [SEO Robot: 6-Agent Content Optimization](/ai-agents/)
+
+The flagship multi-agent system with Research Analyst, Content Strategist, Marketing Strategist, Copywriter, Technical SEO, and Editor working in hierarchical collaboration.
+
+### [Image Robot: Visual Content Generation](./image-robot.md)
+
+4-agent system that creates professional blog images, social cards, and responsive variants—automatically optimized and delivered via global CDN. Turns 90 minutes of design work into 60 seconds.
+
+### [Scheduler Robot: Publishing & Site Monitoring](./scheduler-robot.md)
+
+4-agent system for automated publishing, Google indexing, site health monitoring, and infrastructure tracking. Handles everything after content creation.
+
+### [Newsletter Robot: AI-Powered Curation](./newsletter-robot.md)
+
+Single structured agent that automatically discovers, filters, and compiles relevant content into professional newsletters with strict quality validation.
+
+### [Article Generator: Competitive Analysis to Content](./article-generator.md)
+
+Specialized agent that crawls competitor sites, identifies content gaps, and generates original SEO-optimized articles to fill them.
+
+---
+
+## 🏗️ The 6-Agent SEO System
+
+Our SEO Robot uses six specialized AI agents working together in a hierarchical workflow:
+
+| Agent | Role | Speed | What It Does |
+|-------|------|-------|--------------|
+| **Research Analyst** | Intelligence | Fast | SERP analysis, competitor research, keyword gaps |
+| **Content Strategist** | Planning | Balanced | Topic clusters, topical mesh, content architecture |
+| **Marketing Strategist** | Priorities | Balanced | ROI analysis, business alignment, prioritization |
+| **Copywriter** | Creation | Balanced | SEO-optimized content, natural keyword integration |
+| **Technical SEO** | Optimization | Fast | Schema markup, on-page optimization, structured data |
+| **Editor** | Quality | Premium | Final QA, consistency, formatting, E-E-A-T validation |
+
+> **Speed Tiers Explained**
+>
+> - **Fast** agents use lightweight models for data-heavy tasks (analysis, technical checks)
+> - **Balanced** agents use mid-tier models for reasoning tasks (strategy, writing)
+> - **Premium** agents use top-tier models for nuanced tasks (final editing, quality assessment)
+>
+> This tiered approach optimizes cost while maintaining quality where it matters most.
+
+---
+
+## 🔄 Multi-Agent Architecture
 
 ### Agent Orchestration Patterns
 

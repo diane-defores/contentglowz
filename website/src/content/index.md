@@ -19,15 +19,18 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 ### By Your Role
 
 **👨‍💻 Developers & Technical Teams:**
+- [Platform Documentation](/platform/) - Connect your website, API reference
 - [Technical Optimization Hub](/technical-optimization/) - Dependency management, build optimization
 - [AI Agents Development Hub](/ai-agents/) - Multi-agent systems, automation
 - [Technical Tutorials](/tutorials/) - FastAPI, deployment, security
 
 **🚀 Startup Founders & Entrepreneurs:**
+- [Platform Documentation](/platform/) - Get started with SEO Robots
 - [Startup Journey Chronicles](/startup-journey/) - Revenue growth, strategic decisions
 - [Technical Optimization Hub](/technical-optimization/) - Cost optimization strategies
 
 **📈 Marketers & SEO Professionals:**
+- [Platform Documentation](/platform/) - Connect your website, run analysis
 - [SEO Strategy Hub](/seo-strategy/) - Modern SEO techniques, content strategy
 - [AI Agents Development Hub](/ai-agents/) - Marketing automation tools
 
@@ -83,6 +86,23 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 ---
 
 ## 🗂️ Content Categories
+
+### 🚀 Platform Documentation
+
+*Focus: Get started with the SEO Robots platform - connect your website, run analysis, automate SEO*
+
+**Key Guides:**
+- [Connect Your Website](/platform/connect-your-website) - Link your GitHub repo in 5 minutes
+- [API Reference](/platform/api-reference) - Complete endpoint documentation
+- [Understanding Your Analysis](/platform/understanding-analysis) - What the scores mean
+
+**Perfect for:** Anyone using the SEO Robots platform
+
+**Quick Start:**
+1. Add your GitHub URL
+2. Platform auto-detects your framework
+3. Confirm settings
+4. Start analyzing!
 
 ### 🛠️ Technical Optimization
 

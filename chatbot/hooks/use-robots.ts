@@ -62,6 +62,19 @@ const defaultRobots: Robot[] = [
 		metrics: { totalRuns: 0, successRate: 100, avgDuration: 0 },
 	},
 	{
+		id: "images",
+		name: "Image Robot",
+		description: "Multi-agent image generation and CDN deployment with Bunny Optimizer",
+		status: "operational",
+		agents: [
+			{ name: "Image Strategist", status: "idle", description: "Analyzes content and plans visual strategy" },
+			{ name: "Image Generator", status: "idle", description: "Generates images via Robolly API" },
+			{ name: "Image Optimizer", status: "idle", description: "Prepares images for CDN optimization" },
+			{ name: "CDN Manager", status: "idle", description: "Uploads to Bunny.net with Optimizer URLs" },
+		],
+		metrics: { totalRuns: 0, successRate: 100, avgDuration: 0 },
+	},
+	{
 		id: "newsletter",
 		name: "Newsletter Robot",
 		description: "PydanticAI-based automated newsletter generation with Exa AI",
@@ -166,6 +179,9 @@ export function useRobots() {
 				switch (robotId) {
 					case "seo":
 						endpoint = "/api/seo/api/mesh/analyze";
+						break;
+					case "images":
+						endpoint = "/api/seo/api/images/optimizer/status";
 						break;
 					case "scheduler":
 						endpoint = "/api/seo/api/scheduler/run";

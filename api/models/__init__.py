@@ -32,6 +32,15 @@ from .project import (
     ProjectResponse,
     ProjectListResponse,
 )
+from .images import (
+    GenerateImagesRequest,
+    GenerateImagesResponse,
+    GeneratedImageResponse,
+    UploadImageRequest,
+    UploadImageResponse,
+    OptimizerStatusResponse,
+    ImageRobotHistoryResponse,
+)
 
 __all__ = [
     # Mesh models
@@ -63,4 +72,12 @@ __all__ = [
     "ProjectDetectionResult",
     "ProjectResponse",
     "ProjectListResponse",
+    # Image models
+    "GenerateImagesRequest",
+    "GenerateImagesResponse",
+    "GeneratedImageResponse",
+    "UploadImageRequest",
+    "UploadImageResponse",
+    "OptimizerStatusResponse",
+    "ImageRobotHistoryResponse",
 ]

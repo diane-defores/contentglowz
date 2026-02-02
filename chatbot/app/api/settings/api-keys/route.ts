@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { updateUserApiKey } from "@/lib/db/queries";
 
-const VALID_PROVIDERS = ["openai", "anthropic", "exa", "firecrawl", "serper"] as const;
+const VALID_PROVIDERS = ["openai", "anthropic", "exa", "firecrawl", "serper", "bunnyStorage", "bunnyCdn", "bunnyCdnHostname"] as const;
 type Provider = (typeof VALID_PROVIDERS)[number];
 
 export async function PUT(request: NextRequest) {
@@ -50,6 +50,9 @@ export async function PUT(request: NextRequest) {
 						exa: updated.apiKeys.exa ? "••••••••" : null,
 						firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 						serper: updated.apiKeys.serper ? "••••••••" : null,
+						bunnyStorage: updated.apiKeys.bunnyStorage ? "••••••••" : null,
+						bunnyCdn: updated.apiKeys.bunnyCdn ? "••••••••" : null,
+						bunnyCdnHostname: updated.apiKeys.bunnyCdnHostname ? "••••••••" : null,
 					}
 				: null,
 		};

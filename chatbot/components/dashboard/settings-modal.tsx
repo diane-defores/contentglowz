@@ -31,11 +31,14 @@ import { useSettings } from "@/hooks/use-settings";
 import { SettingsProjectsTab } from "./settings-projects-tab";
 
 const API_KEY_PROVIDERS = [
-	{ id: "openai", name: "OpenAI", placeholder: "sk-..." },
-	{ id: "anthropic", name: "Anthropic", placeholder: "sk-ant-..." },
-	{ id: "exa", name: "Exa AI", placeholder: "exa-..." },
-	{ id: "firecrawl", name: "Firecrawl", placeholder: "fc-..." },
-	{ id: "serper", name: "Serper", placeholder: "serper-..." },
+	{ id: "openai", name: "OpenAI", placeholder: "sk-...", section: "ai" },
+	{ id: "anthropic", name: "Anthropic", placeholder: "sk-ant-...", section: "ai" },
+	{ id: "exa", name: "Exa AI", placeholder: "exa-...", section: "ai" },
+	{ id: "firecrawl", name: "Firecrawl", placeholder: "fc-...", section: "ai" },
+	{ id: "serper", name: "Serper", placeholder: "serper-...", section: "ai" },
+	{ id: "bunnyStorage", name: "Bunny Storage API Key", placeholder: "storage-api-key...", section: "bunny" },
+	{ id: "bunnyCdn", name: "Bunny CDN API Key", placeholder: "cdn-api-key...", section: "bunny" },
+	{ id: "bunnyCdnHostname", name: "Bunny CDN Hostname", placeholder: "my-zone.b-cdn.net", section: "bunny" },
 ] as const;
 
 export function SettingsModal() {
@@ -188,76 +191,158 @@ export function SettingsModal() {
 								Keys are stored securely and never exposed.
 							</p>
 
-							{API_KEY_PROVIDERS.map((provider) => (
-								<div key={provider.id} className="space-y-2">
-									<Label htmlFor={`key-${provider.id}`}>{provider.name}</Label>
-									<div className="flex gap-2">
-										{hasApiKey(provider.id) ? (
-											<>
-												<Input
-													id={`key-${provider.id}`}
-													type="text"
-													value="••••••••••••••••"
-													disabled
-													className="flex-1"
-												/>
-												<Button
-													variant="destructive"
-													size="sm"
-													onClick={() => handleRemoveApiKey(provider.id)}
-													disabled={savingKey === provider.id}
-												>
-													{savingKey === provider.id ? (
-														<Loader2 className="h-4 w-4 animate-spin" />
-													) : (
-														"Remove"
-													)}
-												</Button>
-											</>
-										) : (
-											<>
-												<div className="relative flex-1">
+							{/* AI Provider Keys */}
+							<div className="space-y-4">
+								<h4 className="text-sm font-medium text-foreground">AI Providers</h4>
+								{API_KEY_PROVIDERS.filter((p) => p.section === "ai").map((provider) => (
+									<div key={provider.id} className="space-y-2">
+										<Label htmlFor={`key-${provider.id}`}>{provider.name}</Label>
+										<div className="flex gap-2">
+											{hasApiKey(provider.id) ? (
+												<>
 													<Input
 														id={`key-${provider.id}`}
-														type={showKeys[provider.id] ? "text" : "password"}
-														placeholder={provider.placeholder}
-														value={keyInputs[provider.id] || ""}
-														onChange={(e) =>
-															setKeyInputs((prev) => ({
-																...prev,
-																[provider.id]: e.target.value,
-															}))
-														}
-														className="pr-10"
+														type="text"
+														value="••••••••••••••••"
+														disabled
+														className="flex-1"
 													/>
-													<button
-														type="button"
-														onClick={() => toggleShowKey(provider.id)}
-														className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() => handleRemoveApiKey(provider.id)}
+														disabled={savingKey === provider.id}
 													>
-														{showKeys[provider.id] ? (
-															<EyeOff className="h-4 w-4" />
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
 														) : (
-															<Eye className="h-4 w-4" />
+															"Remove"
 														)}
-													</button>
-												</div>
-												<Button
-													size="sm"
-													onClick={() => handleSaveApiKey(provider.id)}
-													disabled={!keyInputs[provider.id] || savingKey === provider.id}
-												>
-													{savingKey === provider.id ? (
-														<Loader2 className="h-4 w-4 animate-spin" />
-													) : (
-														<Save className="h-4 w-4" />
-													)}
-												</Button>
-											</>
-										)}
+													</Button>
+												</>
+											) : (
+												<>
+													<div className="relative flex-1">
+														<Input
+															id={`key-${provider.id}`}
+															type={showKeys[provider.id] ? "text" : "password"}
+															placeholder={provider.placeholder}
+															value={keyInputs[provider.id] || ""}
+															onChange={(e) =>
+																setKeyInputs((prev) => ({
+																	...prev,
+																	[provider.id]: e.target.value,
+																}))
+															}
+															className="pr-10"
+														/>
+														<button
+															type="button"
+															onClick={() => toggleShowKey(provider.id)}
+															className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+														>
+															{showKeys[provider.id] ? (
+																<EyeOff className="h-4 w-4" />
+															) : (
+																<Eye className="h-4 w-4" />
+															)}
+														</button>
+													</div>
+													<Button
+														size="sm"
+														onClick={() => handleSaveApiKey(provider.id)}
+														disabled={!keyInputs[provider.id] || savingKey === provider.id}
+													>
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Save className="h-4 w-4" />
+														)}
+													</Button>
+												</>
+											)}
+										</div>
 									</div>
-								</div>
-							))}
+								))}
+							</div>
+
+							{/* Bunny CDN Keys */}
+							<div className="space-y-4 border-t pt-4">
+								<h4 className="text-sm font-medium text-foreground">Bunny CDN (Image Robot)</h4>
+								<p className="text-xs text-muted-foreground">
+									Configure Bunny.net for image optimization and CDN delivery.
+								</p>
+								{API_KEY_PROVIDERS.filter((p) => p.section === "bunny").map((provider) => (
+									<div key={provider.id} className="space-y-2">
+										<Label htmlFor={`key-${provider.id}`}>{provider.name}</Label>
+										<div className="flex gap-2">
+											{hasApiKey(provider.id) ? (
+												<>
+													<Input
+														id={`key-${provider.id}`}
+														type="text"
+														value="••••••••••••••••"
+														disabled
+														className="flex-1"
+													/>
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() => handleRemoveApiKey(provider.id)}
+														disabled={savingKey === provider.id}
+													>
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															"Remove"
+														)}
+													</Button>
+												</>
+											) : (
+												<>
+													<div className="relative flex-1">
+														<Input
+															id={`key-${provider.id}`}
+															type={showKeys[provider.id] ? "text" : "password"}
+															placeholder={provider.placeholder}
+															value={keyInputs[provider.id] || ""}
+															onChange={(e) =>
+																setKeyInputs((prev) => ({
+																	...prev,
+																	[provider.id]: e.target.value,
+																}))
+															}
+															className="pr-10"
+														/>
+														<button
+															type="button"
+															onClick={() => toggleShowKey(provider.id)}
+															className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+														>
+															{showKeys[provider.id] ? (
+																<EyeOff className="h-4 w-4" />
+															) : (
+																<Eye className="h-4 w-4" />
+															)}
+														</button>
+													</div>
+													<Button
+														size="sm"
+														onClick={() => handleSaveApiKey(provider.id)}
+														disabled={!keyInputs[provider.id] || savingKey === provider.id}
+													>
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Save className="h-4 w-4" />
+														)}
+													</Button>
+												</>
+											)}
+										</div>
+									</div>
+								))}
+							</div>
 						</TabsContent>
 
 						<TabsContent value="projects" className="pt-4">

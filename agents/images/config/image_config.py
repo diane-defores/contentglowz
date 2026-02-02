@@ -111,11 +111,26 @@ BUNNY_CONFIG = {
         "base_url": "https://api.bunny.net",
     },
     "optimizer": {
+        # Core settings
         "enabled": True,
+        "default_quality": 85,
+
+        # Format auto-detection
         "auto_webp": True,
         "auto_avif": True,
-        "quality": 85,
+        "auto_format": True,  # Let Bunny pick best format based on browser
+
+        # Responsive image widths for srcset generation
+        "responsive_widths": [480, 800, 1200, 2400],
+
+        # JPEG settings
         "progressive_jpeg": True,
+
+        # Cache settings for optimized images
+        "cache_enabled": True,
+
+        # Fallback to local PIL processing if optimizer unavailable
+        "fallback_to_local": True,
     },
     "cache": {
         "max_age_seconds": 31536000,  # 1 year

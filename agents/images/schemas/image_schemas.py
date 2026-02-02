@@ -23,6 +23,135 @@ class ImageFormat(str, Enum):
     PNG = "png"
     WEBP = "webp"
     AVIF = "avif"
+    AUTO = "auto"  # Let CDN optimizer choose best format
+
+
+class CropMode(str, Enum):
+    """Bunny Optimizer crop modes"""
+    FIT = "fit"
+    FILL = "fill"
+    SCALE = "scale"
+    CROP = "crop"
+    PAD = "pad"
+
+
+class CropGravity(str, Enum):
+    """Bunny Optimizer crop gravity options"""
+    CENTER = "center"
+    NORTH = "north"
+    SOUTH = "south"
+    EAST = "east"
+    WEST = "west"
+    NORTHEAST = "northeast"
+    NORTHWEST = "northwest"
+    SOUTHEAST = "southeast"
+    SOUTHWEST = "southwest"
+    SMART = "smart"  # AI-powered smart cropping
+
+
+class OptimizerURL(BaseModel):
+    """
+    Bunny Optimizer URL configuration.
+
+    Represents a dynamically transformed image URL using Bunny CDN's
+    on-the-fly optimization. Instead of generating and uploading multiple
+    variants, a single original is uploaded and transformed via URL params.
+    """
+    base_url: str = Field(..., description="Original CDN URL of the uploaded image")
+    width: Optional[int] = Field(None, ge=1, le=3000, description="Target width in pixels")
+    height: Optional[int] = Field(None, ge=1, le=3000, description="Target height in pixels")
+    quality: int = Field(default=85, ge=1, le=100, description="Compression quality")
+    format: Optional[str] = Field(None, description="Output format (webp, avif, jpeg, auto)")
+    aspect_ratio: Optional[str] = Field(None, description="Force aspect ratio (e.g., 16:9)")
+    crop: Optional[str] = Field(None, description="Crop mode (fit, fill, scale, crop, pad)")
+    crop_gravity: Optional[str] = Field(None, description="Crop gravity (center, smart, etc.)")
+
+    @property
+    def url(self) -> str:
+        """Build the complete optimizer URL with query parameters."""
+        params = {}
+        if self.width:
+            params["width"] = self.width
+        if self.height:
+            params["height"] = self.height
+        if self.quality != 85:  # Only add if non-default
+            params["quality"] = self.quality
+        if self.format:
+            params["format"] = self.format
+        if self.aspect_ratio:
+            params["aspect_ratio"] = self.aspect_ratio
+        if self.crop:
+            params["crop"] = self.crop
+        if self.crop_gravity:
+            params["crop_gravity"] = self.crop_gravity
+
+        if not params:
+            return self.base_url
+
+        from urllib.parse import urlencode
+        return f"{self.base_url}?{urlencode(params)}"
+
+    @property
+    def descriptor(self) -> str:
+        """Get srcset width descriptor (e.g., '800w')."""
+        if self.width:
+            return f"{self.width}w"
+        return ""
+
+    class Config:
+        use_enum_values = True
+
+
+class OptimizerImageSet(BaseModel):
+    """
+    Complete set of optimizer URLs for responsive images.
+
+    This replaces the need to upload multiple pre-generated variants.
+    All transformations happen on-the-fly via Bunny Optimizer.
+    """
+    original_url: str = Field(..., description="CDN URL of the uploaded original image")
+    variants: List[OptimizerURL] = Field(default_factory=list, description="Optimizer URL configs for each size")
+
+    # HTML attributes (pre-computed for convenience)
+    srcset: str = Field(default="", description="HTML srcset attribute value")
+    sizes: str = Field(default="", description="HTML sizes attribute value")
+
+    # SEO metadata
+    alt_text: str = Field(default="", description="Image alt text")
+    file_name: str = Field(default="", description="SEO-friendly filename")
+
+    # Original file info (from upload)
+    original_size_bytes: Optional[int] = Field(None, description="Size of uploaded original")
+    original_format: Optional[str] = Field(None, description="Format of uploaded original")
+
+    @property
+    def primary_url(self) -> str:
+        """Get the primary (largest) variant URL."""
+        if not self.variants:
+            return self.original_url
+        # Return variant with largest width, or first if no width specified
+        largest = max(self.variants, key=lambda v: v.width or 0)
+        return largest.url
+
+    @property
+    def thumbnail_url(self) -> str:
+        """Get the smallest variant URL for thumbnails."""
+        if not self.variants:
+            return self.original_url
+        smallest = min(self.variants, key=lambda v: v.width or float('inf'))
+        return smallest.url
+
+    def get_url_for_width(self, target_width: int) -> str:
+        """Get the closest variant URL for a target width."""
+        if not self.variants:
+            return self.original_url
+
+        # Find closest width
+        closest = min(
+            self.variants,
+            key=lambda v: abs((v.width or 0) - target_width)
+        )
+        return closest.url
 
 
 class ImageBrief(BaseModel):
@@ -125,7 +254,7 @@ class OptimizedImage(BaseModel):
 class ResponsiveImageSet(BaseModel):
     """Complete set of responsive images for one source"""
     original: GeneratedImage = Field(..., description="Original generated image")
-    variants: List[OptimizedImage] = Field(default_factory=list, description="Optimized variants")
+    variants: List[OptimizedImage] = Field(default_factory=list, description="Optimized variants (local files)")
 
     # HTML attributes
     srcset: str = Field(default="", description="HTML srcset attribute")
@@ -137,6 +266,29 @@ class ResponsiveImageSet(BaseModel):
 
     # Placement
     placement_markdown: Optional[str] = Field(None, description="Markdown position marker")
+
+    # Bunny Optimizer support
+    optimizer_enabled: bool = Field(default=False, description="Whether using Bunny Optimizer URLs")
+    optimizer_urls: Optional[OptimizerImageSet] = Field(None, description="Optimizer URL set if using CDN optimization")
+
+    @property
+    def uses_optimizer(self) -> bool:
+        """Check if this set uses Bunny Optimizer instead of local variants."""
+        return self.optimizer_enabled and self.optimizer_urls is not None
+
+    @property
+    def effective_srcset(self) -> str:
+        """Get srcset from optimizer if available, otherwise local."""
+        if self.uses_optimizer and self.optimizer_urls:
+            return self.optimizer_urls.srcset
+        return self.srcset
+
+    @property
+    def effective_sizes(self) -> str:
+        """Get sizes from optimizer if available, otherwise local."""
+        if self.uses_optimizer and self.optimizer_urls:
+            return self.optimizer_urls.sizes
+        return self.sizes
 
 
 class CDNUploadResult(BaseModel):

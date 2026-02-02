@@ -212,6 +212,89 @@ optimized = crew.optimize_article(
 - **Short-form content** - Under 2,000 words (overkill for STORM)
 - **Creative writing** - Fiction, storytelling (STORM is research-focused)
 
+---
+
+## Content Priority Matrix: When STORM Pays Off
+
+Not every piece of content needs STORM's full research power. Here's how we decide:
+
+| Content Type | Priority Score | STORM Level | Target Words | Citations |
+|--------------|----------------|-------------|--------------|-----------|
+| **Pillar Articles** | 80+ | Full research | 7,500+ | 15+ sources |
+| **Cluster Content** | 60-79 | Outline only | 2,500 | 5+ sources |
+| **Supporting Pages** | Below 60 | Not needed | 1,200 | Optional |
+
+> **How Priority Score Works**
+>
+> We calculate priority based on four factors:
+> - **Search volume** - How many people search for this topic
+> - **Keyword difficulty** - How hard to rank for
+> - **Business value** - Potential for conversions
+> - **Topical authority** - How central to your content mesh
+>
+> High scores (80+) justify STORM's full power. Lower scores get faster, lighter content.
+
+---
+
+## Integration with SEO Agents
+
+STORM doesn't work alone—it's enhanced by our SEO agent workflow:
+
+### Before STORM: Research Phase
+The **Research Analyst** gathers competitive intelligence:
+- What are competitors ranking for?
+- What gaps exist in current coverage?
+- What questions are people asking?
+
+This context feeds into STORM's research.
+
+### During STORM: Outline Enhancement
+The **Content Strategist** optimizes STORM's outline:
+- Adds keyword targets to headings
+- Plans internal link placements
+- Inserts answer blocks for AI search (GEO)
+
+### After STORM: SEO Optimization
+The **Technical SEO Specialist** enhances the output:
+- Adds schema markup using STORM's citations
+- Optimizes for Core Web Vitals
+- Extracts entities for structured data
+- Suggests video/image placements
+
+### Final Check: Quality Assurance
+The **Editor Agent** validates everything:
+- Citation accuracy
+- E-E-A-T signals present
+- Internal linking implemented
+- Answer blocks properly formatted
+
+---
+
+## GEO Optimization: Ready for AI Search
+
+STORM articles are automatically optimized for **Generative Engine Optimization (GEO)**—the new SEO for AI search engines like ChatGPT, Perplexity, and Google's AI Overviews.
+
+> **What's GEO?**
+>
+> When someone asks an AI assistant a question, the AI pulls answers from web content. GEO ensures your content is the one that gets cited.
+
+### How STORM Enables GEO
+
+| GEO Requirement | How STORM Delivers |
+|-----------------|-------------------|
+| **Direct answers** | Multi-perspective research provides clear, factual answers |
+| **Citations** | Automatic source attribution builds trust |
+| **Comprehensive coverage** | 7,500+ words covers questions thoroughly |
+| **Structured format** | Clear headings make content easy to extract |
+
+### Answer Blocks
+We add "answer blocks" at the start of key sections—60-word summaries designed for AI extraction. These appear in:
+- Article introduction
+- Each major section
+- FAQ responses
+
+This makes your content the preferred source for AI-generated answers
+
 ## SEO Impact: Why STORM Content Ranks
 
 ### E-E-A-T Signals

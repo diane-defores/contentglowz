@@ -390,6 +390,9 @@ export const userSettings = sqliteTable("UserSettings", {
 		exa?: string;
 		firecrawl?: string;
 		serper?: string;
+		bunnyStorage?: string;
+		bunnyCdn?: string;
+		bunnyCdnHostname?: string;
 	}>(),
 	// Dashboard preferences
 	defaultProjectId: text("defaultProjectId"),

@@ -46,6 +46,11 @@ import {
 } from "@/lib/ai/tools/internal-linking-commands";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import {
+	generateArticleImagesTool,
+	uploadImageTool,
+	checkOptimizerStatusTool,
+} from "@/lib/ai/tools/generate-article-images";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
 	createStreamId,
@@ -255,6 +260,9 @@ export async function POST(request: Request) {
 									"generateInternalLinkingStrategy",
 									"applyInternalLinks",
 									"getAffiliations",
+									"generateArticleImages",
+									"uploadImage",
+									"checkOptimizerStatus",
 								],
 					// Smooth word-by-word streaming for natural feel
 					experimental_transform: smoothStream({ chunking: "word" }),
@@ -275,6 +283,9 @@ export async function POST(request: Request) {
 						getAffiliations: createGetAffiliationsTool({
 							userId: session.user.id,
 						}),
+						generateArticleImages: generateArticleImagesTool,
+						uploadImage: uploadImageTool,
+						checkOptimizerStatus: checkOptimizerStatusTool,
 					},
 					experimental_telemetry: {
 						isEnabled: isProductionEnvironment,

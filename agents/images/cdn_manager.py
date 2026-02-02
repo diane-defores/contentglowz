@@ -14,11 +14,18 @@ from agents.images.tools.bunny_cdn_tools import (
     purge_cdn_cache,
     get_cdn_url
 )
+from agents.images.tools.bunny_optimizer_tools import (
+    generate_optimized_url,
+    generate_responsive_srcset,
+    verify_optimizer_enabled
+)
 from agents.images.schemas.image_schemas import (
     ResponsiveImageSet,
     CDNUploadResult,
     ImageGenerationResult,
-    ImageType
+    ImageType,
+    OptimizerURL,
+    OptimizerImageSet
 )
 from agents.images.config.image_config import BUNNY_CONFIG
 
@@ -128,27 +135,194 @@ class CDNManager:
     """
     High-level interface for the CDN Manager agent.
     Provides methods for uploading and managing CDN content.
+
+    Supports two modes:
+    1. Optimizer mode (default): Upload original only, generate dynamic URLs
+    2. Legacy mode: Upload multiple pre-generated variants
     """
 
     def __init__(self, llm_model: str = "gpt-4o-mini"):
         self.agent = create_cdn_manager(llm_model)
         self.llm_model = llm_model
+        self._optimizer_config = BUNNY_CONFIG.get("optimizer", {})
+        self._optimizer_verified = None  # Cache verification result
+
+    @property
+    def optimizer_enabled(self) -> bool:
+        """Check if Bunny Optimizer is enabled in config."""
+        return self._optimizer_config.get("enabled", False)
+
+    def _verify_optimizer(self) -> bool:
+        """Verify optimizer is actually working (cached)."""
+        if self._optimizer_verified is None:
+            result = verify_optimizer_enabled()
+            self._optimizer_verified = result.get("enabled", False)
+        return self._optimizer_verified
+
+    def upload_with_optimizer(
+        self,
+        source: str,
+        file_name: str,
+        alt_text: str,
+        path_type: str = "articles",
+        image_type: str = "hero"
+    ) -> Dict[str, Any]:
+        """
+        Upload a single original image and generate optimizer URLs.
+
+        This is the new optimized workflow:
+        1. Upload only the original image
+        2. Generate dynamic URLs with Bunny Optimizer params
+        3. Return srcset/sizes for responsive images
+
+        Args:
+            source: Local file path or URL of the original image
+            file_name: SEO-friendly filename for storage
+            alt_text: Alt text for the image
+            path_type: CDN path type (articles, newsletter, social)
+            image_type: Type of image for sizes attribute (hero, section, thumbnail)
+
+        Returns:
+            Dict containing:
+            - success: bool
+            - cdn_url: str (base CDN URL of uploaded original)
+            - optimizer_set: OptimizerImageSet with all URLs
+            - srcset: str
+            - sizes: str
+            - primary_url: str
+        """
+        start_time = datetime.utcnow()
+
+        try:
+            # Upload original image
+            logger.info(f"Uploading original image: {file_name}")
+            upload_result = upload_to_bunny_storage(
+                source=source,
+                file_name=file_name,
+                path_type=path_type
+            )
+
+            if not upload_result.get("success"):
+                return {
+                    "success": False,
+                    "error": upload_result.get("error", "Upload failed")
+                }
+
+            cdn_url = upload_result["cdn_url"]
+            logger.info(f"Original uploaded to: {cdn_url}")
+
+            # Verify CDN propagation
+            verification = verify_cdn_propagation(cdn_url)
+            if not verification.get("propagated"):
+                logger.warning(f"CDN propagation not verified: {verification.get('error')}")
+
+            # Generate optimizer URLs
+            responsive_widths = self._optimizer_config.get("responsive_widths", [480, 800, 1200, 2400])
+            default_quality = self._optimizer_config.get("default_quality", 85)
+
+            # Generate srcset using optimizer
+            srcset_result = generate_responsive_srcset(
+                base_url=cdn_url,
+                widths=responsive_widths,
+                quality=default_quality,
+                format="auto" if self._optimizer_config.get("auto_format") else None,
+                image_type=image_type
+            )
+
+            # Build OptimizerURL objects for each width
+            optimizer_variants = []
+            for width in responsive_widths:
+                variant_url = srcset_result.get("urls", {}).get(width)
+                if variant_url:
+                    optimizer_variants.append(OptimizerURL(
+                        base_url=cdn_url,
+                        width=width,
+                        quality=default_quality,
+                        format="auto"
+                    ))
+
+            # Create OptimizerImageSet
+            optimizer_set = OptimizerImageSet(
+                original_url=cdn_url,
+                variants=optimizer_variants,
+                srcset=srcset_result.get("srcset", ""),
+                sizes=srcset_result.get("sizes", ""),
+                alt_text=alt_text,
+                file_name=file_name,
+                original_size_bytes=upload_result.get("file_size_bytes"),
+                original_format=upload_result.get("content_type")
+            )
+
+            end_time = datetime.utcnow()
+            total_time_ms = int((end_time - start_time).total_seconds() * 1000)
+
+            return {
+                "success": True,
+                "cdn_url": cdn_url,
+                "storage_path": upload_result["storage_path"],
+                "optimizer_set": optimizer_set.dict(),
+                "srcset": srcset_result.get("srcset", ""),
+                "sizes": srcset_result.get("sizes", ""),
+                "primary_url": srcset_result.get("primary_url", cdn_url),
+                "responsive_urls": srcset_result.get("urls", {}),
+                "file_size_bytes": upload_result.get("file_size_bytes", 0),
+                "file_size_kb": upload_result.get("file_size_kb", 0),
+                "upload_time_ms": total_time_ms,
+                "propagation_verified": verification.get("propagated", False),
+                "optimizer_enabled": True
+            }
+
+        except Exception as e:
+            logger.error(f"Optimizer upload error: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
 
     def upload_image_set(
         self,
         image_set: ResponsiveImageSet,
-        path_type: str = "articles"
+        path_type: str = "articles",
+        use_optimizer: Optional[bool] = None
     ) -> Dict[str, Any]:
         """
-        Upload a complete image set (all variants) to CDN.
+        Upload a complete image set to CDN.
+
+        If Bunny Optimizer is enabled, uploads only the original and generates
+        dynamic URLs. Otherwise, falls back to uploading all variants.
 
         Args:
             image_set: ResponsiveImageSet with optimized variants
             path_type: CDN path type (articles, newsletter, social)
+            use_optimizer: Override optimizer setting (None = use config)
 
         Returns:
             Upload results with CDN URLs
         """
+        # Determine whether to use optimizer
+        should_use_optimizer = use_optimizer if use_optimizer is not None else self.optimizer_enabled
+
+        if should_use_optimizer:
+            # Use optimizer workflow - upload only original
+            logger.info("Using Bunny Optimizer workflow")
+
+            # Get image type from original
+            img_type = image_set.original.image_type
+            if isinstance(img_type, str):
+                image_type = img_type.replace("_image", "")
+            else:
+                image_type = img_type.value.replace("_image", "") if hasattr(img_type, 'value') else "hero"
+
+            return self.upload_with_optimizer(
+                source=image_set.original.original_url,
+                file_name=image_set.file_name,
+                alt_text=image_set.alt_text,
+                path_type=path_type,
+                image_type=image_type
+            )
+
+        # Legacy workflow - upload all variants
+        logger.info("Using legacy multi-variant upload workflow")
         start_time = datetime.utcnow()
         upload_results = []
         cdn_urls = {}
@@ -250,8 +424,11 @@ class CDNManager:
             results.append(result)
 
             if result.get("success"):
-                all_urls.extend(result.get("cdn_urls", {}).values())
-                total_size_kb += result.get("total_size_kb", 0)
+                # Handle both optimizer (responsive_urls dict) and legacy (cdn_urls dict) modes
+                responsive_urls = result.get("responsive_urls", {})
+                cdn_urls = result.get("cdn_urls", {})
+                all_urls.extend(responsive_urls.values() if responsive_urls else cdn_urls.values())
+                total_size_kb += result.get("total_size_kb", result.get("file_size_kb", 0))
 
         end_time = datetime.utcnow()
         total_time_ms = int((end_time - start_time).total_seconds() * 1000)
@@ -389,8 +566,11 @@ class CDNManager:
         url: str,
         alt: str,
         responsive_urls: Optional[Dict[str, str]] = None,
+        srcset: Optional[str] = None,
+        sizes: Optional[str] = None,
         css_class: Optional[str] = None,
-        lazy: bool = False
+        lazy: bool = False,
+        optimizer_enabled: bool = False
     ) -> str:
         """
         Generate markdown/HTML for an image with optional responsive srcset.
@@ -398,29 +578,40 @@ class CDNManager:
         Args:
             url: Primary image URL
             alt: Alt text
-            responsive_urls: Dict of size suffix -> URL for srcset
+            responsive_urls: Dict of size suffix/width -> URL for srcset (legacy)
+            srcset: Pre-built srcset string (optimizer mode)
+            sizes: Pre-built sizes string (optimizer mode)
             css_class: Optional CSS class
             lazy: Whether to add lazy loading
+            optimizer_enabled: Whether using Bunny Optimizer URLs
 
         Returns:
             Image markdown/HTML string
         """
-        # If we have responsive URLs, generate HTML with srcset
+        class_attr = f' class="{css_class}"' if css_class else ''
+        loading_attr = ' loading="lazy"' if lazy else ''
+
+        # If we have pre-built srcset (optimizer mode), use it directly
+        if srcset and sizes:
+            return f'<img src="{url}" srcset="{srcset}" sizes="{sizes}" alt="{alt}"{class_attr}{loading_attr} />'
+
+        # If we have responsive URLs (legacy mode), build srcset
         if responsive_urls and len(responsive_urls) > 1:
             srcset_parts = []
-            for suffix, variant_url in responsive_urls.items():
-                # Extract width from suffix (e.g., "-md" -> estimated width)
-                width_map = {"": "1200w", "-md": "800w", "-sm": "480w", "-2x": "2400w"}
-                width = width_map.get(suffix, "1200w")
+            for key, variant_url in responsive_urls.items():
+                # Key can be suffix ("-md") or width (800)
+                if isinstance(key, int):
+                    width = f"{key}w"
+                else:
+                    # Extract width from suffix
+                    width_map = {"": "1200w", "-md": "800w", "-sm": "480w", "-2x": "2400w", "default": "1200w"}
+                    width = width_map.get(str(key), "1200w")
                 srcset_parts.append(f"{variant_url} {width}")
 
-            srcset = ", ".join(srcset_parts)
-            sizes = "(max-width: 480px) 100vw, (max-width: 800px) 100vw, 1200px"
+            built_srcset = ", ".join(srcset_parts)
+            built_sizes = "(max-width: 480px) 100vw, (max-width: 800px) 100vw, 1200px"
 
-            class_attr = f' class="{css_class}"' if css_class else ''
-            loading_attr = ' loading="lazy"' if lazy else ''
-
-            return f'<img src="{url}" srcset="{srcset}" sizes="{sizes}" alt="{alt}"{class_attr}{loading_attr} />'
+            return f'<img src="{url}" srcset="{built_srcset}" sizes="{built_sizes}" alt="{alt}"{class_attr}{loading_attr} />'
 
         # Simple markdown image
         return f'![{alt}]({url})'

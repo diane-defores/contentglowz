@@ -494,6 +494,130 @@ class SEOApiClient {
 			}),
 		});
 	}
+
+	// ─────────────────────────────────────────────────
+	// Image Robot Endpoints
+	// ─────────────────────────────────────────────────
+
+	/**
+	 * Generate images for an article
+	 */
+	async generateImages(
+		articleContent: string,
+		articleTitle: string,
+		articleSlug: string,
+		options?: {
+			strategyType?: "minimal" | "standard" | "hero+sections" | "rich";
+			styleGuide?: string;
+			generateResponsive?: boolean;
+			pathType?: "articles" | "newsletter" | "social";
+		},
+	) {
+		return this.request<{
+			success: boolean;
+			total_images: number;
+			successful_images: number;
+			failed_images: number;
+			images: Array<{
+				success: boolean;
+				image_type: string;
+				primary_url: string | null;
+				responsive_urls: Record<string, string>;
+				alt_text: string;
+				file_name: string;
+				file_size_kb: number | null;
+				error: string | null;
+			}>;
+			markdown_with_images: string;
+			og_image_url: string | null;
+			total_cdn_size_kb: number;
+			processing_time_ms: number;
+			strategy_used: string;
+		}>("/api/images/generate", {
+			method: "POST",
+			body: JSON.stringify({
+				article_content: articleContent,
+				article_title: articleTitle,
+				article_slug: articleSlug,
+				strategy_type: options?.strategyType || "standard",
+				style_guide: options?.styleGuide || "brand_primary",
+				generate_responsive: options?.generateResponsive ?? true,
+				path_type: options?.pathType || "articles",
+			}),
+		});
+	}
+
+	/**
+	 * Upload a single image to CDN
+	 */
+	async uploadImage(
+		sourceUrl: string,
+		fileName: string,
+		altText: string,
+		options?: {
+			imageType?: "hero" | "section" | "thumbnail" | "og";
+			pathType?: "articles" | "newsletter" | "social";
+		},
+	) {
+		return this.request<{
+			success: boolean;
+			cdn_url: string | null;
+			optimizer_url: string | null;
+			responsive_urls: Record<string, string>;
+			file_size_kb: number | null;
+			content_type: string | null;
+			storage_path: string | null;
+			error: string | null;
+		}>("/api/images/upload", {
+			method: "POST",
+			body: JSON.stringify({
+				source_url: sourceUrl,
+				file_name: fileName,
+				alt_text: altText,
+				image_type: options?.imageType || "hero",
+				path_type: options?.pathType || "articles",
+			}),
+		});
+	}
+
+	/**
+	 * Check Bunny Optimizer status
+	 */
+	async getOptimizerStatus(testUrl?: string) {
+		const params = testUrl ? `?test_url=${encodeURIComponent(testUrl)}` : "";
+		return this.request<{
+			enabled: boolean;
+			config_enabled: boolean;
+			verified: boolean | null;
+			hostname: string | null;
+			test_url: string | null;
+			transformed_url: string | null;
+			message: string;
+			supported_formats: string[];
+			default_quality: number;
+		}>(`/api/images/optimizer/status${params}`);
+	}
+
+	/**
+	 * Get image generation history
+	 */
+	async getImageHistory(limit = 20) {
+		return this.request<{
+			items: Array<{
+				workflow_id: string;
+				timestamp: string;
+				article_title: string;
+				article_slug: string;
+				total_images: number;
+				successful_images: number;
+				failed_images: number;
+				processing_time_ms: number;
+				cdn_urls_count: number;
+				total_cdn_size_kb: number;
+			}>;
+			total_count: number;
+		}>(`/api/images/history?limit=${limit}`);
+	}
 }
 
 // Export singleton instance
