@@ -20,6 +20,7 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useRobots, type Robot } from "@/hooks/use-robots";
+import { SEODeploymentPanel } from "./seo-deployment-panel";
 
 function getStatusColor(status: string) {
 	switch (status) {
@@ -142,25 +143,31 @@ function RobotCard({ robot, isRunning, onTrigger, onStop }: RobotCardProps) {
 
 				<CollapsibleContent>
 					<div className="border-t bg-muted/50 p-6">
-						<h4 className="font-medium mb-4">Agents</h4>
-						<div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-							{robot.agents.map((agent) => (
-								<div
-									key={agent.name}
-									className="flex items-center gap-3 p-3 bg-background rounded-lg border"
-								>
-									<span
-										className={`w-2 h-2 rounded-full ${getStatusDot(agent.status)}`}
-									/>
-									<div className="flex-1 min-w-0">
-										<p className="font-medium text-sm truncate">{agent.name}</p>
-										<p className="text-xs text-muted-foreground truncate">
-											{agent.description}
-										</p>
-									</div>
+						{robot.id === "seo" ? (
+							<SEODeploymentPanel />
+						) : (
+							<>
+								<h4 className="font-medium mb-4">Agents</h4>
+								<div className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+									{robot.agents.map((agent) => (
+										<div
+											key={agent.name}
+											className="flex items-center gap-3 p-3 bg-background rounded-lg border"
+										>
+											<span
+												className={`w-2 h-2 rounded-full ${getStatusDot(agent.status)}`}
+											/>
+											<div className="flex-1 min-w-0">
+												<p className="font-medium text-sm truncate">{agent.name}</p>
+												<p className="text-xs text-muted-foreground truncate">
+													{agent.description}
+												</p>
+											</div>
+										</div>
+									))}
 								</div>
-							))}
-						</div>
+							</>
+						)}
 					</div>
 				</CollapsibleContent>
 			</Collapsible>

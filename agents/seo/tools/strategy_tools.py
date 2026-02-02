@@ -4,7 +4,7 @@ Tools for building topic clusters, generating outlines, optimizing topical flow,
 Includes topical mesh builder for French SEO methodology (Cocon Sémantique).
 """
 from typing import Dict, List, Any, Optional, Tuple
-from crewai.tools import Tool
+from crewai.tools import tool
 from datetime import datetime, timedelta
 import json
 import hashlib
@@ -29,8 +29,8 @@ except ImportError:
 
 class TopicClusterBuilder:
     """Build topic clusters with pillar pages and supporting content."""
-    
-        def build_topic_cluster(
+
+    def build_topic_cluster(
         self,
         pillar_topic: str,
         keyword_list: Optional[List[str]] = None,
@@ -159,8 +159,7 @@ class TopicClusterBuilder:
 
 class OutlineGenerator:
     """Generate detailed content outlines."""
-    
-        @tool("Generate Outline")
+
     def generate_outline(
         self,
         topic: str,
@@ -305,9 +304,8 @@ class OutlineGenerator:
 
 class TopicalFlowOptimizer:
     """Optimize topical flow and content progression."""
-    
-    @tool("Optimize Topical Flow")
-def optimize_topical_flow(
+
+    def optimize_topical_flow(
         self,
         content_pieces: List[Dict[str, str]],
         user_journey: Optional[str] = None
@@ -404,9 +402,8 @@ def optimize_topical_flow(
 
 class EditorialCalendarPlanner:
     """Plan editorial calendar and publication schedule."""
-    
-    @tool("Plan Editorial Calendar")
-def plan_editorial_calendar(
+
+    def plan_editorial_calendar(
         self,
         content_pieces: List[Dict[str, Any]],
         start_date: Optional[str] = None,
