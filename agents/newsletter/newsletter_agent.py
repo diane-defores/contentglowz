@@ -2,7 +2,7 @@
 Newsletter Agent - CrewAI agent for newsletter curation and writing.
 
 Capabilities:
-- Read emails via Composio Gmail integration
+- Read emails via IMAP (free) or Composio Gmail (managed)
 - Research trending topics via Exa AI
 - Write newsletter content
 - Create Gmail drafts for review
@@ -12,16 +12,33 @@ from typing import List, Optional
 from crewai import Agent
 import os
 
-from agents.newsletter.tools.gmail_tools import (
-    get_gmail_tools,
-    read_recent_newsletters,
-    read_competitor_newsletters,
-)
 from agents.newsletter.tools.content_tools import (
     research_newsletter_topics,
     find_related_articles,
 )
-from agents.newsletter.config.newsletter_config import NEWSLETTER_DEFAULTS
+from agents.newsletter.config.newsletter_config import (
+    NEWSLETTER_DEFAULTS,
+    EMAIL_BACKEND,
+)
+
+# Conditional import based on email backend configuration
+if EMAIL_BACKEND == "imap":
+    from agents.newsletter.tools.imap_tools import (
+        read_recent_newsletters,
+        read_competitor_newsletters,
+        archive_processed_newsletter,
+    )
+    # IMAP doesn't need additional Gmail tools
+    def get_gmail_tools():
+        return []
+else:
+    from agents.newsletter.tools.gmail_tools import (
+        get_gmail_tools,
+        read_recent_newsletters,
+        read_competitor_newsletters,
+    )
+    # Composio doesn't have archive tool
+    archive_processed_newsletter = None
 
 
 class NewsletterAgent:

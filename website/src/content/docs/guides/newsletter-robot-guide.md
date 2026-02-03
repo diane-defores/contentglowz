@@ -23,8 +23,9 @@ python --version  # 3.11+
 cd ~/my-robots
 pip install -r requirements.txt
 
-# Authentification Gmail
-composio add gmail
+# Choisir backend email (voir section Configuration)
+# Option A: IMAP (gratuit, recommandé)
+# Option B: Composio Gmail (payant)
 
 # Vérification
 curl http://localhost:8000/newsletter/config/check
@@ -32,16 +33,64 @@ curl http://localhost:8000/newsletter/config/check
 
 ## Configuration
 
+### Backend Email (IMAP vs Composio)
+
+Le robot supporte deux backends pour la lecture des emails :
+
+| Backend | Coût | Setup | Avantages |
+|---------|------|-------|-----------|
+| **IMAP** (défaut) | Gratuit | App Password | Pas de dépendance externe, accès manuel conservé |
+| **Composio** | Payant | OAuth | Interface unifiée avec autres outils |
+
 ### Variables d'Environnement
 
 ```bash
 # .env
+
+# --- Core ---
 OPENROUTER_API_KEY=sk-or-...        # LLM provider
 EXA_API_KEY=...                      # Recherche web
-SENDGRID_API_KEY=SG...               # Envoi emails (optionnel)
+
+# --- Email Backend (choisir un) ---
+
+# Option A: IMAP (gratuit, recommandé)
+NEWSLETTER_EMAIL_BACKEND=imap
+NEWSLETTER_IMAP_EMAIL=myrobot.newsletters@gmail.com
+NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
+NEWSLETTER_IMAP_FOLDER=Newsletters            # Optionnel
+NEWSLETTER_IMAP_ARCHIVE=Newsletters/Processed # Optionnel
+
+# Option B: Composio (payant)
+NEWSLETTER_EMAIL_BACKEND=composio
+COMPOSIO_API_KEY=...
+# + composio add gmail
+
+# --- Envoi (optionnel) ---
+SENDGRID_API_KEY=SG...
 NEWSLETTER_FROM_EMAIL=newsletter@domain.com
 NEWSLETTER_FROM_NAME="My Newsletter"
 ```
+
+### Setup Gmail pour IMAP
+
+1. **Créer compte Gmail dédié** : `myrobot.newsletters@gmail.com`
+
+2. **Activer 2FA** :
+   - Google Account → Security → 2-Step Verification → Enable
+
+3. **Générer App Password** :
+   - Google Account → Security → App Passwords
+   - Select "Mail" + "Other (Custom name)"
+   - Copier le mot de passe 16 caractères
+
+4. **Créer labels Gmail** :
+   - `Newsletters` - pour les newsletters entrantes
+   - `Newsletters/Processed` - archive après traitement
+
+5. **Créer filtre Gmail** :
+   - Settings → Filters → Create new filter
+   - From contains: `newsletter OR digest OR weekly`
+   - Apply label: `Newsletters`
 
 ### Configuration Newsletter
 
@@ -72,14 +121,15 @@ config = NewsletterConfig(
 agents/newsletter/
 ├── __init__.py
 ├── newsletter_agent.py      # 3 agents CrewAI
-├── newsletter_crew.py       # Orchestrateur
+├── newsletter_crew.py       # Orchestrateur + archivage
 ├── tools/
-│   ├── gmail_tools.py       # Composio Gmail
+│   ├── imap_tools.py        # IMAP direct (gratuit)
+│   ├── gmail_tools.py       # Composio Gmail (payant)
 │   └── content_tools.py     # Exa AI research
 ├── schemas/
 │   └── newsletter_schemas.py # Pydantic models
 └── config/
-    └── newsletter_config.py  # Configuration
+    └── newsletter_config.py  # Configuration + backend switch
 ```
 
 ### Les 3 Agents
@@ -134,9 +184,43 @@ Avec Composio configuré dans vos MCP servers :
 "Generate a newsletter about AI and SEO based on my recent emails"
 ```
 
-## Gmail Tools
+## Email Tools
 
-### Actions Disponibles
+### IMAP Tools (Backend par défaut)
+
+```python
+from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
+
+reader = IMAPNewsletterReader()
+
+# Toutes les newsletters (7 jours)
+newsletters = reader.fetch_newsletters(
+    folder="Newsletters",
+    max_results=20,
+    days_back=7
+)
+
+# Concurrents spécifiques
+competitor_emails = reader.fetch_by_senders(
+    sender_emails=["newsletter@moz.com", "digest@ahrefs.com"]
+)
+
+# Archiver après traitement
+reader.archive_multiple([email.uid for email in newsletters])
+```
+
+### CrewAI Tools (IMAP)
+
+```python
+from agents.newsletter.tools.imap_tools import (
+    read_recent_newsletters,      # Lit newsletters récentes
+    read_competitor_newsletters,  # Lit concurrents spécifiques
+    archive_processed_newsletter, # Archive un email
+    archive_multiple_newsletters, # Archive plusieurs emails
+)
+```
+
+### Composio Gmail Tools (Alternative payante)
 
 ```python
 from composio_crewai import Action
@@ -151,23 +235,14 @@ Action.GMAIL_CREATE_EMAIL_DRAFT
 Action.GMAIL_SEND_EMAIL
 ```
 
-### Exemples
-
 ```python
 from agents.newsletter.tools.gmail_tools import GmailReader
 
 reader = GmailReader()
-
-# Toutes les newsletters (7 jours)
 newsletters = reader.fetch_newsletter_emails(
     labels=["Newsletter"],
     max_results=20,
     days_back=7
-)
-
-# Concurrents spécifiques
-competitor_emails = reader.fetch_by_sender(
-    sender_emails=["newsletter@moz.com", "digest@ahrefs.com"]
 )
 ```
 
@@ -245,7 +320,25 @@ html = template.render(
 
 ## Dépannage
 
-### Erreur : "Gmail not authenticated"
+### Erreur : "IMAP credentials required"
+
+```bash
+# Vérifier variables d'environnement
+echo $NEWSLETTER_IMAP_EMAIL
+echo $NEWSLETTER_IMAP_PASSWORD
+
+# Les définir
+export NEWSLETTER_IMAP_EMAIL="your@gmail.com"
+export NEWSLETTER_IMAP_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+```
+
+### Erreur : "Authentication failed" (IMAP)
+
+1. Vérifier que le App Password est correct (16 caractères, sans espaces)
+2. Vérifier que 2FA est activé sur le compte Gmail
+3. Vérifier que IMAP est activé : Gmail Settings → Forwarding and POP/IMAP → Enable IMAP
+
+### Erreur : "Gmail not authenticated" (Composio)
 
 ```bash
 # Ré-authentifier
@@ -259,12 +352,26 @@ composio list
 ### Erreur : "No newsletters found"
 
 ```python
-# Vérifier les labels Gmail
+# IMAP: Vérifier les folders
+reader.fetch_newsletters(
+    folder="INBOX",  # Essayer INBOX au lieu de Newsletters
+    days_back=30     # Étendre la période
+)
+
+# Composio: Retirer le filtre label
 reader.fetch_newsletter_emails(
-    labels=None,  # Retirer le filtre label
-    days_back=30  # Étendre la période
+    labels=None,
+    days_back=30
 )
 ```
+
+### Erreur : "Folder not found" (IMAP)
+
+Créer les labels Gmail :
+- `Newsletters`
+- `Newsletters/Processed`
+
+Le système fallback vers INBOX si les labels n'existent pas.
 
 ### Erreur : "Rate limit exceeded"
 
@@ -288,7 +395,8 @@ for email in emails:
 
 ## Ressources
 
-- [Article blog détaillé](/blog/newsletter-robot-ai-automation)
-- [API Reference](/api/newsletter)
+- [Guide Plateforme](/docs/platform/newsletter-robot) - Vue d'ensemble marketing et cas d'usage
+- [Architecture Multi-Agents](/docs/agents/newsletter-agents) - Comment les agents IA collaborent
+- [Annonce IMAP Gratuit](/blog/newsletter-robot-imap-gratuit) - Nouvelle intégration sans frais
 - [Composio Documentation](https://docs.composio.dev)
 - [CrewAI Documentation](https://docs.crewai.com)

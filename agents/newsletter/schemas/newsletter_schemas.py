@@ -17,6 +17,26 @@ class NewsletterTone(str, Enum):
     PROMOTIONAL = "promotional"
 
 
+class EmailMessage(BaseModel):
+    """
+    Email message retrieved from IMAP.
+
+    Used by IMAP tools to represent fetched newsletter emails.
+    """
+
+    uid: str = Field(..., description="Email unique identifier for archiving")
+    subject: str = Field(default="", description="Email subject line")
+    from_email: str = Field(default="", description="Sender email address")
+    from_name: str = Field(default="", description="Sender display name")
+    date: datetime = Field(default_factory=datetime.now, description="Email date")
+    html: str = Field(default="", description="HTML content")
+    text: str = Field(default="", description="Plain text content")
+    is_newsletter: bool = Field(
+        default=False,
+        description="Whether email was detected as a newsletter"
+    )
+
+
 class NewsletterSection(BaseModel):
     """A section within a newsletter."""
 

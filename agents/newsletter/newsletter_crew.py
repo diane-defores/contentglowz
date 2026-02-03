@@ -1,10 +1,10 @@
 """
 Newsletter Crew - Multi-agent workflow for newsletter generation.
 
-Pipeline: Research → Curate → Write → Review → Draft/Send
+Pipeline: Research → Curate → Write → Review → Draft/Send → Archive
 
 Uses:
-- Composio for Gmail integration (read emails, create drafts)
+- IMAP (free) or Composio (managed) for Gmail integration
 - Exa AI for content research
 - SendGrid for mass delivery
 """
@@ -13,6 +13,7 @@ from typing import List, Optional, Dict, Any
 from crewai import Agent, Task, Crew, Process
 from dotenv import load_dotenv
 import os
+import re
 from datetime import datetime
 
 from agents.newsletter.newsletter_agent import (
@@ -25,7 +26,15 @@ from agents.newsletter.schemas.newsletter_schemas import (
     NewsletterDraft,
     NewsletterSection,
 )
-from agents.newsletter.config.newsletter_config import get_newsletter_config
+from agents.newsletter.config.newsletter_config import (
+    get_newsletter_config,
+    EMAIL_BACKEND,
+    is_imap_backend,
+)
+
+# Import archiving tools if using IMAP backend
+if is_imap_backend():
+    from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
 
 load_dotenv()
 
@@ -53,9 +62,11 @@ class NewsletterCrew:
         config = get_newsletter_config()
         self.llm_model = llm_model or config["llm_model"]
         self.use_gmail = use_gmail
+        self.email_backend = EMAIL_BACKEND
 
         # Initialize agents
         print("Initializing Newsletter Crew...")
+        print(f"Email backend: {self.email_backend}")
         self.research_agent = NewsletterResearchAgent(self.llm_model)
         self.writer_agent = NewsletterWriterAgent(self.llm_model)
         print("✅ Newsletter agents initialized")
@@ -172,6 +183,12 @@ class NewsletterCrew:
         results["stages"]["writing"] = writing_task.output.raw if writing_task.output else None
         results["raw_output"] = str(crew_output)
 
+        # Extract email UIDs from research output for archiving
+        email_uids = self._extract_email_uids(
+            results["stages"]["research"] or ""
+        )
+        results["email_uids"] = email_uids
+
         # Create draft object
         draft = NewsletterDraft(
             config=config,
@@ -179,16 +196,27 @@ class NewsletterCrew:
             preview_text=self._extract_preview(str(crew_output)),
             sections=self._parse_sections(str(crew_output)),
             plain_text=str(crew_output),
+            email_sources=email_uids,
         )
         draft.word_count = len(str(crew_output).split())
         draft.estimated_read_time = draft.calculate_read_time()
 
         results["draft"] = draft.model_dump()
 
+        # STAGE 3: Archive processed emails (IMAP only)
+        if is_imap_backend() and email_uids:
+            print("\n📁 STAGE 3: Archiving Processed Emails")
+            print("-" * 40)
+            archived_count = self._archive_processed_emails(email_uids)
+            results["archived_count"] = archived_count
+            print(f"Archived {archived_count} emails")
+
         print("\n" + "=" * 60)
         print("✅ NEWSLETTER GENERATION COMPLETE")
         print(f"Word count: {draft.word_count}")
         print(f"Read time: ~{draft.estimated_read_time} min")
+        if is_imap_backend() and email_uids:
+            print(f"Emails archived: {results.get('archived_count', 0)}")
         print("=" * 60)
 
         return results
@@ -238,6 +266,48 @@ class NewsletterCrew:
             ))
 
         return sections
+
+    def _extract_email_uids(self, research_output: str) -> List[str]:
+        """
+        Extract email UIDs from research agent output.
+
+        The IMAP tools include UID in their output format:
+        - UID: 12345
+
+        Args:
+            research_output: Raw output from research stage
+
+        Returns:
+            List of email UID strings
+        """
+        uids = []
+        # Pattern to match "UID: <value>" in the research output
+        uid_pattern = r"UID:\s*(\S+)"
+        matches = re.findall(uid_pattern, research_output)
+        uids.extend(matches)
+        return uids
+
+    def _archive_processed_emails(self, email_uids: List[str]) -> int:
+        """
+        Archive emails that were processed during newsletter generation.
+
+        Only called when using IMAP backend.
+
+        Args:
+            email_uids: List of email UIDs to archive
+
+        Returns:
+            Number of emails successfully archived
+        """
+        if not email_uids:
+            return 0
+
+        try:
+            reader = IMAPNewsletterReader()
+            return reader.archive_multiple(email_uids)
+        except Exception as e:
+            print(f"Warning: Failed to archive emails: {e}")
+            return 0
 
 
 # Convenience function for quick generation

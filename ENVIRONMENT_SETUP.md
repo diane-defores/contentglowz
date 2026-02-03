@@ -81,6 +81,18 @@ doppler run -- uvicorn api.main:app --host 0.0.0.0 --port 8000
 | `SERP_API_KEY` | SERP analysis | https://serpapi.com |
 | `FIRECRAWL_API_KEY` | Web crawling | https://firecrawl.dev |
 
+### Newsletter Robot Keys
+
+| Key | Purpose | Get it from |
+|-----|---------|-------------|
+| `NEWSLETTER_EMAIL_BACKEND` | Backend: `imap` (free) or `composio` | Config choice |
+| `NEWSLETTER_IMAP_EMAIL` | Gmail address for IMAP | Your Gmail account |
+| `NEWSLETTER_IMAP_PASSWORD` | Gmail App Password | Gmail Security settings |
+| `NEWSLETTER_IMAP_HOST` | IMAP server (default: imap.gmail.com) | Optional |
+| `NEWSLETTER_IMAP_FOLDER` | Folder to read (default: Newsletters) | Optional |
+| `NEWSLETTER_IMAP_ARCHIVE` | Archive folder (default: Newsletters/Processed) | Optional |
+| `COMPOSIO_API_KEY` | Composio API (if using composio backend) | https://composio.dev |
+
 ### Optional Keys
 
 | Key | Purpose | Get it from |
@@ -100,6 +112,12 @@ doppler secrets set \
   GROQ_API_KEY="gsk_..." \
   YDC_API_KEY="..." \
   EXA_API_KEY="..."
+
+# Newsletter Robot IMAP config
+doppler secrets set \
+  NEWSLETTER_EMAIL_BACKEND="imap" \
+  NEWSLETTER_IMAP_EMAIL="myrobot@gmail.com" \
+  NEWSLETTER_IMAP_PASSWORD="xxxx-xxxx-xxxx-xxxx"
 
 # Upload from existing .env
 doppler secrets upload .env
