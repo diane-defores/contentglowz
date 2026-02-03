@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
-    name: "chatbot",
-    cwd: "/home/claude/my-robots/chatbot",
+    name: "my-robots",
+    cwd: "/home/claude/my-robots",
     script: "bash",
-    args: ["-c", "export PORT=3003 && flox activate -- pnpm dev -p 3003"],
+    args: ["-c", "export PORT=3003 && flox activate -- ./venv/bin/python main.py"],
     env: {
       PORT: 3003
     },
