@@ -7,6 +7,7 @@ from .projects import router as projects_router
 from .newsletter import router as newsletter_router
 from .deployment import router as deployment_router
 from .images import router as images_router
+from .status import router as status_router
 
 __all__ = [
     "mesh_router",
@@ -16,4 +17,5 @@ __all__ = [
     "newsletter_router",
     "deployment_router",
     "images_router",
+    "status_router",
 ]

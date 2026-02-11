@@ -33,6 +33,13 @@ from agents.images.config.image_config import ImageConfig, BUNNY_CONFIG
 
 logger = logging.getLogger(__name__)
 
+# Conditional status tracking (graceful degradation)
+try:
+    from status import get_status_service
+    STATUS_AVAILABLE = True
+except ImportError:
+    STATUS_AVAILABLE = False
+
 
 class ImageRobotCrew:
     """
@@ -112,6 +119,29 @@ class ImageRobotCrew:
         workflow_id = f"img_{int(start_time.timestamp())}"
 
         logger.info(f"Starting Image Robot workflow {workflow_id} for '{article_title}'")
+
+        # Status tracking: create content record
+        status_record_id = None
+        if STATUS_AVAILABLE:
+            try:
+                status_svc = get_status_service()
+                record = status_svc.create_content(
+                    title=f"Images: {article_title}",
+                    content_type="image",
+                    source_robot="images",
+                    status="in_progress",
+                    tags=article_topics or [],
+                    metadata={
+                        "article_slug": article_slug,
+                        "strategy_type": strategy_type,
+                        "style_guide": style_guide,
+                        "path_type": path_type,
+                    },
+                )
+                status_record_id = record.id
+                logger.info(f"Status tracking: record {record.id} created (in_progress)")
+            except Exception as e:
+                logger.warning(f"Status tracking init failed (non-critical): {e}")
 
         try:
             # Step 1: Strategy Analysis
@@ -271,12 +301,39 @@ class ImageRobotCrew:
             # Log workflow
             self._log_workflow(workflow_id, article_with_images)
 
+            # Status tracking: mark as generated → pending_review
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.update_content(
+                        status_record_id,
+                        metadata={
+                            "total_images": article_with_images.total_images,
+                            "successful_images": article_with_images.successful_images,
+                            "failed_images": article_with_images.failed_images,
+                            "total_cdn_size_kb": article_with_images.total_cdn_size_kb,
+                            "processing_time_ms": total_time_ms,
+                        },
+                    )
+                    status_svc.transition(status_record_id, "generated", "images_robot")
+                    status_svc.transition(status_record_id, "pending_review", "images_robot")
+                    logger.info(f"Status tracking: marked as pending_review")
+                except Exception as se:
+                    logger.warning(f"Status tracking completion failed (non-critical): {se}")
+
             logger.info(f"Workflow {workflow_id} completed in {total_time_ms}ms")
 
             return article_with_images
 
         except Exception as e:
             logger.error(f"Workflow error: {e}")
+            # Status tracking: mark as failed
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.transition(status_record_id, "failed", "images_robot", reason=str(e))
+                except Exception as se:
+                    logger.warning(f"Status tracking failed transition error: {se}")
             return self._create_error_result(
                 article_title, article_slug, article_content,
                 str(e)

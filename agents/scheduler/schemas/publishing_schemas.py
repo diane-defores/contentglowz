@@ -13,6 +13,7 @@ class ContentType(str, Enum):
     ARTICLE = "article"
     NEWSLETTER = "newsletter"
     SEO_CONTENT = "seo-content"
+    IMAGE = "image"
     MANUAL = "manual"
 
 
@@ -21,6 +22,7 @@ class SourceRobot(str, Enum):
     SEO = "seo"
     NEWSLETTER = "newsletter"
     ARTICLE = "article"
+    IMAGES = "images"
     MANUAL = "manual"
 
 

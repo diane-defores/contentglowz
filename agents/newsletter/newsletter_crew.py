@@ -36,6 +36,20 @@ from agents.newsletter.config.newsletter_config import (
 if is_imap_backend():
     from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
 
+# Conditional memory import (graceful degradation)
+try:
+    from memory import get_memory_service
+    MEMORY_AVAILABLE = True
+except ImportError:
+    MEMORY_AVAILABLE = False
+
+# Conditional status tracking (graceful degradation)
+try:
+    from status import get_status_service
+    STATUS_AVAILABLE = True
+except ImportError:
+    STATUS_AVAILABLE = False
+
 load_dotenv()
 
 
@@ -95,6 +109,28 @@ class NewsletterCrew:
         print(f"Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 60 + "\n")
 
+        # Status tracking: create content record
+        status_record_id = None
+        if STATUS_AVAILABLE:
+            try:
+                status_svc = get_status_service()
+                record = status_svc.create_content(
+                    title=config.name,
+                    content_type="newsletter",
+                    source_robot="newsletter",
+                    status="in_progress",
+                    tags=config.topics,
+                    metadata={
+                        "tone": config.tone.value,
+                        "target_audience": config.target_audience,
+                        "max_sections": config.max_sections,
+                    },
+                )
+                status_record_id = record.id
+                print(f"📊 Status tracking: record {record.id} created (in_progress)")
+            except Exception as e:
+                print(f"⚠ Status tracking init failed (non-critical): {e}")
+
         results = {
             "config": config.model_dump(),
             "stages": {},
@@ -105,6 +141,54 @@ class NewsletterCrew:
         all_competitors = list(config.competitor_emails)
         if competitor_emails:
             all_competitors.extend(competitor_emails)
+
+        # STAGE 0: Memory Context Loading
+        memory_context = ""
+        if MEMORY_AVAILABLE:
+            try:
+                print("\n🧠 STAGE 0: Loading Project Memory")
+                print("-" * 40)
+                memory = get_memory_service()
+
+                sections = []
+
+                # Load brand voice
+                brand_ctx = memory.load_context("brand voice writing style tone guidelines")
+                if brand_ctx:
+                    sections.append(brand_ctx)
+                    print("  ✓ Brand voice loaded")
+
+                # Load past newsletters for deduplication
+                past_ctx = memory.load_context(
+                    "past newsletter generation topics covered",
+                    agent_id="newsletter",
+                    limit=10,
+                )
+                if past_ctx:
+                    sections.append(past_ctx)
+                    print("  ✓ Past newsletters loaded")
+
+                # Load content inventory
+                inventory_ctx = memory.load_context(
+                    "published content articles inventory",
+                    limit=15,
+                )
+                if inventory_ctx:
+                    sections.append(inventory_ctx)
+                    print("  ✓ Content inventory loaded")
+
+                if sections:
+                    memory_context = (
+                        "\n\n--- PROJECT MEMORY CONTEXT ---\n"
+                        + "\n\n".join(sections)
+                        + "\n--- END MEMORY CONTEXT ---\n"
+                    )
+                    print(f"  Total memory sections loaded: {len(sections)}")
+                else:
+                    print("  No memories found (brain may need seeding)")
+            except Exception as e:
+                print(f"  ⚠ Memory loading failed (non-critical): {e}")
+                memory_context = ""
 
         # STAGE 1: Research
         print("\n📧 STAGE 1: Email & Content Research")
@@ -128,6 +212,7 @@ class NewsletterCrew:
             - Trending topics and angles
             - Recommended content themes
             - Source URLs for reference
+            {memory_context}
             """,
             expected_output="Structured research brief with themes, insights, and sources",
             agent=self.research_agent.get_agent(),
@@ -158,6 +243,7 @@ class NewsletterCrew:
             6. Brief outro
 
             Format in clean markdown.
+            {memory_context}
             """,
             expected_output="Complete newsletter in markdown format",
             agent=self.writer_agent.get_agent(),
@@ -176,7 +262,18 @@ class NewsletterCrew:
         )
 
         print("\n🚀 Running newsletter generation pipeline...")
-        crew_output = crew.kickoff()
+        try:
+            crew_output = crew.kickoff()
+        except Exception as e:
+            # Status tracking: mark as failed
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.transition(status_record_id, "failed", "newsletter_robot", reason=str(e))
+                    print(f"📊 Status tracking: marked as failed")
+                except Exception as se:
+                    print(f"⚠ Status tracking failed transition error: {se}")
+            raise
 
         # Parse results
         results["stages"]["research"] = research_task.output.raw if research_task.output else None
@@ -203,6 +300,23 @@ class NewsletterCrew:
 
         results["draft"] = draft.model_dump()
 
+        # Store generation record in memory
+        if MEMORY_AVAILABLE:
+            try:
+                memory = get_memory_service()
+                topics_covered = config.topics
+                memory.store_generation(
+                    content_type="newsletter",
+                    title=draft.subject_line,
+                    topics=topics_covered,
+                    summary=f"Newsletter '{config.name}' with {draft.word_count} words, "
+                            f"{len(draft.sections)} sections. "
+                            f"Topics: {', '.join(topics_covered)}.",
+                )
+                print("🧠 Generation record stored in memory")
+            except Exception as e:
+                print(f"⚠ Failed to store generation record (non-critical): {e}")
+
         # STAGE 3: Archive processed emails (IMAP only)
         if is_imap_backend() and email_uids:
             print("\n📁 STAGE 3: Archiving Processed Emails")
@@ -210,6 +324,28 @@ class NewsletterCrew:
             archived_count = self._archive_processed_emails(email_uids)
             results["archived_count"] = archived_count
             print(f"Archived {archived_count} emails")
+
+        # Status tracking: mark as generated → pending_review
+        if STATUS_AVAILABLE and status_record_id:
+            try:
+                status_svc = get_status_service()
+                preview = str(crew_output)[:500] if crew_output else None
+                status_svc.update_content(
+                    status_record_id,
+                    content_preview=preview,
+                    metadata={
+                        "word_count": draft.word_count,
+                        "read_time_minutes": draft.estimated_read_time,
+                        "sections_count": len(draft.sections),
+                        "subject_line": draft.subject_line,
+                    },
+                )
+                status_svc.transition(status_record_id, "generated", "newsletter_robot")
+                status_svc.transition(status_record_id, "pending_review", "newsletter_robot")
+                results["status_record_id"] = status_record_id
+                print(f"📊 Status tracking: marked as pending_review")
+            except Exception as e:
+                print(f"⚠ Status tracking completion failed (non-critical): {e}")
 
         print("\n" + "=" * 60)
         print("✅ NEWSLETTER GENERATION COMPLETE")

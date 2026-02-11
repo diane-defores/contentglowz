@@ -20,6 +20,13 @@ from agents.seo.editor import EditorAgent
 
 load_dotenv()
 
+# Conditional status tracking (graceful degradation)
+try:
+    from status import get_status_service
+    STATUS_AVAILABLE = True
+except ImportError:
+    STATUS_AVAILABLE = False
+
 
 class SEOContentCrew:
     """
@@ -85,7 +92,31 @@ class SEOContentCrew:
         print(f"Tone: {tone}")
         print(f"Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*60 + "\n")
-        
+
+        # Status tracking: create content record
+        status_record_id = None
+        if STATUS_AVAILABLE:
+            try:
+                status_svc = get_status_service()
+                record = status_svc.create_content(
+                    title=f"SEO: {target_keyword}",
+                    content_type="seo-content",
+                    source_robot="seo",
+                    status="in_progress",
+                    tags=[target_keyword] + (business_goals or []),
+                    metadata={
+                        "target_keyword": target_keyword,
+                        "word_count": word_count,
+                        "tone": tone,
+                        "sector": sector,
+                        "competitor_domains": competitor_domains or [],
+                    },
+                )
+                status_record_id = record.id
+                print(f"📊 Status tracking: record {record.id} created (in_progress)")
+            except Exception as e:
+                print(f"⚠ Status tracking init failed (non-critical): {e}")
+
         results = {
             "input": {
                 "target_keyword": target_keyword,
@@ -261,6 +292,27 @@ class SEOContentCrew:
         results["outputs"]["final_article"] = str(final_output)
         print(f"\n✅ Editorial review complete: {len(str(final_output))} characters\n")
         
+        # Status tracking: mark as generated → pending_review
+        if STATUS_AVAILABLE and status_record_id:
+            try:
+                status_svc = get_status_service()
+                final_content = results["outputs"].get("final_article", "")
+                status_svc.update_content(
+                    status_record_id,
+                    content_preview=final_content[:500] if final_content else None,
+                    metadata={
+                        "target_keyword": target_keyword,
+                        "final_article_length": len(final_content),
+                        "stages_completed": list(results["outputs"].keys()),
+                    },
+                )
+                status_svc.transition(status_record_id, "generated", "seo_robot")
+                status_svc.transition(status_record_id, "pending_review", "seo_robot")
+                results["status_record_id"] = status_record_id
+                print(f"📊 Status tracking: marked as pending_review")
+            except Exception as e:
+                print(f"⚠ Status tracking completion failed (non-critical): {e}")
+
         # Summary
         print("\n" + "="*60)
         print("CONTENT GENERATION COMPLETE")
@@ -274,7 +326,7 @@ class SEOContentCrew:
         print(f"  ✅ Marketing Strategy: {len(results['outputs']['marketing_strategy'])} chars")
         print(f"  ✅ Final Article: {len(results['outputs']['final_article'])} chars")
         print("="*60 + "\n")
-        
+
         return results
     
     def save_results(self, results: Dict[str, Any], output_dir: str = "output"):

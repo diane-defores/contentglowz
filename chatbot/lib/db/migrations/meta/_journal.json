@@ -50,6 +50,20 @@
       "when": 1769976926130,
       "tag": "0006_wandering_skreet",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1770737707990,
+      "tag": "0007_medical_wallow",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1771324800000,
+      "tag": "0008_content_status_system",
+      "breakpoints": true
     }
   ]
 }

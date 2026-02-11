@@ -21,6 +21,13 @@ from agents.scheduler.site_health_monitor import create_site_health_monitor
 from agents.scheduler.tech_stack_analyzer import create_tech_stack_analyzer
 from agents.scheduler.schemas.analysis_schemas import SchedulerReport
 
+# Conditional status tracking (graceful degradation)
+try:
+    from status import get_status_service
+    STATUS_AVAILABLE = True
+except ImportError:
+    STATUS_AVAILABLE = False
+
 
 class SchedulerCrew:
     """
@@ -81,6 +88,22 @@ class SchedulerCrew:
         try:
             workflow_id = f"publish_{int(datetime.now().timestamp())}"
 
+            # Status tracking: transition to scheduled if we have a status_record_id
+            status_record_id = kwargs.get("status_record_id") if hasattr(self, '_dummy') else None
+            # Check if this content has a tracked status record
+            if STATUS_AVAILABLE:
+                try:
+                    status_svc = get_status_service()
+                    # Look for approved content matching this title
+                    approved = status_svc.list_content(status="approved", content_type=content_type)
+                    for record in approved:
+                        if record.title == title or record.content_path == content_path:
+                            status_record_id = record.id
+                            status_svc.transition(status_record_id, "scheduled", "scheduler_robot", reason="Auto-scheduled for publishing")
+                            break
+                except Exception as e:
+                    print(f"⚠ Status tracking scheduling failed (non-critical): {e}")
+
             # Step 1: Add to queue and schedule
             content_data = {
                 "id": workflow_id,
@@ -98,12 +121,26 @@ class SchedulerCrew:
             )
 
             if not schedule_result.get('success'):
+                if STATUS_AVAILABLE and status_record_id:
+                    try:
+                        status_svc = get_status_service()
+                        status_svc.transition(status_record_id, "approved", "scheduler_robot", reason="Scheduling failed, reverting")
+                    except Exception:
+                        pass
                 return {
                     "success": False,
                     "workflow_id": workflow_id,
                     "stage": "scheduling",
                     "error": schedule_result.get('error')
                 }
+
+            # Status tracking: transition to publishing
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.transition(status_record_id, "publishing", "scheduler_robot")
+                except Exception as e:
+                    print(f"⚠ Status tracking publishing transition failed: {e}")
 
             # Step 2: Publish content
             if urls is None:
@@ -119,6 +156,12 @@ class SchedulerCrew:
             )
 
             if not publish_result.get('success'):
+                if STATUS_AVAILABLE and status_record_id:
+                    try:
+                        status_svc = get_status_service()
+                        status_svc.transition(status_record_id, "failed", "scheduler_robot", reason=publish_result.get('error'))
+                    except Exception:
+                        pass
                 return {
                     "success": False,
                     "workflow_id": workflow_id,
@@ -134,6 +177,17 @@ class SchedulerCrew:
                 publish_result=publish_result
             )
 
+            # Status tracking: mark as published
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.transition(status_record_id, "published", "scheduler_robot", reason="Successfully published")
+                    target_url = urls[0] if urls else None
+                    if target_url:
+                        status_svc.update_content(status_record_id, target_url=target_url)
+                except Exception as e:
+                    print(f"⚠ Status tracking published transition failed: {e}")
+
             return {
                 "success": True,
                 "workflow_id": workflow_id,
@@ -143,6 +197,12 @@ class SchedulerCrew:
             }
 
         except Exception as e:
+            if STATUS_AVAILABLE and status_record_id:
+                try:
+                    status_svc = get_status_service()
+                    status_svc.transition(status_record_id, "failed", "scheduler_robot", reason=str(e))
+                except Exception:
+                    pass
             return {
                 "success": False,
                 "workflow_id": workflow_id,

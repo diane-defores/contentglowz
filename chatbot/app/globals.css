@@ -325,4 +325,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  button,
+  a,
+  select,
+  summary,
+  [role="button"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="tab"],
+  [role="option"],
+  [role="switch"],
+  [type="checkbox"],
+  [type="radio"] {
+    cursor: pointer;
+  }
 }

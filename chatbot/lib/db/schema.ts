@@ -313,6 +313,11 @@ export const project = sqliteTable("Project", {
 	isDefault: integer("isDefault", { mode: "boolean" })
 		.notNull()
 		.default(false),
+	status: text("projectStatus", {
+		enum: ["onboarding", "active", "paused", "archived"],
+	})
+		.notNull()
+		.default("active"),
 	settings: text("settings", { mode: "json" }).$type<{
 		autoAnalyze?: boolean;
 		analyzeInterval?: number; // hours
@@ -417,3 +422,135 @@ export const userSettings = sqliteTable("UserSettings", {
 });
 
 export type UserSettings = InferSelectModel<typeof userSettings>;
+
+/**
+ * Newsletter generators — saved newsletter configurations that can be
+ * scheduled (daily/weekly/monthly) or triggered on demand.
+ */
+export const newsletterGenerator = sqliteTable("NewsletterGenerator", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	// Generator config (maps to NewsletterFormData)
+	name: text("name").notNull(),
+	topics: text("topics", { mode: "json" }).$type<string[]>(),
+	targetAudience: text("targetAudience").notNull(),
+	tone: text("tone", { enum: ["professional", "casual", "friendly", "educational"] })
+		.notNull()
+		.default("professional"),
+	competitorEmails: text("competitorEmails", { mode: "json" }).$type<string[]>(),
+	includeEmailInsights: integer("includeEmailInsights", { mode: "boolean" })
+		.notNull()
+		.default(true),
+	maxSections: integer("maxSections").notNull().default(5),
+	// Scheduling
+	schedule: text("schedule", { enum: ["manual", "daily", "weekly", "monthly"] })
+		.notNull()
+		.default("manual"),
+	scheduleDay: integer("scheduleDay"), // 0-6 for weekly (0=Mon), 1-28 for monthly
+	scheduleTime: text("scheduleTime"), // "09:00" format
+	// Status
+	status: text("status", { enum: ["active", "paused"] })
+		.notNull()
+		.default("active"),
+	lastRunAt: integer("lastRunAt", { mode: "timestamp" }),
+	lastRunStatus: text("lastRunStatus", { enum: ["completed", "failed"] }),
+	// Timestamps
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type NewsletterGenerator = InferSelectModel<typeof newsletterGenerator>;
+
+/**
+ * Content records — tracks content through its lifecycle from creation to publication.
+ * Synced from Python status module via the sync service.
+ */
+export const contentRecord = sqliteTable("ContentRecord", {
+	id: text("id").primaryKey().notNull(),
+	title: text("title").notNull(),
+	contentType: text("contentType", {
+		enum: ["article", "newsletter", "seo-content", "image", "manual"],
+	}).notNull(),
+	sourceRobot: text("sourceRobot", {
+		enum: ["seo", "newsletter", "article", "images", "manual"],
+	}).notNull(),
+	status: text("status", {
+		enum: [
+			"todo",
+			"in_progress",
+			"generated",
+			"pending_review",
+			"approved",
+			"rejected",
+			"scheduled",
+			"publishing",
+			"published",
+			"failed",
+			"archived",
+		],
+	})
+		.notNull()
+		.default("todo"),
+	projectId: text("projectId"),
+	contentPath: text("contentPath"),
+	contentPreview: text("contentPreview"),
+	contentHash: text("contentHash"),
+	priority: integer("priority").notNull().default(3),
+	tags: text("tags", { mode: "json" }).$type<string[]>(),
+	metadata: text("metadata", { mode: "json" }).$type<Record<string, unknown>>(),
+	targetUrl: text("targetUrl"),
+	reviewerNote: text("reviewerNote"),
+	reviewedBy: text("reviewedBy"),
+	createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+	updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+	scheduledFor: integer("scheduledFor", { mode: "timestamp" }),
+	publishedAt: integer("publishedAt", { mode: "timestamp" }),
+	syncedAt: integer("syncedAt", { mode: "timestamp" }),
+});
+
+export type ContentRecord = InferSelectModel<typeof contentRecord>;
+
+/**
+ * Status change audit trail — records every status transition with who/why/when.
+ */
+export const statusChange = sqliteTable("StatusChange", {
+	id: text("id").primaryKey().notNull(),
+	contentId: text("contentId")
+		.notNull()
+		.references(() => contentRecord.id, { onDelete: "cascade" }),
+	fromStatus: text("fromStatus").notNull(),
+	toStatus: text("toStatus").notNull(),
+	changedBy: text("changedBy").notNull(),
+	reason: text("reason"),
+	timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+});
+
+export type StatusChange = InferSelectModel<typeof statusChange>;
+
+/**
+ * Work domain records — tracks the state of each work domain (SEO, Newsletter, etc.) per project.
+ */
+export const workDomain = sqliteTable("WorkDomain", {
+	id: text("id").primaryKey().notNull(),
+	projectId: text("projectId").notNull(),
+	domain: text("domain").notNull(),
+	status: text("status").notNull().default("idle"),
+	lastRunAt: integer("lastRunAt", { mode: "timestamp" }),
+	lastRunStatus: text("lastRunStatus"),
+	itemsPending: integer("itemsPending").notNull().default(0),
+	itemsCompleted: integer("itemsCompleted").notNull().default(0),
+	metadata: text("metadata", { mode: "json" }).$type<Record<string, unknown>>(),
+	updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+});
+
+export type WorkDomain = InferSelectModel<typeof workDomain>;

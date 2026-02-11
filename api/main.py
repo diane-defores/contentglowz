@@ -30,7 +30,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router
+from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router
 
 
 # ─────────────────────────────────────────────────
@@ -41,29 +41,54 @@ from api.routers import mesh_router, research_router, health_router, projects_ro
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup/shutdown events
-    
+
     Startup:
     - Load agents into memory
     - Initialize connections
-    
+    - Start background sync for status tracking
+
     Shutdown:
+    - Stop background sync
     - Cleanup resources
     - Close connections
     """
+    import asyncio
+
     # Startup
     print("🚀 Starting SEO Robots API...")
     print(f"📍 Project root: {project_root}")
     print("✅ Loading Python agents...")
-    
+
     # Pre-load agents (optional, for faster first request)
     # Note: Agents will be loaded on-demand when endpoints are called
     print("ℹ️  Agents will be loaded on-demand (lazy loading enabled)")
-    
+
+    # Start background status sync (SQLite → Turso)
+    sync_task = None
+    try:
+        from status.sync import get_sync_service
+        sync_svc = get_sync_service()
+        if sync_svc.configured:
+            sync_task = asyncio.create_task(sync_svc.start_background_sync())
+            print("✅ Status sync started (SQLite → Turso)")
+        else:
+            print("ℹ️  Turso not configured, status sync disabled")
+    except Exception as e:
+        print(f"⚠ Status sync init failed (non-critical): {e}")
+
     print("✅ API ready to serve requests")
-    
+
     yield
-    
+
     # Shutdown
+    if sync_task:
+        try:
+            from status.sync import get_sync_service
+            get_sync_service().stop_background_sync()
+            sync_task.cancel()
+            print("✅ Status sync stopped")
+        except Exception:
+            pass
     print("👋 Shutting down SEO Robots API...")
 
 
@@ -194,6 +219,7 @@ app.include_router(projects_router)
 app.include_router(newsletter_router)
 app.include_router(deployment_router)
 app.include_router(images_router)
+app.include_router(status_router)
 
 
 # ─────────────────────────────────────────────────
@@ -201,26 +227,26 @@ app.include_router(images_router)
 # ─────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    
+
+    port = int(os.environ.get("PORT", 8000))
+
     print("\n" + "="*60)
     print("🚀 SEO ROBOTS API SERVER")
     print("="*60)
-    print("\n📚 Documentation:")
-    print("   Swagger UI: http://localhost:8000/docs")
-    print("   ReDoc:      http://localhost:8000/redoc")
-    print("\n🔗 Endpoints:")
-    print("   Health:     http://localhost:8000/health")
-    print("   Analyze:    POST http://localhost:8000/api/mesh/analyze")
-    print("   Build:      POST http://localhost:8000/api/mesh/build")
-    print("   WebSocket:  ws://localhost:8000/api/mesh/analyze-stream")
-    print("   Projects:   POST http://localhost:8000/api/projects/onboard")
+    print(f"\n📚 Documentation:")
+    print(f"   Swagger UI: http://localhost:{port}/docs")
+    print(f"   ReDoc:      http://localhost:{port}/redoc")
+    print(f"\n🔗 Endpoints:")
+    print(f"   Health:     http://localhost:{port}/health")
+    print(f"   Newsletter: http://localhost:{port}/api/newsletter/config/check")
     print("\n" + "="*60 + "\n")
-    
+
     uvicorn.run(
         "api.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=True,  # Auto-reload on code changes
         log_level="info"
     )

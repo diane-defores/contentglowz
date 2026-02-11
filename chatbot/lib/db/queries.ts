@@ -36,11 +36,17 @@ import {
 	chat,
 	type Competitor,
 	competitor,
+	type ContentRecord,
+	contentRecord,
 	type DBMessage,
 	document,
 	message,
+	type NewsletterGenerator,
+	newsletterGenerator,
 	type Project,
 	project,
+	type StatusChange,
+	statusChange,
 	type Suggestion,
 	stream,
 	suggestion,
@@ -49,6 +55,8 @@ import {
 	type UserSettings,
 	userSettings,
 	vote,
+	type WorkDomain,
+	workDomain,
 } from "./schema";
 import { generateHashedPassword } from "./utils";
 
@@ -1054,6 +1062,217 @@ export async function deleteCompetitor({ id }: { id: string }) {
 }
 
 // ============================================================================
+// Newsletter Generator Queries
+// ============================================================================
+
+/** Gets all generators for a user, optionally filtered by project */
+export async function getGeneratorsByUserId({
+	userId,
+	projectId,
+}: {
+	userId: string;
+	projectId?: string;
+}): Promise<NewsletterGenerator[]> {
+	try {
+		const conditions = [eq(newsletterGenerator.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(newsletterGenerator.projectId, projectId));
+		}
+		return await db
+			.select()
+			.from(newsletterGenerator)
+			.where(and(...conditions))
+			.orderBy(desc(newsletterGenerator.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get generators by user id",
+		);
+	}
+}
+
+/** Gets a single generator by ID */
+export async function getGeneratorById({
+	id,
+}: {
+	id: string;
+}): Promise<NewsletterGenerator | null> {
+	try {
+		const [gen] = await db
+			.select()
+			.from(newsletterGenerator)
+			.where(eq(newsletterGenerator.id, id));
+		return gen || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get generator by id",
+		);
+	}
+}
+
+/** Creates a new newsletter generator */
+export async function createGenerator({
+	userId,
+	projectId,
+	name,
+	topics,
+	targetAudience,
+	tone,
+	competitorEmails,
+	includeEmailInsights,
+	maxSections,
+	schedule,
+	scheduleDay,
+	scheduleTime,
+	status,
+}: {
+	userId: string;
+	projectId?: string;
+	name: string;
+	topics?: string[];
+	targetAudience: string;
+	tone?: "professional" | "casual" | "friendly" | "educational";
+	competitorEmails?: string[];
+	includeEmailInsights?: boolean;
+	maxSections?: number;
+	schedule?: "manual" | "daily" | "weekly" | "monthly";
+	scheduleDay?: number;
+	scheduleTime?: string;
+	status?: "active" | "paused";
+}): Promise<NewsletterGenerator> {
+	try {
+		const [created] = await db
+			.insert(newsletterGenerator)
+			.values({
+				userId,
+				projectId,
+				name,
+				topics,
+				targetAudience,
+				tone: tone || "professional",
+				competitorEmails,
+				includeEmailInsights: includeEmailInsights ?? true,
+				maxSections: maxSections ?? 5,
+				schedule: schedule || "manual",
+				scheduleDay,
+				scheduleTime,
+				status: status || "active",
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create generator",
+		);
+	}
+}
+
+/** Updates a newsletter generator */
+export async function updateGenerator({
+	id,
+	name,
+	topics,
+	targetAudience,
+	tone,
+	competitorEmails,
+	includeEmailInsights,
+	maxSections,
+	schedule,
+	scheduleDay,
+	scheduleTime,
+	status,
+	lastRunAt,
+	lastRunStatus,
+}: {
+	id: string;
+	name?: string;
+	topics?: string[];
+	targetAudience?: string;
+	tone?: "professional" | "casual" | "friendly" | "educational";
+	competitorEmails?: string[];
+	includeEmailInsights?: boolean;
+	maxSections?: number;
+	schedule?: "manual" | "daily" | "weekly" | "monthly";
+	scheduleDay?: number | null;
+	scheduleTime?: string | null;
+	status?: "active" | "paused";
+	lastRunAt?: Date;
+	lastRunStatus?: "completed" | "failed";
+}): Promise<NewsletterGenerator> {
+	try {
+		const updateData: Record<string, any> = {
+			updatedAt: new Date(),
+		};
+		if (name !== undefined) updateData.name = name;
+		if (topics !== undefined) updateData.topics = topics;
+		if (targetAudience !== undefined) updateData.targetAudience = targetAudience;
+		if (tone !== undefined) updateData.tone = tone;
+		if (competitorEmails !== undefined) updateData.competitorEmails = competitorEmails;
+		if (includeEmailInsights !== undefined) updateData.includeEmailInsights = includeEmailInsights;
+		if (maxSections !== undefined) updateData.maxSections = maxSections;
+		if (schedule !== undefined) updateData.schedule = schedule;
+		if (scheduleDay !== undefined) updateData.scheduleDay = scheduleDay;
+		if (scheduleTime !== undefined) updateData.scheduleTime = scheduleTime;
+		if (status !== undefined) updateData.status = status;
+		if (lastRunAt !== undefined) updateData.lastRunAt = lastRunAt;
+		if (lastRunStatus !== undefined) updateData.lastRunStatus = lastRunStatus;
+
+		const [updated] = await db
+			.update(newsletterGenerator)
+			.set(updateData)
+			.where(eq(newsletterGenerator.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update generator",
+		);
+	}
+}
+
+/** Deletes a newsletter generator */
+export async function deleteGenerator({ id }: { id: string }) {
+	try {
+		await db.delete(newsletterGenerator).where(eq(newsletterGenerator.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete generator",
+		);
+	}
+}
+
+/** Updates generator last run info */
+export async function updateGeneratorLastRun({
+	id,
+	status,
+}: {
+	id: string;
+	status: "completed" | "failed";
+}) {
+	try {
+		const [updated] = await db
+			.update(newsletterGenerator)
+			.set({
+				lastRunAt: new Date(),
+				lastRunStatus: status,
+				updatedAt: new Date(),
+			})
+			.where(eq(newsletterGenerator.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update generator last run",
+		);
+	}
+}
+
+// ============================================================================
 // Project Queries
 // ============================================================================
 
@@ -1504,6 +1723,281 @@ export async function deleteUserSettings({ userId }: { userId: string }) {
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to delete user settings",
+		);
+	}
+}
+
+// ============================================================================
+// Content Record Queries
+// ============================================================================
+
+/** Get content records with optional filters */
+export async function getContentRecords({
+	status,
+	contentType,
+	sourceRobot,
+	projectId,
+	limit = 50,
+}: {
+	status?: string;
+	contentType?: string;
+	sourceRobot?: string;
+	projectId?: string;
+	limit?: number;
+}) {
+	try {
+		const conditions: SQL[] = [];
+
+		if (status) {
+			conditions.push(eq(contentRecord.status, status as ContentRecord["status"]));
+		}
+		if (contentType) {
+			conditions.push(eq(contentRecord.contentType, contentType as ContentRecord["contentType"]));
+		}
+		if (sourceRobot) {
+			conditions.push(eq(contentRecord.sourceRobot, sourceRobot as ContentRecord["sourceRobot"]));
+		}
+		if (projectId) {
+			conditions.push(eq(contentRecord.projectId, projectId));
+		}
+
+		const query = db
+			.select()
+			.from(contentRecord)
+			.orderBy(desc(contentRecord.updatedAt))
+			.limit(limit);
+
+		if (conditions.length > 0) {
+			return await query.where(and(...conditions));
+		}
+		return await query;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content records",
+		);
+	}
+}
+
+/** Get a single content record by ID */
+export async function getContentRecordById({ id }: { id: string }) {
+	try {
+		const [record] = await db
+			.select()
+			.from(contentRecord)
+			.where(eq(contentRecord.id, id));
+		return record || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content record",
+		);
+	}
+}
+
+/** Update a content record (for review actions) */
+export async function updateContentRecord({
+	id,
+	...fields
+}: {
+	id: string;
+	status?: string;
+	reviewerNote?: string;
+	reviewedBy?: string;
+	targetUrl?: string;
+	priority?: number;
+}) {
+	try {
+		const updates: Record<string, unknown> = {
+			updatedAt: new Date(),
+		};
+
+		if (fields.status !== undefined) updates.status = fields.status;
+		if (fields.reviewerNote !== undefined) updates.reviewerNote = fields.reviewerNote;
+		if (fields.reviewedBy !== undefined) updates.reviewedBy = fields.reviewedBy;
+		if (fields.targetUrl !== undefined) updates.targetUrl = fields.targetUrl;
+		if (fields.priority !== undefined) updates.priority = fields.priority;
+
+		await db
+			.update(contentRecord)
+			.set(updates)
+			.where(eq(contentRecord.id, id));
+
+		return await getContentRecordById({ id });
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update content record",
+		);
+	}
+}
+
+/** Get status change history for a content record */
+export async function getStatusChangesByContentId({
+	contentId,
+}: { contentId: string }) {
+	try {
+		return await db
+			.select()
+			.from(statusChange)
+			.where(eq(statusChange.contentId, contentId))
+			.orderBy(asc(statusChange.timestamp));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get status changes",
+		);
+	}
+}
+
+/** Create a status change record (for review actions from dashboard) */
+export async function createStatusChange({
+	contentId,
+	fromStatus,
+	toStatus,
+	changedBy,
+	reason,
+}: {
+	contentId: string;
+	fromStatus: string;
+	toStatus: string;
+	changedBy: string;
+	reason?: string;
+}) {
+	try {
+		const id = generateUUID();
+		const now = new Date();
+
+		await db.insert(statusChange).values({
+			id,
+			contentId,
+			fromStatus,
+			toStatus,
+			changedBy,
+			reason: reason || null,
+			timestamp: now,
+		});
+
+		return { id, contentId, fromStatus, toStatus, changedBy, reason, timestamp: now };
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create status change",
+		);
+	}
+}
+
+/** Get content statistics grouped by status */
+export async function getContentStats({
+	projectId,
+}: { projectId?: string } = {}) {
+	try {
+		const conditions: SQL[] = [];
+		if (projectId) {
+			conditions.push(eq(contentRecord.projectId, projectId));
+		}
+
+		const query = db
+			.select({
+				status: contentRecord.status,
+				count: count(),
+			})
+			.from(contentRecord)
+			.groupBy(contentRecord.status);
+
+		const rows = conditions.length > 0
+			? await query.where(and(...conditions))
+			: await query;
+
+		const byStatus: Record<string, number> = {};
+		let total = 0;
+		for (const row of rows) {
+			byStatus[row.status] = row.count;
+			total += row.count;
+		}
+		return { total, byStatus };
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content stats",
+		);
+	}
+}
+
+/** Get work domains, optionally filtered by project */
+export async function getWorkDomains({
+	projectId,
+}: { projectId?: string } = {}) {
+	try {
+		if (projectId) {
+			return await db
+				.select()
+				.from(workDomain)
+				.where(eq(workDomain.projectId, projectId))
+				.orderBy(asc(workDomain.domain));
+		}
+		return await db
+			.select()
+			.from(workDomain)
+			.orderBy(asc(workDomain.domain));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get work domains",
+		);
+	}
+}
+
+/** Update a work domain record */
+export async function updateWorkDomain({
+	projectId,
+	domain,
+	...fields
+}: {
+	projectId: string;
+	domain: string;
+	status?: string;
+	lastRunStatus?: string;
+	itemsPending?: number;
+	itemsCompleted?: number;
+	metadata?: Record<string, unknown>;
+}) {
+	try {
+		const updates: Record<string, unknown> = {
+			updatedAt: new Date(),
+		};
+
+		if (fields.status !== undefined) updates.status = fields.status;
+		if (fields.lastRunStatus !== undefined) updates.lastRunStatus = fields.lastRunStatus;
+		if (fields.itemsPending !== undefined) updates.itemsPending = fields.itemsPending;
+		if (fields.itemsCompleted !== undefined) updates.itemsCompleted = fields.itemsCompleted;
+		if (fields.metadata !== undefined) updates.metadata = fields.metadata;
+
+		await db
+			.update(workDomain)
+			.set(updates)
+			.where(
+				and(
+					eq(workDomain.projectId, projectId),
+					eq(workDomain.domain, domain),
+				),
+			);
+
+		const [result] = await db
+			.select()
+			.from(workDomain)
+			.where(
+				and(
+					eq(workDomain.projectId, projectId),
+					eq(workDomain.domain, domain),
+				),
+			);
+
+		return result || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update work domain",
 		);
 	}
 }
