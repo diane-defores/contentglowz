@@ -325,18 +325,29 @@
   body {
     @apply bg-background text-foreground;
   }
-  button,
-  a,
-  select,
-  summary,
-  [role="button"],
-  [role="menuitem"],
-  [role="menuitemradio"],
-  [role="tab"],
-  [role="option"],
-  [role="switch"],
-  [type="checkbox"],
-  [type="radio"] {
-    cursor: pointer;
-  }
+}
+
+/*
+ * Force pointer cursor on all interactive elements.
+ * Placed outside @layer to beat Tailwind utility specificity
+ * and shadcn/ui cursor-default overrides.
+ */
+button:not(:disabled),
+a,
+select:not(:disabled),
+summary,
+label[for],
+[role="button"],
+[role="menuitem"],
+[role="menuitemradio"],
+[role="menuitemcheckbox"],
+[role="tab"],
+[role="option"],
+[role="switch"],
+[role="combobox"],
+[type="checkbox"]:not(:disabled),
+[type="radio"]:not(:disabled),
+[data-slot="trigger"],
+[data-radix-collection-item] {
+  cursor: pointer !important;
 }
