@@ -69,7 +69,7 @@ export async function POST(
 		const updated = await updateContentRecord({
 			id,
 			status: toStatus,
-			reviewerNote: note || null,
+			reviewerNote: note || undefined,
 			reviewedBy: reviewerEmail,
 		});
 

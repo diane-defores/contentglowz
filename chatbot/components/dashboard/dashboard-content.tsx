@@ -1,13 +1,15 @@
 "use client";
 
 import {
-	Activity,
 	AlertCircle,
 	Bot,
+	CalendarDays,
 	FileCheck,
+	LayoutTemplate,
 	Link as LinkIcon,
 	Loader2,
 	Mail,
+	Search,
 	Users,
 	Zap,
 } from "lucide-react";
@@ -21,11 +23,13 @@ import { useProjectsContext } from "@/contexts/projects-context";
 import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
 import { ContentReviewTab } from "./content-review-tab";
+import { EditorialCalendarTab } from "./editorial-calendar-tab";
 import { MissionControl } from "./mission-control";
 import { NewsletterTab } from "./newsletter-tab";
 import { ProjectSelector } from "./project-selector";
+import { ResearchTab } from "./research-tab";
 import { SettingsModal } from "./settings-modal";
-import { UptimeTab } from "./uptime-tab";
+import { TemplatesTab } from "./templates-tab";
 
 interface DashboardContentProps {
 	repoUrl: string;
@@ -106,40 +110,50 @@ export function DashboardContent({
 			{/* Header */}
 			<div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 				<div className="container mx-auto px-3 sm:px-4">
-					<div className="flex h-14 items-center justify-around">
-						<TabsList className="h-9 w-full bg-transparent p-0 justify-around">
+					<div className="flex h-14 items-center gap-2">
+						<TabsList className="h-9 flex-1 bg-transparent p-0 justify-around">
 							<TabsTrigger value="mission" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<Zap className="h-4 w-4" />
+								<Zap className="h-5 w-5" />
 								<span className="hidden sm:inline">Mission Control</span>
 							</TabsTrigger>
 							<TabsTrigger value="newsletter" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<Mail className="h-4 w-4" />
+								<Mail className="h-5 w-5" />
 								<span className="hidden sm:inline">Newsletter</span>
 							</TabsTrigger>
-							<TabsTrigger value="uptime" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<Activity className="h-4 w-4" />
-								<span className="hidden sm:inline">Uptime</span>
+							<TabsTrigger value="templates" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
+								<LayoutTemplate className="h-5 w-5" />
+								<span className="hidden sm:inline">Templates</span>
+							</TabsTrigger>
+							<TabsTrigger value="research" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
+								<Search className="h-5 w-5" />
+								<span className="hidden sm:inline">Research</span>
 							</TabsTrigger>
 							<TabsTrigger value="affiliations" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<LinkIcon className="h-4 w-4" />
+								<LinkIcon className="h-5 w-5" />
 								<span className="hidden sm:inline">Affiliations</span>
 							</TabsTrigger>
 							<TabsTrigger value="content" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<FileCheck className="h-4 w-4" />
+								<FileCheck className="h-5 w-5" />
 								<span className="hidden sm:inline">Content</span>
 							</TabsTrigger>
+							<TabsTrigger value="calendar" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
+								<CalendarDays className="h-5 w-5" />
+								<span className="hidden sm:inline">Calendar</span>
+							</TabsTrigger>
 							<TabsTrigger value="competitors" className="flex items-center gap-1.5 text-xs sm:text-sm px-2 sm:px-3 h-8 data-[state=active]:bg-muted">
-								<Users className="h-4 w-4" />
+								<Users className="h-5 w-5" />
 								<span className="hidden sm:inline">Competitors</span>
 							</TabsTrigger>
 						</TabsList>
-						<ProjectSelector />
-						<Button asChild variant="ghost" size="icon" className="h-8 w-8">
-							<Link href="/">
-								<Bot className="h-4 w-4" />
-							</Link>
-						</Button>
-						<SettingsModal />
+						<div className="flex items-center gap-1.5 shrink-0">
+							<ProjectSelector />
+							<Button asChild variant="ghost" size="icon" className="h-9 w-9 [&_svg]:size-5">
+								<Link href="/">
+									<Bot className="h-5 w-5" />
+								</Link>
+							</Button>
+							<SettingsModal />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -172,9 +186,14 @@ export function DashboardContent({
 						<NewsletterTab />
 					</TabsContent>
 
-					{/* Uptime Tab */}
-					<TabsContent value="uptime">
-						<UptimeTab />
+					{/* Templates Tab */}
+					<TabsContent value="templates">
+						<TemplatesTab projectId={selectedProject?.id} />
+					</TabsContent>
+
+					{/* Research Tab — forceMount keeps chat state alive across tab switches */}
+					<TabsContent value="research" forceMount className="data-[state=inactive]:hidden">
+						<ResearchTab projectId={selectedProject?.id} />
 					</TabsContent>
 
 					{/* Affiliations Tab */}
@@ -185,6 +204,11 @@ export function DashboardContent({
 					{/* Content Review Tab */}
 					<TabsContent value="content">
 						<ContentReviewTab projectId={selectedProject?.id} />
+					</TabsContent>
+
+					{/* Editorial Calendar Tab */}
+					<TabsContent value="calendar">
+						<EditorialCalendarTab projectId={selectedProject?.id} />
 					</TabsContent>
 
 					{/* Competitors Tab */}

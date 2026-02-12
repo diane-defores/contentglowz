@@ -44,6 +44,12 @@ export const chat = sqliteTable("Chat", {
 	visibility: text("visibility", { enum: ["public", "private"] })
 		.notNull()
 		.default("private"),
+	type: text("type", { enum: ["chat", "research"] })
+		.notNull()
+		.default("chat"),
+	chatStatus: text("chatStatus", { enum: ["active", "pending", "archived"] })
+		.notNull()
+		.default("active"),
 	lastContext: text("lastContext", { mode: "json" }).$type<AppUsage | null>(),
 });
 
@@ -395,6 +401,7 @@ export const userSettings = sqliteTable("UserSettings", {
 		exa?: string;
 		firecrawl?: string;
 		serper?: string;
+		openrouter?: string;
 		bunnyStorage?: string;
 		bunnyCdn?: string;
 		bunnyCdnHostname?: string;
@@ -472,6 +479,30 @@ export const newsletterGenerator = sqliteTable("NewsletterGenerator", {
 export type NewsletterGenerator = InferSelectModel<typeof newsletterGenerator>;
 
 /**
+ * Gmail OAuth tokens — stores access/refresh tokens for Gmail API access.
+ * One token per user (for importing competitor newsletters from their inbox).
+ */
+export const gmailToken = sqliteTable("GmailToken", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	email: text("email").notNull(),
+	accessToken: text("accessToken").notNull(),
+	refreshToken: text("refreshToken").notNull(),
+	expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+	scope: text("scope").notNull(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type GmailToken = InferSelectModel<typeof gmailToken>;
+
+/**
  * Content records — tracks content through its lifecycle from creation to publication.
  * Synced from Python status module via the sync service.
  */
@@ -479,7 +510,7 @@ export const contentRecord = sqliteTable("ContentRecord", {
 	id: text("id").primaryKey().notNull(),
 	title: text("title").notNull(),
 	contentType: text("contentType", {
-		enum: ["article", "newsletter", "seo-content", "image", "manual"],
+		enum: ["article", "newsletter", "seo-content", "image", "manual", "video_script"],
 	}).notNull(),
 	sourceRobot: text("sourceRobot", {
 		enum: ["seo", "newsletter", "article", "images", "manual"],
@@ -511,6 +542,7 @@ export const contentRecord = sqliteTable("ContentRecord", {
 	targetUrl: text("targetUrl"),
 	reviewerNote: text("reviewerNote"),
 	reviewedBy: text("reviewedBy"),
+	currentVersion: integer("currentVersion").notNull().default(0),
 	createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 	updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 	scheduledFor: integer("scheduledFor", { mode: "timestamp" }),
@@ -554,3 +586,170 @@ export const workDomain = sqliteTable("WorkDomain", {
 });
 
 export type WorkDomain = InferSelectModel<typeof workDomain>;
+
+/**
+ * Content bodies — stores the full markdown content with versioning.
+ * Each edit creates a new version row.
+ */
+export const contentBody = sqliteTable("ContentBody", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	contentId: text("contentId")
+		.notNull()
+		.references(() => contentRecord.id, { onDelete: "cascade" }),
+	body: text("body").notNull(),
+	version: integer("version").notNull().default(1),
+	editedBy: text("editedBy"),
+	editNote: text("editNote"),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ContentBody = InferSelectModel<typeof contentBody>;
+
+/**
+ * Content edit history — audit trail of all content modifications.
+ */
+export const contentEdit = sqliteTable("ContentEdit", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	contentId: text("contentId")
+		.notNull()
+		.references(() => contentRecord.id, { onDelete: "cascade" }),
+	editedBy: text("editedBy").notNull(),
+	editNote: text("editNote"),
+	previousVersion: integer("previousVersion").notNull(),
+	newVersion: integer("newVersion").notNull(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ContentEdit = InferSelectModel<typeof contentEdit>;
+
+/**
+ * Schedule jobs — persistent job scheduling replacing in-memory schedules.
+ * Supports newsletter, SEO, and article generation on recurring schedules.
+ */
+export const scheduleJob = sqliteTable("ScheduleJob", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	jobType: text("jobType", {
+		enum: ["newsletter", "seo", "article"],
+	}).notNull(),
+	generatorId: text("generatorId"),
+	configuration: text("configuration", { mode: "json" }).$type<Record<string, unknown>>(),
+	schedule: text("schedule", {
+		enum: ["daily", "weekly", "monthly", "custom"],
+	}).notNull(),
+	cronExpression: text("cronExpression"),
+	scheduleDay: integer("scheduleDay"),
+	scheduleTime: text("scheduleTime"),
+	timezone: text("timezone").notNull().default("UTC"),
+	enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+	lastRunAt: integer("lastRunAt", { mode: "timestamp" }),
+	lastRunStatus: text("lastRunStatus", {
+		enum: ["completed", "failed", "running"],
+	}),
+	nextRunAt: integer("nextRunAt", { mode: "timestamp" }),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ScheduleJob = InferSelectModel<typeof scheduleJob>;
+
+/**
+ * Content templates — reusable structured data models for content generation.
+ * Each template defines a content type (article, newsletter, video script, etc.)
+ * with ordered sections, each having its own AI prompt configuration.
+ */
+export const contentTemplate = sqliteTable("ContentTemplate", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	name: text("name").notNull(),
+	slug: text("slug").notNull(),
+	contentType: text("contentType", {
+		enum: ["article", "newsletter", "video_script", "seo_brief"],
+	}).notNull(),
+	description: text("description"),
+	isSystem: integer("isSystem", { mode: "boolean" })
+		.notNull()
+		.default(false),
+	version: integer("version").notNull().default(1),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ContentTemplate = InferSelectModel<typeof contentTemplate>;
+
+/**
+ * Template sections — ordered fields within a content template.
+ * Each section has its own prompt (AI-generated default + optional user override)
+ * and generation hints (model, temperature, max tokens, style).
+ */
+export const templateSection = sqliteTable("TemplateSection", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	templateId: text("templateId")
+		.notNull()
+		.references(() => contentTemplate.id, { onDelete: "cascade" }),
+	name: text("name").notNull(),
+	label: text("label").notNull(),
+	fieldType: text("fieldType", {
+		enum: ["text", "markdown", "list", "number", "url", "tags"],
+	}).notNull(),
+	required: integer("required", { mode: "boolean" })
+		.notNull()
+		.default(true),
+	order: integer("order").notNull().default(0),
+	description: text("description"),
+	placeholder: text("placeholder"),
+	defaultPrompt: text("defaultPrompt"),
+	userPrompt: text("userPrompt"),
+	promptStrategy: text("promptStrategy", {
+		enum: ["auto_generate", "user_defined", "hybrid"],
+	})
+		.notNull()
+		.default("auto_generate"),
+	generationHints: text("generationHints", { mode: "json" }).$type<{
+		model?: string;
+		temperature?: number;
+		maxTokens?: number;
+		style?: string;
+	}>(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type TemplateSection = InferSelectModel<typeof templateSection>;

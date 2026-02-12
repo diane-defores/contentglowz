@@ -38,8 +38,12 @@ import {
 	competitor,
 	type ContentRecord,
 	contentRecord,
+	type ContentTemplate,
+	contentTemplate,
 	type DBMessage,
 	document,
+	type GmailToken,
+	gmailToken,
 	message,
 	type NewsletterGenerator,
 	newsletterGenerator,
@@ -50,6 +54,8 @@ import {
 	type Suggestion,
 	stream,
 	suggestion,
+	type TemplateSection,
+	templateSection,
 	type User,
 	user,
 	type UserSettings,
@@ -130,12 +136,14 @@ export async function saveChat({
 	projectId,
 	title,
 	visibility,
+	type,
 }: {
 	id: string;
 	userId: string;
 	projectId?: string;
 	title: string;
 	visibility: VisibilityType;
+	type?: "chat" | "research";
 }) {
 	try {
 		return await db.insert(chat).values({
@@ -145,6 +153,7 @@ export async function saveChat({
 			projectId,
 			title,
 			visibility,
+			...(type ? { type } : {}),
 		});
 	} catch (_error) {
 		throw new ChatSDKError("bad_request:database", "Failed to save chat");
@@ -214,12 +223,14 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 export async function getChatsByUserId({
 	id,
 	projectId,
+	type,
 	limit,
 	startingAfter,
 	endingBefore,
 }: {
 	id: string;
 	projectId?: string;
+	type?: "chat" | "research";
 	limit: number;
 	startingAfter: string | null;
 	endingBefore: string | null;
@@ -227,9 +238,10 @@ export async function getChatsByUserId({
 	try {
 		const extendedLimit = limit + 1;
 
-		const baseConditions = projectId
-			? and(eq(chat.userId, id), eq(chat.projectId, projectId))
-			: eq(chat.userId, id);
+		const conditions = [eq(chat.userId, id)];
+		if (projectId) conditions.push(eq(chat.projectId, projectId));
+		if (type) conditions.push(eq(chat.type, type));
+		const baseConditions = conditions.length === 1 ? conditions[0] : and(...conditions);
 
 		const query = (whereCondition?: SQL<any>) =>
 			db
@@ -1690,7 +1702,7 @@ export async function updateUserApiKey({
 	apiKey,
 }: {
 	userId: string;
-	provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname";
+	provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname";
 	apiKey: string | null;
 }): Promise<UserSettings> {
 	try {
@@ -1998,6 +2010,452 @@ export async function updateWorkDomain({
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to update work domain",
+		);
+	}
+}
+
+// ============================================================================
+// Gmail Token Queries
+// ============================================================================
+
+/** Gets the Gmail OAuth token for a user */
+export async function getGmailTokenByUserId({
+	userId,
+}: {
+	userId: string;
+}): Promise<GmailToken | null> {
+	try {
+		const [token] = await db
+			.select()
+			.from(gmailToken)
+			.where(eq(gmailToken.userId, userId));
+		return token || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get Gmail token",
+		);
+	}
+}
+
+/** Upserts a Gmail OAuth token for a user (one token per user) */
+export async function upsertGmailToken({
+	userId,
+	email,
+	accessToken,
+	refreshToken,
+	expiresAt,
+	scope,
+}: {
+	userId: string;
+	email: string;
+	accessToken: string;
+	refreshToken: string;
+	expiresAt: Date;
+	scope: string;
+}): Promise<GmailToken> {
+	try {
+		const existing = await getGmailTokenByUserId({ userId });
+
+		if (existing) {
+			const [updated] = await db
+				.update(gmailToken)
+				.set({ email, accessToken, refreshToken, expiresAt, scope })
+				.where(eq(gmailToken.userId, userId))
+				.returning();
+			return updated;
+		}
+
+		const [created] = await db
+			.insert(gmailToken)
+			.values({ userId, email, accessToken, refreshToken, expiresAt, scope })
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to upsert Gmail token",
+		);
+	}
+}
+
+/** Deletes the Gmail OAuth token for a user */
+export async function deleteGmailToken({ userId }: { userId: string }) {
+	try {
+		await db.delete(gmailToken).where(eq(gmailToken.userId, userId));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete Gmail token",
+		);
+	}
+}
+
+// ============================================================================
+// Content Template Queries
+// ============================================================================
+
+/** Gets all templates for a user (includes system templates), optionally filtered */
+export async function getTemplatesByUserId({
+	userId,
+	projectId,
+	contentType,
+}: {
+	userId: string;
+	projectId?: string;
+	contentType?: string;
+}): Promise<ContentTemplate[]> {
+	try {
+		const conditions = [
+			// User's own templates OR system templates
+			eq(contentTemplate.userId, userId),
+		];
+		if (projectId) {
+			conditions.push(eq(contentTemplate.projectId, projectId));
+		}
+		if (contentType) {
+			conditions.push(
+				eq(
+					contentTemplate.contentType,
+					contentType as ContentTemplate["contentType"],
+				),
+			);
+		}
+		return await db
+			.select()
+			.from(contentTemplate)
+			.where(and(...conditions))
+			.orderBy(desc(contentTemplate.updatedAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get templates",
+		);
+	}
+}
+
+/** Gets a single template by ID with all its sections */
+export async function getTemplateById({
+	id,
+}: {
+	id: string;
+}): Promise<
+	| (ContentTemplate & { sections: TemplateSection[] })
+	| null
+> {
+	try {
+		const [tmpl] = await db
+			.select()
+			.from(contentTemplate)
+			.where(eq(contentTemplate.id, id));
+		if (!tmpl) return null;
+
+		const sections = await db
+			.select()
+			.from(templateSection)
+			.where(eq(templateSection.templateId, id))
+			.orderBy(asc(templateSection.order));
+
+		return { ...tmpl, sections };
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get template by id",
+		);
+	}
+}
+
+/** Creates a template with its sections in one go */
+export async function createTemplate({
+	userId,
+	projectId,
+	name,
+	slug,
+	contentType,
+	description,
+	isSystem,
+	sections,
+}: {
+	userId: string;
+	projectId?: string;
+	name: string;
+	slug: string;
+	contentType: ContentTemplate["contentType"];
+	description?: string;
+	isSystem?: boolean;
+	sections: Array<{
+		name: string;
+		label: string;
+		fieldType: TemplateSection["fieldType"];
+		required?: boolean;
+		order: number;
+		description?: string;
+		placeholder?: string;
+		defaultPrompt?: string;
+		userPrompt?: string;
+		promptStrategy?: TemplateSection["promptStrategy"];
+		generationHints?: TemplateSection["generationHints"];
+	}>;
+}): Promise<ContentTemplate & { sections: TemplateSection[] }> {
+	try {
+		const [created] = await db
+			.insert(contentTemplate)
+			.values({
+				userId,
+				projectId,
+				name,
+				slug,
+				contentType,
+				description,
+				isSystem: isSystem ?? false,
+			})
+			.returning();
+
+		const createdSections: TemplateSection[] = [];
+		for (const section of sections) {
+			const [s] = await db
+				.insert(templateSection)
+				.values({
+					templateId: created.id,
+					name: section.name,
+					label: section.label,
+					fieldType: section.fieldType,
+					required: section.required ?? true,
+					order: section.order,
+					description: section.description,
+					placeholder: section.placeholder,
+					defaultPrompt: section.defaultPrompt,
+					userPrompt: section.userPrompt,
+					promptStrategy: section.promptStrategy ?? "auto_generate",
+					generationHints: section.generationHints,
+				})
+				.returning();
+			createdSections.push(s);
+		}
+
+		return { ...created, sections: createdSections };
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create template",
+		);
+	}
+}
+
+/** Updates a template and diffs its sections (add/update/remove) */
+export async function updateTemplate({
+	id,
+	name,
+	slug,
+	contentType,
+	description,
+	sections,
+}: {
+	id: string;
+	name?: string;
+	slug?: string;
+	contentType?: ContentTemplate["contentType"];
+	description?: string;
+	sections?: Array<{
+		id?: string;
+		name: string;
+		label: string;
+		fieldType: TemplateSection["fieldType"];
+		required?: boolean;
+		order: number;
+		description?: string;
+		placeholder?: string;
+		defaultPrompt?: string;
+		userPrompt?: string;
+		promptStrategy?: TemplateSection["promptStrategy"];
+		generationHints?: TemplateSection["generationHints"];
+	}>;
+}): Promise<ContentTemplate & { sections: TemplateSection[] }> {
+	try {
+		const updateData: Record<string, any> = {
+			updatedAt: new Date(),
+		};
+		if (name !== undefined) updateData.name = name;
+		if (slug !== undefined) updateData.slug = slug;
+		if (contentType !== undefined) updateData.contentType = contentType;
+		if (description !== undefined) updateData.description = description;
+
+		const [updated] = await db
+			.update(contentTemplate)
+			.set(updateData)
+			.where(eq(contentTemplate.id, id))
+			.returning();
+
+		let updatedSections: TemplateSection[] = [];
+
+		if (sections !== undefined) {
+			// Get current sections
+			const existingSections = await db
+				.select()
+				.from(templateSection)
+				.where(eq(templateSection.templateId, id));
+			const existingIds = new Set(existingSections.map((s) => s.id));
+			const incomingIds = new Set(
+				sections.filter((s) => s.id).map((s) => s.id!),
+			);
+
+			// Delete sections not in incoming list
+			for (const existing of existingSections) {
+				if (!incomingIds.has(existing.id)) {
+					await db
+						.delete(templateSection)
+						.where(eq(templateSection.id, existing.id));
+				}
+			}
+
+			// Add or update sections
+			for (const section of sections) {
+				if (section.id && existingIds.has(section.id)) {
+					// Update existing
+					const [s] = await db
+						.update(templateSection)
+						.set({
+							name: section.name,
+							label: section.label,
+							fieldType: section.fieldType,
+							required: section.required ?? true,
+							order: section.order,
+							description: section.description,
+							placeholder: section.placeholder,
+							defaultPrompt: section.defaultPrompt,
+							userPrompt: section.userPrompt,
+							promptStrategy:
+								section.promptStrategy ?? "auto_generate",
+							generationHints: section.generationHints,
+							updatedAt: new Date(),
+						})
+						.where(eq(templateSection.id, section.id))
+						.returning();
+					updatedSections.push(s);
+				} else {
+					// Insert new
+					const [s] = await db
+						.insert(templateSection)
+						.values({
+							templateId: id,
+							name: section.name,
+							label: section.label,
+							fieldType: section.fieldType,
+							required: section.required ?? true,
+							order: section.order,
+							description: section.description,
+							placeholder: section.placeholder,
+							defaultPrompt: section.defaultPrompt,
+							userPrompt: section.userPrompt,
+							promptStrategy:
+								section.promptStrategy ?? "auto_generate",
+							generationHints: section.generationHints,
+						})
+						.returning();
+					updatedSections.push(s);
+				}
+			}
+
+			// Sort by order
+			updatedSections.sort((a, b) => a.order - b.order);
+		} else {
+			updatedSections = await db
+				.select()
+				.from(templateSection)
+				.where(eq(templateSection.templateId, id))
+				.orderBy(asc(templateSection.order));
+		}
+
+		return { ...updated, sections: updatedSections };
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update template",
+		);
+	}
+}
+
+/** Deletes a template (cascade deletes sections) */
+export async function deleteTemplate({ id }: { id: string }) {
+	try {
+		await db
+			.delete(templateSection)
+			.where(eq(templateSection.templateId, id));
+		await db.delete(contentTemplate).where(eq(contentTemplate.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete template",
+		);
+	}
+}
+
+/** Deep-clones a template with new IDs for the user */
+export async function cloneTemplate({
+	id,
+	userId,
+}: {
+	id: string;
+	userId: string;
+}): Promise<(ContentTemplate & { sections: TemplateSection[] }) | null> {
+	try {
+		const source = await getTemplateById({ id });
+		if (!source) return null;
+
+		return await createTemplate({
+			userId,
+			projectId: source.projectId ?? undefined,
+			name: `${source.name} (Copy)`,
+			slug: `${source.slug}-copy-${Date.now()}`,
+			contentType: source.contentType,
+			description: source.description ?? undefined,
+			isSystem: false,
+			sections: source.sections.map((s) => ({
+				name: s.name,
+				label: s.label,
+				fieldType: s.fieldType,
+				required: s.required,
+				order: s.order,
+				description: s.description ?? undefined,
+				placeholder: s.placeholder ?? undefined,
+				defaultPrompt: s.defaultPrompt ?? undefined,
+				userPrompt: s.userPrompt ?? undefined,
+				promptStrategy: s.promptStrategy,
+				generationHints: s.generationHints ?? undefined,
+			})),
+		});
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to clone template",
+		);
+	}
+}
+
+/** Reorders sections within a template by updating order values */
+export async function reorderSections({
+	templateId,
+	sectionIds,
+}: {
+	templateId: string;
+	sectionIds: string[];
+}) {
+	try {
+		for (let i = 0; i < sectionIds.length; i++) {
+			await db
+				.update(templateSection)
+				.set({ order: i, updatedAt: new Date() })
+				.where(
+					and(
+						eq(templateSection.id, sectionIds[i]),
+						eq(templateSection.templateId, templateId),
+					),
+				);
+		}
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to reorder sections",
 		);
 	}
 }

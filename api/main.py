@@ -31,6 +31,8 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router
+from api.routers.scheduler import router as scheduler_router
+from api.routers.templates import router as templates_router
 
 
 # ─────────────────────────────────────────────────
@@ -76,11 +78,29 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"⚠ Status sync init failed (non-critical): {e}")
 
+    # Start background scheduler service
+    scheduler_task = None
+    try:
+        from scheduler.scheduler_service import get_scheduler_service
+        scheduler_svc = get_scheduler_service()
+        scheduler_task = asyncio.create_task(scheduler_svc.start())
+        print("✅ Scheduler service started (60s interval)")
+    except Exception as e:
+        print(f"⚠ Scheduler init failed (non-critical): {e}")
+
     print("✅ API ready to serve requests")
 
     yield
 
     # Shutdown
+    if scheduler_task:
+        try:
+            from scheduler.scheduler_service import get_scheduler_service
+            get_scheduler_service().stop()
+            scheduler_task.cancel()
+            print("✅ Scheduler service stopped")
+        except Exception:
+            pass
     if sync_task:
         try:
             from status.sync import get_sync_service
@@ -220,6 +240,8 @@ app.include_router(newsletter_router)
 app.include_router(deployment_router)
 app.include_router(images_router)
 app.include_router(status_router)
+app.include_router(scheduler_router)
+app.include_router(templates_router)
 
 
 # ─────────────────────────────────────────────────

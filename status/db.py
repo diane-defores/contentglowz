@@ -51,6 +51,7 @@ def init_db(conn: sqlite3.Connection) -> None:
             target_url TEXT,
             reviewer_note TEXT,
             reviewed_by TEXT,
+            current_version INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             scheduled_for TEXT,
@@ -102,6 +103,96 @@ def init_db(conn: sqlite3.Connection) -> None:
             status TEXT NOT NULL DEFAULT 'running',
             error TEXT
         );
+
+        CREATE TABLE IF NOT EXISTS content_bodies (
+            id TEXT PRIMARY KEY,
+            content_id TEXT NOT NULL,
+            body TEXT NOT NULL,
+            version INTEGER NOT NULL DEFAULT 1,
+            edited_by TEXT,
+            edit_note TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (content_id) REFERENCES content_records(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_bodies_content ON content_bodies(content_id);
+        CREATE INDEX IF NOT EXISTS idx_bodies_version ON content_bodies(content_id, version);
+
+        CREATE TABLE IF NOT EXISTS content_edits (
+            id TEXT PRIMARY KEY,
+            content_id TEXT NOT NULL,
+            edited_by TEXT NOT NULL,
+            edit_note TEXT,
+            previous_version INTEGER NOT NULL,
+            new_version INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (content_id) REFERENCES content_records(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_edits_content ON content_edits(content_id);
+
+        CREATE TABLE IF NOT EXISTS schedule_jobs (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            project_id TEXT,
+            job_type TEXT NOT NULL,
+            generator_id TEXT,
+            configuration TEXT NOT NULL DEFAULT '{}',
+            schedule TEXT NOT NULL,
+            cron_expression TEXT,
+            schedule_day INTEGER,
+            schedule_time TEXT,
+            timezone TEXT NOT NULL DEFAULT 'UTC',
+            enabled INTEGER NOT NULL DEFAULT 1,
+            last_run_at TEXT,
+            last_run_status TEXT,
+            next_run_at TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_jobs_enabled ON schedule_jobs(enabled);
+        CREATE INDEX IF NOT EXISTS idx_jobs_next_run ON schedule_jobs(next_run_at);
+
+        CREATE TABLE IF NOT EXISTS content_templates (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            project_id TEXT,
+            name TEXT NOT NULL,
+            slug TEXT NOT NULL,
+            content_type TEXT NOT NULL,
+            description TEXT,
+            is_system INTEGER NOT NULL DEFAULT 0,
+            version INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_template_user ON content_templates(user_id);
+        CREATE INDEX IF NOT EXISTS idx_template_type ON content_templates(content_type);
+        CREATE INDEX IF NOT EXISTS idx_template_slug ON content_templates(slug);
+
+        CREATE TABLE IF NOT EXISTS template_sections (
+            id TEXT PRIMARY KEY,
+            template_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            label TEXT NOT NULL,
+            field_type TEXT NOT NULL,
+            required INTEGER NOT NULL DEFAULT 1,
+            "order" INTEGER NOT NULL DEFAULT 0,
+            description TEXT,
+            placeholder TEXT,
+            default_prompt TEXT,
+            user_prompt TEXT,
+            prompt_strategy TEXT NOT NULL DEFAULT 'auto_generate',
+            generation_hints TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (template_id) REFERENCES content_templates(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_section_template ON template_sections(template_id);
+        CREATE INDEX IF NOT EXISTS idx_section_order ON template_sections(template_id, "order");
         """
     )
     conn.commit()

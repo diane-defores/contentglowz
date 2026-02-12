@@ -15,6 +15,7 @@ class ContentType(str, Enum):
     SEO_CONTENT = "seo-content"
     IMAGE = "image"
     MANUAL = "manual"
+    VIDEO_SCRIPT = "video_script"
 
 
 class SourceRobot(str, Enum):
