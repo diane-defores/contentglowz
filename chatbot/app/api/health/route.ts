@@ -77,5 +77,5 @@ export async function GET() {
 		status: hasError ? "unhealthy" : hasWarning ? "degraded" : "healthy",
 		timestamp: new Date().toISOString(),
 		services,
-	}, { status: hasError ? 503 : 200 });
+	});
 }

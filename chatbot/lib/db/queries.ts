@@ -68,6 +68,39 @@ import {
 const db = getDb();
 
 // ============================================================================
+// User Queries
+// ============================================================================
+
+/** Ensures a user row exists for the given Clerk userId. */
+export async function ensureUser({
+	userId,
+	email,
+}: {
+	userId: string;
+	email?: string;
+}) {
+	try {
+		const [existing] = await db
+			.select()
+			.from(user)
+			.where(eq(user.id, userId));
+
+		if (existing) return existing;
+
+		const [created] = await db
+			.insert(user)
+			.values({
+				id: userId,
+				email: email || `${userId}@clerk.user`,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError("bad_request:database", "Failed to ensure user");
+	}
+}
+
+// ============================================================================
 // Chat Queries
 // ============================================================================
 
@@ -88,6 +121,9 @@ export async function saveChat({
 	type?: "chat" | "research";
 }) {
 	try {
+		// Ensure user exists in DB (Clerk users may not have a row yet)
+		await ensureUser({ userId });
+
 		return await db.insert(chat).values({
 			id,
 			createdAt: new Date(),

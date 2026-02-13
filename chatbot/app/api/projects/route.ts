@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createProject, getProjectsByUserId } from "@/lib/db/queries";
+import { createProject, ensureUser, getProjectsByUserId } from "@/lib/db/queries";
 
 export async function GET() {
 	const { userId } = await auth();
@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
 				{ status: 400 }
 			);
 		}
+
+		// Ensure user exists in DB (Clerk users may not have a row yet)
+		await ensureUser({ userId });
 
 		const project = await createProject({
 			userId,

@@ -3,6 +3,7 @@
 import {
 	Activity,
 	AlertCircle,
+	ArrowLeft,
 	Bot,
 	CheckCircle,
 	Loader2,
@@ -49,7 +50,7 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 	const { categories, activity, robots, stats } = useMissionControl(projectId);
 	const uptime = useUptime();
 	const [showAllActivity, setShowAllActivity] = useState(false);
-	const [showUptime, setShowUptime] = useState(false);
+	const [view, setView] = useState<"main" | "uptime">("main");
 
 	const uptimeColor =
 		uptime.overallStatus === "operational"
@@ -96,9 +97,20 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 							Mission Control
 						</h2>
 						<div className="flex items-center gap-2">
+							{view === "uptime" && (
+								<Button
+									onClick={() => setView("main")}
+									variant="ghost"
+									size="sm"
+									className="h-8"
+								>
+									<ArrowLeft className="h-3.5 w-3.5 sm:mr-1.5" />
+									<span className="hidden sm:inline">Back</span>
+								</Button>
+							)}
 							<Button
-								onClick={() => setShowUptime(true)}
-								variant="outline"
+								onClick={() => setView(view === "uptime" ? "main" : "uptime")}
+								variant={view === "uptime" ? "default" : "outline"}
 								size="sm"
 								className="h-8"
 							>
@@ -106,234 +118,232 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 								<span className="hidden sm:inline">{uptimeLabel}</span>
 								<Activity className="h-3.5 w-3.5 sm:hidden" />
 							</Button>
-							<Button
-								onClick={() => {
-									robots.refresh();
-									activity.refresh();
-								}}
-								variant="outline"
-								size="sm"
-								className="h-8"
-							>
-								<RefreshCw className="h-3.5 w-3.5 sm:mr-2" />
-								<span className="hidden sm:inline">Refresh</span>
-							</Button>
+							{view === "main" && (
+								<Button
+									onClick={() => {
+										robots.refresh();
+										activity.refresh();
+									}}
+									variant="outline"
+									size="sm"
+									className="h-8"
+								>
+									<RefreshCw className="h-3.5 w-3.5 sm:mr-2" />
+									<span className="hidden sm:inline">Refresh</span>
+								</Button>
+							)}
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
-						<Card className="p-3 sm:p-4">
-							<div className="flex items-center gap-2">
-								<Bot className="h-4 w-4 text-muted-foreground" />
-								<div>
-									<div className="text-lg sm:text-2xl font-bold">
-										{stats.totalRobots}
-									</div>
-									<div className="text-xs sm:text-sm text-muted-foreground">
-										Robots
-									</div>
-								</div>
-							</div>
-						</Card>
-						<Card className="p-3 sm:p-4">
-							<div className="flex items-center gap-2">
-								<Activity className="h-4 w-4 text-blue-500" />
-								<div>
-									<div className="text-lg sm:text-2xl font-bold text-blue-600">
-										{stats.activeRobots}
-									</div>
-									<div className="text-xs sm:text-sm text-muted-foreground">
-										Active
+					{view === "main" && (
+						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+							<Card className="p-3 sm:p-4">
+								<div className="flex items-center gap-2">
+									<Bot className="h-4 w-4 text-muted-foreground" />
+									<div>
+										<div className="text-lg sm:text-2xl font-bold">
+											{stats.totalRobots}
+										</div>
+										<div className="text-xs sm:text-sm text-muted-foreground">
+											Robots
+										</div>
 									</div>
 								</div>
-							</div>
-						</Card>
-						<Card className="p-3 sm:p-4">
-							<div className="flex items-center gap-2">
-								<CheckCircle className="h-4 w-4 text-green-500" />
-								<div>
-									<div className="text-lg sm:text-2xl font-bold text-green-600">
-										{stats.successRate}%
-									</div>
-									<div className="text-xs sm:text-sm text-muted-foreground">
-										Success
-									</div>
-								</div>
-							</div>
-						</Card>
-						<Card className="p-3 sm:p-4">
-							<div className="flex items-center gap-2">
-								<AlertCircle className="h-4 w-4 text-red-500" />
-								<div>
-									<div className="text-lg sm:text-2xl font-bold text-red-600">
-										{stats.errorCount}
-									</div>
-									<div className="text-xs sm:text-sm text-muted-foreground">
-										Errors
+							</Card>
+							<Card className="p-3 sm:p-4">
+								<div className="flex items-center gap-2">
+									<Activity className="h-4 w-4 text-blue-500" />
+									<div>
+										<div className="text-lg sm:text-2xl font-bold text-blue-600">
+											{stats.activeRobots}
+										</div>
+										<div className="text-xs sm:text-sm text-muted-foreground">
+											Active
+										</div>
 									</div>
 								</div>
-							</div>
-						</Card>
-					</div>
+							</Card>
+							<Card className="p-3 sm:p-4">
+								<div className="flex items-center gap-2">
+									<CheckCircle className="h-4 w-4 text-green-500" />
+									<div>
+										<div className="text-lg sm:text-2xl font-bold text-green-600">
+											{stats.successRate}%
+										</div>
+										<div className="text-xs sm:text-sm text-muted-foreground">
+											Success
+										</div>
+									</div>
+								</div>
+							</Card>
+							<Card className="p-3 sm:p-4">
+								<div className="flex items-center gap-2">
+									<AlertCircle className="h-4 w-4 text-red-500" />
+									<div>
+										<div className="text-lg sm:text-2xl font-bold text-red-600">
+											{stats.errorCount}
+										</div>
+										<div className="text-xs sm:text-sm text-muted-foreground">
+											Errors
+										</div>
+									</div>
+								</div>
+							</Card>
+						</div>
+					)}
 				</div>
 
-				{/* Main Content Grid */}
-				<div className="grid gap-4 lg:grid-cols-[1fr,300px] xl:grid-cols-[1fr,350px]">
-					{/* Categories Section */}
-					<div className="space-y-4">
-						{robots.loading ? (
-							<div className="flex items-center justify-center py-12">
-								<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-								<span className="ml-3 text-muted-foreground">
-									Loading robots...
-								</span>
-							</div>
-						) : (
-							categories.map((category, index) => {
-								const isGrowthCategory = category.id === "growth";
+				{view === "uptime" ? (
+					/* Inline Uptime View */
+					<UptimeTab />
+				) : (
+					<>
+						{/* Main Content Grid */}
+						<div className="grid gap-4 lg:grid-cols-[1fr,300px] xl:grid-cols-[1fr,350px]">
+							{/* Categories Section */}
+							<div className="space-y-4">
+								{robots.loading ? (
+									<div className="flex items-center justify-center py-12">
+										<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+										<span className="ml-3 text-muted-foreground">
+											Loading robots...
+										</span>
+									</div>
+								) : (
+									categories.map((category, index) => {
+										const isGrowthCategory = category.id === "growth";
 
-								// Wrap the growth category with onboarding steps
-								if (isGrowthCategory) {
-									return (
-										<OnboardingStep
-											key={category.id}
-											step={1}
-											title={ONBOARDING_STEPS.croissance.title}
-											description={ONBOARDING_STEPS.croissance.description}
-											side="right"
-										>
-											<OnboardingStep
-												step={2}
-												title={ONBOARDING_STEPS.seoRobot.title}
-												description={ONBOARDING_STEPS.seoRobot.description}
-												side="right"
-											>
+										// Wrap the growth category with onboarding steps
+										if (isGrowthCategory) {
+											return (
 												<OnboardingStep
-													step={3}
-													title={ONBOARDING_STEPS.runButton.title}
-													description={ONBOARDING_STEPS.runButton.description}
-													side="bottom"
-													isLast
+													key={category.id}
+													step={1}
+													title={ONBOARDING_STEPS.croissance.title}
+													description={ONBOARDING_STEPS.croissance.description}
+													side="right"
 												>
-													<MissionCategory
-														id={category.id}
-														title={category.name}
-														icon={
-															category.icon as
-																| "TrendingUp"
-																| "FileText"
-																| "Wrench"
-														}
-														color={
-															category.color as "blue" | "purple" | "orange"
-														}
-														robots={category.robots}
-														runningRobot={robots.runningRobot}
-														onTriggerRobot={robots.triggerRobot}
-														onStopRobot={robots.stopRobot}
-														defaultOpen={index === 0}
-														onNavigateToTab={onNavigateToTab}
-													/>
+													<OnboardingStep
+														step={2}
+														title={ONBOARDING_STEPS.seoRobot.title}
+														description={ONBOARDING_STEPS.seoRobot.description}
+														side="right"
+													>
+														<OnboardingStep
+															step={3}
+															title={ONBOARDING_STEPS.runButton.title}
+															description={ONBOARDING_STEPS.runButton.description}
+															side="bottom"
+															isLast
+														>
+															<MissionCategory
+																id={category.id}
+																title={category.name}
+																icon={
+																	category.icon as
+																		| "TrendingUp"
+																		| "FileText"
+																		| "Wrench"
+																}
+																color={
+																	category.color as "blue" | "purple" | "orange"
+																}
+																robots={category.robots}
+																runningRobot={robots.runningRobot}
+																onTriggerRobot={robots.triggerRobot}
+																onStopRobot={robots.stopRobot}
+																defaultOpen={index === 0}
+																onNavigateToTab={onNavigateToTab}
+															/>
+														</OnboardingStep>
+													</OnboardingStep>
 												</OnboardingStep>
-											</OnboardingStep>
-										</OnboardingStep>
-									);
-								}
+											);
+										}
 
-								return (
-									<MissionCategory
-										key={category.id}
-										id={category.id}
-										title={category.name}
-										icon={category.icon as "TrendingUp" | "FileText" | "Wrench"}
-										color={category.color as "blue" | "purple" | "orange"}
-										robots={category.robots}
-										runningRobot={robots.runningRobot}
-										onTriggerRobot={robots.triggerRobot}
-										onStopRobot={robots.stopRobot}
-										defaultOpen={index === 0}
-										onNavigateToTab={onNavigateToTab}
-									/>
-								);
-							})
-						)}
-					</div>
-
-					{/* Activity Sidebar - Hidden on mobile, shown in bottom section */}
-					<div className="hidden lg:block">
-						<Card className="p-4 sticky top-4">
-							<div className="flex items-center justify-between mb-4">
-								<h3 className="font-semibold flex items-center gap-2">
-									<Zap className="h-4 w-4 text-yellow-500" />
-									Recent Activity
-								</h3>
-								{activity.stats.running > 0 && (
-									<Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-										{activity.stats.running} running
-									</Badge>
+										return (
+											<MissionCategory
+												key={category.id}
+												id={category.id}
+												title={category.name}
+												icon={category.icon as "TrendingUp" | "FileText" | "Wrench"}
+												color={category.color as "blue" | "purple" | "orange"}
+												robots={category.robots}
+												runningRobot={robots.runningRobot}
+												onTriggerRobot={robots.triggerRobot}
+												onStopRobot={robots.stopRobot}
+												defaultOpen={index === 0}
+												onNavigateToTab={onNavigateToTab}
+											/>
+										);
+									})
 								)}
 							</div>
-							<ActivityFeed
-								logs={activity.logs}
-								loading={activity.loading}
-								limit={5}
-								onViewAll={() => setShowAllActivity(true)}
-							/>
-						</Card>
-					</div>
-				</div>
 
-				{/* Mobile Activity Section */}
-				<div className="lg:hidden">
-					<Card className="p-4">
-						<div className="flex items-center justify-between mb-4">
-							<h3 className="font-semibold flex items-center gap-2">
-								<Zap className="h-4 w-4 text-yellow-500" />
-								Recent Activity
-								{activity.stats.running > 0 && (
-									<Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 ml-2">
-										{activity.stats.running}
-									</Badge>
-								)}
-							</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => setShowAllActivity(true)}
-							>
-								View all
-							</Button>
+							{/* Activity Sidebar - Hidden on mobile, shown in bottom section */}
+							<div className="hidden lg:block">
+								<Card className="p-4 sticky top-4">
+									<div className="flex items-center justify-between mb-4">
+										<h3 className="font-semibold flex items-center gap-2">
+											<Zap className="h-4 w-4 text-yellow-500" />
+											Recent Activity
+										</h3>
+										{activity.stats.running > 0 && (
+											<Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+												{activity.stats.running} running
+											</Badge>
+										)}
+									</div>
+									<ActivityFeed
+										logs={activity.logs}
+										loading={activity.loading}
+										limit={5}
+										onViewAll={() => setShowAllActivity(true)}
+									/>
+								</Card>
+							</div>
 						</div>
-						<ActivityFeed
-							logs={activity.logs}
-							loading={activity.loading}
-							limit={3}
-						/>
-					</Card>
-				</div>
 
-				{/* Full Activity Modal */}
-				<Dialog open={showAllActivity} onOpenChange={setShowAllActivity}>
-					<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-						<DialogHeader>
-							<DialogTitle>Activity Log</DialogTitle>
-						</DialogHeader>
-						<ActivityTab projectId={projectId} />
-					</DialogContent>
-				</Dialog>
+						{/* Mobile Activity Section */}
+						<div className="lg:hidden">
+							<Card className="p-4">
+								<div className="flex items-center justify-between mb-4">
+									<h3 className="font-semibold flex items-center gap-2">
+										<Zap className="h-4 w-4 text-yellow-500" />
+										Recent Activity
+										{activity.stats.running > 0 && (
+											<Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 ml-2">
+												{activity.stats.running}
+											</Badge>
+										)}
+									</h3>
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => setShowAllActivity(true)}
+									>
+										View all
+									</Button>
+								</div>
+								<ActivityFeed
+									logs={activity.logs}
+									loading={activity.loading}
+									limit={3}
+								/>
+							</Card>
+						</div>
 
-				{/* Uptime Modal */}
-				<Dialog open={showUptime} onOpenChange={setShowUptime}>
-					<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-						<DialogHeader>
-							<DialogTitle className="flex items-center gap-2">
-								<Activity className="h-5 w-5" />
-								System Status
-							</DialogTitle>
-						</DialogHeader>
-						<UptimeTab />
-					</DialogContent>
-				</Dialog>
+						{/* Full Activity Modal */}
+						<Dialog open={showAllActivity} onOpenChange={setShowAllActivity}>
+							<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+								<DialogHeader>
+									<DialogTitle>Activity Log</DialogTitle>
+								</DialogHeader>
+								<ActivityTab projectId={projectId} />
+							</DialogContent>
+						</Dialog>
+					</>
+				)}
 			</div>
 		</>
 	);

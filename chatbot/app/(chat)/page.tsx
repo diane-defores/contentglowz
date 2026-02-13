@@ -15,9 +15,8 @@ export default function Page() {
 
 async function NewChatPage() {
 	// Clerk middleware already protects this route, so user is guaranteed
-	const id = generateUUID();
-
 	const cookieStore = await cookies();
+	const id = generateUUID();
 	const modelIdFromCookie = cookieStore.get("chat-model");
 
 	if (!modelIdFromCookie) {

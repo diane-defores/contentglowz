@@ -1,5 +1,6 @@
 import Script from "next/script";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -80,7 +81,9 @@ export default function RootLayout({
 					enableSystem
 				>
 					<Toaster position="top-center" />
-					<ClerkProvider>{children}</ClerkProvider>
+					<Suspense>
+						<ClerkProvider>{children}</ClerkProvider>
+					</Suspense>
 				</ThemeProvider>
 			        <Script src="/buildflowz-inspector.js" strategy="afterInteractive" id="buildflowz-inspector" />
       </body>
