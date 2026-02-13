@@ -723,7 +723,7 @@ export const templateSection = sqliteTable("TemplateSection", {
 	name: text("name").notNull(),
 	label: text("label").notNull(),
 	fieldType: text("fieldType", {
-		enum: ["text", "markdown", "list", "number", "url", "tags"],
+		enum: ["text", "markdown", "list", "number", "url", "tags", "image"],
 	}).notNull(),
 	required: integer("required", { mode: "boolean" })
 		.notNull()

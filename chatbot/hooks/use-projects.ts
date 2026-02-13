@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface Project {
 	id: string;
@@ -24,7 +24,6 @@ export function useProjects() {
 	const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const initializedRef = useRef(false);
 
 	const fetchProjects = useCallback(async () => {
 		setLoading(true);
@@ -49,16 +48,21 @@ export function useProjects() {
 				savedDefaultProjectId = settings.defaultProjectId;
 			}
 
-			// Auto-select project (priority: saved > isDefault > first)
-			if (!initializedRef.current && projectsData.length > 0) {
-				initializedRef.current = true;
-				const savedProject = savedDefaultProjectId
-					? projectsData.find((p: Project) => p.id === savedDefaultProjectId)
-					: null;
-				const defaultProject = projectsData.find((p: Project) => p.isDefault);
-				setSelectedProject(savedProject || defaultProject || projectsData[0]);
+			// Auto-select project (priority: current > saved > isDefault > first)
+			if (projectsData.length > 0) {
+				const currentStillExists = selectedProject
+					? projectsData.some((p: Project) => p.id === selectedProject.id)
+					: false;
+				if (!currentStillExists) {
+					const savedProject = savedDefaultProjectId
+						? projectsData.find((p: Project) => p.id === savedDefaultProjectId)
+						: null;
+					const defaultProject = projectsData.find((p: Project) => p.isDefault);
+					setSelectedProject(savedProject || defaultProject || projectsData[0]);
+				}
 			}
 		} catch (err) {
+			console.error("[use-projects] fetch error:", err);
 			setError(err instanceof Error ? err.message : "Failed to fetch projects");
 		} finally {
 			setLoading(false);

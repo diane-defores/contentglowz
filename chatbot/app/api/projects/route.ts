@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { createProject, getProjectsByUserId } from "@/lib/db/queries";
 
 export async function GET() {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	try {
-		const projects = await getProjectsByUserId({ userId: session.user.id });
+		const projects = await getProjectsByUserId({ userId });
+		console.log("[projects]", userId, projects.length);
 		return NextResponse.json(projects);
 	} catch (error) {
 		return NextResponse.json(
@@ -20,8 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		const project = await createProject({
-			userId: session.user.id,
+			userId,
 			name,
 			url,
 			type,

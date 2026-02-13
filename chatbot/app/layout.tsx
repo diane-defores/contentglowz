@@ -5,12 +5,12 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://chat.vercel.ai"),
-	title: "Next.js Chatbot Template",
-	description: "Next.js chatbot template using the AI SDK.",
+	title: "BizFlow",
+	description: "Intelligent AI automation for SEO, newsletters & content generation.",
 };
 
 export const viewport = {
@@ -80,7 +80,7 @@ export default function RootLayout({
 					enableSystem
 				>
 					<Toaster position="top-center" />
-					<SessionProvider>{children}</SessionProvider>
+					<ClerkProvider>{children}</ClerkProvider>
 				</ThemeProvider>
 			        <Script src="/buildflowz-inspector.js" strategy="afterInteractive" id="buildflowz-inspector" />
       </body>

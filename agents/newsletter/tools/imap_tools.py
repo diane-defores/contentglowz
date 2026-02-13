@@ -11,7 +11,7 @@ Usage:
     3. Create Gmail labels: "Newsletters", "Newsletters/Processed"
 """
 
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from crewai.tools import tool
 from pydantic import BaseModel, Field
@@ -139,6 +139,87 @@ class IMAPNewsletterReader:
                 emails.append(email)
 
         return emails
+
+    def fetch_senders_from_inbox(
+        self,
+        days_back: int = 30,
+        max_results: int = 200,
+        folder: str = "INBOX",
+        newsletters_only: bool = True,
+    ) -> Tuple[List[Dict], int]:
+        """
+        Scan inbox headers and return grouped sender list.
+
+        Uses headers_only=True for speed — no body download.
+
+        Args:
+            days_back: How many days back to scan
+            max_results: Maximum emails to scan
+            folder: Gmail folder to scan
+            newsletters_only: Only return senders detected as newsletters
+
+        Returns:
+            Tuple of (list of sender dicts, total emails scanned)
+        """
+        since_date = datetime.now() - timedelta(days=days_back)
+        senders: Dict[str, Dict] = {}
+        total_scanned = 0
+
+        with self._connect() as mailbox:
+            try:
+                mailbox.folder.set(folder)
+            except Exception:
+                mailbox.folder.set("INBOX")
+
+            criteria = AND(date_gte=since_date.date())
+
+            for msg in mailbox.fetch(
+                criteria,
+                limit=max_results,
+                reverse=True,
+                headers_only=True,
+                mark_seen=False,
+            ):
+                total_scanned += 1
+                email_addr = msg.from_ or ""
+                if not email_addr:
+                    continue
+
+                is_newsletter = self._detect_newsletter(msg)
+
+                if email_addr in senders:
+                    senders[email_addr]["email_count"] += 1
+                    # Update if this message is newer
+                    if msg.date and (
+                        not senders[email_addr]["latest_date"]
+                        or msg.date.isoformat() > senders[email_addr]["latest_date"]
+                    ):
+                        senders[email_addr]["latest_subject"] = msg.subject or ""
+                        senders[email_addr]["latest_date"] = (
+                            msg.date.isoformat() if msg.date else None
+                        )
+                    # Mark as newsletter if any message from sender is detected
+                    if is_newsletter:
+                        senders[email_addr]["is_newsletter"] = True
+                else:
+                    senders[email_addr] = {
+                        "from_email": email_addr,
+                        "from_name": msg.from_values.name if msg.from_values else "",
+                        "email_count": 1,
+                        "is_newsletter": is_newsletter,
+                        "latest_subject": msg.subject or "",
+                        "latest_date": msg.date.isoformat() if msg.date else None,
+                    }
+
+        result = list(senders.values())
+
+        if newsletters_only:
+            result = [s for s in result if s["is_newsletter"]]
+
+        # Sort: newsletters first, then by count descending
+        result.sort(key=lambda s: (-int(s["is_newsletter"]), -s["email_count"]))
+
+        return result, total_scanned
 
     def fetch_by_senders(
         self,

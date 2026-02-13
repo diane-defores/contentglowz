@@ -84,3 +84,13 @@ export type Attachment = {
 	url: string;
 	contentType: string;
 };
+
+/** Session type replacing next-auth Session */
+export interface Session {
+	user: {
+		id: string;
+		email?: string | null;
+		name?: string | null;
+		image?: string | null;
+	};
+}

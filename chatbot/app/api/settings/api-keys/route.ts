@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { updateUserApiKey } from "@/lib/db/queries";
 
-const VALID_PROVIDERS = ["openai", "anthropic", "exa", "firecrawl", "serper", "bunnyStorage", "bunnyCdn", "bunnyCdnHostname"] as const;
+const VALID_PROVIDERS = ["openai", "anthropic", "exa", "firecrawl", "serper", "openrouter", "bunnyStorage", "bunnyCdn", "bunnyCdnHostname"] as const;
 type Provider = (typeof VALID_PROVIDERS)[number];
 
 export async function PUT(request: NextRequest) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
 		const sanitizedKey = apiKey?.trim() || null;
 
 		const updated = await updateUserApiKey({
-			userId: session.user.id,
+			userId,
 			provider: provider as Provider,
 			apiKey: sanitizedKey,
 		});
@@ -50,6 +50,7 @@ export async function PUT(request: NextRequest) {
 						exa: updated.apiKeys.exa ? "••••••••" : null,
 						firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 						serper: updated.apiKeys.serper ? "••••••••" : null,
+						openrouter: updated.apiKeys.openrouter ? "••••••••" : null,
 						bunnyStorage: updated.apiKeys.bunnyStorage ? "••••••••" : null,
 						bunnyCdn: updated.apiKeys.bunnyCdn ? "••••••••" : null,
 						bunnyCdnHostname: updated.apiKeys.bunnyCdnHostname ? "••••••••" : null,

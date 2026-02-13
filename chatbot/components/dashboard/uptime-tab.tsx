@@ -47,7 +47,7 @@ function getStatusBadge(status: ServiceStatus["status"]) {
 
 function formatResponseTime(ms?: number) {
 	if (ms === undefined) return "-";
-	if (ms < 1000) return `${ms}ms`;
+	if (ms < 1000) return `${ms.toFixed(2)}ms`;
 	return `${(ms / 1000).toFixed(2)}s`;
 }
 

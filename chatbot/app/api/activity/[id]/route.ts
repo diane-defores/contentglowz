@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { getActivityLogById, updateActivityLog } from "@/lib/db/queries";
 
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -20,7 +20,7 @@ export async function GET(
 		}
 
 		// Verify ownership
-		if (log.userId !== session.user.id) {
+		if (log.userId !== userId) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
@@ -37,8 +37,8 @@ export async function PUT(
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
 ) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -50,7 +50,7 @@ export async function PUT(
 			return NextResponse.json({ error: "Activity log not found" }, { status: 404 });
 		}
 
-		if (existing.userId !== session.user.id) {
+		if (existing.userId !== userId) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 

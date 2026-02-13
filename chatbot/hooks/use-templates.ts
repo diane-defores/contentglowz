@@ -121,9 +121,11 @@ export function useTemplates(projectId?: string) {
 			const res = await fetch("/api/seo/api/templates/defaults");
 			if (!res.ok) return;
 			const data = await res.json();
-			setDefaultTemplates(data);
+			if (Array.isArray(data)) {
+				setDefaultTemplates(data);
+			}
 		} catch {
-			// Non-critical
+			// Non-critical — Python API may not be running
 		}
 	}, []);
 
@@ -277,7 +279,14 @@ export function useTemplates(projectId?: string) {
 						}),
 					},
 				);
-				if (!res.ok) throw new Error("Prompt generation failed");
+				if (!res.ok) {
+					if (res.status === 405 || res.status === 503) {
+						throw new Error(
+							"Python API server is not reachable. Ensure my-robots is running in PM2.",
+						);
+					}
+					throw new Error("Prompt generation failed");
+				}
 				return await res.json();
 			} catch (err) {
 				setError(
@@ -334,6 +343,11 @@ export function useTemplates(projectId?: string) {
 
 				if (!res.ok) {
 					const data = await res.json().catch(() => ({}));
+					if (res.status === 405 || res.status === 503) {
+						throw new Error(
+							"Python API server is not reachable. Ensure my-robots is running in PM2.",
+						);
+					}
 					throw new Error(
 						data.error || `Generation failed (${res.status})`,
 					);

@@ -64,66 +64,8 @@ import {
 	type WorkDomain,
 	workDomain,
 } from "./schema";
-import { generateHashedPassword } from "./utils";
-
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
-
 /** Get database instance from client */
 const db = getDb();
-
-// ============================================================================
-// User Queries
-// ============================================================================
-
-/** Retrieves user by email for authentication */
-export async function getUser(email: string): Promise<User[]> {
-	try {
-		return await db.select().from(user).where(eq(user.email, email));
-	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to get user by email",
-		);
-	}
-}
-
-/** Creates a new registered user with hashed password */
-export async function createUser(email: string, password: string) {
-	const hashedPassword = generateHashedPassword(password);
-
-	try {
-		return await db.insert(user).values({ email, password: hashedPassword });
-	} catch (_error) {
-		throw new ChatSDKError("bad_request:database", "Failed to create user");
-	}
-}
-
-/**
- * Creates an ephemeral guest user with generated credentials.
- * Guest users are identified by email pattern: guest-{timestamp}
- */
-export async function createGuestUser() {
-	const email = `guest-${Date.now()}`;
-	const password = generateHashedPassword(generateUUID());
-
-	try {
-		console.log("🔍 Creating guest user:", email);
-		const result = await db.insert(user).values({ email, password }).returning({
-			id: user.id,
-			email: user.email,
-		});
-		console.log("✅ Guest user created:", result);
-		return result;
-	} catch (_error) {
-		console.error("❌ createGuestUser error:", _error);
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to create guest user",
-		);
-	}
-}
 
 // ============================================================================
 // Chat Queries

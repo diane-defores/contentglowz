@@ -1,7 +1,9 @@
 "use client";
 
-import { Eye, EyeOff, FolderKanban, Key, Loader2, Moon, Save, Settings, Sun } from "lucide-react";
+import { Eye, EyeOff, FolderKanban, Key, Loader2, LogOut, Moon, RotateCcw, Save, Settings, Sun, UserCircle } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -27,6 +29,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@/components/ui/tabs";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import { useSettings } from "@/hooks/use-settings";
 import { SettingsProjectsTab } from "./settings-projects-tab";
 
@@ -36,6 +39,7 @@ const API_KEY_PROVIDERS = [
 	{ id: "exa", name: "Exa AI", placeholder: "exa-...", section: "ai" },
 	{ id: "firecrawl", name: "Firecrawl", placeholder: "fc-...", section: "ai" },
 	{ id: "serper", name: "Serper", placeholder: "serper-...", section: "ai" },
+	{ id: "openrouter", name: "OpenRouter", placeholder: "sk-or-...", section: "ai" },
 	{ id: "bunnyStorage", name: "Bunny Storage API Key", placeholder: "storage-api-key...", section: "bunny" },
 	{ id: "bunnyCdn", name: "Bunny CDN API Key", placeholder: "cdn-api-key...", section: "bunny" },
 	{ id: "bunnyCdnHostname", name: "Bunny CDN Hostname", placeholder: "my-zone.b-cdn.net", section: "bunny" },
@@ -43,6 +47,9 @@ const API_KEY_PROVIDERS = [
 
 export function SettingsModal() {
 	const { settings, loading, saving, updateSettings, updateApiKey } = useSettings();
+	const onboarding = useOnboarding("croissance");
+	const { user } = useUser();
+	const { signOut } = useClerk();
 	const [open, setOpen] = useState(false);
 	const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
 	const [keyInputs, setKeyInputs] = useState<Record<string, string>>({});
@@ -90,8 +97,8 @@ export function SettingsModal() {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" title="Settings">
-					<Settings className="h-4 w-4" />
+				<Button variant="ghost" size="icon" className="h-9 w-9 [&_svg]:size-5" title="Settings">
+					<Settings className="h-5 w-5" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="max-w-2xl">
@@ -108,12 +115,16 @@ export function SettingsModal() {
 					</div>
 				) : (
 					<Tabs defaultValue="preferences" className="mt-4">
-						<TabsList className="grid w-full grid-cols-3">
+						<TabsList className="grid w-full grid-cols-4">
 							<TabsTrigger value="preferences">Preferences</TabsTrigger>
 							<TabsTrigger value="api-keys">API Keys</TabsTrigger>
 							<TabsTrigger value="projects">
 								<FolderKanban className="mr-2 h-4 w-4" />
 								Projects
+							</TabsTrigger>
+							<TabsTrigger value="account">
+								<UserCircle className="mr-2 h-4 w-4" />
+								Account
 							</TabsTrigger>
 						</TabsList>
 
@@ -182,6 +193,27 @@ export function SettingsModal() {
 									onBlur={(e) => handleWebhookChange(e.target.value)}
 									disabled={saving}
 								/>
+							</div>
+
+							{/* Restart Onboarding */}
+							<div className="flex items-center justify-between border-t pt-6">
+								<div className="space-y-1">
+									<Label>Visite guidée</Label>
+									<p className="text-sm text-muted-foreground">
+										Relancez le tour d'introduction
+									</p>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => {
+										onboarding.reset();
+										setOpen(false);
+									}}
+								>
+									<RotateCcw className="mr-2 h-4 w-4" />
+									Relancer
+								</Button>
 							</div>
 						</TabsContent>
 
@@ -347,6 +379,51 @@ export function SettingsModal() {
 
 						<TabsContent value="projects" className="pt-4">
 							<SettingsProjectsTab />
+						</TabsContent>
+
+						<TabsContent value="account" className="space-y-6 pt-4">
+							{user ? (
+								<>
+									<div className="flex items-center gap-4">
+										{user.imageUrl ? (
+											<Image
+												alt={user.primaryEmailAddress?.emailAddress ?? "Avatar"}
+												className="rounded-full"
+												height={48}
+												src={user.imageUrl}
+												width={48}
+											/>
+										) : (
+											<div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-medium">
+												{(user.primaryEmailAddress?.emailAddress ?? "?")[0].toUpperCase()}
+											</div>
+										)}
+										<div className="flex-1">
+											<p className="font-medium">{user.primaryEmailAddress?.emailAddress}</p>
+											<span className="inline-block mt-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+												Registered
+											</span>
+										</div>
+									</div>
+
+									<div className="border-t pt-4">
+										<Button
+											variant="destructive"
+											onClick={() => signOut({ redirectUrl: "/" })}
+											className="w-full"
+										>
+											<LogOut className="mr-2 h-4 w-4" />
+											Sign Out
+										</Button>
+									</div>
+
+									<p className="text-xs text-muted-foreground">
+										User ID: {user.id}
+									</p>
+								</>
+							) : (
+								<p className="text-sm text-muted-foreground">Not signed in.</p>
+							)}
 						</TabsContent>
 					</Tabs>
 				)}

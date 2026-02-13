@@ -13,6 +13,11 @@ from api.models.status import (
     ContentListResponse,
     WorkDomainResponse,
     UpdateDomainRequest,
+    SaveContentBodyRequest,
+    ContentBodyResponse,
+    ContentEditResponse,
+    RegenerateRequest,
+    ScheduleContentRequest,
 )
 from status.service import (
     get_status_service,
@@ -277,6 +282,125 @@ async def update_domain(
         metadata=record.metadata,
         updated_at=record.updated_at,
     )
+
+
+# ─── Content Body ─────────────────────────────────────
+
+
+@router.get(
+    "/content/{content_id}/body",
+    response_model=ContentBodyResponse,
+    summary="Get content body",
+    description="Get the full content body (latest version or specific version)",
+)
+async def get_content_body(
+    content_id: str,
+    version: Optional[int] = Query(None, description="Specific version number"),
+):
+    """Get content body for a content record."""
+    svc = get_status_service()
+    try:
+        body = svc.get_content_body(content_id, version=version)
+        if not body:
+            raise HTTPException(status_code=404, detail="No content body found")
+        return ContentBodyResponse(**body)
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+
+
+@router.put(
+    "/content/{content_id}/body",
+    response_model=ContentBodyResponse,
+    summary="Save content body",
+    description="Save a new version of the content body with edit tracking",
+)
+async def save_content_body(content_id: str, request: SaveContentBodyRequest):
+    """Save or update content body (creates a new version)."""
+    svc = get_status_service()
+    try:
+        result = svc.save_content_body(
+            content_id=content_id,
+            body=request.body,
+            edited_by=request.edited_by,
+            edit_note=request.edit_note,
+        )
+        return ContentBodyResponse(**result)
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+
+
+@router.get(
+    "/content/{content_id}/body/history",
+    response_model=List[ContentEditResponse],
+    summary="Get content edit history",
+    description="Get the edit history for a content record",
+)
+async def get_edit_history(content_id: str):
+    """Get edit history for a content record."""
+    svc = get_status_service()
+    try:
+        history = svc.get_edit_history(content_id)
+        return [ContentEditResponse(**h) for h in history]
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+
+
+@router.post(
+    "/content/{content_id}/regenerate",
+    response_model=ContentResponse,
+    summary="Send content for re-generation",
+    description="Transition content back to in_progress with instructions for the robot",
+)
+async def regenerate_content(content_id: str, request: RegenerateRequest):
+    """Send content back to the robot for re-generation."""
+    svc = get_status_service()
+    try:
+        # Store instructions in metadata
+        if request.instructions:
+            record = svc.get_content(content_id)
+            metadata = record.metadata or {}
+            metadata["regenerate_instructions"] = request.instructions
+            svc.update_content(content_id, metadata=metadata)
+
+        # Transition to in_progress
+        record = svc.transition(
+            content_id=content_id,
+            to_status="in_progress",
+            changed_by=request.changed_by,
+            reason=f"Re-generation requested: {request.instructions or 'No instructions'}",
+        )
+        return _record_to_response(record)
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    except InvalidTransitionError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch(
+    "/content/{content_id}/schedule",
+    response_model=ContentResponse,
+    summary="Schedule content for publishing",
+    description="Set scheduledFor datetime and transition to scheduled status",
+)
+async def schedule_content(content_id: str, request: ScheduleContentRequest):
+    """Schedule content for publishing at a specific time."""
+    svc = get_status_service()
+    try:
+        # Set scheduled_for date
+        svc.update_content(content_id, scheduled_for=request.scheduled_for)
+
+        # Transition to scheduled
+        record = svc.transition(
+            content_id=content_id,
+            to_status="scheduled",
+            changed_by=request.changed_by,
+            reason=f"Scheduled for {request.scheduled_for}",
+        )
+        return _record_to_response(record)
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+    except InvalidTransitionError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # ─── Sync ──────────────────────────────────────────────

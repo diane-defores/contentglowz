@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { createActivityLog, getActivityLogsByUserId } from "@/lib/db/queries";
 
 export async function GET(request: NextRequest) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 		const limit = parseInt(searchParams.get("limit") || "50", 10);
 
 		const logs = await getActivityLogsByUserId({
-			userId: session.user.id,
+			userId,
 			projectId,
 			robotId,
 			status,
@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 		}
 
 		const log = await createActivityLog({
-			userId: session.user.id,
+			userId,
 			projectId,
 			action,
 			robotId,

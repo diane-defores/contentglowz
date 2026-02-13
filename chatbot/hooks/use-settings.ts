@@ -15,6 +15,7 @@ export interface UserSettings {
 		exa?: string | null;
 		firecrawl?: string | null;
 		serper?: string | null;
+		openrouter?: string | null;
 		bunnyStorage?: string | null;
 		bunnyCdn?: string | null;
 		bunnyCdnHostname?: string | null;
@@ -92,7 +93,7 @@ export function useSettings() {
 	);
 
 	const updateApiKey = useCallback(
-		async (provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
+		async (provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
 			setError(null);
 			setSaving(true);
 

@@ -11,7 +11,7 @@
  * 4. Persists the document to the database
  */
 import { tool, type UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
+import type { Session } from "@/lib/types";
 import { z } from "zod";
 import {
 	artifactKinds,

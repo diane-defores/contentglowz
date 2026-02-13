@@ -21,6 +21,17 @@ from agents.newsletter.config.newsletter_config import (
     EMAIL_BACKEND,
 )
 
+# Conditional import for memory tools (graceful degradation)
+try:
+    from agents.newsletter.tools.memory_tools import (
+        recall_project_context,
+        recall_past_newsletters,
+        recall_brand_voice,
+    )
+    MEMORY_AVAILABLE = True
+except ImportError:
+    MEMORY_AVAILABLE = False
+
 # Conditional import based on email backend configuration
 if EMAIL_BACKEND == "imap":
     from agents.newsletter.tools.imap_tools import (
@@ -131,6 +142,10 @@ class NewsletterResearchAgent:
         ]
         tools.extend(get_gmail_tools())
 
+        # Add memory tools if available
+        if MEMORY_AVAILABLE:
+            tools.extend([recall_project_context, recall_past_newsletters])
+
         return Agent(
             role="Newsletter Research Analyst",
             goal=(
@@ -164,6 +179,12 @@ class NewsletterWriterAgent:
         self.agent = self._create_agent()
 
     def _create_agent(self) -> Agent:
+        tools = []
+
+        # Add memory tools if available
+        if MEMORY_AVAILABLE:
+            tools.append(recall_brand_voice)
+
         return Agent(
             role="Newsletter Content Writer",
             goal=(
@@ -174,9 +195,11 @@ class NewsletterWriterAgent:
                 "You are a skilled copywriter with expertise in email marketing. "
                 "You write compelling subject lines, engaging intros, and content "
                 "that keeps readers scrolling. You understand email-specific "
-                "formatting and mobile-first reading patterns."
+                "formatting and mobile-first reading patterns. When available, "
+                "you use brand voice guidelines from memory to maintain consistent "
+                "tone and style across all newsletters."
             ),
-            tools=[],  # Writer focuses on writing, not research
+            tools=tools,
             llm=self.llm_model,
             verbose=True,
             allow_delegation=False,

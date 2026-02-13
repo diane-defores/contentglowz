@@ -1,11 +1,11 @@
 """Newsletter generation and management endpoints."""
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-router = APIRouter(prefix="/newsletter", tags=["Newsletter"])
+router = APIRouter(prefix="/api/newsletter", tags=["Newsletter"])
 
 
 class NewsletterRequest(BaseModel):
@@ -251,3 +251,74 @@ async def check_config():
             "sendgrid": "Set SENDGRID_API_KEY for sending",
         }
     }
+
+
+class SenderInfo(BaseModel):
+    """Information about an email sender found in inbox."""
+
+    from_email: str = Field(..., description="Sender email address")
+    from_name: str = Field(default="", description="Sender display name")
+    email_count: int = Field(default=1, description="Number of emails from this sender")
+    is_newsletter: bool = Field(default=False, description="Detected as newsletter")
+    latest_subject: str = Field(default="", description="Most recent email subject")
+    latest_date: Optional[str] = Field(default=None, description="Most recent email date")
+
+
+class SenderListResponse(BaseModel):
+    """Response with list of senders from inbox scan."""
+
+    senders: List[SenderInfo]
+    total_scanned: int = Field(default=0, description="Total emails scanned")
+    scan_days: int = Field(default=30, description="Days back scanned")
+
+
+@router.get(
+    "/senders",
+    response_model=SenderListResponse,
+    summary="Scan inbox senders",
+    description="Scan Gmail inbox and return grouped sender list with newsletter detection"
+)
+async def get_inbox_senders(
+    days_back: int = Query(default=30, ge=1, le=90, description="Days back to scan"),
+    max_results: int = Query(default=200, ge=10, le=500, description="Max emails to scan"),
+    folder: str = Query(default="INBOX", description="Folder to scan"),
+    newsletters_only: bool = Query(default=True, description="Only return newsletter senders"),
+):
+    """
+    Scan Gmail inbox via IMAP and return a list of unique senders.
+
+    Groups by sender email, counts occurrences, detects newsletters.
+    Uses headers_only=True for speed (no body download).
+    """
+    try:
+        from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
+
+        reader = IMAPNewsletterReader()
+        senders, total_scanned = reader.fetch_senders_from_inbox(
+            days_back=days_back,
+            max_results=max_results,
+            folder=folder,
+            newsletters_only=newsletters_only,
+        )
+
+        return SenderListResponse(
+            senders=[SenderInfo(**s) for s in senders],
+            total_scanned=total_scanned,
+            scan_days=days_back,
+        )
+
+    except ImportError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"IMAP tools not available: {str(e)}. Install with: pip install imap-tools"
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Configuration error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Inbox scan failed: {str(e)}"
+        )

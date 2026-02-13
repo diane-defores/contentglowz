@@ -435,6 +435,9 @@ export function TemplateEditorModal({
 												<SelectItem value="tags">
 													Tags
 												</SelectItem>
+												<SelectItem value="image">
+													Image
+												</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>

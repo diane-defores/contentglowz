@@ -92,8 +92,8 @@ class StatusService:
             INSERT INTO content_records
             (id, title, content_type, source_robot, status, project_id,
              content_path, content_preview, content_hash, priority, tags,
-             metadata, target_url, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             metadata, target_url, current_version, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record.id,
@@ -109,6 +109,7 @@ class StatusService:
                 json.dumps(record.tags),
                 json.dumps(record.metadata),
                 record.target_url,
+                record.current_version,
                 now,
                 now,
             ),
@@ -136,6 +137,7 @@ class StatusService:
             "title", "content_path", "content_preview", "content_hash",
             "priority", "tags", "metadata", "target_url", "project_id",
             "reviewer_note", "reviewed_by", "scheduled_for", "published_at",
+            "current_version",
         }
         updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
         if not updates:
@@ -406,6 +408,246 @@ class StatusService:
             updated_at=datetime.fromisoformat(result["updated_at"]),
         )
 
+    # ─── Content Body ─────────────────────────────────
+
+    def save_content_body(
+        self,
+        content_id: str,
+        body: str,
+        edited_by: str = "user",
+        edit_note: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Save a new version of content body. Creates version history."""
+        record = self.get_content(content_id)
+        previous_version = record.current_version
+        new_version = previous_version + 1
+        now = datetime.utcnow().isoformat()
+        body_id = str(uuid.uuid4())
+        edit_id = str(uuid.uuid4())
+
+        # Insert new body version
+        self._conn.execute(
+            """
+            INSERT INTO content_bodies (id, content_id, body, version, edited_by, edit_note, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (body_id, content_id, body, new_version, edited_by, edit_note, now),
+        )
+
+        # Insert edit audit entry
+        self._conn.execute(
+            """
+            INSERT INTO content_edits (id, content_id, edited_by, edit_note, previous_version, new_version, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (edit_id, content_id, edited_by, edit_note, previous_version, new_version, now),
+        )
+
+        # Update current_version on content record
+        self._conn.execute(
+            "UPDATE content_records SET current_version = ?, updated_at = ? WHERE id = ?",
+            (new_version, now, content_id),
+        )
+        self._conn.commit()
+
+        return {
+            "id": body_id,
+            "content_id": content_id,
+            "version": new_version,
+            "edited_by": edited_by,
+            "edit_note": edit_note,
+            "created_at": now,
+        }
+
+    def get_content_body(
+        self,
+        content_id: str,
+        version: Optional[int] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Get content body, latest version or specific version."""
+        self.get_content(content_id)  # Ensure exists
+
+        if version is not None:
+            row = self._conn.execute(
+                "SELECT * FROM content_bodies WHERE content_id = ? AND version = ?",
+                (content_id, version),
+            ).fetchone()
+        else:
+            row = self._conn.execute(
+                "SELECT * FROM content_bodies WHERE content_id = ? ORDER BY version DESC LIMIT 1",
+                (content_id,),
+            ).fetchone()
+
+        if not row:
+            return None
+
+        return {
+            "id": row["id"],
+            "content_id": row["content_id"],
+            "body": row["body"],
+            "version": row["version"],
+            "edited_by": row["edited_by"],
+            "edit_note": row["edit_note"],
+            "created_at": row["created_at"],
+        }
+
+    def get_edit_history(self, content_id: str) -> List[Dict[str, Any]]:
+        """Get edit history for a content record."""
+        self.get_content(content_id)  # Ensure exists
+
+        rows = self._conn.execute(
+            "SELECT * FROM content_edits WHERE content_id = ? ORDER BY created_at DESC",
+            (content_id,),
+        ).fetchall()
+
+        return [
+            {
+                "id": row["id"],
+                "content_id": row["content_id"],
+                "edited_by": row["edited_by"],
+                "edit_note": row["edit_note"],
+                "previous_version": row["previous_version"],
+                "new_version": row["new_version"],
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
+
+    # ─── Schedule Jobs ────────────────────────────────
+
+    def create_schedule_job(self, **kwargs: Any) -> Dict[str, Any]:
+        """Create a new schedule job."""
+        now = datetime.utcnow().isoformat()
+        job_id = str(uuid.uuid4())
+
+        self._conn.execute(
+            """
+            INSERT INTO schedule_jobs
+            (id, user_id, project_id, job_type, generator_id, configuration,
+             schedule, cron_expression, schedule_day, schedule_time, timezone,
+             enabled, next_run_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                job_id,
+                kwargs.get("user_id", "system"),
+                kwargs.get("project_id"),
+                kwargs["job_type"],
+                kwargs.get("generator_id"),
+                json.dumps(kwargs.get("configuration", {})),
+                kwargs["schedule"],
+                kwargs.get("cron_expression"),
+                kwargs.get("schedule_day"),
+                kwargs.get("schedule_time"),
+                kwargs.get("timezone", "UTC"),
+                1 if kwargs.get("enabled", True) else 0,
+                kwargs.get("next_run_at"),
+                now,
+                now,
+            ),
+        )
+        self._conn.commit()
+
+        return self.get_schedule_job(job_id)
+
+    def get_schedule_job(self, job_id: str) -> Dict[str, Any]:
+        """Get a schedule job by ID."""
+        row = self._conn.execute(
+            "SELECT * FROM schedule_jobs WHERE id = ?", (job_id,)
+        ).fetchone()
+        if not row:
+            raise ContentNotFoundError(f"Schedule job {job_id} not found")
+        return self._row_to_job(row)
+
+    def list_schedule_jobs(
+        self,
+        user_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+        enabled_only: bool = False,
+    ) -> List[Dict[str, Any]]:
+        """List schedule jobs with optional filters."""
+        query = "SELECT * FROM schedule_jobs WHERE 1=1"
+        params: List[Any] = []
+
+        if user_id:
+            query += " AND user_id = ?"
+            params.append(user_id)
+        if project_id:
+            query += " AND project_id = ?"
+            params.append(project_id)
+        if enabled_only:
+            query += " AND enabled = 1"
+
+        query += " ORDER BY created_at DESC"
+        rows = self._conn.execute(query, params).fetchall()
+        return [self._row_to_job(row) for row in rows]
+
+    def update_schedule_job(self, job_id: str, **kwargs: Any) -> Dict[str, Any]:
+        """Update a schedule job."""
+        self.get_schedule_job(job_id)  # Ensure exists
+        now = datetime.utcnow().isoformat()
+
+        allowed = {
+            "project_id", "job_type", "generator_id", "configuration",
+            "schedule", "cron_expression", "schedule_day", "schedule_time",
+            "timezone", "enabled", "last_run_at", "last_run_status", "next_run_at",
+        }
+        updates = {k: v for k, v in kwargs.items() if k in allowed}
+        if not updates:
+            return self.get_schedule_job(job_id)
+
+        if "configuration" in updates:
+            updates["configuration"] = json.dumps(updates["configuration"])
+        if "enabled" in updates:
+            updates["enabled"] = 1 if updates["enabled"] else 0
+
+        updates["updated_at"] = now
+        set_clause = ", ".join(f"{k} = ?" for k in updates)
+        values = list(updates.values()) + [job_id]
+
+        self._conn.execute(
+            f"UPDATE schedule_jobs SET {set_clause} WHERE id = ?", values
+        )
+        self._conn.commit()
+        return self.get_schedule_job(job_id)
+
+    def delete_schedule_job(self, job_id: str) -> None:
+        """Delete a schedule job."""
+        self.get_schedule_job(job_id)  # Ensure exists
+        self._conn.execute("DELETE FROM schedule_jobs WHERE id = ?", (job_id,))
+        self._conn.commit()
+
+    def get_due_jobs(self) -> List[Dict[str, Any]]:
+        """Get jobs that are due to run (next_run_at <= now and enabled)."""
+        now = datetime.utcnow().isoformat()
+        rows = self._conn.execute(
+            "SELECT * FROM schedule_jobs WHERE enabled = 1 AND next_run_at IS NOT NULL AND next_run_at <= ?",
+            (now,),
+        ).fetchall()
+        return [self._row_to_job(row) for row in rows]
+
+    def _row_to_job(self, row: sqlite3.Row) -> Dict[str, Any]:
+        """Convert a database row to a schedule job dict."""
+        return {
+            "id": row["id"],
+            "user_id": row["user_id"],
+            "project_id": row["project_id"],
+            "job_type": row["job_type"],
+            "generator_id": row["generator_id"],
+            "configuration": json.loads(row["configuration"]) if row["configuration"] else {},
+            "schedule": row["schedule"],
+            "cron_expression": row["cron_expression"],
+            "schedule_day": row["schedule_day"],
+            "schedule_time": row["schedule_time"],
+            "timezone": row["timezone"],
+            "enabled": bool(row["enabled"]),
+            "last_run_at": row["last_run_at"],
+            "last_run_status": row["last_run_status"],
+            "next_run_at": row["next_run_at"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        }
+
     # ─── Sync Helpers ─────────────────────────────────
 
     def get_unsynced_records(self) -> List[ContentRecord]:
@@ -432,6 +674,12 @@ class StatusService:
 
     def _row_to_record(self, row: sqlite3.Row) -> ContentRecord:
         """Convert a database row to a ContentRecord."""
+        # Handle current_version column (may not exist in older DBs)
+        try:
+            current_version = row["current_version"]
+        except (IndexError, KeyError):
+            current_version = 0
+
         return ContentRecord(
             id=row["id"],
             title=row["title"],
@@ -448,6 +696,7 @@ class StatusService:
             target_url=row["target_url"],
             reviewer_note=row["reviewer_note"],
             reviewed_by=row["reviewed_by"],
+            current_version=current_version,
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
             scheduled_for=datetime.fromisoformat(row["scheduled_for"]) if row["scheduled_for"] else None,

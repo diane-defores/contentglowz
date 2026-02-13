@@ -1,11 +1,9 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { generateUUID } from "@/lib/utils";
-import { auth } from "../(auth)/auth";
 
 export default function Page() {
 	return (
@@ -16,12 +14,7 @@ export default function Page() {
 }
 
 async function NewChatPage() {
-	const session = await auth();
-
-	if (!session) {
-		redirect("/api/auth/guest");
-	}
-
+	// Clerk middleware already protects this route, so user is guaranteed
 	const id = generateUUID();
 
 	const cookieStore = await cookies();

@@ -133,6 +133,7 @@ export function ContentReviewTab({ projectId }: ContentReviewTabProps) {
 							item={item}
 							onApprove={approveContent}
 							onReject={rejectContent}
+							onRefresh={refresh}
 						/>
 					))}
 				</div>

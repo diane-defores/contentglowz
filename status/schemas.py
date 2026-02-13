@@ -51,10 +51,12 @@ VALID_TRANSITIONS: Dict[ContentLifecycleStatus, List[ContentLifecycleStatus]] = 
     ],
     ContentLifecycleStatus.GENERATED: [
         ContentLifecycleStatus.PENDING_REVIEW,
+        ContentLifecycleStatus.IN_PROGRESS,  # re-generation
     ],
     ContentLifecycleStatus.PENDING_REVIEW: [
         ContentLifecycleStatus.APPROVED,
         ContentLifecycleStatus.REJECTED,
+        ContentLifecycleStatus.IN_PROGRESS,  # re-generation
     ],
     ContentLifecycleStatus.APPROVED: [
         ContentLifecycleStatus.SCHEDULED,
@@ -111,6 +113,7 @@ class ContentRecord(BaseModel):
     target_url: Optional[str] = Field(None, description="Target URL after publishing")
     reviewer_note: Optional[str] = Field(None, description="Note from the reviewer")
     reviewed_by: Optional[str] = Field(None, description="Who reviewed this content")
+    current_version: int = Field(default=0, description="Current content body version")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Creation timestamp")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Last update timestamp")
     scheduled_for: Optional[datetime] = Field(None, description="Scheduled publish time")

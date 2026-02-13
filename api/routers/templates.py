@@ -344,6 +344,8 @@ def _generate_pass(
             type_hint = " (return as JSON array of strings or objects)"
         elif field_type == "number":
             type_hint = " (return as a number)"
+        elif field_type == "image":
+            type_hint = " (return a detailed image generation prompt describing the visual: subject, style, composition, colors, mood)"
 
         section_instructions.append(
             f'### {name}\nLabel: {label}\nType: {field_type}{type_hint}\nPrompt: {prompt}'

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import {
 	createAffiliation,
 	getAffiliationsByUserId,
@@ -8,17 +8,17 @@ import { ChatSDKError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { searchParams } = new URL(request.url);
 		const projectId = searchParams.get("projectId") || undefined;
 
 		const affiliations = await getAffiliationsByUserId({
-			userId: session.user.id,
+			userId,
 			projectId,
 		});
 
@@ -34,16 +34,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const body = await request.json();
 
 		const affiliation = await createAffiliation({
-			userId: session.user.id,
+			userId,
 			projectId: body.projectId,
 			name: body.name,
 			url: body.url,

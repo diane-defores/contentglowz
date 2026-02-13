@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { createTemplate, getTemplatesByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { searchParams } = new URL(request.url);
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 		const contentType = searchParams.get("contentType") || undefined;
 
 		const templates = await getTemplatesByUserId({
-			userId: session.user.id,
+			userId,
 			projectId,
 			contentType,
 		});
@@ -33,16 +33,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const body = await request.json();
 
 		const template = await createTemplate({
-			userId: session.user.id,
+			userId,
 			projectId: body.projectId,
 			name: body.name,
 			slug: body.slug,

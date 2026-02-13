@@ -20,6 +20,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { useMissionControl } from "@/hooks/use-mission-control";
+import { useUptime } from "@/hooks/use-uptime";
 import { ActivityFeed } from "./activity-feed";
 import { ActivityTab } from "./activity-tab";
 import { MissionCategory } from "./mission-category";
@@ -29,22 +30,40 @@ import {
 	OnboardingStep,
 	WelcomeModal,
 } from "./onboarding";
+import { UptimeTab } from "./uptime-tab";
 
 interface MissionControlProps {
 	projectId?: string;
+	onNavigateToTab?: (tab: string) => void;
 }
 
-export function MissionControl({ projectId }: MissionControlProps) {
+export function MissionControl({ projectId, onNavigateToTab }: MissionControlProps) {
 	return (
 		<OnboardingProvider>
-			<MissionControlContent projectId={projectId} />
+			<MissionControlContent projectId={projectId} onNavigateToTab={onNavigateToTab} />
 		</OnboardingProvider>
 	);
 }
 
-function MissionControlContent({ projectId }: MissionControlProps) {
+function MissionControlContent({ projectId, onNavigateToTab }: MissionControlProps) {
 	const { categories, activity, robots, stats } = useMissionControl(projectId);
+	const uptime = useUptime();
 	const [showAllActivity, setShowAllActivity] = useState(false);
+	const [showUptime, setShowUptime] = useState(false);
+
+	const uptimeColor =
+		uptime.overallStatus === "operational"
+			? "bg-green-500"
+			: uptime.overallStatus === "degraded"
+				? "bg-yellow-500"
+				: "bg-red-500";
+
+	const uptimeLabel =
+		uptime.overallStatus === "operational"
+			? "Operational"
+			: uptime.overallStatus === "degraded"
+				? "Degraded"
+				: "Outage";
 
 	return (
 		<>
@@ -76,18 +95,30 @@ function MissionControlContent({ projectId }: MissionControlProps) {
 							<Zap className="h-5 w-5 text-yellow-500" />
 							Mission Control
 						</h2>
-						<Button
-							onClick={() => {
-								robots.refresh();
-								activity.refresh();
-							}}
-							variant="outline"
-							size="sm"
-							className="h-8"
-						>
-							<RefreshCw className="h-3.5 w-3.5 sm:mr-2" />
-							<span className="hidden sm:inline">Refresh</span>
-						</Button>
+						<div className="flex items-center gap-2">
+							<Button
+								onClick={() => setShowUptime(true)}
+								variant="outline"
+								size="sm"
+								className="h-8"
+							>
+								<span className={`h-2 w-2 rounded-full ${uptimeColor} mr-1.5`} />
+								<span className="hidden sm:inline">{uptimeLabel}</span>
+								<Activity className="h-3.5 w-3.5 sm:hidden" />
+							</Button>
+							<Button
+								onClick={() => {
+									robots.refresh();
+									activity.refresh();
+								}}
+								variant="outline"
+								size="sm"
+								className="h-8"
+							>
+								<RefreshCw className="h-3.5 w-3.5 sm:mr-2" />
+								<span className="hidden sm:inline">Refresh</span>
+							</Button>
+						</div>
 					</div>
 
 					<div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
@@ -201,6 +232,7 @@ function MissionControlContent({ projectId }: MissionControlProps) {
 														onTriggerRobot={robots.triggerRobot}
 														onStopRobot={robots.stopRobot}
 														defaultOpen={index === 0}
+														onNavigateToTab={onNavigateToTab}
 													/>
 												</OnboardingStep>
 											</OnboardingStep>
@@ -220,6 +252,7 @@ function MissionControlContent({ projectId }: MissionControlProps) {
 										onTriggerRobot={robots.triggerRobot}
 										onStopRobot={robots.stopRobot}
 										defaultOpen={index === 0}
+										onNavigateToTab={onNavigateToTab}
 									/>
 								);
 							})
@@ -286,6 +319,19 @@ function MissionControlContent({ projectId }: MissionControlProps) {
 							<DialogTitle>Activity Log</DialogTitle>
 						</DialogHeader>
 						<ActivityTab projectId={projectId} />
+					</DialogContent>
+				</Dialog>
+
+				{/* Uptime Modal */}
+				<Dialog open={showUptime} onOpenChange={setShowUptime}>
+					<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+						<DialogHeader>
+							<DialogTitle className="flex items-center gap-2">
+								<Activity className="h-5 w-5" />
+								System Status
+							</DialogTitle>
+						</DialogHeader>
+						<UptimeTab />
 					</DialogContent>
 				</Dialog>
 			</div>

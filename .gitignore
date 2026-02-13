@@ -158,6 +158,7 @@ htmlcov/
 # Data and output directories
 data/repos/
 data/images/
+data/mem0/
 output/
 *.db
 *.sqlite

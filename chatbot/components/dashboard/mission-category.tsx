@@ -57,6 +57,7 @@ interface MissionCategoryProps {
 	onStopRobot: (robotId: string) => Promise<boolean>;
 	defaultOpen?: boolean;
 	onboardingHighlight?: "category" | "robot" | "run-button";
+	onNavigateToTab?: (tab: string) => void;
 }
 
 export function MissionCategory({
@@ -70,6 +71,7 @@ export function MissionCategory({
 	onStopRobot,
 	defaultOpen = false,
 	onboardingHighlight,
+	onNavigateToTab,
 }: MissionCategoryProps) {
 	const [isOpen, setIsOpen] = useState(defaultOpen);
 	const [isRunningAll, setIsRunningAll] = useState(false);
@@ -85,6 +87,8 @@ export function MissionCategory({
 		try {
 			// Run robots sequentially to avoid overwhelming the API
 			for (const robot of robots) {
+				// Skip newsletter robot — it needs the dedicated form
+				if (robot.id === "newsletter") continue;
 				if (
 					robot.status !== "running" &&
 					robot.status !== "disabled" &&
@@ -178,7 +182,13 @@ export function MissionCategory({
 									key={robot.id}
 									robot={robot}
 									isRunning={runningRobot === robot.id}
-									onRun={() => onTriggerRobot(robot.id)}
+									onRun={() => {
+										if (robot.id === "newsletter" && onNavigateToTab) {
+											onNavigateToTab("newsletter");
+										} else {
+											onTriggerRobot(robot.id);
+										}
+									}}
 									onStop={() => onStopRobot(robot.id)}
 									onboardingHighlight={
 										index === 0 ? onboardingHighlight : undefined

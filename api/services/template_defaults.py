@@ -91,6 +91,15 @@ def _seo_article_template() -> DefaultTemplateData:
                 description="Summary and call to action",
                 default_prompt="Write a conclusion (100-150 words). Summarize the key takeaways in 2-3 sentences. Reinforce the main value proposition. Include a clear call to action relevant to the reader's next step. Optionally include the target keyword one final time.",
             ),
+            TemplateSectionData(
+                name="hero_image",
+                label="Hero Image",
+                field_type="image",
+                required=False,
+                order=8,
+                description="Featured image prompt for the article header",
+                default_prompt="Generate a detailed image prompt for the article's hero image. Describe the subject, visual style (photographic, illustration, 3D render), composition, color palette, lighting, and mood. The image should visually represent the article's main topic and appeal to the target audience. Be specific enough for an AI image generator to produce a high-quality result.",
+            ),
         ],
     )
 
@@ -226,6 +235,15 @@ def _youtube_longform_template() -> DefaultTemplateData:
                 order=7,
                 description="YouTube tags for discoverability",
                 default_prompt="Generate 15-20 YouTube tags. Include: the exact title, main keyword variations, long-tail keywords, related topics, and the channel name placeholder. Order from most to least specific. Keep total character count under 500.",
+            ),
+            TemplateSectionData(
+                name="thumbnail_image",
+                label="Thumbnail Image",
+                field_type="image",
+                required=False,
+                order=8,
+                description="AI image prompt for the YouTube thumbnail",
+                default_prompt="Generate a detailed image prompt for the YouTube thumbnail. Describe a bold, eye-catching composition with high contrast. Include: main subject/person, facial expression if applicable, background style, text placement area, color scheme (bright, saturated), and visual hierarchy. The thumbnail must be readable at small sizes and stand out in a feed. Style: professional YouTube thumbnail aesthetic.",
             ),
         ],
     )

@@ -28,6 +28,9 @@ networkx>=3.0.0
 matplotlib>=3.8.0
 python-louvain>=0.16  # Community detection for topical mesh analysis
 
+# Memory Layer
+mem0ai>=0.1.0
+
 # Email & Templates
 jinja2>=3.1.0
 sendgrid>=6.11.0

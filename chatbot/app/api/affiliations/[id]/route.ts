@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import {
 	deleteAffiliation,
 	getAffiliationById,
@@ -12,10 +12,10 @@ export async function GET(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { id } = await params;
@@ -28,7 +28,7 @@ export async function GET(
 			);
 		}
 
-		if (affiliation.userId !== session.user.id) {
+		if (affiliation.userId !== userId) {
 			return new ChatSDKError("forbidden:chat").toResponse();
 		}
 
@@ -47,10 +47,10 @@ export async function PUT(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { id } = await params;
@@ -63,7 +63,7 @@ export async function PUT(
 			);
 		}
 
-		if (existing.userId !== session.user.id) {
+		if (existing.userId !== userId) {
 			return new ChatSDKError("forbidden:chat").toResponse();
 		}
 
@@ -96,10 +96,10 @@ export async function DELETE(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { id } = await params;
@@ -112,7 +112,7 @@ export async function DELETE(
 			);
 		}
 
-		if (existing.userId !== session.user.id) {
+		if (existing.userId !== userId) {
 			return new ChatSDKError("forbidden:chat").toResponse();
 		}
 

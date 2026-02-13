@@ -109,3 +109,102 @@ class UpdateDomainRequest(BaseModel):
     items_pending: Optional[int] = None
     items_completed: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
+
+
+# ─── Content Body ─────────────────────────────────────
+
+
+class SaveContentBodyRequest(BaseModel):
+    """Request to save/update content body."""
+    body: str = Field(..., description="Full markdown content body")
+    edited_by: str = Field(default="user", description="Who made the edit")
+    edit_note: Optional[str] = Field(None, description="Note about the edit")
+
+
+class ContentBodyResponse(BaseModel):
+    """Response representing a content body version."""
+    id: str
+    content_id: str
+    body: str
+    version: int
+    edited_by: Optional[str]
+    edit_note: Optional[str]
+    created_at: str
+
+
+class ContentEditResponse(BaseModel):
+    """Response representing a content edit history entry."""
+    id: str
+    content_id: str
+    edited_by: str
+    edit_note: Optional[str]
+    previous_version: int
+    new_version: int
+    created_at: str
+
+
+class RegenerateRequest(BaseModel):
+    """Request to send content back for re-generation."""
+    instructions: Optional[str] = Field(None, description="Instructions for the robot")
+    changed_by: str = Field(default="user", description="Who requested re-generation")
+
+
+class ScheduleContentRequest(BaseModel):
+    """Request to schedule content for publishing."""
+    scheduled_for: str = Field(..., description="ISO datetime for scheduled publishing")
+    changed_by: str = Field(default="user", description="Who scheduled the content")
+
+
+# ─── Schedule Jobs ────────────────────────────────────
+
+
+class CreateScheduleJobRequest(BaseModel):
+    """Request to create a new schedule job."""
+    user_id: str = Field(default="system", description="User who created the job")
+    project_id: Optional[str] = Field(None, description="Associated project ID")
+    job_type: str = Field(..., description="Job type: newsletter, seo, or article")
+    generator_id: Optional[str] = Field(None, description="Associated generator ID")
+    configuration: Dict[str, Any] = Field(default_factory=dict, description="Job configuration")
+    schedule: str = Field(..., description="Schedule: daily, weekly, monthly, or custom")
+    cron_expression: Optional[str] = Field(None, description="Custom cron expression")
+    schedule_day: Optional[int] = Field(None, description="Day for weekly (0-6) or monthly (1-28)")
+    schedule_time: Optional[str] = Field(None, description="Time in HH:MM format")
+    timezone: str = Field(default="UTC", description="Timezone")
+    enabled: bool = Field(default=True, description="Whether job is enabled")
+    next_run_at: Optional[str] = Field(None, description="Next run time (ISO datetime)")
+
+
+class UpdateScheduleJobRequest(BaseModel):
+    """Request to update a schedule job."""
+    project_id: Optional[str] = None
+    job_type: Optional[str] = None
+    generator_id: Optional[str] = None
+    configuration: Optional[Dict[str, Any]] = None
+    schedule: Optional[str] = None
+    cron_expression: Optional[str] = None
+    schedule_day: Optional[int] = None
+    schedule_time: Optional[str] = None
+    timezone: Optional[str] = None
+    enabled: Optional[bool] = None
+    next_run_at: Optional[str] = None
+
+
+class ScheduleJobResponse(BaseModel):
+    """Response representing a schedule job."""
+    id: str
+    user_id: str
+    project_id: Optional[str]
+    job_type: str
+    generator_id: Optional[str]
+    configuration: Dict[str, Any]
+    schedule: str
+    cron_expression: Optional[str]
+    schedule_day: Optional[int]
+    schedule_time: Optional[str]
+    timezone: str
+    enabled: bool
+    last_run_at: Optional[str]
+    last_run_status: Optional[str]
+    next_run_at: Optional[str]
+    created_at: str
+    updated_at: str

@@ -1,26 +1,58 @@
 "use client";
 
-import { Check, Clock, ExternalLink, X } from "lucide-react";
-import { useState } from "react";
+import { CalendarDays, Check, Clock, Edit2, ExternalLink, X } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ContentItem } from "@/hooks/use-content-review";
+import { ContentEditorModal } from "./content-editor-modal";
 import { ContentStatusBadge } from "./content-status-badge";
+import { ScheduleContentModal } from "./schedule-content-modal";
 
 interface ContentReviewCardProps {
 	item: ContentItem;
 	onApprove: (id: string, note?: string) => Promise<void>;
 	onReject: (id: string, note: string) => Promise<void>;
+	onRefresh?: () => void;
 }
+
+const EDITABLE_STATUSES = ["generated", "pending_review", "approved"];
 
 export function ContentReviewCard({
 	item,
 	onApprove,
 	onReject,
+	onRefresh,
 }: ContentReviewCardProps) {
 	const [rejectNote, setRejectNote] = useState("");
 	const [showRejectInput, setShowRejectInput] = useState(false);
 	const [acting, setActing] = useState(false);
+	const [editorOpen, setEditorOpen] = useState(false);
+	const [scheduleOpen, setScheduleOpen] = useState(false);
+
+	const handleSchedule = useCallback(
+		async (contentId: string, scheduledFor: string) => {
+			try {
+				const res = await fetch(
+					`/api/seo/api/status/content/${contentId}/schedule`,
+					{
+						method: "PATCH",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							scheduled_for: scheduledFor,
+							changed_by: "user",
+						}),
+					},
+				);
+				if (!res.ok) return false;
+				onRefresh?.();
+				return true;
+			} catch {
+				return false;
+			}
+		},
+		[onRefresh],
+	);
 
 	const handleApprove = async () => {
 		setActing(true);
@@ -140,66 +172,112 @@ export function ContentReviewCard({
 				</div>
 			)}
 
-			{/* Actions (only for pending_review) */}
-			{item.status === "pending_review" && (
-				<div className="space-y-2 pt-1">
-					{showRejectInput ? (
-						<div className="flex gap-2">
-							<input
-								type="text"
-								value={rejectNote}
-								onChange={(e) => setRejectNote(e.target.value)}
-								placeholder="Reason for rejection..."
-								className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
-								onKeyDown={(e) => {
-									if (e.key === "Enter") handleReject();
-									if (e.key === "Escape") setShowRejectInput(false);
-								}}
-							/>
-							<Button
-								size="sm"
-								variant="destructive"
-								disabled={acting || !rejectNote.trim()}
-								onClick={handleReject}
-								className="h-8"
-							>
-								Confirm
-							</Button>
-							<Button
-								size="sm"
-								variant="ghost"
-								onClick={() => setShowRejectInput(false)}
-								className="h-8"
-							>
-								Cancel
-							</Button>
-						</div>
-					) : (
-						<div className="flex gap-2">
-							<Button
-								size="sm"
-								variant="default"
-								disabled={acting}
-								onClick={handleApprove}
-								className="h-8 flex-1"
-							>
-								<Check className="h-3.5 w-3.5 mr-1" />
-								Approve
-							</Button>
+			{/* Actions */}
+			<div className="space-y-2 pt-1">
+				{/* Edit + Schedule row for editable statuses */}
+				{EDITABLE_STATUSES.includes(item.status) && (
+					<div className="flex gap-2">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() => setEditorOpen(true)}
+							className="h-8 flex-1"
+						>
+							<Edit2 className="h-3.5 w-3.5 mr-1" />
+							Edit
+						</Button>
+						{item.status === "approved" && (
 							<Button
 								size="sm"
 								variant="outline"
-								disabled={acting}
-								onClick={() => setShowRejectInput(true)}
+								onClick={() => setScheduleOpen(true)}
 								className="h-8 flex-1"
 							>
-								<X className="h-3.5 w-3.5 mr-1" />
-								Reject
+								<CalendarDays className="h-3.5 w-3.5 mr-1" />
+								Schedule
 							</Button>
-						</div>
-					)}
-				</div>
-			)}
+						)}
+					</div>
+				)}
+
+				{/* Approve/Reject for pending_review */}
+				{item.status === "pending_review" && (
+					<>
+						{showRejectInput ? (
+							<div className="flex gap-2">
+								<input
+									type="text"
+									value={rejectNote}
+									onChange={(e) => setRejectNote(e.target.value)}
+									placeholder="Reason for rejection..."
+									className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
+									onKeyDown={(e) => {
+										if (e.key === "Enter") handleReject();
+										if (e.key === "Escape") setShowRejectInput(false);
+									}}
+								/>
+								<Button
+									size="sm"
+									variant="destructive"
+									disabled={acting || !rejectNote.trim()}
+									onClick={handleReject}
+									className="h-8"
+								>
+									Confirm
+								</Button>
+								<Button
+									size="sm"
+									variant="ghost"
+									onClick={() => setShowRejectInput(false)}
+									className="h-8"
+								>
+									Cancel
+								</Button>
+							</div>
+						) : (
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="default"
+									disabled={acting}
+									onClick={handleApprove}
+									className="h-8 flex-1"
+								>
+									<Check className="h-3.5 w-3.5 mr-1" />
+									Approve
+								</Button>
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={acting}
+									onClick={() => setShowRejectInput(true)}
+									className="h-8 flex-1"
+								>
+									<X className="h-3.5 w-3.5 mr-1" />
+									Reject
+								</Button>
+							</div>
+						)}
+					</>
+				)}
+			</div>
+
+			{/* Editor Modal */}
+			<ContentEditorModal
+				item={item}
+				open={editorOpen}
+				onClose={() => setEditorOpen(false)}
+				onApprove={item.status === "pending_review" ? onApprove : undefined}
+				onRefresh={onRefresh}
+			/>
+
+			{/* Schedule Modal */}
+			<ScheduleContentModal
+				item={item}
+				open={scheduleOpen}
+				onClose={() => setScheduleOpen(false)}
+				onSchedule={handleSchedule}
+			/>
 		</Card>
 	);
 }

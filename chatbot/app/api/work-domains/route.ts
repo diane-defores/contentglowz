@@ -1,13 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { getWorkDomains, updateWorkDomain } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
 	try {
-		const session = await auth();
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		const { userId } = await auth();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { searchParams } = new URL(request.url);
@@ -27,9 +27,9 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
 	try {
-		const session = await auth();
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		const { userId } = await auth();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const body = await request.json();

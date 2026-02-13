@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { cloneTemplate, getTemplateById } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
@@ -8,10 +8,10 @@ export async function POST(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { id } = await params;
@@ -27,7 +27,7 @@ export async function POST(
 		// Any user can clone any template they can see (including system templates)
 		const cloned = await cloneTemplate({
 			id,
-			userId: session.user.id,
+			userId,
 		});
 
 		if (!cloned) {

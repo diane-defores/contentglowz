@@ -98,9 +98,9 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 
 	if (loading) {
 		return (
-			<Button variant="outline" disabled className="w-[200px] justify-start">
-				<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-				Loading...
+			<Button variant="outline" disabled className="h-9 w-9 sm:w-[200px] sm:justify-start [&_svg]:size-5">
+				<Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+				<span className="hidden sm:inline">Loading...</span>
 			</Button>
 		);
 	}
@@ -109,18 +109,21 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="w-[200px] justify-start">
+					<Button variant="outline" className="h-9 w-9 sm:w-[200px] sm:justify-start [&_svg]:size-5">
 						{selectedProject ? (
-							<span className="flex items-center gap-2 truncate">
+							<>
 								{selectedProject.type === "github" ? (
-									<FolderGit2 className="h-4 w-4 shrink-0" />
+									<FolderGit2 className="h-4 w-4 shrink-0 sm:mr-2" />
 								) : (
-									<Globe className="h-4 w-4 shrink-0" />
+									<Globe className="h-4 w-4 shrink-0 sm:mr-2" />
 								)}
-								<span className="truncate">{selectedProject.name}</span>
-							</span>
+								<span className="hidden sm:inline truncate">{selectedProject.name}</span>
+							</>
 						) : (
-							<span className="text-muted-foreground">Select project...</span>
+							<>
+								<FolderGit2 className="h-4 w-4 shrink-0 sm:mr-2" />
+								<span className="hidden sm:inline text-muted-foreground">Select project...</span>
+							</>
 						)}
 					</Button>
 				</DropdownMenuTrigger>

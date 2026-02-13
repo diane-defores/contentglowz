@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { getUserSettings, updateUserSettings } from "@/lib/db/queries";
 
 export async function GET() {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
 	try {
-		const settings = await getUserSettings({ userId: session.user.id });
+		const settings = await getUserSettings({ userId });
 
 		// Don't expose full API keys, just indicate if they're set
 		const safeSettings = {
@@ -20,6 +20,7 @@ export async function GET() {
 				exa: settings.apiKeys.exa ? "••••••••" : null,
 				firecrawl: settings.apiKeys.firecrawl ? "••••••••" : null,
 				serper: settings.apiKeys.serper ? "••••••••" : null,
+				openrouter: settings.apiKeys.openrouter ? "••••••••" : null,
 			} : null,
 		};
 
@@ -33,8 +34,8 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-	const session = await auth();
-	if (!session?.user?.id) {
+	const { userId } = await auth();
+	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -46,7 +47,7 @@ export async function PUT(request: NextRequest) {
 		const { apiKeys, ...safeUpdates } = body;
 
 		const updated = await updateUserSettings({
-			userId: session.user.id,
+			userId,
 			...safeUpdates,
 		});
 
@@ -59,6 +60,7 @@ export async function PUT(request: NextRequest) {
 				exa: updated.apiKeys.exa ? "••••••••" : null,
 				firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 				serper: updated.apiKeys.serper ? "••••••••" : null,
+				openrouter: updated.apiKeys.openrouter ? "••••••••" : null,
 			} : null,
 		};
 

@@ -27,7 +27,7 @@ import {
 import type { ModelCatalog } from "tokenlens/core";
 import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
-import { auth, type UserType } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
@@ -157,16 +157,16 @@ export async function POST(request: Request) {
 			selectedVisibilityType: VisibilityType;
 		} = requestBody;
 
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
+		if (!userId) {
 			return new ChatSDKError("unauthorized:chat").toResponse();
 		}
 
-		const userType: UserType = session.user.type;
+		const userType = "regular" as const;
 
 		const messageCount = await getMessageCountByUserId({
-			id: session.user.id,
+			id: userId,
 			differenceInHours: 24,
 		});
 
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
 		let messagesFromDb: DBMessage[] = [];
 
 		if (chat) {
-			if (chat.userId !== session.user.id) {
+			if (chat.userId !== userId) {
 				return new ChatSDKError("forbidden:chat").toResponse();
 			}
 			// Only fetch messages if chat already exists
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
 
 			await saveChat({
 				id,
-				userId: session.user.id,
+				userId,
 				projectId,
 				title,
 				visibility: selectedVisibilityType,
@@ -268,10 +268,10 @@ export async function POST(request: Request) {
 					experimental_transform: smoothStream({ chunking: "word" }),
 					tools: {
 						getWeather,
-						createDocument: createDocument({ session, dataStream }),
-						updateDocument: updateDocument({ session, dataStream }),
+						createDocument: createDocument({ session: { user: { id: userId } } as any, dataStream }),
+						updateDocument: updateDocument({ session: { user: { id: userId } } as any, dataStream }),
 						requestSuggestions: requestSuggestions({
-							session,
+							session: { user: { id: userId } } as any,
 							dataStream,
 						}),
 						analyzeMesh: analyzeMeshTool,
@@ -281,7 +281,7 @@ export async function POST(request: Request) {
 						generateInternalLinkingStrategy,
 						applyInternalLinks,
 						getAffiliations: createGetAffiliationsTool({
-							userId: session.user.id,
+							userId,
 						}),
 						generateArticleImages: generateArticleImagesTool,
 						uploadImage: uploadImageTool,
@@ -417,15 +417,15 @@ export async function DELETE(request: Request) {
 		return new ChatSDKError("bad_request:api").toResponse();
 	}
 
-	const session = await auth();
+	const { userId } = await auth();
 
-	if (!session?.user) {
+	if (!userId) {
 		return new ChatSDKError("unauthorized:chat").toResponse();
 	}
 
 	const chat = await getChatById({ id });
 
-	if (chat?.userId !== session.user.id) {
+	if (chat?.userId !== userId) {
 		return new ChatSDKError("forbidden:chat").toResponse();
 	}
 

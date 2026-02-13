@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/(auth)/auth";
+import { auth } from "@clerk/nextjs/server";
 import { getCompetitorById, updateCompetitor } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 import { seoApi } from "@/lib/seo-api-client";
@@ -9,10 +9,10 @@ export async function POST(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const session = await auth();
+		const { userId } = await auth();
 
-		if (!session?.user) {
-			return new ChatSDKError("unauthorized:chat").toResponse();
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		const { id } = await params;
@@ -25,7 +25,7 @@ export async function POST(
 			);
 		}
 
-		if (competitor.userId !== session.user.id) {
+		if (competitor.userId !== userId) {
 			return new ChatSDKError("forbidden:chat").toResponse();
 		}
 

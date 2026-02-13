@@ -1,7 +1,29 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { type NextRequest, NextResponse } from "next/server";
 
-// SEO Robots API - defaults to localhost for local development
-const API_URL = process.env.SEO_API_URL || "http://localhost:8000";
+/**
+ * Resolve the Python API URL dynamically:
+ * 1. SEO_API_URL env var (explicit override)
+ * 2. Read port from ecosystem.config.cjs (PM2 source of truth)
+ * 3. Fallback to port 8000
+ */
+function getApiUrl(): string {
+	if (process.env.SEO_API_URL) return process.env.SEO_API_URL;
+
+	try {
+		const ecoPath = resolve(process.cwd(), "../ecosystem.config.cjs");
+		const content = readFileSync(ecoPath, "utf-8");
+		const portMatch = content.match(/PORT[:\s]*(\d+)/);
+		if (portMatch) return `http://localhost:${portMatch[1]}`;
+	} catch {
+		// ecosystem.config.cjs not found — use fallback
+	}
+
+	return "http://localhost:8000";
+}
+
+const API_URL = getApiUrl();
 
 export async function GET(
 	request: NextRequest,
