@@ -23,7 +23,6 @@ MEM0_LLM_MODEL = os.getenv("MEM0_LLM_MODEL", "gpt-4o-mini")
 
 # API keys
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 MEM0_API_KEY = os.getenv("MEM0_API_KEY", "")
 
 
@@ -54,24 +53,8 @@ def _get_local_config() -> dict:
         },
     }
 
-    # LLM for fact extraction — use OpenAI directly if available,
-    # otherwise try OpenRouter
-    if OPENAI_API_KEY:
-        config["llm"] = {
-            "provider": "openai",
-            "config": {
-                "model": MEM0_LLM_MODEL,
-                "api_key": OPENAI_API_KEY,
-            },
-        }
-        config["embedder"] = {
-            "provider": "openai",
-            "config": {
-                "model": "text-embedding-3-small",
-                "api_key": OPENAI_API_KEY,
-            },
-        }
-    elif OPENROUTER_API_KEY:
+    # LLM for fact extraction via OpenRouter
+    if OPENROUTER_API_KEY:
         config["llm"] = {
             "provider": "openai",
             "config": {

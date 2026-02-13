@@ -396,8 +396,6 @@ export const userSettings = sqliteTable("UserSettings", {
 	webhookUrl: text("webhookUrl"),
 	// API Keys (encrypted in production)
 	apiKeys: text("apiKeys", { mode: "json" }).$type<{
-		openai?: string;
-		anthropic?: string;
 		exa?: string;
 		firecrawl?: string;
 		serper?: string;

@@ -10,8 +10,6 @@ export interface UserSettings {
 	emailNotifications: boolean;
 	webhookUrl: string | null;
 	apiKeys: {
-		openai?: string | null;
-		anthropic?: string | null;
 		exa?: string | null;
 		firecrawl?: string | null;
 		serper?: string | null;
@@ -93,7 +91,7 @@ export function useSettings() {
 	);
 
 	const updateApiKey = useCallback(
-		async (provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
+		async (provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
 			setError(null);
 			setSaving(true);
 

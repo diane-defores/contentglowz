@@ -103,52 +103,31 @@ async def get_generation_status(job_id: str):
 
 
 def _get_llm_client():
-    """Get an LLM client for generation. Tries OpenRouter → OpenAI → Anthropic."""
+    """Get an OpenRouter LLM client for generation."""
     openrouter_key = os.environ.get("OPENROUTER_API_KEY")
-    if openrouter_key:
-        from openai import OpenAI
-        return OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=openrouter_key,
-        ), "openrouter"
+    if not openrouter_key:
+        raise ValueError("No LLM API key found. Set OPENROUTER_API_KEY.")
 
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    if openai_key:
-        from openai import OpenAI
-        return OpenAI(api_key=openai_key), "openai"
-
-    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
-    if anthropic_key:
-        import anthropic
-        return anthropic.Anthropic(api_key=anthropic_key), "anthropic"
-
-    raise ValueError("No LLM API key found. Set OPENROUTER_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY.")
+    from openai import OpenAI
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=openrouter_key,
+    )
 
 
 def _llm_call(system_prompt: str, user_prompt: str, model: str | None = None, temperature: float = 0.7) -> str:
-    """Make a single LLM call with automatic provider detection."""
-    client, provider = _get_llm_client()
+    """Make a single LLM call via OpenRouter."""
+    client = _get_llm_client()
 
-    if provider == "anthropic":
-        response = client.messages.create(
-            model=model or "claude-sonnet-4-5-20250929",
-            max_tokens=4096,
-            temperature=temperature,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        return response.content[0].text
-    else:
-        # OpenAI-compatible (OpenAI or OpenRouter)
-        response = client.chat.completions.create(
-            model=model or ("anthropic/claude-sonnet-4-5" if provider == "openrouter" else "gpt-4o"),
-            temperature=temperature,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-        )
-        return response.choices[0].message.content
+    response = client.chat.completions.create(
+        model=model or "anthropic/claude-sonnet-4-5",
+        temperature=temperature,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+    return response.choices[0].message.content
 
 
 async def _generate_section_prompt(request: GeneratePromptRequest) -> GeneratePromptResponse:

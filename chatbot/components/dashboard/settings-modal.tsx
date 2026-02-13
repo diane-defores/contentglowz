@@ -34,8 +34,6 @@ import { useSettings } from "@/hooks/use-settings";
 import { SettingsProjectsTab } from "./settings-projects-tab";
 
 const API_KEY_PROVIDERS = [
-	{ id: "openai", name: "OpenAI", placeholder: "sk-...", section: "ai" },
-	{ id: "anthropic", name: "Anthropic", placeholder: "sk-ant-...", section: "ai" },
 	{ id: "exa", name: "Exa AI", placeholder: "exa-...", section: "ai" },
 	{ id: "firecrawl", name: "Firecrawl", placeholder: "fc-...", section: "ai" },
 	{ id: "serper", name: "Serper", placeholder: "serper-...", section: "ai" },
