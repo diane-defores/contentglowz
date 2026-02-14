@@ -1680,7 +1680,7 @@ export async function updateUserApiKey({
 	apiKey,
 }: {
 	userId: string;
-	provider: "openai" | "anthropic" | "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname";
+	provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname";
 	apiKey: string | null;
 }): Promise<UserSettings> {
 	try {

@@ -15,8 +15,6 @@ export async function GET() {
 		const safeSettings = {
 			...settings,
 			apiKeys: settings.apiKeys ? {
-				openai: settings.apiKeys.openai ? "••••••••" : null,
-				anthropic: settings.apiKeys.anthropic ? "••••••••" : null,
 				exa: settings.apiKeys.exa ? "••••••••" : null,
 				firecrawl: settings.apiKeys.firecrawl ? "••••••••" : null,
 				serper: settings.apiKeys.serper ? "••••••••" : null,
@@ -55,8 +53,6 @@ export async function PUT(request: NextRequest) {
 		const safeSettings = {
 			...updated,
 			apiKeys: updated.apiKeys ? {
-				openai: updated.apiKeys.openai ? "••••••••" : null,
-				anthropic: updated.apiKeys.anthropic ? "••••••••" : null,
 				exa: updated.apiKeys.exa ? "••••••••" : null,
 				firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 				serper: updated.apiKeys.serper ? "••••••••" : null,

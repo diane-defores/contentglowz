@@ -18,10 +18,17 @@ export function ResearchConversationRow({
   onDelete,
 }: ResearchConversationRowProps) {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className={`group flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors ${
         active
           ? "bg-muted text-foreground"
           : "hover:bg-muted/50 text-foreground/80"
@@ -48,6 +55,6 @@ export function ResearchConversationRow({
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
-    </button>
+    </div>
   );
 }

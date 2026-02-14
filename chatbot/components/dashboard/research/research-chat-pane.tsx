@@ -25,7 +25,9 @@ export function ResearchChatPane({
   const [urls, setUrls] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  const { messages, setMessages, sendMessage, status, stop } = useChat({
     id: chatId,
     generateId: generateUUID,
     experimental_throttle: 100,
@@ -64,6 +66,27 @@ export function ResearchChatPane({
       }
     },
   });
+
+  // Load existing messages when opening a past conversation
+  useEffect(() => {
+    let cancelled = false;
+    async function loadMessages() {
+      try {
+        const res = await fetch(`/api/research/chat?id=${chatId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data) && data.length > 0) {
+          setMessages(data);
+        }
+      } catch {
+        // Silently fail — user can still start a new conversation
+      } finally {
+        if (!cancelled) setLoadingHistory(false);
+      }
+    }
+    loadMessages();
+    return () => { cancelled = true; };
+  }, [chatId, setMessages]);
 
   const isStreaming = status === "streaming" || status === "submitted";
 
@@ -157,7 +180,16 @@ export function ResearchChatPane({
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
       >
-        {messages.length === 0 && !errorMessage && (
+        {loadingHistory && messages.length === 0 && (
+          <div className="flex h-full items-center justify-center">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              <span className="text-sm">Loading conversation...</span>
+            </div>
+          </div>
+        )}
+
+        {!loadingHistory && messages.length === 0 && !errorMessage && (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <Search className="h-10 w-10 text-muted-foreground/40 mb-3" />
             <h3 className="text-sm font-medium text-muted-foreground">

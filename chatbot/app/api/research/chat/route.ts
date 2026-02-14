@@ -30,6 +30,40 @@ import { convertToUIMessages, generateUUID } from "@/lib/utils";
 
 export const maxDuration = 60;
 
+export async function GET(request: Request) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get("id");
+
+	if (!id) {
+		return new ChatSDKError("bad_request:api").toResponse();
+	}
+
+	try {
+		const { userId } = await auth();
+		if (!userId) {
+			return new ChatSDKError("unauthorized:chat").toResponse();
+		}
+
+		const chat = await getChatById({ id });
+		if (!chat) {
+			return Response.json([], { status: 200 });
+		}
+		if (chat.userId !== userId) {
+			return new ChatSDKError("forbidden:chat").toResponse();
+		}
+
+		const messagesFromDb = await getMessagesByChatId({ id });
+		const uiMessages = convertToUIMessages(messagesFromDb);
+		return Response.json(uiMessages, { status: 200 });
+	} catch (error) {
+		if (error instanceof ChatSDKError) {
+			return error.toResponse();
+		}
+		console.error("Research chat GET error:", error);
+		return new ChatSDKError("offline:chat").toResponse();
+	}
+}
+
 const textPartSchema = z.object({
 	type: z.enum(["text"]),
 	text: z.string().min(1).max(4000),
