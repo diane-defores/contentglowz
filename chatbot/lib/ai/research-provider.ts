@@ -1,16 +1,20 @@
 /**
  * Research AI Provider — OpenRouter via @ai-sdk/openai
  *
- * Uses the user's OpenRouter API key to access Claude Sonnet 4 for
- * web research conversations. Falls back to error if no key is configured.
+ * Uses the user's OpenRouter API key to access AI models for
+ * web research conversations.
  */
 import { createOpenAI } from "@ai-sdk/openai";
+import { DEFAULT_RESEARCH_MODEL } from "./research-models";
 
-export function createResearchProvider(apiKey: string) {
+export function createResearchProvider(
+	apiKey: string,
+	modelId: string = DEFAULT_RESEARCH_MODEL,
+) {
 	const openrouter = createOpenAI({
 		baseURL: "https://openrouter.ai/api/v1",
 		apiKey,
 	});
 
-	return openrouter("anthropic/claude-sonnet-4");
+	return openrouter(modelId);
 }

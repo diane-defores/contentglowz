@@ -618,6 +618,210 @@ class SEOApiClient {
 			total_count: number;
 		}>(`/api/images/history?limit=${limit}`);
 	}
+
+	// ─────────────────────────────────────────────────
+	// Reels Endpoints
+	// ─────────────────────────────────────────────────
+
+	/**
+	 * Download an Instagram Reel, extract audio, upload to Bunny CDN
+	 */
+	async downloadReel(params: {
+		url: string;
+		userId: string;
+		bunnyStorageKey: string;
+		bunnyCdnHostname: string;
+	}) {
+		return this.request<{
+			reel_id: string;
+			video_url: string;
+			audio_url: string;
+			duration: number | null;
+			thumbnail_url: string | null;
+			caption: string | null;
+			author: string | null;
+		}>("/api/reels/download", {
+			method: "POST",
+			body: JSON.stringify({
+				url: params.url,
+				user_id: params.userId,
+				bunny_storage_key: params.bunnyStorageKey,
+				bunny_cdn_hostname: params.bunnyCdnHostname,
+			}),
+		});
+	}
+
+	/**
+	 * Upload Instagram cookies
+	 */
+	async uploadReelsCookies(params: {
+		userId: string;
+		cookiesContent: string;
+	}) {
+		return this.request<{ success: boolean }>("/api/reels/cookies", {
+			method: "POST",
+			body: JSON.stringify({
+				user_id: params.userId,
+				cookies_content: params.cookiesContent,
+			}),
+		});
+	}
+
+	/**
+	 * Check Instagram cookie status
+	 */
+	async getReelsCookieStatus(userId: string) {
+		return this.request<{
+			has_cookies: boolean;
+			username: string | null;
+		}>(`/api/reels/cookies/status?user_id=${encodeURIComponent(userId)}`);
+	}
+
+	/**
+	 * Delete Instagram cookies
+	 */
+	async deleteReelsCookies(userId: string) {
+		return this.request<{ success: boolean }>("/api/reels/cookies", {
+			method: "DELETE",
+			body: JSON.stringify({ user_id: userId }),
+		});
+	}
+
+	// ─────────────────────────────────────────────────
+	// Psychology Engine Endpoints
+	// ─────────────────────────────────────────────────
+
+	/**
+	 * Trigger narrative synthesis from creator entries
+	 */
+	async synthesizeNarrative(params: {
+		profileId: string;
+		entryIds: string[];
+		currentVoice?: Record<string, unknown>;
+		currentPositioning?: Record<string, unknown>;
+		chapterTitle?: string;
+	}) {
+		return this.request<{ task_id: string; status: string }>(
+			"/api/psychology/synthesize-narrative",
+			{
+				method: "POST",
+				body: JSON.stringify({
+					profile_id: params.profileId,
+					entry_ids: params.entryIds,
+					current_voice: params.currentVoice,
+					current_positioning: params.currentPositioning,
+					chapter_title: params.chapterTitle,
+				}),
+			},
+		);
+	}
+
+	/**
+	 * Poll for narrative synthesis status
+	 */
+	async getSynthesisStatus(taskId: string) {
+		return this.request<{
+			status: string;
+			result?: {
+				voice_delta: Record<string, unknown>;
+				positioning_delta: Record<string, unknown>;
+				narrative_summary: string;
+				chapter_transition?: boolean;
+				suggested_chapter_title?: string;
+			};
+		}>(`/api/psychology/synthesis-status/${taskId}`);
+	}
+
+	/**
+	 * Trigger persona refinement with analytics data
+	 */
+	async refinePersona(params: {
+		personaId: string;
+		currentPersona: Record<string, unknown>;
+		analyticsData?: Record<string, unknown>;
+		contentPerformance?: Record<string, unknown>[];
+	}) {
+		return this.request<{ task_id: string; status: string }>(
+			"/api/psychology/refine-persona",
+			{
+				method: "POST",
+				body: JSON.stringify({
+					persona_id: params.personaId,
+					current_persona: params.currentPersona,
+					analytics_data: params.analyticsData,
+					content_performance: params.contentPerformance,
+				}),
+			},
+		);
+	}
+
+	/**
+	 * Trigger content angle generation
+	 */
+	async generateAngles(params: {
+		profileId: string;
+		personaId: string;
+		creatorVoice: Record<string, unknown>;
+		creatorPositioning: Record<string, unknown>;
+		narrativeSummary?: string;
+		personaData: Record<string, unknown>;
+		contentType?: string;
+		count?: number;
+	}) {
+		return this.request<{ task_id: string; status: string }>(
+			"/api/psychology/generate-angles",
+			{
+				method: "POST",
+				body: JSON.stringify({
+					profile_id: params.profileId,
+					persona_id: params.personaId,
+					creator_voice: params.creatorVoice,
+					creator_positioning: params.creatorPositioning,
+					narrative_summary: params.narrativeSummary,
+					persona_data: params.personaData,
+					content_type: params.contentType,
+					count: params.count || 5,
+				}),
+			},
+		);
+	}
+
+	/**
+	 * Poll for angle generation status
+	 */
+	async getAnglesStatus(taskId: string) {
+		return this.request<{
+			status: string;
+			result?: {
+				angles: Array<{
+					title: string;
+					hook: string;
+					angle: string;
+					content_type: string;
+					narrative_thread: string;
+					pain_point_addressed: string;
+					confidence: number;
+				}>;
+				strategy_note: string;
+			};
+		}>(`/api/psychology/angles-status/${taskId}`);
+	}
+
+	/**
+	 * Render a selected angle into multiple content formats
+	 */
+	async renderExtract(angleId: string, status: string) {
+		return this.request<{
+			angle_id: string;
+			article_outline?: string;
+			newsletter_hook?: string;
+			social_post?: string;
+			video_script_opener?: string;
+		}>("/api/psychology/render-extract", {
+			method: "POST",
+			body: JSON.stringify({ angle_id: angleId, status }),
+		});
+	}
 }
 
 // Export singleton instance

@@ -3,8 +3,12 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AlertCircle, Bot, KeyRound, Search } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { generateUUID } from "@/lib/utils";
+import {
+  DEFAULT_RESEARCH_MODEL,
+  DEFAULT_RESEARCH_PROVIDER,
+} from "@/lib/ai/research-models";
 import { ResearchComposer } from "./research-composer";
 import { ResearchMessage } from "./research-message";
 
@@ -24,27 +28,41 @@ export function ResearchChatPane({
   const [input, setInput] = useState("");
   const [urls, setUrls] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [selectedProvider, setSelectedProvider] = useState(DEFAULT_RESEARCH_PROVIDER);
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_RESEARCH_MODEL);
+
+  // Refs so the transport closure always reads the latest values
+  const selectedProviderRef = useRef(selectedProvider);
+  const selectedModelRef = useRef(selectedModel);
+  useEffect(() => { selectedProviderRef.current = selectedProvider; }, [selectedProvider]);
+  useEffect(() => { selectedModelRef.current = selectedModel; }, [selectedModel]);
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/research/chat",
+        prepareSendMessagesRequest(request) {
+          return {
+            body: {
+              id: chatId,
+              projectId,
+              modelId: selectedModelRef.current,
+              providerId: selectedProviderRef.current,
+              message: request.messages.at(-1),
+            },
+          };
+        },
+      }),
+    [chatId, projectId],
+  );
 
   const { messages, setMessages, sendMessage, status, stop } = useChat({
     id: chatId,
     generateId: generateUUID,
     experimental_throttle: 100,
-    transport: new DefaultChatTransport({
-      api: "/api/research/chat",
-      prepareSendMessagesRequest(request) {
-        return {
-          body: {
-            id: chatId,
-            projectId,
-            message: request.messages.at(-1),
-          },
-        };
-      },
-    }),
+    transport,
     onError: (err) => {
-      // The transport throws Error(response.text()), so msg may be raw JSON
       let msg = err.message || "An error occurred";
       try {
         const parsed = JSON.parse(msg);
@@ -105,7 +123,6 @@ export function ResearchChatPane({
   }, [input]);
 
   // Notify parent of title after we get the first assistant response
-  // (not on user message, to avoid race condition with server chat creation)
   useEffect(() => {
     if (!hasNotifiedTitle.current && messages.length >= 2 && onTitleUpdate) {
       const firstUser = messages.find((m) => m.role === "user");
@@ -120,7 +137,7 @@ export function ResearchChatPane({
     }
   }, [messages, chatId, onTitleUpdate]);
 
-  // Also refresh history when streaming completes (status goes from streaming to ready)
+  // Refresh history when streaming completes
   const prevStatus = useRef(status);
   useEffect(() => {
     if (
@@ -128,7 +145,6 @@ export function ResearchChatPane({
       status === "ready" &&
       onTitleUpdate
     ) {
-      // Trigger a refresh — the chat and messages are saved on the server now
       const firstUser = messages.find((m) => m.role === "user");
       if (firstUser) {
         const textPart = firstUser.parts?.find((p) => p.type === "text");
@@ -154,7 +170,6 @@ export function ResearchChatPane({
     if (isStreaming) return;
     setErrorMessage(null);
 
-    // Build message text, including URLs as context
     let messageText = text;
     if (urls.length > 0) {
       const urlContext = urls
@@ -263,6 +278,10 @@ export function ResearchChatPane({
         urls={urls}
         onAddUrl={handleAddUrl}
         onRemoveUrl={handleRemoveUrl}
+        selectedProvider={selectedProvider}
+        onProviderChange={setSelectedProvider}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
       />
     </div>
   );

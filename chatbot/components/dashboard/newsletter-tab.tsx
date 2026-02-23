@@ -5,6 +5,7 @@ import {
 	Clock,
 	FileText,
 	History,
+	LayoutTemplate,
 	Sparkles,
 	Trash2,
 	X,
@@ -19,8 +20,13 @@ import type { NewsletterGenerator } from "@/lib/db/schema";
 import { GeneratorFormModal } from "./generator-form-modal";
 import { GeneratorsList } from "./generators-list";
 import { NewsletterResultView } from "./newsletter-result";
+import { TemplatePicker } from "./template-picker";
 
-export function NewsletterTab() {
+interface NewsletterTabProps {
+	projectId?: string;
+}
+
+export function NewsletterTab({ projectId }: NewsletterTabProps) {
 	const {
 		history,
 		error: newsletterError,
@@ -59,6 +65,7 @@ export function NewsletterTab() {
 	const [editingGenerator, setEditingGenerator] =
 		useState<NewsletterGenerator | null>(null);
 	const [result, setResult] = useState<ReturnType<typeof loadFromHistory> | null>(null);
+	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
 	// When generation completes, save to history and show result
 	const prevResultIdRef = useRef<string | null>(null);
@@ -196,14 +203,24 @@ export function NewsletterTab() {
 			)}
 
 			{/* Header */}
-			<div>
-				<h2 className="text-xl font-semibold flex items-center gap-2">
-					<Sparkles className="h-5 w-5 text-purple-500" />
-					Newsletter Generator
-				</h2>
-				<p className="text-sm text-muted-foreground mt-1">
-					Register newsletter generators, schedule them, or run on demand
-				</p>
+			<div className="flex items-start justify-between">
+				<div>
+					<h2 className="text-xl font-semibold flex items-center gap-2">
+						<Sparkles className="h-5 w-5 text-purple-500" />
+						Newsletter Generator
+					</h2>
+					<p className="text-sm text-muted-foreground mt-1">
+						Register newsletter generators, schedule them, or run on demand
+					</p>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => setTemplatePickerOpen(true)}
+				>
+					<LayoutTemplate className="mr-1.5 h-3.5 w-3.5" />
+					From template
+				</Button>
 			</div>
 
 			{/* Main Grid */}
@@ -308,6 +325,13 @@ export function NewsletterTab() {
 				gmailConnected={gmailConnected}
 				gmailEmail={gmailEmail}
 				onDisconnectGmail={disconnectGmail}
+			/>
+
+			{/* Template picker sheet */}
+			<TemplatePicker
+				open={templatePickerOpen}
+				onOpenChange={setTemplatePickerOpen}
+				projectId={projectId}
 			/>
 		</div>
 	);

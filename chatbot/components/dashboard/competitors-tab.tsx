@@ -3,6 +3,7 @@
 import { AlertCircle, Loader2, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/hooks/use-confirm";
 import { Card } from "@/components/ui/card";
 import {
 	Select,
@@ -42,6 +43,7 @@ export function CompetitorsTab({ projectId }: CompetitorsTabProps) {
 		null,
 	);
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const handleEdit = (competitor: Competitor) => {
 		setEditingCompetitor(competitor);
@@ -49,9 +51,13 @@ export function CompetitorsTab({ projectId }: CompetitorsTabProps) {
 	};
 
 	const handleDelete = async (id: string) => {
-		if (confirm("Are you sure you want to delete this competitor?")) {
-			await deleteCompetitor(id);
-		}
+		const ok = await confirm({
+			title: "Delete competitor",
+			description: "Are you sure you want to delete this competitor?",
+			confirmLabel: "Delete",
+			destructive: true,
+		});
+		if (ok) await deleteCompetitor(id);
 	};
 
 	const handleSubmit = async (data: CompetitorFormData) => {
@@ -187,6 +193,8 @@ export function CompetitorsTab({ projectId }: CompetitorsTabProps) {
 				competitor={editingCompetitor}
 				onSubmit={handleSubmit}
 			/>
+
+			<ConfirmDialog />
 		</div>
 	);
 }

@@ -10,7 +10,7 @@ function SimpleLoading() {
 }
 
 // Client component for dynamic content
-async function DashboardClient({ repoUrl }: { repoUrl: string }) {
+async function DashboardClient() {
 	// Dynamically import to ensure client-side only
 	const { DashboardContent } = await import(
 		"@/components/dashboard/dashboard-content"
@@ -18,26 +18,16 @@ async function DashboardClient({ repoUrl }: { repoUrl: string }) {
 	const { ProjectsProvider } = await import("@/contexts/projects-context");
 	return (
 		<ProjectsProvider>
-			<DashboardContent repoUrl={repoUrl} />
+			<DashboardContent />
 		</ProjectsProvider>
 	);
 }
 
-export default async function DashboardPage({
-	searchParams,
-}: {
-	searchParams: Promise<{
-		repo?: string;
-	}>;
-}) {
-	const params = await searchParams;
-	const defaultRepo = "https://github.com/dianedef/my-robots";
-	const repoUrl = params.repo || defaultRepo;
-
+export default function DashboardPage() {
 	return (
 		<div className="min-h-screen">
 			<Suspense fallback={<SimpleLoading />}>
-				<DashboardClient repoUrl={repoUrl} />
+				<DashboardClient />
 			</Suspense>
 		</div>
 	);

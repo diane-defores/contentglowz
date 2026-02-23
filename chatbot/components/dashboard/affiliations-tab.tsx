@@ -3,6 +3,7 @@
 import { AlertCircle, Loader2, Plus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/hooks/use-confirm";
 import { Card } from "@/components/ui/card";
 import {
 	Select,
@@ -40,6 +41,7 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 		useState<AffiliateLink | null>(null);
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [categoryFilter, setCategoryFilter] = useState<string>("all");
+	const { confirm, ConfirmDialog } = useConfirm();
 
 	const handleEdit = (affiliation: AffiliateLink) => {
 		setEditingAffiliation(affiliation);
@@ -47,9 +49,13 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 	};
 
 	const handleDelete = async (id: string) => {
-		if (confirm("Are you sure you want to delete this affiliate link?")) {
-			await deleteAffiliation(id);
-		}
+		const ok = await confirm({
+			title: "Delete affiliate link",
+			description: "Are you sure you want to delete this affiliate link?",
+			confirmLabel: "Delete",
+			destructive: true,
+		});
+		if (ok) await deleteAffiliation(id);
 	};
 
 	const handleSubmit = async (data: AffiliationFormData) => {
@@ -199,6 +205,8 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 				affiliation={editingAffiliation}
 				onSubmit={handleSubmit}
 			/>
+
+			<ConfirmDialog />
 		</div>
 	);
 }

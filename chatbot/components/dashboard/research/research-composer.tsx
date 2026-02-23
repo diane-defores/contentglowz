@@ -1,8 +1,20 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Link2, Send, Square, X } from "lucide-react";
+import { Bot, Check, ChevronDown, Link2, Search, Send, Square, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  researchModels,
+  researchProviders,
+  type ResearchModel,
+  type ResearchProvider,
+} from "@/lib/ai/research-models";
 
 interface ResearchComposerProps {
   value: string;
@@ -13,6 +25,10 @@ interface ResearchComposerProps {
   urls: string[];
   onAddUrl: (url: string) => void;
   onRemoveUrl: (index: number) => void;
+  selectedProvider: string;
+  onProviderChange: (id: string) => void;
+  selectedModel: string;
+  onModelChange: (id: string) => void;
 }
 
 export function ResearchComposer({
@@ -24,11 +40,18 @@ export function ResearchComposer({
   urls,
   onAddUrl,
   onRemoveUrl,
+  selectedProvider,
+  onProviderChange,
+  selectedModel,
+  onModelChange,
 }: ResearchComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlDraft, setUrlDraft] = useState("");
+
+  const currentProvider = researchProviders.find((p) => p.id === selectedProvider) || researchProviders[0];
+  const currentModel = researchModels.find((m) => m.id === selectedModel) || researchModels[0];
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -183,18 +206,35 @@ export function ResearchComposer({
 
         {/* Bottom toolbar */}
         <div className="flex items-center justify-between px-3 pb-3">
-          <button
-            type="button"
-            onClick={() => setShowUrlInput((v) => !v)}
-            className={`inline-flex shrink-0 items-center justify-center rounded-full p-2 transition-colors ${
-              showUrlInput || urls.length > 0
-                ? "text-primary bg-primary/10"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-            title="Add URL for context"
-          >
-            <Link2 className="h-4.5 w-4.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Link button */}
+            <button
+              type="button"
+              onClick={() => setShowUrlInput((v) => !v)}
+              className={`inline-flex shrink-0 items-center justify-center rounded-full p-2 transition-colors ${
+                showUrlInput || urls.length > 0
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+              title="Add URL for context"
+            >
+              <Link2 className="h-4.5 w-4.5" />
+            </button>
+
+            {/* Provider selector */}
+            <ProviderDropdown
+              providers={researchProviders}
+              current={currentProvider}
+              onSelect={onProviderChange}
+            />
+
+            {/* Model selector */}
+            <ModelDropdown
+              models={researchModels}
+              current={currentModel}
+              onSelect={onModelChange}
+            />
+          </div>
 
           <div className="flex items-center gap-1">
             {isStreaming ? (
@@ -229,5 +269,95 @@ export function ResearchComposer({
         AI can make mistakes. Check important info.
       </div>
     </div>
+  );
+}
+
+function ProviderDropdown({
+  providers,
+  current,
+  onSelect,
+}: {
+  providers: ResearchProvider[];
+  current: ResearchProvider;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          title="Search provider"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>{current.name}</span>
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[220px]">
+        {providers.map((provider) => (
+          <DropdownMenuItem
+            key={provider.id}
+            onSelect={() => onSelect(provider.id)}
+            className="flex items-center justify-between gap-3"
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">{provider.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {provider.description}
+              </span>
+            </div>
+            {provider.id === current.id && (
+              <Check className="h-4 w-4 shrink-0 text-primary" />
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ModelDropdown({
+  models,
+  current,
+  onSelect,
+}: {
+  models: ResearchModel[];
+  current: ResearchModel;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          title="AI model"
+        >
+          <Bot className="h-3.5 w-3.5" />
+          <span>{current.name}</span>
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[250px]">
+        {models.map((model) => (
+          <DropdownMenuItem
+            key={model.id}
+            onSelect={() => onSelect(model.id)}
+            className="flex items-center justify-between gap-3"
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">{model.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {model.description}
+              </span>
+            </div>
+            {model.id === current.id && (
+              <Check className="h-4 w-4 shrink-0 text-primary" />
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

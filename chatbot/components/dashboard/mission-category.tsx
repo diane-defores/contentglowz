@@ -184,7 +184,7 @@ export function MissionCategory({
 									isRunning={runningRobot === robot.id}
 									onRun={() => {
 										if (robot.id === "newsletter" && onNavigateToTab) {
-											onNavigateToTab("newsletter");
+											onNavigateToTab("create:newsletter");
 										} else {
 											onTriggerRobot(robot.id);
 										}

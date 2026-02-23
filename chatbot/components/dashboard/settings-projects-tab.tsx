@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
 	Dialog,
 	DialogContent,
@@ -46,6 +47,7 @@ export function SettingsProjectsTab() {
 	const [editingProject, setEditingProject] = useState<Project | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+	const { confirm, ConfirmDialog } = useConfirm();
 	const [formData, setFormData] = useState({
 		name: "",
 		url: "",
@@ -114,9 +116,13 @@ export function SettingsProjectsTab() {
 	};
 
 	const handleDelete = async (project: Project) => {
-		if (!confirm(`Delete project "${project.name}"? This cannot be undone.`)) {
-			return;
-		}
+		const ok = await confirm({
+			title: "Delete project",
+			description: `Delete project "${project.name}"? This cannot be undone.`,
+			confirmLabel: "Delete",
+			destructive: true,
+		});
+		if (!ok) return;
 
 		setDeletingId(project.id);
 		try {
@@ -357,6 +363,8 @@ export function SettingsProjectsTab() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<ConfirmDialog />
 		</>
 	);
 }

@@ -24,7 +24,7 @@ export function ResearchMessage({ message, isStreaming }: ResearchMessageProps) 
       <div
         className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
           isUser
-            ? "bg-primary text-primary-foreground"
+            ? "bg-blue-600 text-white"
             : "bg-muted text-foreground"
         }`}
       >
@@ -35,7 +35,7 @@ export function ResearchMessage({ message, isStreaming }: ResearchMessageProps) 
                 key={`text-${i}`}
                 className={`whitespace-pre-wrap prose prose-sm max-w-none [&_a]:underline ${
                   isUser
-                    ? "prose-invert [&_a]:text-primary-foreground/80"
+                    ? "prose-invert [&_a]:text-white/80"
                     : "dark:prose-invert [&_a]:text-blue-500"
                 }`}
                 dangerouslySetInnerHTML={{

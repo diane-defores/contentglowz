@@ -4,12 +4,16 @@ import {
 	Check,
 	FolderGit2,
 	Globe,
+	LayoutTemplate,
 	Loader2,
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { consumeGitHubReturnFlag } from "./github-connect-prompt";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/hooks/use-confirm";
 import {
 	Dialog,
 	DialogContent,
@@ -52,8 +56,17 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 		selectProject,
 	} = useProjectsContext();
 
+	const router = useRouter();
+	const { confirm, ConfirmDialog } = useConfirm();
 	const [showNewDialog, setShowNewDialog] = useState(false);
 	const [creating, setCreating] = useState(false);
+
+	// Navigate to repo browser if returning from OAuth redirect
+	useEffect(() => {
+		if (selectedProject?.type === "github" && consumeGitHubReturnFlag()) {
+			router.push("/dashboard/repo");
+		}
+	}, [selectedProject, router]);
 	const [newProject, setNewProject] = useState({
 		name: "",
 		url: "",
@@ -91,16 +104,20 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 	const handleDelete = async (e: React.MouseEvent, project: Project) => {
 		e.stopPropagation();
 		e.preventDefault();
-		if (confirm(`Delete project "${project.name}"?`)) {
-			await deleteProject(project.id);
-		}
+		const ok = await confirm({
+			title: "Delete project",
+			description: `Delete project "${project.name}"? This cannot be undone.`,
+			confirmLabel: "Delete",
+			destructive: true,
+		});
+		if (ok) await deleteProject(project.id);
 	};
 
 	if (loading) {
 		return (
-			<Button variant="outline" disabled className="h-9 w-9 sm:w-[200px] sm:justify-start [&_svg]:size-5">
-				<Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
-				<span className="hidden sm:inline">Loading...</span>
+			<Button variant="outline" disabled className="h-9 justify-start [&_svg]:size-5">
+				<Loader2 className="h-4 w-4 animate-spin mr-2" />
+				<span className="truncate">Loading...</span>
 			</Button>
 		);
 	}
@@ -109,20 +126,20 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="h-9 w-9 sm:w-[200px] sm:justify-start [&_svg]:size-5">
+					<Button variant="outline" className="h-9 max-w-[160px] sm:max-w-[200px] justify-start [&_svg]:size-5">
 						{selectedProject ? (
 							<>
 								{selectedProject.type === "github" ? (
-									<FolderGit2 className="h-4 w-4 shrink-0 sm:mr-2" />
+									<FolderGit2 className="h-4 w-4 shrink-0 mr-2" />
 								) : (
-									<Globe className="h-4 w-4 shrink-0 sm:mr-2" />
+									<Globe className="h-4 w-4 shrink-0 mr-2" />
 								)}
-								<span className="hidden sm:inline truncate">{selectedProject.name}</span>
+								<span className="truncate">{selectedProject.name}</span>
 							</>
 						) : (
 							<>
-								<FolderGit2 className="h-4 w-4 shrink-0 sm:mr-2" />
-								<span className="hidden sm:inline text-muted-foreground">Select project...</span>
+								<FolderGit2 className="h-4 w-4 shrink-0 mr-2" />
+								<span className="text-muted-foreground truncate">Select...</span>
 							</>
 						)}
 					</Button>
@@ -160,6 +177,21 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 								</span>
 							</DropdownMenuItem>
 						))
+					)}
+					{selectedProject && (
+						<>
+							<DropdownMenuSeparator />
+							{selectedProject.type === "github" && (
+								<DropdownMenuItem onClick={() => router.push("/dashboard/repo")}>
+									<FolderGit2 className="mr-2 h-4 w-4" />
+									Browse repo files
+								</DropdownMenuItem>
+							)}
+							<DropdownMenuItem onClick={() => router.push("/dashboard/templates")}>
+								<LayoutTemplate className="mr-2 h-4 w-4" />
+								Browse templates
+							</DropdownMenuItem>
+						</>
 					)}
 					<DropdownMenuSeparator />
 					<DropdownMenuItem onClick={() => setShowNewDialog(true)}>
@@ -268,6 +300,8 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			<ConfirmDialog />
 		</>
 	);
 }

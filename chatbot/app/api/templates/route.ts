@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createTemplate, getTemplatesByUserId } from "@/lib/db/queries";
+import {
+	createTemplate,
+	getTemplateById,
+	getTemplatesByUserId,
+} from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
@@ -21,7 +25,15 @@ export async function GET(request: NextRequest) {
 			contentType,
 		});
 
-		return NextResponse.json(templates);
+		// Fetch sections for each template so the editor has full data
+		const templatesWithSections = await Promise.all(
+			templates.map(async (t) => {
+				const full = await getTemplateById({ id: t.id });
+				return full || { ...t, sections: [] };
+			}),
+		);
+
+		return NextResponse.json(templatesWithSections);
 	} catch (error) {
 		console.error("Failed to get templates:", error);
 		return NextResponse.json(

@@ -93,7 +93,19 @@ export function ResearchSidebar({
       className="z-10 flex h-full shrink-0 flex-col border-r bg-background overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center gap-2 border-b px-3 py-3">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggleSidebar}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggleSidebar();
+          }
+        }}
+        className="flex cursor-pointer items-center gap-2 border-b px-3 py-3 hover:bg-muted/50 transition-colors"
+        title="Collapse sidebar"
+      >
         <div className="flex items-center gap-2">
           <div className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Search className="h-3.5 w-3.5" />
@@ -101,15 +113,7 @@ export function ResearchSidebar({
           <span className="text-sm font-semibold tracking-tight">Research</span>
         </div>
         <div className="ml-auto">
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="rounded-lg p-2 hover:bg-muted transition-colors"
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-          >
-            <PanelLeftClose className="h-5 w-5" />
-          </button>
+          <PanelLeftClose className="h-5 w-5" />
         </div>
       </div>
 

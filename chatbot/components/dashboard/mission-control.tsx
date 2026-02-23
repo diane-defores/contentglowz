@@ -136,7 +136,7 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 					</div>
 
 					{view === "main" && (
-						<div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+						<div className="grid grid-cols-4 gap-2 sm:gap-4">
 							<Card className="p-3 sm:p-4">
 								<div className="flex items-center gap-2">
 									<Bot className="h-4 w-4 text-muted-foreground" />

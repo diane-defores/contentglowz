@@ -39,6 +39,9 @@ imap-tools>=1.0.0  # IMAP email fetching for newsletter ingestion
 # Composio - AI Agent Integration (Gmail, Slack, etc.)
 composio-crewai>=0.2.0
 
+# Instagram Reels
+instagrapi>=2.0.0
+
 # Utilities
 pytest
 pytest-asyncio
@@ -49,3 +52,6 @@ pyyaml>=6.0.0
 pandas>=2.0.0  # Required by advertools
 libsql-client>=0.3.1
 composio-crewai>=0.2.0
+
+# Google Analytics (Psychology Engine)
+google-analytics-data>=0.18.0

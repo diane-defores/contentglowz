@@ -84,12 +84,12 @@ export function ContentReviewTab({ projectId }: ContentReviewTabProps) {
 			</div>
 
 			{/* Stats cards */}
-			<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+			<div className="grid grid-cols-4 gap-3">
 				<Card className="p-3 text-center">
 					<div className="text-2xl font-bold text-amber-600">
 						{pendingCount}
 					</div>
-					<div className="text-xs text-muted-foreground">Pending Review</div>
+					<div className="text-xs text-muted-foreground">Pending</div>
 				</Card>
 				<Card className="p-3 text-center">
 					<div className="text-2xl font-bold text-green-600">

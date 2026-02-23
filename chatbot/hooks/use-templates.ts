@@ -250,6 +250,169 @@ export function useTemplates(projectId?: string) {
 		[],
 	);
 
+	// Generate sections from repo (Step 1)
+	const generateSections = useCallback(
+		async (meta: {
+			templateName: string;
+			contentType: string;
+			repoOwner: string;
+			repoName: string;
+			basePath: string;
+			filePattern: string;
+			filePaths?: string[];
+		}): Promise<TemplateSectionFormData[]> => {
+			const res = await fetch("/api/templates/generate-sections", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(meta),
+			});
+
+			if (!res.ok) {
+				const errData = await res.json().catch(() => ({}));
+				throw new Error(
+					errData.error || "Failed to generate sections",
+				);
+			}
+
+			// Stream the response and buffer text
+			const reader = res.body?.getReader();
+			if (!reader) throw new Error("No response body");
+
+			const decoder = new TextDecoder();
+			let fullText = "";
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				fullText += decoder.decode(value, { stream: true });
+			}
+
+			// Parse JSON between <SECTIONS> tags
+			const match = fullText.match(
+				/<SECTIONS>\s*([\s\S]*?)\s*<\/SECTIONS>/,
+			);
+			if (!match) {
+				throw new Error(
+					"Failed to parse AI response. No <SECTIONS> block found.",
+				);
+			}
+
+			const parsed = JSON.parse(match[1]) as Array<{
+				name: string;
+				label: string;
+				fieldType: string;
+				required: boolean;
+				order: number;
+				description?: string;
+			}>;
+
+			return parsed.map((s, i) => ({
+				name: s.name,
+				label: s.label,
+				fieldType: (s.fieldType || "text") as TemplateSectionFormData["fieldType"],
+				required: s.required ?? true,
+				order: s.order ?? i,
+				description: s.description,
+				promptStrategy: "auto_generate" as const,
+			}));
+		},
+		[],
+	);
+
+	// Generate all prompts at once (Step 2)
+	const generateAllPrompts = useCallback(
+		async (
+			meta: {
+				templateName: string;
+				contentType: string;
+				templateDescription?: string;
+			},
+			sections: Array<{
+				name: string;
+				label: string;
+				fieldType: string;
+				description?: string;
+			}>,
+			onSectionUpdate: (sectionName: string, promptText: string) => void,
+			onSectionComplete: (sectionName: string) => void,
+		): Promise<void> => {
+			const res = await fetch("/api/templates/generate-prompts", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ ...meta, sections }),
+			});
+
+			if (!res.ok) {
+				const errData = await res.json().catch(() => ({}));
+				throw new Error(
+					errData.error || "Failed to generate prompts",
+				);
+			}
+
+			const reader = res.body?.getReader();
+			if (!reader) throw new Error("No response body");
+
+			const decoder = new TextDecoder();
+			let buffer = "";
+			let currentSection: string | null = null;
+			let currentPrompt = "";
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+				buffer += decoder.decode(value, { stream: true });
+
+				// Process buffer for complete tags
+				while (true) {
+					if (currentSection === null) {
+						// Look for opening tag
+						const openMatch = buffer.match(
+							/<SECTION\s+name="([^"]+)">/,
+						);
+						if (!openMatch) break;
+
+						currentSection = openMatch[1];
+						currentPrompt = "";
+						buffer = buffer.slice(
+							openMatch.index! + openMatch[0].length,
+						);
+					} else {
+						// Look for closing tag
+						const closeIdx = buffer.indexOf("</SECTION>");
+						if (closeIdx !== -1) {
+							// Add remaining content before close tag
+							currentPrompt += buffer.slice(0, closeIdx);
+							onSectionUpdate(
+								currentSection,
+								currentPrompt.trim(),
+							);
+							onSectionComplete(currentSection);
+							buffer = buffer.slice(closeIdx + "</SECTION>".length);
+							currentSection = null;
+							currentPrompt = "";
+						} else {
+							// Stream partial content to the section
+							currentPrompt += buffer;
+							onSectionUpdate(
+								currentSection,
+								currentPrompt.trim(),
+							);
+							buffer = "";
+							break;
+						}
+					}
+				}
+			}
+
+			// Handle any remaining content in the last section
+			if (currentSection && currentPrompt.trim()) {
+				onSectionUpdate(currentSection, currentPrompt.trim());
+				onSectionComplete(currentSection);
+			}
+		},
+		[],
+	);
+
 	// Generate AI prompt for a section
 	const generatePrompt = useCallback(
 		async (sectionContext: {
@@ -306,6 +469,7 @@ export function useTemplates(projectId?: string) {
 			template: TemplateWithSections,
 			context: Record<string, any>,
 			userInputs: Record<string, any> = {},
+			promptOverrides: Record<string, string> = {},
 		) => {
 			setError(null);
 			setGenerating(true);
@@ -328,7 +492,7 @@ export function useTemplates(projectId?: string) {
 									fieldType: s.fieldType,
 									required: s.required,
 									order: s.order,
-									defaultPrompt: s.defaultPrompt,
+									defaultPrompt: promptOverrides[s.name] ?? s.defaultPrompt,
 									userPrompt: s.userPrompt,
 									promptStrategy: s.promptStrategy,
 									generationHints: s.generationHints,
@@ -443,6 +607,8 @@ export function useTemplates(projectId?: string) {
 		updateTemplate,
 		deleteTemplate,
 		cloneTemplate,
+		generateSections,
+		generateAllPrompts,
 		generatePrompt,
 		generateContent,
 		importDefault,

@@ -403,6 +403,9 @@ export const userSettings = sqliteTable("UserSettings", {
 		bunnyStorage?: string;
 		bunnyCdn?: string;
 		bunnyCdnHostname?: string;
+		consensus?: string;
+		tavily?: string;
+		groq?: string;
 	}>(),
 	// Dashboard preferences
 	defaultProjectId: text("defaultProjectId"),
@@ -751,3 +754,252 @@ export const templateSection = sqliteTable("TemplateSection", {
 });
 
 export type TemplateSection = InferSelectModel<typeof templateSection>;
+
+/**
+ * Content sources — maps a GitHub repo directory to a content template.
+ * Each source points to a specific path in a repo where markdown files live,
+ * linked 1:1 to a content template for generation.
+ */
+export const contentSource = sqliteTable("ContentSource", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId")
+		.notNull()
+		.references(() => project.id),
+	name: text("name").notNull(),
+	repoOwner: text("repoOwner").notNull(),
+	repoName: text("repoName").notNull(),
+	basePath: text("basePath").notNull(),
+	filePattern: text("filePattern", { enum: ["md", "mdx", "both", "astro", "ts", "all"] })
+		.notNull()
+		.default("all"),
+	templateId: text("templateId").references(() => contentTemplate.id),
+	defaultBranch: text("defaultBranch").notNull().default("main"),
+	status: text("status", { enum: ["active", "paused", "error"] })
+		.notNull()
+		.default("active"),
+	lastSyncedAt: integer("lastSyncedAt", { mode: "timestamp" }),
+	metadata: text("metadata", { mode: "json" }).$type<{
+		fileCount?: number;
+		lastCommitSha?: string;
+		description?: string;
+	}>(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ContentSource = InferSelectModel<typeof contentSource>;
+
+// ============================================================================
+// Psychology Engine Tables
+// ============================================================================
+
+/**
+ * Creator profile — one per user+project pair.
+ * Stores the creator's evolving identity, voice, and strategic positioning.
+ */
+export const creatorProfile = sqliteTable("CreatorProfile", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	displayName: text("displayName"),
+	voice: text("voice", { mode: "json" }).$type<{
+		tone?: string;
+		vocabulary?: string[];
+		rhetoricalDevices?: string[];
+		avoidWords?: string[];
+	}>(),
+	positioning: text("positioning", { mode: "json" }).$type<{
+		niche?: string;
+		uniqueAngle?: string;
+		competitors?: string[];
+		differentiators?: string[];
+	}>(),
+	values: text("values", { mode: "json" }).$type<string[]>(),
+	currentChapterId: text("currentChapterId"),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type CreatorProfile = InferSelectModel<typeof creatorProfile>;
+
+/**
+ * Narrative chapters — named arcs in the creator's journey.
+ * Each chapter represents a phase (e.g., "Launch", "Pivot", "Scale").
+ */
+export const narrativeChapter = sqliteTable("NarrativeChapter", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	profileId: text("profileId")
+		.notNull()
+		.references(() => creatorProfile.id, { onDelete: "cascade" }),
+	title: text("title").notNull(),
+	summary: text("summary"),
+	status: text("status", { enum: ["active", "closed"] })
+		.notNull()
+		.default("active"),
+	openedAt: integer("openedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	closedAt: integer("closedAt", { mode: "timestamp" }),
+});
+
+export type NarrativeChapter = InferSelectModel<typeof narrativeChapter>;
+
+/**
+ * Creator entries — raw inputs from the weekly ritual.
+ * Free-form reflections, wins, struggles, ideas the creator writes.
+ */
+export const creatorEntry = sqliteTable("CreatorEntry", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	profileId: text("profileId")
+		.notNull()
+		.references(() => creatorProfile.id, { onDelete: "cascade" }),
+	chapterId: text("chapterId")
+		.references(() => narrativeChapter.id),
+	entryType: text("entryType", {
+		enum: ["reflection", "win", "struggle", "idea", "pivot"],
+	})
+		.notNull()
+		.default("reflection"),
+	content: text("content").notNull(),
+	tags: text("tags", { mode: "json" }).$type<string[]>(),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type CreatorEntry = InferSelectModel<typeof creatorEntry>;
+
+/**
+ * Narrative updates — AI-synthesized insights from creator entries.
+ * The psychologist agent produces these; creator reviews before merging.
+ */
+export const narrativeUpdate = sqliteTable("NarrativeUpdate", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	profileId: text("profileId")
+		.notNull()
+		.references(() => creatorProfile.id, { onDelete: "cascade" }),
+	chapterId: text("chapterId")
+		.references(() => narrativeChapter.id),
+	sourceEntryIds: text("sourceEntryIds", { mode: "json" }).$type<string[]>(),
+	voiceDelta: text("voiceDelta", { mode: "json" }).$type<Record<string, unknown>>(),
+	positioningDelta: text("positioningDelta", { mode: "json" }).$type<Record<string, unknown>>(),
+	narrativeSummary: text("narrativeSummary"),
+	status: text("status", { enum: ["pending", "approved", "rejected"] })
+		.notNull()
+		.default("pending"),
+	reviewedAt: integer("reviewedAt", { mode: "timestamp" }),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type NarrativeUpdate = InferSelectModel<typeof narrativeUpdate>;
+
+/**
+ * Customer personas — audience segment models.
+ * Each persona captures demographics, pain points, language patterns.
+ */
+export const customerPersona = sqliteTable("CustomerPersona", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	name: text("name").notNull(),
+	avatar: text("avatar"),
+	demographics: text("demographics", { mode: "json" }).$type<{
+		ageRange?: string;
+		role?: string;
+		industry?: string;
+		experience?: string;
+	}>(),
+	painPoints: text("painPoints", { mode: "json" }).$type<string[]>(),
+	goals: text("goals", { mode: "json" }).$type<string[]>(),
+	language: text("language", { mode: "json" }).$type<{
+		vocabulary?: string[];
+		objections?: string[];
+		triggers?: string[];
+	}>(),
+	contentPreferences: text("contentPreferences", { mode: "json" }).$type<{
+		formats?: string[];
+		channels?: string[];
+		frequency?: string;
+	}>(),
+	confidence: integer("confidence").default(50),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+	updatedAt: integer("updatedAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type CustomerPersona = InferSelectModel<typeof customerPersona>;
+
+/**
+ * Content angles — generated by The Bridge (crossing creator narrative with customer pain).
+ * Each angle is a strategic content opportunity ready to be turned into a piece.
+ */
+export const contentAngle = sqliteTable("ContentAngle", {
+	id: text("id")
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text("userId")
+		.notNull()
+		.references(() => user.id),
+	projectId: text("projectId"),
+	personaId: text("personaId")
+		.references(() => customerPersona.id),
+	title: text("title").notNull(),
+	hook: text("hook"),
+	angle: text("angle").notNull(),
+	contentType: text("contentType", {
+		enum: ["article", "newsletter", "video_script", "social_post"],
+	})
+		.notNull()
+		.default("article"),
+	narrativeThread: text("narrativeThread"),
+	painPointAddressed: text("painPointAddressed"),
+	confidence: integer("confidence").default(70),
+	status: text("status", { enum: ["suggested", "selected", "used", "dismissed"] })
+		.notNull()
+		.default("suggested"),
+	selectedAt: integer("selectedAt", { mode: "timestamp" }),
+	createdAt: integer("createdAt", { mode: "timestamp" })
+		.notNull()
+		.$defaultFn(() => new Date()),
+});
+
+export type ContentAngle = InferSelectModel<typeof contentAngle>;

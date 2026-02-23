@@ -19,6 +19,9 @@ export async function GET() {
 				firecrawl: settings.apiKeys.firecrawl ? "••••••••" : null,
 				serper: settings.apiKeys.serper ? "••••••••" : null,
 				openrouter: settings.apiKeys.openrouter ? "••••••••" : null,
+				consensus: settings.apiKeys.consensus ? "••••••••" : null,
+				tavily: settings.apiKeys.tavily ? "••••••••" : null,
+				groq: settings.apiKeys.groq ? "••••••••" : null,
 			} : null,
 		};
 
@@ -57,6 +60,9 @@ export async function PUT(request: NextRequest) {
 				firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 				serper: updated.apiKeys.serper ? "••••••••" : null,
 				openrouter: updated.apiKeys.openrouter ? "••••••••" : null,
+				consensus: updated.apiKeys.consensus ? "••••••••" : null,
+				tavily: updated.apiKeys.tavily ? "••••••••" : null,
+				groq: updated.apiKeys.groq ? "••••••••" : null,
 			} : null,
 		};
 

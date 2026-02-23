@@ -36,15 +36,29 @@ import {
 	chat,
 	type Competitor,
 	competitor,
+	type ContentAngle,
+	contentAngle,
 	type ContentRecord,
 	contentRecord,
+	type ContentSource,
+	contentSource,
 	type ContentTemplate,
 	contentTemplate,
+	type CreatorEntry,
+	creatorEntry,
+	type CreatorProfile,
+	creatorProfile,
+	type CustomerPersona,
+	customerPersona,
 	type DBMessage,
 	document,
 	type GmailToken,
 	gmailToken,
 	message,
+	type NarrativeChapter,
+	narrativeChapter,
+	type NarrativeUpdate,
+	narrativeUpdate,
 	type NewsletterGenerator,
 	newsletterGenerator,
 	type Project,
@@ -1680,7 +1694,7 @@ export async function updateUserApiKey({
 	apiKey,
 }: {
 	userId: string;
-	provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname";
+	provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname" | "consensus" | "tavily" | "groq";
 	apiKey: string | null;
 }): Promise<UserSettings> {
 	try {
@@ -2434,6 +2448,676 @@ export async function reorderSections({
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to reorder sections",
+		);
+	}
+}
+
+// ============================================================================
+// Content Source Queries
+// ============================================================================
+
+/** Gets all content sources for a user, optionally filtered by project */
+export async function getContentSourcesByUserId({
+	userId,
+	projectId,
+}: {
+	userId: string;
+	projectId?: string;
+}): Promise<ContentSource[]> {
+	try {
+		const conditions = [eq(contentSource.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(contentSource.projectId, projectId));
+		}
+		return await db
+			.select()
+			.from(contentSource)
+			.where(and(...conditions))
+			.orderBy(desc(contentSource.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content sources",
+		);
+	}
+}
+
+/** Gets a single content source by ID */
+export async function getContentSourceById({
+	id,
+}: {
+	id: string;
+}): Promise<ContentSource | null> {
+	try {
+		const [source] = await db
+			.select()
+			.from(contentSource)
+			.where(eq(contentSource.id, id));
+		return source || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content source",
+		);
+	}
+}
+
+/** Creates a new content source */
+export async function createContentSource({
+	userId,
+	projectId,
+	name,
+	repoOwner,
+	repoName,
+	basePath,
+	filePattern,
+	templateId,
+	defaultBranch,
+	metadata,
+}: {
+	userId: string;
+	projectId: string;
+	name: string;
+	repoOwner: string;
+	repoName: string;
+	basePath: string;
+	filePattern?: "md" | "mdx" | "both";
+	templateId?: string;
+	defaultBranch?: string;
+	metadata?: ContentSource["metadata"];
+}): Promise<ContentSource> {
+	try {
+		const [created] = await db
+			.insert(contentSource)
+			.values({
+				userId,
+				projectId,
+				name,
+				repoOwner,
+				repoName,
+				basePath,
+				filePattern: filePattern || "both",
+				templateId,
+				defaultBranch: defaultBranch || "main",
+				metadata,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to create content source",
+		);
+	}
+}
+
+/** Updates a content source */
+export async function updateContentSource({
+	id,
+	name,
+	basePath,
+	filePattern,
+	templateId,
+	defaultBranch,
+	status,
+	lastSyncedAt,
+	metadata,
+}: {
+	id: string;
+	name?: string;
+	basePath?: string;
+	filePattern?: "md" | "mdx" | "both";
+	templateId?: string | null;
+	defaultBranch?: string;
+	status?: "active" | "paused" | "error";
+	lastSyncedAt?: Date;
+	metadata?: ContentSource["metadata"];
+}): Promise<ContentSource> {
+	try {
+		const updateData: Record<string, any> = {
+			updatedAt: new Date(),
+		};
+		if (name !== undefined) updateData.name = name;
+		if (basePath !== undefined) updateData.basePath = basePath;
+		if (filePattern !== undefined) updateData.filePattern = filePattern;
+		if (templateId !== undefined) updateData.templateId = templateId;
+		if (defaultBranch !== undefined) updateData.defaultBranch = defaultBranch;
+		if (status !== undefined) updateData.status = status;
+		if (lastSyncedAt !== undefined) updateData.lastSyncedAt = lastSyncedAt;
+		if (metadata !== undefined) updateData.metadata = metadata;
+
+		const [updated] = await db
+			.update(contentSource)
+			.set(updateData)
+			.where(eq(contentSource.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to update content source",
+		);
+	}
+}
+
+/** Deletes a content source */
+export async function deleteContentSource({ id }: { id: string }) {
+	try {
+		await db.delete(contentSource).where(eq(contentSource.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete content source",
+		);
+	}
+}
+
+// ============================================================================
+// Psychology Engine Queries
+// ============================================================================
+
+/** Gets the creator profile for a user+project pair */
+export async function getCreatorProfile({
+	userId,
+	projectId,
+}: {
+	userId: string;
+	projectId?: string;
+}): Promise<CreatorProfile | null> {
+	try {
+		const conditions = [eq(creatorProfile.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(creatorProfile.projectId, projectId));
+		}
+		const [profile] = await db
+			.select()
+			.from(creatorProfile)
+			.where(and(...conditions));
+		return profile || null;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get creator profile",
+		);
+	}
+}
+
+/** Upserts a creator profile (creates or updates) */
+export async function upsertCreatorProfile({
+	userId,
+	projectId,
+	displayName,
+	voice,
+	positioning,
+	values,
+	currentChapterId,
+}: {
+	userId: string;
+	projectId?: string;
+	displayName?: string;
+	voice?: CreatorProfile["voice"];
+	positioning?: CreatorProfile["positioning"];
+	values?: string[];
+	currentChapterId?: string;
+}): Promise<CreatorProfile> {
+	try {
+		const existing = await getCreatorProfile({ userId, projectId });
+
+		if (existing) {
+			const updateData: Record<string, any> = { updatedAt: new Date() };
+			if (displayName !== undefined) updateData.displayName = displayName;
+			if (voice !== undefined) updateData.voice = voice;
+			if (positioning !== undefined) updateData.positioning = positioning;
+			if (values !== undefined) updateData.values = values;
+			if (currentChapterId !== undefined) updateData.currentChapterId = currentChapterId;
+
+			const [updated] = await db
+				.update(creatorProfile)
+				.set(updateData)
+				.where(eq(creatorProfile.id, existing.id))
+				.returning();
+			return updated;
+		}
+
+		const [created] = await db
+			.insert(creatorProfile)
+			.values({ userId, projectId, displayName, voice, positioning, values, currentChapterId })
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to upsert creator profile",
+		);
+	}
+}
+
+/** Gets creator entries for a profile, newest first */
+export async function getCreatorEntries({
+	profileId,
+	limit = 50,
+}: {
+	profileId: string;
+	limit?: number;
+}): Promise<CreatorEntry[]> {
+	try {
+		return await db
+			.select()
+			.from(creatorEntry)
+			.where(eq(creatorEntry.profileId, profileId))
+			.orderBy(desc(creatorEntry.createdAt))
+			.limit(limit);
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get creator entries",
+		);
+	}
+}
+
+/** Saves a new creator entry */
+export async function saveCreatorEntry({
+	profileId,
+	chapterId,
+	entryType,
+	content,
+	tags,
+}: {
+	profileId: string;
+	chapterId?: string;
+	entryType?: CreatorEntry["entryType"];
+	content: string;
+	tags?: string[];
+}): Promise<CreatorEntry> {
+	try {
+		const [created] = await db
+			.insert(creatorEntry)
+			.values({
+				profileId,
+				chapterId,
+				entryType: entryType || "reflection",
+				content,
+				tags,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to save creator entry",
+		);
+	}
+}
+
+/** Gets narrative chapters for a profile */
+export async function getNarrativeChapters({
+	profileId,
+}: {
+	profileId: string;
+}): Promise<NarrativeChapter[]> {
+	try {
+		return await db
+			.select()
+			.from(narrativeChapter)
+			.where(eq(narrativeChapter.profileId, profileId))
+			.orderBy(desc(narrativeChapter.openedAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get narrative chapters",
+		);
+	}
+}
+
+/** Saves a new narrative chapter */
+export async function saveNarrativeChapter({
+	profileId,
+	title,
+	summary,
+}: {
+	profileId: string;
+	title: string;
+	summary?: string;
+}): Promise<NarrativeChapter> {
+	try {
+		const [created] = await db
+			.insert(narrativeChapter)
+			.values({ profileId, title, summary })
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to save narrative chapter",
+		);
+	}
+}
+
+/** Closes a narrative chapter */
+export async function closeNarrativeChapter({
+	id,
+	summary,
+}: {
+	id: string;
+	summary?: string;
+}): Promise<NarrativeChapter> {
+	try {
+		const updateData: Record<string, any> = {
+			status: "closed",
+			closedAt: new Date(),
+		};
+		if (summary !== undefined) updateData.summary = summary;
+
+		const [updated] = await db
+			.update(narrativeChapter)
+			.set(updateData)
+			.where(eq(narrativeChapter.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to close narrative chapter",
+		);
+	}
+}
+
+/** Gets narrative updates for a profile, optionally filtered by status */
+export async function getNarrativeUpdates({
+	profileId,
+	status,
+}: {
+	profileId: string;
+	status?: NarrativeUpdate["status"];
+}): Promise<NarrativeUpdate[]> {
+	try {
+		const conditions = [eq(narrativeUpdate.profileId, profileId)];
+		if (status) {
+			conditions.push(eq(narrativeUpdate.status, status));
+		}
+		return await db
+			.select()
+			.from(narrativeUpdate)
+			.where(and(...conditions))
+			.orderBy(desc(narrativeUpdate.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get narrative updates",
+		);
+	}
+}
+
+/** Saves a new narrative update (from AI synthesis) */
+export async function saveNarrativeUpdate({
+	profileId,
+	chapterId,
+	sourceEntryIds,
+	voiceDelta,
+	positioningDelta,
+	narrativeSummary,
+}: {
+	profileId: string;
+	chapterId?: string;
+	sourceEntryIds?: string[];
+	voiceDelta?: Record<string, unknown>;
+	positioningDelta?: Record<string, unknown>;
+	narrativeSummary?: string;
+}): Promise<NarrativeUpdate> {
+	try {
+		const [created] = await db
+			.insert(narrativeUpdate)
+			.values({
+				profileId,
+				chapterId,
+				sourceEntryIds,
+				voiceDelta,
+				positioningDelta,
+				narrativeSummary,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to save narrative update",
+		);
+	}
+}
+
+/** Reviews a narrative update (approve or reject) */
+export async function reviewNarrativeUpdate({
+	id,
+	status,
+}: {
+	id: string;
+	status: "approved" | "rejected";
+}): Promise<NarrativeUpdate> {
+	try {
+		const [updated] = await db
+			.update(narrativeUpdate)
+			.set({ status, reviewedAt: new Date() })
+			.where(eq(narrativeUpdate.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to review narrative update",
+		);
+	}
+}
+
+/** Gets customer personas for a user, optionally filtered by project */
+export async function getCustomerPersonas({
+	userId,
+	projectId,
+}: {
+	userId: string;
+	projectId?: string;
+}): Promise<CustomerPersona[]> {
+	try {
+		const conditions = [eq(customerPersona.userId, userId)];
+		if (projectId) {
+			conditions.push(eq(customerPersona.projectId, projectId));
+		}
+		return await db
+			.select()
+			.from(customerPersona)
+			.where(and(...conditions))
+			.orderBy(desc(customerPersona.updatedAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get customer personas",
+		);
+	}
+}
+
+/** Saves or updates a customer persona */
+export async function saveCustomerPersona({
+	id,
+	userId,
+	projectId,
+	name,
+	avatar,
+	demographics,
+	painPoints,
+	goals,
+	language,
+	contentPreferences,
+	confidence,
+}: {
+	id?: string;
+	userId: string;
+	projectId?: string;
+	name: string;
+	avatar?: string;
+	demographics?: CustomerPersona["demographics"];
+	painPoints?: string[];
+	goals?: string[];
+	language?: CustomerPersona["language"];
+	contentPreferences?: CustomerPersona["contentPreferences"];
+	confidence?: number;
+}): Promise<CustomerPersona> {
+	try {
+		if (id) {
+			const updateData: Record<string, any> = { updatedAt: new Date() };
+			if (name !== undefined) updateData.name = name;
+			if (avatar !== undefined) updateData.avatar = avatar;
+			if (demographics !== undefined) updateData.demographics = demographics;
+			if (painPoints !== undefined) updateData.painPoints = painPoints;
+			if (goals !== undefined) updateData.goals = goals;
+			if (language !== undefined) updateData.language = language;
+			if (contentPreferences !== undefined) updateData.contentPreferences = contentPreferences;
+			if (confidence !== undefined) updateData.confidence = confidence;
+
+			const [updated] = await db
+				.update(customerPersona)
+				.set(updateData)
+				.where(eq(customerPersona.id, id))
+				.returning();
+			return updated;
+		}
+
+		const [created] = await db
+			.insert(customerPersona)
+			.values({
+				userId,
+				projectId,
+				name,
+				avatar,
+				demographics,
+				painPoints,
+				goals,
+				language,
+				contentPreferences,
+				confidence: confidence ?? 50,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to save customer persona",
+		);
+	}
+}
+
+/** Deletes a customer persona */
+export async function deleteCustomerPersona({ id }: { id: string }) {
+	try {
+		await db.delete(customerPersona).where(eq(customerPersona.id, id));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to delete customer persona",
+		);
+	}
+}
+
+/** Gets content angles for a user, optionally filtered by project/persona */
+export async function getContentAngles({
+	userId,
+	projectId,
+	personaId,
+	status,
+}: {
+	userId: string;
+	projectId?: string;
+	personaId?: string;
+	status?: ContentAngle["status"];
+}): Promise<ContentAngle[]> {
+	try {
+		const conditions = [eq(contentAngle.userId, userId)];
+		if (projectId) conditions.push(eq(contentAngle.projectId, projectId));
+		if (personaId) conditions.push(eq(contentAngle.personaId, personaId));
+		if (status) conditions.push(eq(contentAngle.status, status));
+
+		return await db
+			.select()
+			.from(contentAngle)
+			.where(and(...conditions))
+			.orderBy(desc(contentAngle.createdAt));
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to get content angles",
+		);
+	}
+}
+
+/** Saves a new content angle */
+export async function saveContentAngle({
+	userId,
+	projectId,
+	personaId,
+	title,
+	hook,
+	angle,
+	contentType,
+	narrativeThread,
+	painPointAddressed,
+	confidence,
+}: {
+	userId: string;
+	projectId?: string;
+	personaId?: string;
+	title: string;
+	hook?: string;
+	angle: string;
+	contentType?: ContentAngle["contentType"];
+	narrativeThread?: string;
+	painPointAddressed?: string;
+	confidence?: number;
+}): Promise<ContentAngle> {
+	try {
+		const [created] = await db
+			.insert(contentAngle)
+			.values({
+				userId,
+				projectId,
+				personaId,
+				title,
+				hook,
+				angle,
+				contentType: contentType || "article",
+				narrativeThread,
+				painPointAddressed,
+				confidence: confidence ?? 70,
+			})
+			.returning();
+		return created;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to save content angle",
+		);
+	}
+}
+
+/** Marks a content angle as selected */
+export async function selectContentAngle({
+	id,
+	status,
+}: {
+	id: string;
+	status: "selected" | "used" | "dismissed";
+}): Promise<ContentAngle> {
+	try {
+		const updateData: Record<string, any> = { status };
+		if (status === "selected") updateData.selectedAt = new Date();
+
+		const [updated] = await db
+			.update(contentAngle)
+			.set(updateData)
+			.where(eq(contentAngle.id, id))
+			.returning();
+		return updated;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to select content angle",
 		);
 	}
 }

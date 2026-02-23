@@ -30,7 +30,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router
+from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
 
@@ -242,6 +242,8 @@ app.include_router(images_router)
 app.include_router(status_router)
 app.include_router(scheduler_router)
 app.include_router(templates_router)
+app.include_router(reels_router)
+app.include_router(psychology_router)
 
 
 # ─────────────────────────────────────────────────

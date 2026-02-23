@@ -17,6 +17,9 @@ export interface UserSettings {
 		bunnyStorage?: string | null;
 		bunnyCdn?: string | null;
 		bunnyCdnHostname?: string | null;
+		consensus?: string | null;
+		tavily?: string | null;
+		groq?: string | null;
 	} | null;
 	defaultProjectId: string | null;
 	dashboardLayout: {
@@ -91,7 +94,7 @@ export function useSettings() {
 	);
 
 	const updateApiKey = useCallback(
-		async (provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname", apiKey: string | null) => {
+		async (provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname" | "consensus" | "tavily" | "groq", apiKey: string | null) => {
 			setError(null);
 			setSaving(true);
 

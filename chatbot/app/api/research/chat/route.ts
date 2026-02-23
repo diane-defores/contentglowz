@@ -15,7 +15,14 @@ import {
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { createResearchProvider } from "@/lib/ai/research-provider";
+import {
+	DEFAULT_RESEARCH_MODEL,
+	DEFAULT_RESEARCH_PROVIDER,
+	researchModels,
+	researchProviders,
+} from "@/lib/ai/research-models";
 import { researchSystemPrompt } from "@/lib/ai/research-prompts";
+import { createExtraResearchTools } from "@/lib/ai/tools/research-extra-tools";
 import { createResearchTools } from "@/lib/ai/tools/research-web-search";
 import {
 	getChatById,
@@ -69,9 +76,14 @@ const textPartSchema = z.object({
 	text: z.string().min(1).max(4000),
 });
 
+const validModelIds = researchModels.map((m) => m.id);
+const validProviderIds = researchProviders.map((p) => p.id);
+
 const requestSchema = z.object({
 	id: z.string().uuid(),
 	projectId: z.string().uuid().optional(),
+	modelId: z.string().optional(),
+	providerId: z.string().optional(),
 	message: z.object({
 		id: z.string().uuid(),
 		role: z.enum(["user"]),
@@ -90,7 +102,9 @@ export async function POST(request: Request) {
 	}
 
 	try {
-		const { id, projectId, message } = body;
+		const { id, projectId, message, modelId: rawModelId, providerId: rawProviderId } = body;
+		const modelId = rawModelId && validModelIds.includes(rawModelId) ? rawModelId : DEFAULT_RESEARCH_MODEL;
+		const providerId = rawProviderId && validProviderIds.includes(rawProviderId) ? rawProviderId : DEFAULT_RESEARCH_PROVIDER;
 		const { userId } = await auth();
 
 		if (!userId) {
@@ -153,8 +167,14 @@ export async function POST(request: Request) {
 			],
 		});
 
-		const model = createResearchProvider(apiKeys.openrouter);
-		const tools = createResearchTools({ exa: apiKeys.exa });
+		const model = createResearchProvider(apiKeys.openrouter, modelId);
+		const tools = createResearchTools({
+			exa: apiKeys.exa,
+			consensus: apiKeys.consensus,
+			tavily: apiKeys.tavily,
+			providerId,
+		});
+		const extraTools = createExtraResearchTools();
 
 		const stream = createUIMessageStream({
 			execute: async ({ writer: dataStream }) => {
@@ -163,12 +183,22 @@ export async function POST(request: Request) {
 					system: researchSystemPrompt,
 					messages: await convertToModelMessages(uiMessages),
 					stopWhen: stepCountIs(5),
-					experimental_activeTools: ["searchWeb", "searchAcademic", "fetchUrl"],
+					experimental_activeTools: [
+						"searchWeb",
+						"searchAcademic",
+						"fetchUrl",
+						"youtubeTranscript",
+						"wikipediaSearch",
+						"semanticScholar",
+					],
 					experimental_transform: smoothStream({ chunking: "word" }),
 					tools: {
 						searchWeb: tools.searchWeb,
 						searchAcademic: tools.searchAcademic,
 						fetchUrl: tools.fetchUrl,
+						youtubeTranscript: extraTools.youtubeTranscript,
+						wikipediaSearch: extraTools.wikipediaSearch,
+						semanticScholar: extraTools.semanticScholar,
 					},
 				});
 
