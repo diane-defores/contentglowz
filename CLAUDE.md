@@ -87,6 +87,11 @@ Multi-agent system for **content publishing and technical analysis**:
 
 **Key Pattern**: Parallel workflows (publish + analyze) with self-analysis capabilities. The robot audits itself for technical SEO and infrastructure health.
 
+**Link validation strategy (local-first → HTTP fallback)**:
+- `SiteCrawler.detect_broken_links(local_repo_path=...)` — uses `LocalLinkChecker` against source files when repo is available (pre-deploy, no HTTP required)
+- Fallback to HTTP crawl when no local repo path is provided (original behaviour)
+- `LocalLinkChecker` lives in `agents/seo/tools/local_link_checker.py` and is also available to `InternalLinkingSpecialistAgent`
+
 ### Topical Flow and Content Architecture
 
 This system emphasizes **topical SEO** strategies:

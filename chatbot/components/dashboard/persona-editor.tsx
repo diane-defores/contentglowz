@@ -1,74 +1,143 @@
 "use client";
 
-import { Loader2, Plus, Trash2, Users } from "lucide-react";
+import { Loader2, Plus, Trash2, UserCircle, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { usePersonas, type CustomerPersona } from "@/hooks/use-personas";
 
 interface PersonaEditorProps {
 	projectId?: string;
 }
 
-function DynamicList({
+function TagInput({
 	label,
 	items,
 	onChange,
+	placeholder,
 }: {
 	label: string;
 	items: string[];
 	onChange: (items: string[]) => void;
+	placeholder?: string;
 }) {
-	const [newItem, setNewItem] = useState("");
+	const [value, setValue] = useState("");
+
+	const add = () => {
+		if (value.trim()) {
+			onChange([...items, value.trim()]);
+			setValue("");
+		}
+	};
 
 	return (
 		<div>
 			<label className="mb-1 block text-xs font-medium text-muted-foreground">
 				{label}
 			</label>
-			<div className="space-y-1">
+			<div className="flex flex-wrap gap-1 mb-1.5">
 				{items.map((item, i) => (
-					<div key={i} className="flex items-center gap-1">
-						<span className="flex-1 rounded border px-2 py-1 text-xs">
-							{item}
-						</span>
+					<Badge key={i} variant="secondary" className="text-xs gap-1">
+						{item}
 						<button
 							type="button"
 							onClick={() => onChange(items.filter((_, j) => j !== i))}
-							className="text-muted-foreground hover:text-destructive"
+							className="hover:text-destructive"
 						>
-							<Trash2 className="h-3 w-3" />
+							<X className="h-2.5 w-2.5" />
 						</button>
-					</div>
+					</Badge>
 				))}
-				<div className="flex gap-1">
-					<Input
-						value={newItem}
-						onChange={(e) => setNewItem(e.target.value)}
-						placeholder={`Add ${label.toLowerCase()}...`}
-						className="h-7 text-xs"
-						onKeyDown={(e) => {
-							if (e.key === "Enter" && newItem.trim()) {
-								onChange([...items, newItem.trim()]);
-								setNewItem("");
-							}
-						}}
-					/>
-					<Button
-						size="sm"
-						variant="ghost"
-						className="h-7 px-2"
-						onClick={() => {
-							if (newItem.trim()) {
-								onChange([...items, newItem.trim()]);
-								setNewItem("");
-							}
-						}}
-					>
-						<Plus className="h-3 w-3" />
-					</Button>
+			</div>
+			<Input
+				value={value}
+				onChange={(e) => setValue(e.target.value)}
+				placeholder={placeholder || `Add ${label.toLowerCase()}...`}
+				className="h-7 text-xs"
+				onKeyDown={(e) => {
+					if (e.key === "Enter") {
+						e.preventDefault();
+						add();
+					}
+				}}
+			/>
+		</div>
+	);
+}
+
+function PersonaCard({
+	persona,
+	onEdit,
+	onDelete,
+}: {
+	persona: CustomerPersona;
+	onEdit: () => void;
+	onDelete: () => void;
+}) {
+	return (
+		<div
+			className="group cursor-pointer rounded-lg border p-3 transition-all hover:border-primary/30 hover:bg-primary/5"
+			onClick={onEdit}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					onEdit();
+				}
+			}}
+			role="button"
+			tabIndex={0}
+		>
+			<div className="flex items-center justify-between mb-1.5">
+				<div className="flex items-center gap-2">
+					<span className="text-base">{persona.avatar || "👤"}</span>
+					<span className="font-medium text-sm">{persona.name}</span>
 				</div>
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						onDelete();
+					}}
+					className="text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+				>
+					<Trash2 className="h-3.5 w-3.5" />
+				</button>
+			</div>
+
+			{persona.demographics?.role && (
+				<p className="text-xs text-muted-foreground mb-1">
+					{persona.demographics.role}
+					{persona.demographics.industry ? ` · ${persona.demographics.industry}` : ""}
+				</p>
+			)}
+
+			{persona.painPoints && persona.painPoints.length > 0 && (
+				<div className="flex flex-wrap gap-1 mt-1.5">
+					{persona.painPoints.slice(0, 3).map((p, i) => (
+						<Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0">
+							{p}
+						</Badge>
+					))}
+					{persona.painPoints.length > 3 && (
+						<span className="text-[10px] text-muted-foreground">
+							+{persona.painPoints.length - 3}
+						</span>
+					)}
+				</div>
+			)}
+
+			{/* Confidence indicator */}
+			<div className="mt-2 flex items-center gap-1.5">
+				<div className="h-1 flex-1 rounded-full bg-muted">
+					<div
+						className="h-full rounded-full bg-primary transition-all"
+						style={{ width: `${persona.confidence ?? 50}%` }}
+					/>
+				</div>
+				<span className="text-[10px] text-muted-foreground">
+					{persona.confidence ?? 50}%
+				</span>
 			</div>
 		</div>
 	);
@@ -146,164 +215,138 @@ export function PersonaEditor({ projectId }: PersonaEditorProps) {
 
 	if (loading) {
 		return (
-			<Card className="p-6">
-				<div className="flex items-center gap-2">
-					<Loader2 className="h-4 w-4 animate-spin" />
-					<span className="text-sm text-muted-foreground">Loading personas...</span>
-				</div>
-			</Card>
+			<div className="flex items-center gap-2 py-4">
+				<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+				<span className="text-xs text-muted-foreground">Loading personas...</span>
+			</div>
 		);
 	}
 
 	return (
-		<Card className="p-6">
-			<div className="mb-4 flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<Users className="h-5 w-5" />
-					<h2 className="text-lg font-semibold">Customer Personas</h2>
-				</div>
-				<Button size="sm" onClick={() => { resetForm(); setShowForm(true); }}>
-					<Plus className="mr-1 h-4 w-4" />
-					New Persona
+		<div className="space-y-3">
+			{/* Header */}
+			<div className="flex items-center justify-between">
+				<h3 className="text-sm font-semibold">Audience Personas</h3>
+				<Button
+					size="sm"
+					variant="outline"
+					className="h-7 text-xs"
+					onClick={() => { resetForm(); setShowForm(true); }}
+				>
+					<Plus className="mr-1 h-3 w-3" />
+					Add
 				</Button>
 			</div>
 
 			{/* Persona cards */}
 			{personas.length > 0 && (
-				<div className="mb-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+				<div className="grid gap-2">
 					{personas.map((p) => (
-						<div
+						<PersonaCard
 							key={p.id}
-							className="cursor-pointer rounded-lg border p-3 transition-colors hover:bg-muted/50"
-							onClick={() => editPersona(p)}
-						>
-							<div className="mb-2 flex items-center justify-between">
-								<div className="flex items-center gap-2">
-									<span className="text-lg">{p.avatar || "👤"}</span>
-									<span className="font-medium text-sm">{p.name}</span>
-								</div>
-								<button
-									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										removePersona(p.id);
-									}}
-									className="text-muted-foreground hover:text-destructive"
-								>
-									<Trash2 className="h-4 w-4" />
-								</button>
-							</div>
-							{p.demographics?.role && (
-								<p className="text-xs text-muted-foreground">
-									{p.demographics.role}
-									{p.demographics.industry ? ` in ${p.demographics.industry}` : ""}
-								</p>
-							)}
-							{p.painPoints && p.painPoints.length > 0 && (
-								<p className="mt-1 text-xs text-muted-foreground">
-									Pain: {p.painPoints.slice(0, 2).join(", ")}
-									{p.painPoints.length > 2 ? ` +${p.painPoints.length - 2}` : ""}
-								</p>
-							)}
-							<div className="mt-2 h-1.5 w-full rounded-full bg-muted">
-								<div
-									className="h-full rounded-full bg-primary"
-									style={{ width: `${p.confidence ?? 50}%` }}
-								/>
-							</div>
-							<span className="text-xs text-muted-foreground">
-								{p.confidence ?? 50}% confidence
-							</span>
-						</div>
+							persona={p}
+							onEdit={() => editPersona(p)}
+							onDelete={() => removePersona(p.id)}
+						/>
 					))}
+				</div>
+			)}
+
+			{/* Empty state */}
+			{personas.length === 0 && !showForm && (
+				<div className="rounded-lg border border-dashed p-4 text-center">
+					<UserCircle className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+					<p className="text-xs text-muted-foreground">
+						Who are you creating for? Add your first audience persona to start building the bridge.
+					</p>
+					<Button
+						size="sm"
+						variant="ghost"
+						className="mt-2 text-xs"
+						onClick={() => setShowForm(true)}
+					>
+						<Plus className="mr-1 h-3 w-3" />
+						Create first persona
+					</Button>
 				</div>
 			)}
 
 			{/* Create/Edit form */}
 			{showForm && (
-				<div className="rounded-lg border p-4">
-					<h3 className="mb-3 text-sm font-medium">
+				<div className="rounded-lg border p-3 space-y-3">
+					<h4 className="text-xs font-medium">
 						{editingId ? "Edit Persona" : "New Persona"}
-					</h3>
-					<div className="grid gap-3 md:grid-cols-2">
-						<div>
-							<label className="mb-1 block text-xs font-medium text-muted-foreground">Name</label>
-							<Input
-								value={form.name}
-								onChange={(e) => setForm({ ...form, name: e.target.value })}
-								placeholder="e.g., Startup Steve"
-								className="h-8 text-sm"
-							/>
-						</div>
-						<div>
-							<label className="mb-1 block text-xs font-medium text-muted-foreground">Avatar (emoji)</label>
-							<Input
-								value={form.avatar}
-								onChange={(e) => setForm({ ...form, avatar: e.target.value })}
-								placeholder="e.g., 🚀"
-								className="h-8 text-sm"
-							/>
-						</div>
-						<div>
-							<label className="mb-1 block text-xs font-medium text-muted-foreground">Role</label>
-							<Input
-								value={form.role}
-								onChange={(e) => setForm({ ...form, role: e.target.value })}
-								placeholder="e.g., CTO"
-								className="h-8 text-sm"
-							/>
-						</div>
-						<div>
-							<label className="mb-1 block text-xs font-medium text-muted-foreground">Industry</label>
-							<Input
-								value={form.industry}
-								onChange={(e) => setForm({ ...form, industry: e.target.value })}
-								placeholder="e.g., SaaS"
-								className="h-8 text-sm"
-							/>
-						</div>
-					</div>
+					</h4>
 
-					<div className="mt-3 grid gap-3 md:grid-cols-2">
-						<DynamicList
-							label="Pain Points"
-							items={form.painPoints}
-							onChange={(items) => setForm({ ...form, painPoints: items })}
+					<div className="grid gap-2 grid-cols-[auto_1fr]">
+						<Input
+							value={form.avatar}
+							onChange={(e) => setForm({ ...form, avatar: e.target.value })}
+							placeholder="👤"
+							className="h-8 w-12 text-center text-sm"
 						/>
-						<DynamicList
-							label="Goals"
-							items={form.goals}
-							onChange={(items) => setForm({ ...form, goals: items })}
-						/>
-						<DynamicList
-							label="Language Triggers"
-							items={form.triggers}
-							onChange={(items) => setForm({ ...form, triggers: items })}
-						/>
-						<DynamicList
-							label="Objections"
-							items={form.objections}
-							onChange={(items) => setForm({ ...form, objections: items })}
+						<Input
+							value={form.name}
+							onChange={(e) => setForm({ ...form, name: e.target.value })}
+							placeholder="Persona name"
+							className="h-8 text-sm"
 						/>
 					</div>
 
-					<div className="mt-4 flex gap-2">
-						<Button size="sm" onClick={handleSave} disabled={!form.name.trim() || saving}>
-							{saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+					<div className="grid gap-2 grid-cols-2">
+						<Input
+							value={form.role}
+							onChange={(e) => setForm({ ...form, role: e.target.value })}
+							placeholder="Role (CTO, Marketer...)"
+							className="h-7 text-xs"
+						/>
+						<Input
+							value={form.industry}
+							onChange={(e) => setForm({ ...form, industry: e.target.value })}
+							placeholder="Industry"
+							className="h-7 text-xs"
+						/>
+					</div>
+
+					<TagInput
+						label="Pain Points"
+						items={form.painPoints}
+						onChange={(items) => setForm({ ...form, painPoints: items })}
+						placeholder="What keeps them up at night?"
+					/>
+
+					<TagInput
+						label="Goals"
+						items={form.goals}
+						onChange={(items) => setForm({ ...form, goals: items })}
+						placeholder="What are they trying to achieve?"
+					/>
+
+					<TagInput
+						label="Language Triggers"
+						items={form.triggers}
+						onChange={(items) => setForm({ ...form, triggers: items })}
+						placeholder="Words that resonate"
+					/>
+
+					<TagInput
+						label="Objections"
+						items={form.objections}
+						onChange={(items) => setForm({ ...form, objections: items })}
+						placeholder="Why they hesitate"
+					/>
+
+					<div className="flex gap-2 pt-1">
+						<Button size="sm" className="h-7 text-xs" onClick={handleSave} disabled={!form.name.trim() || saving}>
+							{saving && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
 							{editingId ? "Update" : "Create"}
 						</Button>
-						<Button size="sm" variant="ghost" onClick={resetForm}>
+						<Button size="sm" variant="ghost" className="h-7 text-xs" onClick={resetForm}>
 							Cancel
 						</Button>
 					</div>
 				</div>
 			)}
-
-			{personas.length === 0 && !showForm && (
-				<p className="text-sm text-muted-foreground">
-					No personas yet. Create one to start generating content angles.
-				</p>
-			)}
-		</Card>
+		</div>
 	);
 }

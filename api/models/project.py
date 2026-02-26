@@ -1,7 +1,7 @@
 """Pydantic models for Project management and onboarding"""
 
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional, Literal
+from pydantic import BaseModel, HttpUrl, Field, model_validator
+from typing import Optional, Literal, List
 from enum import Enum
 from datetime import datetime
 
@@ -105,13 +105,26 @@ class ProjectConfigOverrides(BaseModel):
 class ProjectSettings(BaseModel):
     """Project settings stored in database JSON field"""
     tech_stack: Optional[TechStackDetection] = None
-    content_directory: Optional[ContentDirectoryConfig] = None
+    content_directories: List[ContentDirectoryConfig] = Field(
+        default_factory=list,
+        description="Content directories configured by the user (ordered by priority)"
+    )
     config_overrides: Optional[ProjectConfigOverrides] = None
     onboarding_status: OnboardingStatus = OnboardingStatus.PENDING
     local_repo_path: Optional[str] = Field(
         default=None,
         description="Local path to cloned repository"
     )
+
+    @model_validator(mode='before')
+    @classmethod
+    def migrate_single_content_directory(cls, data: dict) -> dict:
+        """Backward compat: migrate old single content_directory to content_directories list."""
+        if isinstance(data, dict) and 'content_directory' in data and 'content_directories' not in data:
+            old = data.pop('content_directory')
+            if old is not None:
+                data['content_directories'] = [old]
+        return data
 
 
 class Project(BaseModel):
@@ -164,9 +177,9 @@ class ConfirmProjectRequest(BaseModel):
         default=True,
         description="Accept auto-detected settings"
     )
-    content_directory_override: Optional[ContentDirectoryConfig] = Field(
+    content_directories_override: Optional[List[ContentDirectoryConfig]] = Field(
         default=None,
-        description="Override content directory if not confirmed"
+        description="Override content directories if not confirmed"
     )
     config_overrides: Optional[ProjectConfigOverrides] = Field(
         default=None,
@@ -178,9 +191,9 @@ class UpdateProjectRequest(BaseModel):
     """Request to update project details"""
     name: Optional[str] = Field(default=None, description="New project name")
     description: Optional[str] = Field(default=None, description="New description")
-    content_directory: Optional[ContentDirectoryConfig] = Field(
+    content_directories: Optional[List[ContentDirectoryConfig]] = Field(
         default=None,
-        description="Update content directory"
+        description="Update content directories"
     )
     config_overrides: Optional[ProjectConfigOverrides] = Field(
         default=None,

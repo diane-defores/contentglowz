@@ -6,7 +6,10 @@ For individual page analysis (schema, metadata), use agents.seo.tools.technical_
 """
 from crewai.tools import tool
 from typing import List, Dict, Any, Optional
+
+from api.models.project import Project
 from datetime import datetime
+import os
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -137,17 +140,39 @@ class SiteCrawler:
             }
 
     @tool("Detect Broken Links")
-    def detect_broken_links(self, pages: List[Dict]) -> Dict[str, Any]:
+    def detect_broken_links(
+        self,
+        pages: List[Dict],
+        project: Optional[Project] = None
+    ) -> Dict[str, Any]:
         """
         Detect broken internal links.
 
+        Stratégie local-first → fallback HTTP :
+        - Si un objet Project est fourni (avec local_repo_path + content_directory configurés),
+          vérifie les liens directement dans les fichiers source via LocalLinkChecker.
+          Plus rapide, plus précis, ne nécessite pas de déploiement.
+        - Sinon, fallback HTTP : compare les liens internes aux URLs crawlées.
+
         Args:
-            pages: List of crawled pages
+            pages: List of crawled pages (used for HTTP fallback)
+            project: Optional Project object from BizFlows project store.
+                     Si fourni, utilise local_repo_path + content_directory de ProjectSettings.
 
         Returns:
-            List of broken links and 404 pages
+            Dict with broken_links list and source ("local_filesystem" or "http_crawl")
         """
         try:
+            # Local-first : vérification dans les fichiers source via ProjectSettings
+            if project:
+                from agents.seo.tools.local_link_checker import LocalLinkChecker
+                checker = LocalLinkChecker()
+                local_result = checker.check_from_project(project)
+                if local_result.get("success"):
+                    return local_result
+                # Si échec local (no_local_repo, no_content_directory, etc.) → fallback HTTP
+
+            # Fallback HTTP : comportement original
             broken_links = []
             all_urls = set(page['url'] for page in pages)
 
@@ -162,6 +187,7 @@ class SiteCrawler:
 
             return {
                 "success": True,
+                "source": "http_crawl",
                 "broken_links_count": len(broken_links),
                 "broken_links": broken_links
             }
@@ -174,113 +200,156 @@ class SiteCrawler:
 
 
 class PerformanceAnalyzer:
-    """Analyzes page speed and Core Web Vitals"""
+    """Analyzes page speed and Core Web Vitals via Google PageSpeed Insights API"""
+
+    PSI_API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+
+    def _call_pagespeed_api(self, url: str, strategy: str = "mobile") -> Dict[str, Any]:
+        """Call Google PageSpeed Insights API v5."""
+        api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY")
+        if not api_key:
+            return {
+                "success": False,
+                "error": "GOOGLE_PAGESPEED_API_KEY not set in environment"
+            }
+
+        params = {
+            "url": url,
+            "strategy": strategy,
+            "key": api_key,
+            "category": ["performance", "accessibility", "seo", "best-practices"],
+        }
+
+        response = requests.get(self.PSI_API_URL, params=params, timeout=30)
+        response.raise_for_status()
+        return {"success": True, "data": response.json()}
 
     @tool("Check Page Speed")
-    def check_page_speed(self, url: str) -> Dict[str, Any]:
+    def check_page_speed(self, url: str, strategy: str = "mobile") -> Dict[str, Any]:
         """
-        Check page speed using Lighthouse.
+        Check page speed using Google PageSpeed Insights API.
 
         Args:
             url: URL to test
+            strategy: "mobile" or "desktop"
 
         Returns:
-            Page speed metrics
+            Performance, accessibility, SEO, and best practices scores (0-100)
         """
         try:
-            # Note: This requires Lighthouse CLI installed
-            # npm install -g lighthouse
-            cmd = f'lighthouse {url} --output=json --quiet --chrome-flags="--headless"'
+            result = self._call_pagespeed_api(url, strategy)
 
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=60
-            )
-
-            if result.returncode != 0:
+            if not result["success"]:
+                # Fallback: simple HTTP timing
+                start = datetime.now()
+                requests.get(url, timeout=10)
+                load_time = (datetime.now() - start).total_seconds()
                 return {
-                    "success": False,
-                    "error": "Lighthouse not available or failed to run",
+                    "success": True,
                     "fallback": True,
-                    "score": 50  # Default fallback score
+                    "url": url,
+                    "strategy": strategy,
+                    "load_time_seconds": load_time,
+                    "performance_score": min(100, max(0, round(100 - (load_time * 20)))),
+                    "error_detail": result.get("error")
                 }
 
-            # Parse Lighthouse output
-            lighthouse_data = json.loads(result.stdout)
-            categories = lighthouse_data.get('categories', {})
-
-            performance = categories.get('performance', {})
-            accessibility = categories.get('accessibility', {})
-            seo = categories.get('seo', {})
+            data = result["data"]
+            categories = data.get("lighthouseResult", {}).get("categories", {})
 
             return {
                 "success": True,
                 "url": url,
-                "performance_score": performance.get('score', 0) * 100,
-                "accessibility_score": accessibility.get('score', 0) * 100,
-                "seo_score": seo.get('score', 0) * 100,
-                "metrics": lighthouse_data.get('audits', {})
+                "strategy": strategy,
+                "performance_score": round((categories.get("performance", {}).get("score") or 0) * 100),
+                "accessibility_score": round((categories.get("accessibility", {}).get("score") or 0) * 100),
+                "seo_score": round((categories.get("seo", {}).get("score") or 0) * 100),
+                "best_practices_score": round((categories.get("best-practices", {}).get("score") or 0) * 100),
             }
 
-        except subprocess.TimeoutExpired:
-            return {
-                "success": False,
-                "error": "Lighthouse timeout"
-            }
         except Exception as e:
-            # Fallback: simple timing
+            # Last-resort fallback: simple timing
             try:
                 start = datetime.now()
                 requests.get(url, timeout=10)
                 load_time = (datetime.now() - start).total_seconds()
-
                 return {
                     "success": True,
                     "fallback": True,
                     "url": url,
                     "load_time_seconds": load_time,
-                    "performance_score": min(100, max(0, 100 - (load_time * 20)))
+                    "performance_score": min(100, max(0, round(100 - (load_time * 20))))
                 }
             except Exception:
-                return {
-                    "success": False,
-                    "error": str(e)
-                }
+                return {"success": False, "error": str(e)}
 
     @tool("Measure Core Web Vitals")
-    def measure_core_web_vitals(self, url: str) -> Dict[str, Any]:
+    def measure_core_web_vitals(self, url: str, strategy: str = "mobile") -> Dict[str, Any]:
         """
-        Measure Core Web Vitals for a URL.
+        Measure Core Web Vitals using Google PageSpeed Insights API.
+        Returns field data (real CrUX users) and lab data (Lighthouse simulation).
 
         Args:
             url: URL to measure
+            strategy: "mobile" or "desktop"
 
         Returns:
-            Core Web Vitals metrics
+            CWV metrics: LCP, CLS, INP, FCP, TTFB — field + lab data
         """
         try:
-            # This would use real CrUX data or Lighthouse in production
-            # For now, return estimated values
+            result = self._call_pagespeed_api(url, strategy)
+            if not result["success"]:
+                return result
+
+            data = result["data"]
+            audits = data.get("lighthouseResult", {}).get("audits", {})
+            loading_experience = data.get("loadingExperience", {})
+            metrics = loading_experience.get("metrics", {})
+
+            def field_metric(key: str) -> Dict[str, Any]:
+                m = metrics.get(key, {})
+                rating = m.get("category", "")
+                return {
+                    "value": m.get("percentile"),
+                    "rating": rating.lower() if rating else None,
+                }
+
+            def lab_val(audit_key: str):
+                return audits.get(audit_key, {}).get("numericValue")
+
+            # Field data — real user data from Chrome UX Report (CrUX)
+            # INP replaces FID as Core Web Vital since March 2024
+            field_data = {
+                "lcp_ms": field_metric("LARGEST_CONTENTFUL_PAINT_MS"),
+                "cls": field_metric("CUMULATIVE_LAYOUT_SHIFT_SCORE"),
+                "inp_ms": field_metric("INTERACTION_TO_NEXT_PAINT"),
+                "fcp_ms": field_metric("FIRST_CONTENTFUL_PAINT_MS"),
+                "ttfb_ms": field_metric("EXPERIMENTAL_TIME_TO_FIRST_BYTE"),
+                "overall": loading_experience.get("overall_category", "").lower() or None,
+            }
+
+            # Lab data — Lighthouse simulation
+            lab_data = {
+                "lcp_ms": lab_val("largest-contentful-paint"),
+                "cls": lab_val("cumulative-layout-shift"),
+                "fcp_ms": lab_val("first-contentful-paint"),
+                "ttfb_ms": lab_val("server-response-time"),
+                "tbt_ms": lab_val("total-blocking-time"),
+                "speed_index_ms": lab_val("speed-index"),
+            }
+
             return {
                 "success": True,
                 "url": url,
-                "lcp": 2.3,  # Largest Contentful Paint (seconds)
-                "fid": 95,   # First Input Delay (ms)
-                "cls": 0.08, # Cumulative Layout Shift
-                "fcp": 1.5,  # First Contentful Paint (seconds)
-                "ttfb": 0.6, # Time to First Byte (seconds)
-                "overall_rating": "good",
-                "note": "Simulated values - integrate with real CrUX API for production"
+                "strategy": strategy,
+                "overall_rating": field_data.get("overall"),
+                "has_field_data": bool(metrics),
+                "field_data": field_data,
+                "lab_data": lab_data,
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
 
 class LinkAnalyzer:
@@ -430,3 +499,125 @@ class LinkAnalyzer:
                 "success": False,
                 "error": str(e)
             }
+
+
+class CrUXAnalyzer:
+    """
+    Queries the Chrome UX Report (CrUX) API for real-user field data.
+    Returns p75 Core Web Vitals collected from real Chrome users over 28 days.
+
+    Same GOOGLE_PAGESPEED_API_KEY is used — just enable "Chrome UX Report API"
+    in Google Cloud Console alongside PageSpeed Insights API.
+    """
+
+    CRUX_API_URL = "https://chromeuxreport.googleapis.com/v1/records:queryRecord"
+
+    # CWV thresholds for rating classification
+    THRESHOLDS = {
+        "largest_contentful_paint":           {"good": 2500, "needs_improvement": 4000, "unit": "ms"},
+        "cumulative_layout_shift":            {"good": 0.1,  "needs_improvement": 0.25, "unit": "score"},
+        "interaction_to_next_paint":          {"good": 200,  "needs_improvement": 500,  "unit": "ms"},
+        "first_contentful_paint":             {"good": 1800, "needs_improvement": 3000, "unit": "ms"},
+        "experimental_time_to_first_byte":    {"good": 800,  "needs_improvement": 1800, "unit": "ms"},
+    }
+
+    def _get_rating(self, metric_key: str, value: float) -> str:
+        t = self.THRESHOLDS.get(metric_key, {})
+        if not t or value is None:
+            return "unknown"
+        if value <= t["good"]:
+            return "good"
+        if value <= t["needs_improvement"]:
+            return "needs_improvement"
+        return "poor"
+
+    @tool("Query Chrome UX Report")
+    def query_crux(
+        self,
+        url: str,
+        form_factor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Query Chrome UX Report API for real-user Core Web Vitals (p75, 28-day window).
+
+        Args:
+            url: Full URL to query (e.g. "https://example.com")
+            form_factor: Optional — "PHONE", "DESKTOP", or None for all combined
+
+        Returns:
+            p75 values for LCP, CLS, INP, FCP, TTFB with ratings and histogram buckets.
+            Returns has_data=False if the URL has insufficient Chrome traffic.
+        """
+        api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY")
+        if not api_key:
+            return {
+                "success": False,
+                "error": "GOOGLE_PAGESPEED_API_KEY not set in environment"
+            }
+
+        body: Dict[str, Any] = {"url": url}
+        if form_factor:
+            body["formFactor"] = form_factor
+
+        try:
+            response = requests.post(
+                f"{self.CRUX_API_URL}?key={api_key}",
+                json=body,
+                timeout=15,
+            )
+
+            # 404 = URL not in CrUX dataset (insufficient real-user data)
+            if response.status_code == 404:
+                return {
+                    "success": True,
+                    "has_data": False,
+                    "url": url,
+                    "reason": "URL not found in Chrome UX Report — site may have low traffic",
+                }
+
+            response.raise_for_status()
+            data = response.json()
+            record = data.get("record", {})
+            metrics_raw = record.get("metrics", {})
+            period = record.get("collectionPeriod", {})
+
+            metrics: Dict[str, Any] = {}
+            for key, raw in metrics_raw.items():
+                p75 = raw.get("percentiles", {}).get("p75")
+                histogram = raw.get("histogram", [])
+                metrics[key] = {
+                    "p75": p75,
+                    "rating": self._get_rating(key, p75),
+                    "unit": self.THRESHOLDS.get(key, {}).get("unit", ""),
+                    # Histogram densities: [good%, needs_improvement%, poor%]
+                    "histogram": [
+                        round(b.get("density", 0) * 100, 1) for b in histogram
+                    ],
+                }
+
+            # Overall pass/fail: all 3 CWV must be "good"
+            cwv_keys = [
+                "largest_contentful_paint",
+                "cumulative_layout_shift",
+                "interaction_to_next_paint",
+            ]
+            cwv_ratings = [
+                metrics.get(k, {}).get("rating") for k in cwv_keys if k in metrics
+            ]
+            overall = "good" if all(r == "good" for r in cwv_ratings) else "poor"
+
+            return {
+                "success": True,
+                "has_data": True,
+                "url": url,
+                "form_factor": form_factor or "ALL",
+                "overall_cwv": overall,
+                "collection_period": {
+                    "start": period.get("firstDate"),
+                    "end": period.get("lastDate"),
+                },
+                "metrics": metrics,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}

@@ -156,16 +156,15 @@ async def analyze_project(
     }
     ```
 
-    **Example - Override content directory:**
+    **Example - Override content directories:**
     ```json
     {
       "project_id": "uuid-here",
       "confirmed": false,
-      "content_directory_override": {
-        "path": "blog",
-        "auto_detected": false,
-        "file_extensions": [".md", ".mdx"]
-      }
+      "content_directories_override": [
+        {"path": "src/content/blog", "auto_detected": false, "file_extensions": [".md", ".mdx"]},
+        {"path": "src/content/docs", "auto_detected": false, "file_extensions": [".md", ".mdx"]}
+      ]
     }
     ```
     """

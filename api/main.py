@@ -33,6 +33,7 @@ sys.path.insert(0, str(project_root))
 from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
+from api.routers.runs import router as runs_router
 
 
 # ─────────────────────────────────────────────────
@@ -244,6 +245,7 @@ app.include_router(scheduler_router)
 app.include_router(templates_router)
 app.include_router(reels_router)
 app.include_router(psychology_router)
+app.include_router(runs_router)
 
 
 # ─────────────────────────────────────────────────

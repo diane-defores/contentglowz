@@ -15,6 +15,7 @@ import json
 import logging
 from pathlib import Path
 
+from agents.shared.run_history import RunHistory
 from agents.images.image_strategist import ImageStrategist
 from agents.images.image_generator import ImageGenerator
 from agents.images.image_optimizer import ImageOptimizer
@@ -143,205 +144,218 @@ class ImageRobotCrew:
             except Exception as e:
                 logger.warning(f"Status tracking init failed (non-critical): {e}")
 
-        try:
-            # Step 1: Strategy Analysis
-            logger.info("Step 1: Analyzing article and creating strategy")
-            strategy_result = self.strategist.analyze_article(
-                content=article_content,
-                title=article_title,
-                slug=article_slug,
-                strategy_type=strategy_type,
-                style_guide=style_guide
-            )
-
-            if not strategy_result.get("success"):
-                return self._create_error_result(
-                    article_title, article_slug, article_content,
-                    f"Strategy failed: {strategy_result.get('error')}"
+        with RunHistory().start("image_robot", "generate_images", inputs={
+            "article_title": article_title,
+            "article_slug": article_slug,
+            "strategy_type": strategy_type,
+        }) as run:
+            try:
+                # Step 1: Strategy Analysis
+                logger.info("Step 1: Analyzing article and creating strategy")
+                strategy_result = self.strategist.analyze_article(
+                    content=article_content,
+                    title=article_title,
+                    slug=article_slug,
+                    strategy_type=strategy_type,
+                    style_guide=style_guide
                 )
 
-            strategy = ImageStrategy(**strategy_result["strategy"])
-            logger.info(f"Strategy: {strategy.strategy_type}, {strategy.num_images} images")
+                if not strategy_result.get("success"):
+                    run.mark_failed(f"Strategy failed: {strategy_result.get('error')}")
+                    return self._create_error_result(
+                        article_title, article_slug, article_content,
+                        f"Strategy failed: {strategy_result.get('error')}"
+                    )
 
-            # Step 2: Image Generation
-            logger.info("Step 2: Generating images via Robolly")
-            generation_result = self.generator.generate_batch(
-                briefs=strategy.image_briefs,
-                style_guide=style_guide
-            )
+                strategy = ImageStrategy(**strategy_result["strategy"])
+                logger.info(f"Strategy: {strategy.strategy_type}, {strategy.num_images} images")
 
-            if generation_result.get("failed", 0) == len(strategy.image_briefs):
-                return self._create_error_result(
-                    article_title, article_slug, article_content,
-                    f"All image generations failed"
+                # Step 2: Image Generation
+                logger.info("Step 2: Generating images via Robolly")
+                generation_result = self.generator.generate_batch(
+                    briefs=strategy.image_briefs,
+                    style_guide=style_guide
                 )
 
-            # Extract successful generations
-            generated_images = []
-            for result in generation_result.get("results", []):
-                if result.get("result", {}).get("success"):
-                    generated = GeneratedImage(**result["result"]["generated"])
-                    generated_images.append(generated)
+                if generation_result.get("failed", 0) == len(strategy.image_briefs):
+                    run.mark_failed("All image generations failed")
+                    return self._create_error_result(
+                        article_title, article_slug, article_content,
+                        f"All image generations failed"
+                    )
 
-            logger.info(f"Generated {len(generated_images)}/{len(strategy.image_briefs)} images")
+                # Extract successful generations
+                generated_images = []
+                for result in generation_result.get("results", []):
+                    if result.get("result", {}).get("success"):
+                        generated = GeneratedImage(**result["result"]["generated"])
+                        generated_images.append(generated)
 
-            # Step 3: Optimization
-            logger.info("Step 3: Optimizing images")
-            optimization_result = self.optimizer.optimize_batch(
-                generated_images=generated_images,
-                article_title=article_title,
-                generate_responsive=generate_responsive
-            )
+                logger.info(f"Generated {len(generated_images)}/{len(strategy.image_briefs)} images")
 
-            # Extract successful optimizations
-            image_sets = []
-            for result in optimization_result.get("results", []):
-                if result.get("success"):
-                    image_set = ResponsiveImageSet(**result["image_set"])
-                    image_sets.append(image_set)
+                # Step 3: Optimization
+                logger.info("Step 3: Optimizing images")
+                optimization_result = self.optimizer.optimize_batch(
+                    generated_images=generated_images,
+                    article_title=article_title,
+                    generate_responsive=generate_responsive
+                )
 
-            logger.info(f"Optimized {len(image_sets)} image sets")
+                # Extract successful optimizations
+                image_sets = []
+                for result in optimization_result.get("results", []):
+                    if result.get("success"):
+                        image_set = ResponsiveImageSet(**result["image_set"])
+                        image_sets.append(image_set)
 
-            # Step 4: CDN Upload
-            logger.info("Step 4: Uploading to CDN")
-            upload_result = self.cdn_manager.upload_batch(
-                image_sets=image_sets,
-                path_type=path_type
-            )
+                logger.info(f"Optimized {len(image_sets)} image sets")
 
-            # Build image results with CDN URLs
-            image_results = []
-            for i, (image_set, upload_res) in enumerate(zip(image_sets, upload_result.get("results", []))):
-                if upload_res.get("success"):
-                    # Handle both optimizer (responsive_urls with int keys) and legacy (cdn_urls with str keys)
-                    responsive_urls = upload_res.get("responsive_urls", {})
-                    cdn_urls = upload_res.get("cdn_urls", {})
+                # Step 4: CDN Upload
+                logger.info("Step 4: Uploading to CDN")
+                upload_result = self.cdn_manager.upload_batch(
+                    image_sets=image_sets,
+                    path_type=path_type
+                )
 
-                    # Convert integer width keys to string for consistent handling
-                    if responsive_urls:
-                        normalized_urls = {str(k): v for k, v in responsive_urls.items()}
+                # Build image results with CDN URLs
+                image_results = []
+                for i, (image_set, upload_res) in enumerate(zip(image_sets, upload_result.get("results", []))):
+                    if upload_res.get("success"):
+                        # Handle both optimizer (responsive_urls with int keys) and legacy (cdn_urls with str keys)
+                        responsive_urls = upload_res.get("responsive_urls", {})
+                        cdn_urls = upload_res.get("cdn_urls", {})
+
+                        # Convert integer width keys to string for consistent handling
+                        if responsive_urls:
+                            normalized_urls = {str(k): v for k, v in responsive_urls.items()}
+                        else:
+                            normalized_urls = cdn_urls
+
+                        # Get primary URL - optimizer uses 'primary_url', legacy uses 'primary_cdn_url'
+                        primary_url = upload_res.get("primary_url") or upload_res.get("primary_cdn_url")
+
+                        img_result = ImageGenerationResult(
+                            success=True,
+                            image_type=image_set.original.image_type,
+                            generated=image_set.original,
+                            optimized=image_set.variants,
+                            cdn_uploads=upload_res.get("upload_results", []),
+                            primary_cdn_url=primary_url,
+                            responsive_urls=normalized_urls,
+                            alt_text=image_set.alt_text,
+                            file_name=image_set.file_name
+                        )
                     else:
-                        normalized_urls = cdn_urls
+                        img_result = ImageGenerationResult(
+                            success=False,
+                            image_type=image_set.original.image_type,
+                            errors=[upload_res.get("error", "Upload failed")]
+                        )
 
-                    # Get primary URL - optimizer uses 'primary_url', legacy uses 'primary_cdn_url'
-                    primary_url = upload_res.get("primary_url") or upload_res.get("primary_cdn_url")
+                    image_results.append(img_result)
 
-                    img_result = ImageGenerationResult(
-                        success=True,
-                        image_type=image_set.original.image_type,
-                        generated=image_set.original,
-                        optimized=image_set.variants,
-                        cdn_uploads=upload_res.get("upload_results", []),
-                        primary_cdn_url=primary_url,
-                        responsive_urls=normalized_urls,
-                        alt_text=image_set.alt_text,
-                        file_name=image_set.file_name
-                    )
-                else:
-                    img_result = ImageGenerationResult(
-                        success=False,
-                        image_type=image_set.original.image_type,
-                        errors=[upload_res.get("error", "Upload failed")]
-                    )
+                logger.info(f"Uploaded {sum(1 for r in image_results if r.success)} images to CDN")
 
-                image_results.append(img_result)
+                # Step 5: Insert Images into Markdown
+                logger.info("Step 5: Inserting images into markdown")
+                insertion_result = self.cdn_manager.insert_images_in_markdown(
+                    markdown_content=article_content,
+                    image_results=image_results,
+                    article_title=article_title
+                )
 
-            logger.info(f"Uploaded {sum(1 for r in image_results if r.success)} images to CDN")
+                # Build final result
+                end_time = datetime.utcnow()
+                total_time_ms = int((end_time - start_time).total_seconds() * 1000)
 
-            # Step 5: Insert Images into Markdown
-            logger.info("Step 5: Inserting images into markdown")
-            insertion_result = self.cdn_manager.insert_images_in_markdown(
-                markdown_content=article_content,
-                image_results=image_results,
-                article_title=article_title
-            )
+                # Collect all CDN URLs
+                all_cdn_urls = []
+                for result in image_results:
+                    if result.success and result.primary_cdn_url:
+                        all_cdn_urls.append(result.primary_cdn_url)
+                        all_cdn_urls.extend(result.responsive_urls.values())
 
-            # Build final result
-            end_time = datetime.utcnow()
-            total_time_ms = int((end_time - start_time).total_seconds() * 1000)
+                # Calculate total CDN size (handle both optimizer and legacy modes)
+                total_cdn_size_kb = sum(
+                    upload_res.get("total_size_kb", upload_res.get("file_size_kb", 0))
+                    for upload_res in upload_result.get("results", [])
+                    if upload_res.get("success")
+                )
 
-            # Collect all CDN URLs
-            all_cdn_urls = []
-            for result in image_results:
-                if result.success and result.primary_cdn_url:
-                    all_cdn_urls.append(result.primary_cdn_url)
-                    all_cdn_urls.extend(result.responsive_urls.values())
+                # Generate schema.org metadata
+                image_metadata = self._generate_image_schema(
+                    image_results=image_results,
+                    article_title=article_title
+                )
 
-            # Calculate total CDN size (handle both optimizer and legacy modes)
-            total_cdn_size_kb = sum(
-                upload_res.get("total_size_kb", upload_res.get("file_size_kb", 0))
-                for upload_res in upload_result.get("results", [])
-                if upload_res.get("success")
-            )
+                article_with_images = ArticleWithImages(
+                    article_title=article_title,
+                    article_slug=article_slug,
+                    original_content=article_content,
+                    markdown_with_images=insertion_result.get("markdown", article_content),
+                    strategy=strategy,
+                    images=image_results,
+                    total_images=len(image_results),
+                    successful_images=sum(1 for r in image_results if r.success),
+                    failed_images=sum(1 for r in image_results if not r.success),
+                    image_metadata=image_metadata,
+                    og_image_url=insertion_result.get("og_image_url"),
+                    total_cdn_size_kb=total_cdn_size_kb,
+                    cdn_urls=list(set(all_cdn_urls)),
+                    processing_time_ms=total_time_ms,
+                    processed_at=end_time
+                )
 
-            # Generate schema.org metadata
-            image_metadata = self._generate_image_schema(
-                image_results=image_results,
-                article_title=article_title
-            )
+                run.set_outputs({
+                    "workflow_id": workflow_id,
+                    "total_images": article_with_images.total_images,
+                    "successful_images": article_with_images.successful_images,
+                    "failed_images": article_with_images.failed_images,
+                    "processing_time_ms": article_with_images.processing_time_ms,
+                })
 
-            article_with_images = ArticleWithImages(
-                article_title=article_title,
-                article_slug=article_slug,
-                original_content=article_content,
-                markdown_with_images=insertion_result.get("markdown", article_content),
-                strategy=strategy,
-                images=image_results,
-                total_images=len(image_results),
-                successful_images=sum(1 for r in image_results if r.success),
-                failed_images=sum(1 for r in image_results if not r.success),
-                image_metadata=image_metadata,
-                og_image_url=insertion_result.get("og_image_url"),
-                total_cdn_size_kb=total_cdn_size_kb,
-                cdn_urls=list(set(all_cdn_urls)),
-                processing_time_ms=total_time_ms,
-                processed_at=end_time
-            )
+                # Status tracking: mark as generated → pending_review
+                if STATUS_AVAILABLE and status_record_id:
+                    try:
+                        status_svc = get_status_service()
+                        status_svc.update_content(
+                            status_record_id,
+                            metadata={
+                                "total_images": article_with_images.total_images,
+                                "successful_images": article_with_images.successful_images,
+                                "failed_images": article_with_images.failed_images,
+                                "total_cdn_size_kb": article_with_images.total_cdn_size_kb,
+                                "processing_time_ms": total_time_ms,
+                            },
+                        )
+                        status_svc.transition(status_record_id, "generated", "images_robot")
+                        status_svc.transition(status_record_id, "pending_review", "images_robot")
+                        logger.info(f"Status tracking: marked as pending_review")
+                    except Exception as se:
+                        logger.warning(f"Status tracking completion failed (non-critical): {se}")
 
-            # Log workflow
-            self._log_workflow(workflow_id, article_with_images)
+                logger.info(f"Workflow {workflow_id} completed in {total_time_ms}ms")
 
-            # Status tracking: mark as generated → pending_review
-            if STATUS_AVAILABLE and status_record_id:
-                try:
-                    status_svc = get_status_service()
-                    status_svc.update_content(
-                        status_record_id,
-                        metadata={
-                            "total_images": article_with_images.total_images,
-                            "successful_images": article_with_images.successful_images,
-                            "failed_images": article_with_images.failed_images,
-                            "total_cdn_size_kb": article_with_images.total_cdn_size_kb,
-                            "processing_time_ms": total_time_ms,
-                        },
-                    )
-                    status_svc.transition(status_record_id, "generated", "images_robot")
-                    status_svc.transition(status_record_id, "pending_review", "images_robot")
-                    logger.info(f"Status tracking: marked as pending_review")
-                except Exception as se:
-                    logger.warning(f"Status tracking completion failed (non-critical): {se}")
+                return article_with_images
 
-            logger.info(f"Workflow {workflow_id} completed in {total_time_ms}ms")
+            except Exception as e:
+                logger.error(f"Workflow error: {e}")
+                run.mark_failed(str(e))
+                # Status tracking: mark as failed
+                if STATUS_AVAILABLE and status_record_id:
+                    try:
+                        status_svc = get_status_service()
+                        status_svc.transition(status_record_id, "failed", "images_robot", reason=str(e))
+                    except Exception as se:
+                        logger.warning(f"Status tracking failed transition error: {se}")
+                return self._create_error_result(
+                    article_title, article_slug, article_content,
+                    str(e)
+                )
 
-            return article_with_images
-
-        except Exception as e:
-            logger.error(f"Workflow error: {e}")
-            # Status tracking: mark as failed
-            if STATUS_AVAILABLE and status_record_id:
-                try:
-                    status_svc = get_status_service()
-                    status_svc.transition(status_record_id, "failed", "images_robot", reason=str(e))
-                except Exception as se:
-                    logger.warning(f"Status tracking failed transition error: {se}")
-            return self._create_error_result(
-                article_title, article_slug, article_content,
-                str(e)
-            )
-
-        finally:
-            # Cleanup temp files
-            self.optimizer.cleanup_temp_files()
+            finally:
+                # Cleanup temp files
+                self.optimizer.cleanup_temp_files()
 
     def quick_process(
         self,
@@ -461,35 +475,6 @@ class ImageRobotCrew:
             "@context": "https://schema.org",
             "image": images_schema
         }
-
-    def _log_workflow(self, workflow_id: str, result: ArticleWithImages):
-        """Log workflow to history"""
-        log_file = self.data_dir / "workflow_history.json"
-
-        if log_file.exists():
-            with open(log_file, 'r') as f:
-                history = json.load(f)
-        else:
-            history = []
-
-        history.append({
-            "workflow_id": workflow_id,
-            "timestamp": datetime.now().isoformat(),
-            "article_title": result.article_title,
-            "article_slug": result.article_slug,
-            "total_images": result.total_images,
-            "successful_images": result.successful_images,
-            "failed_images": result.failed_images,
-            "processing_time_ms": result.processing_time_ms,
-            "cdn_urls_count": len(result.cdn_urls),
-            "total_cdn_size_kb": result.total_cdn_size_kb
-        })
-
-        # Keep last 100 entries
-        history = history[-100:]
-
-        with open(log_file, 'w') as f:
-            json.dump(history, f, indent=2)
 
 
 def create_image_robot_crew(

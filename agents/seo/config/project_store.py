@@ -12,6 +12,7 @@ from typing import Optional, List
 from datetime import datetime
 
 import libsql_client
+from typing import Optional, List
 
 from api.models.project import (
     Project,
@@ -235,7 +236,7 @@ class ProjectStore:
         project_id: str,
         status: OnboardingStatus,
         tech_stack: Optional[TechStackDetection] = None,
-        content_directory: Optional[ContentDirectoryConfig] = None,
+        content_directories: Optional[List[ContentDirectoryConfig]] = None,
         local_repo_path: Optional[str] = None
     ) -> Optional[Project]:
         """
@@ -245,7 +246,7 @@ class ProjectStore:
             project_id: Project ID
             status: New onboarding status
             tech_stack: Detected tech stack
-            content_directory: Detected/configured content directory
+            content_directories: All detected/configured content directories
             local_repo_path: Path to cloned repository
 
         Returns:
@@ -260,8 +261,8 @@ class ProjectStore:
 
         if tech_stack:
             settings.tech_stack = tech_stack
-        if content_directory:
-            settings.content_directory = content_directory
+        if content_directories is not None:
+            settings.content_directories = content_directories
         if local_repo_path:
             settings.local_repo_path = local_repo_path
 
@@ -332,7 +333,7 @@ class ProjectStore:
         project_id: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        content_directory: Optional[ContentDirectoryConfig] = None,
+        content_directories: Optional[List[ContentDirectoryConfig]] = None,
         config_overrides: Optional[ProjectConfigOverrides] = None
     ) -> Optional[Project]:
         """
@@ -342,7 +343,7 @@ class ProjectStore:
             project_id: Project ID
             name: New name
             description: New description
-            content_directory: New content directory config
+            content_directories: New content directories config
             config_overrides: New config overrides
 
         Returns:
@@ -374,10 +375,10 @@ class ProjectStore:
             )
 
         # Update settings if needed
-        if content_directory or config_overrides:
+        if content_directories is not None or config_overrides:
             settings = project.settings or ProjectSettings()
-            if content_directory:
-                settings.content_directory = content_directory
+            if content_directories is not None:
+                settings.content_directories = content_directories
             if config_overrides:
                 settings.config_overrides = config_overrides
             await self.update_settings(project_id, settings)

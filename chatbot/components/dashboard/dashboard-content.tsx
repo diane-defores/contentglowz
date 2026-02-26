@@ -6,6 +6,8 @@ import {
 	Brain,
 	Film,
 	GitBranch,
+	Gauge,
+	History,
 	Link as LinkIcon,
 	Loader2,
 	Mail,
@@ -25,17 +27,24 @@ import { useProjectsContext } from "@/contexts/projects-context";
 import { AffiliationsTab } from "./affiliations-tab";
 import { CompetitorsTab } from "./competitors-tab";
 import { MissionControl } from "./mission-control";
+import { PerformanceTab } from "./performance-tab";
 import { NewsletterTab } from "./newsletter-tab";
 import { PipelineTab } from "./pipeline-tab";
 import { ProjectSelector } from "./project-selector";
 import { ReelsTab } from "./reels-tab";
 import { ResearchTab } from "./research-tab";
+import { RunsTab } from "./runs-tab";
 import { SettingsModal } from "./settings-modal";
 import { SubTabs, type SubTab } from "./sub-tabs";
 
 interface DashboardContentProps {
 	authToken?: string;
 }
+
+const DASHBOARD_SUB_TABS: SubTab[] = [
+	{ id: "mission", label: "Mission Control", icon: <Zap className="h-4 w-4" /> },
+	{ id: "runs", label: "Runs", icon: <History className="h-4 w-4" /> },
+];
 
 const CREATE_SUB_TABS: SubTab[] = [
 	{ id: "research", label: "Research", icon: <Search className="h-4 w-4" /> },
@@ -46,6 +55,7 @@ const CREATE_SUB_TABS: SubTab[] = [
 const GROW_SUB_TABS: SubTab[] = [
 	{ id: "competitors", label: "Competitors", icon: <Users className="h-4 w-4" /> },
 	{ id: "affiliations", label: "Affiliations", icon: <LinkIcon className="h-4 w-4" /> },
+	{ id: "performance", label: "Performance", icon: <Gauge className="h-4 w-4" /> },
 ];
 
 export function DashboardContent({
@@ -66,6 +76,10 @@ export function DashboardContent({
 	}, []);
 
 	const [activeTab, setActiveTab] = useState(() => parseHash().parent);
+	const [dashboardSubTab, setDashboardSubTab] = useState(() => {
+		const { parent, child } = parseHash();
+		return parent === "dashboard" && child ? child : "mission";
+	});
 	const [createSubTab, setCreateSubTab] = useState(() => {
 		const { parent, child } = parseHash();
 		return parent === "create" && child ? child : "research";
@@ -80,6 +94,7 @@ export function DashboardContent({
 		const onHashChange = () => {
 			const { parent, child } = parseHash();
 			setActiveTab(parent);
+			if (parent === "dashboard" && child) setDashboardSubTab(child);
 			if (parent === "create" && child) setCreateSubTab(child);
 			if (parent === "grow" && child) setGrowSubTab(child);
 		};
@@ -90,12 +105,13 @@ export function DashboardContent({
 	// Sync state → hash when tabs change
 	useEffect(() => {
 		let hash = activeTab;
+		if (activeTab === "dashboard" && dashboardSubTab !== "mission") hash = `dashboard:${dashboardSubTab}`;
 		if (activeTab === "create") hash = `create:${createSubTab}`;
 		if (activeTab === "grow") hash = `grow:${growSubTab}`;
 		if (window.location.hash !== `#${hash}`) {
 			window.history.replaceState(null, "", `#${hash}`);
 		}
-	}, [activeTab, createSubTab, growSubTab]);
+	}, [activeTab, dashboardSubTab, createSubTab, growSubTab]);
 
 	useEffect(() => {
 		if (!repoUrl) {
@@ -113,6 +129,7 @@ export function DashboardContent({
 		if (tab.includes(":")) {
 			const [parent, child] = tab.split(":");
 			setActiveTab(parent);
+			if (parent === "dashboard") setDashboardSubTab(child);
 			if (parent === "create") setCreateSubTab(child);
 			if (parent === "grow") setGrowSubTab(child);
 		} else {
@@ -228,9 +245,15 @@ export function DashboardContent({
 					</div>
 				)}
 
-					{/* Dashboard Tab (Mission Control) */}
+					{/* Dashboard Tab — Mission Control + Runs */}
 					<TabsContent value="dashboard">
-						<MissionControl projectId={selectedProject?.id} onNavigateToTab={handleNavigateToTab} />
+						<SubTabs tabs={DASHBOARD_SUB_TABS} activeTab={dashboardSubTab} onTabChange={setDashboardSubTab} />
+						{dashboardSubTab === "mission" && (
+							<MissionControl projectId={selectedProject?.id} onNavigateToTab={handleNavigateToTab} />
+						)}
+						{dashboardSubTab === "runs" && (
+							<RunsTab />
+						)}
 					</TabsContent>
 
 					{/* Create Tab — forceMount keeps Newsletter polling + Research chat alive */}
@@ -263,6 +286,10 @@ export function DashboardContent({
 
 						{growSubTab === "affiliations" && (
 							<AffiliationsTab projectId={selectedProject?.id} />
+						)}
+
+						{growSubTab === "performance" && (
+							<PerformanceTab projectUrl={selectedProject?.url} />
 						)}
 					</TabsContent>
 

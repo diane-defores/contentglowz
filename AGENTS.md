@@ -978,6 +978,42 @@ DOPPLER_TOKEN=...                   # If using Doppler
 5. **Test individually**: `python test_research_analyst.py` (no pytest suite)
 6. **Add to sys.path**: Import from root requires `sys.path.insert(0, str(project_root))`
 
+#### SEO Tools — Link Validation
+
+**`LocalLinkChecker`** (`agents/seo/tools/local_link_checker.py`)
+
+Validates internal markdown links directly against the local filesystem — no HTTP, no deployed site needed.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `repo_path` | `str` | Absolute path to locally cloned repo |
+| `content_dir` | `str` | Content directory relative to repo root (default: `"src/content"`) |
+
+Returns: `{ success, source, files_analyzed, broken_links[], broken_links_count, valid_links_count, skipped_count, stats }`
+
+**Link resolution strategy:**
+- Fragment-only (`#section`) → skipped (unverifiable without rendered HTML)
+- External (`http://`, `https://`, `mailto:`) → skipped (out of scope)
+- Root-relative (`/foo/bar`) → resolved from `content_root`
+- Relative (`../foo/bar`, `./foo`) → resolved from `source_file.parent`
+- For each candidate: tries exact path, then `+ .md`, then `/ index.md`, then `.mdx` / `.astro`
+
+**Integration in `SiteCrawler.detect_broken_links()`:**
+- Pass `local_repo_path` to get local-first results (faster + pre-deploy)
+- Omit `local_repo_path` to use HTTP crawl fallback (original behaviour)
+- Result field `source` = `"local_filesystem"` or `"http_crawl"` to distinguish
+
+**Quick test:**
+```bash
+cd /home/claude/my-robots
+python -c "
+from agents.seo.tools.local_link_checker import LocalLinkChecker
+checker = LocalLinkChecker()
+result = checker.check_local_links('/home/claude/GoCharbon', 'src/content')
+print(result)
+"
+```
+
 ### For Agents Working on Next.js Chatbot
 
 1. **Strict TypeScript**: `tsconfig.json` has `strict: true`

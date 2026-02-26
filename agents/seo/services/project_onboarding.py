@@ -146,21 +146,28 @@ class ProjectOnboardingService:
             suggested_content_dir = analysis["suggested_content_dir"]
             repo_path = analysis["repo_path"]
 
-            # Create content directory config if we have a suggestion
-            content_dir_config = None
+            # Créer un ContentDirectoryConfig pour chaque dossier détecté.
+            # Le dossier suggéré passe en premier (priorité la plus haute).
+            ordered_dirs = []
             if suggested_content_dir:
-                content_dir_config = ContentDirectoryConfig(
-                    path=suggested_content_dir,
+                ordered_dirs.append(suggested_content_dir)
+            ordered_dirs += [d for d in content_directories if d != suggested_content_dir]
+
+            content_dir_configs = [
+                ContentDirectoryConfig(
+                    path=d,
                     auto_detected=True,
                     file_extensions=[".md", ".mdx"]
                 )
+                for d in ordered_dirs
+            ]
 
             # Update project with detection results
             await self.store.update_onboarding_status(
                 project_id=project_id,
                 status=OnboardingStatus.AWAITING_CONFIRMATION,
                 tech_stack=tech_stack,
-                content_directory=content_dir_config,
+                content_directories=content_dir_configs,
                 local_repo_path=repo_path
             )
 
@@ -202,13 +209,9 @@ class ProjectOnboardingService:
 
         settings = project.settings or ProjectSettings()
 
-        # Apply content directory override if provided
-        if request.content_directory_override:
-            settings.content_directory = request.content_directory_override
-        elif not settings.content_directory and request.confirmed:
-            # User confirmed but no content directory was detected
-            # This is fine, they can set it later
-            pass
+        # Apply content directories override if provided
+        if request.content_directories_override:
+            settings.content_directories = request.content_directories_override
 
         # Apply config overrides
         if request.config_overrides:

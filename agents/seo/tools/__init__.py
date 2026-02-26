@@ -30,6 +30,11 @@ from agents.seo.tools.repo_analyzer import (
     GitHubRepoAnalyzer
 )
 
+# Local-first link validation
+from agents.seo.tools.local_link_checker import (
+    LocalLinkChecker
+)
+
 # Writing tools
 from agents.seo.tools.writing_tools import (
     ContentWriter,
@@ -77,6 +82,7 @@ __all__ = [
     # Mesh Analysis
     'ExistingMeshAnalyzer',
     'GitHubRepoAnalyzer',
+    'LocalLinkChecker',
     # Writing
     'ContentWriter',
     'MetadataGenerator',

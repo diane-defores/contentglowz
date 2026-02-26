@@ -23,6 +23,8 @@ from agents.seo.tools.internal_linking_tools import (
     MaintenanceTracker
 )
 
+from agents.seo.tools.local_link_checker import LocalLinkChecker
+
 from agents.seo.config.internal_linking_config import (
     InternalLinkingConfiguration,
     ConfigurationManager
@@ -59,6 +61,7 @@ class InternalLinkingSpecialistAgent:
         self.automated_inserter = AutomatedInserter()  # Automatic link insertion
         self.funnel_integrator = FunnelIntegrator()  # Marketing funnel integration
         self.maintenance_tracker = MaintenanceTracker()  # Link health monitoring
+        self.local_link_checker = LocalLinkChecker()  # Local-first pre-deploy link validation
 
         # Configuration management
         self.config_manager = ConfigurationManager()
@@ -92,7 +95,8 @@ class InternalLinkingSpecialistAgent:
                 self.personalization_engine.generate_personalized_links,
                 self.automated_inserter.insert_links_automatically,
                 self.funnel_integrator.map_funnel_touchpoints,
-                self.maintenance_tracker.audit_existing_links
+                self.maintenance_tracker.audit_existing_links,
+                self.local_link_checker.check_local_links,
             ],
             llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,

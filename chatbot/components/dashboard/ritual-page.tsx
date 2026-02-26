@@ -1,11 +1,17 @@
 "use client";
 
-import { Brain, Loader2, Send, Sparkles } from "lucide-react";
+import { Brain, ChevronDown, Loader2, Network, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useProjectsContext } from "@/contexts/projects-context";
 import { usePsychology, type CreatorEntry } from "@/hooks/use-psychology";
 import { AngleSelector } from "./angle-selector";
@@ -20,6 +26,250 @@ const ENTRY_TYPES: { value: CreatorEntry["entryType"]; label: string; emoji: str
 	{ value: "pivot", label: "Pivot", emoji: "🔄" },
 ];
 
+/* ---------- Creator Brain Panel (left) ---------- */
+function CreatorBrainPanel({
+	profile,
+	entries,
+	pendingUpdates,
+	submitting,
+	synthesisTaskId,
+	content,
+	setContent,
+	entryType,
+	setEntryType,
+	triggerSynthesis,
+	setTriggerSynthesis,
+	onSubmit,
+	onReviewUpdate,
+}: {
+	profile: ReturnType<typeof usePsychology>["profile"];
+	entries: ReturnType<typeof usePsychology>["entries"];
+	pendingUpdates: ReturnType<typeof usePsychology>["pendingUpdates"];
+	submitting: boolean;
+	synthesisTaskId: string | null;
+	content: string;
+	setContent: (v: string) => void;
+	entryType: CreatorEntry["entryType"];
+	setEntryType: (v: CreatorEntry["entryType"]) => void;
+	triggerSynthesis: boolean;
+	setTriggerSynthesis: (v: boolean) => void;
+	onSubmit: () => void;
+	onReviewUpdate: ReturnType<typeof usePsychology>["reviewUpdate"];
+}) {
+	const hasNarrative = profile && (profile.voice || profile.positioning);
+	const hasEntries = entries.length > 0;
+	const [showEntries, setShowEntries] = useState(false);
+
+	return (
+		<div className="space-y-4">
+			{/* Panel header */}
+			<div className="flex items-center gap-2">
+				<Brain className="h-4 w-4 text-primary" />
+				<h2 className="text-sm font-semibold">Creator Brain</h2>
+				{profile?.displayName && (
+					<span className="text-xs text-muted-foreground">
+						{profile.displayName}
+					</span>
+				)}
+			</div>
+
+			{/* Entry form */}
+			<Card className="p-4">
+				<p className="mb-3 text-xs text-muted-foreground">
+					{hasNarrative
+						? "What's new this week? Your narrative evolves with each entry."
+						: "Start your first entry — wins, struggles, ideas, pivots. Everything shapes your narrative."
+					}
+				</p>
+
+				{/* Entry type pills */}
+				<div className="mb-3 flex flex-wrap gap-1.5">
+					{ENTRY_TYPES.map((t) => (
+						<button
+							key={t.value}
+							type="button"
+							onClick={() => setEntryType(t.value)}
+							className={`rounded-full border px-2.5 py-1 text-xs transition-all ${
+								entryType === t.value
+									? "border-primary bg-primary/10 text-primary"
+									: "border-border hover:bg-muted"
+							}`}
+						>
+							{t.emoji} {t.label}
+						</button>
+					))}
+				</div>
+
+				<Textarea
+					value={content}
+					onChange={(e) => setContent(e.target.value)}
+					placeholder="What happened? What shifted? What are you thinking about?"
+					rows={3}
+					className="mb-3 text-sm"
+				/>
+
+				<div className="flex items-center justify-between">
+					<label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+						<input
+							type="checkbox"
+							checked={triggerSynthesis}
+							onChange={(e) => setTriggerSynthesis(e.target.checked)}
+							className="rounded border"
+						/>
+						<Sparkles className="h-3 w-3" />
+						Synthesize
+					</label>
+
+					<Button
+						onClick={onSubmit}
+						disabled={!content.trim() || submitting}
+						size="sm"
+						className="h-7 text-xs"
+					>
+						{submitting ? (
+							<Loader2 className="mr-1 h-3 w-3 animate-spin" />
+						) : (
+							<Send className="mr-1 h-3 w-3" />
+						)}
+						Save Entry
+					</Button>
+				</div>
+
+				{synthesisTaskId && (
+					<div className="mt-3 flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-xs text-primary">
+						<Loader2 className="h-3 w-3 animate-spin" />
+						Synthesizing your narrative...
+					</div>
+				)}
+			</Card>
+
+			{/* Pending narrative updates (inline editing) */}
+			{pendingUpdates.length > 0 && (
+				<NarrativeValidation
+					updates={pendingUpdates}
+					currentProfile={profile}
+					onReview={onReviewUpdate}
+				/>
+			)}
+
+			{/* Current narrative — adaptive: hidden when empty */}
+			{hasNarrative && (
+				<Card className="p-4">
+					<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+						Your Narrative
+					</h3>
+					<div className="space-y-2">
+						{profile.voice && (
+							<div>
+								{profile.voice.tone && (
+									<p className="text-sm">
+										<span className="text-muted-foreground">Voice:</span>{" "}
+										{profile.voice.tone}
+									</p>
+								)}
+								{profile.voice.vocabulary && profile.voice.vocabulary.length > 0 && (
+									<div className="flex flex-wrap gap-1 mt-1">
+										{profile.voice.vocabulary.map((w, i) => (
+											<Badge key={i} variant="secondary" className="text-[10px]">
+												{w}
+											</Badge>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+						{profile.positioning && (
+							<div>
+								{profile.positioning.niche && (
+									<p className="text-sm">
+										<span className="text-muted-foreground">Niche:</span>{" "}
+										{profile.positioning.niche}
+									</p>
+								)}
+								{profile.positioning.uniqueAngle && (
+									<p className="text-sm">
+										<span className="text-muted-foreground">Angle:</span>{" "}
+										{profile.positioning.uniqueAngle}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+				</Card>
+			)}
+
+			{/* Recent entries — collapsible, adaptive */}
+			{hasEntries && (
+				<Collapsible open={showEntries} onOpenChange={setShowEntries}>
+					<CollapsibleTrigger className="flex w-full items-center gap-1.5 rounded-md px-1 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+						<ChevronDown className={`h-3 w-3 transition-transform ${showEntries ? "rotate-0" : "-rotate-90"}`} />
+						Recent entries ({entries.length})
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<div className="mt-2 space-y-2">
+							{entries.slice(0, 5).map((entry) => (
+								<div
+									key={entry.id}
+									className="rounded-md border px-3 py-2"
+								>
+									<div className="mb-0.5 flex items-center gap-2">
+										<span className="text-xs">
+											{ENTRY_TYPES.find((t) => t.value === entry.entryType)?.emoji}
+										</span>
+										<span className="text-[10px] font-medium uppercase text-muted-foreground">
+											{entry.entryType}
+										</span>
+										<span className="text-[10px] text-muted-foreground">
+											{new Date(entry.createdAt).toLocaleDateString()}
+										</span>
+									</div>
+									<p className="text-xs leading-relaxed">{entry.content}</p>
+								</div>
+							))}
+						</div>
+					</CollapsibleContent>
+				</Collapsible>
+			)}
+		</div>
+	);
+}
+
+/* ---------- Customer Brain Panel (right) ---------- */
+function CustomerBrainPanel({ projectId }: { projectId?: string }) {
+	return (
+		<div className="space-y-4">
+			<div className="flex items-center gap-2">
+				<Network className="h-4 w-4 text-primary" />
+				<h2 className="text-sm font-semibold">Customer Brain</h2>
+			</div>
+
+			<Card className="p-4">
+				<PersonaEditor projectId={projectId} />
+			</Card>
+		</div>
+	);
+}
+
+/* ---------- The Bridge (bottom, full-width) ---------- */
+function BridgePanel({ projectId }: { projectId?: string }) {
+	return (
+		<div className="space-y-4">
+			<div className="flex items-center gap-2">
+				<Sparkles className="h-4 w-4 text-primary" />
+				<h2 className="text-sm font-semibold">The Bridge</h2>
+				<span className="text-xs text-muted-foreground">
+					— where your story meets their needs
+				</span>
+			</div>
+
+			<Card className="p-4">
+				<AngleSelector projectId={projectId} />
+			</Card>
+		</div>
+	);
+}
+
+/* ---------- Main Ritual Page ---------- */
 export function RitualPage() {
 	const { selectedProject } = useProjectsContext();
 	const projectId = selectedProject?.id;
@@ -53,7 +303,10 @@ export function RitualPage() {
 	if (loading) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+				<div className="flex items-center gap-3">
+					<Brain className="h-6 w-6 animate-pulse text-primary" />
+					<span className="text-sm text-muted-foreground">Loading your brain...</span>
+				</div>
 			</div>
 		);
 	}
@@ -62,164 +315,43 @@ export function RitualPage() {
 		<div className="min-h-screen">
 			{/* Header */}
 			<div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-				<div className="container mx-auto flex h-14 items-center justify-between px-4">
+				<div className="container mx-auto flex h-12 items-center justify-between px-4">
 					<div className="flex items-center gap-2">
-						<Brain className="h-5 w-5" />
-						<h1 className="text-lg font-semibold">Psychology Engine</h1>
-						{profile?.displayName && (
-							<span className="text-sm text-muted-foreground">
-								— {profile.displayName}
-							</span>
-						)}
+						<Brain className="h-4 w-4 text-primary" />
+						<h1 className="text-sm font-semibold">Psychology Engine</h1>
 					</div>
-					<Button asChild variant="ghost" size="sm">
-						<Link href="/dashboard">Back to Dashboard</Link>
+					<Button asChild variant="ghost" size="sm" className="h-7 text-xs">
+						<Link href="/dashboard">Dashboard</Link>
 					</Button>
 				</div>
 			</div>
 
-			<div className="container mx-auto space-y-8 px-4 py-6">
-				{/* Section 1: Creator Entry Form */}
-				<Card className="p-6">
-					<h2 className="mb-4 text-lg font-semibold">Weekly Ritual</h2>
-					<p className="mb-4 text-sm text-muted-foreground">
-						Share what&apos;s on your mind. Wins, struggles, ideas, pivots — everything feeds your narrative.
-					</p>
-
-					{/* Entry type selector */}
-					<div className="mb-4 flex flex-wrap gap-2">
-						{ENTRY_TYPES.map((t) => (
-							<button
-								key={t.value}
-								type="button"
-								onClick={() => setEntryType(t.value)}
-								className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-									entryType === t.value
-										? "border-primary bg-primary/10 text-primary"
-										: "border-border hover:bg-muted"
-								}`}
-							>
-								{t.emoji} {t.label}
-							</button>
-						))}
-					</div>
-
-					{/* Content input */}
-					<Textarea
-						value={content}
-						onChange={(e) => setContent(e.target.value)}
-						placeholder="What happened this week? What shifted? What are you thinking about?"
-						rows={4}
-						className="mb-4"
+			<div className="container mx-auto px-4 py-6">
+				{/* Side-by-side: Creator Brain (left) + Customer Brain (right) */}
+				<div className="grid gap-6 lg:grid-cols-2">
+					<CreatorBrainPanel
+						profile={profile}
+						entries={entries}
+						pendingUpdates={pendingUpdates}
+						submitting={submitting}
+						synthesisTaskId={synthesisTaskId}
+						content={content}
+						setContent={setContent}
+						entryType={entryType}
+						setEntryType={setEntryType}
+						triggerSynthesis={triggerSynthesis}
+						setTriggerSynthesis={setTriggerSynthesis}
+						onSubmit={handleSubmit}
+						onReviewUpdate={reviewUpdate}
 					/>
 
-					<div className="flex items-center justify-between">
-						<label className="flex items-center gap-2 text-sm">
-							<input
-								type="checkbox"
-								checked={triggerSynthesis}
-								onChange={(e) => setTriggerSynthesis(e.target.checked)}
-								className="rounded border"
-							/>
-							<Sparkles className="h-4 w-4" />
-							Trigger AI synthesis after save
-						</label>
+					<CustomerBrainPanel projectId={projectId} />
+				</div>
 
-						<Button
-							onClick={handleSubmit}
-							disabled={!content.trim() || submitting}
-							size="sm"
-						>
-							{submitting ? (
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							) : (
-								<Send className="mr-2 h-4 w-4" />
-							)}
-							Save Entry
-						</Button>
-					</div>
-
-					{synthesisTaskId && (
-						<div className="mt-4 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">
-							<Loader2 className="h-4 w-4 animate-spin" />
-							AI is synthesizing your narrative...
-						</div>
-					)}
-				</Card>
-
-				{/* Section 2: Narrative Validation */}
-				{pendingUpdates.length > 0 && (
-					<NarrativeValidation
-						updates={pendingUpdates}
-						currentProfile={profile}
-						onReview={reviewUpdate}
-					/>
-				)}
-
-				{/* Section 3: Current Narrative */}
-				{profile && (profile.voice || profile.positioning) && (
-					<Card className="p-6">
-						<h2 className="mb-4 text-lg font-semibold">Your Narrative</h2>
-						<div className="grid gap-4 md:grid-cols-2">
-							{profile.voice && (
-								<div>
-									<h3 className="mb-2 text-sm font-medium text-muted-foreground">Voice</h3>
-									{profile.voice.tone && (
-										<p className="text-sm"><strong>Tone:</strong> {profile.voice.tone}</p>
-									)}
-									{profile.voice.vocabulary && profile.voice.vocabulary.length > 0 && (
-										<p className="text-sm">
-											<strong>Key words:</strong> {profile.voice.vocabulary.join(", ")}
-										</p>
-									)}
-								</div>
-							)}
-							{profile.positioning && (
-								<div>
-									<h3 className="mb-2 text-sm font-medium text-muted-foreground">Positioning</h3>
-									{profile.positioning.niche && (
-										<p className="text-sm"><strong>Niche:</strong> {profile.positioning.niche}</p>
-									)}
-									{profile.positioning.uniqueAngle && (
-										<p className="text-sm"><strong>Angle:</strong> {profile.positioning.uniqueAngle}</p>
-									)}
-								</div>
-							)}
-						</div>
-					</Card>
-				)}
-
-				{/* Section 4: Recent Entries */}
-				{entries.length > 0 && (
-					<Card className="p-6">
-						<h2 className="mb-4 text-lg font-semibold">Recent Entries</h2>
-						<div className="space-y-3">
-							{entries.slice(0, 5).map((entry) => (
-								<div
-									key={entry.id}
-									className="rounded-lg border p-3"
-								>
-									<div className="mb-1 flex items-center gap-2">
-										<span className="text-xs font-medium uppercase text-muted-foreground">
-											{ENTRY_TYPES.find((t) => t.value === entry.entryType)?.emoji}{" "}
-											{entry.entryType}
-										</span>
-										<span className="text-xs text-muted-foreground">
-											{new Date(entry.createdAt).toLocaleDateString()}
-										</span>
-									</div>
-									<p className="text-sm">{entry.content}</p>
-								</div>
-							))}
-						</div>
-					</Card>
-				)}
-
-				{/* Section 5: Customer Personas */}
-				<PersonaEditor projectId={projectId} />
-
-				{/* Section 6: Content Angles (The Bridge) */}
-				<AngleSelector projectId={projectId} />
+				{/* The Bridge — full width below */}
+				<div className="mt-6">
+					<BridgePanel projectId={projectId} />
+				</div>
 			</div>
 		</div>
 	);
