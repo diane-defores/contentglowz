@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
+import { and, desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-
-const SEO_API_URL = process.env.SEO_API_URL || "http://localhost:8000";
+import { getDb } from "@/lib/db/client";
+import { robotRun } from "@/lib/db/schema";
 
 export async function GET(request: NextRequest) {
 	const { userId } = await auth();
@@ -10,23 +11,28 @@ export async function GET(request: NextRequest) {
 	}
 
 	const { searchParams } = request.nextUrl;
-	const params = new URLSearchParams();
-	if (searchParams.get("robot_name")) params.set("robot_name", searchParams.get("robot_name")!);
-	if (searchParams.get("workflow_type")) params.set("workflow_type", searchParams.get("workflow_type")!);
-	if (searchParams.get("status")) params.set("status", searchParams.get("status")!);
-	if (searchParams.get("limit")) params.set("limit", searchParams.get("limit")!);
+	const robotName = searchParams.get("robot_name");
+	const status = searchParams.get("status") as "running" | "success" | "error" | null;
+	const limit = Math.min(Number(searchParams.get("limit") ?? "50"), 200);
 
 	try {
-		const response = await fetch(`${SEO_API_URL}/runs?${params}`, {
-			signal: AbortSignal.timeout(8000),
-		});
-		if (!response.ok) {
-			return NextResponse.json({ error: `Upstream error: ${response.status}` }, { status: response.status });
-		}
-		const data = await response.json();
-		return NextResponse.json(data);
-	} catch {
-		// Graceful fallback when Python server is down
-		return NextResponse.json({ runs: [], total: 0, offline: true });
+		const db = getDb();
+
+		const where = and(
+			robotName ? eq(robotRun.robotName, robotName) : undefined,
+			status ? eq(robotRun.status, status) : undefined,
+		);
+
+		const runs = await db
+			.select()
+			.from(robotRun)
+			.where(where)
+			.orderBy(desc(robotRun.startedAt))
+			.limit(limit);
+
+		return NextResponse.json({ runs, total: runs.length });
+	} catch (error) {
+		console.error("[runs] DB error:", error);
+		return NextResponse.json({ runs: [], total: 0, error: "DB unavailable" }, { status: 500 });
 	}
 }

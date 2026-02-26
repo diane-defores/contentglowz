@@ -13,7 +13,6 @@ import {
 	Clock,
 	Loader2,
 	RefreshCw,
-	WifiOff,
 	Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -144,7 +143,7 @@ export function RunsTab() {
 	const [robotFilter, setRobotFilter] = useState("all");
 	const [statusFilter, setStatusFilter] = useState("all");
 
-	const { runs, loading, error, offline, stats, refresh } = useRobotRuns({
+	const { runs, loading, error, stats, refresh } = useRobotRuns({
 		robotName: robotFilter !== "all" ? robotFilter : undefined,
 		status: statusFilter !== "all" ? (statusFilter as RobotRun["status"]) : undefined,
 		limit: 50,
@@ -213,17 +212,9 @@ export function RunsTab() {
 			{/* List */}
 			<Card>
 				<CardHeader className="pb-2 pt-4 px-4">
-					<div className="flex items-center justify-between">
-						<CardTitle className="text-sm">
-							{runs.length} run{runs.length !== 1 ? "s" : ""}
-						</CardTitle>
-						{offline && (
-							<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-								<WifiOff className="h-3.5 w-3.5" />
-								Python server offline
-							</div>
-						)}
-					</div>
+					<CardTitle className="text-sm">
+						{runs.length} run{runs.length !== 1 ? "s" : ""}
+					</CardTitle>
 				</CardHeader>
 				<CardContent className="p-0">
 					{loading ? (
@@ -239,7 +230,7 @@ export function RunsTab() {
 						</div>
 					) : runs.length === 0 ? (
 						<div className="p-8 text-center text-sm text-muted-foreground">
-							{offline ? "Python API is not running. Start it to see run history." : "No runs recorded yet. Trigger a workflow to see data here."}
+							No runs recorded yet. Trigger a workflow to see data here.
 						</div>
 					) : (
 						<div>

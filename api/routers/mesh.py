@@ -5,7 +5,7 @@ TopicalMeshArchitect is only loaded when endpoints are called,
 not at module import time. This allows FastAPI to start quickly.
 """
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, BackgroundTasks
+from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect, BackgroundTasks
 from datetime import datetime
 import asyncio
 import time
@@ -113,14 +113,19 @@ def convert_to_response(result: dict, start_time: float) -> dict:
 )
 async def analyze_mesh(
     request: AnalyzeRequest,
+    raw_request: Request,
     architect: "TopicalMeshArchitect" = Depends(get_mesh_architect)
 ) -> Any:
     """Analyze existing website topical mesh"""
     start_time = time.time()
 
-    # Call Python agent
+    # GitHub token forwarded by the Next.js proxy from Clerk OAuth
+    github_token = raw_request.headers.get("X-GitHub-Token")
+
     result = architect.analyze_existing_website(
-        repo_url=str(request.repo_url)
+        repo_url=str(request.repo_url),
+        local_repo_path=request.local_repo_path,
+        github_token=github_token,
     )
 
     # Convert to response format

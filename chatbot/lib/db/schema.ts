@@ -1003,3 +1003,26 @@ export const contentAngle = sqliteTable("ContentAngle", {
 });
 
 export type ContentAngle = InferSelectModel<typeof contentAngle>;
+
+/**
+ * Robot run history — synced from Python SQLite via SyncService.
+ * Robots write locally; this table receives pushes every 30s.
+ * The dashboard reads here directly (no FastAPI proxy needed).
+ */
+export const robotRun = sqliteTable("RobotRun", {
+	runId: text("runId").primaryKey().notNull(),
+	robotName: text("robotName").notNull(),
+	workflowType: text("workflowType").notNull(),
+	startedAt: text("startedAt").notNull(), // ISO string (kept as text to match Python)
+	finishedAt: text("finishedAt"),
+	status: text("status", { enum: ["running", "success", "error"] })
+		.notNull()
+		.default("running"),
+	inputsJson: text("inputsJson", { mode: "json" }).$type<Record<string, unknown>>(),
+	outputsSummaryJson: text("outputsSummaryJson", { mode: "json" }).$type<Record<string, unknown>>(),
+	error: text("error"),
+	durationMs: integer("durationMs"),
+	syncedAt: integer("syncedAt", { mode: "timestamp" }),
+});
+
+export type RobotRun = InferSelectModel<typeof robotRun>;

@@ -21,7 +21,8 @@ import os
 from agents.scheduler.tools.seo_audit_tools import (
     SiteCrawler,
     PerformanceAnalyzer,
-    LinkAnalyzer
+    LinkAnalyzer,
+    SitemapMonitor,
 )
 # Import the On-Page SEO agent to analyze individual pages
 from agents.seo.on_page_technical_seo import OnPageTechnicalSEOAgent
@@ -56,6 +57,7 @@ class SiteHealthMonitorAgent:
         self.site_crawler = SiteCrawler(base_url=base_url)
         self.performance_analyzer = PerformanceAnalyzer()
         self.link_analyzer = LinkAnalyzer()
+        self.sitemap_monitor = SitemapMonitor()
 
         # Initialize On-Page SEO tools for individual page analysis
         self.schema_validator = SchemaGenerator()  # For validation
@@ -89,7 +91,10 @@ class SiteHealthMonitorAgent:
                 self.performance_analyzer.check_page_speed,
                 self.performance_analyzer.measure_core_web_vitals,
                 self.link_analyzer.analyze_internal_links,
-                self.link_analyzer.find_redirect_chains
+                self.link_analyzer.find_redirect_chains,
+                self.sitemap_monitor.check_sitemap_health,
+                self.sitemap_monitor.check_sitemap_coverage,
+                self.sitemap_monitor.check_all_sites_sitemaps,
             ],
             llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
@@ -160,6 +165,7 @@ class SiteHealthMonitorAgent:
                 }
 
             pages = crawl_result['pages']
+            issues: List[Dict[str, Any]] = []
 
             # 2. Analyze each page using On-Page SEO tools
             page_analyses = []
@@ -172,10 +178,23 @@ class SiteHealthMonitorAgent:
                 p.get('on_page_score', 0) for p in page_analyses
             ) / len(page_analyses) if page_analyses else 0
 
-            # 3. Check broken links
+            # 3. Check sitemap health
+            sitemap_check = self.sitemap_monitor.check_sitemap_health(self.base_url)
+            if sitemap_check.get("warnings"):
+                for w in sitemap_check["warnings"]:
+                    issues.append({
+                        "issue_id": f"sitemap_{audit_id}",
+                        "category": "crawlability",
+                        "severity": "high",
+                        "title": "Sitemap issue detected",
+                        "description": w,
+                        "recommendation": "Review sitemap generation and recent deploy history",
+                    })
+
+            # 5. Check broken links
             broken_links = self.site_crawler.detect_broken_links(pages)
 
-            # 4. Analyze internal linking
+            # 6. Analyze internal linking
             linking_analysis = self.link_analyzer.analyze_internal_links(pages)
 
             # 5. Check performance (sample first 5 pages)
@@ -200,8 +219,7 @@ class SiteHealthMonitorAgent:
             mobile_friendly_score = 90  # Would check actual mobile-friendliness
             accessibility_score = 85  # Would run accessibility audit
 
-            # Aggregate issues
-            issues = []
+            # Aggregate issues (issues list was started above for sitemap warnings)
             issues.extend(linking_analysis.get('issues', []))
             if broken_links.get('broken_links_count', 0) > 0:
                 issues.append({
@@ -265,7 +283,8 @@ class SiteHealthMonitorAgent:
                 "crawl_errors": crawl_result.get('crawl_errors', 0),
                 "mobile_friendly": True,
                 "https_enabled": True,
-                "sitemap_valid": True,
+                "sitemap_valid": sitemap_check.get("sitemap_valid", False),
+                "sitemap_url_count": sitemap_check.get("url_count"),
                 "robots_txt_valid": True
             }
 

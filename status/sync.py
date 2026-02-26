@@ -234,6 +234,86 @@ class SyncService:
             "errors": errors if errors else None,
         }
 
+    # ─── Push: robot_runs → Turso ─────────────────────
+
+    async def push_robot_runs(self) -> Dict[str, Any]:
+        """
+        Push unsynced robot runs from local SQLite to Turso RobotRun table.
+        Reads from data/runs/runs.db (managed by RunHistory).
+        """
+        client = await self._get_client()
+        if not client:
+            return {"success": False, "error": "Turso client not available", "synced": 0}
+
+        try:
+            import sqlite3
+            from pathlib import Path
+            runs_db = Path(__file__).parent.parent / "data" / "runs" / "runs.db"
+            if not runs_db.exists():
+                return {"success": True, "synced": 0, "message": "No runs db yet"}
+
+            conn = sqlite3.connect(str(runs_db))
+            conn.row_factory = sqlite3.Row
+
+            # Add synced_at column if not present (upgrade path)
+            try:
+                conn.execute("ALTER TABLE robot_runs ADD COLUMN synced_at TEXT")
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
+
+            rows = conn.execute(
+                "SELECT * FROM robot_runs WHERE synced_at IS NULL AND status != 'running' ORDER BY started_at LIMIT 100"
+            ).fetchall()
+
+            if not rows:
+                conn.close()
+                return {"success": True, "synced": 0}
+
+            synced = 0
+            errors = []
+            now_ms = int(__import__('datetime').datetime.utcnow().timestamp() * 1000)
+
+            for row in rows:
+                try:
+                    await client.execute(
+                        """
+                        INSERT OR REPLACE INTO RobotRun
+                        (runId, robotName, workflowType, startedAt, finishedAt,
+                         status, inputsJson, outputsSummaryJson, error, durationMs, syncedAt)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            row["run_id"],
+                            row["robot_name"],
+                            row["workflow_type"],
+                            row["started_at"],
+                            row["finished_at"],
+                            row["status"],
+                            row["inputs_json"],
+                            row["outputs_summary_json"],
+                            row["error"],
+                            row["duration_ms"],
+                            now_ms,
+                        ],
+                    )
+                    conn.execute(
+                        "UPDATE robot_runs SET synced_at = ? WHERE run_id = ?",
+                        (__import__('datetime').datetime.utcnow().isoformat(), row["run_id"]),
+                    )
+                    synced += 1
+                except Exception as e:
+                    errors.append(f"Run {row['run_id']}: {e}")
+                    logger.error(f"Failed to sync run {row['run_id']}: {e}")
+
+            conn.commit()
+            conn.close()
+            return {"success": len(errors) == 0, "synced": synced, "errors": errors or None}
+
+        except Exception as e:
+            logger.error(f"push_robot_runs failed: {e}")
+            return {"success": False, "error": str(e), "synced": 0}
+
     # ─── Background Sync Loop ─────────────────────────
 
     async def start_background_sync(self):
@@ -250,6 +330,10 @@ class SyncService:
                 push_result = await self.push()
                 if push_result.get("synced", 0) > 0:
                     logger.info(f"Sync push: {push_result['synced']} records")
+
+                runs_result = await self.push_robot_runs()
+                if runs_result.get("synced", 0) > 0:
+                    logger.info(f"Sync runs: {runs_result['synced']} robot runs")
 
                 pull_result = await self.pull()
                 if pull_result.get("pulled", 0) > 0:

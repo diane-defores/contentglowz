@@ -37,7 +37,6 @@ export function useRobotRuns(options: UseRobotRunsOptions = {}) {
 	const [runs, setRuns] = useState<RobotRun[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [offline, setOffline] = useState(false);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const fetchRuns = useCallback(async () => {
@@ -53,7 +52,6 @@ export function useRobotRuns(options: UseRobotRunsOptions = {}) {
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
 			const data = await response.json();
-			setOffline(!!data.offline);
 			setRuns(data.runs ?? []);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to fetch runs");
@@ -101,7 +99,6 @@ export function useRobotRuns(options: UseRobotRunsOptions = {}) {
 		runs,
 		loading,
 		error,
-		offline,
 		stats,
 		refresh: fetchRuns,
 	};

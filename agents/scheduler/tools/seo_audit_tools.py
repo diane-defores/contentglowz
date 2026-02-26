@@ -621,3 +621,323 @@ class CrUXAnalyzer:
 
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+
+class SitemapMonitor:
+    """
+    Monitors sitemap health across sites.
+
+    Three checks:
+    - check_sitemap_health: HTTP status, XML validity, URL count vs stored baseline
+    - check_sitemap_coverage: sitemap URLs vs content files on disk
+    - check_all_sites_sitemaps: cross-site batch run of check_sitemap_health
+    """
+
+    SHRINK_THRESHOLD = 0.10  # Alert if URL count drops more than 10%
+
+    def __init__(self, data_dir: str = "/root/my-robots/data/scheduler"):
+        self.data_dir = Path(data_dir)
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.baselines_file = self.data_dir / "sitemap_baselines.json"
+
+    # ------------------------------------------------------------------ #
+    # Baseline helpers                                                     #
+    # ------------------------------------------------------------------ #
+
+    def _load_baselines(self) -> Dict[str, Any]:
+        if self.baselines_file.exists():
+            with open(self.baselines_file) as f:
+                return json.load(f)
+        return {}
+
+    def _save_baseline(self, site_url: str, url_count: int) -> None:
+        baselines = self._load_baselines()
+        baselines[site_url] = {
+            "url_count": url_count,
+            "recorded_at": datetime.now().isoformat()
+        }
+        with open(self.baselines_file, "w") as f:
+            json.dump(baselines, f, indent=2)
+
+    # ------------------------------------------------------------------ #
+    # Sitemap fetch + parse                                                #
+    # ------------------------------------------------------------------ #
+
+    def _fetch_sitemap_urls(self, site_url: str) -> Dict[str, Any]:
+        """
+        Fetch and parse a sitemap. Tries sitemap-index.xml first (Astro default),
+        then sitemap.xml. Follows sitemap index references one level deep.
+        """
+        site_url = site_url.rstrip("/")
+        candidates = [
+            f"{site_url}/sitemap-index.xml",
+            f"{site_url}/sitemap.xml",
+        ]
+
+        for candidate in candidates:
+            try:
+                resp = requests.get(candidate, timeout=10)
+            except requests.RequestException:
+                continue
+
+            if resp.status_code != 200:
+                continue
+
+            try:
+                soup = BeautifulSoup(resp.text, "lxml-xml")
+            except Exception:
+                return {
+                    "success": False,
+                    "sitemap_url": candidate,
+                    "http_status": resp.status_code,
+                    "error": "XML parse failed — malformed XML",
+                }
+
+            # Sitemap index: collect child sitemaps and aggregate locs
+            if soup.find("sitemapindex"):
+                child_urls: List[str] = []
+                for loc_tag in soup.find_all("loc"):
+                    child_url = loc_tag.get_text(strip=True)
+                    try:
+                        child_resp = requests.get(child_url, timeout=10)
+                        child_soup = BeautifulSoup(child_resp.text, "lxml-xml")
+                        child_urls.extend(
+                            t.get_text(strip=True) for t in child_soup.find_all("loc")
+                        )
+                    except Exception:
+                        pass
+                return {
+                    "success": True,
+                    "sitemap_url": candidate,
+                    "is_index": True,
+                    "http_status": 200,
+                    "urls": child_urls,
+                    "url_count": len(child_urls),
+                }
+
+            # Regular sitemap
+            urls = [t.get_text(strip=True) for t in soup.find_all("loc")]
+            return {
+                "success": True,
+                "sitemap_url": candidate,
+                "is_index": False,
+                "http_status": 200,
+                "urls": urls,
+                "url_count": len(urls),
+            }
+
+        # Nothing responded with 200 — report last known status
+        last_status = None
+        for candidate in candidates:
+            try:
+                r = requests.get(candidate, timeout=10)
+                last_status = r.status_code
+            except Exception:
+                pass
+
+        return {
+            "success": False,
+            "error": "Sitemap not found (tried sitemap-index.xml and sitemap.xml)",
+            "http_status": last_status,
+            "sitemap_url": candidates[0],
+        }
+
+    # ------------------------------------------------------------------ #
+    # Tools                                                                #
+    # ------------------------------------------------------------------ #
+
+    @tool("Check Sitemap Health")
+    def check_sitemap_health(self, site_url: str) -> Dict[str, Any]:
+        """
+        Check sitemap health for a single site.
+
+        Verifies the sitemap is reachable (no 404), parses as valid XML,
+        counts URLs, and compares against the stored baseline to detect
+        unexpected shrinkage (>10% drop triggers a warning).
+
+        Updates the stored baseline after each successful check.
+
+        Args:
+            site_url: Root URL of the site, e.g. "https://gocharbon.com"
+
+        Returns:
+            Dict with url_count, baseline_count, change_pct, warnings, sitemap_valid
+        """
+        try:
+            result = self._fetch_sitemap_urls(site_url)
+            warnings: List[str] = []
+
+            if not result["success"]:
+                return {
+                    "success": True,
+                    "site_url": site_url,
+                    "sitemap_valid": False,
+                    "url_count": 0,
+                    "warnings": [result["error"]],
+                    "http_status": result.get("http_status"),
+                    "ok": False,
+                }
+
+            url_count = result["url_count"]
+            baselines = self._load_baselines()
+            baseline = baselines.get(site_url)
+            baseline_count = baseline["url_count"] if baseline else None
+            change_pct = None
+
+            if baseline_count is not None and baseline_count > 0:
+                change_pct = (url_count - baseline_count) / baseline_count
+                if change_pct < -self.SHRINK_THRESHOLD:
+                    warnings.append(
+                        f"Sitemap shrank by {abs(change_pct):.0%} "
+                        f"({baseline_count} → {url_count} URLs). "
+                        "Possible regression — check recent deploys."
+                    )
+
+            self._save_baseline(site_url, url_count)
+
+            return {
+                "success": True,
+                "site_url": site_url,
+                "sitemap_url": result["sitemap_url"],
+                "sitemap_valid": True,
+                "is_index": result.get("is_index", False),
+                "url_count": url_count,
+                "baseline_count": baseline_count,
+                "change_pct": round(change_pct * 100, 1) if change_pct is not None else None,
+                "warnings": warnings,
+                "ok": len(warnings) == 0,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    @tool("Check Sitemap Coverage")
+    def check_sitemap_coverage(
+        self,
+        site_url: str,
+        content_dir: str,
+        content_extensions: Optional[List[str]] = None,
+        exclude_patterns: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Compare sitemap URL count against content files on disk.
+
+        Detects the "290 posts but only 180 in sitemap" problem.
+        Works locally before deploy — no HTTP crawl needed for the file count.
+
+        Args:
+            site_url: Root URL of the site, e.g. "https://gocharbon.com"
+            content_dir: Path to content directory, e.g. "/home/claude/GoCharbon/src/content"
+            content_extensions: File extensions to count (default: .md, .mdx, .astro)
+            exclude_patterns: Substrings in path to exclude (default: _components, layouts, index)
+
+        Returns:
+            Dict with content_files, sitemap_urls, coverage_pct, warnings
+        """
+        try:
+            extensions = set(content_extensions or [".md", ".mdx", ".astro"])
+            excludes = exclude_patterns or ["_components", "layouts", "index.", "_app"]
+            warnings: List[str] = []
+
+            content_root = Path(content_dir)
+            if not content_root.exists():
+                return {
+                    "success": False,
+                    "error": f"content_dir not found: {content_dir}",
+                }
+
+            content_files = [
+                p for p in content_root.rglob("*")
+                if p.suffix in extensions
+                and not any(ex in str(p) for ex in excludes)
+            ]
+            file_count = len(content_files)
+
+            sitemap_result = self._fetch_sitemap_urls(site_url)
+            if not sitemap_result["success"]:
+                return {
+                    "success": True,
+                    "site_url": site_url,
+                    "content_files": file_count,
+                    "sitemap_urls": 0,
+                    "coverage_pct": 0.0,
+                    "warnings": [f"Could not fetch sitemap: {sitemap_result['error']}"],
+                    "ok": False,
+                }
+
+            sitemap_count = sitemap_result["url_count"]
+            coverage_pct = (sitemap_count / file_count * 100) if file_count > 0 else 0.0
+
+            if coverage_pct < 80:
+                missing_estimate = file_count - sitemap_count
+                warnings.append(
+                    f"Only {coverage_pct:.0f}% of content files appear in sitemap "
+                    f"({sitemap_count}/{file_count}). "
+                    f"~{missing_estimate} pages may be missing — check filter rules in astro.config."
+                )
+            elif coverage_pct > 110:
+                warnings.append(
+                    f"Sitemap has more URLs ({sitemap_count}) than content files ({file_count}). "
+                    "May include generated/pagination URLs — verify no duplicates."
+                )
+
+            return {
+                "success": True,
+                "site_url": site_url,
+                "content_dir": content_dir,
+                "content_files": file_count,
+                "sitemap_urls": sitemap_count,
+                "coverage_pct": round(coverage_pct, 1),
+                "warnings": warnings,
+                "ok": len(warnings) == 0,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    @tool("Check All Sites Sitemaps")
+    def check_all_sites_sitemaps(self, sites: List[Dict[str, str]]) -> Dict[str, Any]:
+        """
+        Run check_sitemap_health across multiple sites and return a consolidated report.
+
+        Args:
+            sites: List of dicts with 'name' and 'url' keys, e.g.:
+                   [{"name": "GoCharbon", "url": "https://gocharbon.com"},
+                    {"name": "NoteFlowz", "url": "https://notefinderdeluxe.com"}]
+
+        Returns:
+            Per-site results plus summary of healthy vs warnings vs failed
+        """
+        try:
+            results = []
+            for site in sites:
+                name = site.get("name", site.get("url", "unknown"))
+                url = site.get("url", "")
+                if not url:
+                    results.append({"name": name, "success": False, "error": "No URL provided"})
+                    continue
+                check = self.check_sitemap_health(url)
+                results.append({"name": name, **check})
+
+            healthy = sum(1 for r in results if r.get("ok"))
+            with_warnings = sum(1 for r in results if r.get("warnings"))
+            failed = sum(1 for r in results if not r.get("sitemap_valid"))
+
+            all_warnings = [
+                f"[{r['name']}] {w}"
+                for r in results
+                for w in r.get("warnings", [])
+            ]
+
+            return {
+                "success": True,
+                "total_sites": len(sites),
+                "healthy": healthy,
+                "with_warnings": with_warnings,
+                "failed": failed,
+                "all_warnings": all_warnings,
+                "sites": results,
+            }
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}

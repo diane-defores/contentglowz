@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useProjectsContext } from "@/contexts/projects-context";
 
 export interface RobotAgent {
 	name: string;
@@ -116,6 +117,7 @@ export function useRobots() {
 	const [loading, setLoading] = useState(false);
 	const [runningRobot, setRunningRobot] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const { selectedProject } = useProjectsContext();
 
 	const fetchRobotStatus = useCallback(async () => {
 		setLoading(true);
@@ -174,20 +176,27 @@ export function useRobots() {
 			);
 
 			try {
-				// Simulate robot execution (replace with actual API call)
 				let endpoint = "";
+				let body: Record<string, unknown> = { action };
+
 				switch (robotId) {
-					case "seo":
+					case "seo": {
+						const repoUrl = selectedProject?.url;
+						if (!repoUrl) {
+							throw new Error("No project selected. Please select a project first.");
+						}
 						endpoint = "/api/seo/api/mesh/analyze";
+						body = { repo_url: repoUrl };
 						break;
+					}
 					case "images":
-						endpoint = "/api/seo/api/images/optimizer/status";
+						endpoint = "/api/seo/api/images/generate";
 						break;
 					case "scheduler":
 						endpoint = "/api/seo/api/scheduler/run";
 						break;
 					default:
-						// Simulate for robots without endpoints yet
+						// Robots without a dedicated endpoint yet
 						await new Promise((resolve) => setTimeout(resolve, 2000));
 						break;
 				}
@@ -196,11 +205,23 @@ export function useRobots() {
 					const response = await fetch(endpoint, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ action }),
+						body: JSON.stringify(body),
 					});
 
 					if (!response.ok) {
-						throw new Error(`Robot ${robotId} failed to ${action}`);
+						if (response.status === 503) {
+							throw new Error(
+								"Python API is not running. Start it with: cd my-robots && uvicorn api.main:app --port 8000"
+							);
+						}
+						if (response.status === 422) {
+							const detail = await response.json().catch(() => ({}));
+							throw new Error(
+								`Robot configuration error: ${JSON.stringify(detail?.detail ?? detail)}`
+							);
+						}
+						const errText = await response.text().catch(() => response.statusText);
+						throw new Error(`Robot ${robotId} failed: ${errText}`);
 					}
 				}
 

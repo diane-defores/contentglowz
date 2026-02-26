@@ -41,21 +41,29 @@ class ExistingMeshAnalyzer:
     def analyze_existing_website(
         self,
         repo_url: str,
-        force_update: bool = True
+        local_repo_path: Optional[str] = None,
+        github_token: Optional[str] = None,
+        force_update: bool = True,
     ) -> Dict[str, Any]:
         """
         Complete analysis of existing website as topical mesh.
-        
+
         Args:
             repo_url: GitHub repository URL
-            force_update: Pull latest changes (default: True)
-            
+            local_repo_path: Optional explicit local path (skips git clone)
+            force_update: Pull latest changes when repo already on disk (default: True)
+
         Returns:
             Complete mesh analysis with current state and recommendations
         """
-        # Step 1: Clone/update repo
+        # Step 1: Resolve repo — cached workspace first, clone only on first run
         print(f"\n📥 Analyzing existing website: {repo_url}")
-        repo_path = self.repo_analyzer.clone_or_update_repo(repo_url, force_update)
+        repo_path = self.repo_analyzer.clone_or_update_repo(
+            repo_url,
+            local_repo_path=local_repo_path,
+            github_token=github_token,
+            force_update=force_update,
+        )
         
         # Step 2: Extract site structure
         print("🔍 Extracting site structure...")

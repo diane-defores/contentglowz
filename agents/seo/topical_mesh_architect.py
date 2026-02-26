@@ -143,22 +143,25 @@ class TopicalMeshArchitect:
     def analyze_existing_website(
         self,
         repo_url: str,
-        force_update: bool = True
+        local_repo_path: Optional[str] = None,
+        github_token: Optional[str] = None,
+        force_update: bool = True,
     ) -> Dict[str, Any]:
         """
         Analyze existing website's topical mesh structure.
-        
-        Uses GitHubRepoAnalyzer to clone and analyze the site, then
-        converts it to a mesh structure with authority scoring.
-        
+
         Args:
             repo_url: GitHub repository URL
-            force_update: Pull latest changes (default: True)
-            
-        Returns:
-            Complete analysis with current state and recommendations
+            local_repo_path: Explicit local path — skips git entirely (self-hosted)
+            github_token: User's GitHub OAuth token from Clerk, for private repo cloning
+            force_update: git pull when repo already cached on disk
         """
-        return self.existing_analyzer.analyze_existing_website(repo_url, force_update)
+        return self.existing_analyzer.analyze_existing_website(
+            repo_url,
+            local_repo_path=local_repo_path,
+            github_token=github_token,
+            force_update=force_update,
+        )
     
     def improve_existing_mesh(
         self,

@@ -54,78 +54,94 @@ class GitHubRepoAnalyzer:
     def clone_or_update_repo(
         self,
         repo_url: str,
-        force_update: bool = True
+        local_repo_path: Optional[str] = None,
+        github_token: Optional[str] = None,
+        force_update: bool = True,
     ) -> Path:
         """
-        Clone repository or update if already exists.
-        
+        Resolve a repository to a local path.
+
+        Priority:
+        1. Explicit local_repo_path from ProjectSettings (skip all network ops)
+        2. workspace/{repo_name} if already cloned on this server
+        3. git clone via HTTPS + GitHub token (required for private repos)
+
         Args:
-            repo_url: GitHub repository URL (https or git)
-            force_update: Always fetch latest changes (default: True)
-            
-        Returns:
-            Path to cloned repository
+            repo_url: GitHub repository URL (https)
+            local_repo_path: Explicit absolute path already on disk
+            github_token: OAuth token forwarded from Clerk via the proxy
+            force_update: git pull when repo already on disk (default: True)
         """
-        # Extract repo name from URL
-        repo_name = repo_url.rstrip('/').split('/')[-1]
-        if repo_name.endswith('.git'):
-            repo_name = repo_name[:-4]
-        
-        repo_path = self.workspace / repo_name
-        
-        # Clone if doesn't exist
-        if not repo_path.exists():
-            print(f"📥 Cloning {repo_name}...")
+        repo_name = repo_url.rstrip("/").split("/")[-1].removesuffix(".git")
+
+        # ── 1. Explicit path from ProjectSettings ─────────────────────────
+        if local_repo_path:
+            explicit = Path(local_repo_path)
+            if explicit.exists() and (explicit / ".git").exists():
+                print(f"📂 Using configured local path: {explicit}")
+                repo_path = explicit
+            else:
+                print(f"⚠️  local_repo_path '{local_repo_path}' not found, falling back to workspace")
+                repo_path = None
+        else:
+            repo_path = None
+
+        # ── 2. Already cloned in workspace ────────────────────────────────
+        if repo_path is None:
+            candidate = self.workspace / repo_name
+            if candidate.exists() and (candidate / ".git").exists():
+                print(f"📂 Found cached repo at: {candidate}")
+                repo_path = candidate
+
+        # ── 3. Clone (first time only) ────────────────────────────────────
+        if repo_path is None:
+            repo_path = self.workspace / repo_name
+            print(f"📥 Cloning {repo_name} for the first time...")
+
+            clone_url = repo_url
+            if github_token and clone_url.startswith("https://github.com/"):
+                clone_url = clone_url.replace(
+                    "https://github.com/",
+                    f"https://{github_token}@github.com/",
+                )
+            elif not github_token:
+                print("⚠️  No GitHub token available — clone may fail for private repos")
+
             try:
                 subprocess.run(
-                    ["git", "clone", repo_url, str(repo_path)],
+                    ["git", "clone", clone_url, str(repo_path)],
                     check=True,
                     capture_output=True,
-                    text=True
+                    text=True,
                 )
                 print(f"✅ Cloned to: {repo_path}")
             except subprocess.CalledProcessError as e:
-                print(f"❌ Clone failed: {e.stderr}")
-                raise
-        
-        # Update if force_update
-        elif force_update:
-            print(f"🔄 Updating {repo_name}...")
+                raise RuntimeError(
+                    f"git clone failed for {repo_name}. "
+                    f"{'No GitHub token was provided.' if not github_token else ''} "
+                    f"stderr: {e.stderr.strip()}"
+                ) from e
+            return repo_path
+
+        # ── Pull latest if requested ───────────────────────────────────────
+        if force_update:
+            print(f"🔄 Pulling latest for {repo_name}...")
             try:
-                os.chdir(repo_path)
-                
-                # Fetch latest changes
-                subprocess.run(
-                    ["git", "fetch", "origin"],
-                    check=True,
-                    capture_output=True,
-                    text=True
-                )
-                
-                # Get current branch
                 branch_result = subprocess.run(
-                    ["git", "branch", "--show-current"],
-                    check=True,
-                    capture_output=True,
-                    text=True
+                    ["git", "-C", str(repo_path), "branch", "--show-current"],
+                    capture_output=True, text=True,
                 )
-                branch = branch_result.stdout.strip() or "master"
-                
-                # Pull latest
+                branch = branch_result.stdout.strip() or "main"
                 subprocess.run(
-                    ["git", "pull", "origin", branch],
-                    check=True,
-                    capture_output=True,
-                    text=True
+                    ["git", "-C", str(repo_path), "pull", "origin", branch],
+                    check=True, capture_output=True, text=True,
                 )
-                
-                print(f"✅ Updated to latest ({branch})")
+                print(f"✅ Up to date ({branch})")
             except subprocess.CalledProcessError as e:
-                print(f"⚠️ Update failed: {e.stderr}")
-                print(f"   Continuing with existing version...")
+                print(f"⚠️  Pull failed (using cached version): {e.stderr.strip()}")
         else:
-            print(f"📂 Using existing repo: {repo_path}")
-        
+            print(f"📂 Using cached repo: {repo_path}")
+
         return repo_path
     
     def analyze_site_structure(self, repo_path: Path) -> Dict[str, Any]:

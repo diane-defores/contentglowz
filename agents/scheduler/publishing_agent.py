@@ -70,7 +70,6 @@ class PublishingAgent:
             tools=[
                 self.git_deployer.deploy_to_production,
                 self.git_deployer.rollback_deployment,
-                self.git_deployer.update_sitemap,
                 self.google_integration.submit_to_google_search_console,
                 self.google_integration.trigger_google_indexing,
                 self.google_integration.check_indexing_status,
@@ -122,10 +121,7 @@ class PublishingAgent:
                     "rollback_available": deploy_result.get('rollback_available', False)
                 }
 
-            # 2. Update sitemap
-            sitemap_result = self.git_deployer.update_sitemap(urls)
-
-            # 3. Monitor deployment
+            # 2. Monitor deployment
             monitor_result = self.deployment_monitor.monitor_deployment(
                 deployment_id=deployment_id,
                 urls=urls
@@ -158,8 +154,7 @@ class PublishingAgent:
                 "urls": urls,
                 "deployment_time_seconds": deploy_result.get('deployment_time_seconds'),
                 "monitoring": monitor_result,
-                "indexing": indexing_result,
-                "sitemap_updated": sitemap_result.get('success', False)
+                "indexing": indexing_result
             }
 
         except Exception as e:

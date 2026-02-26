@@ -75,6 +75,7 @@ class TechStackAnalyzerAgent:
             ),
             tools=[
                 self.dependency_analyzer.analyze_dependencies,
+                self.dependency_analyzer.check_sitemap_plugin,
                 self.vulnerability_scanner.scan_vulnerabilities,
                 self.build_analyzer.analyze_build,
                 self.cost_tracker.track_costs,

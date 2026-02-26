@@ -47,19 +47,21 @@ async def health_check():
         ("content_strategist", "agents.seo.content_strategist"),
         ("internal_linking", "agents.seo.internal_linking_specialist"),
     ]
-    
+
+    import os
     for name, module_path in agents_to_check:
+        module_file = module_path.replace('.', '/') + '.py'
+        if not os.path.exists(module_file):
+            agents_status[name] = "not_found"
+            continue
         try:
-            # Just check if module file exists, don't actually import the agent
-            # This avoids loading heavy dependencies
-            import os
-            module_file = module_path.replace('.', '/') + '.py'
-            if os.path.exists(module_file):
-                agents_status[name] = "available"
-            else:
-                agents_status[name] = "not_found"
+            import importlib
+            importlib.import_module(module_path)
+            agents_status[name] = "available"
+        except ImportError as e:
+            agents_status[name] = f"import_error: {str(e)[:120]}"
         except Exception as e:
-            agents_status[name] = f"error: {str(e)[:100]}"
+            agents_status[name] = f"error: {str(e)[:120]}"
     
     # Overall status
     all_available = all(

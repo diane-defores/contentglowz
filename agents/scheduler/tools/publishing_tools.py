@@ -190,59 +190,6 @@ class GitDeployer:
                 "error": str(e)
             }
 
-    @tool("Update Sitemap")
-    def update_sitemap(self, new_urls: List[str]) -> Dict[str, Any]:
-        """
-        Update sitemap.xml with new URLs.
-
-        Args:
-            new_urls: List of new URLs to add to sitemap
-
-        Returns:
-            Update result
-        """
-        try:
-            sitemap_path = self.repo_path / "public" / "sitemap.xml"
-
-            if not sitemap_path.exists():
-                # Create new sitemap
-                sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
-                sitemap_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-            else:
-                with open(sitemap_path, 'r') as f:
-                    sitemap_content = f.read()
-
-            # Add new URLs
-            for url in new_urls:
-                url_entry = f"""  <url>
-    <loc>{url}</loc>
-    <lastmod>{datetime.now().strftime('%Y-%m-%d')}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>\n"""
-
-                # Insert before closing tag
-                sitemap_content = sitemap_content.replace(
-                    '</urlset>',
-                    url_entry + '</urlset>'
-                )
-
-            # Write back
-            with open(sitemap_path, 'w') as f:
-                f.write(sitemap_content)
-
-            return {
-                "success": True,
-                "urls_added": len(new_urls),
-                "sitemap_path": str(sitemap_path)
-            }
-
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
-
 
 class GoogleIntegration:
     """Integrates with Google Search Console and Indexing API"""

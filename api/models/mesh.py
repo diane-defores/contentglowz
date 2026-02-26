@@ -15,6 +15,10 @@ class AnalyzeRequest(BaseModel):
         description="GitHub repository URL (e.g., https://github.com/user/repo)",
         examples=["https://github.com/example/marketing-site"]
     )
+    local_repo_path: Optional[str] = Field(
+        default=None,
+        description="Absolute local path to an already-cloned repo. Skips git clone entirely."
+    )
     include_visualization: bool = Field(
         default=True,
         description="Generate mesh visualization (PNG/Mermaid/JSON)"

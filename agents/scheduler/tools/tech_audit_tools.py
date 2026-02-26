@@ -171,6 +171,118 @@ class DependencyAnalyzer:
                 "error": str(e)
             }
 
+    @tool("Check Sitemap Plugin")
+    def check_sitemap_plugin(self, project_path: str) -> Dict[str, Any]:
+        """
+        Verify that a project has a proper sitemap integration configured.
+
+        Checks both package.json (installed) and the framework config file (active).
+        Supports Astro (@astrojs/sitemap) and Next.js (next-sitemap or built-in sitemap.ts).
+
+        Args:
+            project_path: Absolute path to the project root
+
+        Returns:
+            Dict with framework, installed, configured, warnings fields
+        """
+        try:
+            root = Path(project_path)
+            warnings = []
+
+            # Detect framework
+            package_json_path = root / "package.json"
+            if not package_json_path.exists():
+                return {
+                    "success": False,
+                    "error": f"No package.json found at {project_path}"
+                }
+
+            with open(package_json_path) as f:
+                pkg = json.load(f)
+
+            all_deps = {
+                **pkg.get("dependencies", {}),
+                **pkg.get("devDependencies", {})
+            }
+
+            is_astro = "astro" in all_deps
+            is_nextjs = "next" in all_deps
+            framework = "astro" if is_astro else ("nextjs" if is_nextjs else "unknown")
+
+            if framework == "unknown":
+                return {
+                    "success": True,
+                    "framework": "unknown",
+                    "installed": False,
+                    "configured": False,
+                    "warnings": ["Could not detect Astro or Next.js in package.json"]
+                }
+
+            # Astro check
+            if is_astro:
+                plugin = "@astrojs/sitemap"
+                installed = plugin in all_deps
+
+                # Check config file for active usage
+                config_files = list(root.glob("astro.config.*"))
+                configured = False
+                if config_files:
+                    config_text = config_files[0].read_text()
+                    configured = "sitemap" in config_text and "sitemap()" in config_text
+
+                if not installed:
+                    warnings.append(f"'{plugin}' not found in package.json — run: pnpm add {plugin}")
+                if not configured:
+                    warnings.append("sitemap() not found in astro.config.* integrations — add it and set site: 'https://...'")
+
+                return {
+                    "success": True,
+                    "framework": "astro",
+                    "plugin": plugin,
+                    "installed": installed,
+                    "configured": configured,
+                    "config_file": str(config_files[0]) if config_files else None,
+                    "warnings": warnings,
+                    "ok": installed and configured
+                }
+
+            # Next.js check
+            if is_nextjs:
+                # Option 1: built-in App Router sitemap (app/sitemap.ts or app/sitemap.js)
+                builtin_sitemap = any(
+                    (root / "app" / f"sitemap.{ext}").exists()
+                    for ext in ("ts", "tsx", "js", "jsx")
+                )
+                # Option 2: next-sitemap package
+                plugin = "next-sitemap"
+                next_sitemap_installed = plugin in all_deps
+                next_sitemap_configured = (root / "next-sitemap.config.js").exists() or (root / "next-sitemap.config.ts").exists()
+
+                installed = builtin_sitemap or next_sitemap_installed
+                configured = builtin_sitemap or next_sitemap_configured
+
+                if not installed:
+                    warnings.append("No sitemap found — add app/sitemap.ts (App Router) or install next-sitemap")
+                elif next_sitemap_installed and not next_sitemap_configured:
+                    warnings.append("next-sitemap installed but next-sitemap.config.js not found")
+
+                return {
+                    "success": True,
+                    "framework": "nextjs",
+                    "builtin_sitemap": builtin_sitemap,
+                    "plugin": plugin if next_sitemap_installed else None,
+                    "installed": installed,
+                    "configured": configured,
+                    "warnings": warnings,
+                    "ok": installed and configured
+                }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
 
 class VulnerabilityScanner:
     """Scans for security vulnerabilities"""

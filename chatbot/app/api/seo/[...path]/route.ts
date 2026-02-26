@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
+import { getGitHubToken } from "@/lib/github";
 
 /**
  * Resolve the Python API URL dynamically:
@@ -25,18 +27,33 @@ function getApiUrl(): string {
 
 const API_URL = getApiUrl();
 
+/** Build headers forwarded to the Python API, including GitHub token if available. */
+async function buildProxyHeaders(userId: string | null): Promise<HeadersInit> {
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+	};
+
+	if (userId) {
+		const githubToken = await getGitHubToken(userId);
+		if (githubToken) {
+			headers["X-GitHub-Token"] = githubToken;
+		}
+	}
+
+	return headers;
+}
+
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: Promise<{ path: string[] }> },
 ) {
 	const { path } = await params;
 	const url = `${API_URL}/${path.join("/")}`;
+	const { userId } = await auth();
 
 	try {
 		const response = await fetch(url, {
-			headers: {
-				"Content-Type": "application/json",
-			},
+			headers: await buildProxyHeaders(userId),
 			cache: "no-store",
 		});
 
@@ -53,9 +70,7 @@ export async function GET(
 	} catch (error) {
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
-			{
-				error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents`,
-			},
+			{ error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents` },
 			{ status: 503 },
 		);
 	}
@@ -67,15 +82,14 @@ export async function POST(
 ) {
 	const { path } = await params;
 	const url = `${API_URL}/${path.join("/")}`;
+	const { userId } = await auth();
 
 	try {
 		const body = await request.json();
 
 		const response = await fetch(url, {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
+			headers: await buildProxyHeaders(userId),
 			body: JSON.stringify(body),
 			cache: "no-store",
 		});
@@ -93,9 +107,7 @@ export async function POST(
 	} catch (error) {
 		console.error("SEO API proxy error:", error);
 		return NextResponse.json(
-			{
-				error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents`,
-			},
+			{ error: `Failed to connect to SEO API at ${API_URL}. Start robots with: python -m agents` },
 			{ status: 503 },
 		);
 	}

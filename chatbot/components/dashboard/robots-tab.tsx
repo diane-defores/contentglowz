@@ -3,14 +3,16 @@
 import {
 	AlertCircle,
 	Bot,
+	Check,
 	ChevronDown,
 	ChevronRight,
+	Copy,
 	Loader2,
 	Pause,
 	Play,
 	RefreshCw,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,6 +55,34 @@ function getStatusDot(status: string) {
 		default:
 			return "bg-gray-400";
 	}
+}
+
+function ErrorBanner({ error, onDismiss }: { error: string; onDismiss: () => void }) {
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = useCallback(() => {
+		navigator.clipboard.writeText(error).then(() => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		});
+	}, [error]);
+
+	return (
+		<div className="rounded-lg border border-red-200 bg-red-50 p-4">
+			<div className="flex items-start gap-3">
+				<AlertCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+				<p className="flex-1 text-sm text-red-600 break-all font-mono">{error}</p>
+				<div className="flex items-center gap-1 shrink-0">
+					<Button onClick={handleCopy} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100">
+						{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+					</Button>
+					<Button onClick={onDismiss} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-100">
+						Dismiss
+					</Button>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 interface RobotCardProps {
@@ -208,19 +238,7 @@ export function RobotsTab() {
 	return (
 		<div className="space-y-6">
 			{/* Error Banner */}
-			{error && (
-				<div className="rounded-lg border border-red-200 bg-red-50 p-4">
-					<div className="flex items-center gap-3">
-						<AlertCircle className="h-5 w-5 text-red-500" />
-						<div className="flex-1">
-							<p className="text-sm text-red-600">{error}</p>
-						</div>
-						<Button onClick={clearError} variant="ghost" size="sm">
-							Dismiss
-						</Button>
-					</div>
-				</div>
-			)}
+			{error && <ErrorBanner error={error} onDismiss={clearError} />}
 
 			{/* Header */}
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
