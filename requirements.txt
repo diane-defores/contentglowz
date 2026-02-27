@@ -55,3 +55,7 @@ composio-crewai>=0.2.0
 
 # Google Analytics (Psychology Engine)
 google-analytics-data>=0.18.0
+
+# Google Indexing API + Search Console (publishing pipeline)
+google-api-python-client>=2.100.0
+google-auth>=2.23.0

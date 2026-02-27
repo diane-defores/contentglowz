@@ -192,52 +192,132 @@ class GitDeployer:
 
 
 class GoogleIntegration:
-    """Integrates with Google Search Console and Indexing API"""
+    """Integrates with Google Search Console and Indexing API.
+
+    Auth: Service account JSON credentials file.
+    Setup:
+      1. Google Cloud Console → Create service account → Download JSON key
+      2. Google Search Console → Add service account email as owner
+      3. Set GOOGLE_CREDENTIALS_FILE=/path/to/service_account.json
+      4. Set GOOGLE_SITE_URL=https://your-site.com (or sc-domain:your-site.com)
+    """
+
+    INDEXING_SCOPES = ["https://www.googleapis.com/auth/indexing"]
+    SEARCH_CONSOLE_SCOPES = ["https://www.googleapis.com/auth/webmasters"]
+    INDEXING_DAILY_LIMIT = 200
 
     def __init__(self):
-        self.search_console_key = os.getenv("GOOGLE_SEARCH_CONSOLE_CREDENTIALS")
-        self.indexing_api_key = os.getenv("GOOGLE_INDEXING_API_KEY")
+        self.credentials_file = (
+            os.getenv("GOOGLE_CREDENTIALS_FILE")
+            or os.getenv("GOOGLE_SEARCH_CONSOLE_CREDENTIALS")  # backward compat
+        )
+        self.site_url = os.getenv("GOOGLE_SITE_URL", "")
+        self._indexing_service = None
+        self._search_console_service = None
 
-    @tool("Submit URL to Google Search Console")
+    def _get_credentials(self, scopes: List[str]):
+        try:
+            from google.oauth2 import service_account
+        except ImportError:
+            raise RuntimeError(
+                "google-auth not installed. Run: pip install google-auth google-api-python-client"
+            )
+
+        if not self.credentials_file:
+            raise ValueError(
+                "GOOGLE_CREDENTIALS_FILE not set. "
+                "Download service account JSON from Google Cloud Console."
+            )
+
+        creds_path = Path(self.credentials_file)
+        if not creds_path.exists():
+            raise FileNotFoundError(
+                f"Service account credentials not found: {self.credentials_file}"
+            )
+
+        return service_account.Credentials.from_service_account_file(
+            str(creds_path), scopes=scopes
+        )
+
+    def _get_indexing_service(self):
+        if self._indexing_service is None:
+            try:
+                from googleapiclient.discovery import build
+            except ImportError:
+                raise RuntimeError(
+                    "google-api-python-client not installed. Run: pip install google-api-python-client"
+                )
+            creds = self._get_credentials(self.INDEXING_SCOPES)
+            self._indexing_service = build("indexing", "v3", credentials=creds, cache_discovery=False)
+        return self._indexing_service
+
+    def _get_search_console_service(self):
+        if self._search_console_service is None:
+            try:
+                from googleapiclient.discovery import build
+            except ImportError:
+                raise RuntimeError(
+                    "google-api-python-client not installed. Run: pip install google-api-python-client"
+                )
+            creds = self._get_credentials(self.SEARCH_CONSOLE_SCOPES)
+            self._search_console_service = build("searchconsole", "v1", credentials=creds, cache_discovery=False)
+        return self._search_console_service
+
+    @tool("Submit Sitemap to Google Search Console")
     def submit_to_google_search_console(self, urls: List[str]) -> Dict[str, Any]:
         """
-        Submit URLs to Google Search Console for indexing.
+        Submit sitemaps to Google Search Console.
 
         Args:
-            urls: List of URLs to submit
+            urls: List of sitemap URLs to submit (e.g. ["https://site.com/sitemap.xml"])
 
         Returns:
-            Submission results for each URL
+            Submission results for each sitemap URL
         """
         try:
-            if not self.search_console_key:
+            if not self.site_url:
                 return {
                     "success": False,
-                    "error": "Google Search Console credentials not configured"
+                    "error": "GOOGLE_SITE_URL not set (e.g. https://your-site.com)"
                 }
 
-            # Note: This is a simplified implementation
-            # In production, you'd use the actual Google Search Console API
+            service = self._get_search_console_service()
             results = []
-            for url in urls:
-                results.append({
-                    "url": url,
-                    "status": "submitted",
-                    "submitted_at": datetime.now().isoformat()
-                })
+            errors = []
+
+            for sitemap_url in urls:
+                try:
+                    service.sitemaps().submit(
+                        siteUrl=self.site_url,
+                        feedpath=sitemap_url
+                    ).execute()
+                    results.append({
+                        "url": sitemap_url,
+                        "status": "submitted",
+                        "submitted_at": datetime.now().isoformat()
+                    })
+                except Exception as e:
+                    error_msg = str(e)
+                    results.append({
+                        "url": sitemap_url,
+                        "status": "error",
+                        "error": error_msg
+                    })
+                    errors.append(f"{sitemap_url}: {error_msg}")
 
             return {
-                "success": True,
-                "urls_submitted": len(urls),
+                "success": len(errors) == 0,
+                "site_url": self.site_url,
+                "urls_submitted": len(urls) - len(errors),
+                "errors": errors,
                 "results": results,
-                "message": "URLs submitted to Google Search Console"
+                "message": f"Submitted {len(urls) - len(errors)}/{len(urls)} sitemaps to Google Search Console"
             }
 
+        except (RuntimeError, ValueError, FileNotFoundError) as e:
+            return {"success": False, "error": str(e)}
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     @tool("Trigger Google Indexing API")
     def trigger_google_indexing(
@@ -246,82 +326,141 @@ class GoogleIntegration:
         action: str = "URL_UPDATED"
     ) -> Dict[str, Any]:
         """
-        Trigger Google Indexing API for instant indexing.
+        Notify Google Indexing API of new or updated URLs for fast crawling.
+        Rate limit: 200 URLs/day. Best for job postings, live events, and fresh content.
 
         Args:
-            urls: List of URLs to index
-            action: Action type (URL_UPDATED or URL_DELETED)
+            urls: List of URLs to notify (max 200/day)
+            action: URL_UPDATED (publish/update) or URL_DELETED (remove from index)
 
         Returns:
-            Indexing API results
+            Indexing API results per URL
         """
-        try:
-            if not self.indexing_api_key:
-                return {
-                    "success": False,
-                    "error": "Google Indexing API key not configured"
-                }
-
-            # Note: This is a simplified implementation
-            # In production, you'd use the actual Google Indexing API
-            # https://developers.google.com/search/apis/indexing-api/v3/quickstart
-
-            results = []
-            for url in urls:
-                results.append(GoogleIndexingStatus(
-                    url=url,
-                    status="pending",
-                    submitted_at=datetime.now()
-                ).dict())
-
-            return {
-                "success": True,
-                "urls_submitted": len(urls),
-                "indexing_requests": results,
-                "message": f"Submitted {len(urls)} URLs to Google Indexing API"
-            }
-
-        except Exception as e:
+        if action not in ("URL_UPDATED", "URL_DELETED"):
             return {
                 "success": False,
-                "error": str(e)
+                "error": f"Invalid action '{action}'. Use URL_UPDATED or URL_DELETED."
             }
+
+        if len(urls) > self.INDEXING_DAILY_LIMIT:
+            return {
+                "success": False,
+                "error": f"Too many URLs ({len(urls)}): daily quota is {self.INDEXING_DAILY_LIMIT}. Split into batches."
+            }
+
+        try:
+            service = self._get_indexing_service()
+        except (RuntimeError, ValueError, FileNotFoundError) as e:
+            return {"success": False, "error": str(e)}
+
+        results = []
+        errors = []
+
+        for url in urls:
+            try:
+                service.urlNotifications().publish(
+                    body={"url": url, "type": action}
+                ).execute()
+                results.append(GoogleIndexingStatus(
+                    url=url,
+                    status="submitted",
+                    submitted_at=datetime.now(),
+                ).model_dump())
+            except Exception as e:
+                error_msg = str(e)
+                results.append(GoogleIndexingStatus(
+                    url=url,
+                    status="error",
+                    submitted_at=datetime.now(),
+                    error_message=error_msg,
+                ).model_dump())
+                errors.append(f"{url}: {error_msg}")
+
+            # Avoid hammering the API when submitting many URLs
+            if len(urls) > 1:
+                time.sleep(0.1)
+
+        successful = len(urls) - len(errors)
+        return {
+            "success": len(errors) == 0,
+            "urls_submitted": successful,
+            "urls_failed": len(errors),
+            "daily_quota_used": len(urls),
+            "daily_quota_remaining": self.INDEXING_DAILY_LIMIT - len(urls),
+            "indexing_requests": results,
+            "errors": errors,
+            "message": f"Submitted {successful}/{len(urls)} URLs to Google Indexing API"
+        }
 
     @tool("Check Indexing Status")
     def check_indexing_status(self, urls: List[str]) -> Dict[str, Any]:
         """
-        Check indexing status of URLs in Google.
+        Check indexing status of URLs via Google Search Console URL Inspection API.
 
         Args:
-            urls: List of URLs to check
+            urls: List of URLs to inspect
 
         Returns:
-            Indexing status for each URL
+            Indexing status for each URL (indexed, coverage state, last crawl date)
         """
-        try:
-            # Note: This would use Google Search Console API in production
-            # For now, return mock data
-            results = []
-            for url in urls:
-                results.append({
-                    "url": url,
-                    "is_indexed": False,  # Would check actual status
-                    "last_crawled": None,
-                    "coverage_state": "unknown"
-                })
-
-            return {
-                "success": True,
-                "total_urls": len(urls),
-                "indexed": sum(1 for r in results if r['is_indexed']),
-                "results": results
-            }
-
-        except Exception as e:
+        if not self.site_url:
             return {
                 "success": False,
-                "error": str(e)
+                "error": "GOOGLE_SITE_URL not set (e.g. https://your-site.com)"
             }
+
+        try:
+            service = self._get_search_console_service()
+        except (RuntimeError, ValueError, FileNotFoundError) as e:
+            return {"success": False, "error": str(e)}
+
+        results = []
+        errors = []
+
+        for url in urls:
+            try:
+                response = service.urlInspection().index().inspect(
+                    body={
+                        "inspectionUrl": url,
+                        "siteUrl": self.site_url,
+                    }
+                ).execute()
+
+                inspection = response.get("inspectionResult", {})
+                index_status = inspection.get("indexStatusResult", {})
+                coverage = index_status.get("coverageState", "unknown")
+
+                results.append({
+                    "url": url,
+                    "is_indexed": coverage in ("Submitted and indexed", "Indexed, not submitted in sitemap"),
+                    "coverage_state": coverage,
+                    "last_crawled": index_status.get("lastCrawlTime"),
+                    "verdict": index_status.get("verdict", "VERDICT_UNSPECIFIED"),
+                    "robots_txt_state": index_status.get("robotsTxtState", "UNKNOWN"),
+                    "indexing_state": index_status.get("indexingState", "UNKNOWN"),
+                })
+            except Exception as e:
+                error_msg = str(e)
+                results.append({
+                    "url": url,
+                    "is_indexed": False,
+                    "coverage_state": "error",
+                    "error": error_msg,
+                })
+                errors.append(f"{url}: {error_msg}")
+
+            # Rate limit: 2000 req/day; space them slightly
+            if len(urls) > 1:
+                time.sleep(0.1)
+
+        return {
+            "success": len(errors) == 0,
+            "total_urls": len(urls),
+            "indexed": sum(1 for r in results if r.get("is_indexed")),
+            "not_indexed": sum(1 for r in results if not r.get("is_indexed")),
+            "errors": errors,
+            "results": results
+        }
 
 
 class DeploymentMonitor:

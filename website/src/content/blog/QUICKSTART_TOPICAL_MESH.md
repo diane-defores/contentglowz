@@ -1,3 +1,9 @@
+---
+title: "Topical Mesh Quick Start"
+description: "Internal quick-start guide for the topical mesh system."
+draft: true
+---
+
 # 🕸️ Topical Mesh System - Quick Start
 
 **Ready to use:** ✅ Operational  

@@ -1,3 +1,9 @@
+---
+title: "Content Transformation Strategy"
+description: "Internal planning document for transforming technical documentation into SEO content."
+draft: true
+---
+
 # 📝 Stratégie de Transformation Documentation → Contenu Website
 
 **Date:** 15 janvier 2026  
