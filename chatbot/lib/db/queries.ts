@@ -94,10 +94,7 @@ export async function ensureUser({
 	email?: string;
 }) {
 	try {
-		const [existing] = await db
-			.select()
-			.from(user)
-			.where(eq(user.id, userId));
+		const [existing] = await db.select().from(user).where(eq(user.id, userId));
 
 		if (existing) return existing;
 
@@ -233,16 +230,15 @@ export async function getChatsByUserId({
 		const conditions = [eq(chat.userId, id)];
 		if (projectId) conditions.push(eq(chat.projectId, projectId));
 		if (type) conditions.push(eq(chat.type, type));
-		const baseConditions = conditions.length === 1 ? conditions[0] : and(...conditions);
+		const baseConditions =
+			conditions.length === 1 ? conditions[0] : and(...conditions);
 
 		const query = (whereCondition?: SQL<any>) =>
 			db
 				.select()
 				.from(chat)
 				.where(
-					whereCondition
-						? and(whereCondition, baseConditions)
-						: baseConditions,
+					whereCondition ? and(whereCondition, baseConditions) : baseConditions,
 				)
 				.orderBy(desc(chat.createdAt))
 				.limit(extendedLimit);
@@ -1036,7 +1032,8 @@ export async function updateCompetitor({
 		if (niche !== undefined) updateData.niche = niche;
 		if (priority !== undefined) updateData.priority = priority;
 		if (notes !== undefined) updateData.notes = notes;
-		if (lastAnalyzedAt !== undefined) updateData.lastAnalyzedAt = lastAnalyzedAt;
+		if (lastAnalyzedAt !== undefined)
+			updateData.lastAnalyzedAt = lastAnalyzedAt;
 		if (analysisData !== undefined) updateData.analysisData = analysisData;
 
 		const [updated] = await db
@@ -1211,10 +1208,13 @@ export async function updateGenerator({
 		};
 		if (name !== undefined) updateData.name = name;
 		if (topics !== undefined) updateData.topics = topics;
-		if (targetAudience !== undefined) updateData.targetAudience = targetAudience;
+		if (targetAudience !== undefined)
+			updateData.targetAudience = targetAudience;
 		if (tone !== undefined) updateData.tone = tone;
-		if (competitorEmails !== undefined) updateData.competitorEmails = competitorEmails;
-		if (includeEmailInsights !== undefined) updateData.includeEmailInsights = includeEmailInsights;
+		if (competitorEmails !== undefined)
+			updateData.competitorEmails = competitorEmails;
+		if (includeEmailInsights !== undefined)
+			updateData.includeEmailInsights = includeEmailInsights;
 		if (maxSections !== undefined) updateData.maxSections = maxSections;
 		if (schedule !== undefined) updateData.schedule = schedule;
 		if (scheduleDay !== undefined) updateData.scheduleDay = scheduleDay;
@@ -1424,7 +1424,8 @@ export async function updateProject({
 		if (description !== undefined) updateData.description = description;
 		if (isDefault !== undefined) updateData.isDefault = isDefault;
 		if (settings !== undefined) updateData.settings = settings;
-		if (lastAnalyzedAt !== undefined) updateData.lastAnalyzedAt = lastAnalyzedAt;
+		if (lastAnalyzedAt !== undefined)
+			updateData.lastAnalyzedAt = lastAnalyzedAt;
 
 		const [updated] = await db
 			.update(project)
@@ -1666,11 +1667,14 @@ export async function updateUserSettings({
 		};
 		if (theme !== undefined) updateData.theme = theme;
 		if (language !== undefined) updateData.language = language;
-		if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications;
+		if (emailNotifications !== undefined)
+			updateData.emailNotifications = emailNotifications;
 		if (webhookUrl !== undefined) updateData.webhookUrl = webhookUrl;
 		if (apiKeys !== undefined) updateData.apiKeys = apiKeys;
-		if (defaultProjectId !== undefined) updateData.defaultProjectId = defaultProjectId;
-		if (dashboardLayout !== undefined) updateData.dashboardLayout = dashboardLayout;
+		if (defaultProjectId !== undefined)
+			updateData.defaultProjectId = defaultProjectId;
+		if (dashboardLayout !== undefined)
+			updateData.dashboardLayout = dashboardLayout;
 		if (robotSettings !== undefined) updateData.robotSettings = robotSettings;
 
 		const [updated] = await db
@@ -1694,7 +1698,17 @@ export async function updateUserApiKey({
 	apiKey,
 }: {
 	userId: string;
-	provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname" | "consensus" | "tavily" | "groq";
+	provider:
+		| "exa"
+		| "firecrawl"
+		| "serper"
+		| "openrouter"
+		| "bunnyStorage"
+		| "bunnyCdn"
+		| "bunnyCdnHostname"
+		| "consensus"
+		| "tavily"
+		| "groq";
 	apiKey: string | null;
 }): Promise<UserSettings> {
 	try {
@@ -1712,10 +1726,7 @@ export async function updateUserApiKey({
 			apiKeys: currentKeys,
 		});
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to update API key",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to update API key");
 	}
 }
 
@@ -1753,13 +1764,25 @@ export async function getContentRecords({
 		const conditions: SQL[] = [];
 
 		if (status) {
-			conditions.push(eq(contentRecord.status, status as ContentRecord["status"]));
+			conditions.push(
+				eq(contentRecord.status, status as ContentRecord["status"]),
+			);
 		}
 		if (contentType) {
-			conditions.push(eq(contentRecord.contentType, contentType as ContentRecord["contentType"]));
+			conditions.push(
+				eq(
+					contentRecord.contentType,
+					contentType as ContentRecord["contentType"],
+				),
+			);
 		}
 		if (sourceRobot) {
-			conditions.push(eq(contentRecord.sourceRobot, sourceRobot as ContentRecord["sourceRobot"]));
+			conditions.push(
+				eq(
+					contentRecord.sourceRobot,
+					sourceRobot as ContentRecord["sourceRobot"],
+				),
+			);
 		}
 		if (projectId) {
 			conditions.push(eq(contentRecord.projectId, projectId));
@@ -1810,6 +1833,7 @@ export async function updateContentRecord({
 	reviewedBy?: string;
 	targetUrl?: string;
 	priority?: number;
+	metadata?: Record<string, unknown>;
 }) {
 	try {
 		const updates: Record<string, unknown> = {
@@ -1817,15 +1841,14 @@ export async function updateContentRecord({
 		};
 
 		if (fields.status !== undefined) updates.status = fields.status;
-		if (fields.reviewerNote !== undefined) updates.reviewerNote = fields.reviewerNote;
+		if (fields.reviewerNote !== undefined)
+			updates.reviewerNote = fields.reviewerNote;
 		if (fields.reviewedBy !== undefined) updates.reviewedBy = fields.reviewedBy;
 		if (fields.targetUrl !== undefined) updates.targetUrl = fields.targetUrl;
 		if (fields.priority !== undefined) updates.priority = fields.priority;
+		if (fields.metadata !== undefined) updates.metadata = fields.metadata;
 
-		await db
-			.update(contentRecord)
-			.set(updates)
-			.where(eq(contentRecord.id, id));
+		await db.update(contentRecord).set(updates).where(eq(contentRecord.id, id));
 
 		return await getContentRecordById({ id });
 	} catch (_error) {
@@ -1839,7 +1862,9 @@ export async function updateContentRecord({
 /** Get status change history for a content record */
 export async function getStatusChangesByContentId({
 	contentId,
-}: { contentId: string }) {
+}: {
+	contentId: string;
+}) {
 	try {
 		return await db
 			.select()
@@ -1882,7 +1907,15 @@ export async function createStatusChange({
 			timestamp: now,
 		});
 
-		return { id, contentId, fromStatus, toStatus, changedBy, reason, timestamp: now };
+		return {
+			id,
+			contentId,
+			fromStatus,
+			toStatus,
+			changedBy,
+			reason,
+			timestamp: now,
+		};
 	} catch (_error) {
 		throw new ChatSDKError(
 			"bad_request:database",
@@ -1894,7 +1927,9 @@ export async function createStatusChange({
 /** Get content statistics grouped by status */
 export async function getContentStats({
 	projectId,
-}: { projectId?: string } = {}) {
+}: {
+	projectId?: string;
+} = {}) {
 	try {
 		const conditions: SQL[] = [];
 		if (projectId) {
@@ -1909,9 +1944,10 @@ export async function getContentStats({
 			.from(contentRecord)
 			.groupBy(contentRecord.status);
 
-		const rows = conditions.length > 0
-			? await query.where(and(...conditions))
-			: await query;
+		const rows =
+			conditions.length > 0
+				? await query.where(and(...conditions))
+				: await query;
 
 		const byStatus: Record<string, number> = {};
 		let total = 0;
@@ -1931,7 +1967,9 @@ export async function getContentStats({
 /** Get work domains, optionally filtered by project */
 export async function getWorkDomains({
 	projectId,
-}: { projectId?: string } = {}) {
+}: {
+	projectId?: string;
+} = {}) {
 	try {
 		if (projectId) {
 			return await db
@@ -1940,10 +1978,7 @@ export async function getWorkDomains({
 				.where(eq(workDomain.projectId, projectId))
 				.orderBy(asc(workDomain.domain));
 		}
-		return await db
-			.select()
-			.from(workDomain)
-			.orderBy(asc(workDomain.domain));
+		return await db.select().from(workDomain).orderBy(asc(workDomain.domain));
 	} catch (_error) {
 		throw new ChatSDKError(
 			"bad_request:database",
@@ -1972,29 +2007,26 @@ export async function updateWorkDomain({
 		};
 
 		if (fields.status !== undefined) updates.status = fields.status;
-		if (fields.lastRunStatus !== undefined) updates.lastRunStatus = fields.lastRunStatus;
-		if (fields.itemsPending !== undefined) updates.itemsPending = fields.itemsPending;
-		if (fields.itemsCompleted !== undefined) updates.itemsCompleted = fields.itemsCompleted;
+		if (fields.lastRunStatus !== undefined)
+			updates.lastRunStatus = fields.lastRunStatus;
+		if (fields.itemsPending !== undefined)
+			updates.itemsPending = fields.itemsPending;
+		if (fields.itemsCompleted !== undefined)
+			updates.itemsCompleted = fields.itemsCompleted;
 		if (fields.metadata !== undefined) updates.metadata = fields.metadata;
 
 		await db
 			.update(workDomain)
 			.set(updates)
 			.where(
-				and(
-					eq(workDomain.projectId, projectId),
-					eq(workDomain.domain, domain),
-				),
+				and(eq(workDomain.projectId, projectId), eq(workDomain.domain, domain)),
 			);
 
 		const [result] = await db
 			.select()
 			.from(workDomain)
 			.where(
-				and(
-					eq(workDomain.projectId, projectId),
-					eq(workDomain.domain, domain),
-				),
+				and(eq(workDomain.projectId, projectId), eq(workDomain.domain, domain)),
 			);
 
 		return result || null;
@@ -2023,10 +2055,7 @@ export async function getGmailTokenByUserId({
 			.where(eq(gmailToken.userId, userId));
 		return token || null;
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to get Gmail token",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to get Gmail token");
 	}
 }
 
@@ -2119,10 +2148,7 @@ export async function getTemplatesByUserId({
 			.where(and(...conditions))
 			.orderBy(desc(contentTemplate.updatedAt));
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to get templates",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to get templates");
 	}
 }
 
@@ -2131,10 +2157,7 @@ export async function getTemplateById({
 	id,
 }: {
 	id: string;
-}): Promise<
-	| (ContentTemplate & { sections: TemplateSection[] })
-	| null
-> {
+}): Promise<(ContentTemplate & { sections: TemplateSection[] }) | null> {
 	try {
 		const [tmpl] = await db
 			.select()
@@ -2227,10 +2250,7 @@ export async function createTemplate({
 
 		return { ...created, sections: createdSections };
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to create template",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to create template");
 	}
 }
 
@@ -2316,8 +2336,7 @@ export async function updateTemplate({
 							placeholder: section.placeholder,
 							defaultPrompt: section.defaultPrompt,
 							userPrompt: section.userPrompt,
-							promptStrategy:
-								section.promptStrategy ?? "auto_generate",
+							promptStrategy: section.promptStrategy ?? "auto_generate",
 							generationHints: section.generationHints,
 							updatedAt: new Date(),
 						})
@@ -2339,8 +2358,7 @@ export async function updateTemplate({
 							placeholder: section.placeholder,
 							defaultPrompt: section.defaultPrompt,
 							userPrompt: section.userPrompt,
-							promptStrategy:
-								section.promptStrategy ?? "auto_generate",
+							promptStrategy: section.promptStrategy ?? "auto_generate",
 							generationHints: section.generationHints,
 						})
 						.returning();
@@ -2360,25 +2378,17 @@ export async function updateTemplate({
 
 		return { ...updated, sections: updatedSections };
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to update template",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to update template");
 	}
 }
 
 /** Deletes a template (cascade deletes sections) */
 export async function deleteTemplate({ id }: { id: string }) {
 	try {
-		await db
-			.delete(templateSection)
-			.where(eq(templateSection.templateId, id));
+		await db.delete(templateSection).where(eq(templateSection.templateId, id));
 		await db.delete(contentTemplate).where(eq(contentTemplate.id, id));
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to delete template",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to delete template");
 	}
 }
 
@@ -2417,10 +2427,7 @@ export async function cloneTemplate({
 			})),
 		});
 	} catch (_error) {
-		throw new ChatSDKError(
-			"bad_request:database",
-			"Failed to clone template",
-		);
+		throw new ChatSDKError("bad_request:database", "Failed to clone template");
 	}
 }
 
@@ -2521,7 +2528,7 @@ export async function createContentSource({
 	repoOwner: string;
 	repoName: string;
 	basePath: string;
-	filePattern?: "md" | "mdx" | "both";
+	filePattern?: "md" | "mdx" | "both" | "astro" | "ts" | "all";
 	templateId?: string;
 	defaultBranch?: string;
 	metadata?: ContentSource["metadata"];
@@ -2566,7 +2573,7 @@ export async function updateContentSource({
 	id: string;
 	name?: string;
 	basePath?: string;
-	filePattern?: "md" | "mdx" | "both";
+	filePattern?: "md" | "mdx" | "both" | "astro" | "ts" | "all";
 	templateId?: string | null;
 	defaultBranch?: string;
 	status?: "active" | "paused" | "error";
@@ -2596,6 +2603,84 @@ export async function updateContentSource({
 		throw new ChatSDKError(
 			"bad_request:database",
 			"Failed to update content source",
+		);
+	}
+}
+
+/** Upserts a content record for repository-synced content. */
+export async function upsertContentRecord({
+	id,
+	title,
+	contentType,
+	sourceRobot,
+	status,
+	projectId,
+	contentPath,
+	contentPreview,
+	tags,
+	metadata,
+	syncedAt,
+}: {
+	id: string;
+	title: string;
+	contentType: ContentRecord["contentType"];
+	sourceRobot: ContentRecord["sourceRobot"];
+	status: ContentRecord["status"];
+	projectId: string | null;
+	contentPath: string;
+	contentPreview?: string | null;
+	tags?: string[] | null;
+	metadata?: Record<string, unknown>;
+	syncedAt?: Date;
+}): Promise<ContentRecord> {
+	try {
+		const now = new Date();
+		await db
+			.insert(contentRecord)
+			.values({
+				id,
+				title,
+				contentType,
+				sourceRobot,
+				status,
+				projectId,
+				contentPath,
+				contentPreview: contentPreview || null,
+				tags: tags || null,
+				metadata,
+				createdAt: now,
+				updatedAt: now,
+				syncedAt: syncedAt || now,
+			})
+			.onConflictDoUpdate({
+				target: contentRecord.id,
+				set: {
+					title,
+					contentType,
+					sourceRobot,
+					status,
+					projectId,
+					contentPath,
+					contentPreview: contentPreview || null,
+					tags: tags || null,
+					metadata,
+					updatedAt: now,
+					syncedAt: syncedAt || now,
+				},
+			});
+
+		const [record] = await db
+			.select()
+			.from(contentRecord)
+			.where(eq(contentRecord.id, id));
+		if (!record) {
+			throw new Error("Failed to fetch upserted content record");
+		}
+		return record;
+	} catch (_error) {
+		throw new ChatSDKError(
+			"bad_request:database",
+			"Failed to upsert content record",
 		);
 	}
 }
@@ -2669,7 +2754,8 @@ export async function upsertCreatorProfile({
 			if (voice !== undefined) updateData.voice = voice;
 			if (positioning !== undefined) updateData.positioning = positioning;
 			if (values !== undefined) updateData.values = values;
-			if (currentChapterId !== undefined) updateData.currentChapterId = currentChapterId;
+			if (currentChapterId !== undefined)
+				updateData.currentChapterId = currentChapterId;
 
 			const [updated] = await db
 				.update(creatorProfile)
@@ -2681,7 +2767,15 @@ export async function upsertCreatorProfile({
 
 		const [created] = await db
 			.insert(creatorProfile)
-			.values({ userId, projectId, displayName, voice, positioning, values, currentChapterId })
+			.values({
+				userId,
+				projectId,
+				displayName,
+				voice,
+				positioning,
+				values,
+				currentChapterId,
+			})
 			.returning();
 		return created;
 	} catch (_error) {
@@ -2969,7 +3063,8 @@ export async function saveCustomerPersona({
 			if (painPoints !== undefined) updateData.painPoints = painPoints;
 			if (goals !== undefined) updateData.goals = goals;
 			if (language !== undefined) updateData.language = language;
-			if (contentPreferences !== undefined) updateData.contentPreferences = contentPreferences;
+			if (contentPreferences !== undefined)
+				updateData.contentPreferences = contentPreferences;
 			if (confidence !== undefined) updateData.confidence = confidence;
 
 			const [updated] = await db

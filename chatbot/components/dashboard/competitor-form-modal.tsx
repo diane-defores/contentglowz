@@ -37,6 +37,7 @@ export function CompetitorFormModal({
 	onSubmit,
 }: CompetitorFormModalProps) {
 	const [loading, setLoading] = useState(false);
+	const [detecting, setDetecting] = useState(false);
 	const [formData, setFormData] = useState<CompetitorFormData>({
 		name: "",
 		url: "",
@@ -64,6 +65,38 @@ export function CompetitorFormModal({
 			});
 		}
 	}, [competitor, open]);
+
+	const handleUrlBlur = async () => {
+		if (competitor || !formData.url) return;
+
+		let parsedUrl: URL;
+		try {
+			parsedUrl = new URL(formData.url);
+		} catch {
+			return;
+		}
+
+		if (!parsedUrl.hostname) return;
+
+		setDetecting(true);
+		try {
+			const res = await fetch(
+				`/api/competitors/detect?url=${encodeURIComponent(formData.url)}`,
+			);
+			if (res.ok) {
+				const { name, niche } = await res.json();
+				setFormData((prev) => ({
+					...prev,
+					name: prev.name || name || prev.name,
+					niche: prev.niche || niche || prev.niche,
+				}));
+			}
+		} catch {
+			// Silently ignore detection errors
+		} finally {
+			setDetecting(false);
+		}
+	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -93,19 +126,6 @@ export function CompetitorFormModal({
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
-						<Label htmlFor="name">Name *</Label>
-						<Input
-							id="name"
-							value={formData.name}
-							onChange={(e) =>
-								setFormData((prev) => ({ ...prev, name: e.target.value }))
-							}
-							placeholder="Competitor Name"
-							required
-						/>
-					</div>
-
-					<div className="space-y-2">
 						<Label htmlFor="url">Website URL *</Label>
 						<Input
 							id="url"
@@ -114,7 +134,23 @@ export function CompetitorFormModal({
 							onChange={(e) =>
 								setFormData((prev) => ({ ...prev, url: e.target.value }))
 							}
+							onBlur={handleUrlBlur}
 							placeholder="https://competitor.com"
+							required
+						/>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="name">
+							Name *{detecting && <span className="ml-2 text-xs text-muted-foreground font-normal">Detecting...</span>}
+						</Label>
+						<Input
+							id="name"
+							value={formData.name}
+							onChange={(e) =>
+								setFormData((prev) => ({ ...prev, name: e.target.value }))
+							}
+							placeholder={detecting ? "Detecting from URL..." : "Competitor Name"}
 							required
 						/>
 					</div>

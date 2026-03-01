@@ -35,6 +35,14 @@ const ROBOT_OPTIONS = [
 	{ value: "manual", label: "Manual" },
 ];
 
+const FUNNEL_OPTIONS = [
+	{ value: "", label: "All Funnel Stages" },
+	{ value: "tofu", label: "ToFu (Awareness)" },
+	{ value: "mofu", label: "MoFu (Consideration)" },
+	{ value: "bofu", label: "BoFu (Decision)" },
+	{ value: "retention", label: "Retention" },
+];
+
 interface ContentFiltersBarProps {
 	filters: ContentFilters;
 	onFiltersChange: (filters: ContentFilters) => void;
@@ -89,7 +97,22 @@ export function ContentFiltersBar({
 				))}
 			</select>
 
-			{(filters.status || filters.contentType || filters.sourceRobot) && (
+			<select
+				value={filters.funnelStage || ""}
+				onChange={(e) => handleChange("funnelStage", e.target.value)}
+				className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+			>
+				{FUNNEL_OPTIONS.map((opt) => (
+					<option key={opt.value} value={opt.value}>
+						{opt.label}
+					</option>
+				))}
+			</select>
+
+			{(filters.status ||
+				filters.contentType ||
+				filters.sourceRobot ||
+				filters.funnelStage) && (
 				<button
 					type="button"
 					onClick={() => onFiltersChange({})}

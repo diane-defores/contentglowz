@@ -29,10 +29,19 @@ export async function POST(
 			return new ChatSDKError("forbidden:chat").toResponse();
 		}
 
+		// Build meaningful keywords from competitor data
+		let domain: string;
+		try {
+			domain = new URL(competitor.url).hostname.replace(/^www\./, "");
+		} catch {
+			domain = competitor.url;
+		}
+		const keywords = [domain, competitor.niche].filter(Boolean) as string[];
+
 		// Trigger AI analysis via SEO API
 		let analysisResult;
 		try {
-			analysisResult = await seoApi.analyzeCompetitors([competitor.url]);
+			analysisResult = await seoApi.analyzeCompetitors(keywords);
 		} catch (apiError) {
 			console.error("SEO API analysis failed:", apiError);
 			return NextResponse.json(

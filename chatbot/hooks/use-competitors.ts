@@ -58,6 +58,27 @@ export function useCompetitors(projectId?: string) {
 
 				const created = await response.json();
 				setCompetitors((prev) => [created, ...prev]);
+
+				// Auto-trigger analysis in the background (fire-and-forget)
+				if (created?.id) {
+					setAnalyzing(created.id);
+					fetch(`/api/competitors/${created.id}/analyze`, { method: "POST" })
+						.then(async (r) => {
+							if (r.ok) {
+								const { competitor: updated } = await r.json();
+								setCompetitors((prev) =>
+									prev.map((c) => (c.id === created.id ? updated : c)),
+								);
+							}
+						})
+						.catch(() => {
+							// Silently ignore background analysis errors
+						})
+						.finally(() => {
+							setAnalyzing(null);
+						});
+				}
+
 				return created;
 			} catch (err) {
 				const message =

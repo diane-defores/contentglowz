@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { normalizeContentMetadata } from "@/lib/content-metadata";
 import {
 	getContentRecordById,
-	updateContentRecord,
 	getStatusChangesByContentId,
+	updateContentRecord,
 } from "@/lib/db/queries";
-import { ChatSDKError } from "@/lib/errors";
 
 export async function GET(
 	_request: NextRequest,
@@ -29,8 +29,19 @@ export async function GET(
 
 		// Include history
 		const history = await getStatusChangesByContentId({ contentId: id });
+		const normalized = normalizeContentMetadata({
+			rawMetadata: record.metadata,
+			title: record.title,
+			tags: record.tags,
+			dashboardStatus: record.status,
+		});
 
-		return NextResponse.json({ ...record, history });
+		return NextResponse.json({
+			...record,
+			history,
+			normalizedMetadata: normalized.metadata,
+			metadataAudit: normalized.audit,
+		});
 	} catch (error) {
 		console.error("Failed to get content record:", error);
 		return NextResponse.json(

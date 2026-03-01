@@ -97,9 +97,7 @@ export function useContentSources(projectId?: string) {
 					);
 				}
 				const updated = await res.json();
-				setSources((prev) =>
-					prev.map((s) => (s.id === id ? updated : s)),
-				);
+				setSources((prev) => prev.map((s) => (s.id === id ? updated : s)));
 				return updated as ContentSource;
 			} catch (err) {
 				const message =
@@ -122,21 +120,80 @@ export function useContentSources(projectId?: string) {
 			if (!res.ok) {
 				const errData = await res.json().catch(() => ({}));
 				throw new Error(
-					errData.details ||
-						errData.error ||
-						"Failed to delete content source",
+					errData.details || errData.error || "Failed to delete content source",
 				);
 			}
 			setSources((prev) => prev.filter((s) => s.id !== id));
 		} catch (err) {
 			const message =
-				err instanceof Error
-					? err.message
-					: "Failed to delete content source";
+				err instanceof Error ? err.message : "Failed to delete content source";
 			setError(message);
 			throw err;
 		}
 	}, []);
+
+	const syncSource = useCallback(
+		async (id: string) => {
+			setError(null);
+			try {
+				const res = await fetch("/api/content/sync", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ sourceId: id }),
+				});
+				if (!res.ok) {
+					const errData = await res.json().catch(() => ({}));
+					throw new Error(
+						errData.error ||
+							errData.details ||
+							"Failed to sync content source metadata",
+					);
+				}
+				await fetchSources();
+				return await res.json();
+			} catch (err) {
+				const message =
+					err instanceof Error
+						? err.message
+						: "Failed to sync content source metadata";
+				setError(message);
+				throw err;
+			}
+		},
+		[fetchSources],
+	);
+
+	const syncAllSources = useCallback(async () => {
+		if (!projectId) {
+			throw new Error("Missing projectId");
+		}
+
+		setError(null);
+		try {
+			const res = await fetch("/api/content/sync", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ projectId }),
+			});
+			if (!res.ok) {
+				const errData = await res.json().catch(() => ({}));
+				throw new Error(
+					errData.error ||
+						errData.details ||
+						"Failed to sync content source metadata",
+				);
+			}
+			await fetchSources();
+			return await res.json();
+		} catch (err) {
+			const message =
+				err instanceof Error
+					? err.message
+					: "Failed to sync content source metadata";
+			setError(message);
+			throw err;
+		}
+	}, [fetchSources, projectId]);
 
 	useEffect(() => {
 		fetchSources();
@@ -150,5 +207,7 @@ export function useContentSources(projectId?: string) {
 		createSource,
 		updateSource,
 		deleteSource,
+		syncSource,
+		syncAllSources,
 	};
 }

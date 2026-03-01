@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
 	deleteContentSource,
 	getContentSourceById,
@@ -31,7 +31,7 @@ export async function GET(
 		}
 
 		return NextResponse.json(source);
-	} catch (error) {
+	} catch (_error) {
 		return NextResponse.json(
 			{ error: "Failed to fetch content source" },
 			{ status: 500 },
@@ -64,7 +64,20 @@ export async function PUT(
 		}
 
 		const body = await request.json();
-		const updated = await updateContentSource({ id, ...body });
+		const normalizedMetadata = {
+			metadataProfile: "frontmatter-v1" as const,
+			metadataValidation: "strict" as const,
+			platform: "astro-next" as const,
+			...(existing.metadata ?? {}),
+			...(body.metadata && typeof body.metadata === "object"
+				? body.metadata
+				: {}),
+		};
+		const updated = await updateContentSource({
+			id,
+			...body,
+			metadata: normalizedMetadata,
+		});
 
 		return NextResponse.json(updated);
 	} catch (error) {
@@ -72,8 +85,7 @@ export async function PUT(
 		return NextResponse.json(
 			{
 				error: "Failed to update content source",
-				details:
-					error instanceof Error ? error.message : String(error),
+				details: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 },
 		);
@@ -111,8 +123,7 @@ export async function DELETE(
 		return NextResponse.json(
 			{
 				error: "Failed to delete content source",
-				details:
-					error instanceof Error ? error.message : String(error),
+				details: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 },
 		);

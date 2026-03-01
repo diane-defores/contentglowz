@@ -7,11 +7,12 @@ import {
 	MoreHorizontal,
 	Pencil,
 	Plus,
+	RefreshCw,
 	Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
-import { useConfirm } from "@/hooks/use-confirm";
 import {
 	Dialog,
 	DialogContent,
@@ -25,7 +26,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "@/components/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import { useContentSources } from "@/hooks/use-content-sources";
 import type { ContentSource } from "@/lib/db/schema";
 import { ContentSourceConfig } from "./content-source-config";
@@ -44,8 +45,15 @@ export function ContentSourcesPanel({
 	repo,
 	selectedPath = "",
 }: ContentSourcesPanelProps) {
-	const { sources, loading, createSource, updateSource, deleteSource } =
-		useContentSources(projectId);
+	const {
+		sources,
+		loading,
+		createSource,
+		updateSource,
+		deleteSource,
+		syncSource,
+		syncAllSources,
+	} = useContentSources(projectId);
 	const { confirm, ConfirmDialog } = useConfirm();
 	const [showConfig, setShowConfig] = useState(false);
 	const [editingSource, setEditingSource] = useState<ContentSource | null>(
@@ -85,9 +93,18 @@ export function ContentSourcesPanel({
 			templateId: string | null;
 			defaultBranch: string;
 		}) => {
+			const metadataProfile = {
+				metadataProfile: "frontmatter-v1" as const,
+				metadataValidation: "strict" as const,
+				platform: "astro-next" as const,
+			};
+
 			try {
 				if (editingSource) {
-					await updateSource(editingSource.id, data);
+					await updateSource(editingSource.id, {
+						...data,
+						metadata: editingSource.metadata ?? metadataProfile,
+					});
 					toast({
 						type: "success",
 						description: `Updated "${data.name}"`,
@@ -102,7 +119,7 @@ export function ContentSourcesPanel({
 						filePattern: data.filePattern,
 						templateId: data.templateId,
 						defaultBranch: data.defaultBranch,
-						metadata: null,
+						metadata: metadataProfile,
 					});
 					toast({
 						type: "success",
@@ -121,14 +138,7 @@ export function ContentSourcesPanel({
 				});
 			}
 		},
-		[
-			editingSource,
-			projectId,
-			owner,
-			repo,
-			createSource,
-			updateSource,
-		],
+		[editingSource, projectId, owner, repo, createSource, updateSource],
 	);
 
 	const handleDelete = useCallback(
@@ -159,6 +169,43 @@ export function ContentSourcesPanel({
 		[deleteSource, confirm],
 	);
 
+	const handleSyncSource = useCallback(
+		async (source: ContentSource) => {
+			try {
+				const result = await syncSource(source.id);
+				toast({
+					type: "success",
+					description: `Synced ${result.recordsUpserted ?? 0} records from "${source.name}"`,
+				});
+			} catch (err) {
+				toast({
+					type: "error",
+					description:
+						err instanceof Error
+							? err.message
+							: "Failed to sync source metadata",
+				});
+			}
+		},
+		[syncSource],
+	);
+
+	const handleSyncAllSources = useCallback(async () => {
+		try {
+			const result = await syncAllSources();
+			toast({
+				type: "success",
+				description: `Synced ${result.recordsUpserted ?? 0} records from ${result.sourcesProcessed ?? 0} source(s)`,
+			});
+		} catch (err) {
+			toast({
+				type: "error",
+				description:
+					err instanceof Error ? err.message : "Failed to sync all sources",
+			});
+		}
+	}, [syncAllSources]);
+
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center py-4">
@@ -171,17 +218,23 @@ export function ContentSourcesPanel({
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
 				<h4 className="text-sm font-medium">Content Sources</h4>
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => {
-						setEditingSource(null);
-						setShowConfig(true);
-					}}
-				>
-					<Plus className="mr-1 h-3 w-3" />
-					Add Source
-				</Button>
+				<div className="flex items-center gap-2">
+					<Button variant="outline" size="sm" onClick={handleSyncAllSources}>
+						<RefreshCw className="mr-1 h-3 w-3" />
+						Sync All
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => {
+							setEditingSource(null);
+							setShowConfig(true);
+						}}
+					>
+						<Plus className="mr-1 h-3 w-3" />
+						Add Source
+					</Button>
+				</div>
 			</div>
 
 			{sources.length === 0 ? (
@@ -194,20 +247,7 @@ export function ContentSourcesPanel({
 					{sources.map((source) => (
 						<div
 							key={source.id}
-							role="button"
-							tabIndex={0}
-							className="flex items-center justify-between rounded-md border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors"
-							onClick={() => {
-								setEditingSource(source);
-								setShowConfig(true);
-							}}
-							onKeyDown={(e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									setEditingSource(source);
-									setShowConfig(true);
-								}
-							}}
+							className="flex items-center justify-between rounded-md border px-3 py-2 hover:bg-accent/50 transition-colors"
 						>
 							<div className="min-w-0">
 								<div className="text-sm font-medium truncate">
@@ -244,6 +284,10 @@ export function ContentSourcesPanel({
 										<Pencil className="mr-2 h-3 w-3" />
 										Edit
 									</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => handleSyncSource(source)}>
+										<RefreshCw className="mr-2 h-3 w-3" />
+										Sync Metadata
+									</DropdownMenuItem>
 									<DropdownMenuItem
 										className="text-destructive"
 										onClick={() => handleDelete(source)}
@@ -269,9 +313,7 @@ export function ContentSourcesPanel({
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
 						<DialogTitle>
-							{editingSource
-								? "Edit Content Source"
-								: "Add Content Source"}
+							{editingSource ? "Edit Content Source" : "Add Content Source"}
 						</DialogTitle>
 						<DialogDescription>
 							Map a repository directory as a content source.

@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
 	cacheComponents: true,
+	turbopack: {
+		root: "/home/claude/my-robots/chatbot",
+	},
 	images: {
 		remotePatterns: [
 			{

@@ -1,11 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
+	createStatusChange,
 	getContentRecordById,
 	updateContentRecord,
-	createStatusChange,
 } from "@/lib/db/queries";
-import { ChatSDKError } from "@/lib/errors";
 
 /**
  * POST /api/content/[id]/review

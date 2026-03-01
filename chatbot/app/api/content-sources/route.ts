@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
 	createContentSource,
 	ensureUser,
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
 		const sources = await getContentSourcesByUserId({ userId, projectId });
 		return NextResponse.json(sources);
-	} catch (error) {
+	} catch (_error) {
 		return NextResponse.json(
 			{ error: "Failed to fetch content sources" },
 			{ status: 500 },
@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
 			defaultBranch,
 			metadata,
 		} = body;
+		const normalizedMetadata = {
+			metadataProfile: "frontmatter-v1" as const,
+			metadataValidation: "strict" as const,
+			platform: "astro-next" as const,
+			...(metadata && typeof metadata === "object" ? metadata : {}),
+		};
 
 		if (!projectId || !name || !repoOwner || !repoName || !basePath) {
 			return NextResponse.json(
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
 			filePattern,
 			templateId,
 			defaultBranch,
-			metadata,
+			metadata: normalizedMetadata,
 		});
 
 		return NextResponse.json(source, { status: 201 });
@@ -77,8 +83,7 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Failed to create content source",
-				details:
-					error instanceof Error ? error.message : String(error),
+				details: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 },
 		);

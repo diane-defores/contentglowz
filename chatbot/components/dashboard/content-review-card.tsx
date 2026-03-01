@@ -1,6 +1,13 @@
 "use client";
 
-import { CalendarDays, Check, Clock, Edit2, ExternalLink, X } from "lucide-react";
+import {
+	CalendarDays,
+	Check,
+	Clock,
+	Edit2,
+	ExternalLink,
+	X,
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +24,12 @@ interface ContentReviewCardProps {
 }
 
 const EDITABLE_STATUSES = ["generated", "pending_review", "approved"];
+const FUNNEL_LABELS = {
+	tofu: "ToFu",
+	mofu: "MoFu",
+	bofu: "BoFu",
+	retention: "Retention",
+} as const;
 
 export function ContentReviewCard({
 	item,
@@ -128,10 +141,7 @@ export function ContentReviewCard({
 			{item.tags && item.tags.length > 0 && (
 				<div className="flex flex-wrap gap-1">
 					{item.tags.slice(0, 5).map((tag) => (
-						<span
-							key={tag}
-							className="text-xs bg-muted px-1.5 py-0.5 rounded"
-						>
+						<span key={tag} className="text-xs bg-muted px-1.5 py-0.5 rounded">
 							{tag}
 						</span>
 					))}
@@ -140,6 +150,33 @@ export function ContentReviewCard({
 							+{item.tags.length - 5}
 						</span>
 					)}
+				</div>
+			)}
+
+			{/* Metadata tracking */}
+			{item.normalizedMetadata && item.metadataAudit && (
+				<div className="rounded-md border bg-muted/20 p-2 space-y-1">
+					<div className="flex flex-wrap items-center gap-2 text-xs">
+						<span className="rounded bg-muted px-1.5 py-0.5 font-medium">
+							{FUNNEL_LABELS[item.normalizedMetadata.funnelStage]}
+						</span>
+						<span className="rounded bg-muted px-1.5 py-0.5">
+							SEO score {item.metadataAudit.score}/100
+						</span>
+						<span className="rounded bg-muted px-1.5 py-0.5">
+							Workflow {item.normalizedMetadata.contentStatus}
+						</span>
+					</div>
+					<div className="text-xs text-muted-foreground">
+						Robots: {item.metadataAudit.robotProgress.done}/
+						{item.metadataAudit.robotProgress.total} done
+						{item.metadataAudit.robotProgress.failed > 0
+							? `, ${item.metadataAudit.robotProgress.failed} failed`
+							: ""}
+						{item.metadataAudit.errorCount > 0
+							? `, ${item.metadataAudit.errorCount} metadata errors`
+							: ""}
+					</div>
 				</div>
 			)}
 
@@ -201,65 +238,62 @@ export function ContentReviewCard({
 				)}
 
 				{/* Approve/Reject for pending_review */}
-				{item.status === "pending_review" && (
-					<>
-						{showRejectInput ? (
-							<div className="flex gap-2">
-								<input
-									type="text"
-									value={rejectNote}
-									onChange={(e) => setRejectNote(e.target.value)}
-									placeholder="Reason for rejection..."
-									className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
-									onKeyDown={(e) => {
-										if (e.key === "Enter") handleReject();
-										if (e.key === "Escape") setShowRejectInput(false);
-									}}
-								/>
-								<Button
-									size="sm"
-									variant="destructive"
-									disabled={acting || !rejectNote.trim()}
-									onClick={handleReject}
-									className="h-8"
-								>
-									Confirm
-								</Button>
-								<Button
-									size="sm"
-									variant="ghost"
-									onClick={() => setShowRejectInput(false)}
-									className="h-8"
-								>
-									Cancel
-								</Button>
-							</div>
-						) : (
-							<div className="flex gap-2">
-								<Button
-									size="sm"
-									variant="default"
-									disabled={acting}
-									onClick={handleApprove}
-									className="h-8 flex-1"
-								>
-									<Check className="h-3.5 w-3.5 mr-1" />
-									Approve
-								</Button>
-								<Button
-									size="sm"
-									variant="outline"
-									disabled={acting}
-									onClick={() => setShowRejectInput(true)}
-									className="h-8 flex-1"
-								>
-									<X className="h-3.5 w-3.5 mr-1" />
-									Reject
-								</Button>
-							</div>
-						)}
-					</>
-				)}
+				{item.status === "pending_review" &&
+					(showRejectInput ? (
+						<div className="flex gap-2">
+							<input
+								type="text"
+								value={rejectNote}
+								onChange={(e) => setRejectNote(e.target.value)}
+								placeholder="Reason for rejection..."
+								className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleReject();
+									if (e.key === "Escape") setShowRejectInput(false);
+								}}
+							/>
+							<Button
+								size="sm"
+								variant="destructive"
+								disabled={acting || !rejectNote.trim()}
+								onClick={handleReject}
+								className="h-8"
+							>
+								Confirm
+							</Button>
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={() => setShowRejectInput(false)}
+								className="h-8"
+							>
+								Cancel
+							</Button>
+						</div>
+					) : (
+						<div className="flex gap-2">
+							<Button
+								size="sm"
+								variant="default"
+								disabled={acting}
+								onClick={handleApprove}
+								className="h-8 flex-1"
+							>
+								<Check className="h-3.5 w-3.5 mr-1" />
+								Approve
+							</Button>
+							<Button
+								size="sm"
+								variant="outline"
+								disabled={acting}
+								onClick={() => setShowRejectInput(true)}
+								className="h-8 flex-1"
+							>
+								<X className="h-3.5 w-3.5 mr-1" />
+								Reject
+							</Button>
+						</div>
+					))}
 			</div>
 
 			{/* Editor Modal */}

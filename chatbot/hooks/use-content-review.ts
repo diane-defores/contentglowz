@@ -17,6 +17,39 @@ export interface ContentItem {
 	priority: number;
 	tags: string[] | null;
 	metadata: Record<string, unknown> | null;
+	normalizedMetadata?: {
+		funnelStage: "tofu" | "mofu" | "bofu" | "retention";
+		contentStatus:
+			| "draft"
+			| "in_review"
+			| "approved"
+			| "scheduled"
+			| "published"
+			| "archived";
+		robotStatus: Record<
+			| "brief"
+			| "writing"
+			| "internalLinking"
+			| "imageGeneration"
+			| "seoValidation"
+			| "cmsSync",
+			"pending" | "in_progress" | "done" | "failed" | "skipped"
+		>;
+		metaTitle?: string;
+		metaDescription?: string;
+	};
+	metadataAudit?: {
+		score: number;
+		errorCount: number;
+		warnCount: number;
+		infoCount: number;
+		robotProgress: {
+			total: number;
+			done: number;
+			failed: number;
+			pending: number;
+		};
+	};
 	targetUrl: string | null;
 	reviewerNote: string | null;
 	reviewedBy: string | null;
@@ -37,6 +70,7 @@ export interface ContentFilters {
 	contentType?: string;
 	sourceRobot?: string;
 	projectId?: string;
+	funnelStage?: "tofu" | "mofu" | "bofu" | "retention";
 }
 
 export interface StatusChangeEntry {
@@ -134,7 +168,9 @@ export function useContentReview(projectId?: string) {
 				}
 				await Promise.all([fetchItems(), fetchStats()]);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to approve content");
+				setError(
+					err instanceof Error ? err.message : "Failed to approve content",
+				);
 				throw err;
 			}
 		},
@@ -156,7 +192,9 @@ export function useContentReview(projectId?: string) {
 				}
 				await Promise.all([fetchItems(), fetchStats()]);
 			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to reject content");
+				setError(
+					err instanceof Error ? err.message : "Failed to reject content",
+				);
 				throw err;
 			}
 		},
@@ -164,16 +202,19 @@ export function useContentReview(projectId?: string) {
 	);
 
 	// Get history for a specific record
-	const getHistory = useCallback(async (id: string): Promise<StatusChangeEntry[]> => {
-		try {
-			const res = await fetch(`${API_BASE}/${id}`);
-			if (!res.ok) throw new Error("Failed to fetch history");
-			const data = await res.json();
-			return data.history || [];
-		} catch {
-			return [];
-		}
-	}, []);
+	const getHistory = useCallback(
+		async (id: string): Promise<StatusChangeEntry[]> => {
+			try {
+				const res = await fetch(`${API_BASE}/${id}`);
+				if (!res.ok) throw new Error("Failed to fetch history");
+				const data = await res.json();
+				return data.history || [];
+			} catch {
+				return [];
+			}
+		},
+		[],
+	);
 
 	const clearError = useCallback(() => setError(null), []);
 

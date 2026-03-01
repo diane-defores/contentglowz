@@ -1,7 +1,7 @@
 import "server-only";
 
-import { Octokit } from "@octokit/rest";
 import { clerkClient } from "@clerk/nextjs/server";
+import { Octokit } from "@octokit/rest";
 
 export interface GitHubTreeEntry {
 	name: string;
@@ -34,15 +34,10 @@ export function parseGitHubUrl(
  * Gets the GitHub OAuth access token for a user via Clerk.
  * Returns null if the user hasn't connected GitHub.
  */
-export async function getGitHubToken(
-	userId: string,
-): Promise<string | null> {
+export async function getGitHubToken(userId: string): Promise<string | null> {
 	try {
 		const client = await clerkClient();
-		const tokens = await client.users.getUserOauthAccessToken(
-			userId,
-			"github",
-		);
+		const tokens = await client.users.getUserOauthAccessToken(userId, "github");
 		const token = tokens.data?.[0]?.token;
 		return token || null;
 	} catch {
@@ -54,9 +49,7 @@ export async function getGitHubToken(
  * Creates an authenticated Octokit instance for a user.
  * Returns null if no GitHub token is available.
  */
-export async function getOctokit(
-	userId: string,
-): Promise<Octokit | null> {
+export async function getOctokit(userId: string): Promise<Octokit | null> {
 	const token = await getGitHubToken(userId);
 	if (!token) return null;
 	return new Octokit({ auth: token });
@@ -182,4 +175,76 @@ export async function getDefaultBranch(
 ): Promise<string> {
 	const response = await octokit.repos.get({ owner, repo });
 	return response.data.default_branch;
+}
+
+/**
+ * Lists files recursively using Git tree API, then filters by basePath and extensions.
+ */
+export async function listRepoFilesRecursive(
+	octokit: Octokit,
+	owner: string,
+	repo: string,
+	params: {
+		basePath?: string;
+		branch?: string;
+		extensions?: string[];
+		limit?: number;
+	},
+): Promise<string[]> {
+	const branch =
+		params.branch || (await getDefaultBranch(octokit, owner, repo));
+	const ref = await octokit.git.getRef({
+		owner,
+		repo,
+		ref: `heads/${branch}`,
+	});
+
+	const tree = await octokit.git.getTree({
+		owner,
+		repo,
+		tree_sha: ref.data.object.sha,
+		recursive: "true",
+	});
+
+	const normalizedBasePath = (params.basePath || "")
+		.replace(/^\/+/, "")
+		.replace(/\/+$/, "");
+
+	const normalizedExtensions =
+		params.extensions?.map((extension) =>
+			extension.startsWith(".")
+				? extension.toLowerCase()
+				: `.${extension.toLowerCase()}`,
+		) || [];
+
+	const files: string[] = [];
+	for (const item of tree.data.tree) {
+		if (item.type !== "blob" || !item.path) {
+			continue;
+		}
+
+		if (
+			normalizedBasePath &&
+			item.path !== normalizedBasePath &&
+			!item.path.startsWith(`${normalizedBasePath}/`)
+		) {
+			continue;
+		}
+
+		if (
+			normalizedExtensions.length > 0 &&
+			!normalizedExtensions.some((extension) =>
+				item.path?.toLowerCase().endsWith(extension),
+			)
+		) {
+			continue;
+		}
+
+		files.push(item.path);
+		if (params.limit && files.length >= params.limit) {
+			break;
+		}
+	}
+
+	return files;
 }

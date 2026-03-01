@@ -788,6 +788,9 @@ export const contentSource = sqliteTable("ContentSource", {
 		fileCount?: number;
 		lastCommitSha?: string;
 		description?: string;
+		metadataProfile?: "frontmatter-v1";
+		metadataValidation?: "strict";
+		platform?: "astro-next";
 	}>(),
 	createdAt: integer("createdAt", { mode: "timestamp" })
 		.notNull()
