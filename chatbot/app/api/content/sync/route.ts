@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 		const sources = sourceId
 			? [await getContentSourceById({ id: sourceId })].filter(
 					(entry): entry is NonNullable<typeof entry> =>
-						Boolean(entry) && entry.userId === userId,
+						Boolean(entry) && entry!.userId === userId,
 				)
 			: await getContentSourcesByUserId({ userId, projectId });
 

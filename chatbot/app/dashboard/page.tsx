@@ -11,16 +11,10 @@ function SimpleLoading() {
 
 // Client component for dynamic content
 async function DashboardClient() {
-	// Dynamically import to ensure client-side only
 	const { DashboardContent } = await import(
 		"@/components/dashboard/dashboard-content"
 	);
-	const { ProjectsProvider } = await import("@/contexts/projects-context");
-	return (
-		<ProjectsProvider>
-			<DashboardContent />
-		</ProjectsProvider>
-	);
+	return <DashboardContent />;
 }
 
 export default function DashboardPage() {

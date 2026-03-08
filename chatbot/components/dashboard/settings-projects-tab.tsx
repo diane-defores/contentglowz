@@ -33,6 +33,11 @@ import {
 import { toast } from "@/components/toast";
 import { type Project } from "@/hooks/use-projects";
 import { useProjectsContext } from "@/contexts/projects-context";
+import {
+	GitHubRepoPicker,
+	type GitHubRepo,
+} from "./github-repo-picker";
+import { PostHogProjectPicker } from "./posthog-project-picker";
 
 export function SettingsProjectsTab() {
 	const {
@@ -149,6 +154,19 @@ export function SettingsProjectsTab() {
 			toast({ type: "error", description: message });
 		}
 	};
+
+	const handleRepoSelect = (repo: GitHubRepo) => {
+		setFormData((prev) => ({
+			...prev,
+			name: repo.name,
+			url: repo.html_url,
+			type: "github",
+			description: repo.description || "",
+		}));
+	};
+
+	// Whether we're in create mode (not editing) and showing the GitHub picker
+	const isNewGitHub = showNewDialog && !editingProject && formData.type === "github";
 
 	if (loading) {
 		return (
@@ -274,23 +292,13 @@ export function SettingsProjectsTab() {
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="project-name">Name</Label>
-							<Input
-								id="project-name"
-								placeholder="My Website"
-								value={formData.name}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, name: e.target.value }))
-								}
-							/>
-						</div>
-						<div className="grid gap-2">
 							<Label htmlFor="project-type">Type</Label>
 							<Select
 								value={formData.type}
 								onValueChange={(value: "github" | "website") =>
-									setFormData((prev) => ({ ...prev, type: value }))
+									setFormData({ name: "", url: "", type: value, description: "", posthogProjectId: "" })
 								}
+								disabled={!!editingProject}
 							>
 								<SelectTrigger id="project-type">
 									<SelectValue />
@@ -311,54 +319,70 @@ export function SettingsProjectsTab() {
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="project-url">
-								{formData.type === "github" ? "Repository URL" : "Website URL"}
-							</Label>
-							<Input
-								id="project-url"
-								placeholder={
-									formData.type === "github"
-										? "https://github.com/user/repo"
-										: "https://example.com"
-								}
-								value={formData.url}
-								onChange={(e) =>
-									setFormData((prev) => ({ ...prev, url: e.target.value }))
-								}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="project-description">Description (optional)</Label>
-							<Input
-								id="project-description"
-								placeholder="Brief description..."
-								value={formData.description}
-								onChange={(e) =>
-									setFormData((prev) => ({
-										...prev,
-										description: e.target.value,
-									}))
-								}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="project-posthog-id">PostHog Project ID (optional)</Label>
-							<Input
-								id="project-posthog-id"
-								placeholder="12345"
-								value={formData.posthogProjectId}
-								onChange={(e) =>
-									setFormData((prev) => ({
-										...prev,
-										posthogProjectId: e.target.value,
-									}))
-								}
-							/>
-							<p className="text-xs text-muted-foreground">
-								Found at PostHog &rarr; Settings &rarr; Project &rarr; Project ID. Links this project to a PostHog project for analytics.
-							</p>
-						</div>
+						{isNewGitHub && !formData.url && (
+							<div className="grid gap-2">
+								<Label>Select a repository</Label>
+								<GitHubRepoPicker onSelect={handleRepoSelect} />
+							</div>
+						)}
+						{(formData.type === "website" || formData.url || editingProject) && (
+							<>
+								<div className="grid gap-2">
+									<Label htmlFor="project-name">Name</Label>
+									<Input
+										id="project-name"
+										placeholder="My Website"
+										value={formData.name}
+										onChange={(e) =>
+											setFormData((prev) => ({ ...prev, name: e.target.value }))
+										}
+									/>
+								</div>
+								<div className="grid gap-2">
+									<Label htmlFor="project-url">
+										{formData.type === "github" ? "Repository URL" : "Website URL"}
+									</Label>
+									<Input
+										id="project-url"
+										placeholder={
+											formData.type === "github"
+												? "https://github.com/user/repo"
+												: "https://example.com"
+										}
+										value={formData.url}
+										onChange={(e) =>
+											setFormData((prev) => ({ ...prev, url: e.target.value }))
+										}
+									/>
+								</div>
+								<div className="grid gap-2">
+									<Label htmlFor="project-description">Description (optional)</Label>
+									<Input
+										id="project-description"
+										placeholder="Brief description..."
+										value={formData.description}
+										onChange={(e) =>
+											setFormData((prev) => ({
+												...prev,
+												description: e.target.value,
+											}))
+										}
+									/>
+								</div>
+								<div className="grid gap-2">
+									<Label>PostHog Project (optional)</Label>
+									<PostHogProjectPicker
+										value={formData.posthogProjectId}
+										onChange={(id) =>
+											setFormData((prev) => ({
+												...prev,
+												posthogProjectId: id === "none" ? "" : id,
+											}))
+										}
+									/>
+								</div>
+							</>
+						)}
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={handleCloseDialog}>

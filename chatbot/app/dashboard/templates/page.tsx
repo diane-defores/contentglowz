@@ -12,12 +12,7 @@ async function TemplatesClient() {
 	const { TemplatesPage } = await import(
 		"@/components/dashboard/templates-page"
 	);
-	const { ProjectsProvider } = await import("@/contexts/projects-context");
-	return (
-		<ProjectsProvider>
-			<TemplatesPage />
-		</ProjectsProvider>
-	);
+	return <TemplatesPage />;
 }
 
 export default function TemplatesRoute() {

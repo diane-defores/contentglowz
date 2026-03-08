@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { consumeGitHubReturnFlag } from "./github-connect-prompt";
+import {
+	GitHubRepoPicker,
+	type GitHubRepo,
+} from "./github-repo-picker";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -113,6 +117,15 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 		if (ok) await deleteProject(project.id);
 	};
 
+	const handleRepoSelect = (repo: GitHubRepo) => {
+		setNewProject({
+			name: repo.name,
+			url: repo.html_url,
+			type: "github",
+			description: repo.description || "",
+		});
+	};
+
 	if (loading) {
 		return (
 			<Button variant="outline" disabled className="h-9 justify-start [&_svg]:size-5">
@@ -211,22 +224,11 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="name">Name</Label>
-							<Input
-								id="name"
-								placeholder="My Website"
-								value={newProject.name}
-								onChange={(e) =>
-									setNewProject((prev) => ({ ...prev, name: e.target.value }))
-								}
-							/>
-						</div>
-						<div className="grid gap-2">
 							<Label htmlFor="type">Type</Label>
 							<Select
 								value={newProject.type}
 								onValueChange={(value: "github" | "website") =>
-									setNewProject((prev) => ({ ...prev, type: value }))
+									setNewProject({ name: "", url: "", type: value, description: "" })
 								}
 							>
 								<SelectTrigger>
@@ -248,37 +250,58 @@ export function ProjectSelector({ onProjectChange }: ProjectSelectorProps) {
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="url">
-								{newProject.type === "github" ? "Repository URL" : "Website URL"}
-							</Label>
-							<Input
-								id="url"
-								placeholder={
-									newProject.type === "github"
-										? "https://github.com/user/repo"
-										: "https://example.com"
-								}
-								value={newProject.url}
-								onChange={(e) =>
-									setNewProject((prev) => ({ ...prev, url: e.target.value }))
-								}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="description">Description (optional)</Label>
-							<Input
-								id="description"
-								placeholder="Brief description..."
-								value={newProject.description}
-								onChange={(e) =>
-									setNewProject((prev) => ({
-										...prev,
-										description: e.target.value,
-									}))
-								}
-							/>
-						</div>
+						{newProject.type === "github" && !newProject.url && (
+							<div className="grid gap-2">
+								<Label>Select a repository</Label>
+								<GitHubRepoPicker onSelect={handleRepoSelect} />
+							</div>
+						)}
+						{(newProject.type === "website" || newProject.url) && (
+							<>
+								<div className="grid gap-2">
+									<Label htmlFor="name">Name</Label>
+									<Input
+										id="name"
+										placeholder="My Website"
+										value={newProject.name}
+										onChange={(e) =>
+											setNewProject((prev) => ({ ...prev, name: e.target.value }))
+										}
+									/>
+								</div>
+								<div className="grid gap-2">
+									<Label htmlFor="url">
+										{newProject.type === "github" ? "Repository URL" : "Website URL"}
+									</Label>
+									<Input
+										id="url"
+										placeholder={
+											newProject.type === "github"
+												? "https://github.com/user/repo"
+												: "https://example.com"
+										}
+										value={newProject.url}
+										onChange={(e) =>
+											setNewProject((prev) => ({ ...prev, url: e.target.value }))
+										}
+									/>
+								</div>
+								<div className="grid gap-2">
+									<Label htmlFor="description">Description (optional)</Label>
+									<Input
+										id="description"
+										placeholder="Brief description..."
+										value={newProject.description}
+										onChange={(e) =>
+											setNewProject((prev) => ({
+												...prev,
+												description: e.target.value,
+											}))
+										}
+									/>
+								</div>
+							</>
+						)}
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setShowNewDialog(false)}>

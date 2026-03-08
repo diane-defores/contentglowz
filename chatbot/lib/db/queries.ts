@@ -1714,7 +1714,9 @@ export async function updateUserApiKey({
 		| "bunnyCdnHostname"
 		| "consensus"
 		| "tavily"
-		| "groq";
+		| "groq"
+		| "posthog"
+		| "posthogHost";
 	apiKey: string | null;
 }): Promise<UserSettings> {
 	try {

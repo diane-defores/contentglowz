@@ -1,4 +1,4 @@
-CREATE TABLE `ContentSource` (
+CREATE TABLE IF NOT EXISTS `ContentSource` (
 	`id` text PRIMARY KEY NOT NULL,
 	`userId` text NOT NULL REFERENCES `User`(`id`),
 	`projectId` text NOT NULL REFERENCES `Project`(`id`),
@@ -16,6 +16,6 @@ CREATE TABLE `ContentSource` (
 	`updatedAt` integer NOT NULL
 );
 
-CREATE INDEX `idx_content_source_user` ON `ContentSource` (`userId`);
-CREATE INDEX `idx_content_source_project` ON `ContentSource` (`projectId`);
-CREATE INDEX `idx_content_source_repo` ON `ContentSource` (`repoOwner`, `repoName`);
+CREATE INDEX IF NOT EXISTS `idx_content_source_user` ON `ContentSource` (`userId`);
+CREATE INDEX IF NOT EXISTS `idx_content_source_project` ON `ContentSource` (`projectId`);
+CREATE INDEX IF NOT EXISTS `idx_content_source_repo` ON `ContentSource` (`repoOwner`, `repoName`);

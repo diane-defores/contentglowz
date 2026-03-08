@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
 				{
 					error:
 						"PostHog API key not configured. Add your personal API key in Settings.",
+					code: "not_configured",
 				},
 				{ status: 400 },
 			);
@@ -114,6 +115,7 @@ export async function GET(request: NextRequest) {
 				{
 					error:
 						"PostHog project ID not configured for this project. Update the project settings.",
+					code: "not_configured",
 				},
 				{ status: 400 },
 			);

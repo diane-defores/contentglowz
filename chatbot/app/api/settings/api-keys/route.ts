@@ -56,7 +56,7 @@ export async function PUT(request: NextRequest) {
 						tavily: updated.apiKeys.tavily ? "••••••••" : null,
 						groq: updated.apiKeys.groq ? "••••••••" : null,
 						posthog: updated.apiKeys.posthog ? "••••••••" : null,
-						posthogHost: updated.apiKeys.posthogHost ? "••••••••" : null,
+						posthogHost: updated.apiKeys.posthogHost || null,
 					}
 				: null,
 		};

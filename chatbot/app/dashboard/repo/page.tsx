@@ -12,12 +12,7 @@ async function RepoClient() {
 	const { RepoBrowserPage } = await import(
 		"@/components/dashboard/repo-browser-page"
 	);
-	const { ProjectsProvider } = await import("@/contexts/projects-context");
-	return (
-		<ProjectsProvider>
-			<RepoBrowserPage />
-		</ProjectsProvider>
-	);
+	return <RepoBrowserPage />;
 }
 
 export default function RepoPage() {

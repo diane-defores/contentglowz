@@ -526,7 +526,7 @@ export function ImageRobotPanel() {
 							<Label>Strategy</Label>
 							<Select
 								value={strategyType}
-								onValueChange={setStrategyType}
+								onValueChange={(v) => setStrategyType(v as "minimal" | "standard" | "hero+sections" | "rich")}
 								disabled={loading}
 							>
 								<SelectTrigger className="w-48">

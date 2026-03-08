@@ -181,8 +181,10 @@ export class PostHogClient {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				kind: "HogQLQuery",
-				query: hogql,
+				query: {
+					kind: "HogQLQuery",
+					query: hogql,
+				},
 			}),
 		});
 

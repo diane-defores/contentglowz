@@ -59,7 +59,7 @@ export function NewsletterTab({ projectId }: NewsletterTabProps) {
 		generateNow,
 		clearGenerationResult,
 		clearError: clearGeneratorsError,
-	} = useGenerators();
+	} = useGenerators(projectId);
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingGenerator, setEditingGenerator] =

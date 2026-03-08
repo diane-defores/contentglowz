@@ -33,6 +33,14 @@ export class ChatPage {
 		return this.page.getByTestId("scroll-to-bottom-button");
 	}
 
+	async goto() {
+		await this.page.goto("/");
+	}
+
+	async login() {
+		// Clerk auth is handled via test fixtures / cookies
+	}
+
 	async createNewChat() {
 		await this.page.goto("/");
 	}

@@ -12,12 +12,7 @@ async function RitualClient() {
 	const { RitualPage } = await import(
 		"@/components/dashboard/ritual-page"
 	);
-	const { ProjectsProvider } = await import("@/contexts/projects-context");
-	return (
-		<ProjectsProvider>
-			<RitualPage />
-		</ProjectsProvider>
-	);
+	return <RitualPage />;
 }
 
 export default function RitualDashboard() {

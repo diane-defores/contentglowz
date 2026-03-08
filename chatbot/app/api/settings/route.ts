@@ -26,7 +26,7 @@ export async function GET() {
 				tavily: settings.apiKeys.tavily ? "••••••••" : null,
 				groq: settings.apiKeys.groq ? "••••••••" : null,
 				posthog: settings.apiKeys.posthog ? "••••••••" : null,
-				posthogHost: settings.apiKeys.posthogHost ? "••••••••" : null,
+				posthogHost: settings.apiKeys.posthogHost || null,
 			} : null,
 		};
 
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
 				tavily: updated.apiKeys.tavily ? "••••••••" : null,
 				groq: updated.apiKeys.groq ? "••••••••" : null,
 				posthog: updated.apiKeys.posthog ? "••••••••" : null,
-				posthogHost: updated.apiKeys.posthogHost ? "••••••••" : null,
+				posthogHost: updated.apiKeys.posthogHost || null,
 			} : null,
 		};
 

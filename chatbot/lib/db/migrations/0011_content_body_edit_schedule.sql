@@ -1,4 +1,4 @@
-CREATE TABLE `ContentBody` (
+CREATE TABLE IF NOT EXISTS `ContentBody` (
 	`id` text PRIMARY KEY NOT NULL,
 	`contentId` text NOT NULL,
 	`body` text NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE `ContentBody` (
 	FOREIGN KEY (`contentId`) REFERENCES `ContentRecord`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `ContentEdit` (
+CREATE TABLE IF NOT EXISTS `ContentEdit` (
 	`id` text PRIMARY KEY NOT NULL,
 	`contentId` text NOT NULL,
 	`editedBy` text NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE `ContentEdit` (
 	FOREIGN KEY (`contentId`) REFERENCES `ContentRecord`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `ScheduleJob` (
+CREATE TABLE IF NOT EXISTS `ScheduleJob` (
 	`id` text PRIMARY KEY NOT NULL,
 	`userId` text NOT NULL,
 	`projectId` text,
