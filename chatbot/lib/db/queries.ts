@@ -1346,6 +1346,7 @@ export async function createProject({
 	description,
 	isDefault,
 	settings,
+	posthogProjectId,
 }: {
 	userId: string;
 	name: string;
@@ -1354,6 +1355,7 @@ export async function createProject({
 	description?: string;
 	isDefault?: boolean;
 	settings?: Project["settings"];
+	posthogProjectId?: string;
 }): Promise<Project> {
 	try {
 		// If this is the default, unset other defaults first
@@ -1373,6 +1375,7 @@ export async function createProject({
 				type: type || "github",
 				description,
 				isDefault: isDefault || false,
+				posthogProjectId,
 				settings,
 			})
 			.returning();
@@ -1391,6 +1394,7 @@ export async function updateProject({
 	description,
 	isDefault,
 	settings,
+	posthogProjectId,
 	lastAnalyzedAt,
 }: {
 	id: string;
@@ -1400,6 +1404,7 @@ export async function updateProject({
 	description?: string;
 	isDefault?: boolean;
 	settings?: Project["settings"];
+	posthogProjectId?: string;
 	lastAnalyzedAt?: Date;
 }): Promise<Project> {
 	try {
@@ -1424,6 +1429,7 @@ export async function updateProject({
 		if (description !== undefined) updateData.description = description;
 		if (isDefault !== undefined) updateData.isDefault = isDefault;
 		if (settings !== undefined) updateData.settings = settings;
+		if (posthogProjectId !== undefined) updateData.posthogProjectId = posthogProjectId;
 		if (lastAnalyzedAt !== undefined)
 			updateData.lastAnalyzedAt = lastAnalyzedAt;
 

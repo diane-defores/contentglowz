@@ -25,6 +25,11 @@ All notable changes to my-robots are documented here.
 - Multi-directory content support — `ProjectSettings.content_directories[]` with backward-compat migration
 - `RunHistory._RunContext.mark_failed()` — handle early-return failure paths inside context manager
 - Chatbot robot runs tab + robots tab — new API routes, React hooks, DB migration
+- Strategy frontmatter governance (project-scoped):
+  - `POST /api/content/frontmatter-audit` with modes: `audit`, `dry-run`, `autofix`
+  - Canonical normalization checks for `funnelStage`, `seoCluster`, `ctaType`, `contentStatus` (+ legacy aliases)
+  - Grouped autofix commits (single commit per `repo@branch`) via GitHub tree/commit API
+  - JSON/CSV exportable audit report for traceability
 
 ### Changed
 - `repo_analyzer` — workspace cache-first, clone only on first run, no hardcoded local paths
@@ -33,3 +38,4 @@ All notable changes to my-robots are documented here.
 - API health check now uses importlib instead of file-existence check
 - Removed redundant `update_sitemap` from publishing pipeline (Astro owns this via `@astrojs/sitemap`)
 - Consolidated RunHistory logging — removed duplicate JSON file logging in `scheduler_crew` + `image_crew`
+- `Grow -> Strategy` now treats registered project repositories (`Content Sources`) as the content container source of truth, with strict `projectId` scoping across funnel/cluster analytics

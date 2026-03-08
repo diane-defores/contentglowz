@@ -507,10 +507,11 @@ class SEOApiClient {
 		articleTitle: string,
 		articleSlug: string,
 		options?: {
+			projectId?: string;
 			strategyType?: "minimal" | "standard" | "hero+sections" | "rich";
 			styleGuide?: string;
 			generateResponsive?: boolean;
-			pathType?: "articles" | "newsletter" | "social";
+			pathType?: "articles" | "newsletter" | "social" | "thumbnails";
 		},
 	) {
 		return this.request<{
@@ -536,6 +537,7 @@ class SEOApiClient {
 		}>("/api/images/generate", {
 			method: "POST",
 			body: JSON.stringify({
+				project_id: options?.projectId,
 				article_content: articleContent,
 				article_title: articleTitle,
 				article_slug: articleSlug,
@@ -556,7 +558,7 @@ class SEOApiClient {
 		altText: string,
 		options?: {
 			imageType?: "hero" | "section" | "thumbnail" | "og";
-			pathType?: "articles" | "newsletter" | "social";
+			pathType?: "articles" | "newsletter" | "social" | "thumbnails";
 		},
 	) {
 		return this.request<{
@@ -601,7 +603,11 @@ class SEOApiClient {
 	/**
 	 * Get image generation history
 	 */
-	async getImageHistory(limit = 20) {
+	async getImageHistory(limit = 20, projectId?: string) {
+		const params = new URLSearchParams({ limit: String(limit) });
+		if (projectId) {
+			params.set("project_id", projectId);
+		}
 		return this.request<{
 			items: Array<{
 				workflow_id: string;
@@ -616,7 +622,162 @@ class SEOApiClient {
 				total_cdn_size_kb: number;
 			}>;
 			total_count: number;
-		}>(`/api/images/history?limit=${limit}`);
+		}>(`/api/images/history?${params.toString()}`);
+	}
+
+	/**
+	 * List image generation profiles (system + custom)
+	 */
+	async getImageProfiles(projectId: string) {
+		return this.request<{
+			items: Array<{
+				profile_id: string;
+				name: string;
+				description: string;
+				image_type: "hero_image" | "section_image" | "og_card" | "thumbnail";
+				image_provider: "robolly" | "openai";
+				style_guide: string;
+				path_type: "articles" | "newsletter" | "social" | "thumbnails";
+				template_id: string | null;
+				default_alt_text: string | null;
+				base_prompt: string | null;
+				tags: string[];
+				is_system: boolean;
+			}>;
+			total_count: number;
+		}>(`/api/images/profiles?project_id=${encodeURIComponent(projectId)}`);
+	}
+
+	/**
+	 * Create or update a custom image profile
+	 */
+	async upsertImageProfile(params: {
+		projectId: string;
+		profileId: string;
+		name: string;
+		description?: string;
+		imageType: "hero_image" | "section_image" | "og_card" | "thumbnail";
+		imageProvider?: "robolly" | "openai";
+		styleGuide?: string;
+		pathType?: "articles" | "newsletter" | "social" | "thumbnails";
+		templateId?: string | null;
+		defaultAltText?: string | null;
+		basePrompt?: string | null;
+		tags?: string[];
+	}) {
+		return this.request<{
+			profile_id: string;
+			name: string;
+			description: string;
+			image_type: "hero_image" | "section_image" | "og_card" | "thumbnail";
+			image_provider: "robolly" | "openai";
+			style_guide: string;
+			path_type: "articles" | "newsletter" | "social" | "thumbnails";
+			template_id: string | null;
+			default_alt_text: string | null;
+			base_prompt: string | null;
+			tags: string[];
+			is_system: boolean;
+		}>(
+			`/api/images/profiles?project_id=${encodeURIComponent(params.projectId)}`,
+			{
+				method: "POST",
+				body: JSON.stringify({
+					profile_id: params.profileId,
+					name: params.name,
+					description: params.description || "",
+					image_type: params.imageType,
+					image_provider: params.imageProvider || "robolly",
+					style_guide: params.styleGuide || "brand_primary",
+					path_type: params.pathType || "articles",
+					template_id: params.templateId ?? null,
+					default_alt_text: params.defaultAltText ?? null,
+					base_prompt: params.basePrompt ?? null,
+					tags: params.tags || [],
+				}),
+			},
+		);
+	}
+
+	/**
+	 * Delete a custom image profile
+	 */
+	async deleteImageProfile(profileId: string, projectId: string) {
+		return this.request<{
+			success: boolean;
+			profile_id: string;
+		}>(
+			`/api/images/profiles/${encodeURIComponent(profileId)}?project_id=${encodeURIComponent(projectId)}`,
+			{
+				method: "DELETE",
+			},
+		);
+	}
+
+	/**
+	 * Generate a single image on-the-fly using a saved profile
+	 */
+	async generateImageFromProfile(params: {
+		projectId: string;
+		profileId: string;
+		titleText: string;
+		subtitleText?: string;
+		fileName?: string;
+		altText?: string;
+		customPrompt?: string;
+		providerOverride?: "robolly" | "openai";
+		styleGuideOverride?: string;
+		pathTypeOverride?: "articles" | "newsletter" | "social" | "thumbnails";
+		templateIdOverride?: string;
+	}) {
+		return this.request<{
+			success: boolean;
+			profile: {
+				profile_id: string;
+				name: string;
+				description: string;
+				image_type: "hero_image" | "section_image" | "og_card" | "thumbnail";
+				image_provider: "robolly" | "openai";
+				style_guide: string;
+				path_type: "articles" | "newsletter" | "social" | "thumbnails";
+				template_id: string | null;
+				default_alt_text: string | null;
+				base_prompt: string | null;
+				tags: string[];
+				is_system: boolean;
+			} | null;
+			image_type: string | null;
+			source_image_url: string | null;
+			cdn_url: string | null;
+			primary_url: string | null;
+			responsive_urls: Record<string, string>;
+			render_id: string | null;
+			file_name: string | null;
+			alt_text: string | null;
+			provider_used: string | null;
+			prompt_used: string | null;
+			style_guide_used: string | null;
+			path_type_used: string | null;
+			storage_path: string | null;
+			generation_time_ms: number | null;
+			upload_time_ms: number | null;
+			error: string | null;
+		}>("/api/images/generate-from-profile", {
+			method: "POST",
+			body: JSON.stringify({
+				project_id: params.projectId,
+				profile_id: params.profileId,
+				title_text: params.titleText,
+				subtitle_text: params.subtitleText,
+				file_name: params.fileName,
+				alt_text: params.altText,
+				custom_prompt: params.customPrompt,
+				provider_override: params.providerOverride,
+				style_guide_override: params.styleGuideOverride,
+				path_type_override: params.pathTypeOverride,
+				template_id_override: params.templateIdOverride,
+			}),
+		});
 	}
 
 	// ─────────────────────────────────────────────────
@@ -654,10 +815,7 @@ class SEOApiClient {
 	/**
 	 * Upload Instagram cookies
 	 */
-	async uploadReelsCookies(params: {
-		userId: string;
-		cookiesContent: string;
-	}) {
+	async uploadReelsCookies(params: { userId: string; cookiesContent: string }) {
 		return this.request<{ success: boolean }>("/api/reels/cookies", {
 			method: "POST",
 			body: JSON.stringify({

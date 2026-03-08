@@ -3,6 +3,21 @@ import { z } from "zod";
 export const FUNNEL_STAGES = ["tofu", "mofu", "bofu", "retention"] as const;
 export type FunnelStage = (typeof FUNNEL_STAGES)[number];
 
+export const SEO_CLUSTERS = [
+	"tech-ia",
+	"business-profils",
+	"marketing",
+	"seo",
+	"affiliation",
+	"e-commerce",
+	"apps-outils",
+	"finance",
+	"entrepreneuriat",
+	"uncategorized",
+] as const;
+export type KnownSeoCluster = (typeof SEO_CLUSTERS)[number];
+export type SeoCluster = string;
+
 export const CTA_TYPES = [
 	"lead_magnet",
 	"newsletter",
@@ -61,6 +76,7 @@ const canonicalMetadataSchema = z.object({
 	draft: z.boolean().default(false),
 	locale: z.string().min(2).default("fr"),
 	funnelStage: z.enum(FUNNEL_STAGES).default("mofu"),
+	seoCluster: z.string().min(1).default("uncategorized"),
 	targetPersona: z.string().optional(),
 	targetKeyword: z.string().optional(),
 	ctaType: z.enum(CTA_TYPES).default("newsletter"),
@@ -111,6 +127,31 @@ const funnelAliasMap: Record<string, FunnelStage> = {
 	decision: "bofu",
 	retention: "retention",
 	loyalty: "retention",
+};
+
+const seoClusterAliasMap: Record<string, KnownSeoCluster> = {
+	"tech-ia": "tech-ia",
+	"tech/ia": "tech-ia",
+	tech: "tech-ia",
+	ia: "tech-ia",
+	ai: "tech-ia",
+	"business-profils": "business-profils",
+	"business/profils": "business-profils",
+	business: "business-profils",
+	profils: "business-profils",
+	marketing: "marketing",
+	seo: "seo",
+	affiliation: "affiliation",
+	"e-commerce": "e-commerce",
+	ecommerce: "e-commerce",
+	"apps-outils": "apps-outils",
+	"apps/outils": "apps-outils",
+	apps: "apps-outils",
+	outils: "apps-outils",
+	tools: "apps-outils",
+	finance: "finance",
+	entrepreneuriat: "entrepreneuriat",
+	entrepreneurship: "entrepreneuriat",
 };
 
 const ctaAliasMap: Record<string, CtaType> = {
@@ -209,6 +250,26 @@ function slugify(input: string): string {
 		.replace(/[^a-z0-9]+/g, "-")
 		.replace(/^-+|-+$/g, "")
 		.replace(/-{2,}/g, "-");
+}
+
+function normalizeClusterSlug(input: string): string {
+	return input
+		.toLowerCase()
+		.trim()
+		.replace(/['’]/g, "")
+		.replace(/[^\w\s/-]+/g, "")
+		.replace(/[/_\s]+/g, "-")
+		.replace(/-{2,}/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
+function normalizeSeoCluster(value: unknown): SeoCluster {
+	const rawValue = asString(value);
+	if (!rawValue) return "uncategorized";
+
+	const candidate = normalizeClusterSlug(rawValue);
+	if (!candidate) return "uncategorized";
+	return seoClusterAliasMap[candidate] ?? candidate;
 }
 
 function normalizeFunnelStage(value: unknown): FunnelStage {
@@ -424,6 +485,9 @@ export function normalizeContentMetadata(params: {
 		draft: asBoolean(raw.draft) ?? false,
 		locale: asString(raw.locale) ?? "fr",
 		funnelStage: normalizeFunnelStage(raw.funnelStage ?? raw.funnel_stage),
+		seoCluster: normalizeSeoCluster(
+			raw.seoCluster ?? raw.seo_cluster ?? raw.cluster,
+		),
 		targetPersona: asString(raw.targetPersona) ?? asString(raw.target_persona),
 		targetKeyword: asString(raw.targetKeyword) ?? asString(raw.target_keyword),
 		ctaType: normalizeCtaType(raw.ctaType ?? raw.cta_type),

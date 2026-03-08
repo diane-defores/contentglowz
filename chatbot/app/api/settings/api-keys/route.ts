@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { updateUserApiKey } from "@/lib/db/queries";
 
-const VALID_PROVIDERS = ["exa", "firecrawl", "serper", "openrouter", "bunnyStorage", "bunnyCdn", "bunnyCdnHostname", "consensus", "tavily", "groq"] as const;
+const VALID_PROVIDERS = ["exa", "firecrawl", "serper", "openrouter", "bunnyStorage", "bunnyCdn", "bunnyCdnHostname", "consensus", "tavily", "groq", "posthog", "posthogHost"] as const;
 type Provider = (typeof VALID_PROVIDERS)[number];
 
 export async function PUT(request: NextRequest) {
@@ -55,6 +55,8 @@ export async function PUT(request: NextRequest) {
 						consensus: updated.apiKeys.consensus ? "••••••••" : null,
 						tavily: updated.apiKeys.tavily ? "••••••••" : null,
 						groq: updated.apiKeys.groq ? "••••••••" : null,
+						posthog: updated.apiKeys.posthog ? "••••••••" : null,
+						posthogHost: updated.apiKeys.posthogHost ? "••••••••" : null,
 					}
 				: null,
 		};

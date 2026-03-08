@@ -19,9 +19,14 @@ export async function GET() {
 				firecrawl: settings.apiKeys.firecrawl ? "••••••••" : null,
 				serper: settings.apiKeys.serper ? "••••••••" : null,
 				openrouter: settings.apiKeys.openrouter ? "••••••••" : null,
+				bunnyStorage: settings.apiKeys.bunnyStorage ? "••••••••" : null,
+				bunnyCdn: settings.apiKeys.bunnyCdn ? "••••••••" : null,
+				bunnyCdnHostname: settings.apiKeys.bunnyCdnHostname ? "••••••••" : null,
 				consensus: settings.apiKeys.consensus ? "••••••••" : null,
 				tavily: settings.apiKeys.tavily ? "••••••••" : null,
 				groq: settings.apiKeys.groq ? "••••••••" : null,
+				posthog: settings.apiKeys.posthog ? "••••••••" : null,
+				posthogHost: settings.apiKeys.posthogHost ? "••••••••" : null,
 			} : null,
 		};
 
@@ -60,9 +65,14 @@ export async function PUT(request: NextRequest) {
 				firecrawl: updated.apiKeys.firecrawl ? "••••••••" : null,
 				serper: updated.apiKeys.serper ? "••••••••" : null,
 				openrouter: updated.apiKeys.openrouter ? "••••••••" : null,
+				bunnyStorage: updated.apiKeys.bunnyStorage ? "••••••••" : null,
+				bunnyCdn: updated.apiKeys.bunnyCdn ? "••••••••" : null,
+				bunnyCdnHostname: updated.apiKeys.bunnyCdnHostname ? "••••••••" : null,
 				consensus: updated.apiKeys.consensus ? "••••••••" : null,
 				tavily: updated.apiKeys.tavily ? "••••••••" : null,
 				groq: updated.apiKeys.groq ? "••••••••" : null,
+				posthog: updated.apiKeys.posthog ? "••••••••" : null,
+				posthogHost: updated.apiKeys.posthogHost ? "••••••••" : null,
 			} : null,
 		};
 

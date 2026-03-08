@@ -53,10 +53,11 @@ export function SettingsProjectsTab() {
 		url: "",
 		type: "github" as "github" | "website",
 		description: "",
+		posthogProjectId: "",
 	});
 
 	const resetForm = () => {
-		setFormData({ name: "", url: "", type: "github", description: "" });
+		setFormData({ name: "", url: "", type: "github", description: "", posthogProjectId: "" });
 	};
 
 	const handleOpenNewDialog = () => {
@@ -70,6 +71,7 @@ export function SettingsProjectsTab() {
 			url: project.url,
 			type: project.type,
 			description: project.description || "",
+			posthogProjectId: project.posthogProjectId || "",
 		});
 		setEditingProject(project);
 	};
@@ -339,6 +341,23 @@ export function SettingsProjectsTab() {
 									}))
 								}
 							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="project-posthog-id">PostHog Project ID (optional)</Label>
+							<Input
+								id="project-posthog-id"
+								placeholder="12345"
+								value={formData.posthogProjectId}
+								onChange={(e) =>
+									setFormData((prev) => ({
+										...prev,
+										posthogProjectId: e.target.value,
+									}))
+								}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Found at PostHog &rarr; Settings &rarr; Project &rarr; Project ID. Links this project to a PostHog project for analytics.
+							</p>
 						</div>
 					</div>
 					<DialogFooter>

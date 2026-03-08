@@ -20,6 +20,8 @@ export interface UserSettings {
 		consensus?: string | null;
 		tavily?: string | null;
 		groq?: string | null;
+		posthog?: string | null;
+		posthogHost?: string | null;
 	} | null;
 	defaultProjectId: string | null;
 	dashboardLayout: {
@@ -94,7 +96,7 @@ export function useSettings() {
 	);
 
 	const updateApiKey = useCallback(
-		async (provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname" | "consensus" | "tavily" | "groq", apiKey: string | null) => {
+		async (provider: "exa" | "firecrawl" | "serper" | "openrouter" | "bunnyStorage" | "bunnyCdn" | "bunnyCdnHostname" | "consensus" | "tavily" | "groq" | "posthog" | "posthogHost", apiKey: string | null) => {
 			setError(null);
 			setSaving(true);
 

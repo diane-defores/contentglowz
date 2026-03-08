@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
 	try {
 		const body = await request.json();
-		const { name, url, type, description, isDefault, settings } = body;
+		const { name, url, type, description, isDefault, settings, posthogProjectId } = body;
 
 		if (!name || !url) {
 			return NextResponse.json(
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
 			description,
 			isDefault,
 			settings,
+			posthogProjectId,
 		});
 
 		return NextResponse.json(project, { status: 201 });

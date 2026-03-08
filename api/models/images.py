@@ -1,7 +1,7 @@
 """Pydantic models for Image Robot API endpoints"""
 
 from pydantic import BaseModel, Field, HttpUrl
-from typing import Optional, List, Dict, Any, Literal
+from typing import Optional, List, Dict, Literal
 from datetime import datetime
 
 
@@ -11,6 +11,10 @@ from datetime import datetime
 
 class GenerateImagesRequest(BaseModel):
     """Request to generate images for an article"""
+    project_id: Optional[str] = Field(
+        default=None,
+        description="Optional project ID for project-scoped history and settings"
+    )
     article_content: str = Field(
         ...,
         min_length=100,
@@ -44,7 +48,7 @@ class GenerateImagesRequest(BaseModel):
         default=True,
         description="Whether to generate responsive image variants"
     )
-    path_type: Literal["articles", "newsletter", "social"] = Field(
+    path_type: Literal["articles", "newsletter", "social", "thumbnails"] = Field(
         default="articles",
         description="CDN path type for organizing images"
     )
@@ -72,10 +76,193 @@ class UploadImageRequest(BaseModel):
         default="hero",
         description="Type of image being uploaded"
     )
-    path_type: Literal["articles", "newsletter", "social"] = Field(
+    path_type: Literal["articles", "newsletter", "social", "thumbnails"] = Field(
         default="articles",
         description="CDN path type for organizing images"
     )
+
+
+class ImageProfileData(BaseModel):
+    """Image generation profile configuration"""
+    profile_id: str = Field(
+        ...,
+        min_length=2,
+        max_length=80,
+        pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        description="Unique profile identifier"
+    )
+    name: str = Field(..., min_length=2, max_length=120, description="Display name")
+    description: str = Field(default="", max_length=300, description="Profile description")
+    image_type: Literal["hero_image", "section_image", "og_card", "thumbnail"] = Field(
+        ...,
+        description="Generated image type"
+    )
+    image_provider: Literal["robolly", "openai"] = Field(
+        default="robolly",
+        description="Image generation provider"
+    )
+    style_guide: str = Field(
+        default="brand_primary",
+        description="Default style guide for this profile"
+    )
+    path_type: Literal["articles", "newsletter", "social", "thumbnails"] = Field(
+        default="articles",
+        description="Default CDN path for generated images"
+    )
+    template_id: Optional[str] = Field(
+        default=None,
+        max_length=120,
+        description="Optional explicit Robolly template ID override"
+    )
+    default_alt_text: Optional[str] = Field(
+        default=None,
+        max_length=300,
+        description="Default alt text prefix for images generated with this profile"
+    )
+    base_prompt: Optional[str] = Field(
+        default=None,
+        max_length=1200,
+        description="Base visual prompt used by AI providers"
+    )
+    tags: List[str] = Field(default_factory=list, description="Profile tags")
+    is_system: bool = Field(default=False, description="Whether profile is built-in")
+
+
+class CreateImageProfileRequest(BaseModel):
+    """Request to create/update a custom image profile"""
+    profile_id: str = Field(
+        ...,
+        min_length=2,
+        max_length=80,
+        pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        description="Custom profile ID"
+    )
+    name: str = Field(..., min_length=2, max_length=120, description="Display name")
+    description: str = Field(default="", max_length=300, description="Profile description")
+    image_type: Literal["hero_image", "section_image", "og_card", "thumbnail"] = Field(
+        ...,
+        description="Generated image type"
+    )
+    image_provider: Literal["robolly", "openai"] = Field(
+        default="robolly",
+        description="Image generation provider"
+    )
+    style_guide: str = Field(
+        default="brand_primary",
+        description="Default style guide for this profile"
+    )
+    path_type: Literal["articles", "newsletter", "social", "thumbnails"] = Field(
+        default="articles",
+        description="Default CDN path for generated images"
+    )
+    template_id: Optional[str] = Field(
+        default=None,
+        max_length=120,
+        description="Optional explicit Robolly template ID override"
+    )
+    default_alt_text: Optional[str] = Field(
+        default=None,
+        max_length=300,
+        description="Default alt text prefix"
+    )
+    base_prompt: Optional[str] = Field(
+        default=None,
+        max_length=1200,
+        description="Base visual prompt for AI providers"
+    )
+    tags: List[str] = Field(default_factory=list, description="Custom tags")
+
+
+class ListImageProfilesResponse(BaseModel):
+    """Response with all available image generation profiles"""
+    items: List[ImageProfileData] = Field(default_factory=list, description="Available profiles")
+    total_count: int = Field(default=0, description="Total profiles count")
+
+
+class GenerateImageFromProfileRequest(BaseModel):
+    """Generate one image on the fly using a saved profile"""
+    project_id: str = Field(
+        ...,
+        min_length=2,
+        max_length=120,
+        description="Project ID used to scope profile storage"
+    )
+    profile_id: str = Field(
+        ...,
+        min_length=2,
+        max_length=80,
+        pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        description="Profile ID to use for generation"
+    )
+    title_text: str = Field(
+        ...,
+        min_length=2,
+        max_length=160,
+        description="Primary title/overlay text"
+    )
+    subtitle_text: Optional[str] = Field(
+        default=None,
+        max_length=200,
+        description="Optional secondary text"
+    )
+    file_name: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=200,
+        description="Optional filename override (without path)"
+    )
+    alt_text: Optional[str] = Field(
+        default=None,
+        max_length=500,
+        description="Optional alt text override"
+    )
+    custom_prompt: Optional[str] = Field(
+        default=None,
+        max_length=2000,
+        description="Optional explicit prompt (AI providers only)"
+    )
+    provider_override: Optional[Literal["robolly", "openai"]] = Field(
+        default=None,
+        description="Optional provider override for this generation"
+    )
+    style_guide_override: Optional[str] = Field(
+        default=None,
+        description="Optional style guide override"
+    )
+    path_type_override: Optional[Literal["articles", "newsletter", "social", "thumbnails"]] = Field(
+        default=None,
+        description="Optional CDN path override"
+    )
+    template_id_override: Optional[str] = Field(
+        default=None,
+        max_length=120,
+        description="Optional Robolly template ID override"
+    )
+
+
+class GenerateImageFromProfileResponse(BaseModel):
+    """Response for on-demand profile-based generation"""
+    success: bool = Field(..., description="Whether generation succeeded")
+    profile: Optional[ImageProfileData] = Field(default=None, description="Resolved generation profile")
+    image_type: Optional[str] = Field(default=None, description="Generated image type")
+    source_image_url: Optional[str] = Field(default=None, description="Raw generated image URL")
+    cdn_url: Optional[str] = Field(default=None, description="Stored CDN original URL")
+    primary_url: Optional[str] = Field(default=None, description="Primary optimized URL")
+    responsive_urls: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Responsive URLs from Bunny optimizer"
+    )
+    render_id: Optional[str] = Field(default=None, description="Robolly render ID")
+    file_name: Optional[str] = Field(default=None, description="Stored file name")
+    alt_text: Optional[str] = Field(default=None, description="Resolved alt text")
+    provider_used: Optional[str] = Field(default=None, description="Provider used for generation")
+    prompt_used: Optional[str] = Field(default=None, description="Resolved prompt for AI generation")
+    style_guide_used: Optional[str] = Field(default=None, description="Final style guide")
+    path_type_used: Optional[str] = Field(default=None, description="Final CDN path")
+    storage_path: Optional[str] = Field(default=None, description="Path in storage zone")
+    generation_time_ms: Optional[int] = Field(default=None, description="Image generation time")
+    upload_time_ms: Optional[int] = Field(default=None, description="Upload + optimizer prep time")
+    error: Optional[str] = Field(default=None, description="Error message if failed")
 
 
 class VerifyOptimizerRequest(BaseModel):

@@ -2,6 +2,7 @@
 
 import {
 	AlertCircle,
+	BarChart3,
 	Bot,
 	Brain,
 	Film,
@@ -25,7 +26,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectsContext } from "@/contexts/projects-context";
 import { AffiliationsTab } from "./affiliations-tab";
+import { AnalyticsTab } from "./analytics-tab";
 import { CompetitorsTab } from "./competitors-tab";
+import { ContentStrategyPanel } from "./content-strategy-panel";
 import { MissionControl } from "./mission-control";
 import { PerformanceTab } from "./performance-tab";
 import { NewsletterTab } from "./newsletter-tab";
@@ -53,6 +56,8 @@ const CREATE_SUB_TABS: SubTab[] = [
 ];
 
 const GROW_SUB_TABS: SubTab[] = [
+	{ id: "strategy", label: "Strategy", icon: <BarChart3 className="h-4 w-4" /> },
+	{ id: "analytics", label: "Analytics", icon: <TrendingUp className="h-4 w-4" /> },
 	{ id: "competitors", label: "Competitors", icon: <Users className="h-4 w-4" /> },
 	{ id: "affiliations", label: "Affiliations", icon: <LinkIcon className="h-4 w-4" /> },
 	{ id: "performance", label: "Performance", icon: <Gauge className="h-4 w-4" /> },
@@ -86,7 +91,7 @@ export function DashboardContent({
 	});
 	const [growSubTab, setGrowSubTab] = useState(() => {
 		const { parent, child } = parseHash();
-		return parent === "grow" && child ? child : "competitors";
+		return parent === "grow" && child ? child : "strategy";
 	});
 
 	// Sync hash → state on back/forward navigation
@@ -279,6 +284,14 @@ export function DashboardContent({
 					{/* Grow Tab */}
 					<TabsContent value="grow">
 						<SubTabs tabs={GROW_SUB_TABS} activeTab={growSubTab} onTabChange={setGrowSubTab} />
+
+						{growSubTab === "strategy" && (
+							<ContentStrategyPanel projectId={selectedProject?.id} />
+						)}
+
+						{growSubTab === "analytics" && (
+							<AnalyticsTab projectId={selectedProject?.id} />
+						)}
 
 						{growSubTab === "competitors" && (
 							<CompetitorsTab projectId={selectedProject?.id} />

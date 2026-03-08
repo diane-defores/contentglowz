@@ -324,6 +324,7 @@ export const project = sqliteTable("Project", {
 	})
 		.notNull()
 		.default("active"),
+	posthogProjectId: text("posthogProjectId"),
 	settings: text("settings", { mode: "json" }).$type<{
 		autoAnalyze?: boolean;
 		analyzeInterval?: number; // hours
@@ -406,6 +407,8 @@ export const userSettings = sqliteTable("UserSettings", {
 		consensus?: string;
 		tavily?: string;
 		groq?: string;
+		posthog?: string;
+		posthogHost?: string;
 	}>(),
 	// Dashboard preferences
 	defaultProjectId: text("defaultProjectId"),

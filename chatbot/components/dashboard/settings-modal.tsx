@@ -44,6 +44,8 @@ const API_KEY_PROVIDERS = [
 	{ id: "bunnyStorage", name: "Bunny Storage API Key", placeholder: "storage-api-key...", section: "bunny" },
 	{ id: "bunnyCdn", name: "Bunny CDN API Key", placeholder: "cdn-api-key...", section: "bunny" },
 	{ id: "bunnyCdnHostname", name: "Bunny CDN Hostname", placeholder: "my-zone.b-cdn.net", section: "bunny" },
+	{ id: "posthog", name: "PostHog Personal API Key", placeholder: "phx_...", section: "analytics" },
+	{ id: "posthogHost", name: "PostHog Host URL", placeholder: "https://us.i.posthog.com", section: "analytics" },
 ] as const;
 
 export function SettingsModal() {
@@ -306,6 +308,93 @@ export function SettingsModal() {
 									Configure Bunny.net for image optimization and CDN delivery.
 								</p>
 								{API_KEY_PROVIDERS.filter((p) => p.section === "bunny").map((provider) => (
+									<div key={provider.id} className="space-y-2">
+										<Label htmlFor={`key-${provider.id}`}>{provider.name}</Label>
+										<div className="flex gap-2">
+											{hasApiKey(provider.id) ? (
+												<>
+													<Input
+														id={`key-${provider.id}`}
+														type="text"
+														value="••••••••••••••••"
+														disabled
+														className="flex-1"
+													/>
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() => handleRemoveApiKey(provider.id)}
+														disabled={savingKey === provider.id}
+													>
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															"Remove"
+														)}
+													</Button>
+												</>
+											) : (
+												<>
+													<div className="relative flex-1">
+														<Input
+															id={`key-${provider.id}`}
+															type={showKeys[provider.id] ? "text" : "password"}
+															placeholder={provider.placeholder}
+															value={keyInputs[provider.id] || ""}
+															onChange={(e) =>
+																setKeyInputs((prev) => ({
+																	...prev,
+																	[provider.id]: e.target.value,
+																}))
+															}
+															className="pr-10"
+														/>
+														<button
+															type="button"
+															onClick={() => toggleShowKey(provider.id)}
+															className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+														>
+															{showKeys[provider.id] ? (
+																<EyeOff className="h-4 w-4" />
+															) : (
+																<Eye className="h-4 w-4" />
+															)}
+														</button>
+													</div>
+													<Button
+														size="sm"
+														onClick={() => handleSaveApiKey(provider.id)}
+														disabled={!keyInputs[provider.id] || savingKey === provider.id}
+													>
+														{savingKey === provider.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<Save className="h-4 w-4" />
+														)}
+													</Button>
+												</>
+											)}
+										</div>
+									</div>
+								))}
+							</div>
+
+							{/* Analytics Keys */}
+							<div className="space-y-4 border-t pt-4">
+								<h4 className="text-sm font-medium text-foreground">Analytics (PostHog)</h4>
+								<p className="text-xs text-muted-foreground">
+									Connect PostHog to view traffic analytics, top pages, and referral sources in the Grow &rarr; Analytics tab.
+									Create a Personal API key at{" "}
+									<a
+										href="https://posthog.com/settings/user-api-keys"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="underline hover:text-foreground"
+									>
+										posthog.com/settings/user-api-keys
+									</a>.
+								</p>
+								{API_KEY_PROVIDERS.filter((p) => p.section === "analytics").map((provider) => (
 									<div key={provider.id} className="space-y-2">
 										<Label htmlFor={`key-${provider.id}`}>{provider.name}</Label>
 										<div className="flex gap-2">

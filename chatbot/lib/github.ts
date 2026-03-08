@@ -11,6 +11,11 @@ export interface GitHubTreeEntry {
 	sha: string;
 }
 
+export interface GitHubBatchFileUpdate {
+	path: string;
+	content: string;
+}
+
 /**
  * Parses a GitHub URL into owner/repo parts.
  * Supports: https://github.com/owner/repo, github.com/owner/repo, etc.
@@ -163,6 +168,84 @@ export async function writeFileContent(
 		sha: response.data.content?.sha || "",
 		commitSha: response.data.commit.sha || "",
 	};
+}
+
+/**
+ * Commits multiple file updates as a single commit on a branch.
+ * Uses Git trees/commits API to avoid one-commit-per-file behavior.
+ */
+export async function writeMultipleFileContents(
+	octokit: Octokit,
+	params: {
+		owner: string;
+		repo: string;
+		branch: string;
+		message: string;
+		files: GitHubBatchFileUpdate[];
+	},
+): Promise<{ commitSha: string }> {
+	const { owner, repo, branch, message, files } = params;
+
+	if (files.length === 0) {
+		throw new Error("writeMultipleFileContents called with no files");
+	}
+
+	const ref = await octokit.git.getRef({
+		owner,
+		repo,
+		ref: `heads/${branch}`,
+	});
+	const headCommitSha = ref.data.object.sha;
+
+	const headCommit = await octokit.git.getCommit({
+		owner,
+		repo,
+		commit_sha: headCommitSha,
+	});
+	const baseTreeSha = headCommit.data.tree.sha;
+
+	const treeEntries = await Promise.all(
+		files.map(async (file) => {
+			const blob = await octokit.git.createBlob({
+				owner,
+				repo,
+				content: file.content,
+				encoding: "utf-8",
+			});
+
+			return {
+				path: file.path,
+				mode: "100644" as const,
+				type: "blob" as const,
+				sha: blob.data.sha,
+			};
+		}),
+	);
+
+	const tree = await octokit.git.createTree({
+		owner,
+		repo,
+		base_tree: baseTreeSha,
+		tree: treeEntries,
+	});
+
+	const commit = await octokit.git.createCommit({
+		owner,
+		repo,
+		message,
+		tree: tree.data.sha,
+		parents: [headCommitSha],
+	});
+
+	await octokit.git.updateRef({
+		owner,
+		repo,
+		ref: `heads/${branch}`,
+		sha: commit.data.sha,
+		force: false,
+	});
+
+	return { commitSha: commit.data.sha };
 }
 
 /**

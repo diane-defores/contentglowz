@@ -10,6 +10,7 @@ export interface Project {
 	type: "github" | "website";
 	description?: string;
 	isDefault: boolean;
+	posthogProjectId?: string;
 	settings?: {
 		autoAnalyze?: boolean;
 		analyzeInterval?: number;

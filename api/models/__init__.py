@@ -40,6 +40,11 @@ from .images import (
     UploadImageResponse,
     OptimizerStatusResponse,
     ImageRobotHistoryResponse,
+    ImageProfileData,
+    CreateImageProfileRequest,
+    ListImageProfilesResponse,
+    GenerateImageFromProfileRequest,
+    GenerateImageFromProfileResponse,
 )
 
 __all__ = [
@@ -80,4 +85,9 @@ __all__ = [
     "UploadImageResponse",
     "OptimizerStatusResponse",
     "ImageRobotHistoryResponse",
+    "ImageProfileData",
+    "CreateImageProfileRequest",
+    "ListImageProfilesResponse",
+    "GenerateImageFromProfileRequest",
+    "GenerateImageFromProfileResponse",
 ]

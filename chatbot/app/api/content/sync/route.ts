@@ -33,6 +33,10 @@ function resolveExtensions(filePattern: string): string[] {
 	}
 }
 
+function isTsFile(filePath: string): boolean {
+	return filePath.endsWith(".ts") || filePath.endsWith(".tsx");
+}
+
 function mapWorkflowStatusToRecordStatus(
 	workflowStatus: string,
 ):
@@ -139,8 +143,14 @@ export async function POST(request: NextRequest) {
 							filePath,
 							source.defaultBranch,
 						);
-						const { metadata: rawMetadata, body: markdownBody } =
-							parseFrontmatter(content);
+						const {
+							metadata: rawMetadata,
+							body: markdownBody,
+							metadataSource,
+						} = parseFrontmatter(content);
+						if (isTsFile(filePath) && metadataSource === "none") {
+							continue;
+						}
 						const fallbackTitle = filePath
 							.split("/")
 							.pop()
