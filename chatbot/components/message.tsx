@@ -23,6 +23,7 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { ValidationTaskList } from "./elements/validation-card";
 
 const PurePreviewMessage = ({
 	chatId,
@@ -161,7 +162,25 @@ const PurePreviewMessage = ({
 							}
 						}
 
-						if (type === "tool-getWeather") {
+						if (type === "tool-getPendingValidations") {
+						const { toolCallId, state } = part;
+						return (
+							<div key={toolCallId} className="w-full">
+								{state === "output-available" && !("error" in (part.output ?? {})) && (
+									<ValidationTaskList
+										articles={(part.output as any)?.articles ?? []}
+									/>
+								)}
+								{state === "output-available" && "error" in (part.output ?? {}) && (
+									<div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-500 text-sm dark:bg-red-950/50">
+										Impossible de charger les articles : {String((part.output as any).error)}
+									</div>
+								)}
+							</div>
+						);
+					}
+
+					if (type === "tool-getWeather") {
 							const { toolCallId, state } = part;
 
 							return (

@@ -38,6 +38,7 @@ import { buildMeshTool } from "@/lib/ai/tools/build-mesh";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { createGetAffiliationsTool } from "@/lib/ai/tools/get-affiliations";
 import { getWeather } from "@/lib/ai/tools/get-weather";
+import { getPendingValidations } from "@/lib/ai/tools/get-pending-validations";
 import { improveMeshTool } from "@/lib/ai/tools/improve-mesh";
 import {
 	analyzeInternalLinking,
@@ -268,6 +269,7 @@ export async function POST(request: Request) {
 					experimental_transform: smoothStream({ chunking: "word" }),
 					tools: {
 						getWeather,
+						getPendingValidations,
 						createDocument: createDocument({ session: { user: { id: userId } } as any, dataStream }),
 						updateDocument: updateDocument({ session: { user: { id: userId } } as any, dataStream }),
 						requestSuggestions: requestSuggestions({
