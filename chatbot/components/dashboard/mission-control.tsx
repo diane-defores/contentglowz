@@ -24,6 +24,7 @@ import { useMissionControl } from "@/hooks/use-mission-control";
 import { useUptime } from "@/hooks/use-uptime";
 import { ActivityFeed } from "./activity-feed";
 import { ActivityTab } from "./activity-tab";
+import { DailyTasksWidget } from "./daily-tasks-widget";
 import { MissionCategory } from "./mission-category";
 import {
 	ONBOARDING_STEPS,
@@ -281,7 +282,10 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 							</div>
 
 							{/* Activity Sidebar - Hidden on mobile, shown in bottom section */}
-							<div className="hidden lg:block">
+							<div className="hidden lg:block space-y-4">
+								<Card className="p-4">
+									<DailyTasksWidget />
+								</Card>
 								<Card className="p-4 sticky top-4">
 									<div className="flex items-center justify-between mb-4">
 										<h3 className="font-semibold flex items-center gap-2">
