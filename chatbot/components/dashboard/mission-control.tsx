@@ -309,7 +309,10 @@ function MissionControlContent({ projectId, onNavigateToTab }: MissionControlPro
 						</div>
 
 						{/* Mobile Activity Section */}
-						<div className="lg:hidden">
+						<div className="lg:hidden space-y-4">
+							<Card className="p-4">
+								<DailyTasksWidget />
+							</Card>
 							<Card className="p-4">
 								<div className="flex items-center justify-between mb-4">
 									<h3 className="font-semibold flex items-center gap-2">
