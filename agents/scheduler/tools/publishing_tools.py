@@ -21,9 +21,32 @@ from agents.scheduler.schemas.publishing_schemas import (
 class GitDeployer:
     """Handles Git operations and deployment"""
 
-    def __init__(self, repo_path: str = "/root/my-robots"):
-        self.repo_path = Path(repo_path)
+    def __init__(self, repo_path: str = "/root/my-robots", project_id: Optional[str] = None):
+        self._project_id = project_id
+        self._repo_path_override = repo_path
         self.github_token = os.getenv("GITHUB_TOKEN")
+        self._resolved = False
+
+    async def _resolve_repo_path(self) -> Path:
+        """Resolve repo path: use project DB lookup if project_id provided, else fallback."""
+        if self._resolved:
+            return self.repo_path
+
+        if self._project_id:
+            try:
+                from agents.seo.config.project_store import ProjectStore
+                store = ProjectStore()
+                project = await store.get_by_id(self._project_id)
+                if project and project.settings and project.settings.local_repo_path:
+                    self.repo_path = Path(project.settings.local_repo_path)
+                    self._resolved = True
+                    return self.repo_path
+            except Exception:
+                pass
+
+        self.repo_path = Path(self._repo_path_override)
+        self._resolved = True
+        return self.repo_path
 
     @tool("Deploy Content to Production")
     def deploy_to_production(

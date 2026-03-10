@@ -20,6 +20,7 @@ from api.models.project import (
 )
 from agents.seo.services.project_onboarding import project_onboarding_service
 from agents.seo.config.project_store import project_store
+from agents.scheduler.tools.content_scanner import get_content_scanner
 
 
 router = APIRouter(
@@ -305,3 +306,29 @@ async def refresh_project(project_id: str) -> ProjectDetectionResult:
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/{project_id}/scan-content",
+    summary="Scan and import content",
+    description="""
+    Scan the project's content directories and import all articles into the scheduling queue.
+
+    **What it does:**
+    - Reads `local_repo_path` and `content_directories` from project settings
+    - Parses frontmatter (title, pubDate, draft, tags) from each markdown file
+    - Creates a ContentRecord per article in the status queue
+    - Already published articles → status `published`
+    - Drafts or future-dated articles → status `pending_review`
+    - Skips files already imported (deduplication by path)
+
+    **Prerequisite:** Project must have been analyzed (`/analyze` + `/confirm`).
+    """
+)
+async def scan_project_content(project_id: str) -> dict:
+    """Import all markdown content from the project into the scheduling queue."""
+    scanner = get_content_scanner()
+    result = await scanner.scan_project(project_id)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Scan failed"))
+    return result
