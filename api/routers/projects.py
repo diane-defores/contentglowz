@@ -4,7 +4,7 @@ Handles project onboarding workflow and CRUD operations.
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from typing import Any
+from typing import Any, List, Optional
 
 from api.models.project import (
     OnboardProjectRequest,
@@ -21,6 +21,7 @@ from api.models.project import (
 from agents.seo.services.project_onboarding import project_onboarding_service
 from agents.seo.config.project_store import project_store
 from agents.scheduler.tools.content_scanner import get_content_scanner
+from agents.scheduler.tools.cluster_scheduler import get_cluster_scheduler
 
 
 router = APIRouter(
@@ -331,4 +332,66 @@ async def scan_project_content(project_id: str) -> dict:
     result = await scanner.scan_project(project_id)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error", "Scan failed"))
+    return result
+
+
+@router.post(
+    "/{project_id}/propose-schedule",
+    summary="AI scheduling proposal",
+    description="""
+    Groups pending articles by topical cluster and asks Claude to propose
+    a strategic publication order.
+
+    **Returns a proposal for user review — does NOT apply anything yet.**
+    Call `/{project_id}/apply-schedule` to confirm.
+
+    Query params:
+    - `cadence`: articles per week (default: 5)
+    - `start_date`: ISO date for first publication (default: tomorrow)
+    """
+)
+async def propose_schedule(
+    project_id: str,
+    cadence: int = 5,
+    start_date: Optional[str] = None,
+) -> dict:
+    """Generate an AI-powered cluster scheduling proposal."""
+    scheduler = get_cluster_scheduler()
+    result = scheduler.propose(project_id, cadence_per_week=cadence, start_date=start_date)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Proposal failed"))
+    return result
+
+
+@router.post(
+    "/{project_id}/apply-schedule",
+    summary="Apply scheduling plan",
+    description="""
+    Applies a validated scheduling plan: assigns pubDates to all pending articles
+    following the cluster order, and updates their metadata.
+
+    Call this after reviewing the proposal from `propose-schedule`.
+
+    Body (optional):
+    - `cadence`: articles per week
+    - `start_date`: ISO date string
+    - `cluster_order`: list of cluster names in desired order (from the proposal)
+    """
+)
+async def apply_schedule(
+    project_id: str,
+    cadence: int = 5,
+    start_date: Optional[str] = None,
+    cluster_order: Optional[list] = None,
+) -> dict:
+    """Apply the validated schedule to all pending articles."""
+    scheduler = get_cluster_scheduler()
+    result = scheduler.apply_schedule(
+        project_id,
+        cadence_per_week=cadence,
+        start_date=start_date,
+        cluster_order=cluster_order,
+    )
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Apply failed"))
     return result
