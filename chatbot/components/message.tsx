@@ -170,6 +170,7 @@ const PurePreviewMessage = ({
 									<ValidationTaskList
 										articles={(part.output as any)?.articles ?? []}
 									/>
+
 								)}
 								{state === "output-available" && "error" in (part.output ?? {}) && (
 									<div className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-500 text-sm dark:bg-red-950/50">
@@ -177,6 +178,35 @@ const PurePreviewMessage = ({
 									</div>
 								)}
 							</div>
+						);
+					}
+
+					if (type === "tool-editArticle") {
+						const { toolCallId, state } = part;
+						const output = part.output as any;
+						return (
+							<Tool defaultOpen={false} key={toolCallId}>
+								<ToolHeader state={state} type="tool-editArticle" />
+								<ToolContent>
+									{state === "output-available" && !output?.error && (
+										<ToolOutput
+											errorText={undefined}
+											output={
+												<p className="text-muted-foreground text-xs">
+													📄 <span className="font-medium">{output?.title}</span>
+													{output?.cluster && ` · ${output.cluster}`}
+												</p>
+											}
+										/>
+									)}
+									{state === "output-available" && output?.error && (
+										<ToolOutput
+											errorText={output.error}
+											output={null}
+										/>
+									)}
+								</ToolContent>
+							</Tool>
 						);
 					}
 

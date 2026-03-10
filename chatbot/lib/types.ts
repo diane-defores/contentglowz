@@ -15,6 +15,7 @@ import { z } from "zod";
 import type { ArtifactKind } from "@/components/artifact";
 import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
+import type { editArticle } from "./ai/tools/edit-article";
 import type { getPendingValidations } from "./ai/tools/get-pending-validations";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { updateDocument } from "./ai/tools/update-document";
@@ -37,6 +38,7 @@ type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
 type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
 type requestSuggestionsTool = InferUITool<ReturnType<typeof requestSuggestions>>;
 type getPendingValidationsTool = InferUITool<typeof getPendingValidations>;
+type editArticleTool = InferUITool<typeof editArticle>;
 
 /** All AI tools available in chat, keyed by their invocation name */
 export type ChatTools = {
@@ -45,6 +47,7 @@ export type ChatTools = {
 	updateDocument: updateDocumentTool;
 	requestSuggestions: requestSuggestionsTool;
 	getPendingValidations: getPendingValidationsTool;
+	editArticle: editArticleTool;
 };
 
 /**

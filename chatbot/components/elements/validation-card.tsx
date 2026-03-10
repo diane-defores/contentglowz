@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useChatActions } from "@/components/chat-actions-context";
 import {
   CheckIcon,
   XIcon,
@@ -26,17 +27,14 @@ function ArticleCard({
   article,
   onApprove,
   onReject,
-  onEdit,
-  onImprove,
 }: {
   article: PendingArticle;
   onApprove: () => void;
   onReject: () => void;
-  onEdit: () => void;
-  onImprove: () => void;
 }) {
   const [status, setStatus] = useState<ValidationStatus>("pending");
   const [loading, setLoading] = useState(false);
+  const { sendMessage } = useChatActions();
 
   const handleApprove = async () => {
     setLoading(true);
@@ -151,7 +149,12 @@ function ArticleCard({
             size="sm"
             variant="outline"
             className="h-7 gap-1.5 text-xs"
-            onClick={onEdit}
+            onClick={() =>
+              sendMessage?.({
+                role: "user",
+                content: `Ouvre l'article pour édition — id: ${article.id}, titre: "${article.title}"`,
+              })
+            }
             disabled={loading}
           >
             <PencilIcon className="size-3" />
@@ -161,7 +164,12 @@ function ArticleCard({
             size="sm"
             variant="outline"
             className="h-7 gap-1.5 text-xs"
-            onClick={onImprove}
+            onClick={() =>
+              sendMessage?.({
+                role: "user",
+                content: `Améliore le texte de cet article et propose une version optimisée — id: ${article.id}, titre: "${article.title}"`,
+              })
+            }
             disabled={loading}
           >
             <SparklesIcon className="size-3" />
@@ -185,11 +193,9 @@ function ArticleCard({
 
 type Props = {
   articles: PendingArticle[];
-  onEdit?: (article: PendingArticle) => void;
-  onImprove?: (article: PendingArticle) => void;
 };
 
-export function ValidationTaskList({ articles, onEdit, onImprove }: Props) {
+export function ValidationTaskList({ articles }: Props) {
   const [approved, setApproved] = useState(0);
 
   if (!articles || articles.length === 0) {
@@ -218,8 +224,6 @@ export function ValidationTaskList({ articles, onEdit, onImprove }: Props) {
           article={article}
           onApprove={() => setApproved((n) => n + 1)}
           onReject={() => {}}
-          onEdit={() => onEdit?.(article)}
-          onImprove={() => onImprove?.(article)}
         />
       ))}
     </div>

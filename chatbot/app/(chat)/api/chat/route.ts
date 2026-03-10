@@ -39,6 +39,7 @@ import { createDocument } from "@/lib/ai/tools/create-document";
 import { createGetAffiliationsTool } from "@/lib/ai/tools/get-affiliations";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { getPendingValidations } from "@/lib/ai/tools/get-pending-validations";
+import { editArticle } from "@/lib/ai/tools/edit-article";
 import { improveMeshTool } from "@/lib/ai/tools/improve-mesh";
 import {
 	analyzeInternalLinking,
@@ -270,6 +271,7 @@ export async function POST(request: Request) {
 					tools: {
 						getWeather,
 						getPendingValidations,
+						editArticle,
 						createDocument: createDocument({ session: { user: { id: userId } } as any, dataStream }),
 						updateDocument: updateDocument({ session: { user: { id: userId } } as any, dataStream }),
 						requestSuggestions: requestSuggestions({

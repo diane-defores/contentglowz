@@ -39,6 +39,7 @@ import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
+import { ChatActionsContext } from "./chat-actions-context";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
@@ -195,6 +196,7 @@ export function Chat({
 	});
 
 	return (
+		<ChatActionsContext.Provider value={{ sendMessage }}>
 		<>
 			<div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
 				<ChatHeader
@@ -285,5 +287,6 @@ export function Chat({
 				</AlertDialogContent>
 			</AlertDialog>
 		</>
+		</ChatActionsContext.Provider>
 	);
 }
