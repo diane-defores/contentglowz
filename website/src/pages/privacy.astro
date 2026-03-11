@@ -1,0 +1,85 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Privacy Policy | My Robots"
+  description="How My Robots uses your data and how to manage your analytics preferences."
+>
+  <main style="max-width: 800px; margin: 0 auto; padding: 4rem 2rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--color-dark);">Privacy Policy</h1>
+    <p style="color: var(--color-gray); margin-bottom: 3rem; font-size: 0.9rem;">Last updated: March 2026</p>
+
+    <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Data Collected</h2>
+        <p style="color: var(--color-gray); line-height: 1.7;">
+          My Robots uses analytics tools (PostHog) to understand how the site is used: pages visited, visit duration, referral source. No personally identifiable information is collected via these tools.
+        </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Analytics Preferences</h2>
+        <p style="color: var(--color-gray); line-height: 1.7; margin-bottom: 1.5rem;">
+          You can disable analytics tracking at any time. Your preference is saved in your browser.
+        </p>
+
+        <div id="analytics-opt-out-section" style="padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
+          <p id="analytics-status" style="margin: 0 0 1rem; color: var(--color-gray);">Loading...</p>
+          <button id="analytics-toggle" style="padding: 0.6rem 1.25rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; border: 1px solid #cbd5e1; background: white; color: var(--color-dark); font-family: var(--font-main);">
+            Loading...
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Cookies</h2>
+        <p style="color: var(--color-gray); line-height: 1.7;">
+          Cookies are limited to those necessary for site functionality and, if enabled, your analytics opt-out preference.
+        </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Contact</h2>
+        <p style="color: var(--color-gray); line-height: 1.7;">
+          For any data-related questions, contact us via the official channels on the site.
+        </p>
+      </section>
+
+    </div>
+  </main>
+</Layout>
+
+<script is:inline>
+  function updateUI() {
+    var status = document.getElementById('analytics-status');
+    var btn = document.getElementById('analytics-toggle');
+    if (!status || !btn) return;
+
+    var optedOut = typeof posthog !== 'undefined' && posthog.has_opted_out_capturing();
+
+    if (optedOut) {
+      status.textContent = '🟢 Analytics tracking is currently disabled.';
+      btn.textContent = 'Re-enable analytics';
+    } else {
+      status.textContent = '🔵 Analytics tracking is currently enabled.';
+      btn.textContent = 'Disable analytics';
+    }
+  }
+
+  function toggleAnalytics() {
+    if (typeof posthog === 'undefined') return;
+    if (posthog.has_opted_out_capturing()) {
+      posthog.opt_in_capturing();
+    } else {
+      posthog.opt_out_capturing();
+    }
+    updateUI();
+  }
+
+  var btn = document.getElementById('analytics-toggle');
+  if (btn) btn.addEventListener('click', toggleAnalytics);
+  document.addEventListener('DOMContentLoaded', updateUI);
+  setTimeout(updateUI, 500);
+</script>
