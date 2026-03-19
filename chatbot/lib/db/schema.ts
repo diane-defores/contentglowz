@@ -245,6 +245,11 @@ export const affiliateLink = sqliteTable("AffiliateLink", {
 	projectId: text("projectId"), // Links to Project.id
 	name: text("name").notNull(),
 	url: text("url").notNull(),
+	description: text("description"), // Description of the affiliate program
+	contactUrl: text("contactUrl"), // Contact URL or email for the program
+	loginUrl: text("loginUrl"), // Dashboard/login URL for the affiliate program
+	researchSummary: text("researchSummary"), // Research summary from Exa
+	researchedAt: integer("researchedAt", { mode: "timestamp" }), // When the research was last run
 	category: text("category"), // tech, finance, lifestyle, health, etc.
 	commission: text("commission"), // "5%" or "10€/sale"
 	keywords: text("keywords", { mode: "json" }).$type<string[]>(), // JSON array for AI matching

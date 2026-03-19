@@ -32,11 +32,13 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 		refresh,
 		createAffiliation,
 		updateAffiliation,
+		researchAffiliation,
 		deleteAffiliation,
 		clearError,
 	} = useAffiliations(projectId);
 
 	const [modalOpen, setModalOpen] = useState(false);
+	const [researchingId, setResearchingId] = useState<string | null>(null);
 	const [editingAffiliation, setEditingAffiliation] =
 		useState<AffiliateLink | null>(null);
 	const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -56,6 +58,12 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 			destructive: true,
 		});
 		if (ok) await deleteAffiliation(id);
+	};
+
+	const handleResearch = async (affiliation: AffiliateLink) => {
+		setResearchingId(affiliation.id);
+		await researchAffiliation(affiliation.id);
+		setResearchingId(null);
 	};
 
 	const handleSubmit = async (data: AffiliationFormData) => {
@@ -195,6 +203,8 @@ export function AffiliationsTab({ projectId }: AffiliationsTabProps) {
 					affiliations={filteredAffiliations}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
+					onResearch={handleResearch}
+					researchingId={researchingId}
 				/>
 			</Card>
 

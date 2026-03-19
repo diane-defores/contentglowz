@@ -8,6 +8,9 @@ export type AffiliationFormData = {
 	url: string;
 	category?: string;
 	commission?: string;
+	description?: string;
+	contactUrl?: string;
+	loginUrl?: string;
 	keywords?: string[];
 	status?: "active" | "expired" | "paused";
 	notes?: string;
@@ -104,6 +107,35 @@ export function useAffiliations(projectId?: string) {
 		[],
 	);
 
+	const researchAffiliation = useCallback(
+		async (id: string): Promise<AffiliateLink | null> => {
+			setError(null);
+
+			try {
+				const response = await fetch(`/api/affiliations/${id}/research`, {
+					method: "POST",
+				});
+
+				if (!response.ok) {
+					const data = await response.json().catch(() => ({}));
+					throw new Error(data.error || "Failed to research affiliation");
+				}
+
+				const updated = await response.json();
+				setAffiliations((prev) =>
+					prev.map((a) => (a.id === id ? updated : a)),
+				);
+				return updated;
+			} catch (err) {
+				const message =
+					err instanceof Error ? err.message : "Failed to research affiliation";
+				setError(message);
+				return null;
+			}
+		},
+		[],
+	);
+
 	const deleteAffiliation = useCallback(async (id: string): Promise<boolean> => {
 		setError(null);
 
@@ -137,6 +169,7 @@ export function useAffiliations(projectId?: string) {
 		refresh: fetchAffiliations,
 		createAffiliation,
 		updateAffiliation,
+		researchAffiliation,
 		deleteAffiliation,
 		clearError: () => setError(null),
 	};

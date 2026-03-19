@@ -811,6 +811,9 @@ export async function createAffiliation({
 	projectId,
 	name,
 	url,
+	description,
+	contactUrl,
+	loginUrl,
 	category,
 	commission,
 	keywords,
@@ -822,6 +825,9 @@ export async function createAffiliation({
 	projectId?: string;
 	name: string;
 	url: string;
+	description?: string;
+	contactUrl?: string;
+	loginUrl?: string;
 	category?: string;
 	commission?: string;
 	keywords?: string[];
@@ -837,6 +843,9 @@ export async function createAffiliation({
 				projectId,
 				name,
 				url,
+				description,
+				contactUrl,
+				loginUrl,
 				category,
 				commission,
 				keywords,
@@ -859,6 +868,11 @@ export async function updateAffiliation({
 	id,
 	name,
 	url,
+	description,
+	contactUrl,
+	loginUrl,
+	researchSummary,
+	researchedAt,
 	category,
 	commission,
 	keywords,
@@ -869,6 +883,11 @@ export async function updateAffiliation({
 	id: string;
 	name?: string;
 	url?: string;
+	description?: string;
+	contactUrl?: string;
+	loginUrl?: string;
+	researchSummary?: string;
+	researchedAt?: Date | null;
 	category?: string;
 	commission?: string;
 	keywords?: string[];
@@ -882,6 +901,11 @@ export async function updateAffiliation({
 		};
 		if (name !== undefined) updateData.name = name;
 		if (url !== undefined) updateData.url = url;
+		if (description !== undefined) updateData.description = description;
+		if (contactUrl !== undefined) updateData.contactUrl = contactUrl;
+		if (loginUrl !== undefined) updateData.loginUrl = loginUrl;
+		if (researchSummary !== undefined) updateData.researchSummary = researchSummary;
+		if (researchedAt !== undefined) updateData.researchedAt = researchedAt;
 		if (category !== undefined) updateData.category = category;
 		if (commission !== undefined) updateData.commission = commission;
 		if (keywords !== undefined) updateData.keywords = keywords;

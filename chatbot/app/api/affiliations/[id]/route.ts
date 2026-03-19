@@ -78,6 +78,9 @@ export async function PUT(
 			keywords: body.keywords,
 			status: body.status,
 			notes: body.notes,
+			description: body.description,
+			contactUrl: body.contactUrl,
+			loginUrl: body.loginUrl,
 			expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
 		});
 

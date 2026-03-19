@@ -86,6 +86,8 @@ export default function RootLayout({
 					</Suspense>
 				</ThemeProvider>
 			        <Script src="/buildflowz-inspector.js" strategy="afterInteractive" id="buildflowz-inspector" />
+              <Script src="/shipflow-inspector.js" strategy="afterInteractive" id="shipflow-inspector" />
+              <Script src="/shipflow-eruda.js" strategy="afterInteractive" id="shipflow-eruda" />
       </body>
 		</html>
 	);

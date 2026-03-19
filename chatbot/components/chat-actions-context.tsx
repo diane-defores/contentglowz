@@ -5,9 +5,11 @@
  * Exposes sendMessage to deep child components (e.g. validation cards)
  * without prop-drilling through the full message render tree.
  */
+import type { UseChatHelpers } from "@ai-sdk/react";
 import { createContext, useContext } from "react";
+import type { ChatMessage } from "@/lib/types";
 
-type SendMessageFn = (message: { role: "user"; content: string }) => void;
+type SendMessageFn = UseChatHelpers<ChatMessage>["sendMessage"];
 
 export const ChatActionsContext = createContext<{
   sendMessage: SendMessageFn | null;

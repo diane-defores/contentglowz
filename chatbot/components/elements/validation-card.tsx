@@ -152,7 +152,7 @@ function ArticleCard({
             onClick={() =>
               sendMessage?.({
                 role: "user",
-                content: `Ouvre l'article pour édition — id: ${article.id}, titre: "${article.title}"`,
+                parts: [{ type: "text", text: `Ouvre l'article pour édition — id: ${article.id}, titre: "${article.title}"` }],
               })
             }
             disabled={loading}
@@ -167,7 +167,7 @@ function ArticleCard({
             onClick={() =>
               sendMessage?.({
                 role: "user",
-                content: `Améliore le texte de cet article et propose une version optimisée — id: ${article.id}, titre: "${article.title}"`,
+                parts: [{ type: "text", text: `Améliore le texte de cet article et propose une version optimisée — id: ${article.id}, titre: "${article.title}"` }],
               })
             }
             disabled={loading}

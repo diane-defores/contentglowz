@@ -2,6 +2,12 @@
 
 All notable changes to my-robots are documented here.
 
+## [2026-03-10]
+
+### Added
+- PostHog injecté dans `website/src/layouts/Layout.astro` (production uniquement, placeholder `POSTHOG_KEY_MYROBOTS` à remplacer)
+- Page `/privacy` créée (`website/src/pages/privacy.astro`) avec bouton opt-out PostHog
+
 ## [Unreleased]
 
 ### Added

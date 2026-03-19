@@ -55,6 +55,9 @@ export function AffiliationFormModal({
 		url: "",
 		category: "",
 		commission: "",
+		description: "",
+		contactUrl: "",
+		loginUrl: "",
 		keywords: [],
 		status: "active",
 		notes: "",
@@ -69,6 +72,9 @@ export function AffiliationFormModal({
 				url: affiliation.url,
 				category: affiliation.category || "",
 				commission: affiliation.commission || "",
+				description: affiliation.description || "",
+				contactUrl: affiliation.contactUrl || "",
+				loginUrl: affiliation.loginUrl || "",
 				keywords: affiliation.keywords || [],
 				status: affiliation.status,
 				notes: affiliation.notes || "",
@@ -83,6 +89,9 @@ export function AffiliationFormModal({
 				url: "",
 				category: "",
 				commission: "",
+				description: "",
+				contactUrl: "",
+				loginUrl: "",
 				keywords: [],
 				status: "active",
 				notes: "",
@@ -154,6 +163,19 @@ export function AffiliationFormModal({
 						/>
 					</div>
 
+					<div className="space-y-2">
+						<Label htmlFor="description">Description</Label>
+						<Textarea
+							id="description"
+							value={formData.description}
+							onChange={(e) =>
+								setFormData((prev) => ({ ...prev, description: e.target.value }))
+							}
+							placeholder="Brief description of the affiliate program..."
+							rows={2}
+						/>
+					</div>
+
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="category">Category</Label>
@@ -185,6 +207,33 @@ export function AffiliationFormModal({
 									setFormData((prev) => ({ ...prev, commission: e.target.value }))
 								}
 								placeholder="5% or $10/sale"
+							/>
+						</div>
+					</div>
+
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label htmlFor="contactUrl">Contact URL</Label>
+							<Input
+								id="contactUrl"
+								type="url"
+								value={formData.contactUrl}
+								onChange={(e) =>
+									setFormData((prev) => ({ ...prev, contactUrl: e.target.value }))
+								}
+								placeholder="https://support.example.com"
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="loginUrl">Login URL</Label>
+							<Input
+								id="loginUrl"
+								type="url"
+								value={formData.loginUrl}
+								onChange={(e) =>
+									setFormData((prev) => ({ ...prev, loginUrl: e.target.value }))
+								}
+								placeholder="https://dashboard.example.com"
 							/>
 						</div>
 					</div>
