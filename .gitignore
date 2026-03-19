@@ -188,6 +188,3 @@ credentials/
 # ShipFlow injected dev tools
 shipflow-*.js
 **/shipflow-*.js
-
-# v0 design prototypes (large, contains node_modules)
-v0-neobrutalist-ui-design_/
