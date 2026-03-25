@@ -1,6 +1,7 @@
 """Idea Pool API Router — CRUD for content ideas from all sources."""
 
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 from typing import Optional
 
 from api.models.idea_pool import (
@@ -101,3 +102,46 @@ async def bulk_ingest(request: BulkIngestRequest):
         project_id=request.project_id,
     )
     return {"ingested": count}
+
+
+# ─── Source triggers (manual or scheduled) ───────────
+
+
+class IngestNewslettersRequest(BaseModel):
+    days_back: int = 7
+    folder: str = "Newsletters"
+    max_results: int = 20
+    project_id: Optional[str] = None
+
+
+class IngestSeoRequest(BaseModel):
+    seed_keywords: list[str]
+    max_keywords: int = 30
+    project_id: Optional[str] = None
+
+
+@router.post("/ingest/newsletters", response_model=dict)
+async def ingest_newsletters(request: IngestNewslettersRequest):
+    """Pull newsletters from IMAP inbox and create ideas."""
+    from agents.sources.ingest import ingest_newsletter_inbox
+
+    count = ingest_newsletter_inbox(
+        days_back=request.days_back,
+        folder=request.folder,
+        max_results=request.max_results,
+        project_id=request.project_id,
+    )
+    return {"source": "newsletter_inbox", "ingested": count}
+
+
+@router.post("/ingest/seo-keywords", response_model=dict)
+async def ingest_seo(request: IngestSeoRequest):
+    """Generate SEO keywords and create ideas."""
+    from agents.sources.ingest import ingest_seo_keywords
+
+    count = ingest_seo_keywords(
+        seed_keywords=request.seed_keywords,
+        max_keywords=request.max_keywords,
+        project_id=request.project_id,
+    )
+    return {"source": "seo_keywords", "ingested": count}

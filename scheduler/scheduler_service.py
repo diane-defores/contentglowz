@@ -88,6 +88,10 @@ class SchedulerService:
                 await self._run_short_job(job)
             elif job_type == "social":
                 await self._run_social_job(job)
+            elif job_type == "ingest_newsletters":
+                await self._run_ingest_newsletters(job)
+            elif job_type == "ingest_seo":
+                await self._run_ingest_seo(job)
             else:
                 print(f"⚠ Unknown job type: {job_type}")
 
@@ -280,6 +284,48 @@ class SchedulerService:
             print("⚠ Social crew not available for scheduled generation")
         except Exception as e:
             raise RuntimeError(f"Social generation failed: {e}") from e
+
+    async def _run_ingest_newsletters(self, job: dict) -> None:
+        """Ingest newsletter emails into the Idea Pool."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.sources.ingest import ingest_newsletter_inbox
+
+            count = await asyncio.to_thread(
+                ingest_newsletter_inbox,
+                days_back=config.get("days_back", 7),
+                folder=config.get("folder", "Newsletters"),
+                max_results=config.get("max_results", 20),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ Newsletter ingestion: {count} ideas")
+
+        except Exception as e:
+            raise RuntimeError(f"Newsletter ingestion failed: {e}") from e
+
+    async def _run_ingest_seo(self, job: dict) -> None:
+        """Generate SEO keywords and ingest into the Idea Pool."""
+        config = job.get("configuration", {})
+        seed_keywords = config.get("seed_keywords", [])
+
+        if not seed_keywords:
+            print("ℹ️  No seed keywords configured for SEO ingestion, skipping")
+            return
+
+        try:
+            from agents.sources.ingest import ingest_seo_keywords
+
+            count = await asyncio.to_thread(
+                ingest_seo_keywords,
+                seed_keywords=seed_keywords,
+                max_keywords=config.get("max_keywords", 30),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ SEO keyword ingestion: {count} ideas")
+
+        except Exception as e:
+            raise RuntimeError(f"SEO ingestion failed: {e}") from e
 
     async def _auto_transition_scheduled(self, svc) -> None:
         """Auto-transition content whose scheduledFor has passed."""
