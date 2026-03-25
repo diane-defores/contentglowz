@@ -1,0 +1,103 @@
+"""Idea Pool API Router — CRUD for content ideas from all sources."""
+
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
+
+from api.models.idea_pool import (
+    CreateIdeaRequest,
+    UpdateIdeaRequest,
+    BulkIngestRequest,
+    IdeaListResponse,
+    IdeaRecord,
+)
+
+router = APIRouter(prefix="/api/ideas", tags=["Idea Pool"])
+
+
+def _get_svc():
+    from status import get_status_service
+    return get_status_service()
+
+
+@router.post("", response_model=dict)
+async def create_idea(request: CreateIdeaRequest):
+    """Create a single idea in the pool."""
+    svc = _get_svc()
+    idea = svc.create_idea(
+        source=request.source,
+        title=request.title,
+        raw_data=request.raw_data,
+        seo_signals=request.seo_signals,
+        trending_signals=request.trending_signals,
+        tags=request.tags,
+        project_id=request.project_id,
+    )
+    return idea
+
+
+@router.get("", response_model=IdeaListResponse)
+async def list_ideas(
+    source: Optional[str] = Query(None, description="Filter by source"),
+    status: Optional[str] = Query(None, description="Filter by status: raw, enriched, used, dismissed"),
+    min_score: Optional[float] = Query(None, description="Minimum priority score"),
+    project_id: Optional[str] = Query(None, description="Filter by project"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """List ideas with optional filters, sorted by priority score desc."""
+    svc = _get_svc()
+    items, total = svc.list_ideas(
+        source=source,
+        status=status,
+        min_score=min_score,
+        project_id=project_id,
+        limit=limit,
+        offset=offset,
+    )
+    return IdeaListResponse(
+        items=[IdeaRecord(**i) for i in items],
+        total=total,
+    )
+
+
+@router.get("/{idea_id}", response_model=dict)
+async def get_idea(idea_id: str):
+    """Get a single idea by ID."""
+    svc = _get_svc()
+    try:
+        return svc.get_idea(idea_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Idea not found")
+
+
+@router.patch("/{idea_id}", response_model=dict)
+async def update_idea(idea_id: str, request: UpdateIdeaRequest):
+    """Update an idea (enrich, dismiss, change score, etc.)."""
+    svc = _get_svc()
+    updates = request.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    try:
+        return svc.update_idea(idea_id, **updates)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Idea not found")
+
+
+@router.delete("/{idea_id}")
+async def delete_idea(idea_id: str):
+    """Delete an idea from the pool."""
+    svc = _get_svc()
+    svc.delete_idea(idea_id)
+    return {"deleted": True}
+
+
+@router.post("/ingest", response_model=dict)
+async def bulk_ingest(request: BulkIngestRequest):
+    """Bulk ingest ideas from a source."""
+    svc = _get_svc()
+    count = svc.bulk_create_ideas(
+        source=request.source,
+        items=request.items,
+        project_id=request.project_id,
+    )
+    return {"ingested": count}

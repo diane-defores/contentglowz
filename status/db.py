@@ -193,6 +193,26 @@ def init_db(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_section_template ON template_sections(template_id);
         CREATE INDEX IF NOT EXISTS idx_section_order ON template_sections(template_id, "order");
+
+        CREATE TABLE IF NOT EXISTS idea_pool (
+            id TEXT PRIMARY KEY,
+            source TEXT NOT NULL,
+            title TEXT NOT NULL,
+            raw_data TEXT NOT NULL DEFAULT '{}',
+            seo_signals TEXT,
+            trending_signals TEXT,
+            tags TEXT NOT NULL DEFAULT '[]',
+            priority_score REAL,
+            status TEXT NOT NULL DEFAULT 'raw',
+            project_id TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ideas_source ON idea_pool(source);
+        CREATE INDEX IF NOT EXISTS idx_ideas_status ON idea_pool(status);
+        CREATE INDEX IF NOT EXISTS idx_ideas_priority ON idea_pool(priority_score);
+        CREATE INDEX IF NOT EXISTS idx_ideas_project ON idea_pool(project_id);
         """
     )
     conn.commit()

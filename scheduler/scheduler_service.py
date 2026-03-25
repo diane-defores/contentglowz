@@ -54,6 +54,14 @@ class SchedulerService:
         # 2. Auto-transition scheduled content whose scheduledFor has passed
         await self._auto_transition_scheduled(svc)
 
+        # 3. Reconcile frequency config with schedule jobs (every 10 ticks ~ 10 min)
+        if not hasattr(self, "_reconcile_counter"):
+            self._reconcile_counter = 0
+        self._reconcile_counter += 1
+        if self._reconcile_counter >= 10:
+            self._reconcile_counter = 0
+            await self._reconcile_frequency_jobs(svc)
+
     async def _dispatch_job(self, job: dict) -> None:
         """Dispatch a due job to the appropriate robot."""
         svc = get_status_service()
@@ -76,6 +84,10 @@ class SchedulerService:
                 await self._run_seo_job(job)
             elif job_type == "article":
                 await self._run_article_job(job)
+            elif job_type == "short":
+                await self._run_short_job(job)
+            elif job_type == "social":
+                await self._run_social_job(job)
             else:
                 print(f"⚠ Unknown job type: {job_type}")
 
@@ -147,12 +159,127 @@ class SchedulerService:
             raise RuntimeError(f"Newsletter generation failed: {e}") from e
 
     async def _run_seo_job(self, job: dict) -> None:
-        """Run an SEO analysis job. Placeholder for future implementation."""
-        print(f"ℹ️  SEO job {job['id']} - dispatching not yet implemented")
+        """Run an SEO content generation job using the SEO Crew pipeline."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.seo.seo_crew import SEOContentCrew
+
+            crew = SEOContentCrew()
+            result = await asyncio.to_thread(
+                crew.generate_content,
+                target_keyword=config.get("target_keyword", ""),
+                competitor_domains=config.get("competitor_domains"),
+                sector=config.get("sector"),
+                word_count=config.get("word_count", 2500),
+            )
+            print(f"✅ SEO job {job['id']} completed: {len(str(result))} chars output")
+
+        except ImportError:
+            print("⚠ SEO crew not available for scheduled generation")
+        except Exception as e:
+            raise RuntimeError(f"SEO generation failed: {e}") from e
 
     async def _run_article_job(self, job: dict) -> None:
-        """Run an article generation job. Placeholder for future implementation."""
-        print(f"ℹ️  Article job {job['id']} - dispatching not yet implemented")
+        """Run an article generation job. Picks the best idea from the pool."""
+        config = job.get("configuration", {})
+        svc = get_status_service()
+
+        # Try to get an enriched idea from the pool
+        try:
+            ideas, _ = svc.list_ideas(status="enriched", min_score=50.0, limit=1)
+        except Exception:
+            ideas = []
+
+        angle = config.get("angle", {})
+        if ideas and not angle:
+            idea = ideas[0]
+            angle = {
+                "title": idea["title"],
+                "hook": idea.get("raw_data", {}).get("hook", idea["title"]),
+                "angle": idea.get("raw_data", {}).get("angle", ""),
+                "pain_point_addressed": "",
+            }
+            svc.update_idea(idea["id"], status="used")
+
+        if not angle.get("title"):
+            print(f"ℹ️  Article job {job['id']}: no angle or enriched idea available, skipping")
+            return
+
+        try:
+            from agents.seo.seo_crew import SEOContentCrew
+
+            crew = SEOContentCrew()
+            result = await asyncio.to_thread(
+                crew.generate_content,
+                target_keyword=angle.get("seo_keyword", angle.get("title", "")),
+                word_count=config.get("word_count", 2500),
+            )
+
+            # Create content record
+            body = result.get("outputs", {}).get("article", str(result))
+            record = svc.create_content(
+                title=angle.get("title", "Scheduled Article"),
+                content_type="article",
+                source_robot="seo",
+                status="generated",
+                project_id=job.get("project_id"),
+                content_preview=body[:500] if body else "",
+                metadata={"scheduled_job_id": job["id"], "angle": angle},
+            )
+            if body:
+                svc.save_content_body(record.id, body, edited_by="scheduler")
+            svc.transition(record.id, "pending_review", "scheduler")
+
+        except ImportError:
+            print("⚠ SEO crew not available for article generation")
+        except Exception as e:
+            raise RuntimeError(f"Article generation failed: {e}") from e
+
+    async def _run_short_job(self, job: dict) -> None:
+        """Run a short-form content generation job."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.short.short_crew import ShortContentCrew
+
+            crew = ShortContentCrew()
+            result = await asyncio.to_thread(
+                crew.generate_short,
+                angle=config.get("angle", {"title": "Trending topic", "hook": ""}),
+                creator_voice=config.get("creator_voice", {}),
+                platform=config.get("platform", "tiktok"),
+                max_duration=config.get("max_duration", 60),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ Short job {job['id']} completed")
+
+        except ImportError:
+            print("⚠ Short crew not available for scheduled generation")
+        except Exception as e:
+            raise RuntimeError(f"Short generation failed: {e}") from e
+
+    async def _run_social_job(self, job: dict) -> None:
+        """Run a social post generation job."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.social.social_crew import SocialPostCrew
+
+            crew = SocialPostCrew()
+            result = await asyncio.to_thread(
+                crew.generate_social_post,
+                angle=config.get("angle", {"title": "Daily insight", "hook": ""}),
+                creator_voice=config.get("creator_voice", {}),
+                platforms=config.get("platforms", ["twitter", "linkedin"]),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ Social job {job['id']} completed")
+
+        except ImportError:
+            print("⚠ Social crew not available for scheduled generation")
+        except Exception as e:
+            raise RuntimeError(f"Social generation failed: {e}") from e
 
     async def _auto_transition_scheduled(self, svc) -> None:
         """Auto-transition content whose scheduledFor has passed."""
@@ -173,6 +300,96 @@ class SchedulerService:
                     print(f"📅 Auto-transitioning {item.id} to publishing")
                 except Exception as e:
                     print(f"⚠ Failed to auto-transition {item.id}: {e}")
+
+    async def _reconcile_frequency_jobs(self, svc) -> None:
+        """Ensure schedule jobs match user frequency config from settings.
+
+        Reads contentFrequency from user settings and creates/updates/disables
+        schedule jobs to match the desired cadence.
+        """
+        try:
+            from api.services.user_data_store import UserDataStore
+            store = UserDataStore()
+        except Exception:
+            return  # DB not configured, skip
+
+        # For now, reconcile for all users with settings
+        # In production, this would iterate over active users
+        try:
+            # Get all users with settings — simplified to single-user for now
+            # The system currently operates as single-tenant
+            freq = None
+            try:
+                # Try to read from a known user or system config
+                settings = store.get_user_settings_raw()
+                if settings:
+                    robot_settings = settings.get("robotSettings", {})
+                    if isinstance(robot_settings, str):
+                        import json
+                        robot_settings = json.loads(robot_settings)
+                    freq = robot_settings.get("contentFrequency")
+            except Exception:
+                pass
+
+            if not freq:
+                return
+
+            # Map frequency config to job types
+            freq_map = {
+                "article": {
+                    "count": freq.get("blog_posts_per_month", 0),
+                    "schedule": "weekly" if freq.get("blog_posts_per_month", 0) >= 4 else "monthly",
+                    "schedule_time": "09:00",
+                    "schedule_day": 1,
+                },
+                "newsletter": {
+                    "count": freq.get("newsletters_per_week", 0),
+                    "schedule": "weekly",
+                    "schedule_time": "10:00",
+                    "schedule_day": 1,
+                },
+                "short": {
+                    "count": freq.get("shorts_per_day", 0),
+                    "schedule": "daily",
+                    "schedule_time": "08:00",
+                },
+                "social": {
+                    "count": freq.get("social_posts_per_day", 0),
+                    "schedule": "daily",
+                    "schedule_time": "09:00",
+                },
+            }
+
+            existing_jobs = svc.list_schedule_jobs()
+            existing_by_type = {}
+            for job in existing_jobs:
+                jtype = job.get("job_type", "")
+                if jtype.startswith("auto_"):
+                    existing_by_type[jtype.replace("auto_", "")] = job
+
+            for job_type, config in freq_map.items():
+                existing = existing_by_type.get(job_type)
+                should_exist = config["count"] > 0
+
+                if should_exist and not existing:
+                    # Create new auto-job
+                    svc.create_schedule_job(
+                        user_id="system",
+                        job_type=f"auto_{job_type}",
+                        schedule=config["schedule"],
+                        schedule_time=config.get("schedule_time", "09:00"),
+                        schedule_day=config.get("schedule_day"),
+                        configuration={"auto_generated": True, "target_count": config["count"]},
+                        enabled=True,
+                    )
+                    print(f"📅 Created auto_{job_type} job (count={config['count']})")
+                elif not should_exist and existing:
+                    # Disable existing auto-job
+                    svc.update_schedule_job(existing["id"], enabled=False)
+                    print(f"📅 Disabled auto_{job_type} job")
+
+        except Exception as e:
+            print(f"⚠ Frequency reconciliation failed: {e}")
 
     def _calculate_next_run(self, job: dict) -> Optional[str]:
         """Calculate the next run time based on schedule configuration."""

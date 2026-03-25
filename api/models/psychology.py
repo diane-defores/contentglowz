@@ -22,6 +22,7 @@ class ContentType(str, Enum):
     newsletter = "newsletter"
     video_script = "video_script"
     social_post = "social_post"
+    short = "short"
 
 
 # ─────────────────────────────────────────────────
@@ -96,6 +97,9 @@ class AngleSuggestion(BaseModel):
     narrative_thread: str = Field(..., description="Which part of the creator's story this draws from")
     pain_point_addressed: str = Field(..., description="Which customer pain point this addresses")
     confidence: int = Field(default=70, ge=0, le=100, description="Confidence score")
+    priority_score: float = Field(default=50.0, ge=0, le=100, description="Computed priority score")
+    seo_keyword: Optional[str] = Field(None, description="Primary SEO keyword if applicable")
+    source_idea_ids: list[str] = Field(default_factory=list, description="Idea Pool IDs that contributed")
 
 
 class AngleGenerationRequest(BaseModel):
@@ -108,6 +112,9 @@ class AngleGenerationRequest(BaseModel):
     persona_data: dict = Field(..., description="Customer persona data")
     content_type: Optional[ContentType] = Field(None, description="Limit to specific content type")
     count: int = Field(default=5, ge=1, le=10, description="Number of angles to generate")
+    seo_signals: Optional[list[dict]] = Field(None, description="SEO keyword data (volume, difficulty, intent)")
+    trending_signals: Optional[list[dict]] = Field(None, description="Trending topics from research or competitor watch")
+    source_ideas: Optional[list[str]] = Field(None, description="Idea pool IDs that seeded this generation")
 
 
 class ContentAngleResult(BaseModel):
@@ -123,9 +130,30 @@ class AngleSelectionInput(BaseModel):
 
 
 class MultiFormatExtract(BaseModel):
-    """A selected angle rendered into multiple content formats"""
+    """A selected angle rendered into multiple content formats (deprecated — use dispatch-pipeline)"""
     angle_id: str = Field(..., description="Source angle ID")
     article_outline: Optional[str] = Field(None, description="Full article outline")
     newsletter_hook: Optional[str] = Field(None, description="Newsletter intro paragraph")
     social_post: Optional[str] = Field(None, description="Social media post text")
     video_script_opener: Optional[str] = Field(None, description="Video script opening")
+
+
+# ─────────────────────────────────────────────────
+# Pipeline Dispatch Models
+# ─────────────────────────────────────────────────
+
+class PipelineDispatchRequest(BaseModel):
+    """Request to dispatch an angle to a content generation pipeline"""
+    angle_data: dict = Field(..., description="The full angle object from generation")
+    target_format: str = Field(..., description="Target format: article, newsletter, short, social_post")
+    creator_voice: Optional[dict] = Field(None, description="Creator's voice profile")
+    seo_keyword: Optional[str] = Field(None, description="Primary SEO keyword for blog articles")
+    project_id: Optional[str] = Field(None, description="Associated project ID")
+
+
+class PipelineDispatchResult(BaseModel):
+    """Result of pipeline dispatch (async — poll for completion)"""
+    task_id: str = Field(..., description="Background task ID for polling")
+    content_record_id: str = Field(..., description="Created ContentRecord ID")
+    format: str = Field(..., description="Target format")
+    status: str = Field(..., description="running, completed, or failed")

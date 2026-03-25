@@ -16,6 +16,8 @@ class ContentType(str, Enum):
     IMAGE = "image"
     MANUAL = "manual"
     VIDEO_SCRIPT = "video_script"
+    SHORT = "short"
+    SOCIAL_POST = "social_post"
 
 
 class SourceRobot(str, Enum):
@@ -25,6 +27,8 @@ class SourceRobot(str, Enum):
     ARTICLE = "article"
     IMAGES = "images"
     MANUAL = "manual"
+    SHORT = "short"
+    SOCIAL = "social"
 
 
 class PublishingStatus(str, Enum):

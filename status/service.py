@@ -171,6 +171,7 @@ class StatusService:
         content_type: Optional[str] = None,
         source_robot: Optional[str] = None,
         project_id: Optional[str] = None,
+        project_ids: Optional[List[str]] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> List[ContentRecord]:
@@ -190,6 +191,12 @@ class StatusService:
         if project_id:
             query += " AND project_id = ?"
             params.append(project_id)
+        elif project_ids is not None:
+            if not project_ids:
+                return []
+            placeholders = ", ".join("?" for _ in project_ids)
+            query += f" AND project_id IN ({placeholders})"
+            params.extend(project_ids)
 
         query += " ORDER BY updated_at DESC LIMIT ? OFFSET ?"
         params.extend([limit, offset])
@@ -283,6 +290,7 @@ class StatusService:
     def get_stats(
         self,
         project_id: Optional[str] = None,
+        project_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """Get content counts grouped by status."""
         query = "SELECT status, COUNT(*) as count FROM content_records"
@@ -291,6 +299,13 @@ class StatusService:
         if project_id:
             query += " WHERE project_id = ?"
             params.append(project_id)
+        elif project_ids is not None:
+            if not project_ids:
+                counts = {s.value: 0 for s in ContentLifecycleStatus}
+                return {"total": 0, "by_status": counts}
+            placeholders = ", ".join("?" for _ in project_ids)
+            query += f" WHERE project_id IN ({placeholders})"
+            params.extend(project_ids)
 
         query += " GROUP BY status"
         rows = self._conn.execute(query, params).fetchall()
@@ -307,6 +322,7 @@ class StatusService:
     def get_domains(
         self,
         project_id: Optional[str] = None,
+        project_ids: Optional[List[str]] = None,
     ) -> List[WorkDomainRecord]:
         """Get work domain records, optionally filtered by project."""
         query = "SELECT * FROM work_domains"
@@ -315,6 +331,12 @@ class StatusService:
         if project_id:
             query += " WHERE project_id = ?"
             params.append(project_id)
+        elif project_ids is not None:
+            if not project_ids:
+                return []
+            placeholders = ", ".join("?" for _ in project_ids)
+            query += f" WHERE project_id IN ({placeholders})"
+            params.extend(project_ids)
 
         query += " ORDER BY domain ASC"
         rows = self._conn.execute(query, params).fetchall()
@@ -703,6 +725,189 @@ class StatusService:
             published_at=datetime.fromisoformat(row["published_at"]) if row["published_at"] else None,
             synced_at=datetime.fromisoformat(row["synced_at"]) if row["synced_at"] else None,
         )
+
+
+    # ─── Idea Pool CRUD ──────────────────────────────────
+
+    def create_idea(
+        self,
+        source: str,
+        title: str,
+        raw_data: Optional[Dict[str, Any]] = None,
+        seo_signals: Optional[Dict[str, Any]] = None,
+        trending_signals: Optional[Dict[str, Any]] = None,
+        tags: Optional[List[str]] = None,
+        priority_score: Optional[float] = None,
+        project_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Create a new idea in the pool."""
+        now = datetime.utcnow().isoformat()
+        idea_id = str(uuid.uuid4())
+
+        self._conn.execute(
+            """INSERT INTO idea_pool
+               (id, source, title, raw_data, seo_signals, trending_signals,
+                tags, priority_score, status, project_id, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'raw', ?, ?, ?)""",
+            (
+                idea_id,
+                source,
+                title,
+                json.dumps(raw_data or {}),
+                json.dumps(seo_signals) if seo_signals else None,
+                json.dumps(trending_signals) if trending_signals else None,
+                json.dumps(tags or []),
+                priority_score,
+                project_id,
+                now,
+                now,
+            ),
+        )
+        self._conn.commit()
+        return self.get_idea(idea_id)
+
+    def get_idea(self, idea_id: str) -> Dict[str, Any]:
+        """Get a single idea by ID."""
+        row = self._conn.execute(
+            "SELECT * FROM idea_pool WHERE id = ?", (idea_id,)
+        ).fetchone()
+        if not row:
+            raise ContentNotFoundError(f"Idea {idea_id} not found")
+        return self._idea_from_row(row)
+
+    def list_ideas(
+        self,
+        source: Optional[str] = None,
+        status: Optional[str] = None,
+        min_score: Optional[float] = None,
+        project_id: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """List ideas with optional filters. Returns (items, total)."""
+        conditions = []
+        params: list = []
+
+        if source:
+            conditions.append("source = ?")
+            params.append(source)
+        if status:
+            conditions.append("status = ?")
+            params.append(status)
+        if min_score is not None:
+            conditions.append("priority_score >= ?")
+            params.append(min_score)
+        if project_id:
+            conditions.append("project_id = ?")
+            params.append(project_id)
+
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        total = self._conn.execute(
+            f"SELECT COUNT(*) FROM idea_pool {where}", params
+        ).fetchone()[0]
+
+        rows = self._conn.execute(
+            f"""SELECT * FROM idea_pool {where}
+                ORDER BY COALESCE(priority_score, 0) DESC, created_at DESC
+                LIMIT ? OFFSET ?""",
+            params + [limit, offset],
+        ).fetchall()
+
+        return [self._idea_from_row(r) for r in rows], total
+
+    def update_idea(self, idea_id: str, **kwargs) -> Dict[str, Any]:
+        """Update an idea's fields."""
+        allowed = {
+            "title", "seo_signals", "trending_signals", "tags",
+            "priority_score", "status", "project_id",
+        }
+        updates = []
+        params = []
+        for key, value in kwargs.items():
+            if key not in allowed:
+                continue
+            if key in ("seo_signals", "trending_signals"):
+                updates.append(f"{key} = ?")
+                params.append(json.dumps(value) if value is not None else None)
+            elif key == "tags":
+                updates.append(f"{key} = ?")
+                params.append(json.dumps(value or []))
+            else:
+                updates.append(f"{key} = ?")
+                params.append(value)
+
+        if not updates:
+            return self.get_idea(idea_id)
+
+        updates.append("updated_at = ?")
+        params.append(datetime.utcnow().isoformat())
+        params.append(idea_id)
+
+        self._conn.execute(
+            f"UPDATE idea_pool SET {', '.join(updates)} WHERE id = ?",
+            params,
+        )
+        self._conn.commit()
+        return self.get_idea(idea_id)
+
+    def delete_idea(self, idea_id: str) -> None:
+        """Delete an idea."""
+        self._conn.execute("DELETE FROM idea_pool WHERE id = ?", (idea_id,))
+        self._conn.commit()
+
+    def bulk_create_ideas(
+        self,
+        source: str,
+        items: List[Dict[str, Any]],
+        project_id: Optional[str] = None,
+    ) -> int:
+        """Bulk insert ideas. Returns count created."""
+        now = datetime.utcnow().isoformat()
+        count = 0
+        for item in items:
+            title = item.get("title", "").strip()
+            if not title:
+                continue
+            self._conn.execute(
+                """INSERT INTO idea_pool
+                   (id, source, title, raw_data, seo_signals, trending_signals,
+                    tags, priority_score, status, project_id, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'raw', ?, ?, ?)""",
+                (
+                    str(uuid.uuid4()),
+                    source,
+                    title,
+                    json.dumps(item.get("raw_data", {})),
+                    json.dumps(item["seo_signals"]) if item.get("seo_signals") else None,
+                    json.dumps(item["trending_signals"]) if item.get("trending_signals") else None,
+                    json.dumps(item.get("tags", [])),
+                    item.get("priority_score"),
+                    project_id,
+                    now,
+                    now,
+                ),
+            )
+            count += 1
+        self._conn.commit()
+        return count
+
+    def _idea_from_row(self, row) -> Dict[str, Any]:
+        """Convert a database row to an idea dict."""
+        return {
+            "id": row["id"],
+            "source": row["source"],
+            "title": row["title"],
+            "raw_data": json.loads(row["raw_data"]),
+            "seo_signals": json.loads(row["seo_signals"]) if row["seo_signals"] else None,
+            "trending_signals": json.loads(row["trending_signals"]) if row["trending_signals"] else None,
+            "tags": json.loads(row["tags"]),
+            "priority_score": row["priority_score"],
+            "status": row["status"],
+            "project_id": row["project_id"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"],
+        }
 
 
 # ─── Singleton ────────────────────────────────────────

@@ -30,11 +30,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router
+from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router, me_router, settings_router, creator_profile_router, personas_router, idea_pool_router
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
 from api.routers.runs import router as runs_router
 from api.routers.content import router as content_router
+from api.routers.publish import router as publish_router
 
 
 # ─────────────────────────────────────────────────
@@ -235,6 +236,10 @@ async def global_exception_handler(request, exc):
 app.include_router(health_router)
 
 # Domain routers (with /api prefix)
+app.include_router(me_router)
+app.include_router(settings_router)
+app.include_router(creator_profile_router)
+app.include_router(personas_router)
 app.include_router(mesh_router)
 app.include_router(research_router)
 app.include_router(projects_router)
@@ -248,6 +253,8 @@ app.include_router(reels_router)
 app.include_router(psychology_router)
 app.include_router(runs_router)
 app.include_router(content_router)
+app.include_router(publish_router)
+app.include_router(idea_pool_router)
 
 
 # ─────────────────────────────────────────────────
