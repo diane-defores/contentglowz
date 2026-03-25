@@ -80,6 +80,7 @@ class AppTheme {
       'Newsletter' => const Color(0xFFFDAA5E),
       'Video' => const Color(0xFFE17055),
       'Reel' => const Color(0xFFE84393),
+      'Short' => const Color(0xFFFF6B6B),
       _ => _primaryColor,
     };
   }

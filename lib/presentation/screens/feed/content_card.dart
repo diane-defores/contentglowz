@@ -36,6 +36,8 @@ class ContentCard extends StatelessWidget {
           children: [
             // Header with type badge and project
             _buildHeader(typeColor),
+            // Format-specific metadata chips
+            if (_hasFormatMeta()) _buildFormatMeta(typeColor),
             // Image if present
             if (item.imageUrl != null) _buildImage(),
             // Content preview
@@ -87,6 +89,89 @@ class ContentCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  bool _hasFormatMeta() {
+    return item.seoKeyword != null ||
+        item.shortPlatform != null ||
+        item.socialPlatforms.isNotEmpty ||
+        item.narrativeThread != null;
+  }
+
+  Widget _buildFormatMeta(Color typeColor) {
+    final chips = <Widget>[];
+
+    // SEO keyword chip (articles)
+    if (item.seoKeyword != null) {
+      chips.add(_metaChip(Icons.search, item.seoKeyword!, typeColor));
+      if (item.seoVolume != null) {
+        chips.add(_metaChip(Icons.trending_up, '${item.seoVolume} vol', Colors.green));
+      }
+    }
+
+    // Short platform + duration
+    if (item.shortPlatform != null) {
+      chips.add(_metaChip(Icons.play_arrow_rounded, item.shortPlatform!, typeColor));
+      if (item.shortDuration != null) {
+        chips.add(_metaChip(Icons.timer_outlined, '${item.shortDuration}s', Colors.orange));
+      }
+    }
+
+    // Social platforms
+    if (item.socialPlatforms.isNotEmpty) {
+      for (final p in item.socialPlatforms) {
+        chips.add(_metaChip(_iconForPlatform(p), p, typeColor));
+      }
+    }
+
+    // Narrative thread
+    if (item.narrativeThread != null) {
+      chips.add(_metaChip(Icons.auto_stories, item.narrativeThread!, Colors.purple.shade200));
+    }
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: chips,
+      ),
+    );
+  }
+
+  Widget _metaChip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(40)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color.withAlpha(180)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: color.withAlpha(200)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconForPlatform(String platform) {
+    return switch (platform.toLowerCase()) {
+      'twitter' || 'x' => Icons.alternate_email,
+      'linkedin' => Icons.work_outline,
+      'instagram' => Icons.camera_alt_outlined,
+      'tiktok' => Icons.music_note,
+      'youtube' || 'youtube_shorts' => Icons.play_circle_outline,
+      _ => Icons.public,
+    };
   }
 
   Widget _buildImage() {
@@ -209,6 +294,7 @@ class ContentCard extends StatelessWidget {
       ContentType.newsletter => Icons.email_outlined,
       ContentType.videoScript => Icons.videocam_outlined,
       ContentType.reel => Icons.slow_motion_video,
+      ContentType.short => Icons.bolt_outlined,
     };
   }
 

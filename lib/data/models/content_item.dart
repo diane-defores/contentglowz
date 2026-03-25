@@ -4,6 +4,7 @@ enum ContentType {
   newsletter,
   videoScript,
   reel,
+  short,
 }
 
 enum ContentStatus {
@@ -150,10 +151,47 @@ class ContentItem {
         ContentType.newsletter => 'Newsletter',
         ContentType.videoScript => 'Video',
         ContentType.reel => 'Reel',
+        ContentType.short => 'Short',
       };
 
   String get channelLabels =>
       channels.map((c) => c.name).join(', ');
+
+  // ── Format-specific metadata helpers ──
+
+  /// SEO keyword for blog articles (from angle enrichment)
+  String? get seoKeyword => metadata?['seo_keyword'] as String?
+      ?? metadata?['angle']?['seo_keyword'] as String?;
+
+  /// Primary keyword search volume
+  int? get seoVolume => metadata?['seo_signals']?['volume'] as int?;
+
+  /// Short: target platform (tiktok, instagram_reels, youtube_shorts)
+  String? get shortPlatform => metadata?['platform'] as String?;
+
+  /// Short: duration in seconds
+  int? get shortDuration => metadata?['duration_seconds'] as int?
+      ?? metadata?['max_duration'] as int?;
+
+  /// Short: hashtags list
+  List<String> get shortHashtags =>
+      (metadata?['hashtags'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [];
+
+  /// Social: target platforms
+  List<String> get socialPlatforms =>
+      (metadata?['platforms'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [];
+
+  /// Angle confidence score
+  int? get angleConfidence => metadata?['confidence'] as int?
+      ?? metadata?['angle']?['confidence'] as int?;
+
+  /// Narrative thread this content draws from
+  String? get narrativeThread => metadata?['narrative_thread'] as String?
+      ?? metadata?['angle']?['narrative_thread'] as String?;
 
   // ── Parsing helpers ──
 
@@ -166,6 +204,7 @@ class ContentItem {
       'newsletter' => ContentType.newsletter,
       'video_script' || 'video' => ContentType.videoScript,
       'reel' || 'reels' => ContentType.reel,
+      'short' || 'shorts' => ContentType.short,
       _ => ContentType.blogPost,
     };
   }
@@ -215,6 +254,7 @@ class ContentItem {
         ContentType.newsletter => 'newsletter',
         ContentType.videoScript => 'video_script',
         ContentType.reel => 'reel',
+        ContentType.short => 'short',
       };
 
   static String _statusToString(ContentStatus status) => switch (status) {

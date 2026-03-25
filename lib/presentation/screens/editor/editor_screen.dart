@@ -214,6 +214,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             ],
           ),
         ),
+        // Format-specific metadata bar
+        if (_item != null) _buildFormatMetaBar(_item!),
         const SizedBox(height: 12),
         const Divider(height: 1, color: Colors.white12),
         // Body content
@@ -289,6 +291,79 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFormatMetaBar(ContentItem item) {
+    final chips = <Widget>[];
+
+    switch (item.type) {
+      case ContentType.blogPost:
+        if (item.seoKeyword != null) {
+          chips.add(_editorChip(Icons.search, 'SEO: ${item.seoKeyword}'));
+        }
+        if (item.seoVolume != null) {
+          chips.add(_editorChip(Icons.trending_up, '${item.seoVolume} vol'));
+        }
+      case ContentType.short:
+        if (item.shortPlatform != null) {
+          chips.add(_editorChip(Icons.play_arrow_rounded, item.shortPlatform!));
+        }
+        if (item.shortDuration != null) {
+          chips.add(_editorChip(Icons.timer_outlined, '${item.shortDuration}s'));
+        }
+        if (item.shortHashtags.isNotEmpty) {
+          chips.add(_editorChip(Icons.tag, item.shortHashtags.take(3).join(' ')));
+        }
+      case ContentType.socialPost:
+        for (final p in item.socialPlatforms) {
+          chips.add(_editorChip(Icons.public, p));
+        }
+      case ContentType.newsletter:
+        // Newsletter-specific: could show subject line, CTA etc.
+        break;
+      case ContentType.videoScript || ContentType.reel:
+        break;
+    }
+
+    if (item.narrativeThread != null) {
+      chips.add(_editorChip(Icons.auto_stories, item.narrativeThread!));
+    }
+    if (item.angleConfidence != null) {
+      chips.add(_editorChip(Icons.psychology, '${item.angleConfidence}% conf'));
+    }
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: chips,
+      ),
+    );
+  }
+
+  Widget _editorChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withAlpha(25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: Colors.white.withAlpha(140)),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(160)),
+          ),
+        ],
+      ),
     );
   }
 
