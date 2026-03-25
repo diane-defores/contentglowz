@@ -180,6 +180,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 28),
 
+          // Content frequency
+          _sectionHeader('Content Frequency'),
+          const SizedBox(height: 12),
+          _buildFrequencyCard(userSettings),
+
+          const SizedBox(height: 28),
+
           // Publishing channels
           _sectionHeader('Publishing Channels'),
           const SizedBox(height: 12),
@@ -293,6 +300,143 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildFrequencyCard(AsyncValue<AppSettings?> userSettings) {
+    return _buildCard(
+      child: userSettings.when(
+        data: (settings) {
+          final freq = settings?.contentFrequency ?? {};
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'How much content should the AI generate?',
+                style: TextStyle(color: Colors.white.withAlpha(140), fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              _frequencyRow(
+                icon: Icons.article_outlined,
+                label: 'Blog articles',
+                value: freq['blog_posts_per_month'] as int? ?? 0,
+                unit: '/month',
+                max: 30,
+                color: const Color(0xFF6C5CE7),
+                onChanged: (v) => _updateFrequency('blog_posts_per_month', v),
+              ),
+              const SizedBox(height: 12),
+              _frequencyRow(
+                icon: Icons.email_outlined,
+                label: 'Newsletters',
+                value: freq['newsletters_per_week'] as int? ?? 0,
+                unit: '/week',
+                max: 7,
+                color: const Color(0xFFFDAA5E),
+                onChanged: (v) => _updateFrequency('newsletters_per_week', v),
+              ),
+              const SizedBox(height: 12),
+              _frequencyRow(
+                icon: Icons.bolt_outlined,
+                label: 'Shorts',
+                value: freq['shorts_per_day'] as int? ?? 0,
+                unit: '/day',
+                max: 10,
+                color: const Color(0xFFFF6B6B),
+                onChanged: (v) => _updateFrequency('shorts_per_day', v),
+              ),
+              const SizedBox(height: 12),
+              _frequencyRow(
+                icon: Icons.chat_bubble_outline,
+                label: 'Social posts',
+                value: freq['social_posts_per_day'] as int? ?? 0,
+                unit: '/day',
+                max: 10,
+                color: const Color(0xFF0984E3),
+                onChanged: (v) => _updateFrequency('social_posts_per_day', v),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        error: (_, _) => Text(
+          'Sign in to configure content frequency',
+          style: TextStyle(color: Colors.white.withAlpha(100)),
+        ),
+      ),
+    );
+  }
+
+  Widget _frequencyRow({
+    required IconData icon,
+    required String label,
+    required int value,
+    required String unit,
+    required int max,
+    required Color color,
+    required ValueChanged<int> onChanged,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ),
+        Expanded(
+          child: SliderTheme(
+            data: SliderThemeData(
+              activeTrackColor: color,
+              inactiveTrackColor: color.withAlpha(30),
+              thumbColor: color,
+              overlayColor: color.withAlpha(30),
+              trackHeight: 4,
+            ),
+            child: Slider(
+              value: value.toDouble(),
+              min: 0,
+              max: max.toDouble(),
+              divisions: max,
+              onChanged: (v) => onChanged(v.round()),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 55,
+          child: Text(
+            value == 0 ? 'Off' : '$value$unit',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: value == 0 ? Colors.white.withAlpha(60) : color,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _updateFrequency(String key, int value) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.updateSettings({
+        'robotSettings': {
+          'contentFrequency': {key: value},
+        },
+      });
+      ref.invalidate(currentUserSettingsProvider);
+    } catch (_) {
+      // Silently fail — settings might not be persisted if not authenticated
+    }
   }
 
   Widget _buildCard({required Widget child}) {

@@ -23,6 +23,10 @@ class AppSettings {
 
   bool get notificationsEnabled => emailNotifications;
 
+  /// Content frequency config from robotSettings.contentFrequency
+  Map<String, dynamic> get contentFrequency =>
+      (robotSettings?['contentFrequency'] as Map<String, dynamic>?) ?? {};
+
   AppSettings copyWith({
     String? id,
     String? userId,
