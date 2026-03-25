@@ -480,46 +480,76 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
     setState(() => _isGenerating = true);
 
     final api = ref.read(apiServiceProvider);
-    final result = await api.createContentFromAngle(angle: angle);
+    final creatorProfile = ref.read(creatorProfileProvider).valueOrNull;
 
-    if (!mounted) return;
-    setState(() => _isGenerating = false);
-
-    if (result != null) {
-      // Refresh feed so the new item appears
-      ref.read(pendingContentProvider.notifier).refresh();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              '${_contentTypeLabel(angle.contentType)} created: "${angle.title}"'),
-          backgroundColor: AppTheme.approveColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          duration: const Duration(seconds: 3),
-        ),
+    try {
+      final result = await api.dispatchPipeline(
+        angle: angle,
+        creatorVoice: creatorProfile?.voice,
       );
-      context.pop();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to create content. Check backend connection.'),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+
+      if (!mounted) return;
+      setState(() => _isGenerating = false);
+
+      if (result != null) {
+        // Refresh feed so the new item appears
+        ref.read(pendingContentProvider.notifier).refresh();
+
+        final format = result['format'] ?? angle.contentType;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${_contentTypeLabel(format)} generating: "${angle.title}"'),
+            backgroundColor: AppTheme.approveColor.withAlpha(200),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        context.pop();
+      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isGenerating = false);
+
+      // Fallback to old method if dispatch-pipeline not available
+      final fallback = await api.createContentFromAngle(angle: angle);
+      if (!mounted) return;
+      if (fallback != null) {
+        ref.read(pendingContentProvider.notifier).refresh();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${_contentTypeLabel(angle.contentType)} created: "${angle.title}"'),
+            backgroundColor: AppTheme.approveColor.withAlpha(200),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        context.pop();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to create content. Check backend connection.'),
+            backgroundColor: AppTheme.rejectColor.withAlpha(200),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     }
   }
 
   String _contentTypeLabel(String type) => switch (type) {
-        'blog_post' => 'Article',
+        'blog_post' || 'article' => 'Article',
         'social_post' => 'Social',
         'newsletter' => 'Newsletter',
         'video_script' => 'Video',
         'reel' => 'Reel',
+        'short' => 'Short',
         _ => type,
       };
 }

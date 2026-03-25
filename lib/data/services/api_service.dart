@@ -484,6 +484,66 @@ class ApiService {
     }
   }
 
+  /// Dispatch an angle to the real content generation pipeline.
+  /// Returns {task_id, content_record_id, format, status}.
+  Future<Map<String, dynamic>?> dispatchPipeline({
+    required AngleSuggestion angle,
+    Map<String, dynamic>? creatorVoice,
+    String? projectId,
+  }) async {
+    if (allowDemoData) {
+      return {
+        'task_id': 'demo-task',
+        'content_record_id': 'demo-record',
+        'format': angle.contentType,
+        'status': 'running',
+      };
+    }
+
+    // Map angle content_type to pipeline format
+    final targetFormat = switch (angle.contentType) {
+      'blog_post' => 'article',
+      'social_post' => 'social_post',
+      'newsletter' => 'newsletter',
+      'short' || 'reel' => 'short',
+      'video_script' => 'article',
+      _ => angle.contentType,
+    };
+
+    try {
+      final response = await _dio.post(
+        '/api/psychology/dispatch-pipeline',
+        data: {
+          'angle_data': {
+            'title': angle.title,
+            'hook': angle.hook,
+            'angle': angle.angle,
+            'content_type': angle.contentType,
+            'narrative_thread': angle.narrativeThread,
+            'pain_point_addressed': angle.painPointAddressed,
+            'confidence': angle.confidence,
+          },
+          'target_format': targetFormat,
+          if (creatorVoice != null) 'creator_voice': creatorVoice,
+          if (projectId != null) 'project_id': projectId,
+        },
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  /// Poll pipeline dispatch status.
+  Future<Map<String, dynamic>?> getPipelineStatus(String taskId) async {
+    try {
+      final response = await _dio.get('/api/psychology/pipeline-status/$taskId');
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchScheduleJobs() async {
     if (allowDemoData) {
       return const [];
