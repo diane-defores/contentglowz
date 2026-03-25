@@ -1,0 +1,80 @@
+/**
+ * Static file server for Flutter web build.
+ * Serves build/web/ with SPA fallback (all routes → index.html).
+ *
+ * Usage: node server.js [port]
+ * Default port: 3050
+ */
+
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const PORT = parseInt(process.env.PORT || process.argv[2] || '3050');
+const BUILD_DIR = path.join(__dirname, 'build', 'web');
+
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.wasm': 'application/wasm',
+};
+
+const server = http.createServer((req, res) => {
+  // CORS for API proxy
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  let filePath = path.join(BUILD_DIR, req.url === '/' ? 'index.html' : req.url);
+
+  // Security: prevent directory traversal
+  if (!filePath.startsWith(BUILD_DIR)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
+
+  // Try the exact file first
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const ext = path.extname(filePath);
+    const mime = MIME_TYPES[ext] || 'application/octet-stream';
+
+    // Cache static assets (JS/CSS/fonts), no-cache for HTML
+    const cacheControl = ext === '.html'
+      ? 'no-cache'
+      : 'public, max-age=31536000, immutable';
+
+    res.writeHead(200, {
+      'Content-Type': mime,
+      'Cache-Control': cacheControl,
+    });
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
+
+  // SPA fallback: serve index.html for all routes (GoRouter handles client-side)
+  const indexPath = path.join(BUILD_DIR, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-cache',
+    });
+    fs.createReadStream(indexPath).pipe(res);
+  } else {
+    res.writeHead(404);
+    res.end('Not found. Run: flutter build web');
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`ContentFlowz app serving on http://localhost:${PORT}`);
+  console.log(`   Serving: ${BUILD_DIR}`);
+});

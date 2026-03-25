@@ -1,0 +1,335 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../data/models/content_item.dart';
+import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/skeleton_loader.dart';
+import 'content_card.dart';
+
+class FeedScreen extends ConsumerStatefulWidget {
+  const FeedScreen({super.key});
+
+  @override
+  ConsumerState<FeedScreen> createState() => _FeedScreenState();
+}
+
+class _FeedScreenState extends ConsumerState<FeedScreen>
+    with SingleTickerProviderStateMixin {
+  final CardSwiperController _swiperController = CardSwiperController();
+  String? _swipeOverlay;
+  late AnimationController _overlayAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _overlayAnimation = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
+  @override
+  void dispose() {
+    _swiperController.dispose();
+    _overlayAnimation.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final contentAsync = ref.watch(pendingContentProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Content Feed'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.read(pendingContentProvider.notifier).refresh(),
+          ),
+        ],
+      ),
+      body: contentAsync.when(
+        loading: () => const FeedSkeletonLoader(),
+        error: (err, _) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.white24),
+              const SizedBox(height: 16),
+              Text('Error: $err',
+                  style: TextStyle(color: Colors.white.withAlpha(120))),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () =>
+                    ref.read(pendingContentProvider.notifier).refresh(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (items) {
+          if (items.isEmpty) {
+            return _buildEmptyState();
+          }
+          return _buildSwiper(items);
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_circle_outline,
+              size: 72, color: Color(0xFF00B894)),
+          const SizedBox(height: 24),
+          const Text(
+            'All caught up!',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'No content waiting for review',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withAlpha(120),
+            ),
+          ),
+          const SizedBox(height: 32),
+          FilledButton.icon(
+            onPressed: () =>
+                ref.read(pendingContentProvider.notifier).refresh(),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Check for new content'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwiper(List<ContentItem> items) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: CardSwiper(
+            controller: _swiperController,
+            cardsCount: items.length,
+            numberOfCardsDisplayed: items.length.clamp(1, 3),
+            backCardOffset: const Offset(0, -30),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+            scale: 0.95,
+            isLoop: false,
+            onSwipe: (prevIndex, currentIndex, direction) =>
+                _onSwipe(items, prevIndex, direction),
+            onSwipeDirectionChange: (horizontalDirection, verticalDirection) {
+              setState(() {
+                if (verticalDirection == CardSwiperDirection.top) {
+                  _swipeOverlay = 'edit';
+                } else if (horizontalDirection == CardSwiperDirection.right) {
+                  _swipeOverlay = 'approve';
+                } else if (horizontalDirection == CardSwiperDirection.left) {
+                  _swipeOverlay = 'reject';
+                } else {
+                  _swipeOverlay = null;
+                }
+              });
+            },
+            cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
+              if (index >= items.length) return const SizedBox.shrink();
+              return ContentCard(
+                item: items[index],
+                onTap: () => _openEditor(items[index]),
+              );
+            },
+          ),
+        ),
+        // Swipe direction overlay
+        if (_swipeOverlay != null) _buildOverlay(),
+        // Bottom action buttons
+        Positioned(
+          bottom: 24,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOverlay() {
+    final (label, color, icon) = switch (_swipeOverlay) {
+      'approve' => ('PUBLISH', AppTheme.approveColor, Icons.check_circle),
+      'reject' => ('SKIP', AppTheme.rejectColor, Icons.cancel),
+      'edit' => ('EDIT', AppTheme.editColor, Icons.edit),
+      _ => ('', Colors.transparent, Icons.circle),
+    };
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [color.withAlpha(30), Colors.transparent],
+              radius: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              decoration: BoxDecoration(
+                color: color.withAlpha(40),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color, width: 2),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: color, size: 28),
+                  const SizedBox(width: 12),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _actionButton(
+          icon: Icons.close_rounded,
+          color: AppTheme.rejectColor,
+          label: 'Skip',
+          onTap: () => _swiperController.swipe(CardSwiperDirection.left),
+        ),
+        _actionButton(
+          icon: Icons.edit_rounded,
+          color: AppTheme.editColor,
+          label: 'Edit',
+          onTap: () => _swiperController.swipe(CardSwiperDirection.top),
+          large: true,
+        ),
+        _actionButton(
+          icon: Icons.check_rounded,
+          color: AppTheme.approveColor,
+          label: 'Publish',
+          onTap: () => _swiperController.swipe(CardSwiperDirection.right),
+        ),
+      ],
+    );
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+    bool large = false,
+  }) {
+    final size = large ? 64.0 : 52.0;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withAlpha(30),
+              border: Border.all(color: color.withAlpha(150), width: 2),
+            ),
+            child: Icon(icon, color: color, size: large ? 32 : 26),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: color.withAlpha(180),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  bool _onSwipe(
+      List<ContentItem> items, int prevIndex, CardSwiperDirection direction) {
+    if (prevIndex >= items.length) return false;
+    final item = items[prevIndex];
+
+    setState(() => _swipeOverlay = null);
+
+    switch (direction) {
+      case CardSwiperDirection.right:
+        // Approve & publish
+        ref.read(pendingContentProvider.notifier).approve(item.id).then((result) {
+          if (!mounted) return;
+          _showSnackBar(result.message, _colorForApproveSeverity(result.severity));
+        });
+        return true;
+
+      case CardSwiperDirection.left:
+        // Reject
+        ref.read(pendingContentProvider.notifier).reject(item.id);
+        _showSnackBar('Skipped: ${item.title}', AppTheme.rejectColor);
+        return true;
+
+      case CardSwiperDirection.top:
+        // Edit
+        _openEditor(item);
+        return false; // Don't remove from stack
+
+      default:
+        return false;
+    }
+  }
+
+  void _openEditor(ContentItem item) {
+    context.push('/editor/${item.id}');
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color.withAlpha(200),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Color _colorForApproveSeverity(ApproveSeverity severity) => switch (severity) {
+        ApproveSeverity.success => AppTheme.approveColor,
+        ApproveSeverity.info => Colors.blue,
+        ApproveSeverity.warning => Colors.orange,
+        ApproveSeverity.error => AppTheme.rejectColor,
+      };
+}

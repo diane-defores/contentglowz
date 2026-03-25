@@ -1,0 +1,426 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../data/models/content_item.dart';
+import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
+
+class EditorScreen extends ConsumerStatefulWidget {
+  final String contentId;
+
+  const EditorScreen({super.key, required this.contentId});
+
+  @override
+  ConsumerState<EditorScreen> createState() => _EditorScreenState();
+}
+
+class _EditorScreenState extends ConsumerState<EditorScreen> {
+  late TextEditingController _titleController;
+  late TextEditingController _bodyController;
+  bool _isEditing = false;
+  bool _isPreview = true;
+  bool _hasChanges = false;
+
+  ContentItem? _item;
+  bool _bodyLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _bodyController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _bodyController.dispose();
+    super.dispose();
+  }
+
+  void _initFromItem(ContentItem item) {
+    if (_item?.id != item.id) {
+      _item = item;
+      _titleController.text = item.title;
+      _bodyController.text = item.body;
+      _hasChanges = false;
+      _bodyLoaded = item.body.isNotEmpty;
+      // If body is empty/preview only, fetch full body from API
+      if (!_bodyLoaded) {
+        _loadFullBody(item.id);
+      }
+    }
+  }
+
+  Future<void> _loadFullBody(String contentId) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final body = await api.fetchContentBody(contentId);
+      if (body != null && mounted) {
+        setState(() {
+          _bodyController.text = body;
+          _bodyLoaded = true;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load full content: $error')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final contentAsync = ref.watch(pendingContentProvider);
+
+    return contentAsync.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, _) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(child: Text('Error: $err')),
+      ),
+      data: (items) {
+        final item = items.where((c) => c.id == widget.contentId).firstOrNull;
+        if (item == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: const Center(child: Text('Content not found')),
+          );
+        }
+
+        _initFromItem(item);
+
+        return Scaffold(
+          appBar: _buildAppBar(item),
+          body: _buildBody(item),
+          bottomNavigationBar: _buildBottomBar(item),
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(ContentItem item) {
+    final typeColor = AppTheme.colorForContentType(item.typeLabel);
+
+    return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: () {
+          if (_hasChanges) {
+            _showDiscardDialog();
+          } else {
+            context.pop();
+          }
+        },
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: typeColor.withAlpha(40),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              item.typeLabel,
+              style: TextStyle(color: typeColor, fontSize: 13),
+            ),
+          ),
+          if (item.projectName != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              item.projectName!,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.white.withAlpha(120),
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        // Toggle edit/preview
+        IconButton(
+          icon: Icon(_isPreview ? Icons.edit_rounded : Icons.visibility_rounded),
+          tooltip: _isPreview ? 'Edit' : 'Preview',
+          onPressed: () => setState(() {
+            _isPreview = !_isPreview;
+            _isEditing = !_isPreview;
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBody(ContentItem item) {
+    return Column(
+      children: [
+        // Title
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          child: _isEditing
+              ? TextField(
+                  controller: _titleController,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Title',
+                    border: InputBorder.none,
+                    filled: false,
+                  ),
+                  onChanged: (_) => setState(() => _hasChanges = true),
+                )
+              : Text(
+                  _titleController.text,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+        ),
+        // Channels
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Icon(Icons.send_rounded,
+                  size: 14, color: Colors.white.withAlpha(80)),
+              const SizedBox(width: 8),
+              ...item.channels.map((ch) => Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      ch.name,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withAlpha(120),
+                      ),
+                    ),
+                  )),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        const Divider(height: 1, color: Colors.white12),
+        // Body content
+        Expanded(
+          child: _isEditing
+              ? Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: TextField(
+                    controller: _bodyController,
+                    maxLines: null,
+                    expands: true,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white.withAlpha(220),
+                      height: 1.7,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Content body...',
+                      border: InputBorder.none,
+                      filled: false,
+                    ),
+                    onChanged: (_) => setState(() => _hasChanges = true),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Markdown(
+                    data: _bodyController.text,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white.withAlpha(220),
+                        height: 1.7,
+                      ),
+                      h1: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      h2: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      h3: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      code: TextStyle(
+                        backgroundColor: Colors.white.withAlpha(15),
+                        color: const Color(0xFF6C5CE7),
+                        fontSize: 14,
+                      ),
+                      codeblockDecoration: BoxDecoration(
+                        color: Colors.white.withAlpha(10),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      blockquoteDecoration: BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: Colors.white.withAlpha(40),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                      listBullet: TextStyle(
+                        color: Colors.white.withAlpha(180),
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomBar(ContentItem item) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+          20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A1A2E),
+        border: Border(top: BorderSide(color: Colors.white12)),
+      ),
+      child: Row(
+        children: [
+          // Reject button
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _reject(item),
+              icon: const Icon(Icons.close_rounded),
+              label: const Text('Skip'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.rejectColor,
+                side: BorderSide(color: AppTheme.rejectColor.withAlpha(100)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Publish button
+          Expanded(
+            flex: 2,
+            child: FilledButton.icon(
+              onPressed: () => _publish(item),
+              icon: const Icon(Icons.send_rounded),
+              label: Text(_hasChanges ? 'Save & Publish' : 'Publish'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.approveColor,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _publish(ContentItem item) async {
+    if (_hasChanges) {
+      try {
+        final api = ref.read(apiServiceProvider);
+        await api.updateContent(item.id, title: _titleController.text);
+        await api.saveContentBody(item.id, _bodyController.text);
+
+        final updated = item.copyWith(
+          title: _titleController.text,
+          body: _bodyController.text,
+        );
+        ref.read(pendingContentProvider.notifier).updateItem(updated);
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save changes: $error'),
+            backgroundColor: Colors.orange.withAlpha(200),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        return;
+      }
+    }
+    final result = await ref.read(pendingContentProvider.notifier).approve(item.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: _colorForApproveSeverity(result.severity).withAlpha(200),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    context.pop();
+  }
+
+  void _reject(ContentItem item) {
+    ref.read(pendingContentProvider.notifier).reject(item.id);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Skipped: ${item.title}'),
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    context.pop();
+  }
+
+  void _showDiscardDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: const Text('Discard changes?'),
+        content: const Text('You have unsaved edits.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Keep editing'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.pop();
+            },
+            child: Text('Discard',
+                style: TextStyle(color: AppTheme.rejectColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _colorForApproveSeverity(ApproveSeverity severity) => switch (severity) {
+        ApproveSeverity.success => AppTheme.approveColor,
+        ApproveSeverity.info => Colors.blue,
+        ApproveSeverity.warning => Colors.orange,
+        ApproveSeverity.error => AppTheme.rejectColor,
+      };
+}

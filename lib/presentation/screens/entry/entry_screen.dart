@@ -1,0 +1,902 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../data/models/auth_session.dart';
+import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
+
+class EntryScreen extends ConsumerWidget {
+  const EntryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authSession = ref.watch(authSessionProvider);
+    final bootstrap = ref.watch(appBootstrapProvider);
+    final stateCard = _buildStateCard(context, ref, authSession, bootstrap);
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0D1321), Color(0xFF111827), Color(0xFF1A1A2E)],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1160),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHero(context, ref, stateCard),
+                    const SizedBox(height: 24),
+                    _buildProofStrip(),
+                    const SizedBox(height: 24),
+                    _buildPainVsFlow(),
+                    const SizedBox(height: 24),
+                    _buildHowItWorks(),
+                    const SizedBox(height: 24),
+                    _buildFeatureGrid(),
+                    const SizedBox(height: 24),
+                    _buildFaqSection(),
+                    const SizedBox(height: 32),
+                    _buildBottomCta(context, ref),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHero(
+    BuildContext context,
+    WidgetRef ref,
+    Widget stateCard,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 900;
+        final left = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _pill(
+              icon: Icons.auto_awesome_rounded,
+              label: 'AI content ops for founders, creators, and lean teams',
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Turn one repo into a weekly content machine.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 48,
+                fontWeight: FontWeight.w800,
+                height: 1.05,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'ContentFlowz analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
+              style: TextStyle(
+                color: Colors.white.withAlpha(170),
+                fontSize: 17,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  onPressed: () {
+                    ref.read(authSessionProvider.notifier).signInDemo();
+                    context.go('/onboarding?intent=entry');
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.approveColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Open Interactive Demo'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/auth'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: BorderSide(color: Colors.white.withAlpha(40)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                  ),
+                  icon: const Icon(Icons.lock_open_rounded),
+                  label: const Text('Create Workspace'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: const [
+                _MetricChip(
+                  value: '1',
+                  label: 'workflow from angle to publish',
+                ),
+                _MetricChip(
+                  value: '3',
+                  label: 'setup steps before first workspace',
+                ),
+                _MetricChip(
+                  value: '7',
+                  label: 'publishing channels already modeled',
+                ),
+              ],
+            ),
+          ],
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              left,
+              const SizedBox(height: 24),
+              stateCard,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(flex: 6, child: left),
+            const SizedBox(width: 24),
+            Expanded(flex: 5, child: stateCard),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProofStrip() {
+    const items = [
+      'Repo-aware onboarding instead of blank-prompt setup',
+      'Narrative ritual plus personas before generation',
+      'Swipe approval flow tied to real publish actions',
+      'Demo workspace available without sales call',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: items
+            .map(
+              (item) => _pill(
+                icon: Icons.check_circle_outline_rounded,
+                label: item,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildPainVsFlow() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 900;
+        final children = [
+          Expanded(
+            child: _comparisonCard(
+              title: 'Without ContentFlowz',
+              accent: AppTheme.rejectColor,
+              items: const [
+                'You explain your product from scratch in every prompt.',
+                'Ideas, drafts, and publishing live in separate tools.',
+                'The team loses momentum between generation and approval.',
+                'Publishing still depends on manual copy-paste.',
+              ],
+            ),
+          ),
+          if (!compact) const SizedBox(width: 20) else const SizedBox(height: 20),
+          Expanded(
+            child: _comparisonCard(
+              title: 'With ContentFlowz',
+              accent: AppTheme.approveColor,
+              items: const [
+                'Your workspace starts from a real repo and a real content plan.',
+                'Rituals and personas sharpen the angle before generation.',
+                'Drafts are reviewed with one approval workflow.',
+                'Publishing, scheduling, and channel readiness stay visible.',
+              ],
+            ),
+          ),
+        ];
+
+        return compact
+            ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children)
+            : Row(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+      },
+    );
+  }
+
+  Widget _buildHowItWorks() {
+    const steps = [
+      (
+        '1. Connect the product context',
+        'Start with your repo, project name, and content mix so the app works from actual context.',
+      ),
+      (
+        '2. Shape the narrative',
+        'Capture rituals, personas, and angles before asking the model for drafts.',
+      ),
+      (
+        '3. Review and publish',
+        'Approve, edit, schedule, and publish content from one queue instead of bouncing across tools.',
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'How the workflow actually works',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The promise is not "AI writes for you". The promise is a tighter system from source material to published output.',
+            style: TextStyle(
+              color: Colors.white.withAlpha(150),
+              fontSize: 15,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: steps
+                .map(
+                  (step) => SizedBox(
+                    width: 320,
+                    child: _infoCard(
+                      title: step.$1,
+                      description: step.$2,
+                      icon: Icons.arrow_outward_rounded,
+                      accent: AppTheme.editColor,
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureGrid() {
+    final items = [
+      (
+        'Onboarding that creates a plan',
+        'Project, repo, formats, and cadence are captured before generation starts.',
+        Icons.rocket_launch_outlined,
+        AppTheme.approveColor,
+      ),
+      (
+        'Angles from persona context',
+        'The app uses ritual and persona inputs to propose more relevant content directions.',
+        Icons.psychology_alt_outlined,
+        AppTheme.editColor,
+      ),
+      (
+        'Approval-first feed',
+        'Operators can swipe through content decisions quickly instead of managing a cluttered queue.',
+        Icons.swipe_outlined,
+        Colors.orange,
+      ),
+      (
+        'Publishing visibility',
+        'Channel connections, scheduling state, and publish results stay attached to the workflow.',
+        Icons.publish_outlined,
+        AppTheme.approveColor,
+      ),
+    ];
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: items
+          .map(
+            (item) => SizedBox(
+              width: 350,
+              child: _infoCard(
+                title: item.$1,
+                description: item.$2,
+                icon: item.$3,
+                accent: item.$4,
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildFaqSection() {
+    final items = [
+      (
+        'Why not just use ChatGPT?',
+        'Because the hard part is not getting text. The hard part is preserving product context, deciding what to say next, and moving approved drafts into publishing without friction.',
+      ),
+      (
+        'What makes the demo useful?',
+        'The demo is a stable public workspace, so visitors can inspect the workflow end-to-end before creating their own workspace.',
+      ),
+      (
+        'Is this only for social posts?',
+        'No. The product already models blog posts, newsletters, social posts, video scripts, and short-form video content.',
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Common objections',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _faqItem(question: item.$1, answer: item.$2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomCta(BuildContext context, WidgetRef ref) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'See the workflow before you commit',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start with the stable demo workspace to inspect the flow, then create your own workspace when you are ready to connect a real product.',
+            style: TextStyle(
+              color: Colors.white.withAlpha(150),
+              fontSize: 15,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              FilledButton(
+                onPressed: () {
+                  ref.read(authSessionProvider.notifier).signInDemo();
+                  context.go('/onboarding?intent=entry');
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.approveColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 18,
+                  ),
+                ),
+                child: const Text('Open Demo Workspace'),
+              ),
+              OutlinedButton(
+                onPressed: () => context.go('/auth'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withAlpha(35)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 18,
+                  ),
+                ),
+                child: const Text('Create Workspace'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStateCard(
+    BuildContext context,
+    WidgetRef ref,
+    AuthSession authSession,
+    AsyncValue<dynamic> bootstrap,
+  ) {
+    if (authSession.isLoading) {
+      return _card(
+        eyebrow: 'Restoring session',
+        title: 'Checking Clerk session',
+        description:
+            'The app is restoring your Clerk session and deciding whether to open auth, onboarding, or your workspace.',
+        icon: Icons.sync_rounded,
+        accent: AppTheme.editColor,
+        primaryLabel: 'Please wait',
+        onPrimary: null,
+        secondaryLabel: 'Open Demo Workspace',
+        onSecondary: () {
+          ref.read(authSessionProvider.notifier).signInDemo();
+          context.go('/onboarding?intent=entry');
+        },
+      );
+    }
+
+    if (authSession.status == AuthStatus.authenticated && bootstrap.isLoading) {
+      return _card(
+        eyebrow: 'Checking session',
+        title: 'Loading your workspace',
+        description:
+            'The app is validating your session and loading your workspace from FastAPI.',
+        icon: Icons.sync_rounded,
+        accent: AppTheme.editColor,
+        primaryLabel: 'Please wait',
+        onPrimary: null,
+        secondaryLabel: 'Sign out',
+        onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+      );
+    }
+
+    if (authSession.status == AuthStatus.authenticated && bootstrap.hasError) {
+      return _card(
+        eyebrow: 'Session error',
+        title: 'Reconnect your account',
+        description:
+            'Your Clerk session could not load the workspace bootstrap. Sign in again to refresh the bearer token.',
+        icon: Icons.warning_amber_rounded,
+        accent: Colors.orange,
+        primaryLabel: 'Sign In Again',
+        onPrimary: () {
+          ref.read(authSessionProvider.notifier).signOut();
+          context.go('/auth');
+        },
+        secondaryLabel: 'Open Demo Workspace',
+        onSecondary: () {
+          ref.read(authSessionProvider.notifier).signInDemo();
+          context.go(
+            authSession.onboardingComplete
+                ? '/feed'
+                : '/onboarding?intent=entry',
+          );
+        },
+      );
+    }
+
+    final bootstrapData = bootstrap.valueOrNull;
+    final onboardingDone = authSession.isAuthenticated
+        ? (bootstrapData?.shouldOnboard == false)
+        : authSession.onboardingComplete;
+
+    if (authSession.isSignedIn && onboardingDone) {
+      return _card(
+        eyebrow: 'Session active',
+        title: 'Welcome back to ContentFlowz',
+        description:
+            'Your account is already recognized. Jump back into the content pipeline instead of going through onboarding again.',
+        icon: Icons.verified_user_rounded,
+        accent: AppTheme.approveColor,
+        primaryLabel: 'Open Dashboard',
+        onPrimary: () => context.go('/feed'),
+        secondaryLabel: 'Sign out',
+        onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+      );
+    }
+
+    if (authSession.isSignedIn && !onboardingDone) {
+      return _card(
+        eyebrow: 'Setup required',
+        title: 'Finish onboarding before entering the app',
+        description:
+            'Your session exists, but the workspace setup is still incomplete. Continue onboarding to configure project, content types, and publishing flow.',
+        icon: Icons.rocket_launch_rounded,
+        accent: AppTheme.editColor,
+        primaryLabel: 'Continue Onboarding',
+        onPrimary: () => context.go('/onboarding?intent=entry'),
+        secondaryLabel: 'Sign out',
+        onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+      );
+    }
+
+    return _card(
+      eyebrow: 'Logged out',
+      title: 'Create or reconnect your workspace',
+      description:
+          'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
+      icon: Icons.lock_outline_rounded,
+      accent: Colors.orange,
+      primaryLabel: 'Sign In / Sign Up',
+      onPrimary: () => context.go('/auth'),
+      secondaryLabel: 'Open Demo Workspace',
+      onSecondary: () {
+        ref.read(authSessionProvider.notifier).signInDemo();
+        context.go(
+          authSession.onboardingComplete ? '/feed' : '/onboarding?intent=entry',
+        );
+      },
+      caption:
+          'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
+    );
+  }
+
+  Widget _card({
+    required String eyebrow,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color accent,
+    required String primaryLabel,
+    required VoidCallback? onPrimary,
+    required String secondaryLabel,
+    required VoidCallback onSecondary,
+    String? caption,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withAlpha(20)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withAlpha(22),
+            blurRadius: 36,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: accent.withAlpha(30),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(icon, color: accent, size: 28),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            eyebrow.toUpperCase(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.4,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              height: 1.15,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            description,
+            style: TextStyle(
+              color: Colors.white.withAlpha(150),
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          if (caption != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              caption,
+              style: TextStyle(
+                color: Colors.white.withAlpha(110),
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onPrimary,
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(primaryLabel),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onSecondary,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white70,
+                side: BorderSide(color: Colors.white.withAlpha(35)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(secondaryLabel),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pill({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withAlpha(18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white70, size: 16),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withAlpha(190),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _comparisonCard({
+    required String title,
+    required Color accent,
+    required List<String> items,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withAlpha(90)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.circle, color: accent, size: 10),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(155),
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color accent,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: accent.withAlpha(26),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: accent),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(
+              color: Colors.white.withAlpha(145),
+              fontSize: 14,
+              height: 1.55,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _faqItem({required String question, required String answer}) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF121A2B),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            question,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            answer,
+            style: TextStyle(
+              color: Colors.white.withAlpha(145),
+              fontSize: 14,
+              height: 1.55,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricChip extends StatelessWidget {
+  const _MetricChip({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withAlpha(150),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

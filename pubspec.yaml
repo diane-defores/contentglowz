@@ -1,0 +1,61 @@
+name: my_robots_app
+description: "Content approval pipeline - AI generates, you swipe to publish."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Swipeable cards
+  flutter_card_swiper: ^7.0.1
+
+  # HTTP client
+  dio: ^5.7.0
+  clerk_auth: ^0.0.14-beta
+
+  # Markdown rendering
+  flutter_markdown: ^0.7.6
+
+  # Local storage
+  shared_preferences: ^2.3.4
+
+  # Date formatting
+  intl: ^0.19.0
+
+  # JSON serialization
+  json_annotation: ^4.9.0
+
+  # Cached network images
+  cached_network_image: ^3.4.1
+
+  # URL launcher
+  url_launcher: ^6.3.1
+
+  # Responsive layout
+  responsive_framework: ^1.5.1
+
+  # Google Fonts
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.5
+
+flutter:
+  uses-material-design: true
