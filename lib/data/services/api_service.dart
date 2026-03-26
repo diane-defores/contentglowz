@@ -605,6 +605,31 @@ class ApiService {
     }
   }
 
+  /// Get OAuth connect URL for a platform. Opens in browser to authorize.
+  Future<String?> getConnectUrl(String platform) async {
+    if (allowDemoData) return null;
+
+    try {
+      final response = await _dio.get('/api/publish/connect/$platform');
+      final data = _asMap(response.data);
+      return data['connect_url'] as String?;
+    } on DioException {
+      return null;
+    }
+  }
+
+  /// Disconnect a social account.
+  Future<bool> disconnectAccount(String accountId) async {
+    if (allowDemoData) return false;
+
+    try {
+      await _dio.delete('/api/publish/accounts/$accountId');
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> publishContent({
     required String content,
     required List<Map<String, String>> platforms,

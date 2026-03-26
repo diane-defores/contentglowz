@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
@@ -593,7 +594,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return OutlinedButton(
-      onPressed: () => _showConnectDialog(name),
+      onPressed: () => _connectChannel(name, platform),
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.white60,
         side: BorderSide(color: Colors.white.withAlpha(40)),
@@ -604,24 +605,76 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showConnectDialog(String channelName) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        title: Text('Connect $channelName'),
-        content: Text(
-          'OAuth is not wired in-app yet. Connect the account on the backend/LATE side, then reopen this screen or refresh the API URL to fetch /api/publish/accounts again.',
-          style: TextStyle(color: Colors.white.withAlpha(160)),
+  Future<void> _connectChannel(String channelName, String? platform) async {
+    if (platform == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$channelName is not supported for direct connection yet'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK'),
+      );
+      return;
+    }
+
+    final api = ref.read(apiServiceProvider);
+    final connectUrl = await api.getConnectUrl(platform);
+
+    if (!mounted) return;
+
+    if (connectUrl == null || connectUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not get connect URL for $channelName'),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+
+    // Open OAuth URL in browser
+    final uri = Uri.parse(connectUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+      // Show dialog to refresh after connecting
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1A1A2E),
+          title: Text('Connecting $channelName'),
+          content: Text(
+            'A browser window has opened for you to authorize $channelName.\n\nOnce done, tap "Refresh" to see your connected account.',
+            style: TextStyle(color: Colors.white.withAlpha(180)),
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.invalidate(publishAccountsProvider);
+              },
+              child: const Text('Refresh'),
+            ),
+          ],
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open browser for $channelName authorization'),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   PublishAccount? _accountForPlatform(
