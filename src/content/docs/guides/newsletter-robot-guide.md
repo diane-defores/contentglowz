@@ -55,7 +55,7 @@ EXA_API_KEY=...                      # Recherche web
 
 # Option A: IMAP (gratuit, recommandé)
 NEWSLETTER_EMAIL_BACKEND=imap
-NEWSLETTER_IMAP_EMAIL=myrobot.newsletters@gmail.com
+NEWSLETTER_IMAP_EMAIL=your-newsletters@gmail.com
 NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
 NEWSLETTER_IMAP_FOLDER=Newsletters            # Optionnel
 NEWSLETTER_IMAP_ARCHIVE=CONTENTFLOWZ_DONE # Optionnel
@@ -73,7 +73,7 @@ NEWSLETTER_FROM_NAME="My Newsletter"
 
 ### Setup Gmail pour IMAP
 
-1. **Créer compte Gmail dédié** : `myrobot.newsletters@gmail.com`
+1. **Créer compte Gmail dédié** : `your-newsletters@gmail.com`
 
 2. **Activer 2FA** :
    - Google Account → Security → 2-Step Verification → Enable
