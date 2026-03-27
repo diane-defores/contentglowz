@@ -90,7 +90,7 @@ doppler run -- uvicorn api.main:app --host 0.0.0.0 --port 8000
 | `NEWSLETTER_IMAP_PASSWORD` | Gmail App Password | Gmail Security settings |
 | `NEWSLETTER_IMAP_HOST` | IMAP server (default: imap.gmail.com) | Optional |
 | `NEWSLETTER_IMAP_FOLDER` | Folder to read (default: Newsletters) | Optional |
-| `NEWSLETTER_IMAP_ARCHIVE` | Archive folder (default: Newsletters/Processed) | Optional |
+| `NEWSLETTER_IMAP_ARCHIVE` | Archive folder (default: CONTENTFLOWZ_DONE) | Optional |
 | `COMPOSIO_API_KEY` | Composio API (if using composio backend) | https://composio.dev |
 
 ### Optional Keys

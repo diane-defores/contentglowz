@@ -92,6 +92,12 @@ class SchedulerService:
                 await self._run_ingest_newsletters(job)
             elif job_type == "ingest_seo":
                 await self._run_ingest_seo(job)
+            elif job_type == "enrich_ideas":
+                await self._run_enrich_ideas(job)
+            elif job_type == "ingest_competitors":
+                await self._run_ingest_competitors(job)
+            elif job_type == "track_serp":
+                await self._run_track_serp(job)
             else:
                 print(f"⚠ Unknown job type: {job_type}")
 
@@ -190,6 +196,7 @@ class SchedulerService:
         svc = get_status_service()
 
         # Try to get an enriched idea from the pool
+        idea = None
         try:
             ideas, _ = svc.list_ideas(status="enriched", min_score=50.0, limit=1)
         except Exception:
@@ -203,12 +210,70 @@ class SchedulerService:
                 "hook": idea.get("raw_data", {}).get("hook", idea["title"]),
                 "angle": idea.get("raw_data", {}).get("angle", ""),
                 "pain_point_addressed": "",
+                "seo_keyword": idea["title"],
             }
             svc.update_idea(idea["id"], status="used")
+
+        # Extract competitor domains from idea data (competitor_watch ideas)
+        idea_competitor_domains = None
+        if idea:
+            raw = idea.get("raw_data", {})
+            rankings = raw.get("competitors_ranking", [])
+            if rankings:
+                idea_competitor_domains = [r["domain"] for r in rankings if r.get("domain")]
+            elif raw.get("competitor_domain"):
+                idea_competitor_domains = [raw["competitor_domain"]]
+
+        # Optional: Run the Angle Strategist for richer angles
+        if idea and config.get("use_angle_strategist", False):
+            try:
+                from agents.psychology.angle_strategist import run_angle_generation
+
+                seo_signals_list = []
+                if idea.get("seo_signals"):
+                    seo_signals_list.append({"keyword": idea["title"], **idea["seo_signals"]})
+
+                trending_list = []
+                if idea.get("trending_signals"):
+                    trending_list.append(idea["trending_signals"])
+
+                angle_result = await asyncio.to_thread(
+                    run_angle_generation,
+                    creator_voice=config.get("creator_voice", {}),
+                    creator_positioning=config.get("creator_positioning", {}),
+                    narrative_summary=config.get("narrative_summary"),
+                    persona_data=config.get("persona_data", {}),
+                    content_type="article",
+                    count=1,
+                    seo_signals=seo_signals_list or None,
+                    trending_signals=trending_list or None,
+                )
+
+                generated_angles = angle_result.get("angles", [])
+                if generated_angles:
+                    best = generated_angles[0]
+                    angle = {
+                        "title": best.get("title", idea["title"]),
+                        "hook": best.get("hook", ""),
+                        "angle": best.get("angle", ""),
+                        "pain_point_addressed": best.get("pain_point_addressed", ""),
+                        "seo_keyword": best.get("seo_keyword", idea["title"]),
+                        "content_type": best.get("content_type", "article"),
+                        "narrative_thread": best.get("narrative_thread", ""),
+                        "confidence": best.get("confidence", 70),
+                    }
+                    print(f"🎯 Angle Strategist produced: {angle['title']}")
+
+            except ImportError:
+                print("ℹ️  Angle Strategist not available, using direct idea")
+            except Exception as e:
+                print(f"⚠ Angle Strategist failed (falling back to direct idea): {e}")
 
         if not angle.get("title"):
             print(f"ℹ️  Article job {job['id']}: no angle or enriched idea available, skipping")
             return
+
+        target_keyword = angle.get("seo_keyword", angle.get("title", ""))
 
         try:
             from agents.seo.seo_crew import SEOContentCrew
@@ -216,11 +281,17 @@ class SchedulerService:
             crew = SEOContentCrew()
             result = await asyncio.to_thread(
                 crew.generate_content,
-                target_keyword=angle.get("seo_keyword", angle.get("title", "")),
+                target_keyword=target_keyword,
+                competitor_domains=idea_competitor_domains or config.get("competitor_domains"),
+                sector=config.get("sector"),
+                business_goals=config.get("business_goals"),
+                brand_voice=config.get("brand_voice"),
+                target_audience=config.get("target_audience"),
                 word_count=config.get("word_count", 2500),
+                tone=config.get("tone", "professional"),
             )
 
-            # Create content record
+            # Create content record with enriched metadata
             body = result.get("outputs", {}).get("article", str(result))
             record = svc.create_content(
                 title=angle.get("title", "Scheduled Article"),
@@ -229,7 +300,13 @@ class SchedulerService:
                 status="generated",
                 project_id=job.get("project_id"),
                 content_preview=body[:500] if body else "",
-                metadata={"scheduled_job_id": job["id"], "angle": angle},
+                metadata={
+                    "scheduled_job_id": job["id"],
+                    "angle": angle,
+                    "target_keyword": target_keyword,
+                    "seo_signals": idea.get("seo_signals") if idea else None,
+                    "source_idea_id": idea["id"] if idea else None,
+                },
             )
             if body:
                 svc.save_content_body(record.id, body, edited_by="scheduler")
@@ -286,8 +363,23 @@ class SchedulerService:
             raise RuntimeError(f"Social generation failed: {e}") from e
 
     async def _run_ingest_newsletters(self, job: dict) -> None:
-        """Ingest newsletter emails into the Idea Pool."""
+        """Ingest newsletter emails into the Idea Pool with LLM extraction."""
         config = job.get("configuration", {})
+        user_id = job.get("user_id")
+        project_id = job.get("project_id")
+
+        # Pre-fetch persona/niche context (async) for LLM scoring
+        persona_context = ""
+        if user_id and user_id != "system":
+            try:
+                from api.services.user_data_store import user_data_store
+                from agents.sources.newsletter_extractor import format_persona_context
+
+                personas = await user_data_store.list_personas(user_id, project_id)
+                creator = await user_data_store.get_creator_profile(user_id, project_id)
+                persona_context = format_persona_context(personas, creator)
+            except Exception as e:
+                print(f"⚠ Could not load persona context: {e}")
 
         try:
             from agents.sources.ingest import ingest_newsletter_inbox
@@ -297,7 +389,9 @@ class SchedulerService:
                 days_back=config.get("days_back", 7),
                 folder=config.get("folder", "Newsletters"),
                 max_results=config.get("max_results", 20),
-                project_id=job.get("project_id"),
+                project_id=project_id,
+                persona_context=persona_context,
+                archive_folder=config.get("archive_folder", "CONTENTFLOWZ_DONE"),
             )
             print(f"✅ Newsletter ingestion: {count} ideas")
 
@@ -326,6 +420,70 @@ class SchedulerService:
 
         except Exception as e:
             raise RuntimeError(f"SEO ingestion failed: {e}") from e
+
+    async def _run_enrich_ideas(self, job: dict) -> None:
+        """Enrich raw ideas in the Idea Pool with DataForSEO metrics."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.sources.ingest import enrich_ideas
+
+            count = await asyncio.to_thread(
+                enrich_ideas,
+                batch_size=config.get("batch_size", 50),
+                location=config.get("location", "us"),
+                language=config.get("language", "en"),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ Idea enrichment: {count} ideas enriched")
+
+        except Exception as e:
+            raise RuntimeError(f"Idea enrichment failed: {e}") from e
+
+    async def _run_ingest_competitors(self, job: dict) -> None:
+        """Analyze competitors and ingest content gaps into the Idea Pool."""
+        config = job.get("configuration", {})
+        target_domain = config.get("target_domain")
+        competitor_domains = config.get("competitor_domains", [])
+
+        if not competitor_domains:
+            print("ℹ️  No competitor domains configured, skipping")
+            return
+
+        try:
+            from agents.sources.ingest import ingest_competitor_watch
+
+            count = await asyncio.to_thread(
+                ingest_competitor_watch,
+                target_domain=target_domain or "",
+                competitor_domains=competitor_domains,
+                max_gaps=config.get("max_gaps", 50),
+                location=config.get("location", "us"),
+                language=config.get("language", "en"),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ Competitor intelligence: {count} gap ideas ingested")
+
+        except Exception as e:
+            raise RuntimeError(f"Competitor ingestion failed: {e}") from e
+
+    async def _run_track_serp(self, job: dict) -> None:
+        """Track SERP positions for published content."""
+        config = job.get("configuration", {})
+
+        try:
+            from agents.sources.ingest import track_serp_positions
+
+            count = await asyncio.to_thread(
+                track_serp_positions,
+                location=config.get("location", "us"),
+                language=config.get("language", "en"),
+                project_id=job.get("project_id"),
+            )
+            print(f"✅ SERP tracking: {count} items tracked")
+
+        except Exception as e:
+            raise RuntimeError(f"SERP tracking failed: {e}") from e
 
     async def _auto_transition_scheduled(self, svc) -> None:
         """Auto-transition content whose scheduledFor has passed."""

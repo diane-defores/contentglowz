@@ -20,7 +20,7 @@ NEWSLETTER_IMAP_EMAIL=myrobot.newsletters@gmail.com
 NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
 NEWSLETTER_IMAP_HOST=imap.gmail.com
 NEWSLETTER_IMAP_FOLDER=Newsletters
-NEWSLETTER_IMAP_ARCHIVE=Newsletters/Processed
+NEWSLETTER_IMAP_ARCHIVE=CONTENTFLOWZ_DONE
 ```
 
 ### 2. Gmail Setup (One-time)
@@ -37,7 +37,7 @@ NEWSLETTER_IMAP_ARCHIVE=Newsletters/Processed
 
 4. **Create Gmail Labels**:
    - `Newsletters` - Inbox for incoming newsletters
-   - `Newsletters/Processed` - Archive for processed emails
+   - `CONTENTFLOWZ_DONE` - Archive for processed emails
 
 5. **Create Gmail Filter**:
    - Settings → Filters → Create new filter
@@ -182,7 +182,7 @@ reader.archive_multiple([e.uid for e in emails])
 
 1. **Research Stage**: Agent uses `read_recent_newsletters` and `read_competitor_newsletters`
 2. **Writing Stage**: Agent writes newsletter content based on research
-3. **Archive Stage** (IMAP only): Processed emails are moved to `Newsletters/Processed`
+3. **Archive Stage** (IMAP only): Processed emails are moved to `CONTENTFLOWZ_DONE`
 
 The archive stage prevents re-processing the same emails on subsequent runs.
 
@@ -206,7 +206,7 @@ export NEWSLETTER_IMAP_PASSWORD="your-app-password"
 
 Create the Gmail labels:
 - `Newsletters`
-- `Newsletters/Processed`
+- `CONTENTFLOWZ_DONE`
 
 The system falls back to INBOX if labels don't exist.
 

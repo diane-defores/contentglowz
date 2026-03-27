@@ -116,32 +116,116 @@ class IngestNewslettersRequest(BaseModel):
 
 class IngestSeoRequest(BaseModel):
     seed_keywords: list[str]
-    max_keywords: int = 30
+    max_keywords: int = 50
+    location: str = "us"
+    language: str = "en"
+    project_id: Optional[str] = None
+
+
+class EnrichIdeasRequest(BaseModel):
+    batch_size: int = 50
+    location: str = "us"
+    language: str = "en"
+    project_id: Optional[str] = None
+
+
+class IngestCompetitorsRequest(BaseModel):
+    target_domain: str
+    competitor_domains: list[str]
+    max_gaps: int = 50
+    location: str = "us"
+    language: str = "en"
+    project_id: Optional[str] = None
+
+
+class TrackSerpRequest(BaseModel):
+    location: str = "us"
+    language: str = "en"
     project_id: Optional[str] = None
 
 
 @router.post("/ingest/newsletters", response_model=dict)
 async def ingest_newsletters(request: IngestNewslettersRequest):
-    """Pull newsletters from IMAP inbox and create ideas."""
+    """Pull newsletters from IMAP inbox, extract ideas with LLM, and archive."""
     from agents.sources.ingest import ingest_newsletter_inbox
+
+    # Try to load persona context for LLM scoring
+    persona_context = ""
+    if request.project_id:
+        try:
+            from api.services.user_data_store import user_data_store
+            from agents.sources.newsletter_extractor import format_persona_context
+
+            # Find any user with this project
+            personas = await user_data_store.list_personas(None, request.project_id)
+            creator = await user_data_store.get_creator_profile(None, request.project_id)
+            persona_context = format_persona_context(personas, creator)
+        except Exception:
+            pass  # Extraction still works without persona context
 
     count = ingest_newsletter_inbox(
         days_back=request.days_back,
         folder=request.folder,
         max_results=request.max_results,
         project_id=request.project_id,
+        persona_context=persona_context,
     )
     return {"source": "newsletter_inbox", "ingested": count}
 
 
 @router.post("/ingest/seo-keywords", response_model=dict)
 async def ingest_seo(request: IngestSeoRequest):
-    """Generate SEO keywords and create ideas."""
+    """Discover SEO keyword opportunities via DataForSEO and create ideas."""
     from agents.sources.ingest import ingest_seo_keywords
 
     count = ingest_seo_keywords(
         seed_keywords=request.seed_keywords,
         max_keywords=request.max_keywords,
+        location=request.location,
+        language=request.language,
         project_id=request.project_id,
     )
     return {"source": "seo_keywords", "ingested": count}
+
+
+@router.post("/enrich", response_model=dict)
+async def enrich(request: EnrichIdeasRequest):
+    """Enrich raw ideas with DataForSEO keyword metrics (volume, difficulty, CPC)."""
+    from agents.sources.ingest import enrich_ideas
+
+    count = enrich_ideas(
+        batch_size=request.batch_size,
+        location=request.location,
+        language=request.language,
+        project_id=request.project_id,
+    )
+    return {"enriched": count}
+
+
+@router.post("/ingest/competitors", response_model=dict)
+async def ingest_competitors(request: IngestCompetitorsRequest):
+    """Analyze competitor domains and ingest content gaps as ideas."""
+    from agents.sources.ingest import ingest_competitor_watch
+
+    count = ingest_competitor_watch(
+        target_domain=request.target_domain,
+        competitor_domains=request.competitor_domains,
+        max_gaps=request.max_gaps,
+        location=request.location,
+        language=request.language,
+        project_id=request.project_id,
+    )
+    return {"source": "competitor_watch", "ingested": count}
+
+
+@router.post("/track-serp", response_model=dict)
+async def track_serp(request: TrackSerpRequest):
+    """Track SERP positions for published content with SEO keywords."""
+    from agents.sources.ingest import track_serp_positions
+
+    count = track_serp_positions(
+        location=request.location,
+        language=request.language,
+        project_id=request.project_id,
+    )
+    return {"tracked": count}

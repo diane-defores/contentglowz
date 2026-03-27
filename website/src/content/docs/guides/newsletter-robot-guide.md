@@ -58,7 +58,7 @@ NEWSLETTER_EMAIL_BACKEND=imap
 NEWSLETTER_IMAP_EMAIL=myrobot.newsletters@gmail.com
 NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
 NEWSLETTER_IMAP_FOLDER=Newsletters            # Optionnel
-NEWSLETTER_IMAP_ARCHIVE=Newsletters/Processed # Optionnel
+NEWSLETTER_IMAP_ARCHIVE=CONTENTFLOWZ_DONE # Optionnel
 
 # Option B: Composio (payant)
 NEWSLETTER_EMAIL_BACKEND=composio
@@ -85,7 +85,7 @@ NEWSLETTER_FROM_NAME="My Newsletter"
 
 4. **Créer labels Gmail** :
    - `Newsletters` - pour les newsletters entrantes
-   - `Newsletters/Processed` - archive après traitement
+   - `CONTENTFLOWZ_DONE` - archive après traitement
 
 5. **Créer filtre Gmail** :
    - Settings → Filters → Create new filter
@@ -369,7 +369,7 @@ reader.fetch_newsletter_emails(
 
 Créer les labels Gmail :
 - `Newsletters`
-- `Newsletters/Processed`
+- `CONTENTFLOWZ_DONE`
 
 Le système fallback vers INBOX si les labels n'existent pas.
 
