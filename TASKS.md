@@ -5,7 +5,7 @@
 
 **Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 5 — Unified Content Pipeline
 
-**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at `/home/claude/my-robots/`
+**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at `/home/claude/contentflowz/`
 
 ---
 
@@ -69,7 +69,7 @@
 > Unifier les 3 pipelines déconnectés (Psychology, SEO, Newsletter) en un flux unique:
 > Sources → Idea Pool → Angles enrichis → Pipelines par format → Review Queue
 
-### Backend (my-robots/)
+### Backend (contentflowz/)
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -85,7 +85,7 @@
 | ✅ | Scheduler ingestion jobs — ingest_newsletters, ingest_seo job types + API triggers manuels | ✅ done |
 | ✅ | Nettoyage legacy JS — suppression chatbot/ Next.js (41 MB), prototypes v0, BMAD framework | ✅ done |
 
-### Flutter (my-robots-app/)
+### Flutter (contentflowz-app/)
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -103,7 +103,7 @@
 > Intégrer DataForSEO API v3 comme source de données SEO réelles dans tout le pipeline.
 > Remplace SerpApi (SERP-only) + Advertools (combos mock) par une API unifiée.
 
-### Backend (my-robots/)
+### Backend (contentflowz/)
 
 | Pri | Task | Status |
 |-----|------|--------|

@@ -1,4 +1,4 @@
-package com.myrobots.my_robots_app
+package com.contentflowz.contentflowz_app
 
 import io.flutter.embedding.android.FlutterActivity
 

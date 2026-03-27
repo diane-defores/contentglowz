@@ -2,7 +2,7 @@
 set -euo pipefail
 
 export PATH="/home/claude/.flutter-sdk/bin:$PATH"
-cd /home/claude/my-robots-app
+cd /home/claude/contentflowz-app
 
 API_BASE_URL_VALUE="${API_BASE_URL:-http://localhost:8000}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"

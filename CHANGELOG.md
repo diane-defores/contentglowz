@@ -46,7 +46,7 @@ The format is based on Keep a Changelog.
 - **Format-specific metadata** in Flutter: content cards and editor show SEO keyword, platform, duration, hashtags, narrative thread depending on content type.
 - **Settings: Content Frequency section** with sliders for each format.
 - Spec document: `specs/SPEC-content-pipeline-unification.md`.
-- Flutter repo initialized and pushed to GitHub (`dianedef/my-robots-app`).
+- Flutter repo initialized and pushed to GitHub (`dianedef/contentflowz-app`).
 
 ### Changed
 - Angles screen now calls `POST /api/psychology/dispatch-pipeline` for real content generation (with fallback to old `createContentFromAngle`).
