@@ -20,7 +20,7 @@ Le Newsletter Robot est un système multi-agents qui automatise :
 python --version  # 3.11+
 
 # Installation
-cd ~/my-robots
+cd ~/contentflowz
 pip install -r requirements.txt
 
 # Choisir backend email (voir section Configuration)

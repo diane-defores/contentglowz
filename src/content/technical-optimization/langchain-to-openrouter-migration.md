@@ -2,7 +2,7 @@
 title: "The Great Dependency Migration: How We Replaced LangChain with OpenRouter and Saved 90% on LLM Costs"
 description: "From 50+ packages to 3. Our step-by-step journey migrating from LangChain to OpenRouter, cutting dependencies by 50%, reducing build times by 40%, and achieving $0 LLM costs with free tiers."
 pubDate: 2026-01-15
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["dependency optimization", "langchain", "openrouter", "llm costs", "build optimization", "technical migration"]
 featured: true
 image: "/images/blog/dependency-migration.jpg"
@@ -100,7 +100,7 @@ pip list | grep lang
 **Step 2: Measure the Impact**
 ```bash
 # Before migration
-docker images my-robots-api
+docker images contentflowz-api
 # Size: 2.5GB
 
 time docker build .
@@ -150,8 +150,8 @@ def get_llm(tier: str = "free", temperature: float = 0.7, max_tokens: int = 4096
         api_key=os.getenv("OPENROUTER_API_KEY"),
         base_url="https://openrouter.ai/api/v1",
         default_headers={
-            "HTTP-Referer": "https://myrobots.ai",
-            "X-Title": "My Robots SEO System"
+            "HTTP-Referer": "https://contentflowz.com",
+            "X-Title": "Content Flows SEO System"
         }
     )
 
@@ -879,9 +879,9 @@ def resilient_llm_call(messages, tier="balanced"):
 ## 🛠️ Resources & Code
 
 ### Complete Migration Code
-- [utils/llm_simple.py](https://github.com/user/my-robots/blob/master/utils/llm_simple.py) - Our OpenRouter wrapper
-- [requirements.txt (after)](https://github.com/user/my-robots/blob/master/requirements.txt) - Optimized dependencies
-- [Migration Example](https://github.com/user/my-robots/blob/master/examples/MIGRATION_EXAMPLE.md) - Step-by-step guide
+- [utils/llm_simple.py](https://github.com/user/contentflowz/blob/master/utils/llm_simple.py) - Our OpenRouter wrapper
+- [requirements.txt (after)](https://github.com/user/contentflowz/blob/master/requirements.txt) - Optimized dependencies
+- [Migration Example](https://github.com/user/contentflowz/blob/master/examples/MIGRATION_EXAMPLE.md) - Step-by-step guide
 
 ### Documentation
 - [OpenRouter API Docs](https://openrouter.ai/docs) - Complete API reference
@@ -903,12 +903,12 @@ This migration saved us $20/month and 8 hours of build time per week. But more i
 
 **What's your dependency bloat story?** 
 - [Share on Twitter](https://twitter.com/intent/tweet?text=We just migrated from LangChain to OpenRouter and cut dependencies by 50%. What's your dependency optimization story?)
-- [Comment on GitHub](https://github.com/user/my-robots/discussions)
-- [Join our Discord](https://discord.gg/myrobots)
+- [Comment on GitHub](https://github.com/user/contentflowz/discussions)
+- [Join our Discord](https://discord.gg/contentflowz)
 
 **Questions about the migration?**
-- Email: dev@myrobots.ai
-- GitHub Issues: [Open an issue](https://github.com/user/my-robots/issues)
+- Email: contact@contentflowz.com
+- GitHub Issues: [Open an issue](https://github.com/user/contentflowz/issues)
 
 ---
 

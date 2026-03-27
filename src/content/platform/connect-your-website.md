@@ -2,7 +2,7 @@
 title: "Connect Your Website"
 description: "Link your GitHub repository to the SEO Robots platform. Auto-detect your framework, configure content directories, and start analyzing in minutes."
 pubDate: 2026-02-02
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["getting started", "onboarding", "github", "setup"]
 featured: true
 image: "/images/blog/connect-website.jpg"
@@ -21,7 +21,7 @@ Link your GitHub repository to start analyzing your content structure, topical a
 ### Step 1: Start Onboarding
 
 ```bash
-curl -X POST https://api.bizflowz.com/api/projects/onboard \
+curl -X POST https://api.contentflowz.com/api/projects/onboard \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -41,7 +41,7 @@ curl -X POST https://api.bizflowz.com/api/projects/onboard \
 ### Step 2: Analyze Repository
 
 ```bash
-curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/analyze \
+curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/analyze \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -66,7 +66,7 @@ curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/analyze \
 
 **Accept auto-detected settings:**
 ```bash
-curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/confirm \
+curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -77,7 +77,7 @@ curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/confirm \
 
 **Or override content directory:**
 ```bash
-curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/confirm \
+curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -361,7 +361,7 @@ POST /api/projects/{project_id}/refresh
 ```python
 import httpx
 
-API_BASE = "https://api.bizflowz.com"
+API_BASE = "https://api.contentflowz.com"
 API_KEY = "your_api_key"
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
@@ -396,7 +396,7 @@ print("Project connected!")
 ### JavaScript/TypeScript
 
 ```typescript
-const API_BASE = "https://api.bizflowz.com";
+const API_BASE = "https://api.contentflowz.com";
 const API_KEY = "your_api_key";
 
 async function connectWebsite(githubUrl: string) {
@@ -442,7 +442,7 @@ async function connectWebsite(githubUrl: string) {
 #!/bin/bash
 # connect-website.sh
 
-API_BASE="https://api.bizflowz.com"
+API_BASE="https://api.contentflowz.com"
 API_KEY="your_api_key"
 GITHUB_URL="https://github.com/you/your-site"
 
@@ -478,7 +478,7 @@ echo "Done! Project connected."
 When your repository changes (new content, structure updates):
 
 ```bash
-curl -X POST https://api.bizflowz.com/api/projects/proj_abc123/refresh \
+curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/refresh \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -496,7 +496,7 @@ Add to your deployment workflow:
 # .github/workflows/deploy.yml
 - name: Refresh SEO Analysis
   run: |
-    curl -X POST https://api.bizflowz.com/api/projects/$PROJECT_ID/refresh \
+    curl -X POST https://api.contentflowz.com/api/projects/$PROJECT_ID/refresh \
       -H "Authorization: Bearer ${{ secrets.SEO_API_KEY }}"
 ```
 
@@ -549,4 +549,4 @@ Now that your website is connected:
 
 ---
 
-**Need help?** Contact support@bizflowz.com or [join our Discord](#discord).
+**Need help?** Contact support@contentflowz.com or [join our Discord](#discord).

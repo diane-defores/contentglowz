@@ -2,7 +2,7 @@
 title: "Why We Chose Railway Over Heroku (And Why We Might Switch to Render)"
 description: "Our deployment platform journey: from Heroku's pricing changes to Railway's simplicity, and why Render's free tier might be our next move. Real trade-offs from building AI automation SaaS."
 pubDate: 2026-01-15
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["deployment", "railway", "render", "heroku", "infrastructure", "build in public"]
 featured: true
 image: "/images/blog/deployment-platforms.jpg"
@@ -62,7 +62,7 @@ railway init
 railway up
 
 # 2 minutes later...
-✅ API live at: https://bizflowz-production.up.railway.app
+✅ API live at: https://contentflowz-production.up.railway.app
 ```
 
 **What We Loved:**
@@ -171,7 +171,7 @@ requirements.txt    # Shared dependencies
 ```yaml
 services:
   - type: web
-    name: bizflowz-api
+    name: contentflowz-api
     env: python
     region: frankfurt  # EU region for GDPR
     plan: free
@@ -190,10 +190,10 @@ services:
         sync: false
 
 databases:
-  - name: bizflowz-db
+  - name: contentflowz-db
     plan: free
-    databaseName: bizflowz
-    user: bizflowz
+    databaseName: contentflowz
+    user: contentflowz
 ```
 
 **Deployment Options:**
@@ -453,7 +453,7 @@ AND revenue > $50/month
 # Via Dashboard (5 minutes)
 1. https://render.com/ → Sign up
 2. New → Blueprint
-3. Connect GitHub: github.com/user/my-robots
+3. Connect GitHub: github.com/user/contentflowz
 4. Detect render.yaml ✅
 5. Add environment variables:
    - OPENROUTER_API_KEY
@@ -462,17 +462,17 @@ AND revenue > $50/month
 6. Create Blueprint → Deploy
 
 # Build time: ~6-8 minutes
-# URL: https://bizflowz-api.onrender.com
+# URL: https://contentflowz-api.onrender.com
 ```
 
 **Step 3: Test**
 ```bash
 # Health check
-curl https://bizflowz-api.onrender.com/health
+curl https://contentflowz-api.onrender.com/health
 # → {"status": "healthy"}
 
 # API docs
-open https://bizflowz-api.onrender.com/docs
+open https://contentflowz-api.onrender.com/docs
 ```
 
 **Step 4: Monitor**
@@ -598,9 +598,9 @@ railway rollback  # Railway's rollback
 ## 📚 Resources
 
 **Deployment Configs (GitHub):**
-- [Our render.yaml](https://github.com/user/my-robots/blob/master/render.yaml)
-- [Our railway.toml](https://github.com/user/my-robots/blob/master/railway.toml)
-- [Deployment comparison doc](https://github.com/user/my-robots/blob/master/DEPLOYMENT_PLATFORMS.md)
+- [Our render.yaml](https://github.com/user/contentflowz/blob/master/render.yaml)
+- [Our railway.toml](https://github.com/user/contentflowz/blob/master/railway.toml)
+- [Deployment comparison doc](https://github.com/user/contentflowz/blob/master/DEPLOYMENT_PLATFORMS.md)
 
 **Platform Links:**
 - [Railway.app](https://railway.app/) - $5/month, no cold starts
@@ -613,6 +613,6 @@ railway rollback  # Railway's rollback
 
 ---
 
-**Questions about our deployment journey?** Comment below or reach out: devops@myrobots.ai
+**Questions about our deployment journey?** Comment below or reach out: contact@contentflowz.com
 
 *Last updated: January 15, 2026*

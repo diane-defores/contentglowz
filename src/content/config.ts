@@ -25,7 +25,7 @@ const blog = defineCollection({
     // Normalize image: prefer heroImage, fall back to image
     cover: data.heroImage ?? data.image ?? null,
     // Normalize author
-    byline: data.author ?? data.authors?.join(', ') ?? 'My Robots Team',
+    byline: data.author ?? data.authors?.join(', ') ?? 'Content Flows Team',
   })),
 });
 

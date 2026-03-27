@@ -2,7 +2,7 @@
 title: "Complete Content Library"
 description: "Comprehensive guides for developers, founders, and marketers. From technical optimization to startup journeys, master modern development and business strategies."
 pubDate: 2026-01-15
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["content library", "guides", "tutorials", "documentation"]
 featured: true
 image: "/images/blog/content-library.jpg"
@@ -147,7 +147,7 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 **Key Guides:**
 - [Journey to 10K MRR](/startup-journey/journey-to-10k-mrr.md) - Complete revenue breakdown
 - [Why We Chose Railway Over Heroku](/startup-journey/why-we-chose-railway-over-heroku.md) - Infrastructure decisions
-- [Platform Architecture Evolution](/startup-journey/bizflowz-platform.md) - From monolith to microservices
+- [Platform Architecture Evolution](/startup-journey/contentflowz-platform.md) - From monolith to microservices
 - [Pricing Strategy Evolution](/startup-journey/index.md) *(Coming Soon)*
 
 **Perfect for:** Startup founders, product managers, investors
@@ -418,7 +418,7 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 **For Startup Growth:**
 1. Read [Journey to 10K MRR](/startup-journey/journey-to-10k-mrr.md)
 2. Study [Infrastructure Decisions](/startup-journey/why-we-chose-railway-over-heroku.md)
-3. Review [Platform Architecture](/startup-journey/bizflowz-platform.md)
+3. Review [Platform Architecture](/startup-journey/contentflowz-platform.md)
 
 ---
 
@@ -440,8 +440,8 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 
 **Never Miss an Update:**
 - [Newsletter Subscription](#newsletter)
-- [Twitter/X @MyRobotsSEO](https://twitter.com/myrobotsseo)
-- [GitHub Repository](https://github.com/user/my-robots)
+- [Twitter/X @ContentFlowz](https://twitter.com/contentflowz)
+- [GitHub Repository](https://github.com/user/contentflowz)
 - [RSS Feed](/rss.xml)
 
 ---

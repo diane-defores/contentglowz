@@ -2,7 +2,7 @@
 title: "Startup Journey Chronicles"
 description: "Follow our complete startup journey from idea to revenue. Real metrics, challenges, and decisions in building an AI-powered SEO automation platform."
 pubDate: 2026-01-15
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["startup journey", "build in public", "saas metrics", "entrepreneurship"]
 featured: true
 image: "/images/blog/startup-journey-hub.jpg"
@@ -63,7 +63,7 @@ Building in public means sharing everything - the wins, the losses, and the toug
 
 **Results:** 60% cost savings, faster iteration, better developer experience.
 
-### [Platform Architecture Evolution](./bizflowz-platform.md)
+### [Platform Architecture Evolution](./contentflowz-platform.md)
 
 **TL;DR:** How our architecture evolved from simple monolith to multi-service system handling AI agents, database, and web dashboard.
 
@@ -263,9 +263,9 @@ Building in public means sharing everything - the wins, the losses, and the toug
 ## 📬 Follow Our Journey
 
 **Weekly Updates:**
-- [Twitter/X @MyRobotsSEO](https://twitter.com/myrobotsseo) - Daily insights
+- [Twitter/X @ContentFlowz](https://twitter.com/contentflowz) - Daily insights
 - [Newsletter](#newsletter) - Weekly roundup and metrics
-- [GitHub](https://github.com/user/my-robots) - Open source development
+- [GitHub](https://github.com/user/contentflowz) - Open source development
 
 **Monthly Reports:**
 - [Blog](#blog) - Detailed metrics and decisions

@@ -2,7 +2,7 @@
 title: "Platform Documentation"
 description: "Everything you need to get started with the SEO Robots platform. Connect your website, run SEO analysis, and automate your content strategy."
 pubDate: 2026-02-02
-author: "My Robots Team"
+author: "Content Flows Team"
 tags: ["platform", "documentation", "getting started", "api"]
 featured: true
 image: "/images/blog/platform-docs.jpg"
@@ -22,7 +22,7 @@ Link your GitHub repository to start analyzing your content:
 
 ```bash
 # Start onboarding
-curl -X POST https://api.bizflowz.com/api/projects/onboard \
+curl -X POST https://api.contentflowz.com/api/projects/onboard \
   -H "Content-Type: application/json" \
   -d '{"github_url": "https://github.com/you/your-site"}'
 ```
@@ -34,7 +34,7 @@ curl -X POST https://api.bizflowz.com/api/projects/onboard \
 Once connected, analyze your topical mesh:
 
 ```bash
-curl -X POST https://api.bizflowz.com/api/mesh/analyze \
+curl -X POST https://api.contentflowz.com/api/mesh/analyze \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/you/your-site"}'
 ```
@@ -176,7 +176,7 @@ import httpx
 
 # Analyze your site
 response = httpx.post(
-    "https://api.bizflowz.com/api/mesh/analyze",
+    "https://api.contentflowz.com/api/mesh/analyze",
     json={"repo_url": "https://github.com/you/your-site"},
     headers={"Authorization": "Bearer YOUR_API_KEY"}
 )
@@ -201,7 +201,7 @@ Add to your deployment pipeline:
 # .github/workflows/seo-check.yml
 - name: SEO Analysis
   run: |
-    curl -X POST https://api.bizflowz.com/api/mesh/analyze \
+    curl -X POST https://api.contentflowz.com/api/mesh/analyze \
       -H "Authorization: Bearer ${{ secrets.SEO_API_KEY }}" \
       -d '{"repo_url": "${{ github.repository }}"}'
 ```
@@ -218,9 +218,9 @@ Add to your deployment pipeline:
 
 ### Support
 
-- **Email:** support@bizflowz.com
+- **Email:** support@contentflowz.com
 - **Discord:** [Join our community](#discord)
-- **GitHub:** [Report issues](https://github.com/myrobots/platform/issues)
+- **GitHub:** [Report issues](https://github.com/contentflowz/platform/issues)
 
 ---
 

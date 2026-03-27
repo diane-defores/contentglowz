@@ -1,26 +1,26 @@
 ---
-title: "BizFlowz — The AI-Driven SEO Studio Built by One Developer"
-description: "Discover how BizFlowz combines six specialized AI robots to create a powerful SEO platform that delivers industry-grade results while remaining fully customizable."
+title: "Content Flows — The AI-Driven SEO Studio Built by One Developer"
+description: "Discover how Content Flows combines six specialized AI robots to create a powerful SEO platform that delivers industry-grade results while remaining fully customizable."
 date: "2026-01-15"
 ---
 
-# BizFlowz — The AI-Driven SEO Studio Built by One Developer 
+# Content Flows — The AI-Driven SEO Studio Built by One Developer 
 
 **Launch date:** January 13 2026 | **Status:** Production-ready
 
 ---
 
-## The BizFlowz Story
+## The Content Flows Story
 
 It started with a simple belief: what if powerful, industry-grade SEO tools weren't just for agencies with million-dollar budgets? 
 
-I built BizFlowz as a solo developer, partnering with AI agents like OpenCode and Copilot to create something that normally requires entire teams. While big companies deploy armies of specialists, my "team" consists of six specialized AI robots working in harmony—handling everything from keyword research to final content polishing.
+I built Content Flows as a solo developer, partnering with AI agents like OpenCode and Copilot to create something that normally requires entire teams. While big companies deploy armies of specialists, my "team" consists of six specialized AI robots working in harmony—handling everything from keyword research to final content polishing.
 
 The result? A platform that delivers professional results, remains completely customizable through GitHub integration, and provides a dashboard that gives you full visibility into the entire content creation process.
 
 ---
 
-## 🚀 What BizFlowz Offers  
+## 🚀 What Content Flows Offers  
 
 | Platform | Core Purpose | Key AI Robots |
 |----------|--------------|---------------|
@@ -49,7 +49,7 @@ All three systems share a **unified knowledge graph** that guarantees consistent
 
 ## The Hackable SEO Platform
 
-What makes BizFlowz unique is how deeply you can customize it. Unlike black-box SEO tools:
+What makes Content Flows unique is how deeply you can customize it. Unlike black-box SEO tools:
 
 1. **GitHub Integration** — Every website lives in its own repository, giving you full version control and the ability to make direct changes.
 
@@ -73,9 +73,9 @@ What makes BizFlowz unique is how deeply you can customize it. Unlike black-box 
 
 ---
 
-## The Making of BizFlowz
+## The Making of Content Flows
 
-Building BizFlowz as a solo developer meant being strategic about where to invest my time. I leveraged OpenCode for rapid prototyping, GitHub Copilot for coding assistance, and CrewAI for the multi-agent framework.
+Building Content Flows as a solo developer meant being strategic about where to invest my time. I leveraged OpenCode for rapid prototyping, GitHub Copilot for coding assistance, and CrewAI for the multi-agent framework.
 
 The secret was letting AI handle the repetitive tasks while I focused on architecture and user experience. This approach allowed me to build a system that rivals agency-level tools, but remains flexible and accessible.
 
@@ -85,8 +85,8 @@ Each AI robot went through hundreds of iterations to tune its performance, with 
 
 ## Get Started Today
 
-BizFlowz gives you access to all six robots, the customizable dashboard, and the publishing platform through a simple subscription model. We don't lock you into templates or limit your customization options.
+Content Flows gives you access to all six robots, the customizable dashboard, and the publishing platform through a simple subscription model. We don't lock you into templates or limit your customization options.
 
-Every website you build with BizFlowz is yours to keep, edit, and deploy however you choose—we even help you with GitHub setup if that's new territory.
+Every website you build with Content Flows is yours to keep, edit, and deploy however you choose—we even help you with GitHub setup if that's new territory.
 
-**Ready to build an SEO powerhouse? Let BizFlowz's AI robots be your virtual team.**
+**Ready to build an SEO powerhouse? Let Content Flows's AI robots be your virtual team.**
