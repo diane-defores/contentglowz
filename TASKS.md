@@ -98,6 +98,29 @@
 | ✅ | ApiService — dispatchPipeline() + getPipelineStatus() | ✅ done |
 | ✅ | Settings — section Content Frequency (sliders blog/newsletter/short/social) | ✅ done |
 
+## Phase 6 — DataForSEO Integration (2026-03-27) ✅
+
+> Intégrer DataForSEO API v3 comme source de données SEO réelles dans tout le pipeline.
+> Remplace SerpApi (SERP-only) + Advertools (combos mock) par une API unifiée.
+
+### Backend (my-robots/)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Client DataForSEO API v3 — `dataforseo_client.py` (SERP, keywords, trends, competitors, intent) | ✅ done |
+| ✅ | Provider DFS — `dataforseo_provider.py` (DFSSERPAnalyzer, DFSTrendMonitor, DFSKeywordGapFinder, DFSRankingPatternExtractor) | ✅ done |
+| ✅ | Supprimer SerpApi — `research_tools.py` réécrit, DFS direct, mêmes @tool wrappers CrewAI | ✅ done |
+| ✅ | Niveau 1 — `ingest_seo_keywords` réécrit avec DFS keyword_ideas + keyword_overview (vrais volume/difficulty/CPC) | ✅ done |
+| ✅ | Niveau 2 — `enrich_ideas` batch-enrichit les idées raw via DFS keyword_overview → priority_score | ✅ done |
+| ✅ | Niveau 3 — `ingest_competitor_watch` via DFS domain_intersection + ranked_keywords → idées competitor_watch | ✅ done |
+| ✅ | Niveau 4 — `track_serp_positions` vérifie le ranking Google post-publication → serp_history dans metadata | ✅ done |
+| ✅ | Scheduler jobs — enrich_ideas, ingest_competitors, track_serp wired dans scheduler_service.py | ✅ done |
+| ✅ | API endpoints — POST /api/ideas/enrich, /ingest/competitors, /track-serp | ✅ done |
+| ✅ | Gap 1 fix — `_run_article_job` passe seo_signals + competitor_domains au SEO Crew | ✅ done |
+| ✅ | Gap 2 fix — Bridge optionnel Idea Pool → Angle Strategist dans _run_article_job (opt-in) | ✅ done |
+| ✅ | Gap 3 fix — Feedback loop SERP → idées refresh (`_evaluate_serp_feedback`, 3 triggers) | ✅ done |
+| ✅ | Config — DFS_CONFIG dans research_config.py, .env.example mis à jour | ✅ done |
+
 ---
 
 ## P1 — Prochaines priorités
@@ -109,6 +132,7 @@
 | 🟠 | Landing page produit | High | Medium | Première version dans EntryScreen; à extraire vers site marketing |
 | 🟠 | Stripe Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth |
 | 🟠 | Tests end-to-end pipeline — tester un flux complet angle → dispatch → contenu généré → review queue | High | Low | Le code est en place, il faut valider avec le vrai backend |
+| 🟠 | Configurer credentials DataForSEO en production (Doppler) | High | Low | Client prêt, il faut les clés réelles |
 
 ### 🟡 P2 — Polish & Engagement
 
@@ -136,6 +160,6 @@
 
 ---
 
-> **Priority last updated**: 2026-03-26
+> **Priority last updated**: 2026-03-27
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Valider le flux Clerk réel en runtime, puis tests end-to-end du pipeline unifié avec le vrai backend, puis OAuth channels
+> **Recommended next**: Configurer les credentials DataForSEO en prod (Doppler), puis valider le flux Clerk réel en runtime, puis tests end-to-end du pipeline unifié avec le vrai backend

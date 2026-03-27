@@ -1,4 +1,4 @@
-name: my_robots_app
+name: contentflowz_app
 description: "Content approval pipeline - AI generates, you swipe to publish."
 publish_to: 'none'
 version: 0.1.0+1

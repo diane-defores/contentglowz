@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [0.6.0] - 2026-03-27 — DataForSEO Integration
+
+### Added
+- **DataForSEO API v3 client** (`dataforseo_client.py`): reusable HTTP client with Basic Auth for SERP, keywords, trends, competitors, search intent, domain rank.
+- **DFS provider** (`dataforseo_provider.py`): DFSSERPAnalyzer, DFSTrendMonitor, DFSKeywordGapFinder, DFSRankingPatternExtractor — real data instead of mocks.
+- **Level 1 — SEO keyword ingestion**: `ingest_seo_keywords()` rewritten with DFS `keyword_ideas` + `keyword_overview`. Each idea gets real volume, difficulty, CPC, intent, opportunity_score.
+- **Level 2 — Idea enrichment**: new `enrich_ideas()` batch-enriches raw ideas via DFS `keyword_overview`, computes `priority_score`, transitions to status `enriched`.
+- **Level 3 — Competitor intelligence**: new `ingest_competitor_watch()` uses DFS `domain_intersection` + `ranked_keywords` to find content gaps and competitor keywords.
+- **Level 4 — SERP position tracking**: new `track_serp_positions()` checks Google rankings for published content, stores 90-day position history in content metadata.
+- **SERP feedback loop**: `_evaluate_serp_feedback()` creates refresh ideas (source=`serp_feedback`) when content is never ranked, declining, or stuck on page 2.
+- **Angle Strategist bridge**: optional step in `_run_article_job` (opt-in via `use_angle_strategist` config) that feeds enriched SEO data through the Angle Strategist before the SEO Crew.
+- **3 new API endpoints**: `POST /api/ideas/enrich`, `POST /api/ideas/ingest/competitors`, `POST /api/ideas/track-serp`.
+- **3 new scheduler job types**: `enrich_ideas`, `ingest_competitors`, `track_serp`.
+- `DFS_CONFIG` in `research_config.py` with location, language, depth settings.
+- `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD` in `.env.example`.
+
+### Changed
+- `research_tools.py` rewritten: SerpApi removed, DFS provider classes used directly. Same `@tool` wrappers for CrewAI agents.
+- `_run_article_job` now passes `competitor_domains`, `sector`, `business_goals`, `brand_voice`, `target_audience`, `tone` to SEO Crew (were ignored before).
+- Content record metadata now includes `target_keyword`, `seo_signals`, `source_idea_id` for SERP tracker traceability.
+- `ingest_seo_keywords` default `max_keywords` raised from 30 to 50.
+
+### Removed
+- SerpApi dependency (`serpapi` package) and `SERP_API_KEY` from `.env.example`.
+- Mock/hardcoded data in `TrendMonitor` (trend_score: 75.0) and `KeywordGapFinder` (search_volume: 1000).
+- `SEO_PROVIDER` env var toggle (no longer needed, DFS is the only provider).
+
 ## [0.5.0] - 2026-03-26 — Unified Content Pipeline
 
 ### Added
