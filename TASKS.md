@@ -3,9 +3,9 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 5 — Unified Content Pipeline
+**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 7 — Domain Migration Complete
 
-**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at `/home/claude/contentflowz/`
+**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlowz_lab/
 
 ---
 
@@ -121,12 +121,46 @@
 | ✅ | Gap 3 fix — Feedback loop SERP → idées refresh (`_evaluate_serp_feedback`, 3 triggers) | ✅ done |
 | ✅ | Config — DFS_CONFIG dans research_config.py, .env.example mis à jour | ✅ done |
 
+## Phase 7 — Legacy Domain Migration (2026-03-28) ✅
+
+> Re-implement all 13 domains deleted with legacy Node.js chatbot.
+> Scrollable nav replaces fixed 4-tab NavigationBar. Pattern: SQL migration + Pydantic + store + router + Flutter screen.
+
+### Backend Lab — New domains
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Affiliations — migration SQL + modèle Pydantic + store CRUD 5 méthodes + router 5 endpoints | ✅ done |
+| ✅ | Activity Log — migration SQL + store list/create + router 2 endpoints | ✅ done |
+| ✅ | Work Domains — migration SQL + store list/create/update + router 3 endpoints | ✅ done |
+| ✅ | Idempotent table creation au démarrage FastAPI (ensure_*_table dans lifespan) | ✅ done |
+
+### Flutter — New screens (13 écrans)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Navigation scrollable horizontale (remplace NavigationBar fixe 4 tabs → 17 tabs) | ✅ done |
+| ✅ | Affiliations — liste + stats + filtres status/category + formulaire BottomSheet CRUD | ✅ done |
+| ✅ | Activity — timeline des actions robots/utilisateur avec badges status | ✅ done |
+| ✅ | Runs — liste historique des runs robots | ✅ done |
+| ✅ | Templates — galerie des templates par défaut | ✅ done |
+| ✅ | Newsletter — check config + formulaire génération async | ✅ done |
+| ✅ | Research — formulaire analyse concurrentielle + résultats | ✅ done |
+| ✅ | Reels — download Instagram reel + extract audio + upload CDN | ✅ done |
+| ✅ | SEO Mesh — analyse topical mesh + issues + recommandations | ✅ done |
+| ✅ | Content Tools — 3 tabs : validations pendantes, funnel clusters SEO, audit contenu | ✅ done |
+| ✅ | Work Domains — cards status par domaine (SEO, Newsletter, etc.) | ✅ done |
+| ✅ | Analytics — pipeline funnel + content par type + channels + timeline publication | ✅ done |
+| ✅ | Performance — stats dashboard (total, pending, published, rejected, par type) | ✅ done |
+| ✅ | Uptime — health check API + ping history avec latence | ✅ done |
+
 ---
 
 ## P1 — Prochaines priorités
 
 | Pri | Task | Impact | Effort | Notes |
 |-----|------|--------|--------|-------|
+| 🟠 | Regrouper les 17 tabs en sections (Content, Tools, Monitoring, Settings) | High | Low | 17 tabs scrollables = difficile à naviguer |
 | 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
 | 🟠 | OAuth flow pour connecter les channels (via LATE) | High | Medium | Bouton Connect est encore un placeholder UI |
 | 🟠 | Landing page produit | High | Medium | Première version dans EntryScreen; à extraire vers site marketing |
@@ -149,6 +183,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
+| 🟢 | Gmail OAuth integration | 💤 deferred (complex OAuth flow) |
 | 🟢 | iOS support | 💤 deferred |
 | 🟢 | Mode offline (cache local + sync) | 💤 deferred |
 | 🟢 | Image generation (Robolly) | 💤 deferred |
@@ -156,10 +191,9 @@
 | 🟢 | A/B testing de hooks/titles | 💤 deferred |
 | 🟢 | Newsletter preview HTML | 💤 deferred |
 | 🟢 | App Store / Play Store submission | 💤 deferred |
-| 🟢 | Analytics dashboard | 💤 deferred |
 
 ---
 
-> **Priority last updated**: 2026-03-27
+> **Priority last updated**: 2026-03-28
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Configurer les credentials DataForSEO en prod (Doppler), puis valider le flux Clerk réel en runtime, puis tests end-to-end du pipeline unifié avec le vrai backend
+> **Recommended next**: Regrouper les 17 tabs nav en sections, puis valider le flux Clerk réel en runtime, puis tests end-to-end du pipeline unifié
