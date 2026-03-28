@@ -22,6 +22,7 @@ const _navItems = [
   _NavItem(icon: Icons.analytics_rounded, label: 'Research', path: '/research'),
   _NavItem(icon: Icons.hub_rounded, label: 'SEO', path: '/seo'),
   _NavItem(icon: Icons.workspaces_rounded, label: 'Domains', path: '/work-domains'),
+  _NavItem(icon: Icons.insights_rounded, label: 'Analytics', path: '/analytics'),
   _NavItem(icon: Icons.bar_chart_rounded, label: 'Perf', path: '/performance'),
   _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
   _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),

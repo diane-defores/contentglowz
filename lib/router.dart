@@ -15,6 +15,7 @@ import 'presentation/screens/ritual/ritual_screen.dart';
 import 'presentation/screens/personas/personas_list_screen.dart';
 import 'presentation/screens/personas/persona_editor_screen.dart';
 import 'presentation/screens/activity/activity_screen.dart';
+import 'presentation/screens/analytics/analytics_screen.dart';
 import 'presentation/screens/affiliations/affiliations_screen.dart';
 import 'presentation/screens/angles/angles_screen.dart';
 import 'presentation/screens/calendar/calendar_screen.dart';
@@ -163,6 +164,11 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/seo',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SeoScreen()),
+          ),
+          GoRoute(
+            path: '/analytics',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AnalyticsScreen()),
           ),
           GoRoute(
             path: '/work-domains',
