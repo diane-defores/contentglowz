@@ -45,6 +45,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       appBar: AppBar(
         title: const Text('Content Feed'),
         actions: [
+          if (contentAsync.valueOrNull != null &&
+              contentAsync.valueOrNull!.length > 1)
+            TextButton.icon(
+              onPressed: () => _bulkApprove(contentAsync.valueOrNull!),
+              icon: const Icon(Icons.done_all, size: 18),
+              label: Text('All (${contentAsync.valueOrNull!.length})'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.approveColor,
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.read(pendingContentProvider.notifier).refresh(),
@@ -276,6 +286,53 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         ),
       ],
     );
+  }
+
+  Future<void> _bulkApprove(List<ContentItem> items) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Approve all?'),
+        content: Text(
+          'This will approve and publish ${items.length} content item${items.length > 1 ? 's' : ''}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.approveColor,
+            ),
+            child: Text('Approve ${items.length}'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final notifier = ref.read(pendingContentProvider.notifier);
+    var approved = 0;
+    var failed = 0;
+
+    for (final item in List.of(items)) {
+      try {
+        await notifier.approve(item.id);
+        approved++;
+      } catch (_) {
+        failed++;
+      }
+    }
+
+    if (mounted) {
+      final msg = failed == 0
+          ? 'Approved $approved items'
+          : 'Approved $approved, failed $failed';
+      _showSnackBar(msg, failed == 0 ? AppTheme.approveColor : Colors.orange);
+    }
   }
 
   bool _onSwipe(
