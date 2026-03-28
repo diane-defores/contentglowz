@@ -30,7 +30,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router, me_router, settings_router, creator_profile_router, personas_router, idea_pool_router, affiliations_router, activity_router
+from api.routers import mesh_router, research_router, health_router, projects_router, newsletter_router, deployment_router, images_router, status_router, reels_router, psychology_router, me_router, settings_router, creator_profile_router, personas_router, idea_pool_router, affiliations_router, activity_router, work_domains_router
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
 from api.routers.runs import router as runs_router
@@ -97,7 +97,8 @@ async def lifespan(app: FastAPI):
         if user_data_store.db_client:
             await user_data_store.ensure_affiliate_table()
             await user_data_store.ensure_activity_table()
-            print("✅ AffiliateLink + ActivityLog tables ensured")
+            await user_data_store.ensure_work_domain_table()
+            print("✅ AffiliateLink + ActivityLog + WorkDomain tables ensured")
     except Exception as e:
         print(f"⚠ AffiliateLink migration failed (non-critical): {e}")
 
@@ -267,6 +268,7 @@ app.include_router(publish_router)
 app.include_router(idea_pool_router)
 app.include_router(affiliations_router)
 app.include_router(activity_router)
+app.include_router(work_domains_router)
 
 
 # ─────────────────────────────────────────────────

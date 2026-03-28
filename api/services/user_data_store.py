@@ -614,5 +614,116 @@ class UserDataStore:
         )
         return self._activity_from_row(rs.rows[0])
 
+    # ─── Work Domains ──────────────────────────────────────────
+
+    async def ensure_work_domain_table(self) -> None:
+        self._ensure_connected()
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS WorkDomain (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                domain TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'idle',
+                lastRunAt INTEGER,
+                lastRunStatus TEXT,
+                itemsPending INTEGER NOT NULL DEFAULT 0,
+                itemsCompleted INTEGER NOT NULL DEFAULT 0,
+                metadata TEXT,
+                updatedAt INTEGER NOT NULL
+            )
+            """
+        )
+
+    def _work_domain_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "domain": row[3],
+            "status": row[4] or "idle",
+            "lastRunAt": _ts(row[5]) if row[5] else None,
+            "lastRunStatus": row[6],
+            "itemsPending": row[7] or 0,
+            "itemsCompleted": row[8] or 0,
+            "metadata": _json_load(row[9], None),
+            "updatedAt": _ts(row[10]),
+        }
+
+    _WD_COLS = "id, userId, projectId, domain, status, lastRunAt, lastRunStatus, itemsPending, itemsCompleted, metadata, updatedAt"
+
+    async def list_work_domains(self, user_id: str, project_id: str | None = None) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        query = f"SELECT {self._WD_COLS} FROM WorkDomain WHERE userId = ?"
+        params: list[Any] = [user_id]
+        if project_id is not None:
+            query += " AND projectId = ?"
+            params.append(project_id)
+        query += " ORDER BY domain ASC"
+        rs = await self.db_client.execute(query, params)
+        return [self._work_domain_from_row(row) for row in rs.rows]
+
+    async def get_work_domain(self, user_id: str, domain_id: str) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            f"SELECT {self._WD_COLS} FROM WorkDomain WHERE id = ? AND userId = ? LIMIT 1",
+            [domain_id, user_id],
+        )
+        if not rs.rows:
+            return None
+        return self._work_domain_from_row(rs.rows[0])
+
+    async def create_work_domain(self, user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        domain_id = str(uuid.uuid4())
+        await self.db_client.execute(
+            """
+            INSERT INTO WorkDomain (id, userId, projectId, domain, status, metadata, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                domain_id, user_id,
+                payload["projectId"], payload["domain"],
+                payload.get("status") or "idle",
+                _json_dump(payload.get("metadata")),
+                now,
+            ],
+        )
+        result = await self.get_work_domain(user_id, domain_id)
+        if not result:
+            raise RuntimeError("Failed to create work domain")
+        return result
+
+    async def update_work_domain(self, user_id: str, domain_id: str, payload: dict[str, Any]) -> dict[str, Any] | None:
+        self._ensure_connected()
+        existing = await self.get_work_domain(user_id, domain_id)
+        if not existing:
+            return None
+        now = int(datetime.now().timestamp())
+        fields: list[str] = ["updatedAt = ?"]
+        params: list[Any] = [now]
+        for key in ("status", "lastRunStatus"):
+            if key in payload:
+                fields.append(f"{key} = ?")
+                params.append(payload[key])
+        for key in ("itemsPending", "itemsCompleted"):
+            if key in payload:
+                fields.append(f"{key} = ?")
+                params.append(payload[key])
+        if "metadata" in payload:
+            fields.append("metadata = ?")
+            params.append(_json_dump(payload["metadata"]))
+        if payload.get("status") in ("running",):
+            fields.append("lastRunAt = ?")
+            params.append(now)
+        params.extend([domain_id, user_id])
+        await self.db_client.execute(
+            f"UPDATE WorkDomain SET {', '.join(fields)} WHERE id = ? AND userId = ?",
+            params,
+        )
+        return await self.get_work_domain(user_id, domain_id)
+
 
 user_data_store = UserDataStore()
