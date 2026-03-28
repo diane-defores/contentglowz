@@ -4,61 +4,51 @@
 <section id="robots" class="robots-section">
   <div class="container">
     <div class="section-header">
-      <h2>Three Powerful Robots<br/>Working Together</h2>
-      <p>Deploy intelligent automation that scales your content operations</p>
+      <h2>How It Works</h2>
+      <p>Three steps. Your voice in, published content out.</p>
     </div>
 
     <div class="robots-grid">
       <div class="robot-card">
-        <div class="robot-icon">🔍</div>
-        <h3>SEO Robot</h3>
-        <p class="robot-tagline">6-Agent CrewAI System</p>
+        <div class="step-number">1</div>
+        <div class="robot-icon">🧠</div>
+        <h3>Feed Your Voice</h3>
+        <p class="robot-tagline">Weekly Ritual + Personas</p>
         <ul class="robot-features">
-          <li>✓ Research & competitive analysis</li>
-          <li>✓ Topic clustering & topical flow</li>
-          <li>✓ SEO-optimized content creation</li>
-          <li>✓ Schema.org markup generation</li>
-          <li>✓ Technical SEO validation</li>
+          <li>Complete a 5-minute weekly ritual</li>
+          <li>Define your audience personas</li>
+          <li>AI learns your voice, tone, positioning</li>
+          <li>Your narrative arc evolves over time</li>
+          <li>Content stays authentically you</li>
         </ul>
-        <div class="robot-tech">
-          <span class="tech-badge">CrewAI</span>
-          <span class="tech-badge">Pydantic</span>
-        </div>
       </div>
 
       <div class="robot-card featured">
-        <div class="featured-badge">Most Popular</div>
-        <div class="robot-icon">📧</div>
-        <h3>Newsletter Robot</h3>
-        <p class="robot-tagline">PydanticAI Automation</p>
+        <div class="featured-badge">The Magic</div>
+        <div class="robot-icon">⚡</div>
+        <h3>AI Generates Content</h3>
+        <p class="robot-tagline">23 Agents Work Together</p>
         <ul class="robot-features">
-          <li>✓ Exa AI content discovery</li>
-          <li>✓ Intelligent curation & filtering</li>
-          <li>✓ Automated email generation</li>
-          <li>✓ Quality validation (>0.8 score)</li>
-          <li>✓ Scheduled delivery & analytics</li>
+          <li>Angles matched to your personas' pain points</li>
+          <li>Articles, newsletters, social posts, shorts</li>
+          <li>SEO data informs every piece</li>
+          <li>Affiliate links woven in automatically</li>
+          <li>Scheduled based on optimal timing</li>
         </ul>
-        <div class="robot-tech">
-          <span class="tech-badge">PydanticAI</span>
-          <span class="tech-badge">Exa AI</span>
-        </div>
       </div>
 
       <div class="robot-card">
-        <div class="robot-icon">✍️</div>
-        <h3>Article Robot</h3>
-        <p class="robot-tagline">Competitor Analysis + Generation</p>
+        <div class="step-number">3</div>
+        <div class="robot-icon">👆</div>
+        <h3>Swipe & Publish</h3>
+        <p class="robot-tagline">Review in Seconds</p>
         <ul class="robot-features">
-          <li>✓ Firecrawl web scraping</li>
-          <li>✓ Content gap identification</li>
-          <li>✓ Original article generation</li>
-          <li>✓ Uniqueness >90% guarantee</li>
-          <li>✓ SEO topical alignment</li>
+          <li>Open the app on your phone</li>
+          <li>Swipe right to publish, left to skip</li>
+          <li>Edit inline if needed</li>
+          <li>Published to all connected channels</li>
+          <li>Track performance in analytics</li>
         </ul>
-        <div class="robot-tech">
-          <span class="tech-badge">CrewAI</span>
-          <span class="tech-badge">Firecrawl</span>
-        </div>
       </div>
     </div>
   </div>
@@ -94,7 +84,7 @@
 
   .robots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-top: 3rem;
   }
@@ -118,6 +108,22 @@
     transform: scale(1.05);
   }
 
+  .step-number {
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+
   .featured-badge {
     position: absolute;
     top: -15px;
@@ -131,7 +137,7 @@
   }
 
   .robot-icon {
-    font-size: 4rem;
+    font-size: 3.5rem;
     margin-bottom: 1rem;
   }
 
@@ -149,32 +155,22 @@
 
   .robot-features {
     list-style: none;
-    margin-bottom: 2rem;
   }
 
   .robot-features li {
-    padding: 0.75rem 0;
+    padding: 0.6rem 0;
     color: var(--color-dark);
     border-bottom: 1px solid var(--color-light-gray);
+    font-size: 0.95rem;
   }
 
   .robot-features li:last-child {
     border-bottom: none;
   }
 
-  .robot-tech {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .tech-badge {
-    background: var(--color-light-gray);
-    color: var(--color-dark);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
+  .robot-features li::before {
+    content: "\2192  ";
+    color: var(--color-primary);
   }
 
   @media (max-width: 768px) {

@@ -4,82 +4,79 @@
 <section id="pricing" class="pricing-section">
   <div class="container">
     <div class="section-header">
-      <h2>Fair Pricing, Unlimited Potential</h2>
-      <p>Choose the plan that fits your automation needs</p>
-    </div>
-
-    <div class="pricing-toggle">
-      <button class="toggle-btn active" data-plan="monthly">Monthly</button>
-      <button class="toggle-btn" data-plan="annual">Annual <span class="save-badge">Save 17%</span></button>
+      <h2>Simple Pricing. Start Free.</h2>
+      <p>No credit card required. Upgrade when your content scales.</p>
     </div>
 
     <div class="pricing-grid">
       <div class="pricing-card">
-        <h3>Starter</h3>
+        <h3>Free</h3>
         <div class="price">
-          <span class="currency">$</span>
-          <span class="amount monthly">49</span>
-          <span class="amount annual" style="display: none;">41</span>
-          <span class="period">/mo</span>
+          <span class="amount">0</span>
+          <span class="currency">&euro;</span>
         </div>
-        <p class="billing-note monthly">Billed monthly</p>
-        <p class="billing-note annual" style="display: none;">Billed annually ($492/year)</p>
-        
+        <p class="billing-note">Forever free</p>
+
         <ul class="features">
-          <li>✓ 1 Robot (SEO or Newsletter)</li>
-          <li>✓ 50,000 words/month</li>
-          <li>✓ 500 research credits</li>
-          <li>✓ Basic analytics</li>
-          <li>✓ Email support</li>
+          <li>1 project</li>
+          <li>5 content pieces/month</li>
+          <li>Swipe approval feed</li>
+          <li>1 publishing channel</li>
+          <li>Basic analytics</li>
+          <li>Community support</li>
         </ul>
         <button class="cta-btn">Get Started</button>
       </div>
 
       <div class="pricing-card featured">
         <div class="popular-badge">Most Popular</div>
-        <h3>Professional</h3>
+        <h3>Creator</h3>
         <div class="price">
-          <span class="currency">$</span>
-          <span class="amount monthly">149</span>
-          <span class="amount annual" style="display: none;">124</span>
+          <span class="amount">19</span>
+          <span class="currency">&euro;</span>
           <span class="period">/mo</span>
         </div>
-        <p class="billing-note monthly">Billed monthly</p>
-        <p class="billing-note annual" style="display: none;">Billed annually ($1,488/year)</p>
-        
+        <p class="billing-note">Everything you need to publish consistently</p>
+
         <ul class="features">
-          <li>✓ All 3 Robots (SEO + Newsletter + Article)</li>
-          <li>✓ 200,000 words/month</li>
-          <li>✓ 2,000 research credits</li>
-          <li>✓ Advanced analytics & monitoring</li>
-          <li>✓ Priority support</li>
-          <li>✓ Custom integrations</li>
-          <li>✓ API access</li>
+          <li>3 projects</li>
+          <li>50 content pieces/month</li>
+          <li>All 6 content formats</li>
+          <li>All publishing channels</li>
+          <li>SEO keyword research</li>
+          <li>Affiliate link management</li>
+          <li>Content scheduling</li>
+          <li>Full analytics</li>
+          <li>Email support</li>
         </ul>
-        <button class="cta-btn primary">Get Started</button>
+        <button class="cta-btn primary">Start 14-Day Trial</button>
       </div>
 
       <div class="pricing-card">
-        <h3>Enterprise</h3>
+        <h3>Pro</h3>
         <div class="price">
-          <span class="custom">Custom</span>
+          <span class="amount">49</span>
+          <span class="currency">&euro;</span>
+          <span class="period">/mo</span>
         </div>
-        <p class="billing-note">Tailored to your needs</p>
-        
+        <p class="billing-note">For serious content creators and agencies</p>
+
         <ul class="features">
-          <li>✓ Unlimited robots & content</li>
-          <li>✓ Unlimited research credits</li>
-          <li>✓ White-label deployment</li>
-          <li>✓ Dedicated infrastructure</li>
-          <li>✓ Custom agent development</li>
-          <li>✓ 24/7 premium support</li>
-          <li>✓ SLA guarantee</li>
+          <li>Unlimited projects</li>
+          <li>Unlimited content</li>
+          <li>All Creator features</li>
+          <li>Competitor analysis</li>
+          <li>SERP position tracking</li>
+          <li>Topical mesh analysis</li>
+          <li>Custom personas</li>
+          <li>Priority support</li>
+          <li>API access</li>
         </ul>
-        <button class="cta-btn">Contact Sales</button>
+        <button class="cta-btn">Start 14-Day Trial</button>
       </div>
     </div>
 
-    <p class="pricing-note">All plans include free updates, security patches, and all API costs covered</p>
+    <p class="pricing-note">All plans include AI generation costs, updates, and security patches. No hidden fees.</p>
   </div>
 </section>
 
@@ -111,39 +108,9 @@
     color: var(--color-gray);
   }
 
-  .pricing-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 3rem;
-  }
-
-  .toggle-btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    background: white;
-    color: var(--color-gray);
-    transition: all 0.3s ease;
-  }
-
-  .toggle-btn.active {
-    background: var(--color-primary);
-    color: white;
-  }
-
-  .save-badge {
-    background: var(--color-accent);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    margin-left: 0.5rem;
-  }
-
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-bottom: 2rem;
   }
@@ -196,6 +163,7 @@
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-gray);
+    margin-left: 0.25rem;
   }
 
   .amount {
@@ -210,12 +178,6 @@
     margin-left: 0.25rem;
   }
 
-  .custom {
-    font-size: 3rem;
-    font-weight: 900;
-    color: var(--color-dark);
-  }
-
   .billing-note {
     color: var(--color-gray);
     font-size: 0.9rem;
@@ -228,13 +190,20 @@
   }
 
   .features li {
-    padding: 0.75rem 0;
+    padding: 0.6rem 0;
     color: var(--color-dark);
     border-bottom: 1px solid var(--color-light-gray);
+    font-size: 0.95rem;
   }
 
   .features li:last-child {
     border-bottom: none;
+  }
+
+  .features li::before {
+    content: "\2713  ";
+    color: var(--color-primary);
+    font-weight: 700;
   }
 
   .cta-btn {
@@ -279,25 +248,3 @@
     }
   }
 </style>
-
-<script>
-  const toggleButtons = document.querySelectorAll('.toggle-btn');
-  const monthlyPrices = document.querySelectorAll('.monthly');
-  const annualPrices = document.querySelectorAll('.annual');
-
-  toggleButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      toggleButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      const plan = btn.dataset.plan;
-      if (plan === 'monthly') {
-        monthlyPrices.forEach(el => el.style.display = '');
-        annualPrices.forEach(el => el.style.display = 'none');
-      } else {
-        monthlyPrices.forEach(el => el.style.display = 'none');
-        annualPrices.forEach(el => el.style.display = '');
-      }
-    });
-  });
-</script>

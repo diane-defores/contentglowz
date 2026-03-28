@@ -6,26 +6,36 @@
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">
-        Your Robots <span class="gradient-text rotating-words">
-          <span class="word active">write</span>
-          <span class="word">research</span>
-          <span class="word">analyze</span>
-          <span class="word">optimize</span>
-        </span>, you scale.
+        AI creates your <span class="gradient-text rotating-words">
+          <span class="word active">articles</span>
+          <span class="word">newsletters</span>
+          <span class="word">social posts</span>
+          <span class="word">video scripts</span>
+        </span>.<br/>You swipe to publish.
       </h1>
       <p class="hero-subtitle">
-        Deploy intelligent AI robots that automate SEO optimization, newsletter curation, and content generation. 
-        Built with CrewAI and PydanticAI for enterprise-grade automation.
+        Content Flows is a complete AI content pipeline. Your creator voice feeds AI agents
+        that generate multi-format content. Review in a Tinder-like feed. Swipe right to publish,
+        left to skip. Done.
       </p>
       <div class="hero-cta">
-        <a href="#pricing" class="btn-primary">Start Building</a>
+        <a href="#pricing" class="btn-primary">Start Free</a>
         <a href="#features" class="btn-secondary">See How It Works</a>
       </div>
-      <div class="social-proof">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>"The most powerful automation suite I've ever used. It actually delivers."</p>
-        <div class="author">
-          <strong>Alex Chen</strong> - Tech Startup Founder
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">6</span>
+          <span class="stat-label">content formats</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">7</span>
+          <span class="stat-label">publish channels</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">23</span>
+          <span class="stat-label">AI agents</span>
         </div>
       </div>
     </div>
@@ -45,7 +55,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: 
+    background:
       radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
     z-index: -1;
@@ -64,9 +74,9 @@
   }
 
   .hero-title {
-    font-size: 4rem;
+    font-size: 3.5rem;
     font-weight: 900;
-    line-height: 1.1;
+    line-height: 1.15;
     margin-bottom: 1.5rem;
   }
 
@@ -105,7 +115,7 @@
   }
 
   .hero-subtitle {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     color: var(--color-gray);
     margin-bottom: 2.5rem;
     line-height: 1.8;
@@ -150,29 +160,45 @@
     color: white;
   }
 
-  .social-proof {
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
     background: white;
-    padding: 2rem;
+    padding: 1.5rem 3rem;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    max-width: 600px;
+    max-width: 500px;
     margin: 0 auto;
   }
 
-  .stars {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .social-proof p {
-    font-style: italic;
-    color: var(--color-dark);
-    margin-bottom: 1rem;
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .author {
+  .stat-label {
+    font-size: 0.8rem;
     color: var(--color-gray);
-    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--color-light-gray);
   }
 
   @media (max-width: 768px) {
@@ -181,7 +207,7 @@
     }
 
     .hero-title {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
     }
 
     .hero-cta {
@@ -190,6 +216,11 @@
 
     .btn-primary, .btn-secondary {
       width: 100%;
+    }
+
+    .hero-stats {
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
     }
   }
 </style>
