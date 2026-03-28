@@ -580,16 +580,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     if (connected) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.approveColor.withAlpha(30),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          'Connected',
-          style: TextStyle(color: AppTheme.approveColor, fontSize: 12),
-        ),
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.approveColor.withAlpha(30),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Connected',
+              style: TextStyle(color: AppTheme.approveColor, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: Icon(Icons.link_off, size: 18, color: Colors.white.withAlpha(80)),
+            tooltip: 'Disconnect',
+            onPressed: () => _disconnectChannel(name, platform!),
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            padding: EdgeInsets.zero,
+          ),
+        ],
       );
     }
 
@@ -674,6 +687,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
+    }
+  }
+
+  Future<void> _disconnectChannel(String channelName, String platform) async {
+    final accounts = ref.read(publishAccountsProvider).valueOrNull ?? [];
+    final account = _accountForPlatform(accounts, platform);
+    if (account == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: Text('Disconnect $channelName?'),
+        content: Text(
+          'This will remove the connection to ${account.displayName}.',
+          style: TextStyle(color: Colors.white.withAlpha(180)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.rejectColor,
+            ),
+            child: const Text('Disconnect'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final api = ref.read(apiServiceProvider);
+    final success = await api.disconnectAccount(account.id);
+
+    if (mounted) {
+      if (success) {
+        ref.invalidate(publishAccountsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Disconnected $channelName'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to disconnect $channelName'),
+            backgroundColor: AppTheme.rejectColor.withAlpha(200),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     }
   }
 
