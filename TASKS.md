@@ -163,7 +163,7 @@
 | ✅ | Regrouper les 17 tabs en sections (Content, Create, Analyze, System) | High | Low | ✅ done — dividers visuels entre sections |
 | 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
-| 🟠 | Landing page produit | High | Medium | Première version dans EntryScreen; à extraire vers site marketing |
+| ✅ | Landing page produit (ContentFlowz_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
 | 🟠 | Stripe Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
 | 🟠 | Configurer credentials DataForSEO en production (Doppler) | High | Low | Client prêt, il faut les clés réelles |
