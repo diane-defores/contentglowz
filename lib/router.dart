@@ -16,6 +16,8 @@ import 'presentation/screens/personas/personas_list_screen.dart';
 import 'presentation/screens/personas/persona_editor_screen.dart';
 import 'presentation/screens/activity/activity_screen.dart';
 import 'presentation/screens/analytics/analytics_screen.dart';
+import 'presentation/screens/content_tools/content_tools_screen.dart';
+import 'presentation/screens/reels/reels_screen.dart';
 import 'presentation/screens/affiliations/affiliations_screen.dart';
 import 'presentation/screens/angles/angles_screen.dart';
 import 'presentation/screens/calendar/calendar_screen.dart';
@@ -161,9 +163,19 @@ GoRouter createAppRouter(WidgetRef ref) {
                 const NoTransitionPage(child: ResearchScreen()),
           ),
           GoRoute(
+            path: '/reels',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ReelsScreen()),
+          ),
+          GoRoute(
             path: '/seo',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SeoScreen()),
+          ),
+          GoRoute(
+            path: '/content-tools',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ContentToolsScreen()),
           ),
           GoRoute(
             path: '/analytics',

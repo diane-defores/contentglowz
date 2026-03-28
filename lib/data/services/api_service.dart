@@ -666,6 +666,56 @@ class ApiService {
     }
   }
 
+  // ─── Reels ────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> downloadReel({
+    required String url,
+    required String userId,
+    String? bunnyStorageKey,
+    String? bunnyCdnHostname,
+  }) async {
+    try {
+      final response = await _dio.post('/api/reels/download', data: {
+        'url': url,
+        'user_id': userId,
+        if (bunnyStorageKey != null) 'bunny_storage_key': bunnyStorageKey,
+        if (bunnyCdnHostname != null) 'bunny_cdn_hostname': bunnyCdnHostname,
+      });
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> getReelsCookieStatus(String userId) async {
+    try {
+      final response = await _dio.get('/api/reels/cookies/status',
+          queryParameters: {'user_id': userId});
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      if (allowDemoData) return {'has_cookies': false};
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Content Tools ───────────────────────────────────────
+
+  Future<Map<String, dynamic>> fetchPendingValidations({
+    String? projectId,
+    int daysAhead = 7,
+  }) async {
+    try {
+      final params = <String, dynamic>{'days_ahead': daysAhead};
+      if (projectId != null) params['project_id'] = projectId;
+      final response = await _dio.get('/api/content/pending-validations',
+          queryParameters: params);
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      if (allowDemoData) return {'total': 0, 'articles': []};
+      throw _mapDioException(error);
+    }
+  }
+
   // ─── Work Domains ─────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> fetchWorkDomains({String? projectId}) async {
