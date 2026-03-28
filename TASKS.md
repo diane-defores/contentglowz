@@ -52,7 +52,7 @@
 |-----|------|--------|
 | ✅ | Angles, Schedule, Content update, Personas refresh, Ritual narrative, Persona language model | ✅ done |
 | ✅ | GitHub Actions, Zernio API, Publish accounts, Channel states, Schedule API | ✅ done |
-| 🟠 | OAuth channel connections | 📋 todo |
+| ✅ | OAuth channel connections (Connect + Disconnect via Zernio) | ✅ done |
 
 ## Phase 4 — Auth & Workspace Migration ✅
 
@@ -160,12 +160,12 @@
 
 | Pri | Task | Impact | Effort | Notes |
 |-----|------|--------|--------|-------|
-| 🟠 | Regrouper les 17 tabs en sections (Content, Tools, Monitoring, Settings) | High | Low | 17 tabs scrollables = difficile à naviguer |
+| ✅ | Regrouper les 17 tabs en sections (Content, Create, Analyze, System) | High | Low | ✅ done — dividers visuels entre sections |
 | 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
-| 🟠 | OAuth flow pour connecter les channels (via LATE) | High | Medium | Bouton Connect est encore un placeholder UI |
+| ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | 🟠 | Landing page produit | High | Medium | Première version dans EntryScreen; à extraire vers site marketing |
 | 🟠 | Stripe Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth |
-| 🟠 | Tests end-to-end pipeline — tester un flux complet angle → dispatch → contenu généré → review queue | High | Low | Le code est en place, il faut valider avec le vrai backend |
+| ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
 | 🟠 | Configurer credentials DataForSEO en production (Doppler) | High | Low | Client prêt, il faut les clés réelles |
 
 ### 🟡 P2 — Polish & Engagement
@@ -196,4 +196,4 @@
 
 > **Priority last updated**: 2026-03-28
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Regrouper les 17 tabs nav en sections, puis valider le flux Clerk réel en runtime, puis tests end-to-end du pipeline unifié
+> **Recommended next**: Valider le flux Clerk réel en runtime Flutter, puis landing page produit, puis Stripe billing
