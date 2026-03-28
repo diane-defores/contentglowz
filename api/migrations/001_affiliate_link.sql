@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS AffiliateLink (
+    id TEXT PRIMARY KEY NOT NULL,
+    userId TEXT NOT NULL REFERENCES User(id),
+    projectId TEXT,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    description TEXT,
+    contactUrl TEXT,
+    loginUrl TEXT,
+    researchSummary TEXT,
+    researchedAt INTEGER,
+    category TEXT,
+    commission TEXT,
+    keywords TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    notes TEXT,
+    expiresAt INTEGER,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);

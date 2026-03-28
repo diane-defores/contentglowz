@@ -15,6 +15,7 @@ from .settings import router as settings_router
 from .creator_profile import router as creator_profile_router
 from .personas import router as personas_router
 from .idea_pool import router as idea_pool_router
+from .affiliations import router as affiliations_router
 
 __all__ = [
     "mesh_router",
@@ -32,4 +33,5 @@ __all__ = [
     "creator_profile_router",
     "personas_router",
     "idea_pool_router",
+    "affiliations_router",
 ]

@@ -359,5 +359,187 @@ class UserDataStore:
         )
         return True
 
+    # ─── Affiliate Links ───────────────────────────────────────
+
+    async def ensure_affiliate_table(self) -> None:
+        """Create AffiliateLink table if it doesn't exist (idempotent)."""
+        self._ensure_connected()
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS AffiliateLink (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT,
+                name TEXT NOT NULL,
+                url TEXT NOT NULL,
+                description TEXT,
+                contactUrl TEXT,
+                loginUrl TEXT,
+                researchSummary TEXT,
+                researchedAt INTEGER,
+                category TEXT,
+                commission TEXT,
+                keywords TEXT,
+                status TEXT NOT NULL DEFAULT 'active',
+                notes TEXT,
+                expiresAt INTEGER,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL
+            )
+            """
+        )
+
+    def _affiliate_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "name": row[3],
+            "url": row[4],
+            "description": row[5],
+            "contactUrl": row[6],
+            "loginUrl": row[7],
+            "researchSummary": row[8],
+            "researchedAt": _ts(row[9]) if row[9] else None,
+            "category": row[10],
+            "commission": row[11],
+            "keywords": _json_load(row[12], []),
+            "status": row[13] or "active",
+            "notes": row[14],
+            "expiresAt": _ts(row[15]) if row[15] else None,
+            "createdAt": _ts(row[16]),
+            "updatedAt": _ts(row[17]),
+        }
+
+    async def list_affiliations(self, user_id: str, project_id: str | None = None) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        query = """
+            SELECT id, userId, projectId, name, url, description,
+                   contactUrl, loginUrl, researchSummary, researchedAt,
+                   category, commission, keywords, status, notes,
+                   expiresAt, createdAt, updatedAt
+            FROM AffiliateLink
+            WHERE userId = ?
+        """
+        params: list[Any] = [user_id]
+        if project_id is not None:
+            query += " AND projectId = ?"
+            params.append(project_id)
+        query += " ORDER BY createdAt DESC"
+        rs = await self.db_client.execute(query, params)
+        return [self._affiliate_from_row(row) for row in rs.rows]
+
+    async def get_affiliation(self, user_id: str, affiliation_id: str) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT id, userId, projectId, name, url, description,
+                   contactUrl, loginUrl, researchSummary, researchedAt,
+                   category, commission, keywords, status, notes,
+                   expiresAt, createdAt, updatedAt
+            FROM AffiliateLink
+            WHERE id = ? AND userId = ?
+            LIMIT 1
+            """,
+            [affiliation_id, user_id],
+        )
+        if not rs.rows:
+            return None
+        return self._affiliate_from_row(rs.rows[0])
+
+    async def create_affiliation(self, user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        affiliation_id = str(uuid.uuid4())
+        expires_at = None
+        if payload.get("expiresAt"):
+            try:
+                expires_at = int(datetime.fromisoformat(payload["expiresAt"]).timestamp())
+            except (ValueError, TypeError):
+                pass
+        await self.db_client.execute(
+            """
+            INSERT INTO AffiliateLink (
+                id, userId, projectId, name, url, description,
+                contactUrl, loginUrl, category, commission,
+                keywords, status, notes, expiresAt, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                affiliation_id,
+                user_id,
+                payload.get("projectId"),
+                payload["name"],
+                payload["url"],
+                payload.get("description"),
+                payload.get("contactUrl"),
+                payload.get("loginUrl"),
+                payload.get("category"),
+                payload.get("commission"),
+                _json_dump(payload.get("keywords") or []),
+                payload.get("status") or "active",
+                payload.get("notes"),
+                expires_at,
+                now,
+                now,
+            ],
+        )
+        affiliation = await self.get_affiliation(user_id, affiliation_id)
+        if not affiliation:
+            raise RuntimeError("Failed to create affiliation")
+        return affiliation
+
+    async def update_affiliation(self, user_id: str, affiliation_id: str, payload: dict[str, Any]) -> dict[str, Any] | None:
+        self._ensure_connected()
+        existing = await self.get_affiliation(user_id, affiliation_id)
+        if not existing:
+            return None
+        update_fields: list[str] = ["updatedAt = ?"]
+        params: list[Any] = [int(datetime.now().timestamp())]
+        scalar_fields = {
+            "name": "name",
+            "url": "url",
+            "description": "description",
+            "contactUrl": "contactUrl",
+            "loginUrl": "loginUrl",
+            "category": "category",
+            "commission": "commission",
+            "status": "status",
+            "notes": "notes",
+        }
+        for key, column in scalar_fields.items():
+            if key in payload:
+                update_fields.append(f"{column} = ?")
+                params.append(payload[key])
+        if "keywords" in payload:
+            update_fields.append("keywords = ?")
+            params.append(_json_dump(payload["keywords"]))
+        if "expiresAt" in payload:
+            update_fields.append("expiresAt = ?")
+            if payload["expiresAt"]:
+                try:
+                    params.append(int(datetime.fromisoformat(payload["expiresAt"]).timestamp()))
+                except (ValueError, TypeError):
+                    params.append(None)
+            else:
+                params.append(None)
+        params.extend([affiliation_id, user_id])
+        await self.db_client.execute(
+            f"UPDATE AffiliateLink SET {', '.join(update_fields)} WHERE id = ? AND userId = ?",
+            params,
+        )
+        return await self.get_affiliation(user_id, affiliation_id)
+
+    async def delete_affiliation(self, user_id: str, affiliation_id: str) -> bool:
+        self._ensure_connected()
+        affiliation = await self.get_affiliation(user_id, affiliation_id)
+        if not affiliation:
+            return False
+        await self.db_client.execute(
+            "DELETE FROM AffiliateLink WHERE id = ? AND userId = ?",
+            [affiliation_id, user_id],
+        )
+        return True
+
 
 user_data_store = UserDataStore()
