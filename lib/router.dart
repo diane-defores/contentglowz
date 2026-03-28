@@ -21,8 +21,11 @@ import 'presentation/screens/calendar/calendar_screen.dart';
 import 'presentation/screens/newsletter/newsletter_screen.dart';
 import 'presentation/screens/research/research_screen.dart';
 import 'presentation/screens/runs/runs_screen.dart';
+import 'presentation/screens/performance/performance_screen.dart';
 import 'presentation/screens/seo/seo_screen.dart';
 import 'presentation/screens/templates/templates_screen.dart';
+import 'presentation/screens/uptime/uptime_screen.dart';
+import 'presentation/screens/work_domains/work_domains_screen.dart';
 
 GoRouter createAppRouter(WidgetRef ref) {
   final authSession = ref.watch(authSessionProvider);
@@ -160,6 +163,21 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/seo',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SeoScreen()),
+          ),
+          GoRoute(
+            path: '/work-domains',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: WorkDomainsScreen()),
+          ),
+          GoRoute(
+            path: '/performance',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: PerformanceScreen()),
+          ),
+          GoRoute(
+            path: '/uptime',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: UptimeScreen()),
           ),
           GoRoute(
             path: '/settings',

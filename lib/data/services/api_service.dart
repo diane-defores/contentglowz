@@ -666,6 +666,22 @@ class ApiService {
     }
   }
 
+  // ─── Work Domains ─────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> fetchWorkDomains({String? projectId}) async {
+    try {
+      final params = <String, dynamic>{};
+      if (projectId != null) params['projectId'] = projectId;
+      final response = await _dio.get('/api/work-domains', queryParameters: params);
+      final data = response.data;
+      if (data is List) return data.cast<Map<String, dynamic>>();
+      return [];
+    } on DioException catch (error) {
+      if (allowDemoData) return const [];
+      throw _mapDioException(error);
+    }
+  }
+
   // ─── Activity ─────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> fetchActivity({
