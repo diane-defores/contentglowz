@@ -170,14 +170,14 @@
 
 ### 🟡 P2 — Polish & Engagement
 
-| Pri | Task | Notes |
-|-----|------|-------|
-| 🟡 | Preview du post par plateforme | Nice to have, s'inspirer de v0-neobrutalist-ui-design_ |
-| 🟡 | Bulk approve (swipe tout, valider par lot) | Quick win quand volume de contenu augmente |
-| 🟡 | Responsive layout web (adaptive scaffold) | Pour users desktop |
-| 🟡 | Firebase Cloud Messaging (push notifications) | Mobile-only |
-| 🟡 | Statistiques post-publication | Dépend des APIs plateforme |
-| 🟡 | Landing dédiée avec hero orienté outcome | Preuves produit, FAQ, pricing |
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Bulk approve (approve all pending in one tap) | ✅ done |
+| ✅ | Responsive layout web (side rail on desktop, bottom nav on mobile) | ✅ done |
+| ✅ | Preview post par plateforme (Twitter, LinkedIn, Instagram, Ghost, YouTube, TikTok) | ✅ done |
+| ✅ | Stats post-publication (destinations breakdown + approval rate) | ✅ done |
+| ✅ | Landing page rebrand (hero, features, pricing, use cases, FAQ) | ✅ done |
+| ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
 
 ### 🟢 P3 — Backlog
 
