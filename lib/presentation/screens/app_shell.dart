@@ -44,8 +44,10 @@ const _sections = [
   ]),
 ];
 
-// Flat list for index lookup
 final _allItems = _sections.expand((s) => s.items).toList();
+
+/// Breakpoint: above this width we show side rail instead of bottom nav.
+const _desktopBreakpoint = 800.0;
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -57,49 +59,33 @@ class AppShell extends ConsumerWidget {
     final pendingCount = ref.watch(pendingCountProvider);
     final currentRoute = GoRouterState.of(context).uri.path;
     final selectedPath = _selectedPath(currentRoute);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= _desktopBreakpoint;
+
+    if (isWide) {
+      return Scaffold(
+        body: Row(
+          children: [
+            _SideRail(
+              selectedPath: selectedPath,
+              pendingCount: pendingCount,
+              colorScheme: colorScheme,
+              onNavigate: (path) => context.go(path),
+            ),
+            VerticalDivider(width: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            Expanded(child: child),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-          ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: [
-                for (var sectionIdx = 0; sectionIdx < _sections.length; sectionIdx++) ...[
-                  if (sectionIdx > 0)
-                    _SectionDivider(
-                      label: _sections[sectionIdx].label,
-                      colorScheme: colorScheme,
-                    ),
-                  for (final item in _sections[sectionIdx].items)
-                    _NavTab(
-                      icon: item.icon,
-                      label: item.label,
-                      isSelected: item.path == selectedPath,
-                      badgeCount: item.path == '/feed' && pendingCount > 0
-                          ? pendingCount
-                          : null,
-                      colorScheme: colorScheme,
-                      onTap: () => context.go(item.path),
-                    ),
-                ],
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: _BottomNav(
+        selectedPath: selectedPath,
+        pendingCount: pendingCount,
+        colorScheme: colorScheme,
+        onNavigate: (path) => context.go(path),
       ),
     );
   }
@@ -109,6 +95,209 @@ class AppShell extends ConsumerWidget {
       if (route.startsWith(item.path)) return item.path;
     }
     return '/feed';
+  }
+}
+
+// ─── Desktop: Side Rail ──────────────────────────────────────
+
+class _SideRail extends StatelessWidget {
+  const _SideRail({
+    required this.selectedPath,
+    required this.pendingCount,
+    required this.colorScheme,
+    required this.onNavigate,
+  });
+
+  final String selectedPath;
+  final int pendingCount;
+  final ColorScheme colorScheme;
+  final ValueChanged<String> onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 220,
+      color: colorScheme.surface,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Logo area
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: colorScheme.primary, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Content Flows',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Sections
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                children: [
+                  for (final section in _sections) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 16, 12, 6),
+                      child: Text(
+                        section.label.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.outlineVariant,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    for (final item in section.items)
+                      _SideNavItem(
+                        icon: item.icon,
+                        label: item.label,
+                        isSelected: item.path == selectedPath,
+                        badgeCount:
+                            item.path == '/feed' && pendingCount > 0
+                                ? pendingCount
+                                : null,
+                        colorScheme: colorScheme,
+                        onTap: () => onNavigate(item.path),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SideNavItem extends StatelessWidget {
+  const _SideNavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.colorScheme,
+    required this.onTap,
+    this.badgeCount,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final int? badgeCount;
+  final ColorScheme colorScheme;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+    final bgColor = isSelected
+        ? colorScheme.primary.withValues(alpha: 0.12)
+        : Colors.transparent;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Material(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Badge(
+                  isLabelVisible: badgeCount != null,
+                  label: badgeCount != null ? Text('$badgeCount') : null,
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: color,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Mobile: Bottom Nav ──────────────────────────────────────
+
+class _BottomNav extends StatelessWidget {
+  const _BottomNav({
+    required this.selectedPath,
+    required this.pendingCount,
+    required this.colorScheme,
+    required this.onNavigate,
+  });
+
+  final String selectedPath;
+  final int pendingCount;
+  final ColorScheme colorScheme;
+  final ValueChanged<String> onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              for (var sectionIdx = 0; sectionIdx < _sections.length; sectionIdx++) ...[
+                if (sectionIdx > 0)
+                  _SectionDivider(
+                    label: _sections[sectionIdx].label,
+                    colorScheme: colorScheme,
+                  ),
+                for (final item in _sections[sectionIdx].items)
+                  _NavTab(
+                    icon: item.icon,
+                    label: item.label,
+                    isSelected: item.path == selectedPath,
+                    badgeCount: item.path == '/feed' && pendingCount > 0
+                        ? pendingCount
+                        : null,
+                    colorScheme: colorScheme,
+                    onTap: () => onNavigate(item.path),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
