@@ -164,9 +164,9 @@
 | 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | ✅ | Landing page produit (ContentFlowz_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
-| 🟠 | Stripe Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth |
+| 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth Clerk |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
-| 🟠 | Configurer credentials DataForSEO en production (Doppler) | High | Low | Client prêt, il faut les clés réelles |
+| 🟡 | DataForSEO — credentials OK dans Doppler, ajouter credits au compte DFS | High | Low | Auth OK (20000), mais 402 Payment Required — ajouter credits sur dataforseo.com/billing |
 
 ### 🟡 P2 — Polish & Engagement
 
