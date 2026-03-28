@@ -666,6 +666,25 @@ class ApiService {
     }
   }
 
+  // ─── Activity ─────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> fetchActivity({
+    String? projectId,
+    int limit = 50,
+  }) async {
+    try {
+      final params = <String, dynamic>{'limit': limit};
+      if (projectId != null) params['projectId'] = projectId;
+      final response = await _dio.get('/api/activity', queryParameters: params);
+      final data = response.data;
+      if (data is List) return data.cast<Map<String, dynamic>>();
+      return [];
+    } on DioException catch (error) {
+      if (allowDemoData) return const [];
+      throw _mapDioException(error);
+    }
+  }
+
   // ─── Runs ─────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> fetchRuns({

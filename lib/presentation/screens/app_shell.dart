@@ -15,6 +15,7 @@ const _navItems = [
   _NavItem(icon: Icons.calendar_month_rounded, label: 'Schedule', path: '/calendar'),
   _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
   _NavItem(icon: Icons.link_rounded, label: 'Affiliations', path: '/affiliations'),
+  _NavItem(icon: Icons.timeline_rounded, label: 'Activity', path: '/activity'),
   _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
   _NavItem(icon: Icons.description_rounded, label: 'Templates', path: '/templates'),
   _NavItem(icon: Icons.email_rounded, label: 'Newsletter', path: '/newsletter'),

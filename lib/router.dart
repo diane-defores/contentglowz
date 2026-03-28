@@ -14,6 +14,7 @@ import 'presentation/screens/auth/auth_screen.dart';
 import 'presentation/screens/ritual/ritual_screen.dart';
 import 'presentation/screens/personas/personas_list_screen.dart';
 import 'presentation/screens/personas/persona_editor_screen.dart';
+import 'presentation/screens/activity/activity_screen.dart';
 import 'presentation/screens/affiliations/affiliations_screen.dart';
 import 'presentation/screens/angles/angles_screen.dart';
 import 'presentation/screens/calendar/calendar_screen.dart';
@@ -124,6 +125,11 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/history',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: HistoryScreen()),
+          ),
+          GoRoute(
+            path: '/activity',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ActivityScreen()),
           ),
           GoRoute(
             path: '/affiliations',
