@@ -10,25 +10,42 @@ class _NavItem {
   final String path;
 }
 
-const _navItems = [
-  _NavItem(icon: Icons.dynamic_feed_rounded, label: 'Feed', path: '/feed'),
-  _NavItem(icon: Icons.calendar_month_rounded, label: 'Schedule', path: '/calendar'),
-  _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
-  _NavItem(icon: Icons.link_rounded, label: 'Affiliations', path: '/affiliations'),
-  _NavItem(icon: Icons.timeline_rounded, label: 'Activity', path: '/activity'),
-  _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
-  _NavItem(icon: Icons.description_rounded, label: 'Templates', path: '/templates'),
-  _NavItem(icon: Icons.email_rounded, label: 'Newsletter', path: '/newsletter'),
-  _NavItem(icon: Icons.analytics_rounded, label: 'Research', path: '/research'),
-  _NavItem(icon: Icons.slow_motion_video_rounded, label: 'Reels', path: '/reels'),
-  _NavItem(icon: Icons.hub_rounded, label: 'SEO', path: '/seo'),
-  _NavItem(icon: Icons.build_circle_rounded, label: 'Content', path: '/content-tools'),
-  _NavItem(icon: Icons.workspaces_rounded, label: 'Domains', path: '/work-domains'),
-  _NavItem(icon: Icons.insights_rounded, label: 'Analytics', path: '/analytics'),
-  _NavItem(icon: Icons.bar_chart_rounded, label: 'Perf', path: '/performance'),
-  _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
-  _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
+class _NavSection {
+  const _NavSection({required this.label, required this.items});
+  final String label;
+  final List<_NavItem> items;
+}
+
+const _sections = [
+  _NavSection(label: 'Content', items: [
+    _NavItem(icon: Icons.dynamic_feed_rounded, label: 'Feed', path: '/feed'),
+    _NavItem(icon: Icons.calendar_month_rounded, label: 'Schedule', path: '/calendar'),
+    _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
+    _NavItem(icon: Icons.build_circle_rounded, label: 'Tools', path: '/content-tools'),
+  ]),
+  _NavSection(label: 'Create', items: [
+    _NavItem(icon: Icons.description_rounded, label: 'Templates', path: '/templates'),
+    _NavItem(icon: Icons.email_rounded, label: 'Newsletter', path: '/newsletter'),
+    _NavItem(icon: Icons.slow_motion_video_rounded, label: 'Reels', path: '/reels'),
+    _NavItem(icon: Icons.link_rounded, label: 'Affiliations', path: '/affiliations'),
+  ]),
+  _NavSection(label: 'Analyze', items: [
+    _NavItem(icon: Icons.analytics_rounded, label: 'Research', path: '/research'),
+    _NavItem(icon: Icons.hub_rounded, label: 'SEO', path: '/seo'),
+    _NavItem(icon: Icons.insights_rounded, label: 'Analytics', path: '/analytics'),
+    _NavItem(icon: Icons.bar_chart_rounded, label: 'Perf', path: '/performance'),
+  ]),
+  _NavSection(label: 'System', items: [
+    _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
+    _NavItem(icon: Icons.timeline_rounded, label: 'Activity', path: '/activity'),
+    _NavItem(icon: Icons.workspaces_rounded, label: 'Domains', path: '/work-domains'),
+    _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
+    _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
+  ]),
 ];
+
+// Flat list for index lookup
+final _allItems = _sections.expand((s) => s.items).toList();
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -39,7 +56,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingCount = ref.watch(pendingCountProvider);
     final currentRoute = GoRouterState.of(context).uri.path;
-    final selectedIndex = _indexFromRoute(currentRoute);
+    final selectedPath = _selectedPath(currentRoute);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -60,20 +77,26 @@ class AppShell extends ConsumerWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
-              children: List.generate(_navItems.length, (index) {
-                final item = _navItems[index];
-                final isSelected = index == selectedIndex;
-                final showBadge = index == 0 && pendingCount > 0;
-
-                return _NavTab(
-                  icon: item.icon,
-                  label: item.label,
-                  isSelected: isSelected,
-                  badgeCount: showBadge ? pendingCount : null,
-                  colorScheme: colorScheme,
-                  onTap: () => context.go(item.path),
-                );
-              }),
+              children: [
+                for (var sectionIdx = 0; sectionIdx < _sections.length; sectionIdx++) ...[
+                  if (sectionIdx > 0)
+                    _SectionDivider(
+                      label: _sections[sectionIdx].label,
+                      colorScheme: colorScheme,
+                    ),
+                  for (final item in _sections[sectionIdx].items)
+                    _NavTab(
+                      icon: item.icon,
+                      label: item.label,
+                      isSelected: item.path == selectedPath,
+                      badgeCount: item.path == '/feed' && pendingCount > 0
+                          ? pendingCount
+                          : null,
+                      colorScheme: colorScheme,
+                      onTap: () => context.go(item.path),
+                    ),
+                ],
+              ],
             ),
           ),
         ),
@@ -81,11 +104,44 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  int _indexFromRoute(String route) {
-    for (var i = 0; i < _navItems.length; i++) {
-      if (route.startsWith(_navItems[i].path)) return i;
+  String _selectedPath(String route) {
+    for (final item in _allItems) {
+      if (route.startsWith(item.path)) return item.path;
     }
-    return 0;
+    return '/feed';
+  }
+}
+
+class _SectionDivider extends StatelessWidget {
+  const _SectionDivider({required this.label, required this.colorScheme});
+  final String label;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 1,
+            height: 20,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.outlineVariant,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -114,20 +170,20 @@ class _NavTab extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Badge(
               isLabelVisible: badgeCount != null,
               label: badgeCount != null ? Text('$badgeCount') : null,
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 22),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: color,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
