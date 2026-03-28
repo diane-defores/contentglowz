@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import 'platform_preview_sheet.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
   final String contentId;
@@ -144,6 +145,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ],
       ),
       actions: [
+        // Platform preview
+        if (item.channels.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.devices_rounded),
+            tooltip: 'Platform preview',
+            onPressed: () => _showPlatformPreview(item),
+          ),
         // Toggle edit/preview
         IconButton(
           icon: Icon(_isPreview ? Icons.edit_rounded : Icons.visibility_rounded),
@@ -465,6 +473,20 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       ),
     );
     context.pop();
+  }
+
+  void _showPlatformPreview(ContentItem item) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => PlatformPreviewSheet(
+        title: _titleController.text,
+        body: _bodyController.text,
+        channels: item.channels,
+        type: item.type,
+      ),
+    );
   }
 
   void _showDiscardDialog() {
