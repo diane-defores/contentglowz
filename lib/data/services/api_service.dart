@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../demo/demo_seed.dart';
+import '../models/affiliate_link.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
 import '../models/content_item.dart';
@@ -660,6 +661,62 @@ class ApiService {
         },
       );
       return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Affiliations ──────────────────────────────────────────
+
+  Future<List<AffiliateLink>> fetchAffiliations({String? projectId}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (projectId != null) queryParams['projectId'] = projectId;
+      final response = await _dio.get(
+        '/api/affiliations',
+        queryParameters: queryParams,
+      );
+      final data = response.data;
+      if (data is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid affiliations response from FastAPI.',
+        );
+      }
+      return data
+          .map((json) => AffiliateLink.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (error) {
+      if (allowDemoData) return const [];
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AffiliateLink> createAffiliation(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/api/affiliations', data: data);
+      return AffiliateLink.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AffiliateLink> updateAffiliation(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final response = await _dio.put('/api/affiliations/$id', data: data);
+      return AffiliateLink.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<bool> deleteAffiliation(String id) async {
+    try {
+      await _dio.delete('/api/affiliations/$id');
+      return true;
     } on DioException catch (error) {
       throw _mapDioException(error);
     }

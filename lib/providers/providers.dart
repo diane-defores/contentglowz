@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
+import '../data/models/affiliate_link.dart';
 import '../data/models/app_bootstrap.dart';
 import '../data/models/app_settings.dart';
 import '../data/models/auth_session.dart';
@@ -581,6 +582,11 @@ final creatorProfileProvider = FutureProvider<CreatorProfile?>((ref) async {
 final personasProvider = FutureProvider<List<Persona>>((ref) async {
   final api = ref.read(apiServiceProvider);
   return api.fetchPersonas();
+});
+
+final affiliationsProvider = FutureProvider<List<AffiliateLink>>((ref) async {
+  final api = ref.read(apiServiceProvider);
+  return api.fetchAffiliations();
 });
 
 final lastNarrativeProvider = StateProvider<NarrativeSynthesisResult?>(
