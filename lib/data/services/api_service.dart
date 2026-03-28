@@ -666,6 +666,115 @@ class ApiService {
     }
   }
 
+  // ─── Runs ─────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> fetchRuns({
+    String? robotName,
+    String? status,
+    int limit = 20,
+  }) async {
+    try {
+      final params = <String, dynamic>{'limit': limit};
+      if (robotName != null) params['robot_name'] = robotName;
+      if (status != null) params['status'] = status;
+      final response = await _dio.get('/runs', queryParameters: params);
+      final data = response.data;
+      if (data is List) return data.cast<Map<String, dynamic>>();
+      return (_asMap(data)['runs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    } on DioException catch (error) {
+      if (allowDemoData) return const [];
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Templates ────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> fetchDefaultTemplates() async {
+    try {
+      final response = await _dio.get('/api/templates/defaults');
+      final data = response.data;
+      if (data is List) return data.cast<Map<String, dynamic>>();
+      return (_asMap(data)['templates'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    } on DioException catch (error) {
+      if (allowDemoData) return const [];
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Newsletter ───────────────────────────────────────────
+
+  Future<Map<String, dynamic>> checkNewsletterConfig() async {
+    try {
+      final response = await _dio.get('/api/newsletter/config/check');
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      if (allowDemoData) return {'configured': false};
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> generateNewsletter({
+    required String name,
+    required List<String> topics,
+    required String targetAudience,
+    String tone = 'professional',
+    int maxSections = 5,
+  }) async {
+    try {
+      final response = await _dio.post('/api/newsletter/generate-async', data: {
+        'name': name,
+        'topics': topics,
+        'target_audience': targetAudience,
+        'tone': tone,
+        'max_sections': maxSections,
+      });
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> getNewsletterJobStatus(String jobId) async {
+    try {
+      final response = await _dio.get('/api/newsletter/jobs/$jobId');
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Research ─────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> runCompetitorAnalysis({
+    required String targetUrl,
+    required List<String> competitors,
+    List<String> keywords = const [],
+  }) async {
+    try {
+      final response = await _dio.post('/api/research/competitor-analysis', data: {
+        'target_url': targetUrl,
+        'competitors': competitors,
+        if (keywords.isNotEmpty) 'keywords': keywords,
+      });
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── SEO Mesh ─────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> analyzeMesh({required String repoUrl}) async {
+    try {
+      final response = await _dio.post('/api/mesh/analyze', data: {
+        'repo_url': repoUrl,
+      });
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   // ─── Affiliations ──────────────────────────────────────────
 
   Future<List<AffiliateLink>> fetchAffiliations({String? projectId}) async {

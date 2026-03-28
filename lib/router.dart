@@ -17,6 +17,11 @@ import 'presentation/screens/personas/persona_editor_screen.dart';
 import 'presentation/screens/affiliations/affiliations_screen.dart';
 import 'presentation/screens/angles/angles_screen.dart';
 import 'presentation/screens/calendar/calendar_screen.dart';
+import 'presentation/screens/newsletter/newsletter_screen.dart';
+import 'presentation/screens/research/research_screen.dart';
+import 'presentation/screens/runs/runs_screen.dart';
+import 'presentation/screens/seo/seo_screen.dart';
+import 'presentation/screens/templates/templates_screen.dart';
 
 GoRouter createAppRouter(WidgetRef ref) {
   final authSession = ref.watch(authSessionProvider);
@@ -124,6 +129,31 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/affiliations',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: AffiliationsScreen()),
+          ),
+          GoRoute(
+            path: '/runs',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: RunsScreen()),
+          ),
+          GoRoute(
+            path: '/templates',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: TemplatesScreen()),
+          ),
+          GoRoute(
+            path: '/newsletter',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: NewsletterScreen()),
+          ),
+          GoRoute(
+            path: '/research',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ResearchScreen()),
+          ),
+          GoRoute(
+            path: '/seo',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SeoScreen()),
           ),
           GoRoute(
             path: '/settings',
