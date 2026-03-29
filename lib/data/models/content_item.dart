@@ -193,6 +193,50 @@ class ContentItem {
   String? get narrativeThread => metadata?['narrative_thread'] as String?
       ?? metadata?['angle']?['narrative_thread'] as String?;
 
+  /// SEO keyword difficulty (0-100)
+  int? get seoDifficulty => metadata?['seo_signals']?['difficulty'] as int?;
+
+  /// Source idea IDs that contributed to this content
+  List<String> get sourceIdeaIds =>
+      (metadata?['source_idea_ids'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [];
+
+  /// Source of the idea (seo_keywords, competitor_watch, weekly_ritual, etc.)
+  String? get ideaSource => metadata?['source_idea_source'] as String?
+      ?? metadata?['angle']?['source'] as String?;
+
+  /// Human-readable reason why this content was generated
+  String? get generationReason {
+    final source = ideaSource;
+    final keyword = seoKeyword;
+    final vol = seoVolume;
+
+    if (source == 'competitor_watch' || source == 'competitor_gap') {
+      return 'Competitor gap';
+    }
+    if (source == 'serp_feedback') {
+      return 'SERP refresh';
+    }
+    if (keyword != null && vol != null) {
+      final volLabel = vol >= 1000 ? '${(vol / 1000).toStringAsFixed(1)}K' : '$vol';
+      return 'SEO: $keyword ($volLabel vol)';
+    }
+    if (keyword != null) {
+      return 'SEO: $keyword';
+    }
+    if (source == 'newsletter_inbox') {
+      return 'Newsletter insight';
+    }
+    if (source == 'weekly_ritual') {
+      return 'Your ritual';
+    }
+    if (source == 'social_listening') {
+      return 'Social trend';
+    }
+    return null;
+  }
+
   // ── Parsing helpers ──
 
   static ContentType _parseContentType(String raw) {

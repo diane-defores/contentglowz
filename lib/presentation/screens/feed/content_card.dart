@@ -95,7 +95,8 @@ class ContentCard extends StatelessWidget {
     return item.seoKeyword != null ||
         item.shortPlatform != null ||
         item.socialPlatforms.isNotEmpty ||
-        item.narrativeThread != null;
+        item.narrativeThread != null ||
+        item.generationReason != null;
   }
 
   Widget _buildFormatMeta(Color typeColor) {
@@ -105,8 +106,14 @@ class ContentCard extends StatelessWidget {
     if (item.seoKeyword != null) {
       chips.add(_metaChip(Icons.search, item.seoKeyword!, typeColor));
       if (item.seoVolume != null) {
-        chips.add(_metaChip(Icons.trending_up, '${item.seoVolume} vol', Colors.green));
+        final diffLabel = item.seoDifficulty != null ? ' / KD ${item.seoDifficulty}' : '';
+        chips.add(_metaChip(Icons.trending_up, '${item.seoVolume} vol$diffLabel', Colors.green));
       }
+    }
+
+    // Generation reason chip (why this content was created)
+    if (item.generationReason != null && item.seoKeyword == null) {
+      chips.add(_metaChip(Icons.lightbulb_outline, item.generationReason!, Colors.amber));
     }
 
     // Short platform + duration
