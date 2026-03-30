@@ -115,6 +115,12 @@ class ProjectSettings(BaseModel):
         default=None,
         description="Local path to cloned repository"
     )
+    analytics_enabled: bool = Field(
+        default=False,
+        description="Whether cookie-free analytics tracking is enabled for this project. "
+                    "When enabled, a lightweight script (<1KB) is injected into the site layout "
+                    "to collect anonymous pageview data (no cookies, no IP storage, EU-hosted)."
+    )
 
     @model_validator(mode='before')
     @classmethod
@@ -185,6 +191,13 @@ class ConfirmProjectRequest(BaseModel):
         default=None,
         description="Additional configuration overrides"
     )
+    analytics_enabled: bool = Field(
+        default=False,
+        description="Enable cookie-free analytics. Injects a lightweight tracking script (<1KB) "
+                    "into your site layout. No cookies, no IP storage, EU-hosted. "
+                    "Required for pageview analytics, SEO performance tracking, and content insights "
+                    "in the dashboard."
+    )
 
 
 class UpdateProjectRequest(BaseModel):
@@ -198,6 +211,10 @@ class UpdateProjectRequest(BaseModel):
     config_overrides: Optional[ProjectConfigOverrides] = Field(
         default=None,
         description="Update configuration overrides"
+    )
+    analytics_enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable or disable cookie-free analytics for this project"
     )
 
 

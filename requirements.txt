@@ -42,6 +42,9 @@ composio-crewai>=0.2.0
 # Instagram Reels
 instagrapi>=2.0.0
 
+# Content Quality Analysis
+textstat>=0.7.0
+
 # Utilities
 pytest
 pytest-asyncio

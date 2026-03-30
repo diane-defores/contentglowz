@@ -10,7 +10,90 @@ Levels:
   4. track_serp_positions     — post-publication SERP ranking tracker
 """
 
+import logging
+import time
+from collections import defaultdict
 from typing import Optional
+
+
+DFS_STANDARD_ENRICH_THRESHOLD = 25
+DFS_STANDARD_KEYWORD_SEED_THRESHOLD = 3
+DFS_STANDARD_COMPETITOR_RANKED_LIMIT = 30
+
+logger = logging.getLogger(__name__)
+DATAFORSEO_COST_PER_TASK = {"standard": 0.05, "live": 0.075}
+
+DATAFORSEO_USAGE_METRICS: dict[str, dict[str, float]] = defaultdict(
+    lambda: {
+        "standard_calls": 0,
+        "live_calls": 0,
+        "standard_time": 0.0,
+        "live_time": 0.0,
+        "estimated_cost": 0.0,
+    }
+)
+
+
+def _record_metric(pipeline: str, mode: str, duration: float, task_count: int = 1) -> None:
+    metrics = DATAFORSEO_USAGE_METRICS[pipeline]
+    metrics[f"{mode}_calls"] += 1
+    metrics[f"{mode}_time"] += duration
+    cost = DATAFORSEO_COST_PER_TASK.get(mode, 0.075) * task_count
+    metrics["estimated_cost"] += cost
+    logger.debug(
+        "DataForSEO %s %s call took %.3fs (%d tasks ≈ $%.3f) (total: std=%d live=%d ≈ $%.2f)",
+        pipeline,
+        mode,
+        duration,
+        task_count,
+        cost,
+        metrics["standard_calls"],
+        metrics["live_calls"],
+        metrics["estimated_cost"],
+    )
+
+
+def _log_pipeline_metrics(pipeline: str) -> None:
+    metrics = DATAFORSEO_USAGE_METRICS.get(pipeline)
+    if not metrics:
+        return
+    logger.info(
+        "DataForSEO %s metrics → standard: %d calls %.2fs; live: %d calls %.2fs; estimated cost: $%.3f",
+        pipeline,
+        metrics["standard_calls"],
+        metrics["standard_time"],
+        metrics["live_calls"],
+        metrics["live_time"],
+        metrics["estimated_cost"],
+    )
+
+
+def get_total_estimated_cost() -> float:
+    """Return the total estimated DataForSEO cost across all pipelines."""
+    return sum(m["estimated_cost"] for m in DATAFORSEO_USAGE_METRICS.values())
+
+
+def flush_metrics() -> dict[str, dict[str, float]]:
+    """Return current DFS usage metrics and reset counters.
+
+    Call after each job run to capture costs for persistence.
+    The scheduler uses this to feed status.cost_tracker.log_job_costs().
+    """
+    snapshot = {k: dict(v) for k, v in DATAFORSEO_USAGE_METRICS.items()}
+    DATAFORSEO_USAGE_METRICS.clear()
+    return snapshot
+
+
+def _measure_call(pipeline: str, mode: str, call_fn, task_count: int = 1):
+    start = time.perf_counter()
+    try:
+        result = call_fn()
+    except Exception:
+        _record_metric(pipeline, mode, time.perf_counter() - start, task_count)
+        raise
+    else:
+        _record_metric(pipeline, mode, time.perf_counter() - start, task_count)
+        return result
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -71,6 +154,9 @@ def ingest_newsletter_inbox(
 
     # Try LLM extraction, fall back to naive subject-line approach
     items = _extract_with_llm(emails, persona_context)
+    _log_pipeline_metrics("competitor.domain_intersection")
+    _log_pipeline_metrics("competitor.ranked_keywords")
+
     if not items:
         print("⚠ LLM extraction returned no results, falling back to subject-line mode")
         items = _extract_naive(emails)
@@ -255,6 +341,7 @@ def ingest_seo_keywords(
     location: str = "us",
     language: str = "en",
     project_id: Optional[str] = None,
+    force_standard: bool = False,
 ) -> int:
     """Discover SEO keyword opportunities via DataForSEO and ingest into Idea Pool.
 
@@ -279,59 +366,161 @@ def ingest_seo_keywords(
         return 0
 
     print(f"🔍 Discovering keywords for: {seed_keywords}")
+    use_standard = force_standard or len(seed_keywords) >= DFS_STANDARD_KEYWORD_SEED_THRESHOLD
 
-    # Step 1: Get keyword ideas from DFS
+    # Step 1: Get keyword ideas from DFS (all seeds in one call — 1 task instead of N)
     all_keywords = []
-    for seed in seed_keywords[:5]:  # max 5 seeds
-        try:
-            ideas = client.keyword_ideas(
-                keywords=[seed],
-                location=location,
-                language=language,
-                limit=max_keywords,
+    seeds = seed_keywords[:5]
+    try:
+        if use_standard:
+            print(f"⏳ Using DataForSEO Standard for keyword ideas: {seeds}")
+            ideas = _measure_call(
+                "seo_keywords.ideas",
+                "standard",
+                lambda: client.keyword_ideas_standard(
+                    keywords=seeds,
+                    location=location,
+                    language=language,
+                    limit=max_keywords,
+                    timeout_seconds=30,
+                    poll_interval_seconds=2.0,
+                ),
             )
-            for item in ideas:
-                kd = item.get("keyword_data", {})
-                ki = kd.get("keyword_info", {})
-                kw = kd.get("keyword", "")
-                if kw and ki.get("search_volume", 0) > 0:
-                    all_keywords.append({
-                        "keyword": kw,
-                        "volume": ki.get("search_volume", 0),
-                        "difficulty": ki.get("keyword_difficulty", 0),
-                        "cpc": ki.get("cpc", 0),
-                        "competition": ki.get("competition"),
-                        "intent": ki.get("search_intent"),
-                        "monthly_searches": ki.get("monthly_searches", []),
-                    })
-        except Exception as e:
-            print(f"⚠ keyword_ideas failed for '{seed}': {e}")
+        else:
+            ideas = _measure_call(
+                "seo_keywords.ideas",
+                "live",
+                lambda: client.keyword_ideas(
+                    keywords=seeds,
+                    location=location,
+                    language=language,
+                    limit=max_keywords,
+                ),
+            )
+        for item in ideas:
+            kd = item.get("keyword_data", {})
+            ki = kd.get("keyword_info", {})
+            kw = kd.get("keyword", "")
+            if kw and ki.get("search_volume", 0) > 0:
+                all_keywords.append({
+                    "keyword": kw,
+                    "volume": ki.get("search_volume", 0),
+                    "difficulty": ki.get("keyword_difficulty", 0),
+                    "cpc": ki.get("cpc", 0),
+                    "competition": ki.get("competition"),
+                    "intent": ki.get("search_intent"),
+                    "monthly_searches": ki.get("monthly_searches", []),
+                })
+    except Exception as e:
+        if use_standard:
+            print(f"⚠ keyword_ideas standard failed, falling back to live: {e}")
+            try:
+                ideas = _measure_call(
+                    "seo_keywords.ideas",
+                    "live",
+                    lambda: client.keyword_ideas(
+                        keywords=seeds,
+                        location=location,
+                        language=language,
+                        limit=max_keywords,
+                    ),
+                )
+                for item in ideas:
+                    kd = item.get("keyword_data", {})
+                    ki = kd.get("keyword_info", {})
+                    kw = kd.get("keyword", "")
+                    if kw and ki.get("search_volume", 0) > 0:
+                        all_keywords.append({
+                            "keyword": kw,
+                            "volume": ki.get("search_volume", 0),
+                            "difficulty": ki.get("keyword_difficulty", 0),
+                            "cpc": ki.get("cpc", 0),
+                            "competition": ki.get("competition"),
+                            "intent": ki.get("search_intent"),
+                            "monthly_searches": ki.get("monthly_searches", []),
+                        })
+            except Exception as live_error:
+                print(f"⚠ keyword_ideas failed: {live_error}")
+        else:
+            print(f"⚠ keyword_ideas failed: {e}")
 
-    # Step 2: Also get keyword suggestions (autocomplete-style)
-    for seed in seed_keywords[:3]:
-        try:
-            suggestions = client.keyword_suggestions(
-                keyword=seed,
-                location=location,
-                language=language,
-                limit=20,
+    # Step 2: Also get keyword suggestions (autocomplete-style) — batched in 1 POST
+    suggestion_seeds = seed_keywords[:3]
+    try:
+        if use_standard:
+            print(f"⏳ Using DataForSEO Standard for keyword suggestions: {suggestion_seeds}")
+            suggestions = _measure_call(
+                "seo_keywords.suggestions",
+                "standard",
+                lambda: client.keyword_suggestions_batch_standard(
+                    keywords=suggestion_seeds,
+                    location=location,
+                    language=language,
+                    limit=20,
+                    timeout_seconds=30,
+                    poll_interval_seconds=2.0,
+                ),
+                task_count=len(suggestion_seeds),
             )
-            for item in suggestions:
-                kd = item.get("keyword_data", {})
-                ki = kd.get("keyword_info", {})
-                kw = kd.get("keyword", "")
-                if kw and ki.get("search_volume", 0) > 0:
-                    all_keywords.append({
-                        "keyword": kw,
-                        "volume": ki.get("search_volume", 0),
-                        "difficulty": ki.get("keyword_difficulty", 0),
-                        "cpc": ki.get("cpc", 0),
-                        "competition": ki.get("competition"),
-                        "intent": ki.get("search_intent"),
-                        "keyword_type": "suggestion",
-                    })
-        except Exception as e:
-            print(f"⚠ keyword_suggestions failed for '{seed}': {e}")
+        else:
+            suggestions = _measure_call(
+                "seo_keywords.suggestions",
+                "live",
+                lambda: client.keyword_suggestions_batch(
+                    keywords=suggestion_seeds,
+                    location=location,
+                    language=language,
+                    limit=20,
+                ),
+                task_count=len(suggestion_seeds),
+            )
+        for item in suggestions:
+            kd = item.get("keyword_data", {})
+            ki = kd.get("keyword_info", {})
+            kw = kd.get("keyword", "")
+            if kw and ki.get("search_volume", 0) > 0:
+                all_keywords.append({
+                    "keyword": kw,
+                    "volume": ki.get("search_volume", 0),
+                    "difficulty": ki.get("keyword_difficulty", 0),
+                    "cpc": ki.get("cpc", 0),
+                    "competition": ki.get("competition"),
+                    "intent": ki.get("search_intent"),
+                    "keyword_type": "suggestion",
+                })
+    except Exception as e:
+        if use_standard:
+            print(f"⚠ keyword_suggestions standard failed, falling back to live: {e}")
+            try:
+                suggestions = _measure_call(
+                    "seo_keywords.suggestions",
+                    "live",
+                    lambda: client.keyword_suggestions_batch(
+                        keywords=suggestion_seeds,
+                        location=location,
+                        language=language,
+                        limit=20,
+                    ),
+                    task_count=len(suggestion_seeds),
+                )
+                for item in suggestions:
+                    kd = item.get("keyword_data", {})
+                    ki = kd.get("keyword_info", {})
+                    kw = kd.get("keyword", "")
+                    if kw and ki.get("search_volume", 0) > 0:
+                        all_keywords.append({
+                            "keyword": kw,
+                            "volume": ki.get("search_volume", 0),
+                            "difficulty": ki.get("keyword_difficulty", 0),
+                            "cpc": ki.get("cpc", 0),
+                            "competition": ki.get("competition"),
+                            "intent": ki.get("search_intent"),
+                            "keyword_type": "suggestion",
+                        })
+            except Exception as live_error:
+                print(f"⚠ keyword_suggestions failed: {live_error}")
+        else:
+            print(f"⚠ keyword_suggestions failed: {e}")
 
     if not all_keywords:
         print("ℹ️  No keywords discovered")
@@ -387,6 +576,8 @@ def ingest_seo_keywords(
         items=items,
         project_id=project_id,
     )
+    _log_pipeline_metrics("seo_keywords.ideas")
+    _log_pipeline_metrics("seo_keywords.suggestions")
     print(f"✅ Ingested {count} SEO keyword ideas (DataForSEO)")
     return count
 
@@ -416,6 +607,7 @@ def enrich_ideas(
     location: str = "us",
     language: str = "en",
     project_id: Optional[str] = None,
+    force_standard: bool = False,
 ) -> int:
     """Enrich raw ideas in the Idea Pool with real SEO metrics from DataForSEO.
 
@@ -452,15 +644,50 @@ def enrich_ideas(
     # Batch keywords for overview (DFS supports up to 1000 per call)
     keywords = [idea["title"] for idea in ideas]
 
+    use_standard = force_standard or len(keywords) >= DFS_STANDARD_ENRICH_THRESHOLD
     try:
-        overview_results = client.keyword_overview(
-            keywords=keywords,
-            location=location,
-            language=language,
-        )
+        if use_standard:
+            print(f"⏳ Using DataForSEO Standard mode for {len(keywords)} keyword overviews")
+            overview_results = _measure_call(
+                "enrich.keyword_overview",
+                "standard",
+                lambda: client.keyword_overview_standard(
+                    keywords=keywords,
+                    location=location,
+                    language=language,
+                    timeout_seconds=30,
+                    poll_interval_seconds=2.0,
+                ),
+            )
+        else:
+            overview_results = _measure_call(
+                "enrich.keyword_overview",
+                "live",
+                lambda: client.keyword_overview(
+                    keywords=keywords,
+                    location=location,
+                    language=language,
+                ),
+            )
     except Exception as e:
-        print(f"⚠ keyword_overview failed: {e}")
-        return 0
+        if use_standard:
+            print(f"⚠ keyword_overview standard failed, falling back to live: {e}")
+            try:
+                overview_results = _measure_call(
+                    "enrich.keyword_overview",
+                    "live",
+                    lambda: client.keyword_overview(
+                        keywords=keywords,
+                        location=location,
+                        language=language,
+                    ),
+                )
+            except Exception as live_error:
+                print(f"⚠ keyword_overview failed: {live_error}")
+                return 0
+        else:
+            print(f"⚠ keyword_overview failed: {e}")
+            return 0
 
     # Build lookup: keyword → metrics
     metrics_map = {}
@@ -524,9 +751,9 @@ def enrich_ideas(
             status="enriched",
             tags=_build_seo_tags(metrics),
         )
-        enriched_count += 1
-
+    enriched_count += 1
     print(f"✅ Enriched {enriched_count} ideas with DataForSEO metrics")
+    _log_pipeline_metrics("enrich.keyword_overview")
     return enriched_count
 
 
@@ -542,6 +769,7 @@ def ingest_competitor_watch(
     location: str = "us",
     language: str = "en",
     project_id: Optional[str] = None,
+    force_standard: bool = False,
 ) -> int:
     """Analyze competitor domains via DataForSEO and ingest content gaps as ideas.
 
@@ -567,6 +795,8 @@ def ingest_competitor_watch(
         return 0
 
     print(f"🔎 Analyzing competitors: {competitor_domains}")
+    use_standard_domain = force_standard or max_gaps >= DFS_STANDARD_COMPETITOR_RANKED_LIMIT
+    use_standard_ranked = force_standard or max_gaps >= DFS_STANDARD_COMPETITOR_RANKED_LIMIT
     items = []
 
     # Strategy 1: Domain intersection — find gaps
@@ -575,84 +805,139 @@ def ingest_competitor_watch(
         for i, comp in enumerate(competitor_domains[:19], 2):
             targets[str(i)] = comp
 
+        intersection = []
         try:
-            intersection = client.domain_intersection(
-                targets=targets,
-                location=location,
-                language=language,
-                limit=max_gaps * 2,  # fetch extra, filter below
+            if use_standard_domain:
+                print("⏳ Using DataForSEO Standard mode for competitor domain intersection")
+                intersection = _measure_call(
+                    "competitor.domain_intersection",
+                    "standard",
+                    lambda: client.domain_intersection_standard(
+                        targets=targets,
+                        location=location,
+                        language=language,
+                        limit=max_gaps * 2,
+                        timeout_seconds=30,
+                        poll_interval_seconds=2.0,
+                    ),
+                )
+            else:
+                intersection = _measure_call(
+                    "competitor.domain_intersection",
+                    "live",
+                    lambda: client.domain_intersection(
+                        targets=targets,
+                        location=location,
+                        language=language,
+                        limit=max_gaps * 2,
+                    ),
+                )
+        except Exception as e:
+            if use_standard_domain:
+                print(f"⚠ Domain intersection standard failed, falling back to live: {e}")
+                try:
+                    intersection = _measure_call(
+                        "competitor.domain_intersection",
+                        "live",
+                        lambda: client.domain_intersection(
+                            targets=targets,
+                            location=location,
+                            language=language,
+                            limit=max_gaps * 2,
+                        ),
+                    )
+                except Exception as live_error:
+                    print(f"⚠ Domain intersection failed: {live_error}")
+                    intersection = []
+            else:
+                print(f"⚠ Domain intersection failed: {e}")
+                intersection = []
+
+        for item in intersection:
+            kd = item.get("keyword_data", {})
+            ki = kd.get("keyword_info", {})
+            kw = kd.get("keyword", "")
+            intersections = item.get("intersection_result", {})
+
+            # Target position
+            target_pos = intersections.get("1")
+            target_rank = target_pos.get("rank_absolute") if target_pos else None
+
+            # Only gaps: target doesn't rank (or ranks > 50)
+            if target_rank is not None and target_rank <= 50:
+                continue
+
+            volume = ki.get("search_volume", 0)
+            difficulty = ki.get("keyword_difficulty", 0)
+            if volume < 10:
+                continue
+
+            # Which competitors rank for this?
+            ranking_comps = []
+            for key, val in intersections.items():
+                if key == "1" or not val:
+                    continue
+                idx = int(key) - 2
+                if 0 <= idx < len(competitor_domains):
+                    pos = val.get("rank_absolute", 100)
+                    ranking_comps.append({
+                        "domain": competitor_domains[idx],
+                        "position": pos,
+                    })
+
+            opportunity = round(
+                (volume / 1000) * ((100 - difficulty) / 100), 2
             )
 
-            for item in intersection:
-                kd = item.get("keyword_data", {})
-                ki = kd.get("keyword_info", {})
-                kw = kd.get("keyword", "")
-                intersections = item.get("intersection_result", {})
+            items.append({
+                "title": kw,
+                "raw_data": {
+                    "gap_type": "domain_intersection",
+                    "target_domain": target_domain,
+                    "competitors_ranking": ranking_comps,
+                    "target_rank": target_rank,
+                },
+                "seo_signals": {
+                    "source": "dataforseo",
+                    "volume": volume,
+                    "difficulty": difficulty,
+                    "cpc": ki.get("cpc", 0),
+                    "intent": ki.get("search_intent"),
+                    "opportunity_score": opportunity,
+                },
+                "priority_score": opportunity,
+                "tags": ["competitor_gap", f"vs:{competitor_domains[0]}"],
+            })
 
-                # Target position
-                target_pos = intersections.get("1")
-                target_rank = target_pos.get("rank_absolute") if target_pos else None
-
-                # Only gaps: target doesn't rank (or ranks > 50)
-                if target_rank is not None and target_rank <= 50:
-                    continue
-
-                volume = ki.get("search_volume", 0)
-                difficulty = ki.get("keyword_difficulty", 0)
-                if volume < 10:
-                    continue
-
-                # Which competitors rank for this?
-                ranking_comps = []
-                for key, val in intersections.items():
-                    if key == "1" or not val:
-                        continue
-                    idx = int(key) - 2
-                    if 0 <= idx < len(competitor_domains):
-                        pos = val.get("rank_absolute", 100)
-                        ranking_comps.append({
-                            "domain": competitor_domains[idx],
-                            "position": pos,
-                        })
-
-                opportunity = round(
-                    (volume / 1000) * ((100 - difficulty) / 100), 2
-                )
-
-                items.append({
-                    "title": kw,
-                    "raw_data": {
-                        "gap_type": "domain_intersection",
-                        "target_domain": target_domain,
-                        "competitors_ranking": ranking_comps,
-                        "target_rank": target_rank,
-                    },
-                    "seo_signals": {
-                        "source": "dataforseo",
-                        "volume": volume,
-                        "difficulty": difficulty,
-                        "cpc": ki.get("cpc", 0),
-                        "intent": ki.get("search_intent"),
-                        "opportunity_score": opportunity,
-                    },
-                    "priority_score": opportunity,
-                    "tags": ["competitor_gap", f"vs:{competitor_domains[0]}"],
-                })
-
-            print(f"  Found {len(items)} gaps from domain intersection")
-
-        except Exception as e:
-            print(f"⚠ Domain intersection failed: {e}")
-
+        print(f"  Found {len(items)} gaps from domain intersection")
     # Strategy 2: Competitor ranked keywords — discover what they target
     for comp_domain in competitor_domains[:3]:
         try:
-            ranked = client.ranked_keywords(
-                target=comp_domain,
-                location=location,
-                language=language,
-                limit=30,
-            )
+            if use_standard_ranked:
+                print(f"⏳ Using DataForSEO Standard mode for ranked keywords: {comp_domain}")
+                ranked = _measure_call(
+                    "competitor.ranked_keywords",
+                    "standard",
+                    lambda: client.ranked_keywords_standard(
+                        target=comp_domain,
+                        location=location,
+                        language=language,
+                        limit=DFS_STANDARD_COMPETITOR_RANKED_LIMIT,
+                        timeout_seconds=30,
+                        poll_interval_seconds=2.0,
+                    ),
+                )
+            else:
+                ranked = _measure_call(
+                    "competitor.ranked_keywords",
+                    "live",
+                    lambda: client.ranked_keywords(
+                        target=comp_domain,
+                        location=location,
+                        language=language,
+                        limit=DFS_STANDARD_COMPETITOR_RANKED_LIMIT,
+                    ),
+                )
 
             for item in ranked:
                 kd = item.get("keyword_data", {})
@@ -665,7 +950,6 @@ def ingest_competitor_watch(
                 if volume < 50 or not kw:
                     continue
 
-                # Skip if we already have this keyword from intersection
                 if any(i["title"].lower() == kw.lower() for i in items):
                     continue
 
@@ -695,8 +979,62 @@ def ingest_competitor_watch(
             print(f"  Found keywords from {comp_domain}")
 
         except Exception as e:
-            print(f"⚠ ranked_keywords failed for {comp_domain}: {e}")
+            if use_standard_ranked:
+                print(f"⚠ ranked_keywords standard failed for {comp_domain}, falling back to live: {e}")
+                try:
+                    ranked = _measure_call(
+                        "competitor.ranked_keywords",
+                        "live",
+                        lambda: client.ranked_keywords(
+                            target=comp_domain,
+                            location=location,
+                            language=language,
+                            limit=DFS_STANDARD_COMPETITOR_RANKED_LIMIT,
+                        ),
+                    )
+                except Exception as live_error:
+                    print(f"⚠ ranked_keywords failed for {comp_domain}: {live_error}")
+                    continue
+            else:
+                print(f"⚠ ranked_keywords failed for {comp_domain}: {e}")
+                continue
 
+            for item in ranked:
+                kd = item.get("keyword_data", {})
+                ki = kd.get("keyword_info", {})
+                kw = kd.get("keyword", "")
+                volume = ki.get("search_volume", 0)
+                difficulty = ki.get("keyword_difficulty", 0)
+                rank_pos = item.get("ranked_serp_element", {}).get("serp_item", {}).get("rank_absolute", 0)
+
+                if volume < 50 or not kw:
+                    continue
+
+                if any(i["title"].lower() == kw.lower() for i in items):
+                    continue
+
+                opportunity = round(
+                    (volume / 1000) * ((100 - difficulty) / 100), 2
+                )
+
+                items.append({
+                    "title": kw,
+                    "raw_data": {
+                        "gap_type": "competitor_ranked",
+                        "competitor_domain": comp_domain,
+                        "competitor_position": rank_pos,
+                    },
+                    "seo_signals": {
+                        "source": "dataforseo",
+                        "volume": volume,
+                        "difficulty": difficulty,
+                        "cpc": ki.get("cpc", 0),
+                        "intent": ki.get("search_intent"),
+                        "opportunity_score": opportunity,
+                    },
+                    "priority_score": opportunity,
+                    "tags": ["competitor_keyword", f"from:{comp_domain}"],
+                })
     if not items:
         print("ℹ️  No competitor gaps found")
         return 0
@@ -784,14 +1122,31 @@ def track_serp_positions(
     tracked = 0
     today = datetime.utcnow().strftime("%Y-%m-%d")
 
-    for item in trackable:
+    # Submit all SERP tasks in one batch via Standard queue ($0.05 vs $0.075/task)
+    keywords_to_track = [item["keyword"] for item in trackable]
+    try:
+        task_ids = client.serp_google_organic_batch_task_post(
+            keywords=keywords_to_track,
+            location=location,
+            language=language,
+            depth=100,
+        )
+    except Exception as e:
+        print(f"⚠ SERP batch submission failed: {e}")
+        return 0
+
+    task_map = dict(zip(task_ids, trackable))
+    print(f"  Submitted {len(task_ids)} SERP tasks (Standard queue)")
+    time.sleep(5)  # Initial wait for Standard queue processing
+
+    for task_id, item in task_map.items():
         try:
-            serp = client.serp_google_organic(
-                keyword=item["keyword"],
-                location=location,
-                language=language,
-                depth=100,  # check top 100
+            serp_results = client.wait_for_task_results(
+                f"serp/google/organic/task_get/advanced/{task_id}",
+                timeout_seconds=30,
+                poll_interval_seconds=3.0,
             )
+            serp = serp_results[0] if serp_results else {}
 
             # Find our position
             position = None
@@ -816,7 +1171,6 @@ def track_serp_positions(
                 "url_found": our_url,
                 "keyword": item["keyword"],
             })
-            # Keep last 90 days of history
             history = history[-90:]
             meta["serp_history"] = history
             meta["last_serp_check"] = today

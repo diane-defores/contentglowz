@@ -334,7 +334,8 @@ class ProjectStore:
         name: Optional[str] = None,
         description: Optional[str] = None,
         content_directories: Optional[List[ContentDirectoryConfig]] = None,
-        config_overrides: Optional[ProjectConfigOverrides] = None
+        config_overrides: Optional[ProjectConfigOverrides] = None,
+        analytics_enabled: Optional[bool] = None,
     ) -> Optional[Project]:
         """
         Update project details.
@@ -345,6 +346,7 @@ class ProjectStore:
             description: New description
             content_directories: New content directories config
             config_overrides: New config overrides
+            analytics_enabled: Enable/disable cookie-free analytics
 
         Returns:
             Updated project
@@ -375,12 +377,14 @@ class ProjectStore:
             )
 
         # Update settings if needed
-        if content_directories is not None or config_overrides:
+        if content_directories is not None or config_overrides or analytics_enabled is not None:
             settings = project.settings or ProjectSettings()
             if content_directories is not None:
                 settings.content_directories = content_directories
             if config_overrides:
                 settings.config_overrides = config_overrides
+            if analytics_enabled is not None:
+                settings.analytics_enabled = analytics_enabled
             await self.update_settings(project_id, settings)
 
         return await self.get_by_id(project_id)

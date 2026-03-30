@@ -8,10 +8,13 @@ Also auto-transitions scheduled content whose scheduledFor has passed.
 
 import asyncio
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
 from status.service import get_status_service, ContentNotFoundError
+
+logger = logging.getLogger(__name__)
 
 
 class SchedulerService:
@@ -62,6 +65,8 @@ class SchedulerService:
             self._reconcile_counter = 0
             await self._reconcile_frequency_jobs(svc)
 
+    _DFS_JOB_TYPES = {"ingest_seo", "enrich_ideas", "ingest_competitors", "track_serp"}
+
     async def _dispatch_job(self, job: dict) -> None:
         """Dispatch a due job to the appropriate robot."""
         svc = get_status_service()
@@ -76,6 +81,14 @@ class SchedulerService:
             last_run_at=datetime.utcnow().isoformat(),
             last_run_status="running",
         )
+
+        # Reset DFS metrics before DFS jobs so we capture only this job's costs
+        if job_type in self._DFS_JOB_TYPES:
+            try:
+                from agents.sources.ingest import flush_metrics
+                flush_metrics()
+            except ImportError:
+                pass
 
         try:
             if job_type == "newsletter":
@@ -103,6 +116,9 @@ class SchedulerService:
             else:
                 print(f"⚠ Unknown job type: {job_type}")
 
+            # Persist DFS API costs for this job
+            self._persist_dfs_costs(job)
+
             # Mark completed and calculate next run
             next_run = self._calculate_next_run(job)
             svc.update_schedule_job(
@@ -113,6 +129,9 @@ class SchedulerService:
             print(f"✅ Job {job_id} completed. Next run: {next_run}")
 
         except Exception as e:
+            # Still capture costs even on failure
+            self._persist_dfs_costs(job)
+
             print(f"❌ Job {job_id} failed: {e}")
             next_run = self._calculate_next_run(job)
             svc.update_schedule_job(
@@ -120,6 +139,25 @@ class SchedulerService:
                 last_run_status="failed",
                 next_run_at=next_run,
             )
+
+    def _persist_dfs_costs(self, job: dict) -> None:
+        """Flush in-memory DFS metrics and persist to cost log DB."""
+        if job["job_type"] not in self._DFS_JOB_TYPES:
+            return
+        try:
+            from agents.sources.ingest import flush_metrics
+            from status.cost_tracker import log_job_costs
+
+            metrics = flush_metrics()
+            if metrics:
+                log_job_costs(
+                    job_id=job["id"],
+                    project_id=job.get("project_id"),
+                    job_type=job["job_type"],
+                    metrics=metrics,
+                )
+        except Exception as e:
+            logger.warning("Failed to persist DFS costs for job %s: %s", job["id"], e)
 
     async def _run_newsletter_job(self, job: dict) -> None:
         """Run a newsletter generation job."""
@@ -426,13 +464,25 @@ class SchedulerService:
             return
 
         try:
-            from agents.sources.ingest import ingest_seo_keywords
+            from agents.sources.ingest import (
+                DFS_STANDARD_KEYWORD_SEED_THRESHOLD,
+                ingest_seo_keywords,
+            )
 
+            # Scheduler jobs always use Standard queue ($0.05 vs $0.075/task)
+            force_standard = config.get("force_standard", True)
+            logger.info(
+                "ingest_seo job %s force_standard=%s seed_count=%d",
+                job.get("id"),
+                force_standard,
+                len(seed_keywords),
+            )
             count = await asyncio.to_thread(
                 ingest_seo_keywords,
                 seed_keywords=seed_keywords,
                 max_keywords=config.get("max_keywords", 30),
                 project_id=job.get("project_id"),
+                force_standard=force_standard,
             )
             print(f"✅ SEO keyword ingestion: {count} ideas")
 
@@ -444,14 +494,27 @@ class SchedulerService:
         config = job.get("configuration", {})
 
         try:
-            from agents.sources.ingest import enrich_ideas
+            from agents.sources.ingest import (
+                DFS_STANDARD_ENRICH_THRESHOLD,
+                enrich_ideas,
+            )
 
+            batch_size = config.get("batch_size", 50)
+            # Scheduler jobs always use Standard queue ($0.05 vs $0.075/task)
+            force_standard = config.get("force_standard", True)
+            logger.info(
+                "enrich_ideas job %s batch_size=%d force_standard=%s",
+                job.get("id"),
+                batch_size,
+                force_standard,
+            )
             count = await asyncio.to_thread(
                 enrich_ideas,
-                batch_size=config.get("batch_size", 50),
+                batch_size=batch_size,
                 location=config.get("location", "us"),
                 language=config.get("language", "en"),
                 project_id=job.get("project_id"),
+                force_standard=force_standard,
             )
             print(f"✅ Idea enrichment: {count} ideas enriched")
 
@@ -469,16 +532,29 @@ class SchedulerService:
             return
 
         try:
-            from agents.sources.ingest import ingest_competitor_watch
+            from agents.sources.ingest import (
+                DFS_STANDARD_COMPETITOR_RANKED_LIMIT,
+                ingest_competitor_watch,
+            )
 
+            max_gaps = config.get("max_gaps", 50)
+            # Scheduler jobs always use Standard queue ($0.05 vs $0.075/task)
+            force_standard = config.get("force_standard", True)
+            logger.info(
+                "ingest_competitors job %s max_gaps=%d force_standard=%s",
+                job.get("id"),
+                max_gaps,
+                force_standard,
+            )
             count = await asyncio.to_thread(
                 ingest_competitor_watch,
                 target_domain=target_domain or "",
                 competitor_domains=competitor_domains,
-                max_gaps=config.get("max_gaps", 50),
+                max_gaps=max_gaps,
                 location=config.get("location", "us"),
                 language=config.get("language", "en"),
                 project_id=job.get("project_id"),
+                force_standard=force_standard,
             )
             print(f"✅ Competitor intelligence: {count} gap ideas ingested")
 

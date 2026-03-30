@@ -217,6 +217,9 @@ class ProjectOnboardingService:
         if request.config_overrides:
             settings.config_overrides = request.config_overrides
 
+        # Apply analytics opt-in
+        settings.analytics_enabled = request.analytics_enabled
+
         # Mark as completed
         settings.onboarding_status = OnboardingStatus.COMPLETED
 

@@ -5,71 +5,94 @@ Tools for quality checking, consistency validation, markdown formatting, and pub
 from typing import Dict, List, Any, Optional
 import re
 
+try:
+    import textstat
+    TEXTSTAT_AVAILABLE = True
+except ImportError:
+    TEXTSTAT_AVAILABLE = False
+
 
 class QualityChecker:
-    """Check content quality and readability."""
-    
+    """Check content quality and readability using textstat metrics."""
+
     def check_quality(
         self,
         content: str,
-        min_words: int = 1500
+        min_words: int = 1500,
+        language: str = "en",
     ) -> Dict[str, Any]:
-        """
-        Check content quality metrics.
-        
+        """Check content quality metrics with real readability scores.
+
         Args:
             content: Content to check
             min_words: Minimum word count requirement
-            
+            language: Text language (default: en)
+
         Returns:
             Quality analysis results
         """
+        if TEXTSTAT_AVAILABLE and language != "en":
+            textstat.set_lang(language)
+
         words = content.split()
         word_count = len(words)
-        
-        # Count sentences (approximate)
         sentences = len(re.findall(r'[.!?]+', content))
-        
-        # Calculate average sentence length
         avg_sentence_length = word_count / sentences if sentences > 0 else 0
-        
-        # Count paragraphs
         paragraphs = len([p for p in content.split('\n\n') if p.strip()])
-        
-        # Quality scores
-        issues = []
-        
+
+        issues: List[str] = []
+
         if word_count < min_words:
             issues.append(f"Word count below minimum ({word_count}/{min_words})")
-        
         if avg_sentence_length > 25:
             issues.append("Average sentence length too high - reduce complexity")
-        
         if avg_sentence_length < 10:
             issues.append("Average sentence length too low - vary sentence structure")
-        
-        # Calculate readability score (simplified Flesch Reading Ease)
-        # Real implementation would use syllable counting
-        readability_score = 206.835 - (1.015 * avg_sentence_length)
-        
+
+        readability = self._compute_readability(content, avg_sentence_length)
+
+        flesch = readability["flesch_reading_ease"]
+        if flesch < 50:
+            issues.append(f"Flesch score {flesch} — too difficult for web content (target 60-70)")
+        elif flesch > 80:
+            issues.append(f"Flesch score {flesch} — may be too simplistic (target 60-70)")
+
         return {
             "word_count": word_count,
             "sentence_count": sentences,
             "paragraph_count": paragraphs,
             "avg_sentence_length": round(avg_sentence_length, 1),
-            "readability_score": round(readability_score, 1),
-            "readability_level": self._get_readability_level(readability_score),
+            **readability,
             "issues": issues,
-            "quality_grade": self._calculate_grade(word_count, min_words, avg_sentence_length, issues),
-            "recommendations": [
-                "Target 8th-9th grade reading level",
-                "Vary sentence length for rhythm",
-                "Use active voice in 80%+ of sentences",
-                "Break long paragraphs (max 4-5 sentences)",
-                "Add examples and concrete details"
-            ]
+            "quality_grade": self._calculate_grade(word_count, min_words, flesch, issues),
         }
-    
+
+    def _compute_readability(self, content: str, avg_sentence_length: float) -> Dict[str, Any]:
+        """Compute readability metrics via textstat, with manual fallback."""
+        if TEXTSTAT_AVAILABLE:
+            flesch = textstat.flesch_reading_ease(content)
+            return {
+                "flesch_reading_ease": round(flesch, 1),
+                "flesch_kincaid_grade": round(textstat.flesch_kincaid_grade(content), 1),
+                "gunning_fog": round(textstat.gunning_fog(content), 1),
+                "smog_index": round(textstat.smog_index(content), 1),
+                "coleman_liau": round(textstat.coleman_liau_index(content), 1),
+                "reading_time_sec": round(textstat.reading_time(content, ms_per_char=14.69)),
+                "readability_level": self._get_readability_level(flesch),
+            }
+
+        # Fallback: incomplete Flesch (no syllable count)
+        flesch = round(206.835 - (1.015 * avg_sentence_length), 1)
+        return {
+            "flesch_reading_ease": flesch,
+            "flesch_kincaid_grade": None,
+            "gunning_fog": None,
+            "smog_index": None,
+            "coleman_liau": None,
+            "reading_time_sec": None,
+            "readability_level": self._get_readability_level(flesch),
+        }
+
     def _get_readability_level(self, score: float) -> str:
         """Convert Flesch score to reading level."""
         if score >= 90:
@@ -84,19 +107,20 @@ class QualityChecker:
             return "10th-12th grade (fairly difficult)"
         else:
             return "College level (difficult)"
-    
-    def _calculate_grade(self, word_count: int, min_words: int, avg_sent: float, issues: List[str]) -> str:
+
+    def _calculate_grade(self, word_count: int, min_words: int, flesch: float, issues: List[str]) -> str:
         """Calculate overall quality grade."""
         score = 100
-        
+
         if word_count < min_words:
             score -= 20
-        
-        if avg_sent > 25 or avg_sent < 10:
+        if flesch < 50 or flesch > 80:
             score -= 15
-        
+        elif flesch < 60 or flesch > 70:
+            score -= 5
+
         score -= len(issues) * 5
-        
+
         if score >= 90:
             return "A"
         elif score >= 80:

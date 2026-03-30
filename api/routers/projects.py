@@ -250,7 +250,8 @@ async def update_project(
         name=request.name,
         description=request.description,
         content_directories=request.content_directories,
-        config_overrides=request.config_overrides
+        config_overrides=request.config_overrides,
+        analytics_enabled=request.analytics_enabled,
     )
 
     if not project:

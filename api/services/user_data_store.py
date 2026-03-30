@@ -46,10 +46,7 @@ def _mask_api_keys(api_keys: dict[str, Any] | None) -> dict[str, Any] | None:
         return None
     safe: dict[str, Any] = {}
     for key, value in api_keys.items():
-        if key == "posthogHost":
-            safe[key] = value
-        else:
-            safe[key] = "••••••••" if value else None
+        safe[key] = "••••••••" if value else None
     return safe
 
 

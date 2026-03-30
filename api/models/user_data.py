@@ -21,8 +21,6 @@ class SafeApiKeys(BaseModel):
     consensus: str | None = None
     tavily: str | None = None
     groq: str | None = None
-    posthog: str | None = None
-    posthogHost: str | None = None
 
 
 class DashboardLayout(BaseModel):

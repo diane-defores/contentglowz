@@ -18,6 +18,8 @@ from .idea_pool import router as idea_pool_router
 from .affiliations import router as affiliations_router
 from .activity import router as activity_router
 from .work_domains import router as work_domains_router
+from .preview import router as preview_router
+from .analytics import analytics_public_router, analytics_router
 
 __all__ = [
     "mesh_router",
@@ -38,4 +40,7 @@ __all__ = [
     "affiliations_router",
     "activity_router",
     "work_domains_router",
+    "preview_router",
+    "analytics_public_router",
+    "analytics_router",
 ]
