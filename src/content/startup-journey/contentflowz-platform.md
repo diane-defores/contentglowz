@@ -24,7 +24,7 @@ The result? A platform that delivers professional results, remains completely cu
 
 | Platform | Core Purpose | Key AI Robots |
 |----------|--------------|---------------|
-| **SEO Robots** | End-to-end content creation, on-page SEO, and business ROI analysis | Research Analyst, Content Strategist, Copywriter, Technical SEO, Marketing Strategist, Editor |
+| **ContentFlow** | End-to-end content creation, on-page SEO, and business ROI analysis | Research Analyst, Content Strategist, Copywriter, Technical SEO, Marketing Strategist, Editor |
 | **Next.js Dashboard** | Real-time AI-driven conversation, artifact generation, content management | Conversational agents, UI-driven artifact renderers |
 | **Astro Website** | Publish the AI-generated articles as fast-loading, SEO-optimized pages | Content publishing pipeline, SEO-friendly markup |
 

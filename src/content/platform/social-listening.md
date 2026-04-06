@@ -227,4 +227,12 @@ Social Listening uses your existing Exa AI credits. Hacker News scanning is comp
 
 ---
 
+## Next Steps
+
+- **[Content Quality Scoring](./content-quality-scoring)** — Check readability before publishing the articles you write from Social Listening ideas
+- **[Link Previews](./link-previews)** — See rich previews for the source URLs attached to each idea
+- **[SEO Deployment](./seo-deployment)** — Turn your best ideas into full SEO-optimized articles
+
+---
+
 **Last updated:** March 30, 2026

@@ -125,7 +125,7 @@ import uvicorn
 
 # Initialize FastAPI
 app = FastAPI(
-    title="SEO Robots API",
+    title="ContentFlow API",
     description="AI-powered SEO automation agents",
     version="0.1.0",
     docs_url="/docs",  # Swagger UI
@@ -155,7 +155,7 @@ app.include_router(research.router, prefix="/api/research", tags=["Research"])
 @app.get("/")
 async def root():
     return {
-        "name": "SEO Robots API",
+        "name": "ContentFlow API",
         "version": "0.1.0",
         "status": "operational",
         "docs": "/docs",

@@ -174,4 +174,12 @@ No additional setup required. No external API keys needed. The scoring engine ru
 
 ---
 
+## Next Steps
+
+- **[SEO Deployment](./seo-deployment)** — Run the full content pipeline (quality scoring is built in)
+- **[Social Listening](./social-listening)** — Find trending topics to write about
+- **[Image Optimization](./image-optimization)** — Generate hero images for your scored content
+
+---
+
 **Last updated:** March 30, 2026

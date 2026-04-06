@@ -25,7 +25,7 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 - [Technical Tutorials](/tutorials/) - FastAPI, deployment, security
 
 **🚀 Startup Founders & Entrepreneurs:**
-- [Platform Documentation](/platform/) - Get started with SEO Robots
+- [Platform Documentation](/platform/) - Get started with ContentFlow
 - [Startup Journey Chronicles](/startup-journey/) - Revenue growth, strategic decisions
 - [Technical Optimization Hub](/technical-optimization/) - Cost optimization strategies
 
@@ -89,14 +89,14 @@ Welcome to our comprehensive knowledge base. We're building in public and docume
 
 ### 🚀 Platform Documentation
 
-*Focus: Get started with the SEO Robots platform - connect your website, run analysis, automate SEO*
+*Focus: Get started with the ContentFlow platform - connect your website, run analysis, automate SEO*
 
 **Key Guides:**
 - [Connect Your Website](/platform/connect-your-website) - Link your GitHub repo in 5 minutes
 - [API Reference](/platform/api-reference) - Complete endpoint documentation
 - [Understanding Your Analysis](/platform/understanding-analysis) - What the scores mean
 
-**Perfect for:** Anyone using the SEO Robots platform
+**Perfect for:** Anyone using the ContentFlow platform
 
 **Quick Start:**
 1. Add your GitHub URL

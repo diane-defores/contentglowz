@@ -115,4 +115,12 @@ Before sharing a link on social media, check what the preview card will look lik
 
 ---
 
+## Next Steps
+
+- **[Social Listening](./social-listening)** — Feed your calendar with trending topic ideas (previews enrich them automatically)
+- **[Content Quality Scoring](./content-quality-scoring)** — Score your articles before publishing
+- **[Connect Your Website](./connect-your-website)** — Set up your project to start using all platform features
+
+---
+
 **Last updated:** March 30, 2026

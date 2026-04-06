@@ -1,6 +1,6 @@
 ---
 title: "Platform Documentation"
-description: "Everything you need to get started with the SEO Robots platform. Connect your website, run SEO analysis, and automate your content strategy."
+description: "Everything you need to get started with ContentFlow. Connect your website, run SEO analysis, and automate your content strategy."
 pubDate: 2026-02-02
 author: "ContentFlow Team"
 tags: ["platform", "documentation", "getting started", "api"]
@@ -10,7 +10,7 @@ image: "/images/blog/platform-docs.jpg"
 
 # Platform Documentation
 
-Welcome to the SEO Robots platform. This documentation will help you connect your website, understand the analysis tools, and automate your SEO workflow.
+Welcome to the ContentFlow platform. This documentation will help you connect your website, understand the analysis tools, and automate your SEO workflow.
 
 ---
 
@@ -107,7 +107,7 @@ Automatically detected from lock files:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    SEO ROBOTS WORKFLOW                      │
+│                   CONTENTFLOW WORKFLOW                      │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  1. CONNECT                                                 │

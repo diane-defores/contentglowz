@@ -1,6 +1,6 @@
 ---
 title: "Connect Your Website"
-description: "Link your GitHub repository to the SEO Robots platform. Auto-detect your framework, configure content directories, and start analyzing in minutes."
+description: "Link your GitHub repository to ContentFlow. Auto-detect your framework, configure content directories, and start analyzing in minutes."
 pubDate: 2026-02-02
 author: "ContentFlow Team"
 tags: ["getting started", "onboarding", "github", "setup"]
