@@ -29,6 +29,7 @@ class SourceRobot(str, Enum):
     MANUAL = "manual"
     SHORT = "short"
     SOCIAL = "social"
+    DRIP = "drip"
 
 
 class PublishingStatus(str, Enum):

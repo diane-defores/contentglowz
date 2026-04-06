@@ -213,6 +213,35 @@ def init_db(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_ideas_status ON idea_pool(status);
         CREATE INDEX IF NOT EXISTS idx_ideas_priority ON idea_pool(priority_score);
         CREATE INDEX IF NOT EXISTS idx_ideas_project ON idea_pool(project_id);
+
+        CREATE TABLE IF NOT EXISTS drip_plans (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            project_id TEXT,
+            name TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'draft',
+
+            cadence_config TEXT NOT NULL DEFAULT '{}',
+            cluster_strategy TEXT NOT NULL DEFAULT '{}',
+            ssg_config TEXT NOT NULL DEFAULT '{}',
+            gsc_config TEXT,
+
+            total_items INTEGER NOT NULL DEFAULT 0,
+
+            started_at TEXT,
+            completed_at TEXT,
+            last_drip_at TEXT,
+            next_drip_at TEXT,
+
+            schedule_job_id TEXT,
+
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_drip_plans_status ON drip_plans(status);
+        CREATE INDEX IF NOT EXISTS idx_drip_plans_user ON drip_plans(user_id);
+        CREATE INDEX IF NOT EXISTS idx_drip_plans_project ON drip_plans(project_id);
         """
     )
     conn.commit()

@@ -2,6 +2,20 @@
 
 All notable changes to Content Flows are documented here.
 
+## [2026-04-06]
+
+### Added
+- **Content Drip module** — publication progressive de contenu SSG, backend complet
+  - `api/models/drip.py` — 13 enums + 8 modeles Pydantic (cadence, clustering, SSG, GSC configs)
+  - `api/services/drip_service.py` — 17 methodes (CRUD plans, import directory, 3 modes clustering, scheduling fixe/ramp-up, execution tick, plan lifecycle)
+  - `api/routers/drip.py` — 17 endpoints `/api/drip/*` (plans CRUD, import, cluster, schedule, preview, activate/pause/resume/cancel, execute-tick, GSC submit/check)
+  - `api/services/frontmatter.py` — parser/writer YAML frontmatter pour fichiers Markdown
+  - `api/services/rebuild_trigger.py` — trigger rebuild SSG (webhook Vercel/Netlify, GitHub Actions)
+  - `api/services/gsc_client.py` — Google Search Console (Indexing API submit + URL Inspection API check)
+  - `SourceRobot.DRIP` ajoute aux enums existants
+  - Table `drip_plans` dans le schema SQLite
+  - Specs : `SPEC-progressive-content-release.md` + `ANALYSIS-drip-integration-with-existing.md`
+
 ## [2026-03-30]
 
 ### Added

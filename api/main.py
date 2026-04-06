@@ -36,6 +36,7 @@ from api.routers.templates import router as templates_router
 from api.routers.runs import router as runs_router
 from api.routers.content import router as content_router
 from api.routers.publish import router as publish_router
+from api.routers.drip import router as drip_router
 
 
 # ─────────────────────────────────────────────────
@@ -280,6 +281,7 @@ app.include_router(work_domains_router)
 app.include_router(preview_router)
 app.include_router(analytics_public_router)
 app.include_router(analytics_router)
+app.include_router(drip_router)
 
 
 # ─────────────────────────────────────────────────
