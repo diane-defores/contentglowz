@@ -2,7 +2,7 @@
 title: "Complete Content Library"
 description: "Comprehensive guides for developers, founders, and marketers. From technical optimization to startup journeys, master modern development and business strategies."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["content library", "guides", "tutorials", "documentation"]
 featured: true
 image: "/images/blog/content-library.jpg"

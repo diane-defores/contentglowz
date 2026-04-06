@@ -2,7 +2,7 @@
 title: "Connect Your Website"
 description: "Link your GitHub repository to the SEO Robots platform. Auto-detect your framework, configure content directories, and start analyzing in minutes."
 pubDate: 2026-02-02
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["getting started", "onboarding", "github", "setup"]
 featured: true
 image: "/images/blog/connect-website.jpg"
@@ -91,6 +91,48 @@ curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
 ```
 
 **Done!** Your website is now connected and ready for SEO analysis.
+
+### Step 4: Enable Analytics (Optional)
+
+During confirmation, you can opt in to cookie-free analytics by setting `analytics_enabled: true`. This injects a lightweight tracking script (<1KB) into your site layout, giving you pageview data directly in your dashboard.
+
+```bash
+curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "project_id": "proj_abc123",
+    "confirmed": true,
+    "analytics_enabled": true
+  }'
+```
+
+**What you get with analytics enabled:**
+- Pageviews, top pages, referrers, and daily trends per project
+- SEO performance insights used by the AI agents for smarter recommendations
+- Content gap analysis informed by real visitor data
+
+**Privacy guarantees:**
+- **Cookie-free** — no consent banner required
+- **Under 1KB** — no impact on Core Web Vitals
+- **EU-hosted** — GDPR/CCPA compliant by design
+- **No IP storage** — country derived from CDN headers, then discarded
+
+You can enable or disable analytics at any time via the project update endpoint:
+
+```bash
+curl -X PATCH https://api.contentflowz.com/api/projects/proj_abc123 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"analytics_enabled": false}'
+```
+
+View your analytics in the dashboard or via the API:
+
+```bash
+curl https://api.contentflowz.com/api/analytics/summary?projectId=proj_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
 
 ---
 

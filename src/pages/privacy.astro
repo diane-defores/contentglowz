@@ -3,8 +3,8 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout
-  title="Privacy Policy | Content Flows"
-  description="How Content Flows uses your data and how to manage your analytics preferences."
+  title="Privacy Policy | ContentFlow"
+  description="How ContentFlow uses your data and how to manage your analytics preferences."
 >
   <main style="max-width: 800px; margin: 0 auto; padding: 4rem 2rem;">
     <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--color-dark);">Privacy Policy</h1>
@@ -15,29 +15,44 @@ import Layout from '../layouts/Layout.astro';
       <section>
         <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Data Collected</h2>
         <p style="color: var(--color-gray); line-height: 1.7;">
-          Content Flows uses analytics tools (PostHog) to understand how the site is used: pages visited, visit duration, referral source. No personally identifiable information is collected via these tools.
+          ContentFlow uses its own lightweight, cookie-free analytics to understand how your sites are used: pages visited, referral source, UTM campaign parameters, and device type. No personally identifiable information is collected — no IP addresses are stored, no browser fingerprinting is used, and no third-party tracking scripts are loaded.
         </p>
       </section>
 
       <section>
-        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Analytics Preferences</h2>
-        <p style="color: var(--color-gray); line-height: 1.7; margin-bottom: 1.5rem;">
-          You can disable analytics tracking at any time. Your preference is saved in your browser.
-        </p>
-
-        <div id="analytics-opt-out-section" style="padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc;">
-          <p id="analytics-status" style="margin: 0 0 1rem; color: var(--color-gray);">Loading...</p>
-          <button id="analytics-toggle" style="padding: 0.6rem 1.25rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; border: 1px solid #cbd5e1; background: white; color: var(--color-dark); font-family: var(--font-main);">
-            Loading...
-          </button>
-        </div>
-      </section>
-
-      <section>
-        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Cookies</h2>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Cookie-Free by Design</h2>
         <p style="color: var(--color-gray); line-height: 1.7;">
-          Cookies are limited to those necessary for site functionality and, if enabled, your analytics opt-out preference.
+          Our analytics system does not use cookies, localStorage, or any client-side storage mechanism. Each pageview is an independent, anonymous event. This means no consent banner is required — our approach is fully compliant with GDPR, CCPA, ePrivacy, and PECR out of the box.
         </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">Data Hosting</h2>
+        <p style="color: var(--color-gray); line-height: 1.7;">
+          All analytics data is processed and stored exclusively in the European Union. We do not share data with any third party, advertising network, or data broker. You can export your data at any time from the dashboard.
+        </p>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">What We Track</h2>
+        <ul style="color: var(--color-gray); line-height: 2; padding-left: 1.5rem;">
+          <li>Page URL and path (which pages are visited)</li>
+          <li>Referrer (where visitors come from)</li>
+          <li>UTM parameters (campaign tracking)</li>
+          <li>Device type, browser, and OS (parsed server-side from the user-agent)</li>
+          <li>Country (derived from CDN headers, no IP stored)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-dark);">What We Don't Track</h2>
+        <ul style="color: var(--color-gray); line-height: 2; padding-left: 1.5rem;">
+          <li>IP addresses (never stored)</li>
+          <li>Individual visitors (no session or visitor IDs)</li>
+          <li>Browser fingerprints</li>
+          <li>Scroll position, mouse movements, or clicks</li>
+          <li>Form inputs or personal data</li>
+        </ul>
       </section>
 
       <section>
@@ -51,35 +66,3 @@ import Layout from '../layouts/Layout.astro';
   </main>
 </Layout>
 
-<script is:inline>
-  function updateUI() {
-    var status = document.getElementById('analytics-status');
-    var btn = document.getElementById('analytics-toggle');
-    if (!status || !btn) return;
-
-    var optedOut = typeof posthog !== 'undefined' && posthog.has_opted_out_capturing();
-
-    if (optedOut) {
-      status.textContent = '🟢 Analytics tracking is currently disabled.';
-      btn.textContent = 'Re-enable analytics';
-    } else {
-      status.textContent = '🔵 Analytics tracking is currently enabled.';
-      btn.textContent = 'Disable analytics';
-    }
-  }
-
-  function toggleAnalytics() {
-    if (typeof posthog === 'undefined') return;
-    if (posthog.has_opted_out_capturing()) {
-      posthog.opt_in_capturing();
-    } else {
-      posthog.opt_out_capturing();
-    }
-    updateUI();
-  }
-
-  var btn = document.getElementById('analytics-toggle');
-  if (btn) btn.addEventListener('click', toggleAnalytics);
-  document.addEventListener('DOMContentLoaded', updateUI);
-  setTimeout(updateUI, 500);
-</script>

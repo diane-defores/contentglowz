@@ -2,7 +2,7 @@
 title: "Image Optimization"
 description: "Generate stunning blog images in seconds. Create hero images, social cards, and responsive variants—automatically optimized and delivered via global CDN."
 pubDate: 2026-02-02
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["images", "optimization", "cdn", "performance", "seo"]
 featured: true
 image: "/images/blog/image-optimization.jpg"

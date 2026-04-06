@@ -1,1 +1,1 @@
-/home/claude/shipflow_data/projects/my-robots/TASKS.md
+/home/claude/shipflow_data/projects/contentflowz/TASKS.md

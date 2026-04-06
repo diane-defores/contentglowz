@@ -2,7 +2,7 @@
 title: "The Great Dependency Migration: How We Replaced LangChain with OpenRouter and Saved 90% on LLM Costs"
 description: "From 50+ packages to 3. Our step-by-step journey migrating from LangChain to OpenRouter, cutting dependencies by 50%, reducing build times by 40%, and achieving $0 LLM costs with free tiers."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["dependency optimization", "langchain", "openrouter", "llm costs", "build optimization", "technical migration"]
 featured: true
 image: "/images/blog/dependency-migration.jpg"
@@ -151,7 +151,7 @@ def get_llm(tier: str = "free", temperature: float = 0.7, max_tokens: int = 4096
         base_url="https://openrouter.ai/api/v1",
         default_headers={
             "HTTP-Referer": "https://contentflowz.com",
-            "X-Title": "Content Flows SEO System"
+            "X-Title": "ContentFlow SEO System"
         }
     )
 

@@ -2,7 +2,7 @@
 title: "Startup Journey Chronicles"
 description: "Follow our complete startup journey from idea to revenue. Real metrics, challenges, and decisions in building an AI-powered SEO automation platform."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["startup journey", "build in public", "saas metrics", "entrepreneurship"]
 featured: true
 image: "/images/blog/startup-journey-hub.jpg"
@@ -235,7 +235,7 @@ Building in public means sharing everything - the wins, the losses, and the toug
 - Notion (documentation)
 
 **Analytics:**
-- PostHog (product analytics)
+- ContentFlow Analytics (cookie-free, built-in)
 - Google Analytics (web)
 - Stripe (revenue)
 - Mixpanel (funnels)

@@ -2,7 +2,7 @@
 title: "Building Production-Ready FastAPI: From Python Agents to Next.js Dashboard"
 description: "How we built a FastAPI 0.128.0 server to expose our Python AI agents to a Next.js dashboard. Real-time WebSockets, auto-validation, Swagger docs, and deployment strategies."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["fastapi", "python", "api design", "nextjs", "websockets", "build in public"]
 featured: true
 image: "/images/blog/fastapi-production.jpg"

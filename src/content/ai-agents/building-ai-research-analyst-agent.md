@@ -2,7 +2,7 @@
 title: "Building Our First AI Research Analyst: From Zero to 4/4 Tests Passing"
 description: "How we built the first agent in our SEO multi-agent system: technical challenges, API integrations, and lessons from implementing a production-grade AI analyst in 2 weeks."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["ai agents", "crewai", "seo automation", "python", "build in public"]
 featured: true
 image: "/images/blog/research-analyst-agent.jpg"

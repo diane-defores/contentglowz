@@ -2,7 +2,7 @@
 title: "Why We Chose Railway Over Heroku (And Why We Might Switch to Render)"
 description: "Our deployment platform journey: from Heroku's pricing changes to Railway's simplicity, and why Render's free tier might be our next move. Real trade-offs from building AI automation SaaS."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["deployment", "railway", "render", "heroku", "infrastructure", "build in public"]
 featured: true
 image: "/images/blog/deployment-platforms.jpg"

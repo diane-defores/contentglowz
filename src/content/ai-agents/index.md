@@ -2,7 +2,7 @@
 title: "AI Agents Development Hub"
 description: "Complete guides to building AI agents and multi-agent systems. From research automation to content generation, learn how we create production-ready AI agents."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["ai agents", "multi-agent systems", "crewai", "automation", "python"]
 featured: true
 image: "/images/blog/ai-agents-hub.jpg"

@@ -3,7 +3,7 @@ title: "SEO Content Strategy Results: Tracking Our Blog Traffic from 0 to 10K Vi
 description: "Month-by-month tracking of our SEO blog performance. Real Google Analytics data, ranking positions, and conversion metrics. Updated monthly with actual results."
 pubDate: 2026-01-15
 lastUpdated: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["seo results", "content marketing", "traffic growth", "analytics", "case study"]
 featured: true
 image: "/images/blog/seo-content-results.jpg"

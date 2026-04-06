@@ -2,7 +2,7 @@
 title: "Platform Documentation"
 description: "Everything you need to get started with the SEO Robots platform. Connect your website, run SEO analysis, and automate your content strategy."
 pubDate: 2026-02-02
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["platform", "documentation", "getting started", "api"]
 featured: true
 image: "/images/blog/platform-docs.jpg"
@@ -58,6 +58,9 @@ The platform returns:
 | [Connect Your Website](./connect-your-website) | Link your GitHub repo and configure settings | 5 min |
 | [SEO Deployment](./seo-deployment) | Run SEO pipelines from the dashboard | 10 min |
 | [Image Optimization](./image-optimization) | Generate and optimize images for your content | 5 min |
+| [Social Listening](./social-listening) | Discover trending topics from Reddit, X, HN, YouTube | 5 min |
+| [Content Quality Scoring](./content-quality-scoring) | Readability metrics and quality grades | 5 min |
+| [Link Previews](./link-previews) | OpenGraph extraction for your content calendar | 2 min |
 | [Understanding Your Analysis](./understanding-analysis) | What the scores and metrics mean | 10 min |
 | [API Reference](./api-reference) | Complete API endpoint documentation | Reference |
 
@@ -71,6 +74,10 @@ The platform returns:
 | **SEO Recommendations** | Prioritized actions to improve rankings |
 | **SEO Deployment** | Run content pipelines, batch process topics, schedule automation |
 | **Image Optimization** | Generate hero images, social cards, and responsive variants via global CDN |
+| **Cookie-Free Analytics** | Built-in pageview tracking — no cookies, no consent banner, EU-hosted, under 1KB script |
+| **Social Listening** | Scan Reddit, X, HN, and YouTube for trending topics — auto-ranks by engagement and cross-platform convergence |
+| **Content Quality Scoring** | 6 readability metrics (Flesch, Gunning Fog, SMOG...) with letter grades — catches hard-to-read content before publication |
+| **Link Previews** | Instant OpenGraph extraction — see titles, descriptions, and images for any URL in your calendar |
 
 ---
 
@@ -224,4 +231,4 @@ Add to your deployment pipeline:
 
 ---
 
-**Last updated:** February 2, 2026
+**Last updated:** March 30, 2026

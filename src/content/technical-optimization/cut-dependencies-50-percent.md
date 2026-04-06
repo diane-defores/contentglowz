@@ -2,7 +2,7 @@
 title: "How We Cut Dependencies by 50% (and Build Time by 40%)"
 description: "From LangChain's 40+ packages to a simple 15-package stack. Our journey optimizing Python dependencies for faster builds, smaller Docker images, and cleaner code."
 pubDate: 2026-01-15
-author: "Content Flows Team"
+author: "ContentFlow Team"
 tags: ["python", "dependencies", "optimization", "build time", "docker", "technical debt"]
 featured: true
 image: "/images/blog/dependency-optimization.jpg"
