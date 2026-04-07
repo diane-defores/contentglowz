@@ -179,6 +179,17 @@
 | ✅ | Landing page rebrand (hero, features, pricing, use cases, FAQ) | ✅ done |
 | ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
 
+### 🟠 P1 — Content Drip (Publication Progressive)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Étape 1 — Fondations : SourceRobot.DRIP + table drip_plans + DripService CRUD + router /api/drip/ | ✅ done |
+| ✅ | Étape 2 — Import + clustering DIRECTORY : scanner .md, créer ContentRecords, grouper par dossiers | ✅ done |
+| ✅ | Étape 3 — Scheduling + Execution : cadence fixe/ramp-up, frontmatter updater, rebuild trigger, cron tick, plan lifecycle (activate/pause/resume/cancel) | ✅ done |
+| ✅ | Étape 4 — Clustering avancé : cluster_by_tags + cluster_auto via Topical Mesh Architect (fallback gracieux si crewai absent) | ✅ done |
+| ✅ | Étape 5 — GSC : GSCClient (Indexing API submit + URL Inspection API check), endpoints /gsc/submit-urls et /gsc/indexation-status, auto-submit dans execute-tick | ✅ done |
+| 🟠 | Étape 6 — Flutter UI : écran liste plans + wizard création + dashboard progression + actions lifecycle | 🔄 in progress |
+
 ### 🟢 P3 — Backlog
 
 | Pri | Task | Status |

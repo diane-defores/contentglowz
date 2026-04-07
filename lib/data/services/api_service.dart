@@ -6,6 +6,7 @@ import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
+import '../models/idea.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
 import '../models/ritual.dart';
@@ -916,6 +917,61 @@ class ApiService {
     }
   }
 
+  // ─── Idea Pool ─────────────────────────────────────────────
+
+  Future<List<Idea>> fetchIdeas({
+    String? status,
+    String? source,
+    double? minScore,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final qp = <String, dynamic>{
+        'limit': limit,
+        'offset': offset,
+      };
+      if (status != null) qp['status'] = status;
+      if (source != null) qp['source'] = source;
+      if (minScore != null) qp['min_score'] = minScore;
+      final response = await _dio.get('/api/ideas', queryParameters: qp);
+      final data = _asMap(response.data);
+      final items = data['items'] as List? ?? [];
+      return items
+          .map((e) => Idea.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchIdeaPoolReadiness() async {
+    try {
+      final response = await _dio.get('/api/ideas/readiness');
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Idea> updateIdea(String id, Map<String, dynamic> updates) async {
+    try {
+      final response = await _dio.patch('/api/ideas/$id', data: updates);
+      return Idea.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<bool> deleteIdea(String id) async {
+    try {
+      await _dio.delete('/api/ideas/$id');
+      return true;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   List<ContentItem> _parseContentList(dynamic data) {
     final items = data is List
         ? data
@@ -1208,5 +1264,93 @@ class ApiService {
         createdAt: now.subtract(const Duration(days: 3)),
       ),
     ];
+  }
+}
+
+// ─── Content Drip API ─────────────────────────────────
+
+extension DripApi on ApiService {
+  Future<List<Map<String, dynamic>>> fetchDripPlans() async {
+    final response = await _dio.get('/api/drip/plans');
+    final data = response.data;
+    if (data is Map && data['items'] is List) {
+      return List<Map<String, dynamic>>.from(data['items']);
+    }
+    return [];
+  }
+
+  Future<Map<String, dynamic>> createDripPlan(Map<String, dynamic> body) async {
+    final response = await _dio.post('/api/drip/plans', data: body);
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> getDripPlan(String planId) async {
+    final response = await _dio.get('/api/drip/plans/$planId');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> updateDripPlan(String planId, Map<String, dynamic> body) async {
+    final response = await _dio.patch('/api/drip/plans/$planId', data: body);
+    return _asMap(response.data);
+  }
+
+  Future<void> deleteDripPlan(String planId) async {
+    await _dio.delete('/api/drip/plans/$planId');
+  }
+
+  Future<Map<String, dynamic>> getDripStats(String planId) async {
+    final response = await _dio.get('/api/drip/plans/$planId/stats');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> importDripContent(String planId, String directory, {bool excludeDrafts = true}) async {
+    final response = await _dio.post(
+      '/api/drip/plans/$planId/import',
+      queryParameters: {'directory': directory, 'exclude_drafts': excludeDrafts},
+    );
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> clusterDripPlan(String planId, {String mode = 'directory'}) async {
+    final response = await _dio.post(
+      '/api/drip/plans/$planId/cluster',
+      queryParameters: {'mode': mode},
+    );
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> scheduleDripPlan(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/schedule');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> previewDripSchedule(String planId) async {
+    final response = await _dio.get('/api/drip/plans/$planId/preview');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> activateDripPlan(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/activate');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> pauseDripPlan(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/pause');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> resumeDripPlan(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/resume');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> cancelDripPlan(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/cancel');
+    return _asMap(response.data);
+  }
+
+  Future<Map<String, dynamic>> executeDripTick(String planId) async {
+    final response = await _dio.post('/api/drip/plans/$planId/execute-tick');
+    return _asMap(response.data);
   }
 }

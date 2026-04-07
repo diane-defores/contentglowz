@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
 import '../data/models/affiliate_link.dart';
+import '../data/models/drip_plan.dart';
 import '../data/models/app_bootstrap.dart';
 import '../data/models/app_settings.dart';
 import '../data/models/auth_session.dart';
 import '../data/models/content_item.dart';
 import '../data/models/creator_profile.dart';
+import '../data/models/idea.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/ritual.dart';
@@ -567,6 +569,26 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
       return api.updateSettings({'emailNotifications': enabled});
     });
   }
+
+  Future<void> toggleIdeaPool(bool enabled) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    if (ref.read(authSessionProvider).isDemo) {
+      final rs = Map<String, dynamic>.from(current.robotSettings ?? {});
+      rs['ideaPoolEnabled'] = enabled;
+      state = AsyncData(current.copyWith(robotSettings: rs));
+      return;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      return api.updateSettings({
+        'robotSettings': {'ideaPoolEnabled': enabled},
+      });
+    });
+  }
 }
 
 final creatorProfileProvider = FutureProvider<CreatorProfile?>((ref) async {
@@ -592,3 +614,68 @@ final affiliationsProvider = FutureProvider<List<AffiliateLink>>((ref) async {
 final lastNarrativeProvider = StateProvider<NarrativeSynthesisResult?>(
   (ref) => null,
 );
+
+// ─── Idea Pool ──────────────────────────────────────────
+
+final ideasProvider =
+    AsyncNotifierProvider<IdeasNotifier, List<Idea>>(IdeasNotifier.new);
+
+class IdeasNotifier extends AsyncNotifier<List<Idea>> {
+  String _statusFilter = 'all';
+  String _sourceFilter = 'all';
+
+  String get statusFilter => _statusFilter;
+  String get sourceFilter => _sourceFilter;
+
+  @override
+  Future<List<Idea>> build() async {
+    final api = ref.read(apiServiceProvider);
+    return api.fetchIdeas(
+      status: _statusFilter == 'all' ? null : _statusFilter,
+      source: _sourceFilter == 'all' ? null : _sourceFilter,
+    );
+  }
+
+  void setStatusFilter(String filter) {
+    _statusFilter = filter;
+    ref.invalidateSelf();
+  }
+
+  void setSourceFilter(String filter) {
+    _sourceFilter = filter;
+    ref.invalidateSelf();
+  }
+
+  Future<void> dismissIdea(String id) async {
+    final api = ref.read(apiServiceProvider);
+    await api.updateIdea(id, {'status': 'dismissed'});
+    ref.invalidateSelf();
+  }
+
+  Future<void> prioritizeIdea(String id, double score) async {
+    final api = ref.read(apiServiceProvider);
+    await api.updateIdea(id, {'priority_score': score});
+    ref.invalidateSelf();
+  }
+
+  Future<void> deleteIdea(String id) async {
+    final api = ref.read(apiServiceProvider);
+    await api.deleteIdea(id);
+    ref.invalidateSelf();
+  }
+}
+
+// ─── Content Drip ──────────────────────────────────────────
+
+final dripPlansProvider = FutureProvider<List<DripPlan>>((ref) async {
+  final api = ref.read(apiServiceProvider);
+  final raw = await api.fetchDripPlans();
+  return raw.map((j) => DripPlan.fromJson(j)).toList();
+});
+
+final dripStatsProvider =
+    FutureProvider.family<DripStats, String>((ref, planId) async {
+  final api = ref.read(apiServiceProvider);
+  final raw = await api.getDripStats(planId);
+  return DripStats.fromJson(raw);
+});

@@ -28,7 +28,9 @@ import 'presentation/screens/performance/performance_screen.dart';
 import 'presentation/screens/seo/seo_screen.dart';
 import 'presentation/screens/templates/templates_screen.dart';
 import 'presentation/screens/uptime/uptime_screen.dart';
+import 'presentation/screens/idea_pool/idea_pool_screen.dart';
 import 'presentation/screens/work_domains/work_domains_screen.dart';
+import 'presentation/screens/drip/drip_screen.dart';
 
 GoRouter createAppRouter(WidgetRef ref) {
   final authSession = ref.watch(authSessionProvider);
@@ -173,6 +175,11 @@ GoRouter createAppRouter(WidgetRef ref) {
                 const NoTransitionPage(child: SeoScreen()),
           ),
           GoRoute(
+            path: '/drip',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DripScreen()),
+          ),
+          GoRoute(
             path: '/content-tools',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: ContentToolsScreen()),
@@ -181,6 +188,11 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/analytics',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: AnalyticsScreen()),
+          ),
+          GoRoute(
+            path: '/idea-pool',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: IdeaPoolScreen()),
           ),
           GoRoute(
             path: '/work-domains',

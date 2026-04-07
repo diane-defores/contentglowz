@@ -21,6 +21,7 @@ const _sections = [
     _NavItem(icon: Icons.dynamic_feed_rounded, label: 'Feed', path: '/feed'),
     _NavItem(icon: Icons.calendar_month_rounded, label: 'Schedule', path: '/calendar'),
     _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
+    _NavItem(icon: Icons.water_drop_rounded, label: 'Drip', path: '/drip'),
     _NavItem(icon: Icons.build_circle_rounded, label: 'Tools', path: '/content-tools'),
   ]),
   _NavSection(label: 'Create', items: [
