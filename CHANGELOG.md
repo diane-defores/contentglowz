@@ -29,7 +29,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Design: Fixed `clamp()` pure `vw` preferred values → `rem + vw` in BlogPost and blog index
 - Design: Privacy page migrated from inline styles to scoped CSS classes
 - Design: Footer added `role="contentinfo"` semantic
-- Design: Global button system — `.btn-primary` and `.btn-secondary` extracted to Layout.astro (removed 64 duplicate lines)
+- Design: Global design system in Layout.astro — `.container`, `.section-header`, `.btn-primary`, `.btn-secondary` extracted from 10 components (-122 duplicate lines total)
+- Design: `<link rel="apple-touch-icon">` added for mobile home screen support
 - Design: 5 hardcoded hex colors (`#dbeafe`, `#e2e8f0`, `#fef3c7`, `#92400e`, `#ffffff`) tokenized as CSS custom properties
 - Design: Navbar anchor links now use `/#section` format for cross-page navigation
 - Design: Blog index replaced inline nav/footer with shared Navbar/Footer components
