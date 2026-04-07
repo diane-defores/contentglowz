@@ -1,6 +1,30 @@
 ---
+const faqData = [
+  { question: "Does the AI really sound like me?", answer: "Yes. The Psychology Engine learns your voice through weekly rituals and evolves with your narrative arc. It's not generic AI — it's trained on your specific positioning, tone, and audience personas." },
+  { question: "What content formats are supported?", answer: "Blog articles, newsletters, social posts (Twitter/LinkedIn/Instagram), short-form video scripts (TikTok/Reels/Shorts), and YouTube video scripts. One idea generates all formats." },
+  { question: "Where can I publish from ContentFlow?", answer: "Twitter/X, LinkedIn, Instagram, TikTok, YouTube, Ghost, and WordPress. Connect your accounts via OAuth in the Settings screen. More platforms coming soon." },
+  { question: "Do I review every piece of content?", answer: "Yes, you're always in control. AI generates, you approve. The swipe feed makes review fast — most creators spend 5-10 minutes reviewing a day's worth of content." },
+  { question: "How does SEO work?", answer: "ContentFlow uses DataForSEO for real keyword data, competitor analysis, and SERP tracking. Articles are optimized for keywords with real search volume. Your content ranks because it's data-driven, not guessed." },
+  { question: "What about affiliate links?", answer: "Register your affiliate programs with keywords. AI automatically weaves relevant links into generated content when the topic matches. You control which programs are active." },
+  { question: "Are API costs included?", answer: "Yes. All AI generation costs (LLM, search, analysis) are included in your plan. No surprise bills. The pricing is what you see." },
+  { question: "Can I use it on mobile?", answer: "The Flutter app works on Android, iOS, and web. Review and approve content from anywhere. The swipe interface was designed mobile-first." },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqData.map(({ question, answer }) => ({
+    "@type": "Question",
+    "name": question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": answer,
+    },
+  })),
+};
 ---
 
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 <section id="faq" class="faq-section">
   <div class="container">
     <div class="section-header">
@@ -9,85 +33,17 @@
     </div>
 
     <div class="faq-grid">
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Does the AI really sound like me?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Yes. The Psychology Engine learns your voice through weekly rituals and evolves with your narrative arc. It's not generic AI — it's trained on your specific positioning, tone, and audience personas.</p>
+      {faqData.map(({ question, answer }) => (
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>{question}</span>
+            <span class="icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>{answer}</p>
+          </div>
         </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>What content formats are supported?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Blog articles, newsletters, social posts (Twitter/LinkedIn/Instagram), short-form video scripts (TikTok/Reels/Shorts), and YouTube video scripts. One idea generates all formats.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Where can I publish from ContentFlow?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Twitter/X, LinkedIn, Instagram, TikTok, YouTube, Ghost, and WordPress. Connect your accounts via OAuth in the Settings screen. More platforms coming soon.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Do I review every piece of content?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Yes, you're always in control. AI generates, you approve. The swipe feed makes review fast — most creators spend 5-10 minutes reviewing a day's worth of content.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>How does SEO work?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>ContentFlow uses DataForSEO for real keyword data, competitor analysis, and SERP tracking. Articles are optimized for keywords with real search volume. Your content ranks because it's data-driven, not guessed.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>What about affiliate links?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Register your affiliate programs with keywords. AI automatically weaves relevant links into generated content when the topic matches. You control which programs are active.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Are API costs included?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Yes. All AI generation costs (LLM, search, analysis) are included in your plan. No surprise bills. The pricing is what you see.</p>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Can I use it on mobile?</span>
-          <span class="icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>The Flutter app works on Android, iOS, and web. Review and approve content from anywhere. The swipe interface was designed mobile-first.</p>
-        </div>
-      </div>
+      ))}
     </div>
   </div>
 </section>

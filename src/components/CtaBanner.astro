@@ -1,0 +1,66 @@
+---
+---
+
+<aside class="cta-banner">
+  <div class="cta-banner-content">
+    <p class="cta-banner-text">
+      <strong>Stop writing content manually.</strong> ContentFlow turns your ideas into articles, social posts, and newsletters — automatically.
+    </p>
+    <a href="/#pricing" class="cta-banner-btn">Start Free</a>
+  </div>
+</aside>
+
+<style>
+  .cta-banner {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    margin: 3rem 0;
+  }
+
+  .cta-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .cta-banner-text {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .cta-banner-text strong {
+    color: white;
+  }
+
+  .cta-banner-btn {
+    background: white;
+    color: var(--color-primary);
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .cta-banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  @media (max-width: 600px) {
+    .cta-banner-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .cta-banner-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

@@ -33,7 +33,7 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
     {featured && (
       <a href={`/blog/${featured.slug}`} class="featured-card">
         {featured.data.cover && (
-          <img src={featured.data.cover} alt={featured.data.title} width="800" height="420" />
+          <img src={featured.data.cover} alt={`Featured: ${featured.data.title}`} width="800" height="420" />
         )}
         <div class="featured-body">
           <div class="featured-eyebrow">
@@ -63,7 +63,7 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
           {rest.map((post) => (
             <a href={`/blog/${post.slug}`} class="post-card">
               {post.data.cover && (
-                <img src={post.data.cover} alt={post.data.title} width="400" height="210" />
+                <img src={post.data.cover} alt={`Illustration for ${post.data.title}`} width="400" height="210" />
               )}
               <div class="post-card-body">
                 {post.data.tags?.slice(0, 2).map((t) => (

@@ -1,10 +1,11 @@
 ---
 import Layout from './Layout.astro';
+import CtaBanner from '../components/CtaBanner.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: CollectionEntry<'blog'> | CollectionEntry<'ai-agents'> | CollectionEntry<'platform'> | CollectionEntry<'seo-strategy'> | CollectionEntry<'startup-journey'> | CollectionEntry<'technical-optimization'> | CollectionEntry<'tutorials'>;
 }
 
 const { post } = Astro.props;
@@ -26,13 +27,27 @@ while ((match = headingRe.exec(post.body)) !== null) {
 }
 const hasToc = headings.length >= 3;
 
-// Related posts: same tags, exclude self
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+// Collection-aware section name and path
+const collectionId = post.collection;
+const sectionLabels: Record<string, string> = {
+  blog: 'Blog',
+  'ai-agents': 'AI Agents',
+  platform: 'Platform',
+  'seo-strategy': 'SEO Strategy',
+  'startup-journey': 'Startup Journey',
+  'technical-optimization': 'Technical Optimization',
+  tutorials: 'Tutorials',
+};
+const sectionLabel = sectionLabels[collectionId] ?? 'Blog';
+const sectionPath = `/${collectionId}`;
+
+// Related posts: same collection, same tags, exclude self
+const allPosts = await getCollection(collectionId as any, ({ data }: any) => !data.draft);
 const related = allPosts
-  .filter((p) => p.slug !== post.slug && p.data.tags?.some((t) => tags.includes(t)))
-  .sort((a, b) => {
-    const sharedA = a.data.tags?.filter((t) => tags.includes(t)).length ?? 0;
-    const sharedB = b.data.tags?.filter((t) => tags.includes(t)).length ?? 0;
+  .filter((p: any) => p.slug !== post.slug && p.data.tags?.some((t: string) => tags.includes(t)))
+  .sort((a: any, b: any) => {
+    const sharedA = a.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
+    const sharedB = b.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
     return sharedB - sharedA;
   })
   .slice(0, 3);
@@ -42,6 +57,18 @@ const formattedDate = date.toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflowz.com';
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+    { "@type": "ListItem", "position": 2, "name": sectionLabel, "item": `${siteUrl}${sectionPath}` },
+    { "@type": "ListItem", "position": 3, "name": title, "item": `${siteUrl}${sectionPath}/${post.slug}` },
+  ],
+};
 ---
 
 <Layout
@@ -53,11 +80,12 @@ const formattedDate = date.toLocaleDateString('en-US', {
   author={byline}
   tags={tags}
 >
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
   <header class="blog-header">
     <nav class="breadcrumb">
       <a href="/">Home</a>
       <span>›</span>
-      <a href="/blog">Blog</a>
+      <a href={sectionPath}>{sectionLabel}</a>
     </nav>
   </header>
 
@@ -66,7 +94,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
       <!-- Hero -->
       {cover && (
         <div class="hero-image">
-          <img src={cover} alt={title} width="1200" height="630" />
+          <img src={cover} alt={`Illustration for ${title}`} width="1200" height="630" />
         </div>
       )}
 
@@ -114,15 +142,18 @@ const formattedDate = date.toLocaleDateString('en-US', {
       </div>
     </article>
 
+    <!-- Product CTA -->
+    <CtaBanner />
+
     <!-- Related posts -->
     {related.length > 0 && (
       <section class="related">
         <h2>Related articles</h2>
         <div class="related-grid">
           {related.map((rp) => (
-            <a href={`/blog/${rp.slug}`} class="related-card">
+            <a href={`${sectionPath}/${rp.slug}`} class="related-card">
               {rp.data.cover && (
-                <img src={rp.data.cover} alt={rp.data.title} width="400" height="210" />
+                <img src={rp.data.cover} alt={`Illustration for ${rp.data.title}`} width="400" height="210" />
               )}
               <div class="related-card-body">
                 {rp.data.tags?.slice(0, 2).map((t) => (
@@ -140,7 +171,7 @@ const formattedDate = date.toLocaleDateString('en-US', {
 
     <!-- Back link -->
     <div class="back-link">
-      <a href="/blog">← Back to Blog</a>
+      <a href={sectionPath}>← Back to {sectionLabel}</a>
     </div>
   </main>
 </Layout>

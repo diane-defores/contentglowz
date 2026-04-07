@@ -1,0 +1,94 @@
+---
+---
+
+<section class="closing-cta">
+  <div class="container">
+    <h2>Ready to publish 6x more content?</h2>
+    <p>Join solo founders who stopped writing and started shipping. Free plan, no credit card.</p>
+    <div class="closing-cta-buttons">
+      <a href="#pricing" class="btn-primary">Start Free</a>
+      <a href="/blog" class="btn-secondary">Read the Blog</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .closing-cta {
+    padding: 5rem 0;
+    text-align: center;
+    background: white;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .closing-cta h2 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .closing-cta p {
+    font-size: 1.15rem;
+    color: var(--color-gray);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+  }
+
+  .closing-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--color-primary);
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid var(--color-primary);
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .closing-cta h2 {
+      font-size: 1.8rem;
+    }
+
+    .closing-cta-buttons {
+      flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

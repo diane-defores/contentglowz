@@ -1,6 +1,42 @@
 ---
+const pricingSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "ContentFlow",
+  "description": "AI content pipeline — generate, review, and publish multi-format content",
+  "brand": { "@type": "Brand", "name": "ContentFlow" },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Free",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "1 project, 5 content pieces/month, 1 publishing channel",
+      "availability": "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      "name": "Creator",
+      "price": "19",
+      "priceCurrency": "EUR",
+      "billingIncrement": 1,
+      "description": "3 projects, 50 content pieces/month, all formats and channels, SEO keyword research",
+      "availability": "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      "name": "Pro",
+      "price": "49",
+      "priceCurrency": "EUR",
+      "billingIncrement": 1,
+      "description": "Unlimited projects and content, competitor analysis, SERP tracking, API access",
+      "availability": "https://schema.org/InStock",
+    },
+  ],
+};
 ---
 
+<script type="application/ld+json" set:html={JSON.stringify(pricingSchema)} />
 <section id="pricing" class="pricing-section">
   <div class="container">
     <div class="section-header">
@@ -66,9 +102,9 @@
           <li>Unlimited content</li>
           <li>All Creator features</li>
           <li>Competitor analysis</li>
-          <li>SERP position tracking</li>
-          <li>Topical mesh analysis</li>
-          <li>Custom personas</li>
+          <li>Ranking position tracking</li>
+          <li>Content strategy analysis</li>
+          <li>Custom audience personas</li>
           <li>Priority support</li>
           <li>API access</li>
         </ul>
