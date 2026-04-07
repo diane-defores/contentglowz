@@ -11,6 +11,12 @@ All notable changes to Content Flows are documented here.
 - **CORS regex tightened** — `*.vercel.app` narrowed to `contentflowz*.vercel.app`
 - **Input sanitization** on test_runner.py user-supplied file paths
 
+### Changed
+- **Dependency pins** — all packages in requirements.txt now have upper-bound constraints (e.g. `>=2.0,<3.0`)
+- **Structured logging** — `logging.basicConfig` with ISO timestamps and configurable `LOG_LEVEL` env var at startup
+- **Rate limiting** — IP-based middleware (120 req/min), returns 429 with `Retry-After` header
+- **Health check** — `/health` now tests database connectivity (libsql/Turso) instead of hardcoded "not_configured"
+
 ### Fixed
 - 7 bare `except:` clauses replaced with `except Exception:` in repo_analyzer.py and seo_research_tools.py
 - Drip router now uses authenticated `current_user.user_id` instead of hardcoded `"system"`

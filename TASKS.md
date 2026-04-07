@@ -28,14 +28,14 @@
 | 🟠 | Drip router hardcodes `user_id="system"` — no tenant isolation | `api/routers/drip.py` | **FIXED** |
 | 🟠 | CORS regex allows any `*.vercel.app` subdomain | `api/main.py` | **FIXED** |
 | 🟠 | In-memory state lost on restart (deployment, templates) | `api/routers/deployment.py`, `api/routers/templates.py` | Open |
-| 🟠 | Loose dependency pins (`>=` with no upper bound) | `requirements.txt` | Open |
+| 🟠 | Loose dependency pins (`>=` with no upper bound) | `requirements.txt` | **FIXED** |
 | 🟠 | God file: 3512 lines, 140 functions | `agents/seo/tools/internal_linking_tools.py` | Open |
 | 🟡 | No CI/CD pipeline to run existing tests | Project-wide | Open |
 | 🟡 | Multiple 500+ line files (8 files over 500 lines) | `ingest.py`, `dataforseo_client.py`, `status/service.py`, etc. | Open |
-| 🟡 | No structured logging for production | Project-wide | Open |
-| 🟡 | No rate limiting on any endpoint | `api/main.py` | Open |
-| 🟡 | No DB health check in health endpoint | `api/routers/health.py` | Open |
-| 🟡 | In-memory job storage in templates router | `api/routers/templates.py:22` | Open |
+| 🟡 | No structured logging for production | Project-wide | **FIXED** |
+| 🟡 | No rate limiting on any endpoint | `api/main.py` | **FIXED** |
+| 🟡 | No DB health check in health endpoint | `api/routers/health.py` | **FIXED** |
+| 🟡 | In-memory state (deployment, templates routers) | `deployment.py`, `templates.py` | Open |
 | 🟡 | test_runner.py user input sanitization | `test_runner.py` | **FIXED** |
 
 ## Backlog

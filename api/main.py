@@ -19,10 +19,13 @@ Docs:
     http://localhost:8000/redoc (ReDoc)
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
+import os
+import time
 import sys
 from pathlib import Path
 
@@ -59,6 +62,15 @@ async def lifespan(app: FastAPI):
     - Close connections
     """
     import asyncio
+
+    # Configure structured logging
+    import logging
+    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    logging.basicConfig(
+        level=getattr(logging, log_level, logging.INFO),
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+    )
 
     # Startup
     print("🚀 Starting SEO Robots API...")
@@ -211,6 +223,41 @@ app = FastAPI(
 # ─────────────────────────────────────────────────
 # Middleware
 # ─────────────────────────────────────────────────
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Simple in-process rate limiter. Limits per IP per window."""
+
+    def __init__(self, app, requests_per_minute: int = 60):
+        super().__init__(app)
+        self.rpm = requests_per_minute
+        self._hits: dict[str, list[float]] = {}
+
+    async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for health checks
+        if request.url.path in ("/", "/health", "/version"):
+            return await call_next(request)
+
+        ip = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        window = 60.0
+
+        hits = self._hits.get(ip, [])
+        # Prune old entries
+        hits = [t for t in hits if now - t < window]
+        if len(hits) >= self.rpm:
+            return JSONResponse(
+                status_code=429,
+                content={"error": "Too many requests"},
+                headers={"Retry-After": "60"},
+            )
+        hits.append(now)
+        self._hits[ip] = hits
+
+        return await call_next(request)
+
+
+app.add_middleware(RateLimitMiddleware, requests_per_minute=120)
 
 # CORS - Allow Next.js frontend to call API
 # Note: FastAPI CORS middleware doesn't support wildcard subdomains (*.vercel.app)

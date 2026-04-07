@@ -76,10 +76,22 @@ async def health_check():
         "agents": agents_status,
         "components": {
             "api": "operational",
-            "database": "not_configured",  # TODO: Add when DB ready
+            "database": await _check_db(),
             "cache": "not_configured"
         }
     }
+
+
+async def _check_db() -> str:
+    """Check database connectivity."""
+    try:
+        from api.services.user_data_store import user_data_store
+        if not user_data_store.db_client:
+            return "not_configured"
+        await user_data_store.db_client.execute("SELECT 1")
+        return "operational"
+    except Exception:
+        return "unreachable"
 
 
 @router.get(
