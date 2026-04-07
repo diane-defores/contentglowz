@@ -14,7 +14,7 @@ from crewai import Agent, Task, Crew
 from dotenv import load_dotenv
 import os
 
-from agents.seo.tools.internal_linking_tools import (
+from agents.seo.tools.internal_linking import (
     LinkingAnalyzer,
     ConversionOptimizer,
     PersonalizationEngine,

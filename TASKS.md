@@ -29,7 +29,7 @@
 | 🟠 | CORS regex allows any `*.vercel.app` subdomain | `api/main.py` | **FIXED** |
 | 🟠 | In-memory state lost on restart (deployment, templates) | `api/routers/deployment.py`, `api/routers/templates.py` | Open |
 | 🟠 | Loose dependency pins (`>=` with no upper bound) | `requirements.txt` | **FIXED** |
-| 🟠 | God file: 3512 lines, 140 functions | `agents/seo/tools/internal_linking_tools.py` | Open |
+| 🟠 | God file: 3512 lines, 140 functions | `agents/seo/tools/internal_linking/` | **FIXED** |
 | 🟡 | No CI/CD pipeline to run existing tests | Project-wide | Open |
 | 🟡 | Multiple 500+ line files (8 files over 500 lines) | `ingest.py`, `dataforseo_client.py`, `status/service.py`, etc. | Open |
 | 🟡 | No structured logging for production | Project-wide | **FIXED** |
