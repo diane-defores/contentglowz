@@ -1,5 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -14,16 +16,9 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
   description="Guides, case studies, and technical deep-dives on AI automation for SEO, newsletters, and content generation."
   ogType="website"
 >
-  <!-- Minimal nav -->
-  <header class="blog-nav">
-    <a href="/" class="logo">ContentFlow</a>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/blog" class="active">Blog</a>
-    </nav>
-  </header>
+  <Navbar />
 
-  <main class="blog-index">
+  <main id="main-content" class="blog-index">
     <div class="blog-header">
       <h1>Blog</h1>
       <p>Guides, case studies, and technical deep-dives on AI automation.</p>
@@ -91,35 +86,14 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
     )}
   </main>
 
-  <footer class="blog-footer">
-    <p>© {new Date().getFullYear()} ContentFlow · <a href="/">Home</a></p>
-  </footer>
+  <Footer />
 </Layout>
 
 <style>
-  .blog-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 2rem;
-    border-bottom: 1px solid var(--color-light-gray);
-    max-width: 1100px;
-    margin: 0 auto;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .logo { font-weight: 800; font-size: 1.1rem; color: var(--color-dark); }
-
-  .blog-nav nav { display: flex; gap: 1.5rem; }
-  .blog-nav nav a { font-size: 0.9rem; color: var(--color-gray); }
-  .blog-nav nav a.active { color: var(--color-primary); font-weight: 600; }
-  .blog-nav nav a:hover { color: var(--color-primary); }
-
   .blog-index {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 3rem 2rem 5rem;
+    padding: 6rem 2rem 5rem;
   }
 
   .blog-header {
@@ -298,16 +272,6 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
     border-radius: 8px;
     font-weight: 600;
   }
-
-  .blog-footer {
-    text-align: center;
-    padding: 2rem;
-    border-top: 1px solid var(--color-light-gray);
-    font-size: 0.875rem;
-    color: var(--color-gray);
-  }
-
-  .blog-footer a { color: var(--color-primary); }
 
   /* Responsive */
   @media (max-width: 700px) {

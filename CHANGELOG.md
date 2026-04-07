@@ -13,7 +13,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Design: `<meta name="theme-color">` for mobile browser chrome
 - Design: `aria-expanded`, `aria-controls`, `role="region"` on FAQ accordion
 - Design: `aria-hidden` on rotating hero words + `aria-label` summary for screen readers
-- Design: Navbar + Footer on Privacy and 404 pages (were bare layout)
+- Design: Navbar + Footer on Privacy, 404, blog index, blog posts, and tag pages (all pages now share consistent navigation)
 - SEO: robots.txt, 404 page, favicon.svg, OG default image
 - SEO: FAQPage, BreadcrumbList, WebSite+SearchAction, Product/Offer JSON-LD schemas
 - SEO: Blog link in Navbar, explicit meta robots tag, font preload
@@ -29,6 +29,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Design: Fixed `clamp()` pure `vw` preferred values → `rem + vw` in BlogPost and blog index
 - Design: Privacy page migrated from inline styles to scoped CSS classes
 - Design: Footer added `role="contentinfo"` semantic
+- Design: Navbar anchor links now use `/#section` format for cross-page navigation
+- Design: Blog index replaced inline nav/footer with shared Navbar/Footer components
+- Design: BlogPost layout and tag pages now include Navbar/Footer with proper top padding
 - Homepage: "Who It's For" section moved before Pricing (identification before price ask)
 - Features: reduced from 10 to 5 benefit-focused cards, jargon eliminated (CrewAI, DataForSEO, OAuth → plain language)
 - Robots: "23 Agents Work Together" → "Multiple Formats, One Pipeline"

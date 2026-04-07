@@ -1,5 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.astro';
+import Footer from '../../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -31,8 +33,10 @@ const { label, posts } = Astro.props;
   title={`${label} — ContentFlow Blog`}
   description={`Articles tagged "${label}" on the ContentFlow blog.`}
 >
+  <Navbar />
+
   <header class="tag-header">
-    <nav class="breadcrumb">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a>
       <span>›</span>
       <a href="/blog">Blog</a>
@@ -41,7 +45,7 @@ const { label, posts } = Astro.props;
     </nav>
   </header>
 
-  <main class="tag-main">
+  <main id="main-content" class="tag-main">
     <h1>Tag: {label}</h1>
     <p class="count">{posts.length} article{posts.length !== 1 ? 's' : ''}</p>
 
@@ -64,11 +68,13 @@ const { label, posts } = Astro.props;
 
     <a href="/blog" class="back-link">← Back to Blog</a>
   </main>
+
+  <Footer />
 </Layout>
 
 <style>
   .tag-header {
-    padding: 1.5rem 2rem;
+    padding: 5rem 2rem 1.5rem;
     border-bottom: 1px solid var(--color-light-gray);
   }
 

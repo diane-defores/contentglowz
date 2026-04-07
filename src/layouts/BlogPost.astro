@@ -1,5 +1,7 @@
 ---
 import Layout from './Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
@@ -81,15 +83,16 @@ const breadcrumbSchema = {
   tags={tags}
 >
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <Navbar />
   <header class="blog-header">
-    <nav class="breadcrumb">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a>
       <span>›</span>
       <a href={sectionPath}>{sectionLabel}</a>
     </nav>
   </header>
 
-  <main class="blog-main">
+  <main id="main-content" class="blog-main">
     <article class="blog-article">
       <!-- Hero -->
       {cover && (
@@ -174,11 +177,12 @@ const breadcrumbSchema = {
       <a href={sectionPath}>← Back to {sectionLabel}</a>
     </div>
   </main>
+  <Footer />
 </Layout>
 
 <style>
   .blog-header {
-    padding: 1.5rem 2rem;
+    padding: 5rem 2rem 1.5rem;
     border-bottom: 1px solid var(--color-light-gray);
   }
 
