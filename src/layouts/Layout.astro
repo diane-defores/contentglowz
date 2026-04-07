@@ -120,6 +120,10 @@ const websiteSchema = {
     --color-dark: #0f172a;
     --color-gray: #64748b;
     --color-light-gray: #f1f5f9;
+    --color-light-blue: #dbeafe;
+    --color-code-text: #e2e8f0;
+    --color-badge-bg: #fef3c7;
+    --color-badge-text: #92400e;
     --color-white: #ffffff;
     --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
@@ -162,6 +166,41 @@ const websiteSchema = {
   img {
     max-width: 100%;
     height: auto;
+  }
+
+  /* Button system */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: var(--color-white);
+    color: var(--color-primary);
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid var(--color-primary);
+    transition: background 0.2s, color 0.2s;
+    display: inline-block;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-primary);
+    color: white;
   }
 
   /* Focus styles — WCAG 2.4.11 Focus Appearance */
