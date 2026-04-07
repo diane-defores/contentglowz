@@ -181,6 +181,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 28),
 
+          // Idea Pool
+          _sectionHeader('Idea Pool'),
+          const SizedBox(height: 12),
+          _buildIdeaPoolCard(userSettings),
+
+          const SizedBox(height: 28),
+
           // Content frequency
           _sectionHeader('Content Frequency'),
           const SizedBox(height: 12),
@@ -298,6 +305,108 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             '$error',
             style: TextStyle(color: Colors.white.withAlpha(100)),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIdeaPoolCard(AsyncValue<AppSettings?> userSettings) {
+    return _buildCard(
+      child: userSettings.when(
+        data: (settings) {
+          final enabled = settings?.ideaPoolEnabled ?? false;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                title: const Text(
+                  'Curate ideas before generation',
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  enabled
+                      ? 'Content generation waits for your review'
+                      : 'Content is generated automatically',
+                  style: TextStyle(color: Colors.white.withAlpha(100)),
+                ),
+                value: enabled,
+                onChanged: settings == null
+                    ? null
+                    : (val) {
+                        ref
+                            .read(currentUserSettingsProvider.notifier)
+                            .toggleIdeaPool(val);
+                      },
+                activeTrackColor: const Color(0xFFFDAA5E),
+                contentPadding: EdgeInsets.zero,
+              ),
+              if (enabled) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDAA5E).withAlpha(15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFFFDAA5E).withAlpha(40),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.lightbulb_outline,
+                        color: Color(0xFFFDAA5E),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(160),
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push('/idea-pool'),
+                    icon: const Icon(Icons.lightbulb_outline, size: 18),
+                    label: const Text('View Idea Pool'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFDAA5E),
+                      side: BorderSide(
+                        color: const Color(0xFFFDAA5E).withAlpha(60),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
+        loading: () => const ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            'Loading Idea Pool settings',
+            style: TextStyle(color: Colors.white),
+          ),
+          trailing: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        error: (_, _) => Text(
+          'Sign in to configure Idea Pool',
+          style: TextStyle(color: Colors.white.withAlpha(100)),
         ),
       ),
     );

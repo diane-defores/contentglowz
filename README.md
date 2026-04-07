@@ -71,6 +71,25 @@ CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 
 The static server serves `build/web` on port `3050` by default.
 
+## Vercel Build
+
+Vercel now builds the Flutter web bundle directly from this repo.
+
+Required Vercel environment variables:
+
+- `API_BASE_URL`
+- `CLERK_PUBLISHABLE_KEY`
+
+The Vercel project uses:
+
+- [vercel.json](/home/claude/ContentFlowz_app/vercel.json)
+- [scripts/vercel-install.sh](/home/claude/ContentFlowz_app/scripts/vercel-install.sh)
+- [scripts/vercel-build.sh](/home/claude/ContentFlowz_app/scripts/vercel-build.sh)
+
+`installCommand` downloads the Flutter SDK in the Vercel build environment and enables web support. `buildCommand` then runs `flutter build web` and injects `API_BASE_URL` and `CLERK_PUBLISHABLE_KEY` through `--dart-define`.
+
+If Doppler is connected to Vercel, those variables must be exposed to the Vercel build for the target environment. The Clerk publishable key is intentionally compiled into the frontend bundle.
+
 Clerk runtime validation with optional Eruda console:
 
 ```bash

@@ -23,6 +23,10 @@ class AppSettings {
 
   bool get notificationsEnabled => emailNotifications;
 
+  /// Whether the Idea Pool curation step is enabled before content generation.
+  bool get ideaPoolEnabled =>
+      robotSettings?['ideaPoolEnabled'] as bool? ?? false;
+
   /// Content frequency config from robotSettings.contentFrequency
   Map<String, dynamic> get contentFrequency =>
       (robotSettings?['contentFrequency'] as Map<String, dynamic>?) ?? {};
