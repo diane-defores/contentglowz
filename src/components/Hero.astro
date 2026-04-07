@@ -1,16 +1,16 @@
 ---
 ---
 
-<section class="hero">
+<section id="main-content" class="hero">
   <div class="hero-bg"></div>
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">
-        AI creates your <span class="gradient-text rotating-words">
-          <span class="word active">articles</span>
-          <span class="word">newsletters</span>
-          <span class="word">social posts</span>
-          <span class="word">video scripts</span>
+        AI creates your <span class="gradient-text rotating-words" aria-label="articles, newsletters, social posts, video scripts">
+          <span class="word active" aria-hidden="true">articles</span>
+          <span class="word" aria-hidden="true">newsletters</span>
+          <span class="word" aria-hidden="true">social posts</span>
+          <span class="word" aria-hidden="true">video scripts</span>
         </span>.<br/>You swipe to publish.
       </h1>
       <p class="hero-subtitle">
@@ -75,7 +75,7 @@
   }
 
   .hero-title {
-    font-size: 3.5rem;
+    font-size: clamp(2.2rem, 1.2rem + 4.17vw, 3.5rem);
     font-weight: 900;
     line-height: 1.15;
     margin-bottom: 1.5rem;
@@ -212,10 +212,6 @@
   @media (max-width: 768px) {
     .hero {
       padding: 8rem 0 4rem;
-    }
-
-    .hero-title {
-      font-size: 2.2rem;
     }
 
     .hero-cta {

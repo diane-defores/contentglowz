@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ## 2026-04-07
 
 ### Added
+- Design: Hamburger mobile menu with animated open/close and `aria-expanded`/`aria-controls`
+- Design: Skip navigation link ("Skip to content") for keyboard/screen reader users
+- Design: Global `:focus-visible` outline (2px solid, WCAG 2.4.11 Focus Appearance)
+- Design: `prefers-reduced-motion` media query — disables all animations/transitions
+- Design: `<meta name="theme-color">` for mobile browser chrome
+- Design: `aria-expanded`, `aria-controls`, `role="region"` on FAQ accordion
+- Design: `aria-hidden` on rotating hero words + `aria-label` summary for screen readers
+- Design: Navbar + Footer on Privacy and 404 pages (were bare layout)
 - SEO: robots.txt, 404 page, favicon.svg, OG default image
 - SEO: FAQPage, BreadcrumbList, WebSite+SearchAction, Product/Offer JSON-LD schemas
 - SEO: Blog link in Navbar, explicit meta robots tag, font preload
@@ -17,6 +25,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - AUDIT_LOG.md for tracking audit history
 
 ### Changed
+- Design: All heading font-sizes now use `clamp(rem, rem+vw, rem)` for fluid scaling (7 components)
+- Design: Fixed `clamp()` pure `vw` preferred values → `rem + vw` in BlogPost and blog index
+- Design: Privacy page migrated from inline styles to scoped CSS classes
+- Design: Footer added `role="contentinfo"` semantic
 - Homepage: "Who It's For" section moved before Pricing (identification before price ask)
 - Features: reduced from 10 to 5 benefit-focused cards, jargon eliminated (CrewAI, DataForSEO, OAuth → plain language)
 - Robots: "23 Agents Work Together" → "Multiple Formats, One Pipeline"

@@ -134,7 +134,7 @@ const pricingSchema = {
   }
 
   .section-header h2 {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.2rem + 3.33vw, 3rem);
     margin-bottom: 1rem;
     color: var(--color-dark);
   }
@@ -275,10 +275,6 @@ const pricingSchema = {
   }
 
   @media (max-width: 768px) {
-    .section-header h2 {
-      font-size: 2rem;
-    }
-
     .pricing-card.featured {
       transform: scale(1);
     }

@@ -33,13 +33,13 @@ const faqSchema = {
     </div>
 
     <div class="faq-grid">
-      {faqData.map(({ question, answer }) => (
+      {faqData.map(({ question, answer }, i) => (
         <div class="faq-item">
-          <button class="faq-question">
+          <button class="faq-question" aria-expanded="false" aria-controls={`faq-answer-${i}`}>
             <span>{question}</span>
-            <span class="icon">+</span>
+            <span class="icon" aria-hidden="true">+</span>
           </button>
-          <div class="faq-answer">
+          <div class="faq-answer" id={`faq-answer-${i}`} role="region" aria-labelledby={`faq-q-${i}`}>
             <p>{answer}</p>
           </div>
         </div>
@@ -66,7 +66,7 @@ const faqSchema = {
   }
 
   .section-header h2 {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.2rem + 3.33vw, 3rem);
     margin-bottom: 1rem;
     color: var(--color-dark);
   }
@@ -138,10 +138,6 @@ const faqSchema = {
   }
 
   @media (max-width: 768px) {
-    .section-header h2 {
-      font-size: 2rem;
-    }
-
     .faq-question {
       font-size: 1rem;
     }
@@ -150,19 +146,23 @@ const faqSchema = {
 
 <script>
   const faqItems = document.querySelectorAll('.faq-item');
-  
+
   faqItems.forEach(item => {
     const question = item.querySelector('.faq-question');
-    
+
     question?.addEventListener('click', () => {
       const isActive = item.classList.contains('active');
-      
+
       // Close all items
-      faqItems.forEach(i => i.classList.remove('active'));
-      
+      faqItems.forEach(i => {
+        i.classList.remove('active');
+        i.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+
       // Open clicked item if it wasn't active
       if (!isActive) {
         item.classList.add('active');
+        question.setAttribute('aria-expanded', 'true');
       }
     });
   });
