@@ -11,20 +11,22 @@ export PATH="$FLUTTER_ROOT/bin:$PATH"
 API_BASE_URL_VALUE="${API_BASE_URL:-}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
 
-if [[ -z "$API_BASE_URL_VALUE" ]]; then
-  echo "ERROR: API_BASE_URL is required for the Vercel build." >&2
-  exit 1
+DART_DEFINES=""
+
+if [[ -n "$API_BASE_URL_VALUE" ]]; then
+  DART_DEFINES="$DART_DEFINES --dart-define=API_BASE_URL=$API_BASE_URL_VALUE"
+else
+  echo "WARNING: API_BASE_URL not set — using Dart default (http://localhost:8000)" >&2
 fi
 
-if [[ -z "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then
-  echo "ERROR: CLERK_PUBLISHABLE_KEY is required for the Vercel build." >&2
-  exit 1
+if [[ -n "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then
+  DART_DEFINES="$DART_DEFINES --dart-define=CLERK_PUBLISHABLE_KEY=$CLERK_PUBLISHABLE_KEY_VALUE"
+else
+  echo "WARNING: CLERK_PUBLISHABLE_KEY not set — auth will not work" >&2
 fi
 
 cd "$ROOT_DIR"
 
 flutter --version
 flutter pub get
-flutter build web --release \
-  --dart-define=API_BASE_URL="$API_BASE_URL_VALUE" \
-  --dart-define=CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY_VALUE"
+flutter build web --release $DART_DEFINES
