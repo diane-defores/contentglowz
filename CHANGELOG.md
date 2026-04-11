@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [0.7.0] - 2026-04-11 — Mobile UX Overhaul
+
+### Changed
+- **Bottom navigation redesigned**: replaced unusable 18-item horizontal scroll with a 5-tab bar (Feed, Schedule, History, Drip, More) + categorized bottom sheet for all other screens.
+- **Entry screen responsive**: hero text scales from 28px→36px→48px based on viewport width; feature/step cards go full-width on mobile instead of fixed 320/350px.
+- **Pain vs Flow section**: fixed `Expanded` inside `Column` crash on compact layout; now uses conditional Row/Column correctly.
+- **Feed action buttons**: replaced `GestureDetector` with `Material` + `InkWell` for visible ripple touch feedback on mobile.
+- **Content card footer**: swipe hints hide on screens narrower than 380px to prevent overflow; spacing tightened.
+- **Settings frequency sliders**: stacks label/slider vertically on screens narrower than 360px instead of cramped horizontal layout.
+
+### Fixed
+- **Idea Pool action buttons**: increased touch targets from ~24px to 44px minimum height (WCAG 2.5.8 compliance).
+
 ## [0.6.0] - 2026-03-27 — DataForSEO Integration
 
 ### Added

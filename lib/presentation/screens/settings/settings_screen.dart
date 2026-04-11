@@ -490,49 +490,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required Color color,
     required ValueChanged<int> onChanged,
   }) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-          ),
+    return LayoutBuilder(builder: (context, constraints) {
+      final compact = constraints.maxWidth < 360;
+      final slider = SliderTheme(
+        data: SliderThemeData(
+          activeTrackColor: color,
+          inactiveTrackColor: color.withAlpha(30),
+          thumbColor: color,
+          overlayColor: color.withAlpha(30),
+          trackHeight: 4,
         ),
-        Expanded(
-          child: SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: color,
-              inactiveTrackColor: color.withAlpha(30),
-              thumbColor: color,
-              overlayColor: color.withAlpha(30),
-              trackHeight: 4,
-            ),
-            child: Slider(
-              value: value.toDouble(),
-              min: 0,
-              max: max.toDouble(),
-              divisions: max,
-              onChanged: (v) => onChanged(v.round()),
-            ),
-          ),
+        child: Slider(
+          value: value.toDouble(),
+          min: 0,
+          max: max.toDouble(),
+          divisions: max,
+          onChanged: (v) => onChanged(v.round()),
         ),
-        SizedBox(
-          width: 55,
-          child: Text(
-            value == 0 ? 'Off' : '$value$unit',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: value == 0 ? Colors.white.withAlpha(60) : color,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+      );
+      final valueText = Text(
+        value == 0 ? 'Off' : '$value$unit',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: value == 0 ? Colors.white.withAlpha(60) : color,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
-      ],
-    );
+      );
+
+      if (compact) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: color),
+                const SizedBox(width: 8),
+                Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                const Spacer(),
+                valueText,
+              ],
+            ),
+            slider,
+          ],
+        );
+      }
+
+      return Row(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 100,
+            child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          ),
+          Expanded(child: slider),
+          SizedBox(width: 55, child: valueText),
+        ],
+      );
+    });
   }
 
   Future<void> _updateFrequency(String key, int value) async {

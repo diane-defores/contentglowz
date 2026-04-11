@@ -71,15 +71,19 @@ class EntryScreen extends ConsumerWidget {
               label: 'AI content ops for founders, creators, and lean teams',
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Turn one repo into a weekly content machine.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.w800,
-                height: 1.05,
-              ),
-            ),
+            Builder(builder: (context) {
+              final sw = MediaQuery.sizeOf(context).width;
+              final heroSize = sw < 400 ? 28.0 : sw < 600 ? 36.0 : 48.0;
+              return Text(
+                'Turn one repo into a weekly content machine.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: heroSize,
+                  fontWeight: FontWeight.w800,
+                  height: 1.05,
+                ),
+              );
+            }),
             const SizedBox(height: 16),
             Text(
               'ContentFlowz analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
@@ -203,37 +207,41 @@ class EntryScreen extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 900;
-        final children = [
-          Expanded(
-            child: _comparisonCard(
-              title: 'Without ContentFlowz',
-              accent: AppTheme.rejectColor,
-              items: const [
-                'You explain your product from scratch in every prompt.',
-                'Ideas, drafts, and publishing live in separate tools.',
-                'The team loses momentum between generation and approval.',
-                'Publishing still depends on manual copy-paste.',
-              ],
-            ),
-          ),
-          if (!compact) const SizedBox(width: 20) else const SizedBox(height: 20),
-          Expanded(
-            child: _comparisonCard(
-              title: 'With ContentFlowz',
-              accent: AppTheme.approveColor,
-              items: const [
-                'Your workspace starts from a real repo and a real content plan.',
-                'Rituals and personas sharpen the angle before generation.',
-                'Drafts are reviewed with one approval workflow.',
-                'Publishing, scheduling, and channel readiness stay visible.',
-              ],
-            ),
-          ),
-        ];
+        final withoutCard = _comparisonCard(
+          title: 'Without ContentFlowz',
+          accent: AppTheme.rejectColor,
+          items: const [
+            'You explain your product from scratch in every prompt.',
+            'Ideas, drafts, and publishing live in separate tools.',
+            'The team loses momentum between generation and approval.',
+            'Publishing still depends on manual copy-paste.',
+          ],
+        );
+        final withCard = _comparisonCard(
+          title: 'With ContentFlowz',
+          accent: AppTheme.approveColor,
+          items: const [
+            'Your workspace starts from a real repo and a real content plan.',
+            'Rituals and personas sharpen the angle before generation.',
+            'Drafts are reviewed with one approval workflow.',
+            'Publishing, scheduling, and channel readiness stay visible.',
+          ],
+        );
 
-        return compact
-            ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children)
-            : Row(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [withoutCard, const SizedBox(height: 20), withCard],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: withoutCard),
+            const SizedBox(width: 20),
+            Expanded(child: withCard),
+          ],
+        );
       },
     );
   }
@@ -282,23 +290,28 @@ class EntryScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: steps
-                .map(
-                  (step) => SizedBox(
-                    width: 320,
-                    child: _infoCard(
-                      title: step.$1,
-                      description: step.$2,
-                      icon: Icons.arrow_outward_rounded,
-                      accent: AppTheme.editColor,
+          LayoutBuilder(builder: (context, constraints) {
+            final cardWidth = constraints.maxWidth < 700
+                ? constraints.maxWidth
+                : 320.0;
+            return Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: steps
+                  .map(
+                    (step) => SizedBox(
+                      width: cardWidth,
+                      child: _infoCard(
+                        title: step.$1,
+                        description: step.$2,
+                        icon: Icons.arrow_outward_rounded,
+                        accent: AppTheme.editColor,
+                      ),
                     ),
-                  ),
-                )
-                .toList(),
-          ),
+                  )
+                  .toList(),
+            );
+          }),
         ],
       ),
     );
@@ -332,23 +345,28 @@ class EntryScreen extends ConsumerWidget {
       ),
     ];
 
-    return Wrap(
-      spacing: 16,
-      runSpacing: 16,
-      children: items
-          .map(
-            (item) => SizedBox(
-              width: 350,
-              child: _infoCard(
-                title: item.$1,
-                description: item.$2,
-                icon: item.$3,
-                accent: item.$4,
+    return LayoutBuilder(builder: (context, constraints) {
+      final cardWidth = constraints.maxWidth < 750
+          ? constraints.maxWidth
+          : 350.0;
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: items
+            .map(
+              (item) => SizedBox(
+                width: cardWidth,
+                child: _infoCard(
+                  title: item.$1,
+                  description: item.$2,
+                  icon: item.$3,
+                  accent: item.$4,
+                ),
               ),
-            ),
-          )
-          .toList(),
-    );
+            )
+            .toList(),
+      );
+    });
   }
 
   Widget _buildFaqSection() {

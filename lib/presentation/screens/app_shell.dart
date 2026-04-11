@@ -245,6 +245,9 @@ class _SideNavItem extends StatelessWidget {
 
 // ─── Mobile: Bottom Nav ──────────────────────────────────────
 
+/// Primary tabs shown in the bottom bar on mobile.
+const _mobileTabPaths = ['/feed', '/calendar', '/history', '/drip'];
+
 class _BottomNav extends StatelessWidget {
   const _BottomNav({
     required this.selectedPath,
@@ -260,6 +263,10 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryItems =
+        _allItems.where((i) => _mobileTabPaths.contains(i.path)).toList();
+    final isMoreSelected = !_mobileTabPaths.contains(selectedPath);
+
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -271,65 +278,125 @@ class _BottomNav extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Row(
-            children: [
-              for (var sectionIdx = 0; sectionIdx < _sections.length; sectionIdx++) ...[
-                if (sectionIdx > 0)
-                  _SectionDivider(
-                    label: _sections[sectionIdx].label,
-                    colorScheme: colorScheme,
-                  ),
-                for (final item in _sections[sectionIdx].items)
-                  _NavTab(
-                    icon: item.icon,
-                    label: item.label,
-                    isSelected: item.path == selectedPath,
-                    badgeCount: item.path == '/feed' && pendingCount > 0
-                        ? pendingCount
-                        : null,
-                    colorScheme: colorScheme,
-                    onTap: () => onNavigate(item.path),
-                  ),
-              ],
-            ],
-          ),
+        child: Row(
+          children: [
+            for (final item in primaryItems)
+              Expanded(
+                child: _NavTab(
+                  icon: item.icon,
+                  label: item.label,
+                  isSelected: item.path == selectedPath,
+                  badgeCount: item.path == '/feed' && pendingCount > 0
+                      ? pendingCount
+                      : null,
+                  colorScheme: colorScheme,
+                  onTap: () => onNavigate(item.path),
+                ),
+              ),
+            Expanded(
+              child: _NavTab(
+                icon: Icons.grid_view_rounded,
+                label: 'More',
+                isSelected: isMoreSelected,
+                colorScheme: colorScheme,
+                onTap: () => _showMoreSheet(context),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _SectionDivider extends StatelessWidget {
-  const _SectionDivider({required this.label, required this.colorScheme});
-  final String label;
-  final ColorScheme colorScheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 1,
-            height: 20,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+  void _showMoreSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              for (final section in _sections)
+                ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        section.label.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.outlineVariant,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: section.items.map((item) {
+                      final isSelected = item.path == selectedPath;
+                      final color = isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant;
+                      final bgColor = isSelected
+                          ? colorScheme.primary.withValues(alpha: 0.12)
+                          : Colors.transparent;
+                      return Material(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            onNavigate(item.path);
+                          },
+                          child: SizedBox(
+                            width: 80,
+                            height: 64,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(item.icon, color: color, size: 22),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: color,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.outlineVariant,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -358,22 +425,21 @@ class _NavTab extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Badge(
               isLabelVisible: badgeCount != null,
               label: badgeCount != null ? Text('$badgeCount') : null,
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 12,
                 color: color,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),

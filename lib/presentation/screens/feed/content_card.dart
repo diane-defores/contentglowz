@@ -238,6 +238,9 @@ class ContentCard extends StatelessWidget {
   }
 
   Widget _buildFooter(BuildContext context, Color typeColor) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final showHints = screenWidth > 380;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       child: Row(
@@ -252,35 +255,38 @@ class ContentCard extends StatelessWidget {
                 ),
               )),
           const Spacer(),
-          // Swipe hints
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.arrow_back_rounded,
-                  size: 14, color: AppTheme.rejectColor.withAlpha(150)),
-              const SizedBox(width: 4),
-              Text('Skip',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.rejectColor.withAlpha(150))),
-              const SizedBox(width: 12),
-              Text('Edit',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.editColor.withAlpha(150))),
-              const SizedBox(width: 4),
-              Icon(Icons.arrow_upward_rounded,
-                  size: 14, color: AppTheme.editColor.withAlpha(150)),
-              const SizedBox(width: 12),
-              Text('Publish',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.approveColor.withAlpha(150))),
-              const SizedBox(width: 4),
-              Icon(Icons.arrow_forward_rounded,
-                  size: 14, color: AppTheme.approveColor.withAlpha(150)),
-            ],
-          ),
+          // Swipe hints — hidden on very narrow screens to prevent overflow
+          if (showHints)
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.arrow_back_rounded,
+                      size: 14, color: AppTheme.rejectColor.withAlpha(150)),
+                  const SizedBox(width: 3),
+                  Text('Skip',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.rejectColor.withAlpha(150))),
+                  const SizedBox(width: 8),
+                  Icon(Icons.arrow_upward_rounded,
+                      size: 14, color: AppTheme.editColor.withAlpha(150)),
+                  const SizedBox(width: 3),
+                  Text('Edit',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.editColor.withAlpha(150))),
+                  const SizedBox(width: 8),
+                  Text('Publish',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.approveColor.withAlpha(150))),
+                  const SizedBox(width: 3),
+                  Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: AppTheme.approveColor.withAlpha(150)),
+                ],
+              ),
+            ),
         ],
       ),
     );

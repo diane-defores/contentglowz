@@ -178,6 +178,7 @@
 | ✅ | Stats post-publication (destinations breakdown + approval rate) | ✅ done |
 | ✅ | Landing page rebrand (hero, features, pricing, use cases, FAQ) | ✅ done |
 | ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
+| ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
@@ -205,6 +206,6 @@
 
 ---
 
-> **Priority last updated**: 2026-03-28
+> **Priority last updated**: 2026-04-11
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
 > **Recommended next**: Valider le flux Clerk réel en runtime Flutter, puis landing page produit, puis Stripe billing

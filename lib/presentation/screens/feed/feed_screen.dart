@@ -136,7 +136,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             cardsCount: items.length,
             numberOfCardsDisplayed: items.length.clamp(1, 3),
             backCardOffset: const Offset(0, -30),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
             scale: 0.95,
             isLoop: false,
             onSwipe: (prevIndex, currentIndex, direction) =>
@@ -262,17 +262,20 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withAlpha(30),
-              border: Border.all(color: color.withAlpha(150), width: 2),
+        Material(
+          color: color.withAlpha(30),
+          shape: CircleBorder(
+            side: BorderSide(color: color.withAlpha(150), width: 2),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            splashColor: color.withAlpha(60),
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: Icon(icon, color: color, size: large ? 32 : 26),
             ),
-            child: Icon(icon, color: color, size: large ? 32 : 26),
           ),
         ),
         const SizedBox(height: 6),
@@ -280,7 +283,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           label,
           style: TextStyle(
             color: color.withAlpha(180),
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
         ),
