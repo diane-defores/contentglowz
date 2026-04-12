@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 from typing import Any
 
-import libsql_client
+from utils.libsql_async import create_client
 
 
 class JobStore:
@@ -20,7 +20,7 @@ class JobStore:
     def __init__(self) -> None:
         self.db_client = None
         if os.getenv("TURSO_DATABASE_URL") and os.getenv("TURSO_AUTH_TOKEN"):
-            self.db_client = libsql_client.create_client(
+            self.db_client = create_client(
                 url=os.getenv("TURSO_DATABASE_URL"),
                 auth_token=os.getenv("TURSO_AUTH_TOKEN"),
             )

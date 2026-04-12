@@ -8,6 +8,8 @@
 | Content Quality Scoring — textstat integration + fix broken Flesch | Done |
 | OG Preview service — OpenGraph extraction for link previews | Done |
 | Social Listener spec — `specs/social-listener.md` | Done |
+| Production API publish — expose backend on `api.winflowz.com` via Caddy + PM2 | Done |
+| Turso production connectivity — replace deprecated `libsql-client`, restore DB health to operational | Done |
 | Branding alignment — rename ContentFlowz defaults, paths, domains, and archive labels to ContentFlow | Done |
 | Feature documentation on ContentFlow site (3 pages + index update) | Done |
 | P0.2 — Rename fake agents to pipelines (SchedulerPipeline, ImagePipeline) | Done |

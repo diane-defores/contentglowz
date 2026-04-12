@@ -172,11 +172,4 @@ class MaintenanceTracker:
         
         return health_percentage
 
-
-# Initialize tool instances
-personalization_engine = PersonalizationEngine()
-conversion_optimizer = ConversionOptimizer()
-linking_analyzer = LinkingAnalyzer()
-automated_inserter = AutomatedInserter()
-funnel_integrator = FunnelIntegrator()
-maintenance_tracker = MaintenanceTracker()
+# This module exports the MaintenanceTracker class only.

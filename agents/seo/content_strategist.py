@@ -19,7 +19,6 @@ from typing import List, Optional, Dict, Any, Union
 
 # Third-party imports
 from crewai import Agent, Task, Crew
-from crewai.tools import Tool
 from dotenv import load_dotenv
 
 # Utility imports
@@ -114,31 +113,9 @@ class ContentStrategistAgent:
             Configured CrewAI Agent
         """
         tool_list = [
-            Tool.tool(
-                name="Generate Content Outline",
-                func=self.outline_generator.generate_outline,
-                description=(
-                    "Generate a detailed, SEO-optimized content outline. "
-                    "Includes structure, target word count, and key sections "
-                    "aligned with search intent."
-                )
-            ),
-            Tool.tool(
-                name="Optimize Topical Flow",
-                func=self.flow_optimizer.optimize_topical_flow,
-                description=(
-                    "Analyze and optimize content progression and internal linking. "
-                    "Ensures smooth user journey and maximum topical coverage."
-                )
-            ),
-            Tool.tool(
-                name="Plan Editorial Calendar",
-                func=self.calendar_planner.plan_editorial_calendar,
-                description=(
-                    "Create a strategic editorial calendar with publication schedule. "
-                    "Prioritizes content based on business goals and topical impact."
-                )
-            )
+            self.outline_generator.generate_outline,
+            self.flow_optimizer.optimize_topical_flow,
+            self.calendar_planner.plan_editorial_calendar,
         ]
         
         p = load_prompt("seo", "content_strategist")
@@ -198,7 +175,6 @@ class ContentStrategistAgent:
         try:
             # Create strategy task
             task = self.create_strategy_task(
-                research_insights=research_insights,
                 target_keyword=target_keyword,
                 existing_content=existing_content,
                 business_goals=business_goals,

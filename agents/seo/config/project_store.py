@@ -11,7 +11,7 @@ import uuid
 from typing import Optional, List
 from datetime import datetime
 
-import libsql_client
+from utils.libsql_async import create_client
 from typing import Optional, List
 
 from api.models.project import (
@@ -36,7 +36,7 @@ class ProjectStore:
         """Initialize database client from environment variables."""
         self.db_client = None
         if os.getenv("TURSO_DATABASE_URL") and os.getenv("TURSO_AUTH_TOKEN"):
-            self.db_client = libsql_client.create_client(
+            self.db_client = create_client(
                 url=os.getenv("TURSO_DATABASE_URL"),
                 auth_token=os.getenv("TURSO_AUTH_TOKEN")
             )

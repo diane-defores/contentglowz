@@ -5,9 +5,23 @@ All notable changes to Content Flows are documented here.
 ## [2026-04-12]
 
 ### Added
-- **`agents/seo/schemas/pipeline_outputs.py`** — 6 Pydantic BaseModel schemas for SEO pipeline stage outputs: `ResearchOutput`, `StrategyOutput`, `WritingOutput`, `TechnicalOutput`, `MarketingOutput`, `EditingOutput`. All fields are flat (`str`, `list[str]`, `int`, `float`) to maximise LLM JSON parsing reliability
+- **`utils/libsql_async.py`** — async compatibility wrapper around the maintained `libsql` driver so existing repository stores can keep using `await db_client.execute(...)` against Turso without the deprecated websocket client
 
 ### Changed
+- **Production API publish path finalized on `api.winflowz.com`** — PM2 now starts the backend through `doppler run`, Caddy proxies the public hostname to `localhost:3000`, and the service is reachable from the Flutter app and Vercel builds with a stable root URL
+- **Flox environment includes `cmake`** — build prerequisite captured in `.flox/env/manifest.toml` and lockfile so native Python dependencies can be installed reproducibly on fresh environments
+- **Turso store modules now import `utils.libsql_async.create_client`** — `user_data_store`, `job_store`, `analytics_store`, `project_store`, and `content_config` no longer depend on `libsql-client`
+- **Python dependency switched from `libsql-client` to `libsql`** — repository now targets the maintained Turso/libSQL driver instead of the deprecated client
+
+### Fixed
+- **`/health` now reports `database: operational` in production** — production Turso connectivity was restored after replacing the deprecated client path and wiring the backend to the correct Doppler-injected credentials
+- **`ContentStrategistAgent` tool wiring** — removed the invalid `crewai.tools.Tool` wrapper usage and passed decorated tool methods directly so the strategist agent imports and boots correctly again
+- **Internal linking maintenance imports** — removed invalid global initializers from `maintenance_tracker.py` that referenced undefined classes and broke agent loading at startup
+
+### Added (continued)
+- **`agents/seo/schemas/pipeline_outputs.py`** — 6 Pydantic BaseModel schemas for SEO pipeline stage outputs: `ResearchOutput`, `StrategyOutput`, `WritingOutput`, `TechnicalOutput`, `MarketingOutput`, `EditingOutput`. All fields are flat (`str`, `list[str]`, `int`, `float`) to maximise LLM JSON parsing reliability
+
+### Changed (continued)
 - **Branding/defaults aligned from `ContentFlowz` to `ContentFlow`** — updated project paths, domains, Doppler project names, Bunny/IMAP defaults, memory IDs, repo links, and operational docs/examples across the backend and documentation
 - **SEO pipeline tasks now use `output_pydantic=`** — all 6 tasks in `seo_crew.py` have a typed schema attached; agents must emit valid JSON matching the schema instead of free-form text
 - **`results["structured"]`** added to `generate_content()` return value — callers get typed model instances (e.g. `results["structured"]["editing"].publication_ready`) alongside the existing `results["outputs"]` string dict (API shape preserved)

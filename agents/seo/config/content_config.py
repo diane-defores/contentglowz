@@ -46,7 +46,7 @@ class ContentConfiguration:
 
 import os
 import json
-import libsql_client
+from utils.libsql_async import create_client
 
 class ContentConfigurationManager:
     """Manages content configuration with precedence, fetching from Turso DB."""
@@ -55,7 +55,7 @@ class ContentConfigurationManager:
         self.default_config = ContentConfiguration()
         self.db_client = None
         if os.getenv("TURSO_DATABASE_URL") and os.getenv("TURSO_AUTH_TOKEN"):
-            self.db_client = libsql_client.create_client(
+            self.db_client = create_client(
                 url=os.getenv("TURSO_DATABASE_URL"),
                 auth_token=os.getenv("TURSO_AUTH_TOKEN")
             )
