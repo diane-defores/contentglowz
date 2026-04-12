@@ -579,8 +579,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   String _maskPublishableKey() {
     final key = AppConfig.clerkPublishableKey;
     if (key.isEmpty) return 'missing';
-    if (key.length <= 12) return key;
-    return '${key.substring(0, 7)}...${key.substring(key.length - 4)}';
+    if (key.length <= 18) return key;
+    return '${key.substring(0, 10)}...${key.substring(key.length - 5)} (len=${key.length})';
   }
 
   Future<void> _copyDiagnostics({
