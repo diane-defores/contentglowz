@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-13]
+
+### Changed
+- Reworked the Flutter auth screen around the official Clerk UI so password-manager autofill and configured social providers can be rendered by the SDK instead of a custom form.
+
+### Fixed
+- Replaced the infinite auth spinner with explicit Clerk SDK initialization states, including a timeout and surfaced diagnostics when Clerk fails to load.
+
 ## [2026-04-12]
 
 ### Changed

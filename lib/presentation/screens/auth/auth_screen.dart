@@ -22,6 +22,8 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   late final ClerkAuthConfig _clerkConfig;
+  late final Future<ClerkAuthState> _clerkAuthStateFuture;
+  ClerkAuthState? _ownedClerkAuthState;
   bool _isSubmitting = false;
   String? _error;
   String? _lastSyncedSessionId;
@@ -33,6 +35,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       publishableKey: AppConfig.clerkPublishableKey,
       persistor: SharedPreferencesPersistor(ref.read(sharedPrefsProvider)),
     );
+    _clerkAuthStateFuture = _initializeClerkAuthState();
+  }
+
+  @override
+  void dispose() {
+    _ownedClerkAuthState?.terminate();
+    super.dispose();
   }
 
   @override
@@ -97,67 +106,158 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildForm(BuildContext context, AuthSession authSession) {
-    return ClerkAuth(
-      config: _clerkConfig,
-      child: ClerkErrorListener(
-        handler: (context, error) async {
-          setState(() {
-            _error = _friendlyAuthError(error);
-          });
-        },
-        child: ClerkAuthBuilder(
-          signedInBuilder: (context, authState) {
-            unawaited(_syncFromClerkIfNeeded(authState));
-            return _buildSyncingState(authSession);
-          },
-          signedOutBuilder: (context, authState) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Sign in to your workspace',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Use Clerk to sign in with your password manager, Google, or any provider enabled in your Clerk dashboard.',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(150),
-                    fontSize: 15,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildRuntimeDiagnostics(
-                  hasClerkKey: true,
-                  authSession: authSession,
-                  error: _error,
-                ),
-                const SizedBox(height: 24),
-                Theme(
-                  data: Theme.of(context).copyWith(
-                    extensions: [Theme.of(context).clerkThemeExtension],
-                  ),
-                  child: const ClerkAuthentication(),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: _isSubmitting ? null : _clearLocalSession,
-                    child: const Text('Clear Local Clerk Session'),
-                  ),
-                ),
-              ],
-            );
-          },
+    return FutureBuilder<ClerkAuthState>(
+      future: _clerkAuthStateFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return _buildSdkLoadingState(authSession);
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          final message = _friendlyAuthError(
+            snapshot.error ??
+                StateError('Clerk SDK did not finish initialization.'),
+          );
+          return _buildSdkErrorState(authSession, message);
+        }
+
+        return ClerkAuth(
+          authState: snapshot.data,
+          child: ClerkErrorListener(
+            handler: (context, error) async {
+              setState(() {
+                _error = _friendlyAuthError(error);
+              });
+            },
+            child: ClerkAuthBuilder(
+              signedInBuilder: (context, authState) {
+                unawaited(_syncFromClerkIfNeeded(authState));
+                return _buildSyncingState(authSession);
+              },
+              signedOutBuilder: (context, authState) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Sign in to your workspace',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Use Clerk to sign in with your password manager, Google, or any provider enabled in your Clerk dashboard.',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(150),
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRuntimeDiagnostics(
+                      hasClerkKey: true,
+                      authSession: authSession,
+                      error: _error,
+                    ),
+                    const SizedBox(height: 24),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        extensions: [Theme.of(context).clerkThemeExtension],
+                      ),
+                      child: const ClerkAuthentication(),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: _isSubmitting ? null : _clearLocalSession,
+                        child: const Text('Clear Local Clerk Session'),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSdkLoadingState(AuthSession authSession) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Loading Clerk',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
+        const SizedBox(height: 12),
+        Text(
+          'The app is initializing the Clerk SDK and loading your configured sign-in methods.',
+          style: TextStyle(
+            color: Colors.white.withAlpha(150),
+            fontSize: 15,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildRuntimeDiagnostics(
+          hasClerkKey: true,
+          authSession: authSession,
+          error: _error,
+        ),
+        const SizedBox(height: 24),
+        const Center(child: CircularProgressIndicator()),
+      ],
+    );
+  }
+
+  Widget _buildSdkErrorState(AuthSession authSession, String message) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Clerk failed to initialize',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'The SDK did not reach a usable state, so the official Clerk UI could not be rendered.',
+          style: TextStyle(
+            color: Colors.white.withAlpha(150),
+            fontSize: 15,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildRuntimeDiagnostics(
+          hasClerkKey: true,
+          authSession: authSession,
+          error: message,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: _isSubmitting ? null : _clearLocalSession,
+            child: const Text('Clear Local Clerk Session'),
+          ),
+        ),
+      ],
     );
   }
 
@@ -373,6 +473,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         });
       }
     }
+  }
+
+  Future<ClerkAuthState> _initializeClerkAuthState() async {
+    final authState = await ClerkAuthState.create(config: _clerkConfig).timeout(
+      const Duration(seconds: 8),
+      onTimeout: () => throw TimeoutException(
+        'Clerk SDK initialization timed out after 8 seconds. This usually means the publishable key is invalid for the current environment, or the app cannot reach the Clerk frontend API.',
+      ),
+    );
+    _ownedClerkAuthState = authState;
+    return authState;
   }
 
   String _friendlyAuthError(Object error) {

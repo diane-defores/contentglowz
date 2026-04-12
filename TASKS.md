@@ -60,6 +60,7 @@
 |-----|------|--------|
 | ✅ | Spec architecture, Clerk auth FastAPI + Flutter, Bootstrap, Projects, User data, Content ownership | ✅ done |
 | ✅ | Flutter auth headless Clerk, session restore, onboarding réel, 401 handling | ✅ done |
+| ✅ | Écran auth Clerk officiel + fallback diagnostics quand le SDK reste bloqué au chargement | ✅ done |
 | 🟠 | Vérifier runtime Clerk réel en environnement Flutter | 📋 todo |
 
 ---
