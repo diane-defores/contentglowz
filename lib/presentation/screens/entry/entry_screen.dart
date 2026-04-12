@@ -86,7 +86,7 @@ class EntryScreen extends ConsumerWidget {
             }),
             const SizedBox(height: 16),
             Text(
-              'ContentFlowz analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
+              'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
               style: TextStyle(
                 color: Colors.white.withAlpha(170),
                 fontSize: 17,
@@ -208,7 +208,7 @@ class EntryScreen extends ConsumerWidget {
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 900;
         final withoutCard = _comparisonCard(
-          title: 'Without ContentFlowz',
+          title: 'Without ContentFlow',
           accent: AppTheme.rejectColor,
           items: const [
             'You explain your product from scratch in every prompt.',
@@ -218,7 +218,7 @@ class EntryScreen extends ConsumerWidget {
           ],
         );
         final withCard = _comparisonCard(
-          title: 'With ContentFlowz',
+          title: 'With ContentFlow',
           accent: AppTheme.approveColor,
           items: const [
             'Your workspace starts from a real repo and a real content plan.',
@@ -554,7 +554,7 @@ class EntryScreen extends ConsumerWidget {
     if (authSession.isSignedIn && onboardingDone) {
       return _card(
         eyebrow: 'Session active',
-        title: 'Welcome back to ContentFlowz',
+        title: 'Welcome back to ContentFlow',
         description:
             'Your account is already recognized. Jump back into the content pipeline instead of going through onboarding again.',
         icon: Icons.verified_user_rounded,

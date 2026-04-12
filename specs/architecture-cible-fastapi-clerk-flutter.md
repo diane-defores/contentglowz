@@ -103,13 +103,13 @@ Le schema cible est:
 - Le `userId Clerk` est deja la vraie identite produit.
 
 Fichiers de reference:
-- `/home/claude/contentflowz/chatbot/middleware.ts`
-- `/home/claude/contentflowz/chatbot/app/api/projects/route.ts`
-- `/home/claude/contentflowz/chatbot/app/api/settings/route.ts`
-- `/home/claude/contentflowz/chatbot/app/api/psychology/route.ts`
-- `/home/claude/contentflowz/chatbot/app/api/psychology/personas/route.ts`
-- `/home/claude/contentflowz/chatbot/lib/db/schema.ts`
-- `/home/claude/contentflowz/chatbot/lib/db/queries.ts`
+- `/home/claude/contentflow/chatbot/middleware.ts`
+- `/home/claude/contentflow/chatbot/app/api/projects/route.ts`
+- `/home/claude/contentflow/chatbot/app/api/settings/route.ts`
+- `/home/claude/contentflow/chatbot/app/api/psychology/route.ts`
+- `/home/claude/contentflow/chatbot/app/api/psychology/personas/route.ts`
+- `/home/claude/contentflow/chatbot/lib/db/schema.ts`
+- `/home/claude/contentflow/chatbot/lib/db/queries.ts`
 
 ### Flutter
 
@@ -119,12 +119,12 @@ Fichiers de reference:
 - L'onboarding est stocke localement au lieu d'etre derive du backend.
 
 Fichiers de reference:
-- `/home/claude/contentflowz-app/lib/main.dart`
-- `/home/claude/contentflowz-app/lib/router.dart`
-- `/home/claude/contentflowz-app/lib/data/services/api_service.dart`
-- `/home/claude/contentflowz-app/lib/providers/providers.dart`
-- `/home/claude/contentflowz-app/lib/presentation/screens/entry/entry_screen.dart`
-- `/home/claude/contentflowz-app/lib/presentation/screens/onboarding/onboarding_screen.dart`
+- `/home/claude/contentflow-app/lib/main.dart`
+- `/home/claude/contentflow-app/lib/router.dart`
+- `/home/claude/contentflow-app/lib/data/services/api_service.dart`
+- `/home/claude/contentflow-app/lib/providers/providers.dart`
+- `/home/claude/contentflow-app/lib/presentation/screens/entry/entry_screen.dart`
+- `/home/claude/contentflow-app/lib/presentation/screens/onboarding/onboarding_screen.dart`
 
 ### Donnees a recuperer pour retrouver un compte existant
 
@@ -292,47 +292,47 @@ Regle:
 
 ### Fichiers a creer
 
-- `/home/claude/contentflowz/api/auth/clerk.py`
+- `/home/claude/contentflow/api/auth/clerk.py`
   - validation JWT Clerk
   - chargement/caching JWKS
   - extraction `sub`
 
-- `/home/claude/contentflowz/api/dependencies/auth.py`
+- `/home/claude/contentflow/api/dependencies/auth.py`
   - dependency `get_current_user()`
   - dependency `require_current_user()`
 
-- `/home/claude/contentflowz/api/models/me.py`
-- `/home/claude/contentflowz/api/models/settings.py`
-- `/home/claude/contentflowz/api/models/persona.py`
-- `/home/claude/contentflowz/api/models/creator_profile.py`
-- `/home/claude/contentflowz/api/models/bootstrap.py`
+- `/home/claude/contentflow/api/models/me.py`
+- `/home/claude/contentflow/api/models/settings.py`
+- `/home/claude/contentflow/api/models/persona.py`
+- `/home/claude/contentflow/api/models/creator_profile.py`
+- `/home/claude/contentflow/api/models/bootstrap.py`
 
-- `/home/claude/contentflowz/api/repositories/`
+- `/home/claude/contentflow/api/repositories/`
   - `projects_repository.py`
   - `settings_repository.py`
   - `creator_profile_repository.py`
   - `personas_repository.py`
   - `content_repository.py`
 
-- `/home/claude/contentflowz/api/routers/me.py`
-- `/home/claude/contentflowz/api/routers/settings.py`
-- `/home/claude/contentflowz/api/routers/personas.py`
-- `/home/claude/contentflowz/api/routers/creator_profile.py`
-- `/home/claude/contentflowz/api/routers/bootstrap.py`
+- `/home/claude/contentflow/api/routers/me.py`
+- `/home/claude/contentflow/api/routers/settings.py`
+- `/home/claude/contentflow/api/routers/personas.py`
+- `/home/claude/contentflow/api/routers/creator_profile.py`
+- `/home/claude/contentflow/api/routers/bootstrap.py`
 
 ### Fichiers a modifier
 
-- `/home/claude/contentflowz/api/main.py`
+- `/home/claude/contentflow/api/main.py`
   - ajouter la nouvelle auth dependency/middleware
   - inclure les nouveaux routers
   - mettre a jour la doc/CORS si necessaire
 
-- `/home/claude/contentflowz/api/routers/projects.py`
+- `/home/claude/contentflow/api/routers/projects.py`
   - remplacer `default-user` par le vrai user Clerk
 
-- `/home/claude/contentflowz/api/routers/content.py`
-- `/home/claude/contentflowz/api/routers/status.py`
-- `/home/claude/contentflowz/api/routers/publish.py`
+- `/home/claude/contentflow/api/routers/content.py`
+- `/home/claude/contentflow/api/routers/status.py`
+- `/home/claude/contentflow/api/routers/publish.py`
   - imposer ownership et user context la ou pertinent
 
 ## Structure Flutter recommandee
@@ -396,37 +396,37 @@ Regle:
 ## Taches d'implementation
 
 - [ ] Tache 1: Ajouter l'auth Clerk cote FastAPI
-  - Fichier: `/home/claude/contentflowz/api/auth/clerk.py`
+  - Fichier: `/home/claude/contentflow/api/auth/clerk.py`
   - Action: Implementer validation JWT via JWKS Clerk, extraction `sub`, cache JWKS.
 
 - [ ] Tache 2: Creer la dependency user courante
-  - Fichier: `/home/claude/contentflowz/api/dependencies/auth.py`
+  - Fichier: `/home/claude/contentflow/api/dependencies/auth.py`
   - Action: Exposer `get_current_user()` pour toutes les routes protegees.
 
 - [ ] Tache 3: Corriger la route projects FastAPI
-  - Fichier: `/home/claude/contentflowz/api/routers/projects.py`
+  - Fichier: `/home/claude/contentflow/api/routers/projects.py`
   - Action: Supprimer `default-user`, utiliser le user Clerk reel.
 
 - [ ] Tache 4: Ajouter les routes `me` et `bootstrap`
-  - Fichier: `/home/claude/contentflowz/api/routers/me.py`
-  - Fichier: `/home/claude/contentflowz/api/routers/bootstrap.py`
+  - Fichier: `/home/claude/contentflow/api/routers/me.py`
+  - Fichier: `/home/claude/contentflow/api/routers/bootstrap.py`
   - Action: Exposer les informations minimales pour la decision Flutter login/onboarding/dashboard.
 
 - [ ] Tache 5: Reexposer `settings` via FastAPI
-  - Fichier: `/home/claude/contentflowz/api/routers/settings.py`
+  - Fichier: `/home/claude/contentflow/api/routers/settings.py`
   - Action: Lire/ecrire les settings utilisateur sans jamais renvoyer les secrets.
 
 - [ ] Tache 6: Reexposer `creator profile`
-  - Fichier: `/home/claude/contentflowz/api/routers/creator_profile.py`
+  - Fichier: `/home/claude/contentflow/api/routers/creator_profile.py`
   - Action: Reprendre le contrat utile a Flutter autour de la psychologie.
 
 - [ ] Tache 7: Reexposer `personas`
-  - Fichier: `/home/claude/contentflowz/api/routers/personas.py`
+  - Fichier: `/home/claude/contentflow/api/routers/personas.py`
   - Action: CRUD complet scoppé par `user_id` et `project_id`.
 
 - [ ] Tache 8: Durcir et reexposer `content`
-  - Fichier: `/home/claude/contentflowz/api/repositories/content_repository.py`
-  - Fichier: `/home/claude/contentflowz/api/routers/content.py`
+  - Fichier: `/home/claude/contentflow/api/repositories/content_repository.py`
+  - Fichier: `/home/claude/contentflow/api/routers/content.py`
   - Action: Imposer un vrai controle d'ownership et exposer liste/detail/update/history.
 
 - [ ] Tache 9: Integrer Clerk dans Flutter

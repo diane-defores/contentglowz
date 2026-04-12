@@ -47,7 +47,8 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
           // Current status
           statusAsync.when(
             loading: () => const LinearProgressIndicator(),
-            error: (_, __) => _StatusBanner(online: false, theme: theme),
+            error: (error, stackTrace) =>
+                _StatusBanner(online: false, theme: theme),
             data: (data) {
               final online = data['status'] == 'ok' || data['status'] == 'healthy';
               return _StatusBanner(online: online, theme: theme);
@@ -58,7 +59,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
           // API details
           statusAsync.when(
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (error, stackTrace) => const SizedBox.shrink(),
             data: (data) {
               return Card(
                 child: Padding(

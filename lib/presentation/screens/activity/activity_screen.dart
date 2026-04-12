@@ -121,10 +121,10 @@ class _ActivityItem extends StatelessWidget {
         ),
         subtitle: Text(
           [
-            if (robotId != null) robotId,
+            robotId,
             status,
-            if (createdAt.isNotEmpty) createdAt.split('T').first,
-          ].join(' · '),
+            createdAt.isNotEmpty ? createdAt.split('T').first : null,
+          ].whereType<String>().join(' · '),
           style: theme.textTheme.bodySmall,
         ),
       ),

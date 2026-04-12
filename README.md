@@ -1,6 +1,6 @@
-# ContentFlowz
+# ContentFlow
 
-Flutter product app for the ContentFlowz content pipeline.
+Flutter product app for the ContentFlow content pipeline.
 
 The target architecture is:
 - `Flutter` for the product UI
@@ -48,7 +48,7 @@ Requirements:
 Run the web app with PM2/build script:
 
 ```bash
-API_BASE_URL=http://localhost:8000 \
+API_BASE_URL=https://api.winflowz.com \
 CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 ./pm2-web.sh
 ```
@@ -56,7 +56,7 @@ CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 Build manually:
 
 ```bash
-API_BASE_URL=http://localhost:8000 \
+API_BASE_URL=https://api.winflowz.com \
 CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 ./build.sh
 ```
@@ -64,7 +64,7 @@ CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 Build and serve locally:
 
 ```bash
-API_BASE_URL=http://localhost:8000 \
+API_BASE_URL=https://api.winflowz.com \
 CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 ./build.sh --serve
 ```
@@ -82,9 +82,9 @@ Required Vercel environment variables:
 
 The Vercel project uses:
 
-- [vercel.json](/home/claude/ContentFlowz_app/vercel.json)
-- [scripts/vercel-install.sh](/home/claude/ContentFlowz_app/scripts/vercel-install.sh)
-- [scripts/vercel-build.sh](/home/claude/ContentFlowz_app/scripts/vercel-build.sh)
+- [vercel.json](vercel.json)
+- [scripts/vercel-install.sh](scripts/vercel-install.sh)
+- [scripts/vercel-build.sh](scripts/vercel-build.sh)
 
 `installCommand` downloads the Flutter SDK in the Vercel build environment and enables web support. `buildCommand` then runs `flutter build web` and injects `API_BASE_URL` and `CLERK_PUBLISHABLE_KEY` through `--dart-define`.
 
@@ -93,7 +93,7 @@ If Doppler is connected to Vercel, those variables must be exposed to the Vercel
 Clerk runtime validation with optional Eruda console:
 
 ```bash
-API_BASE_URL=http://localhost:8000 \
+API_BASE_URL=https://api.winflowz.com \
 CLERK_PUBLISHABLE_KEY=pk_test_xxx \
 PORT=3050 \
 ./scripts/validate-clerk-runtime.sh

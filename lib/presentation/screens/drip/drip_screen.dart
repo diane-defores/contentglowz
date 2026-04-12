@@ -50,7 +50,7 @@ class DripScreen extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: plans.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) => _PlanCard(
                 plan: plans[index],
                 onTap: () => _openDetail(context, plans[index]),

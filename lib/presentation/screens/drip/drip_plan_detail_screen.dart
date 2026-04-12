@@ -31,13 +31,13 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         title: plan.when(
           data: (p) => Text(p.name),
           loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Error'),
+          error: (error, stackTrace) => const Text('Error'),
         ),
         actions: [
           plan.when(
             data: (p) => _ActionMenu(plan: p, onAction: (a) => _handleAction(a, p)),
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (error, stackTrace) => const SizedBox.shrink(),
           ),
         ],
       ),

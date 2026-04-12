@@ -122,6 +122,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
   }
 
   Future<void> _delete(BuildContext context, AffiliateLink affiliation) async {
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -149,13 +150,13 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
       await api.deleteAffiliation(affiliation.id!);
       ref.invalidate(affiliationsProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Deleted "${affiliation.name}"')),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(content: Text('Failed to delete: $e')),
         );
       }

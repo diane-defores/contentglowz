@@ -16,7 +16,7 @@ DART_DEFINES=""
 if [[ -n "$API_BASE_URL_VALUE" ]]; then
   DART_DEFINES="$DART_DEFINES --dart-define=API_BASE_URL=$API_BASE_URL_VALUE"
 else
-  echo "WARNING: API_BASE_URL not set — using Dart default (http://localhost:8000)" >&2
+  echo "WARNING: API_BASE_URL not set — using Dart default (https://api.winflowz.com)" >&2
 fi
 
 if [[ -n "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then

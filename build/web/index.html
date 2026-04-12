@@ -20,19 +20,19 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta
     name="description"
-    content="ContentFlowz turns your product into a content workflow from angle to publish."
+    content="ContentFlow turns your product into a content workflow from angle to publish."
   >
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="ContentFlowz">
+  <meta name="apple-mobile-web-app-title" content="ContentFlow">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>ContentFlowz</title>
+  <title>ContentFlow</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -48,18 +48,18 @@
     (function () {
       var params = new URLSearchParams(window.location.search);
       var shouldEnable =
-        params.get('eruda') === '1' || localStorage.getItem('contentflowz:eruda') === '1';
+        params.get('eruda') === '1' || localStorage.getItem('contentflow:eruda') === '1';
 
       if (!shouldEnable) return;
 
-      localStorage.setItem('contentflowz:eruda', '1');
+      localStorage.setItem('contentflow:eruda', '1');
 
       var script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/eruda';
       script.onload = function () {
         if (window.eruda) {
           window.eruda.init();
-          console.log('[ContentFlowz] Eruda enabled');
+          console.log('[ContentFlow] Eruda enabled');
         }
       };
       document.head.appendChild(script);

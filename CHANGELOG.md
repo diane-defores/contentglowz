@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-12]
+
+### Changed
+- Rebranded the Flutter app from `ContentFlowz` to `ContentFlow` across the app shell, entry/auth/settings copy, web metadata, Android package identifiers, and project documentation.
+- Switched the default deployed API base URL from local development to `https://api.winflowz.com` in runtime config, PM2/Vercel build scripts, and README examples.
+
+### Fixed
+- Corrected the generated Android entrypoint/package path to match the renamed `com.contentflow.contentflow_app` namespace.
+- Regenerated Flutter web output so the built assets, manifest, bootstrap metadata, and service worker version align with the current app identity.
+
 ## [0.7.0] - 2026-04-11 — Mobile UX Overhaul
 
 ### Changed
@@ -59,7 +69,7 @@ The format is based on Keep a Changelog.
 - **Format-specific metadata** in Flutter: content cards and editor show SEO keyword, platform, duration, hashtags, narrative thread depending on content type.
 - **Settings: Content Frequency section** with sliders for each format.
 - Spec document: `specs/SPEC-content-pipeline-unification.md`.
-- Flutter repo initialized and pushed to GitHub (`dianedef/contentflowz-app`).
+- Flutter repo initialized and pushed to GitHub (`dianedef/ContentFlow-app`).
 
 ### Changed
 - Angles screen now calls `POST /api/psychology/dispatch-pipeline` for real content generation (with fallback to old `createContentFromAngle`).

@@ -105,7 +105,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
           personasAsync.when(
             data: (personas) => _buildPersonaPicker(personas),
             loading: () => const SizedBox(height: 60),
-            error: (_, __) => const SizedBox(height: 60),
+            error: (error, stackTrace) => const SizedBox(height: 60),
           ),
           // Narrative context banner
           _buildNarrativeBanner(),
@@ -141,7 +141,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: personas.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final persona = personas[index];
           final isSelected = _selectedPersona?.id == persona.id;

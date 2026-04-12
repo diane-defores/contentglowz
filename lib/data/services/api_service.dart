@@ -74,6 +74,11 @@ class ApiService {
     _dio.options.headers['Authorization'] = 'Bearer $authToken';
   }
 
+  Map<String, dynamic> _compactMap(Map<String, dynamic> values) {
+    values.removeWhere((_, value) => value == null);
+    return values;
+  }
+
   Future<Map<String, dynamic>> healthCheck() async {
     try {
       final response = await _dio.get('/health');
@@ -170,14 +175,14 @@ class ApiService {
     try {
       final response = await _dio.put(
         '/api/creator-profile',
-        data: {
-          if (projectId != null) 'projectId': projectId,
-          if (displayName != null) 'displayName': displayName,
-          if (voice != null) 'voice': voice,
-          if (positioning != null) 'positioning': positioning,
-          if (values != null) 'values': values,
-          if (currentChapterId != null) 'currentChapterId': currentChapterId,
-        },
+        data: _compactMap({
+          'projectId': projectId,
+          'displayName': displayName,
+          'voice': voice,
+          'positioning': positioning,
+          'values': values,
+          'currentChapterId': currentChapterId,
+        }),
       );
       return CreatorProfile.fromJson(_asMap(response.data));
     } on DioException catch (error) {
@@ -242,11 +247,11 @@ class ApiService {
     try {
       await _dio.put(
         '/api/status/content/$id/body',
-        data: {
+        data: _compactMap({
           'body': body,
           'edited_by': editedBy,
-          if (editNote != null) 'edit_note': editNote,
-        },
+          'edit_note': editNote,
+        }),
       );
       return true;
     } on DioException catch (error) {
@@ -266,11 +271,11 @@ class ApiService {
     try {
       await _dio.post(
         '/api/status/content/$id/transition',
-        data: {
+        data: _compactMap({
           'to_status': toStatus,
           'changed_by': 'flutter_app',
-          if (reason != null) 'reason': reason,
-        },
+          'reason': reason,
+        }),
       );
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -311,17 +316,16 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/psychology/synthesize-narrative',
-        data: {
+        data: _compactMap({
           'profile_id': profileId,
           'entries': entries
               .where((entry) => !entry.isEmpty)
               .map((entry) => entry.toJson())
               .toList(),
-          if (currentVoice != null) 'current_voice': currentVoice,
-          if (currentPositioning != null)
-            'current_positioning': currentPositioning,
-          if (chapterTitle != null) 'chapter_title': chapterTitle,
-        },
+          'current_voice': currentVoice,
+          'current_positioning': currentPositioning,
+          'chapter_title': chapterTitle,
+        }),
       );
       return NarrativeSynthesisResult.fromJson(_asMap(response.data));
     } on DioException catch (error) {
@@ -406,15 +410,14 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/psychology/generate-angles',
-        data: {
-          if (creatorVoice != null) 'creator_voice': creatorVoice,
-          if (creatorPositioning != null)
-            'creator_positioning': creatorPositioning,
-          if (narrativeSummary != null) 'narrative_summary': narrativeSummary,
+        data: _compactMap({
+          'creator_voice': creatorVoice,
+          'creator_positioning': creatorPositioning,
+          'narrative_summary': narrativeSummary,
           'persona_data': personaData,
-          if (contentType != null) 'content_type': contentType,
+          'content_type': contentType,
           'count': count,
-        },
+        }),
       );
       final raw = response.data;
       final angles = raw is Map<String, dynamic> ? raw['angles'] ?? [] : raw;
@@ -458,12 +461,12 @@ class ApiService {
 
       final response = await _dio.post(
         '/api/status/content',
-        data: {
+        data: _compactMap({
           'title': angle.title,
           'content_type': contentType,
           'source_robot': sourceRobot,
           'status': 'todo',
-          if (projectId != null) 'project_id': projectId,
+          'project_id': projectId,
           'content_preview': angle.hook,
           'priority': angle.confidence >= 80 ? 4 : 3,
           'tags': [
@@ -478,7 +481,7 @@ class ApiService {
             'confidence': angle.confidence,
             'generated_from': 'angles_screen',
           },
-        },
+        }),
       );
       return _asMap(response.data);
     } on DioException catch (error) {
@@ -515,7 +518,7 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/psychology/dispatch-pipeline',
-        data: {
+        data: _compactMap({
           'angle_data': {
             'title': angle.title,
             'hook': angle.hook,
@@ -526,9 +529,9 @@ class ApiService {
             'confidence': angle.confidence,
           },
           'target_format': targetFormat,
-          if (creatorVoice != null) 'creator_voice': creatorVoice,
-          if (projectId != null) 'project_id': projectId,
-        },
+          'creator_voice': creatorVoice,
+          'project_id': projectId,
+        }),
       );
       return _asMap(response.data);
     } on DioException catch (error) {
@@ -651,15 +654,15 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/publish',
-        data: {
+        data: _compactMap({
           'content': content,
           'platforms': platforms,
-          if (title != null) 'title': title,
-          if (mediaUrls.isNotEmpty) 'media_urls': mediaUrls,
-          if (tags.isNotEmpty) 'tags': tags,
-          if (contentRecordId != null) 'content_record_id': contentRecordId,
+          'title': title,
+          'media_urls': mediaUrls.isEmpty ? null : mediaUrls,
+          'tags': tags.isEmpty ? null : tags,
+          'content_record_id': contentRecordId,
           'publish_now': publishNow,
-        },
+        }),
       );
       return _asMap(response.data);
     } on DioException catch (error) {
@@ -676,12 +679,15 @@ class ApiService {
     String? bunnyCdnHostname,
   }) async {
     try {
-      final response = await _dio.post('/api/reels/download', data: {
-        'url': url,
-        'user_id': userId,
-        if (bunnyStorageKey != null) 'bunny_storage_key': bunnyStorageKey,
-        if (bunnyCdnHostname != null) 'bunny_cdn_hostname': bunnyCdnHostname,
-      });
+      final response = await _dio.post(
+        '/api/reels/download',
+        data: _compactMap({
+          'url': url,
+          'user_id': userId,
+          'bunny_storage_key': bunnyStorageKey,
+          'bunny_cdn_hostname': bunnyCdnHostname,
+        }),
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       throw _mapDioException(error);

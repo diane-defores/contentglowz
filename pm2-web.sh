@@ -4,7 +4,7 @@ set -euo pipefail
 export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 cd "$(cd "$(dirname "$0")" && pwd)"
 
-API_BASE_URL_VALUE="${API_BASE_URL:-http://localhost:8000}"
+API_BASE_URL_VALUE="${API_BASE_URL:-https://api.winflowz.com}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
 PORT_VALUE="${PORT:-3050}"
 

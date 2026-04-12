@@ -75,6 +75,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`ContentFlowz app serving on http://localhost:${PORT}`);
+  console.log(`ContentFlow app serving on http://localhost:${PORT}`);
   console.log(`   Serving: ${BUILD_DIR}`);
 });

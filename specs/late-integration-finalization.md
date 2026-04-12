@@ -71,7 +71,7 @@ Finaliser l'integration en 4 couches:
   - Notes: Normaliser les payloads et eviter la logique basee sur des strings implicites.
 
 - [ ] Tache 2: Durcir le backend publish
-  - Fichier: `/home/claude/contentflowz/api/routers/publish.py`
+  - Fichier: `/home/claude/contentflow/api/routers/publish.py`
   - Action: Persister dans le `ContentRecord` les metadonnees de publication utiles (`post_id`, `platform_urls`, potentiellement `target_url` principal) avant ou apres transition vers `published`.
   - Notes: Definir une regle claire pour `publish_now` vs `scheduled_for`.
 
@@ -106,7 +106,7 @@ Finaliser l'integration en 4 couches:
   - Notes: Si non supporte par LATE, les exclure du publish auto avec message explicite.
 
 - [ ] Tache 9: Ajouter des tests backend
-  - Fichier: `/home/claude/contentflowz/tests/` (nouveaux fichiers)
+  - Fichier: `/home/claude/contentflow/tests/` (nouveaux fichiers)
   - Action: Ajouter des tests pour `/api/publish`, `/api/publish/accounts`, erreurs de cle API, timeout, et persistance des metadonnees de publication.
   - Notes: Mock de `httpx.AsyncClient`.
 

@@ -18,20 +18,20 @@ void main() async {
       overrides: [
         sharedPrefsProvider.overrideWithValue(prefs),
       ],
-      child: const ContentFlowzApp(),
+      child: const ContentFlowApp(),
     ),
   );
 }
 
-class ContentFlowzApp extends ConsumerWidget {
-  const ContentFlowzApp({super.key});
+class ContentFlowApp extends ConsumerWidget {
+  const ContentFlowApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = createAppRouter(ref);
 
     return MaterialApp.router(
-      title: 'ContentFlowz',
+      title: 'ContentFlow',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: router,

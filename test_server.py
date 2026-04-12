@@ -1,5 +1,5 @@
 """
-Minimal test server for ContentFlowz Flutter app.
+Minimal test server for ContentFlow Flutter app.
 Simulates the FastAPI backend's status endpoints with in-memory data.
 
 Run: python3 test_server.py

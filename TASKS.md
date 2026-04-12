@@ -1,11 +1,11 @@
-# Tasks — ContentFlowz (Flutter)
+# Tasks — ContentFlow (Flutter)
 
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
 **Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 7 — Domain Migration Complete
 
-**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlowz_lab/
+**Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
 
 ---
 
@@ -69,7 +69,7 @@
 > Unifier les 3 pipelines déconnectés (Psychology, SEO, Newsletter) en un flux unique:
 > Sources → Idea Pool → Angles enrichis → Pipelines par format → Review Queue
 
-### Backend (contentflowz/)
+### Backend (contentflow/)
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -85,7 +85,7 @@
 | ✅ | Scheduler ingestion jobs — ingest_newsletters, ingest_seo job types + API triggers manuels | ✅ done |
 | ✅ | Nettoyage legacy JS — suppression chatbot/ Next.js (41 MB), prototypes v0, BMAD framework | ✅ done |
 
-### Flutter (contentflowz-app/)
+### Flutter (contentflow-app/)
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -103,7 +103,7 @@
 > Intégrer DataForSEO API v3 comme source de données SEO réelles dans tout le pipeline.
 > Remplace SerpApi (SERP-only) + Advertools (combos mock) par une API unifiée.
 
-### Backend (contentflowz/)
+### Backend (contentflow/)
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -163,7 +163,7 @@
 | ✅ | Regrouper les 17 tabs en sections (Content, Create, Analyze, System) | High | Low | ✅ done — dividers visuels entre sections |
 | 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
-| ✅ | Landing page produit (ContentFlowz_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
+| ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth Clerk |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
 | 🟡 | DataForSEO — credentials OK dans Doppler, ajouter credits au compte DFS | High | Low | Auth OK (20000), mais 402 Payment Required — ajouter credits sur dataforseo.com/billing |
@@ -179,6 +179,7 @@
 | ✅ | Landing page rebrand (hero, features, pricing, use cases, FAQ) | ✅ done |
 | ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
+| ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
@@ -206,6 +207,6 @@
 
 ---
 
-> **Priority last updated**: 2026-04-11
+> **Priority last updated**: 2026-04-12
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Valider le flux Clerk réel en runtime Flutter, puis landing page produit, puis Stripe billing
+> **Recommended next**: Valider le flux Clerk réel en runtime Flutter, puis Polar billing, puis crédits DataForSEO

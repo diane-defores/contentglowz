@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build & serve ContentFlowz Flutter app
+# Build & serve ContentFlow Flutter app
 # Usage: ./build.sh [--serve]
 
 set -e
@@ -7,7 +7,7 @@ set -e
 export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 cd "$(dirname "$0")"
 
-API_BASE_URL_VALUE="${API_BASE_URL:-http://localhost:8000}"
+API_BASE_URL_VALUE="${API_BASE_URL:-https://api.winflowz.com}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
 PORT_VALUE="${PORT:-3050}"
 

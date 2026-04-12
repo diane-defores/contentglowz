@@ -337,7 +337,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required String? error,
   }) async {
     final lines = [
-      'ContentFlowz auth diagnostics',
+      'ContentFlow auth diagnostics',
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
       'CLERK_PUBLISHABLE_KEY: ${hasClerkKey ? 'configured' : 'missing'}',
       'Key preview: ${hasClerkKey ? _maskPublishableKey() : 'missing'}',

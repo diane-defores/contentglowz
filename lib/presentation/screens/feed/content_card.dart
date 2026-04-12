@@ -308,7 +308,6 @@ class ContentCard extends StatelessWidget {
       ContentType.videoScript => Icons.videocam_outlined,
       ContentType.reel => Icons.slow_motion_video,
       ContentType.short => Icons.bolt_outlined,
-      _ => Icons.article_outlined,
     };
   }
 

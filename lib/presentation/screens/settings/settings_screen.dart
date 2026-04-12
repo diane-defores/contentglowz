@@ -217,7 +217,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'ContentFlowz',
+                  'ContentFlow',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -723,7 +723,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           IconButton(
             icon: Icon(Icons.link_off, size: 18, color: Colors.white.withAlpha(80)),
             tooltip: 'Disconnect',
-            onPressed: () => _disconnectChannel(name, platform!),
+            onPressed: () => _disconnectChannel(name, platform),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: EdgeInsets.zero,
           ),

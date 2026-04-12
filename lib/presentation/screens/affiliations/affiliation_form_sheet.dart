@@ -155,7 +155,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _category.isEmpty ? null : _category,
+                      initialValue: _category.isEmpty ? null : _category,
                       decoration: const InputDecoration(labelText: 'Category'),
                       items: _categories
                           .map((c) => DropdownMenuItem(
@@ -222,7 +222,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _status,
+                      initialValue: _status,
                       decoration: const InputDecoration(labelText: 'Status'),
                       items: _statuses
                           .map((s) => DropdownMenuItem(

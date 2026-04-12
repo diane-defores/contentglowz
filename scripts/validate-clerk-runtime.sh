@@ -5,13 +5,13 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 
-API_BASE_URL_VALUE="${API_BASE_URL:-http://localhost:8000}"
+API_BASE_URL_VALUE="${API_BASE_URL:-https://api.winflowz.com}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
 PORT_VALUE="${PORT:-3050}"
 
 cd "$ROOT_DIR"
 
-echo "== ContentFlowz Clerk Runtime Validation =="
+echo "== ContentFlow Clerk Runtime Validation =="
 echo "Project: $ROOT_DIR"
 echo "API_BASE_URL: $API_BASE_URL_VALUE"
 echo "PORT: $PORT_VALUE"
@@ -22,7 +22,7 @@ if [[ -z "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then
   echo "Export it, then re-run this script."
   echo ""
   echo "Example:"
-  echo "  API_BASE_URL=http://localhost:8000 \\"
+  echo "  API_BASE_URL=https://api.winflowz.com \\"
   echo "  CLERK_PUBLISHABLE_KEY=pk_test_xxx \\"
   echo "  PORT=3050 \\"
   echo "  ./scripts/validate-clerk-runtime.sh"

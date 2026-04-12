@@ -80,26 +80,26 @@ CREATE TABLE AffiliateLink (
 ### Bloc A — Navigation scrollable Flutter
 
 - [ ] Tache 1 : Remplacer NavigationBar par SingleChildScrollView + Row dans AppShell
-  - Fichier : `ContentFlowz_app/lib/presentation/screens/app_shell.dart`
+  - Fichier : `ContentFlow_app/lib/presentation/screens/app_shell.dart`
   - Action : Remplacer le widget `NavigationBar` par une barre custom scrollable horizontalement. Garder les 4 destinations actuelles (Feed, Schedule, History, Settings) + ajouter Affiliations. Utiliser `SingleChildScrollView(scrollDirection: Axis.horizontal)` avec des `InkWell`/`NavigationDestination`-like widgets. Conserver le highlight de la tab active. La barre doit rester en `bottomNavigationBar` du Scaffold.
   - Notes : Garder le meme style visuel (Material 3, icones + labels). La barre doit etre facilement extensible (ajouter une destination = ajouter un item dans une liste).
 
 - [ ] Tache 2 : Ajouter la route /affiliations dans le router
-  - Fichier : `ContentFlowz_app/lib/router.dart`
+  - Fichier : `ContentFlow_app/lib/router.dart`
   - Action : Ajouter `GoRoute(path: '/affiliations', ...)` dans le `ShellRoute.routes`. Importer `AffiliationsScreen`.
 
 ### Bloc B — Backend Lab (FastAPI)
 
 - [ ] Tache 3 : Migration SQL AffiliateLink
-  - Fichier : `ContentFlowz_lab/api/migrations/001_affiliate_link.sql` (nouveau)
+  - Fichier : `ContentFlow_lab/api/migrations/001_affiliate_link.sql` (nouveau)
   - Action : `CREATE TABLE IF NOT EXISTS AffiliateLink (...)` avec le schema legacy. Le `IF NOT EXISTS` rend la migration idempotente au cas ou la table existe deja dans Turso.
 
 - [ ] Tache 4 : Executer la migration au demarrage
-  - Fichier : `ContentFlowz_lab/api/services/user_data_store.py`
+  - Fichier : `ContentFlow_lab/api/services/user_data_store.py`
   - Action : Ajouter une methode `ensure_tables()` qui execute la migration SQL au premier appel. Appeler dans `_ensure_connected()` ou au demarrage via lifespan. Patron idempotent.
 
 - [ ] Tache 5 : Modele Pydantic affiliations
-  - Fichier : `ContentFlowz_lab/api/models/affiliations.py` (nouveau)
+  - Fichier : `ContentFlow_lab/api/models/affiliations.py` (nouveau)
   - Action : Creer `AffiliateLinkResponse`, `AffiliateLinkCreateRequest`, `AffiliateLinkUpdateRequest`. Suivre le meme pattern que `PersonaResponse`/`PersonaCreateRequest` dans `user_data.py`.
 
   ```python
@@ -152,7 +152,7 @@ CREATE TABLE AffiliateLink (
   ```
 
 - [ ] Tache 6 : Store CRUD affiliations
-  - Fichier : `ContentFlowz_lab/api/services/user_data_store.py`
+  - Fichier : `ContentFlow_lab/api/services/user_data_store.py`
   - Action : Ajouter dans la classe `UserDataStore` :
     - `_affiliate_from_row(row)` — helper row-to-dict
     - `list_affiliations(user_id, project_id=None)` — SELECT avec filtre optionnel projectId
@@ -163,7 +163,7 @@ CREATE TABLE AffiliateLink (
   - Notes : Suivre exactement le pattern `list_personas`/`create_persona`/`update_persona`/`delete_persona`. Ownership via `userId = ?`.
 
 - [ ] Tache 7 : Router FastAPI affiliations
-  - Fichier : `ContentFlowz_lab/api/routers/affiliations.py` (nouveau)
+  - Fichier : `ContentFlow_lab/api/routers/affiliations.py` (nouveau)
   - Action : CRUD complet :
     - `GET /api/affiliations` — liste, filtre optionnel `projectId`
     - `POST /api/affiliations` — creation
@@ -173,17 +173,17 @@ CREATE TABLE AffiliateLink (
   - Notes : Copier le pattern exact de `routers/personas.py`. `Depends(require_current_user)` partout.
 
 - [ ] Tache 8 : Enregistrer le router dans main.py
-  - Fichier : `ContentFlowz_lab/api/main.py`
+  - Fichier : `ContentFlow_lab/api/main.py`
   - Action : Importer `affiliations_router` et ajouter `app.include_router(affiliations_router)`.
 
 ### Bloc C — Flutter (modele + API + ecran)
 
 - [ ] Tache 9 : Modele Dart AffiliateLink
-  - Fichier : `ContentFlowz_app/lib/data/models/affiliate_link.dart` (nouveau)
+  - Fichier : `ContentFlow_app/lib/data/models/affiliate_link.dart` (nouveau)
   - Action : Classe `AffiliateLink` avec `fromJson`, `toJson`, `copyWith`. Champs : id, userId, projectId, name, url, description, contactUrl, loginUrl, researchSummary, researchedAt, category, commission, keywords (List<String>), status, notes, expiresAt, createdAt, updatedAt.
 
 - [ ] Tache 10 : Methodes ApiService affiliations
-  - Fichier : `ContentFlowz_app/lib/data/services/api_service.dart`
+  - Fichier : `ContentFlow_app/lib/data/services/api_service.dart`
   - Action : Ajouter 4 methodes :
     - `fetchAffiliations({String? projectId})` → `List<AffiliateLink>`
     - `createAffiliation(Map<String, dynamic> data)` → `AffiliateLink`
@@ -192,11 +192,11 @@ CREATE TABLE AffiliateLink (
   - Notes : Suivre le pattern `fetchPersonas`/`savePersona`. Avec `allowDemoData` fallback.
 
 - [ ] Tache 11 : Provider Riverpod affiliations
-  - Fichier : `ContentFlowz_app/lib/providers/providers.dart`
+  - Fichier : `ContentFlow_app/lib/providers/providers.dart`
   - Action : Ajouter `affiliationsProvider` (FutureProvider qui appelle `fetchAffiliations`).
 
 - [ ] Tache 12 : Ecran AffiliationsScreen — liste
-  - Fichier : `ContentFlowz_app/lib/presentation/screens/affiliations/affiliations_screen.dart` (nouveau)
+  - Fichier : `ContentFlow_app/lib/presentation/screens/affiliations/affiliations_screen.dart` (nouveau)
   - Action : Ecran avec :
     - AppBar "Affiliations" avec bouton "+" pour ajouter
     - Liste des liens affilies (Card par item : name, url, status badge, category, commission)
@@ -209,7 +209,7 @@ CREATE TABLE AffiliateLink (
   - Notes : Mobile-first. Pas de table desktop pour l'instant (Flutter = mobile d'abord).
 
 - [ ] Tache 13 : Formulaire AffiliationFormSheet
-  - Fichier : `ContentFlowz_app/lib/presentation/screens/affiliations/affiliation_form_sheet.dart` (nouveau)
+  - Fichier : `ContentFlow_app/lib/presentation/screens/affiliations/affiliation_form_sheet.dart` (nouveau)
   - Action : BottomSheet ou page modale avec les champs :
     - name (required), url (required), description, category (dropdown), commission, contactUrl, loginUrl, keywords (chips/tags input), status (dropdown), notes, expiresAt (date picker)
   - Notes : Reutilisable en mode create et edit. Pattern similaire a `PersonaEditorScreen`.
@@ -252,7 +252,7 @@ Le backend d'abord pour pouvoir tester avec curl/Swagger. La nav ensuite car c'e
 
 ## Reference legacy
 
-Le code complet legacy est accessible dans le git history de ContentFlowz_site :
+Le code complet legacy est accessible dans le git history de ContentFlow_site :
 ```bash
 git show e096383:chatbot/lib/db/schema.ts          # Schema Drizzle
 git show e096383:chatbot/lib/db/queries.ts          # Queries CRUD

@@ -13,7 +13,7 @@ class AnalyticsScreen extends ConsumerWidget {
     final historyAsync = ref.watch(contentHistoryProvider);
     final theme = Theme.of(context);
 
-    final allContent = [
+    final List<ContentItem> allContent = [
       ...pendingAsync.valueOrNull ?? [],
       ...historyAsync.valueOrNull ?? [],
     ];
