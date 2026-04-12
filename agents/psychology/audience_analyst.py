@@ -31,6 +31,7 @@ def _build_agent() -> Agent:
             correlate_content_performance,
         ],
         verbose=False,
+        allow_delegation=True,
     )
 
 

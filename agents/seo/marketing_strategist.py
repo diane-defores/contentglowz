@@ -64,7 +64,7 @@ class MarketingStrategistAgent:
             ],
             llm=self.llm_model,  # CrewAI uses LiteLLM internally
             verbose=True,
-            allow_delegation=False
+            allow_delegation=True
         )
     
     def create_strategy_task(
