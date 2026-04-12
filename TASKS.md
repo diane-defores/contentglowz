@@ -9,12 +9,19 @@
 | OG Preview service — OpenGraph extraction for link previews | Done |
 | Social Listener spec — `specs/social-listener.md` | Done |
 | Feature documentation on ContentFlowz site (3 pages + index update) | Done |
+| P0.2 — Rename fake agents to pipelines (SchedulerPipeline, ImagePipeline) | Done |
+| P0.3 — Remove hollow SEO tools, wire KeywordIntegrator to DataForSEO | Done |
+| P0.4 — Wire Firecrawl + Exa as shared CrewAI tools | Done |
+| P0.1 — Externalize all agent prompts to YAML (17 files, 14 agents, prompt_loader helper) | Done |
+| P1.1 — Fuse 6 separate SEO Crews into single multi-agent Crew (Process.sequential + task.context) | Done |
+| P1.2 — Enable allow_delegation=True on coordinator agents (Editor, Strategist, Marketing, AudienceAnalyst) | Done |
+| P1.3 — Add Pydantic output schemas to all 6 SEO pipeline tasks (output_pydantic=) | Done |
 
 ## In Progress
 
 | Pri | Task | Status |
 |-----|------|--------|
-| P0 | P0.1 — Externalize agent prompts (role/goal/backstory/tasks) to YAML files | ✅ done |
+| -- | -- | -- |
 
 ### Audit: Code (2026-04-07)
 
@@ -62,9 +69,9 @@ Audit complet du code des agents dans `agents/`. Sur ~21 agents définis, enviro
 
 ### P0 — Court terme (quick wins, pas de refactoring majeur)
 
-#### P0.1 — Externaliser les prompts dans des fichiers YAML
+#### P0.1 — Externaliser les prompts dans des fichiers YAML ✅
 
-- [ ] **Créer le dossier `agents/{robot}/prompts/` pour chaque robot**
+- [x] **Créer le dossier `agents/{robot}/prompts/` pour chaque robot**
 
 **Problème :** Tous les prompts (role, goal, backstory, `Task.description`) sont des f-strings hardcodées dans le code Python. Impossible de modifier un prompt sans toucher au code. Pas de versioning, pas d'A/B testing, pas de feedback loop.
 
@@ -89,12 +96,12 @@ Audit complet du code des agents dans `agents/`. Sur ~21 agents définis, enviro
    - Gère les erreurs (fichier manquant, clé manquante) avec des messages explicites
 
 **Fichiers à modifier :**
-- [ ] `agents/seo/seo_crew.py` — extraire les 6 agents + leurs tasks vers YAML
-- [ ] `agents/newsletter/newsletter_crew.py` — extraire les 2 agents vers YAML
-- [ ] `agents/psychology/psychology_crew.py` — extraire les 3 agents vers YAML
-- [ ] `agents/social/social_crew.py` — extraire l'agent vers YAML
-- [ ] `agents/short/short_crew.py` — extraire l'agent vers YAML
-- [ ] Créer `agents/shared/prompt_loader.py` — helper de chargement YAML
+- [x] `agents/seo/` — 8 agents extraits vers YAML (research_analyst, copywriter, editor, content_strategist, marketing_strategist, technical_seo, topical_mesh_architect, internal_linking_specialist)
+- [x] `agents/newsletter/newsletter_agent.py` — 3 agents extraits vers YAML
+- [x] `agents/psychology/` — 3 agents extraits vers YAML (audience_analyst, angle_strategist, creator_psychologist)
+- [x] `agents/social/social_crew.py` — 2 agents extraits vers YAML
+- [x] `agents/short/short_crew.py` — 1 agent extrait vers YAML
+- [x] Créer `agents/shared/prompt_loader.py` — helper de chargement YAML
 
 **Bénéfice :** Itération rapide sur les prompts sans risquer de casser le code Python. Versioning Git des prompts séparément du code. Possibilité future d'A/B testing de prompts.
 

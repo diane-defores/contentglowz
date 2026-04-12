@@ -18,6 +18,16 @@ from agents.seo.technical_seo import TechnicalSEOAgent
 from agents.seo.marketing_strategist import MarketingStrategistAgent
 from agents.seo.editor import EditorAgent
 
+# Pydantic output schemas for structured inter-agent context
+from agents.seo.schemas.pipeline_outputs import (
+    ResearchOutput,
+    StrategyOutput,
+    WritingOutput,
+    TechnicalOutput,
+    MarketingOutput,
+    EditingOutput,
+)
+
 load_dotenv()
 
 # Conditional status tracking (graceful degradation)
@@ -141,6 +151,7 @@ class SEOContentCrew:
             sector=sector,
             target_domain=existing_content[0] if existing_content else None,
         )
+        research_task.output_pydantic = ResearchOutput
 
         strategy_task = self.strategy_agent.create_strategy_task(
             target_keyword=target_keyword,
@@ -149,6 +160,7 @@ class SEOContentCrew:
             content_count=5,
         )
         strategy_task.context = [research_task]
+        strategy_task.output_pydantic = StrategyOutput
 
         writing_task = self.copywriter_agent.create_writing_task(
             target_keywords=keywords,
@@ -158,6 +170,7 @@ class SEOContentCrew:
             word_count=word_count,
         )
         writing_task.context = [research_task, strategy_task]
+        writing_task.output_pydantic = WritingOutput
 
         metadata = {
             "title": f"{target_keyword} - Complete Guide",
@@ -170,12 +183,14 @@ class SEOContentCrew:
             existing_pages=existing_content,
         )
         technical_task.context = [writing_task]
+        technical_task.output_pydantic = TechnicalOutput
 
         marketing_task = self.marketing_agent.create_strategy_task(
             business_goals=business_goals,
             target_audience=target_audience,
         )
         marketing_task.context = [strategy_task, writing_task, technical_task]
+        marketing_task.output_pydantic = MarketingOutput
 
         brand_guidelines = None
         if brand_voice:
@@ -197,6 +212,7 @@ class SEOContentCrew:
             quality_standards=quality_standards,
         )
         editing_task.context = [writing_task, technical_task, marketing_task]
+        editing_task.output_pydantic = EditingOutput
 
         # --- Single Crew, Process.sequential ---
         print("\n🚀 Running unified 6-agent SEO Crew (Process.sequential)")
@@ -225,9 +241,13 @@ class SEOContentCrew:
 
         crew.kickoff()
 
-        # Collect per-stage outputs from task.output (preserves existing API shape)
+        # Collect per-stage outputs — prefer structured Pydantic model, fall back to raw text
         def _raw(task) -> str:
-            return task.output.raw if task.output else ""
+            if not task.output:
+                return ""
+            if task.output.pydantic:
+                return task.output.pydantic.model_dump_json(indent=2)
+            return task.output.raw
 
         results["outputs"] = {
             "research": _raw(research_task),
@@ -238,20 +258,31 @@ class SEOContentCrew:
             "final_article": _raw(editing_task),
         }
 
-        final_output = results["outputs"]["final_article"]
+        # Expose structured models for callers that want typed access
+        results["structured"] = {
+            "research": research_task.output and research_task.output.pydantic,
+            "strategy": strategy_task.output and strategy_task.output.pydantic,
+            "writing": writing_task.output and writing_task.output.pydantic,
+            "technical": technical_task.output and technical_task.output.pydantic,
+            "marketing": marketing_task.output and marketing_task.output.pydantic,
+            "editing": editing_task.output and editing_task.output.pydantic,
+        }
+
+        # Final article: prefer structured field, fall back to raw
+        editing_model = results["structured"]["editing"]
+        final_output = editing_model.final_article if editing_model else results["outputs"]["final_article"]
         print(f"\n✅ Pipeline complete — final article: {len(final_output)} characters\n")
         
         # Status tracking: mark as generated → pending_review
         if STATUS_AVAILABLE and status_record_id:
             try:
                 status_svc = get_status_service()
-                final_content = final_output
                 status_svc.update_content(
                     status_record_id,
-                    content_preview=final_content[:500] if final_content else None,
+                    content_preview=final_output[:500] if final_output else None,
                     metadata={
                         "target_keyword": target_keyword,
-                        "final_article_length": len(final_content),
+                        "final_article_length": len(final_output),
                         "stages_completed": list(results["outputs"].keys()),
                     },
                 )

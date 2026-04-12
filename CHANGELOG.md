@@ -2,6 +2,16 @@
 
 All notable changes to Content Flows are documented here.
 
+## [2026-04-12]
+
+### Added
+- **`agents/seo/schemas/pipeline_outputs.py`** — 6 Pydantic BaseModel schemas for SEO pipeline stage outputs: `ResearchOutput`, `StrategyOutput`, `WritingOutput`, `TechnicalOutput`, `MarketingOutput`, `EditingOutput`. All fields are flat (`str`, `list[str]`, `int`, `float`) to maximise LLM JSON parsing reliability
+
+### Changed
+- **SEO pipeline tasks now use `output_pydantic=`** — all 6 tasks in `seo_crew.py` have a typed schema attached; agents must emit valid JSON matching the schema instead of free-form text
+- **`results["structured"]`** added to `generate_content()` return value — callers get typed model instances (e.g. `results["structured"]["editing"].publication_ready`) alongside the existing `results["outputs"]` string dict (API shape preserved)
+- **`_raw()` helper** prefers `task.output.pydantic.model_dump_json()` over raw LLM text when Pydantic parsing succeeds; graceful fallback to raw string when it doesn't
+
 ## [2026-04-08]
 
 ### Removed
