@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/utils/clerk_file_cache.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,23 @@ import '../../../main.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 
+class _NoopClerkFileCache implements ClerkFileCache {
+  const _NoopClerkFileCache();
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  void terminate() {}
+
+  @override
+  Stream<File> stream(
+    Uri uri, {
+    Duration ttl = ClerkFileCache.defaultTTL,
+    Map<String, String>? headers,
+  }) async* {}
+}
+
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -23,6 +42,8 @@ class AuthScreen extends ConsumerStatefulWidget {
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   late final ClerkAuthConfig _clerkConfig;
   late final Future<ClerkAuthState> _clerkAuthStateFuture;
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
   ClerkAuthState? _ownedClerkAuthState;
   bool _isSubmitting = false;
   String? _error;
@@ -34,13 +55,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _clerkConfig = ClerkAuthConfig(
       publishableKey: AppConfig.clerkPublishableKey,
       persistor: SharedPreferencesPersistor(ref.read(sharedPrefsProvider)),
+      fileCache: const _NoopClerkFileCache(),
     );
     _clerkAuthStateFuture = _initializeClerkAuthState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _ownedClerkAuthState?.terminate();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -114,10 +140,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
-          final message = _friendlyAuthError(
-            snapshot.error ??
-                StateError('Clerk SDK did not finish initialization.'),
-          );
+          final error =
+              snapshot.error ??
+              StateError('Clerk SDK did not finish initialization.');
+          final message = _friendlyAuthError(error);
+          if (_shouldUseHeadlessFallback(error)) {
+            return _buildHeadlessFallbackState(authSession, message);
+          }
           return _buildSdkErrorState(authSession, message);
         }
 
@@ -248,6 +277,86 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           hasClerkKey: true,
           authSession: authSession,
           error: message,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: _isSubmitting ? null : _clearLocalSession,
+            child: const Text('Clear Local Clerk Session'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeadlessFallbackState(
+    AuthSession authSession,
+    String message,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Clerk UI unavailable here',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'The official Clerk widget could not start on this runtime, so the app switched to a direct email/password sign-in path.',
+          style: TextStyle(
+            color: Colors.white.withAlpha(150),
+            fontSize: 15,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildRuntimeDiagnostics(
+          hasClerkKey: true,
+          authSession: authSession,
+          error: message,
+        ),
+        const SizedBox(height: 24),
+        TextField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.username, AutofillHints.email],
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            hintText: 'you@example.com',
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _passwordController,
+          obscureText: true,
+          autofillHints: const [AutofillHints.password],
+          decoration: const InputDecoration(
+            labelText: 'Password',
+          ),
+          onSubmitted: (_) => _submitHeadlessSignIn(),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: _isSubmitting ? null : _submitHeadlessSignIn,
+            child: Text(_isSubmitting ? 'Signing in...' : 'Sign in'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Google and other Clerk social providers stay unavailable until the runtime supports the official Clerk widget path.',
+          style: TextStyle(
+            color: Colors.white.withAlpha(120),
+            fontSize: 12,
+            height: 1.4,
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -490,6 +599,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final raw = error.toString().replaceFirst('Exception: ', '').trim();
     final lower = raw.toLowerCase();
 
+    if (lower.contains('missingpluginexception') &&
+        lower.contains('getapplicationdocumentsdirectory')) {
+      return 'The runtime does not expose the filesystem plugin that the Clerk Flutter UI currently expects for its local cache. ContentFlow can still use Clerk through the direct email/password flow, but the embedded official Clerk widget cannot start on this platform as-is.';
+    }
+
     if (lower.contains('invalid base64') || lower.contains('base64')) {
       return 'The Clerk token returned to the app is malformed. This usually means a frontend/backend Clerk mismatch or a corrupted local session. Clear the local session and verify that the app key and backend Clerk issuer belong to the same Clerk project.';
     }
@@ -510,6 +624,49 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     return raw;
+  }
+
+  bool _shouldUseHeadlessFallback(Object error) {
+    final raw = error.toString().toLowerCase();
+    return raw.contains('missingpluginexception') &&
+        raw.contains('getapplicationdocumentsdirectory');
+  }
+
+  Future<void> _submitHeadlessSignIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        _error = 'Enter both email and password to sign in.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
+      await ref.read(authSessionProvider.notifier).signInWithPassword(
+        email: email,
+        password: password,
+      );
+      if (!mounted) return;
+      context.go('/entry');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = _friendlyAuthError(error);
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   Future<void> _syncFromClerkIfNeeded(ClerkAuthState authState) async {
