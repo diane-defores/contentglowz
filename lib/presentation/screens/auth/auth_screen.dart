@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +8,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/app_config.dart';
 import '../../../data/models/auth_session.dart';
+import '../../../data/services/clerk_auth_service.dart';
+import '../../../main.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 
@@ -16,21 +21,18 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isSignUp = false;
+  late final ClerkAuthConfig _clerkConfig;
   bool _isSubmitting = false;
   String? _error;
+  String? _lastSyncedSessionId;
 
   @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _clerkConfig = ClerkAuthConfig(
+      publishableKey: AppConfig.clerkPublishableKey,
+      persistor: SharedPreferencesPersistor(ref.read(sharedPrefsProvider)),
+    );
   }
 
   @override
@@ -95,13 +97,78 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildForm(BuildContext context, AuthSession authSession) {
+    return ClerkAuth(
+      config: _clerkConfig,
+      child: ClerkErrorListener(
+        handler: (context, error) async {
+          setState(() {
+            _error = _friendlyAuthError(error);
+          });
+        },
+        child: ClerkAuthBuilder(
+          signedInBuilder: (context, authState) {
+            unawaited(_syncFromClerkIfNeeded(authState));
+            return _buildSyncingState(authSession);
+          },
+          signedOutBuilder: (context, authState) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Sign in to your workspace',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Use Clerk to sign in with your password manager, Google, or any provider enabled in your Clerk dashboard.',
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(150),
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildRuntimeDiagnostics(
+                  hasClerkKey: true,
+                  authSession: authSession,
+                  error: _error,
+                ),
+                const SizedBox(height: 24),
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    extensions: [Theme.of(context).clerkThemeExtension],
+                  ),
+                  child: const ClerkAuthentication(),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _isSubmitting ? null : _clearLocalSession,
+                    child: const Text('Clear Local Clerk Session'),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSyncingState(AuthSession authSession) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          _isSignUp ? 'Create your account' : 'Sign in to your workspace',
-          style: const TextStyle(
+        const Text(
+          'Finalizing session',
+          style: TextStyle(
             color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -109,9 +176,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          _isSignUp
-              ? 'Create a Clerk account and reconnect it to your existing workspace.'
-              : 'Use your Clerk credentials to recover your account and workspace data.',
+          'Clerk accepted your sign-in. The app is now syncing the bearer token and workspace session.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -125,74 +190,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           error: _error,
         ),
         const SizedBox(height: 24),
-        if (_isSignUp) ...[
-          TextField(
-            controller: _firstNameController,
-            decoration: const InputDecoration(labelText: 'First name'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _lastNameController,
-            decoration: const InputDecoration(labelText: 'Last name'),
-          ),
-          const SizedBox(height: 12),
-        ],
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(labelText: 'Email'),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _passwordController,
-          obscureText: true,
-          decoration: const InputDecoration(labelText: 'Password'),
-        ),
-        if (_error != null) ...[
-          const SizedBox(height: 16),
-          Text(_error!, style: const TextStyle(color: Colors.redAccent)),
-        ],
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _isSubmitting ? null : _submit,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppTheme.approveColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: Text(
-              _isSubmitting
-                  ? 'Please wait...'
-                  : (_isSignUp ? 'Create Account' : 'Sign In'),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: _isSubmitting
-                ? null
-                : () => setState(() {
-                    _isSignUp = !_isSignUp;
-                    _error = null;
-                  }),
-            child: Text(
-              _isSignUp
-                  ? 'Already have an account? Sign in'
-                  : 'Need an account? Sign up',
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: _isSubmitting ? null : _clearLocalSession,
-            child: const Text('Clear Local Clerk Session'),
-          ),
-        ),
+        const Center(child: CircularProgressIndicator()),
       ],
     );
   }
@@ -312,7 +310,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'For browser debugging, open /entry?eruda=1 once to enable the Eruda console.',
+            'If Google does not appear, enable the Google social connection in the same Clerk instance as this publishable key.',
             style: TextStyle(
               color: Colors.white.withAlpha(120),
               fontSize: 12,
@@ -344,7 +342,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       'Session state: ${authSession.status.name}',
       'Session email: ${authSession.email ?? 'none'}',
       'Last auth error: ${error == null || error.isEmpty ? 'none' : error}',
-      'Eruda enabled from: /entry?eruda=1',
     ];
 
     await Clipboard.setData(ClipboardData(text: lines.join('\n')));
@@ -358,6 +355,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     setState(() {
       _error = null;
       _isSubmitting = true;
+      _lastSyncedSessionId = null;
     });
 
     try {
@@ -382,7 +380,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final lower = raw.toLowerCase();
 
     if (lower.contains('invalid base64') || lower.contains('base64')) {
-      return 'The Clerk token returned to the app is malformed. This usually means a frontend/backend Clerk mismatch or a corrupted local session, not a wrong password. Clear the local session and verify that the app key and backend Clerk issuer belong to the same Clerk project.';
+      return 'The Clerk token returned to the app is malformed. This usually means a frontend/backend Clerk mismatch or a corrupted local session. Clear the local session and verify that the app key and backend Clerk issuer belong to the same Clerk project.';
     }
 
     if (lower.contains('invalid clerk token') ||
@@ -392,13 +390,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return 'Clerk authentication reached the backend, but the backend rejected the token. Check that `CLERK_PUBLISHABLE_KEY` in the app and `CLERK_JWT_ISSUER` or `CLERK_JWKS_URL` in FastAPI point to the same Clerk project.';
     }
 
-    if (lower.contains('password') &&
-        (lower.contains('invalid') || lower.contains('incorrect'))) {
-      return 'The email/password pair looks invalid. If you do not remember the password, reset it in Clerk instead of checking the app database.';
-    }
-
-    if (lower.contains('extra verification step')) {
-      return 'Sign-up reached Clerk, but the app does not handle Clerk verification yet. Use sign-in with an existing account or add the Clerk verification flow.';
+    if (lower.contains('oauth') && lower.contains('google')) {
+      return 'Google sign-in did not complete. Verify that Google is enabled in Clerk for this exact publishable key and that the Clerk instance allows the callback used by the app.';
     }
 
     if (lower.contains('not configured')) {
@@ -408,13 +401,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return raw;
   }
 
-  Future<void> _submit() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _error = 'Email and password are required.';
-      });
+  Future<void> _syncFromClerkIfNeeded(ClerkAuthState authState) async {
+    final sessionId = authState.session?.id;
+    if (sessionId == null ||
+        sessionId == _lastSyncedSessionId ||
+        _isSubmitting) {
       return;
     }
 
@@ -424,28 +415,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
 
     try {
-      final auth = ref.read(authSessionProvider.notifier);
-      if (_isSignUp) {
-        await auth.signUpWithPassword(
-          email: email,
-          password: password,
-          firstName: _firstNameController.text.trim().isEmpty
-              ? null
-              : _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim().isEmpty
-              ? null
-              : _lastNameController.text.trim(),
-        );
-      } else {
-        await auth.signInWithPassword(email: email, password: password);
-      }
-
+      await ref.read(authSessionProvider.notifier).syncFromClerkSession();
+      _lastSyncedSessionId = sessionId;
       if (!mounted) return;
       context.go('/entry');
     } catch (error) {
-      setState(() {
-        _error = _friendlyAuthError(error);
-      });
+      if (mounted) {
+        setState(() {
+          _error = _friendlyAuthError(error);
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {

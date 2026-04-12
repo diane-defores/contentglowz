@@ -201,6 +201,23 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     setAuthenticatedSession(result.bearerToken, email: result.email ?? email);
   }
 
+  Future<void> syncFromClerkSession() async {
+    final service = ref.read(clerkAuthServiceProvider);
+    if (service == null) {
+      throw StateError('Clerk is not configured. Set CLERK_PUBLISHABLE_KEY.');
+    }
+
+    final restored = await service.restoreSession();
+    if (restored == null) {
+      throw StateError('Clerk did not return an active session.');
+    }
+
+    setAuthenticatedSession(
+      restored.bearerToken,
+      email: restored.email,
+    );
+  }
+
   Future<void> clearLocalSession() async {
     final service = ref.read(clerkAuthServiceProvider);
     try {
