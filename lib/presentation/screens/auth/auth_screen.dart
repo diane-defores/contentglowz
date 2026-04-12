@@ -164,6 +164,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 return _buildSyncingState(authSession);
               },
               signedOutBuilder: (context, authState) {
+                if (_isEnvironmentEmpty(authState)) {
+                  return _buildHeadlessFallbackState(
+                    authSession,
+                    'Clerk initialized, but this publishable key returned no sign-in identifiers and no social providers to the Flutter SDK.',
+                    authState: authState,
+                  );
+                }
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -190,6 +198,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       hasClerkKey: true,
                       authSession: authSession,
                       error: _error,
+                      authState: authState,
                     ),
                     const SizedBox(height: 24),
                     Theme(
@@ -292,7 +301,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Widget _buildHeadlessFallbackState(
     AuthSession authSession,
-    String message,
+    String message, {
+    ClerkAuthState? authState,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,6 +330,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           hasClerkKey: true,
           authSession: authSession,
           error: message,
+          authState: authState,
         ),
         const SizedBox(height: 24),
         TextField(
@@ -408,8 +419,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required bool hasClerkKey,
     required AuthSession authSession,
     required String? error,
+    ClerkAuthState? authState,
   }) {
     final keyPreview = hasClerkKey ? _maskPublishableKey() : 'missing';
+    final env = authState?.env;
+    final identificationStrategies =
+        env?.identificationStrategies.map((s) => s.name).join(', ') ?? 'n/a';
+    final oauthStrategies =
+        env?.oauthStrategies.map((s) => s.name).join(', ') ?? 'n/a';
+    final socialConnections =
+        env?.socialConnections.map((s) => s.name).join(', ') ?? 'n/a';
 
     return Container(
       width: double.infinity,
@@ -478,6 +497,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               fontSize: 12,
             ),
           ),
+          if (authState != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Clerk identification strategies: ${identificationStrategies.isEmpty ? 'none' : identificationStrategies}',
+              style: TextStyle(
+                color: Colors.white.withAlpha(120),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Clerk OAuth strategies: ${oauthStrategies.isEmpty ? 'none' : oauthStrategies}',
+              style: TextStyle(
+                color: Colors.white.withAlpha(120),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Clerk social connections: ${socialConnections.isEmpty ? 'none' : socialConnections}',
+              style: TextStyle(
+                color: Colors.white.withAlpha(120),
+                fontSize: 12,
+              ),
+            ),
+          ],
           if (authSession.email != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -630,6 +675,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final raw = error.toString().toLowerCase();
     return raw.contains('missingpluginexception') &&
         raw.contains('getapplicationdocumentsdirectory');
+  }
+
+  bool _isEnvironmentEmpty(ClerkAuthState authState) {
+    return !authState.env.hasIdentificationStrategies &&
+        !authState.env.hasOauthStrategies;
   }
 
   Future<void> _submitHeadlessSignIn() async {
