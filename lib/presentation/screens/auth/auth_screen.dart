@@ -303,7 +303,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     AuthSession authSession,
     String message, {
     ClerkAuthState? authState,
-  ) {
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
