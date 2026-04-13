@@ -16,6 +16,6 @@ class AppConfig {
 
   static const appWebUrl = String.fromEnvironment(
     'APP_WEB_URL',
-    defaultValue: 'https://contentflow.winflowz.com',
+    defaultValue: 'https://app.contentflow.winflowz.com',
   );
 }
