@@ -23,7 +23,7 @@ const {
   noindex = false,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflow.com';
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflow.winflowz.com';
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 

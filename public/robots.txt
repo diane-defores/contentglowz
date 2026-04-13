@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://contentflow.com/sitemap-index.xml
+Sitemap: https://contentflow.winflowz.com/sitemap-index.xml
