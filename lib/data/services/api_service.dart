@@ -133,6 +133,18 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> exchangeWebHandoff(String handoffToken) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/web/exchange',
+        data: {'handoff_token': handoffToken},
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<AppSettings> fetchSettings() async {
     try {
       final response = await _dio.get('/api/settings');

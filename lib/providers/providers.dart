@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
@@ -22,23 +23,51 @@ const _apiBaseUrlKey = 'api_base_url';
 const _demoModeKey = 'demo_mode_enabled';
 const _demoOnboardingKey = 'demo_onboarding_complete';
 
-final apiBaseUrlProvider =
-    StateNotifierProvider<ApiBaseUrlNotifier, String>((ref) {
-      return ApiBaseUrlNotifier(ref);
-    });
+final apiBaseUrlProvider = StateNotifierProvider<ApiBaseUrlNotifier, String>((
+  ref,
+) {
+  return ApiBaseUrlNotifier(ref);
+});
+
+String _normalizeApiBaseUrl(String? raw) {
+  final fallback = AppConfig.apiBaseUrl;
+  final value = raw?.trim();
+  if (value == null || value.isEmpty) {
+    return fallback;
+  }
+
+  final uri = Uri.tryParse(value);
+  if (uri == null ||
+      !uri.hasScheme ||
+      !(uri.scheme == 'http' || uri.scheme == 'https') ||
+      uri.host.isEmpty) {
+    return fallback;
+  }
+
+  if (uri.path.isNotEmpty && uri.path != '/') {
+    return fallback;
+  }
+
+  return uri
+      .replace(path: '', query: null, fragment: null)
+      .toString()
+      .replaceAll(RegExp(r'/$'), '');
+}
 
 class ApiBaseUrlNotifier extends StateNotifier<String> {
   ApiBaseUrlNotifier(this.ref)
     : super(
-        ref.read(sharedPrefsProvider).getString(_apiBaseUrlKey) ??
-            AppConfig.apiBaseUrl,
+        _normalizeApiBaseUrl(
+          ref.read(sharedPrefsProvider).getString(_apiBaseUrlKey),
+        ),
       );
 
   final Ref ref;
 
   Future<void> update(String url) async {
-    state = url;
-    await ref.read(sharedPrefsProvider).setString(_apiBaseUrlKey, url);
+    final normalized = _normalizeApiBaseUrl(url);
+    state = normalized;
+    await ref.read(sharedPrefsProvider).setString(_apiBaseUrlKey, normalized);
   }
 }
 
@@ -105,6 +134,10 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     }
 
     try {
+      if (kIsWeb && Uri.base.queryParameters['handoff_token'] != null) {
+        state = const AuthSession(status: AuthStatus.signedOut);
+        return;
+      }
       final restored = await service.restoreSession();
       if (restored == null) {
         _clearLegacyAuthPrefs();
@@ -137,10 +170,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     _invalidateAuthenticatedState();
   }
 
-  void setAuthenticatedSession(
-    String token, {
-    String? email,
-  }) {
+  void setAuthenticatedSession(String token, {String? email}) {
     final prefs = ref.read(sharedPrefsProvider);
     prefs.remove(_demoModeKey);
     prefs.remove(_demoOnboardingKey);
@@ -212,10 +242,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       throw StateError('Clerk did not return an active session.');
     }
 
-    setAuthenticatedSession(
-      restored.bearerToken,
-      email: restored.email,
-    );
+    setAuthenticatedSession(restored.bearerToken, email: restored.email);
   }
 
   Future<void> clearLocalSession() async {
@@ -634,8 +661,9 @@ final lastNarrativeProvider = StateProvider<NarrativeSynthesisResult?>(
 
 // ─── Idea Pool ──────────────────────────────────────────
 
-final ideasProvider =
-    AsyncNotifierProvider<IdeasNotifier, List<Idea>>(IdeasNotifier.new);
+final ideasProvider = AsyncNotifierProvider<IdeasNotifier, List<Idea>>(
+  IdeasNotifier.new,
+);
 
 class IdeasNotifier extends AsyncNotifier<List<Idea>> {
   String _statusFilter = 'all';
@@ -690,8 +718,10 @@ final dripPlansProvider = FutureProvider<List<DripPlan>>((ref) async {
   return raw.map((j) => DripPlan.fromJson(j)).toList();
 });
 
-final dripStatsProvider =
-    FutureProvider.family<DripStats, String>((ref, planId) async {
+final dripStatsProvider = FutureProvider.family<DripStats, String>((
+  ref,
+  planId,
+) async {
   final api = ref.read(apiServiceProvider);
   final raw = await api.getDripStats(planId);
   return DripStats.fromJson(raw);

@@ -8,4 +8,14 @@ class AppConfig {
     'CLERK_PUBLISHABLE_KEY',
     defaultValue: '',
   );
+
+  static const siteUrl = String.fromEnvironment(
+    'APP_SITE_URL',
+    defaultValue: 'https://contentflow.com',
+  );
+
+  static const appWebUrl = String.fromEnvironment(
+    'APP_WEB_URL',
+    defaultValue: 'https://app.winflowz.com',
+  );
 }

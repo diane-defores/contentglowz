@@ -1,15 +1,89 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/app_config.dart';
+import '../../../data/services/api_service.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 
-class EntryScreen extends ConsumerWidget {
+class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EntryScreen> createState() => _EntryScreenState();
+}
+
+class _EntryScreenState extends ConsumerState<EntryScreen> {
+  bool _isExchangingHandoff = false;
+  String? _handoffError;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _consumeWebHandoffIfPresent();
+      });
+    }
+  }
+
+  Future<void> _consumeWebHandoffIfPresent() async {
+    final handoffToken = Uri.base.queryParameters['handoff_token'];
+    if (!mounted || handoffToken == null || handoffToken.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isExchangingHandoff = true;
+      _handoffError = null;
+    });
+
+    final api = ApiService(baseUrl: ref.read(apiBaseUrlProvider));
+    try {
+      final result = await api.exchangeWebHandoff(handoffToken);
+      final token = result['bearer_token']?.toString();
+      final email = result['email']?.toString();
+      if (token == null || token.isEmpty) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'The site handoff completed but did not return a bearer token.',
+        );
+      }
+
+      ref.read(authSessionProvider.notifier).setAuthenticatedSession(
+        token,
+        email: email,
+      );
+      if (!mounted) return;
+      context.go('/entry');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _handoffError = error.toString();
+      });
+      context.go('/entry');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExchangingHandoff = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _openWebsiteSignIn() async {
+    await launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in'));
+  }
+
+  Future<void> _openWebsiteLaunch() async {
+    await launchUrl(Uri.parse('${AppConfig.siteUrl}/launch'));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authSession = ref.watch(authSessionProvider);
     final bootstrap = ref.watch(appBootstrapProvider);
     final stateCard = _buildStateCard(context, ref, authSession, bootstrap);
@@ -114,7 +188,9 @@ class EntryScreen extends ConsumerWidget {
                   label: const Text('Open Interactive Demo'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () => context.go('/auth'),
+                  onPressed: kIsWeb
+                      ? _openWebsiteSignIn
+                      : () => context.go('/auth'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: BorderSide(color: Colors.white.withAlpha(40)),
@@ -124,7 +200,7 @@ class EntryScreen extends ConsumerWidget {
                     ),
                   ),
                   icon: const Icon(Icons.lock_open_rounded),
-                  label: const Text('Create Workspace'),
+                  label: Text(kIsWeb ? 'Sign In On Website' : 'Create Workspace'),
                 ),
               ],
             ),
@@ -464,7 +540,9 @@ class EntryScreen extends ConsumerWidget {
                 child: const Text('Open Demo Workspace'),
               ),
               OutlinedButton(
-                onPressed: () => context.go('/auth'),
+                onPressed: kIsWeb
+                    ? _openWebsiteSignIn
+                    : () => context.go('/auth'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withAlpha(35)),
@@ -473,7 +551,7 @@ class EntryScreen extends ConsumerWidget {
                     vertical: 18,
                   ),
                 ),
-                child: const Text('Create Workspace'),
+                child: Text(kIsWeb ? 'Sign In On Website' : 'Create Workspace'),
               ),
             ],
           ),
@@ -488,6 +566,24 @@ class EntryScreen extends ConsumerWidget {
     AuthSession authSession,
     AsyncValue<dynamic> bootstrap,
   ) {
+    if (_isExchangingHandoff) {
+      return _card(
+        eyebrow: 'Website handoff',
+        title: 'Opening your app session',
+        description:
+            'ContentFlow is exchanging the secure website handoff for an app session before loading your workspace.',
+        icon: Icons.sync_rounded,
+        accent: AppTheme.editColor,
+        primaryLabel: 'Please wait',
+        onPrimary: null,
+        secondaryLabel: 'Open Demo Workspace',
+        onSecondary: () {
+          ref.read(authSessionProvider.notifier).signInDemo();
+          context.go('/onboarding?intent=entry');
+        },
+      );
+    }
+
     if (authSession.isLoading) {
       return _card(
         eyebrow: 'Restoring session',
@@ -526,13 +622,18 @@ class EntryScreen extends ConsumerWidget {
         eyebrow: 'Session error',
         title: 'Reconnect your account',
         description:
+            _handoffError ??
             'Your Clerk session could not load the workspace bootstrap. Sign in again to refresh the bearer token.',
         icon: Icons.warning_amber_rounded,
         accent: Colors.orange,
-        primaryLabel: 'Sign In Again',
+        primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In Again',
         onPrimary: () {
           ref.read(authSessionProvider.notifier).signOut();
-          context.go('/auth');
+          if (kIsWeb) {
+            _openWebsiteSignIn();
+          } else {
+            context.go('/auth');
+          }
         },
         secondaryLabel: 'Open Demo Workspace',
         onSecondary: () {
@@ -581,26 +682,34 @@ class EntryScreen extends ConsumerWidget {
       );
     }
 
-    return _card(
-      eyebrow: 'Logged out',
-      title: 'Create or reconnect your workspace',
-      description:
-          'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
-      icon: Icons.lock_outline_rounded,
-      accent: Colors.orange,
-      primaryLabel: 'Sign In / Sign Up',
-      onPrimary: () => context.go('/auth'),
-      secondaryLabel: 'Open Demo Workspace',
-      onSecondary: () {
-        ref.read(authSessionProvider.notifier).signInDemo();
-        context.go(
-          authSession.onboardingComplete ? '/feed' : '/onboarding?intent=entry',
-        );
-      },
-      caption:
-          'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
-    );
-  }
+      return _card(
+        eyebrow: 'Logged out',
+        title: 'Create or reconnect your workspace',
+        description:
+            kIsWeb
+            ? 'You are not signed in yet. Continue on the main website to use Google sign-in and password-manager autofill, then the site will return you to this app.'
+            : 'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
+        icon: Icons.lock_outline_rounded,
+        accent: Colors.orange,
+        primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In / Sign Up',
+        onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
+        secondaryLabel: kIsWeb ? 'I Already Signed In' : 'Open Demo Workspace',
+        onSecondary: kIsWeb
+            ? _openWebsiteLaunch
+            : () {
+                ref.read(authSessionProvider.notifier).signInDemo();
+                context.go(
+                  authSession.onboardingComplete
+                      ? '/feed'
+                      : '/onboarding?intent=entry',
+                );
+              },
+        caption:
+            kIsWeb
+            ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
+            : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
+      );
+    }
 
   Widget _card({
     required String eyebrow,

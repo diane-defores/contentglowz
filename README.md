@@ -16,6 +16,7 @@ The migration away from the legacy JavaScript runtime is advanced but not fully 
 What is already in place:
 - real Clerk auth screen in Flutter
 - Clerk session restore and bootstrap-driven entry gate
+- website-driven web login handoff via `contentflow_site -> contentflow_lab -> contentflow_app`
 - FastAPI-backed `projects`, `settings`, `creator-profile`, `personas`, and content/status flows
 - real onboarding path that creates a workspace in FastAPI
 - explicit demo mode separated from the authenticated flow
@@ -79,6 +80,8 @@ Required Vercel environment variables:
 
 - `API_BASE_URL`
 - `CLERK_PUBLISHABLE_KEY`
+- `APP_SITE_URL`
+- `APP_WEB_URL`
 
 The Vercel project uses:
 
@@ -107,6 +110,10 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   FastAPI base URL injected into Flutter with `--dart-define`
 - `CLERK_PUBLISHABLE_KEY`
   Clerk publishable key injected into Flutter with `--dart-define`
+- `APP_SITE_URL`
+  Marketing/auth website URL used by Flutter web for sign-in redirects
+- `APP_WEB_URL`
+  Public Flutter web URL used by the website handoff flow
 - `PORT`
   Port used by `server.js` / `pm2-web.sh` / `build.sh --serve`
 

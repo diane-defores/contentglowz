@@ -46,6 +46,12 @@
   -->
   <script>
     (function () {
+      if (window.location.pathname.startsWith('/api/') && window.location.hash.startsWith('#/')) {
+        var normalized = '/' + window.location.hash;
+        if (window.location.search) normalized += window.location.search;
+        window.history.replaceState(null, '', normalized);
+      }
+
       var params = new URLSearchParams(window.location.search);
       var shouldEnable =
         params.get('eruda') === '1' || localStorage.getItem('contentflow:eruda') === '1';

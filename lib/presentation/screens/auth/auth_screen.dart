@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_config.dart';
 import '../../../data/models/auth_session.dart';
@@ -134,10 +135,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Widget _buildForm(BuildContext context, AuthSession authSession) {
     if (kIsWeb) {
-      return _buildHeadlessFallbackState(
-        authSession,
-        'Flutter web now uses the direct email/password path because the current Clerk Flutter beta does not reliably expose web sign-in providers or identifiers.',
-      );
+      return _buildWebRedirectState(authSession);
     }
 
     return FutureBuilder<ClerkAuthState>(
@@ -383,6 +381,54 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           child: TextButton(
             onPressed: _isSubmitting ? null : _clearLocalSession,
             child: const Text('Clear Local Clerk Session'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebRedirectState(AuthSession authSession) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Sign in on the website',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'ContentFlow web authentication now runs on the main website so Google sign-in and browser password managers use a standard web flow before opening the Flutter app.',
+          style: TextStyle(
+            color: Colors.white.withAlpha(150),
+            fontSize: 15,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildRuntimeDiagnostics(
+          hasClerkKey: true,
+          authSession: authSession,
+          error: null,
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () => launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in')),
+            child: const Text('Continue On Website'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: () => launchUrl(Uri.parse('${AppConfig.siteUrl}/launch')),
+            child: const Text('Already signed in? Open App'),
           ),
         ),
       ],

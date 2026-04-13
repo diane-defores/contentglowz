@@ -61,6 +61,7 @@
 | ✅ | Spec architecture, Clerk auth FastAPI + Flutter, Bootstrap, Projects, User data, Content ownership | ✅ done |
 | ✅ | Flutter auth headless Clerk, session restore, onboarding réel, 401 handling | ✅ done |
 | ✅ | Écran auth Clerk officiel + fallback diagnostics quand le SDK reste bloqué au chargement | ✅ done |
+| ✅ | Auth web déportée sur ContentFlow Site + handoff sécurisé vers Flutter web (`/entry` + exchange backend) | ✅ done |
 | 🟠 | Vérifier runtime Clerk réel en environnement Flutter | 📋 todo |
 
 ---
@@ -162,7 +163,7 @@
 | Pri | Task | Impact | Effort | Notes |
 |-----|------|--------|--------|-------|
 | ✅ | Regrouper les 17 tabs en sections (Content, Create, Analyze, System) | High | Low | ✅ done — dividers visuels entre sections |
-| 🟠 | Validation runtime Clerk (login/signup réel, restore session, `/api/bootstrap`) | High | Medium | Code branché, reste à valider en runtime Flutter réel |
+| 🟠 | Validation runtime Clerk (site sign-in réel, handoff web, restore session, `/api/bootstrap`) | High | Medium | Handoff web branché; reste à valider en production avec Clerk réel |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth Clerk |
@@ -210,4 +211,4 @@
 
 > **Priority last updated**: 2026-04-12
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Valider le flux Clerk réel en runtime Flutter, puis Polar billing, puis crédits DataForSEO
+> **Recommended next**: Valider le handoff web Clerk réel de bout en bout, puis Polar billing, puis crédits DataForSEO

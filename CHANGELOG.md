@@ -6,8 +6,12 @@ The format is based on Keep a Changelog.
 
 ## [2026-04-13]
 
+### Added
+- Added a website-driven web auth handoff so `contentflow_site` can authenticate with Clerk and open Flutter web through `/api/auth/web/exchange` on `/entry`.
+
 ### Changed
 - Reworked the Flutter auth screen around the official Clerk UI so password-manager autofill and configured social providers can be rendered by the SDK instead of a custom form.
+- Switched Flutter web to redirect users toward the main website for sign-in instead of relying on the unsupported `clerk_flutter` web UI.
 
 ### Fixed
 - Replaced the infinite auth spinner with explicit Clerk SDK initialization states, including a timeout and surfaced diagnostics when Clerk fails to load.
