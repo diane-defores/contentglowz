@@ -280,12 +280,13 @@ app.add_middleware(
         "https://winflowz.com",       # Current production domain
         "https://www.winflowz.com",
         "https://contentflow.winflowz.com",
+        "https://app.contentflow.winflowz.com",
         "https://contentflow_site.vercel.app",
     ],
     allow_origin_regex=(
         r"https://("
         r"contentflow[a-z0-9-]*\.(vercel\.app|railway\.app|render\.com)"
-        r"|[a-z0-9-]+\.winflowz\.com"
+        r"|([a-z0-9-]+\.)*winflowz\.com"
         r")$"
     ),
     allow_credentials=True,
