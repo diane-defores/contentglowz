@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:clerk_flutter/src/utils/clerk_file_cache.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -132,6 +133,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildForm(BuildContext context, AuthSession authSession) {
+    if (kIsWeb) {
+      return _buildHeadlessFallbackState(
+        authSession,
+        'Flutter web now uses the direct email/password path because the current Clerk Flutter beta does not reliably expose web sign-in providers or identifiers.',
+      );
+    }
+
     return FutureBuilder<ClerkAuthState>(
       future: _clerkAuthStateFuture,
       builder: (context, snapshot) {
