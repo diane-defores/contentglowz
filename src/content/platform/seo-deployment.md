@@ -312,4 +312,4 @@ Ready to automate your content?
 
 ---
 
-**Questions?** Contact support@contentflowz.com or [join our community](#discord).
+**Questions?** Contact support@contentflow.com or [join our community](#discord).

@@ -1,0 +1,144 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
+const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://app.winflowz.com';
+---
+
+<Layout
+  title="Create Account — ContentFlow"
+  description="Create your ContentFlow account on the website, then continue into the app."
+  noindex={true}
+>
+  <section class="auth-shell">
+    <div class="auth-copy">
+      <p class="eyebrow">Website signup</p>
+      <h1>Create your workspace account.</h1>
+      <p>
+        Start on the website with the official Clerk web flow, then continue into
+        the ContentFlow app with a secure short-lived handoff.
+      </p>
+      <div class="auth-links">
+        <a class="btn-secondary" href="/sign-in">Already have an account?</a>
+        <a class="btn-secondary" href="/launch">Already signed in? Open app</a>
+      </div>
+    </div>
+    <div class="auth-panel">
+      <div id="auth-status" class="auth-status">Loading account creation…</div>
+      <div id="clerk-auth"></div>
+    </div>
+  </section>
+
+  <script
+    defer
+    crossorigin="anonymous"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  ></script>
+  <script define:vars={{ clerkPublishableKey, appWebUrl }}>
+    const statusEl = document.getElementById('auth-status');
+    const mountNode = document.getElementById('clerk-auth');
+    const redirectTarget =
+      new URLSearchParams(window.location.search).get('redirect_url') ||
+      `${appWebUrl}/entry`;
+    const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
+
+    async function bootSignUp() {
+      if (!clerkPublishableKey) {
+        statusEl.textContent =
+          'CLERK_PUBLISHABLE_KEY is missing on the website deployment.';
+        return;
+      }
+
+      if (!window.Clerk) {
+        statusEl.textContent = 'Clerk failed to load in the browser.';
+        return;
+      }
+
+      try {
+        await window.Clerk.load({ publishableKey: clerkPublishableKey });
+        if (window.Clerk.session) {
+          window.location.replace(continueUrl);
+          return;
+        }
+
+        statusEl.textContent = 'Create your account to continue.';
+        window.Clerk.mountSignUp(mountNode, {
+          signInUrl: `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`,
+        });
+
+        const sync = window.setInterval(() => {
+          if (window.Clerk?.session) {
+            window.clearInterval(sync);
+            window.location.replace(continueUrl);
+          }
+        }, 800);
+      } catch (error) {
+        statusEl.textContent =
+          error instanceof Error ? error.message : 'Unable to render Clerk sign-up.';
+      }
+    }
+
+    window.addEventListener('load', bootSignUp);
+  </script>
+</Layout>
+
+<style>
+  .auth-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+    gap: 2rem;
+    align-items: center;
+    padding: 7rem 2rem 3rem;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .auth-copy h1 {
+    font-size: clamp(2.2rem, 1.2rem + 3vw, 4rem);
+    margin-bottom: 1rem;
+  }
+
+  .auth-copy p {
+    color: var(--color-gray);
+    font-size: 1.05rem;
+    max-width: 44rem;
+  }
+
+  .eyebrow {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+  }
+
+  .auth-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .auth-panel {
+    background: white;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+  }
+
+  .auth-status {
+    margin-bottom: 1rem;
+    color: var(--color-gray);
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 900px) {
+    .auth-shell {
+      grid-template-columns: 1fr;
+      padding-top: 6rem;
+    }
+  }
+</style>

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-04-13
+
+### Added
+- Web auth routes: `/sign-in`, `/sign-up`, and `/launch` now host the Clerk web login and hand off authenticated users to the Flutter app.
+
+### Changed
+- Primary marketing CTAs now point to the website auth flow and the Flutter app launch path instead of the old generic pricing entrypoint.
+
 ## 2026-04-07
 
 ### Added
@@ -70,4 +78,4 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - PostHog script and privacy opt-out UI
 - Hero stats changed from specs (6 formats / 7 channels / 23 agents) to value metrics (5 min / 6x content / 0 platforms) (R5)
 - Footer cleaned: removed 8 dead links (/docs, /api, /guides, /about, /careers, /contact, /terms, /security) (R6)
-- Brand naming harmonized to "ContentFlowz" across navbar, footer, hero, schema.org, og:site_name (R7)
+- Brand naming harmonized to "ContentFlow" across navbar, footer, hero, schema.org, og:site_name (R7)

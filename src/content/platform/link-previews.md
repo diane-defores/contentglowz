@@ -66,7 +66,7 @@ The system follows a smart fallback chain: OpenGraph tags first, then standard H
 ### Simple API Call
 
 ```bash
-curl "https://api.contentflowz.com/api/preview?url=https://example.com/blog/post" \
+curl "https://api.contentflow.com/api/preview?url=https://example.com/blog/post" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

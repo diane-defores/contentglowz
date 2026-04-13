@@ -441,9 +441,9 @@ def select_agent(task_type: str):
 ### Code Examples
 
 **Our Open Source Projects:**
-- [SEO Research Analyst](https://github.com/user/contentflowz) - Complete agent implementation
-- [Multi-Agent Orchestration](https://github.com/user/contentflowz) - CrewAI patterns
-- [LLM Optimization](https://github.com/user/contentflowz) - Cost and performance tuning
+- [SEO Research Analyst](https://github.com/user/contentflow) - Complete agent implementation
+- [Multi-Agent Orchestration](https://github.com/user/contentflow) - CrewAI patterns
+- [LLM Optimization](https://github.com/user/contentflow) - Cost and performance tuning
 
 ---
 

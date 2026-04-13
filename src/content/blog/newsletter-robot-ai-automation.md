@@ -476,8 +476,8 @@ SENDGRID_API_KEY=...       # Envoi emails (optionnel)
 
 ```bash
 # Cloner le repo
-git clone https://github.com/your-org/contentflowz.git
-cd contentflowz
+git clone https://github.com/your-org/contentflow.git
+cd contentflow
 
 # Installer dépendances
 pip install -r requirements.txt
@@ -663,8 +663,8 @@ Vous obtenez un système qui :
 **Prêt à automatiser vos newsletters ?**
 
 ```bash
-git clone https://github.com/your-org/contentflowz.git
-cd contentflowz
+git clone https://github.com/your-org/contentflow.git
+cd contentflow
 pip install -r requirements.txt
 composio add gmail
 python -m agents.newsletter

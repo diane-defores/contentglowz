@@ -62,7 +62,7 @@ railway init
 railway up
 
 # 2 minutes later...
-✅ API live at: https://contentflowz-production.up.railway.app
+✅ API live at: https://contentflow-production.up.railway.app
 ```
 
 **What We Loved:**
@@ -171,7 +171,7 @@ requirements.txt    # Shared dependencies
 ```yaml
 services:
   - type: web
-    name: contentflowz-api
+    name: contentflow-api
     env: python
     region: frankfurt  # EU region for GDPR
     plan: free
@@ -190,10 +190,10 @@ services:
         sync: false
 
 databases:
-  - name: contentflowz-db
+  - name: contentflow-db
     plan: free
-    databaseName: contentflowz
-    user: contentflowz
+    databaseName: contentflow
+    user: contentflow
 ```
 
 **Deployment Options:**
@@ -453,7 +453,7 @@ AND revenue > $50/month
 # Via Dashboard (5 minutes)
 1. https://render.com/ → Sign up
 2. New → Blueprint
-3. Connect GitHub: github.com/user/contentflowz
+3. Connect GitHub: github.com/user/contentflow
 4. Detect render.yaml ✅
 5. Add environment variables:
    - OPENROUTER_API_KEY
@@ -462,17 +462,17 @@ AND revenue > $50/month
 6. Create Blueprint → Deploy
 
 # Build time: ~6-8 minutes
-# URL: https://contentflowz-api.onrender.com
+# URL: https://contentflow-api.onrender.com
 ```
 
 **Step 3: Test**
 ```bash
 # Health check
-curl https://contentflowz-api.onrender.com/health
+curl https://contentflow-api.onrender.com/health
 # → {"status": "healthy"}
 
 # API docs
-open https://contentflowz-api.onrender.com/docs
+open https://contentflow-api.onrender.com/docs
 ```
 
 **Step 4: Monitor**
@@ -598,9 +598,9 @@ railway rollback  # Railway's rollback
 ## 📚 Resources
 
 **Deployment Configs (GitHub):**
-- [Our render.yaml](https://github.com/user/contentflowz/blob/master/render.yaml)
-- [Our railway.toml](https://github.com/user/contentflowz/blob/master/railway.toml)
-- [Deployment comparison doc](https://github.com/user/contentflowz/blob/master/DEPLOYMENT_PLATFORMS.md)
+- [Our render.yaml](https://github.com/user/contentflow/blob/master/render.yaml)
+- [Our railway.toml](https://github.com/user/contentflow/blob/master/railway.toml)
+- [Deployment comparison doc](https://github.com/user/contentflow/blob/master/DEPLOYMENT_PLATFORMS.md)
 
 **Platform Links:**
 - [Railway.app](https://railway.app/) - $5/month, no cold starts
@@ -613,6 +613,6 @@ railway rollback  # Railway's rollback
 
 ---
 
-**Questions about our deployment journey?** Comment below or reach out: contact@contentflowz.com
+**Questions about our deployment journey?** Comment below or reach out: contact@contentflow.com
 
 *Last updated: January 15, 2026*

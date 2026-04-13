@@ -21,7 +21,7 @@ Link your GitHub repository to start analyzing your content structure, topical a
 ### Step 1: Start Onboarding
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/onboard \
+curl -X POST https://api.contentflow.com/api/projects/onboard \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -41,7 +41,7 @@ curl -X POST https://api.contentflowz.com/api/projects/onboard \
 ### Step 2: Analyze Repository
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/analyze \
+curl -X POST https://api.contentflow.com/api/projects/proj_abc123/analyze \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -66,7 +66,7 @@ curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/analyze \
 
 **Accept auto-detected settings:**
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
+curl -X POST https://api.contentflow.com/api/projects/proj_abc123/confirm \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -77,7 +77,7 @@ curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
 
 **Or override content directory:**
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
+curl -X POST https://api.contentflow.com/api/projects/proj_abc123/confirm \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -97,7 +97,7 @@ curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
 During confirmation, you can opt in to cookie-free analytics by setting `analytics_enabled: true`. This injects a lightweight tracking script (<1KB) into your site layout, giving you pageview data directly in your dashboard.
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
+curl -X POST https://api.contentflow.com/api/projects/proj_abc123/confirm \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -121,7 +121,7 @@ curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/confirm \
 You can enable or disable analytics at any time via the project update endpoint:
 
 ```bash
-curl -X PATCH https://api.contentflowz.com/api/projects/proj_abc123 \
+curl -X PATCH https://api.contentflow.com/api/projects/proj_abc123 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{"analytics_enabled": false}'
@@ -130,7 +130,7 @@ curl -X PATCH https://api.contentflowz.com/api/projects/proj_abc123 \
 View your analytics in the dashboard or via the API:
 
 ```bash
-curl https://api.contentflowz.com/api/analytics/summary?projectId=proj_abc123 \
+curl https://api.contentflow.com/api/analytics/summary?projectId=proj_abc123 \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -403,7 +403,7 @@ POST /api/projects/{project_id}/refresh
 ```python
 import httpx
 
-API_BASE = "https://api.contentflowz.com"
+API_BASE = "https://api.contentflow.com"
 API_KEY = "your_api_key"
 
 headers = {"Authorization": f"Bearer {API_KEY}"}
@@ -438,7 +438,7 @@ print("Project connected!")
 ### JavaScript/TypeScript
 
 ```typescript
-const API_BASE = "https://api.contentflowz.com";
+const API_BASE = "https://api.contentflow.com";
 const API_KEY = "your_api_key";
 
 async function connectWebsite(githubUrl: string) {
@@ -484,7 +484,7 @@ async function connectWebsite(githubUrl: string) {
 #!/bin/bash
 # connect-website.sh
 
-API_BASE="https://api.contentflowz.com"
+API_BASE="https://api.contentflow.com"
 API_KEY="your_api_key"
 GITHUB_URL="https://github.com/you/your-site"
 
@@ -520,7 +520,7 @@ echo "Done! Project connected."
 When your repository changes (new content, structure updates):
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/projects/proj_abc123/refresh \
+curl -X POST https://api.contentflow.com/api/projects/proj_abc123/refresh \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -538,7 +538,7 @@ Add to your deployment workflow:
 # .github/workflows/deploy.yml
 - name: Refresh SEO Analysis
   run: |
-    curl -X POST https://api.contentflowz.com/api/projects/$PROJECT_ID/refresh \
+    curl -X POST https://api.contentflow.com/api/projects/$PROJECT_ID/refresh \
       -H "Authorization: Bearer ${{ secrets.SEO_API_KEY }}"
 ```
 
@@ -591,4 +591,4 @@ Now that your website is connected:
 
 ---
 
-**Need help?** Contact support@contentflowz.com or [join our Discord](#discord).
+**Need help?** Contact support@contentflow.com or [join our Discord](#discord).

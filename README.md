@@ -18,6 +18,23 @@ npm run build
 npm run preview
 ```
 
+## Auth Handoff Setup
+
+The site now owns the web login flow and redirects authenticated users into the
+Flutter app with a short-lived backend handoff.
+
+Required environment variables:
+
+- `CLERK_PUBLISHABLE_KEY`
+- `API_BASE_URL`
+- `APP_WEB_URL`
+
+Key routes:
+
+- `/sign-in`
+- `/sign-up`
+- `/launch`
+
 ## 📂 Project Structure
 
 ```

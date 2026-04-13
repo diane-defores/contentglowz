@@ -1,0 +1,144 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
+const apiBaseUrl = import.meta.env.API_BASE_URL ?? 'https://api.winflowz.com';
+const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://app.winflowz.com';
+---
+
+<Layout
+  title="Opening App — ContentFlow"
+  description="Exchanging your website session for an app session."
+  noindex={true}
+>
+  <section class="launch-shell">
+    <div class="launch-card">
+      <p class="eyebrow">App handoff</p>
+      <h1>Opening your workspace…</h1>
+      <p id="launch-status">
+        ContentFlow is turning your website login into a short-lived app handoff.
+      </p>
+      <div class="launch-actions">
+        <a class="btn-secondary" href="/sign-in">Back to sign in</a>
+        <a class="btn-secondary" href={appWebUrl}>Open app home</a>
+      </div>
+    </div>
+  </section>
+
+  <script
+    defer
+    crossorigin="anonymous"
+    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+  ></script>
+  <script define:vars={{ clerkPublishableKey, apiBaseUrl, appWebUrl }}>
+    const statusEl = document.getElementById('launch-status');
+
+    async function launchApp() {
+      const redirectTarget =
+        new URLSearchParams(window.location.search).get('redirect_url') ||
+        `${appWebUrl}/entry`;
+
+      if (!clerkPublishableKey) {
+        statusEl.textContent =
+          'CLERK_PUBLISHABLE_KEY is missing on the website deployment.';
+        return;
+      }
+
+      if (!window.Clerk) {
+        statusEl.textContent = 'Clerk failed to load in the browser.';
+        return;
+      }
+
+      try {
+        await window.Clerk.load({ publishableKey: clerkPublishableKey });
+        if (!window.Clerk.session) {
+          window.location.replace(
+            `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`,
+          );
+          return;
+        }
+
+        statusEl.textContent = 'Requesting a secure app handoff…';
+        const bearerToken = await window.Clerk.session.getToken();
+        if (!bearerToken) {
+          throw new Error('Clerk did not return a session token for the app handoff.');
+        }
+
+        const response = await fetch(`${apiBaseUrl}/api/auth/web/handoff`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${bearerToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          throw new Error(
+            body?.detail || 'The backend rejected the website handoff request.',
+          );
+        }
+
+        const payload = await response.json();
+        const handoffToken = payload?.handoff_token;
+        if (!handoffToken) {
+          throw new Error('The backend did not return a handoff token.');
+        }
+
+        const appUrl = new URL(redirectTarget, window.location.origin);
+        appUrl.searchParams.set('handoff_token', handoffToken);
+        statusEl.textContent = 'Redirecting to the app…';
+        window.location.replace(appUrl.toString());
+      } catch (error) {
+        statusEl.textContent =
+          error instanceof Error ? error.message : 'Unable to open the app.';
+      }
+    }
+
+    window.addEventListener('load', launchApp);
+  </script>
+</Layout>
+
+<style>
+  .launch-shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 7rem 2rem 3rem;
+  }
+
+  .launch-card {
+    width: min(100%, 720px);
+    background: white;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+  }
+
+  .launch-card h1 {
+    font-size: clamp(2rem, 1.2rem + 2vw, 3rem);
+    margin-bottom: 1rem;
+  }
+
+  .launch-card p {
+    color: var(--color-gray);
+    font-size: 1rem;
+  }
+
+  .eyebrow {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+  }
+
+  .launch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+</style>

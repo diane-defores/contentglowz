@@ -1235,10 +1235,10 @@ clusters = content_strategist.build_topic_clusters(research_report)
 ## 📚 Resources
 
 ### Code Repository
-- [GitHub: contentflowz](https://github.com/user/contentflowz)
-- [agents/seo/research_analyst.py](https://github.com/user/contentflowz/blob/master/agents/seo/research_analyst.py)
-- [agents/seo/tools/research_tools.py](https://github.com/user/contentflowz/blob/master/agents/seo/tools/research_tools.py)
-- [test_research_simple.py](https://github.com/user/contentflowz/blob/master/test_research_simple.py)
+- [GitHub: contentflow](https://github.com/user/contentflow)
+- [agents/seo/research_analyst.py](https://github.com/user/contentflow/blob/master/agents/seo/research_analyst.py)
+- [agents/seo/tools/research_tools.py](https://github.com/user/contentflow/blob/master/agents/seo/tools/research_tools.py)
+- [test_research_simple.py](https://github.com/user/contentflow/blob/master/test_research_simple.py)
 
 ### Documentation
 - [CrewAI Docs](https://docs.crewai.com/)
@@ -1257,11 +1257,11 @@ clusters = content_strategist.build_topic_clusters(research_report)
 
 **Building in public:** We share code, metrics, and lessons weekly.
 
-- [GitHub](https://github.com/user/contentflowz) - Star the repo
-- [Twitter/X @ContentFlowz](https://twitter.com/contentflowz) - Follow for updates
-- [Blog](https://contentflowz.com/blog) - Deep dives like this one
+- [GitHub](https://github.com/user/contentflow) - Star the repo
+- [Twitter/X @ContentFlow](https://twitter.com/contentflow) - Follow for updates
+- [Blog](https://contentflow.com/blog) - Deep dives like this one
 
-**Questions about our agent implementation?** Comment below or reach out: contact@contentflowz.com
+**Questions about our agent implementation?** Comment below or reach out: contact@contentflow.com
 
 ---
 

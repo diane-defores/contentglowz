@@ -23,7 +23,7 @@ const {
   noindex = false,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflowz.com';
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflow.com';
 const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 
@@ -104,7 +104,7 @@ const websiteSchema = {
 
     <!-- ContentFlow Analytics (cookie-free, production only) -->
     {import.meta.env.PROD && (
-      <script defer src="https://api.contentflowz.com/a/s.js"></script>
+      <script defer src="https://api.contentflow.com/a/s.js"></script>
     )}
   </head>
   <body>

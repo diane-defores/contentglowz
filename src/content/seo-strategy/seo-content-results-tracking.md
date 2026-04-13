@@ -338,13 +338,13 @@ We're testing a hypothesis: **Can 5 comprehensive, technical blog articles drive
 | 1 | semrush.com | 92 | Product page |
 | 2 | ahrefs.com | 91 | Comparison article |
 | 3 | moz.com | 87 | Tool list |
-| **Our Goal** | **contentflowz.com** | **New** | **In-depth comparison** |
+| **Our Goal** | **contentflow.com** | **New** | **In-depth comparison** |
 
 **For "topical mesh" (720 vol):**
 | Position | Domain | DA | Strategy |
 |----------|--------|----|----|
 | 1-10 | Various SEO blogs | 40-60 | Surface coverage |
-| **Our Advantage** | **contentflowz.com** | **New** | **Technical depth + NetworkX code** |
+| **Our Advantage** | **contentflow.com** | **New** | **Technical depth + NetworkX code** |
 
 ### Differentiation Strategy
 
@@ -463,10 +463,10 @@ We're testing a hypothesis: **Can 5 comprehensive, technical blog articles drive
 
 **Get Updates:**
 - [Email Newsletter: Monthly SEO Reports](#)
-- [Twitter/X: @ContentFlowz](#)
+- [Twitter/X: @ContentFlow](#)
 - [RSS Feed](#)
 
-**Questions about our strategy?** Comment below or reach out: contact@contentflowz.com
+**Questions about our strategy?** Comment below or reach out: contact@contentflow.com
 
 ---
 

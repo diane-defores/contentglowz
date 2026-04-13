@@ -458,7 +458,7 @@ git push origin main
 # Build time: 5m 23s (was 8m 48s) ✅
 
 # 3. Test health endpoint
-curl https://contentflowz-api.onrender.com/health
+curl https://contentflow-api.onrender.com/health
 # {"status": "healthy"} ✅
 
 # 4. Test new LLM wrapper
@@ -785,14 +785,14 @@ grep -r "import pandas" agents/
 ## 📚 Resources
 
 **Code:**
-- [utils/llm_simple.py](https://github.com/user/contentflowz/blob/master/utils/llm_simple.py) - Our simplified LLM wrapper
-- [requirements.txt (before)](https://github.com/user/contentflowz/blob/a04c687a/requirements.txt) - Original dependencies
-- [requirements.txt (after)](https://github.com/user/contentflowz/blob/master/requirements.txt) - Optimized dependencies
+- [utils/llm_simple.py](https://github.com/user/contentflow/blob/master/utils/llm_simple.py) - Our simplified LLM wrapper
+- [requirements.txt (before)](https://github.com/user/contentflow/blob/a04c687a/requirements.txt) - Original dependencies
+- [requirements.txt (after)](https://github.com/user/contentflow/blob/master/requirements.txt) - Optimized dependencies
 
 **Documentation:**
 - [OpenRouter Docs](https://openrouter.ai/docs)
-- [Migration Example](https://github.com/user/contentflowz/blob/master/examples/MIGRATION_EXAMPLE.md)
-- [Deployment Status](https://github.com/user/contentflowz/blob/master/DEPLOYMENT_STATUS.md)
+- [Migration Example](https://github.com/user/contentflow/blob/master/examples/MIGRATION_EXAMPLE.md)
+- [Deployment Status](https://github.com/user/contentflow/blob/master/DEPLOYMENT_STATUS.md)
 
 **Related Articles:**
 - [Why We Chose Railway Over Heroku](#) (Platform selection)
@@ -801,7 +801,7 @@ grep -r "import pandas" agents/
 
 ---
 
-**Questions about dependency optimization?** Comment below or reach out: contact@contentflowz.com
+**Questions about dependency optimization?** Comment below or reach out: contact@contentflow.com
 
 *Last updated: January 15, 2026*  
 *Dependencies reduced: 52 → 25 (48% reduction)*  

@@ -128,7 +128,7 @@ Run quality scoring on your existing articles to find which ones need rewriting:
 
 ```bash
 # Score an existing article
-curl -X POST https://api.contentflowz.com/api/content/{id}/readability \
+curl -X POST https://api.contentflow.com/api/content/{id}/readability \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -166,7 +166,7 @@ Quality scoring is built into the SEO deployment pipeline. Every article generat
 To score existing content or content from external sources, use the API:
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/content/{id}/readability \
+curl -X POST https://api.contentflow.com/api/content/{id}/readability \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 

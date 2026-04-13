@@ -706,7 +706,7 @@ async def version():
 ### Local Development
 
 ```bash
-cd /root/contentflowz
+cd /root/contentflow
 source venv/bin/activate
 python api/main.py
 
@@ -1082,9 +1082,9 @@ async def analyze(request: AnalyzeRequest):
 ## 📚 Resources
 
 **Code:**
-- [api/main.py](https://github.com/user/contentflowz/blob/master/api/main.py)
-- [api/routers/mesh.py](https://github.com/user/contentflowz/blob/master/api/routers/mesh.py)
-- [api/models/mesh.py](https://github.com/user/contentflowz/blob/master/api/models/mesh.py)
+- [api/main.py](https://github.com/user/contentflow/blob/master/api/main.py)
+- [api/routers/mesh.py](https://github.com/user/contentflow/blob/master/api/routers/mesh.py)
+- [api/models/mesh.py](https://github.com/user/contentflow/blob/master/api/models/mesh.py)
 
 **Documentation:**
 - [FastAPI Docs](https://fastapi.tiangolo.com/)
@@ -1112,7 +1112,7 @@ async def analyze(request: AnalyzeRequest):
 
 ---
 
-**Questions about our FastAPI implementation?** Comment below or reach out: contact@contentflowz.com
+**Questions about our FastAPI implementation?** Comment below or reach out: contact@contentflow.com
 
 *Last updated: January 15, 2026*  
 *Status: ✅ Production-ready, deployed to Railway*  

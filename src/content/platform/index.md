@@ -22,7 +22,7 @@ Link your GitHub repository to start analyzing your content:
 
 ```bash
 # Start onboarding
-curl -X POST https://api.contentflowz.com/api/projects/onboard \
+curl -X POST https://api.contentflow.com/api/projects/onboard \
   -H "Content-Type: application/json" \
   -d '{"github_url": "https://github.com/you/your-site"}'
 ```
@@ -34,7 +34,7 @@ curl -X POST https://api.contentflowz.com/api/projects/onboard \
 Once connected, analyze your topical mesh:
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/mesh/analyze \
+curl -X POST https://api.contentflow.com/api/mesh/analyze \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/you/your-site"}'
 ```
@@ -183,7 +183,7 @@ import httpx
 
 # Analyze your site
 response = httpx.post(
-    "https://api.contentflowz.com/api/mesh/analyze",
+    "https://api.contentflow.com/api/mesh/analyze",
     json={"repo_url": "https://github.com/you/your-site"},
     headers={"Authorization": "Bearer YOUR_API_KEY"}
 )
@@ -208,7 +208,7 @@ Add to your deployment pipeline:
 # .github/workflows/seo-check.yml
 - name: SEO Analysis
   run: |
-    curl -X POST https://api.contentflowz.com/api/mesh/analyze \
+    curl -X POST https://api.contentflow.com/api/mesh/analyze \
       -H "Authorization: Bearer ${{ secrets.SEO_API_KEY }}" \
       -d '{"repo_url": "${{ github.repository }}"}'
 ```
@@ -225,9 +225,9 @@ Add to your deployment pipeline:
 
 ### Support
 
-- **Email:** support@contentflowz.com
+- **Email:** support@contentflow.com
 - **Discord:** [Join our community](#discord)
-- **GitHub:** [Report issues](https://github.com/contentflowz/platform/issues)
+- **GitHub:** [Report issues](https://github.com/contentflow/platform/issues)
 
 ---
 

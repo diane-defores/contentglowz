@@ -399,7 +399,7 @@ series: "startup-journey"
 - Create valuable content for SEO
 
 **Follow Updates:**
-- [Twitter/X: @ContentFlowz](#)
+- [Twitter/X: @ContentFlow](#)
 - [Newsletter: Monthly Updates](#)
 - [RSS Feed](#)
 - [GitHub: Open Roadmap](#)
@@ -411,8 +411,8 @@ series: "startup-journey"
 **Questions? Feedback? Want to share your journey?**
 
 Comment below or reach out:
-- Email: contact@contentflowz.com
-- Twitter: @ContentFlowz
+- Email: contact@contentflow.com
+- Twitter: @ContentFlow
 - Discord: [Join our community](#)
 
 **Other founders building AI tools?** Let's connect and share insights!

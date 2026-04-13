@@ -20,7 +20,7 @@ Le Newsletter Robot est un système multi-agents qui automatise :
 python --version  # 3.11+
 
 # Installation
-cd ~/contentflowz
+cd ~/contentflow
 pip install -r requirements.txt
 
 # Choisir backend email (voir section Configuration)
@@ -58,7 +58,7 @@ NEWSLETTER_EMAIL_BACKEND=imap
 NEWSLETTER_IMAP_EMAIL=your-newsletters@gmail.com
 NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
 NEWSLETTER_IMAP_FOLDER=Newsletters            # Optionnel
-NEWSLETTER_IMAP_ARCHIVE=CONTENTFLOWZ_DONE # Optionnel
+NEWSLETTER_IMAP_ARCHIVE=CONTENTFLOW_DONE # Optionnel
 
 # Option B: Composio (payant)
 NEWSLETTER_EMAIL_BACKEND=composio
@@ -85,7 +85,7 @@ NEWSLETTER_FROM_NAME="My Newsletter"
 
 4. **Créer labels Gmail** :
    - `Newsletters` - pour les newsletters entrantes
-   - `CONTENTFLOWZ_DONE` - archive après traitement
+   - `CONTENTFLOW_DONE` - archive après traitement
 
 5. **Créer filtre Gmail** :
    - Settings → Filters → Create new filter
@@ -369,7 +369,7 @@ reader.fetch_newsletter_emails(
 
 Créer les labels Gmail :
 - `Newsletters`
-- `CONTENTFLOWZ_DONE`
+- `CONTENTFLOW_DONE`
 
 Le système fallback vers INBOX si les labels n'existent pas.
 

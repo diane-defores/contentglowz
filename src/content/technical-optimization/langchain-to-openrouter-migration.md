@@ -100,7 +100,7 @@ pip list | grep lang
 **Step 2: Measure the Impact**
 ```bash
 # Before migration
-docker images contentflowz-api
+docker images contentflow-api
 # Size: 2.5GB
 
 time docker build .
@@ -150,7 +150,7 @@ def get_llm(tier: str = "free", temperature: float = 0.7, max_tokens: int = 4096
         api_key=os.getenv("OPENROUTER_API_KEY"),
         base_url="https://openrouter.ai/api/v1",
         default_headers={
-            "HTTP-Referer": "https://contentflowz.com",
+            "HTTP-Referer": "https://contentflow.com",
             "X-Title": "ContentFlow SEO System"
         }
     )
@@ -879,9 +879,9 @@ def resilient_llm_call(messages, tier="balanced"):
 ## 🛠️ Resources & Code
 
 ### Complete Migration Code
-- [utils/llm_simple.py](https://github.com/user/contentflowz/blob/master/utils/llm_simple.py) - Our OpenRouter wrapper
-- [requirements.txt (after)](https://github.com/user/contentflowz/blob/master/requirements.txt) - Optimized dependencies
-- [Migration Example](https://github.com/user/contentflowz/blob/master/examples/MIGRATION_EXAMPLE.md) - Step-by-step guide
+- [utils/llm_simple.py](https://github.com/user/contentflow/blob/master/utils/llm_simple.py) - Our OpenRouter wrapper
+- [requirements.txt (after)](https://github.com/user/contentflow/blob/master/requirements.txt) - Optimized dependencies
+- [Migration Example](https://github.com/user/contentflow/blob/master/examples/MIGRATION_EXAMPLE.md) - Step-by-step guide
 
 ### Documentation
 - [OpenRouter API Docs](https://openrouter.ai/docs) - Complete API reference
@@ -903,12 +903,12 @@ This migration saved us $20/month and 8 hours of build time per week. But more i
 
 **What's your dependency bloat story?** 
 - [Share on Twitter](https://twitter.com/intent/tweet?text=We just migrated from LangChain to OpenRouter and cut dependencies by 50%. What's your dependency optimization story?)
-- [Comment on GitHub](https://github.com/user/contentflowz/discussions)
-- [Join our Discord](https://discord.gg/contentflowz)
+- [Comment on GitHub](https://github.com/user/contentflow/discussions)
+- [Join our Discord](https://discord.gg/contentflow)
 
 **Questions about the migration?**
-- Email: contact@contentflowz.com
-- GitHub Issues: [Open an issue](https://github.com/user/contentflowz/issues)
+- Email: contact@contentflow.com
+- GitHub Issues: [Open an issue](https://github.com/user/contentflow/issues)
 
 ---
 

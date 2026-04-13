@@ -63,7 +63,7 @@ Building in public means sharing everything - the wins, the losses, and the toug
 
 **Results:** 60% cost savings, faster iteration, better developer experience.
 
-### [Platform Architecture Evolution](./contentflowz-platform.md)
+### [Platform Architecture Evolution](./contentflow-platform.md)
 
 **TL;DR:** How our architecture evolved from simple monolith to multi-service system handling AI agents, database, and web dashboard.
 
@@ -263,9 +263,9 @@ Building in public means sharing everything - the wins, the losses, and the toug
 ## 📬 Follow Our Journey
 
 **Weekly Updates:**
-- [Twitter/X @ContentFlowz](https://twitter.com/contentflowz) - Daily insights
+- [Twitter/X @ContentFlow](https://twitter.com/contentflow) - Daily insights
 - [Newsletter](#newsletter) - Weekly roundup and metrics
-- [GitHub](https://github.com/user/contentflowz) - Open source development
+- [GitHub](https://github.com/user/contentflow) - Open source development
 
 **Monthly Reports:**
 - [Blog](#blog) - Detailed metrics and decisions

@@ -180,7 +180,7 @@ def generate_optimized_title(keyword, intent, angle):
   "dateModified": "2026-01-15",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://contentflowz.com/guide"
+    "@id": "https://contentflow.com/guide"
   }
 }
 ```

@@ -170,7 +170,7 @@ Navigate to **Ideas > Ingest > Social Listening**, enter your topics, and click 
 ### Via the API
 
 ```bash
-curl -X POST https://api.contentflowz.com/api/ideas/ingest/social \
+curl -X POST https://api.contentflow.com/api/ideas/ingest/social \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

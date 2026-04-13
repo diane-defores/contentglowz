@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**ContentFlowz Site** — Marketing website built with Astro. Static site with blog, pricing, features, and SEO content.
+**ContentFlow Site** — Marketing website built with Astro. Static site with blog, pricing, features, and SEO content.
 
 ## Common Commands
 
@@ -39,5 +39,5 @@ src/
 
 ## Related Repos
 
-- **ContentFlowz-app** — Flutter application (Web, iOS, Android)
-- **ContentFlowz-lab** — FastAPI backend + AI agents (Python)
+- **contentflow_app** — Flutter application (Web, iOS, Android)
+- **contentflow_lab** — FastAPI backend + AI agents (Python)
