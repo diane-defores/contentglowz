@@ -25,11 +25,15 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
     </div>
     <div class="auth-panel">
       <div id="auth-status" class="auth-status">Loading secure sign-in…</div>
+      <button id="copy-auth-error" class="copy-error-button" type="button" hidden>
+        Copy error
+      </button>
       <div id="clerk-auth"></div>
     </div>
   </section>
 
   <script
+    id="clerk-browser-script"
     defer
     crossorigin="anonymous"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
@@ -37,20 +41,54 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
   <script define:vars={{ clerkPublishableKey, appWebUrl }}>
     const statusEl = document.getElementById('auth-status');
     const mountNode = document.getElementById('clerk-auth');
+    const copyButton = document.getElementById('copy-auth-error');
+    const clerkScript = document.getElementById('clerk-browser-script');
     const redirectTarget =
       new URLSearchParams(window.location.search).get('redirect_url') ||
       `${appWebUrl}/entry`;
     const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
+    let lastErrorText = '';
+
+    async function copyError() {
+      if (!lastErrorText) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(lastErrorText);
+        copyButton.textContent = 'Copied';
+        window.setTimeout(() => {
+          copyButton.textContent = 'Copy error';
+        }, 1500);
+      } catch (_) {
+        copyButton.textContent = 'Copy failed';
+      }
+    }
+
+    function showError(message) {
+      lastErrorText = [
+        message,
+        `Host: ${window.location.host}`,
+        `Path: ${window.location.pathname}`,
+        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
+      ].join('\n');
+      statusEl.textContent = message;
+      copyButton.hidden = false;
+    }
+
+    copyButton.addEventListener('click', copyError);
+    clerkScript?.addEventListener('error', () => {
+      showError('Clerk CDN script failed to load in the browser.');
+    });
 
     async function bootSignIn() {
       if (!clerkPublishableKey) {
-        statusEl.textContent =
-          'CLERK_PUBLISHABLE_KEY is missing on the website deployment.';
+        showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
         return;
       }
 
       if (!window.Clerk) {
-        statusEl.textContent = 'Clerk failed to load in the browser.';
+        showError('Clerk failed to load in the browser.');
         return;
       }
 
@@ -73,8 +111,9 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
           }
         }, 800);
       } catch (error) {
-        statusEl.textContent =
-          error instanceof Error ? error.message : 'Unable to render Clerk sign-in.';
+        showError(
+          error instanceof Error ? error.message : 'Unable to render Clerk sign-in.',
+        );
       }
     }
 
@@ -133,6 +172,17 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
     margin-bottom: 1rem;
     color: var(--color-gray);
     font-size: 0.95rem;
+  }
+
+  .copy-error-button {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    background: rgba(15, 23, 42, 0.04);
+    color: var(--color-dark);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    font: inherit;
+    cursor: pointer;
   }
 
   @media (max-width: 900px) {

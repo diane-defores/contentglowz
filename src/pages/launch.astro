@@ -18,6 +18,9 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
       <p id="launch-status">
         ContentFlow is turning your website login into a short-lived app handoff.
       </p>
+      <button id="copy-launch-error" class="copy-error-button" type="button" hidden>
+        Copy error
+      </button>
       <div class="launch-actions">
         <a class="btn-secondary" href="/sign-in">Back to sign in</a>
         <a class="btn-secondary" href={appWebUrl}>Open app home</a>
@@ -26,12 +29,49 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
   </section>
 
   <script
+    id="clerk-browser-script"
     defer
     crossorigin="anonymous"
     src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
   ></script>
   <script define:vars={{ clerkPublishableKey, apiBaseUrl, appWebUrl }}>
     const statusEl = document.getElementById('launch-status');
+    const copyButton = document.getElementById('copy-launch-error');
+    const clerkScript = document.getElementById('clerk-browser-script');
+    let lastErrorText = '';
+
+    async function copyError() {
+      if (!lastErrorText) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(lastErrorText);
+        copyButton.textContent = 'Copied';
+        window.setTimeout(() => {
+          copyButton.textContent = 'Copy error';
+        }, 1500);
+      } catch (_) {
+        copyButton.textContent = 'Copy failed';
+      }
+    }
+
+    function showError(message) {
+      lastErrorText = [
+        message,
+        `Host: ${window.location.host}`,
+        `Path: ${window.location.pathname}`,
+        `API base: ${apiBaseUrl}`,
+        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
+      ].join('\n');
+      statusEl.textContent = message;
+      copyButton.hidden = false;
+    }
+
+    copyButton.addEventListener('click', copyError);
+    clerkScript?.addEventListener('error', () => {
+      showError('Clerk CDN script failed to load in the browser.');
+    });
 
     async function launchApp() {
       const redirectTarget =
@@ -39,13 +79,12 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
         `${appWebUrl}/entry`;
 
       if (!clerkPublishableKey) {
-        statusEl.textContent =
-          'CLERK_PUBLISHABLE_KEY is missing on the website deployment.';
+        showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
         return;
       }
 
       if (!window.Clerk) {
-        statusEl.textContent = 'Clerk failed to load in the browser.';
+        showError('Clerk failed to load in the browser.');
         return;
       }
 
@@ -90,8 +129,7 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
         statusEl.textContent = 'Redirecting to the app…';
         window.location.replace(appUrl.toString());
       } catch (error) {
-        statusEl.textContent =
-          error instanceof Error ? error.message : 'Unable to open the app.';
+        showError(error instanceof Error ? error.message : 'Unable to open the app.');
       }
     }
 
@@ -140,5 +178,16 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 1.5rem;
+  }
+
+  .copy-error-button {
+    margin-top: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    background: rgba(15, 23, 42, 0.04);
+    color: var(--color-dark);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    font: inherit;
+    cursor: pointer;
   }
 </style>
