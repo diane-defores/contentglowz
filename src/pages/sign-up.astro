@@ -72,7 +72,7 @@ const clerkScriptSrc = clerkFrontendApi
     const clerkScript = document.getElementById('clerk-browser-script');
     const redirectTarget =
       new URLSearchParams(window.location.search).get('redirect_url') ||
-      `${appWebUrl}/entry`;
+      `${appWebUrl}/#/entry`;
     const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
     let lastErrorText = '';
 

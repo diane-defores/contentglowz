@@ -101,10 +101,19 @@ const clerkScriptSrc = clerkFrontendApi
       showError('Clerk CDN script failed to load in the browser.');
     });
 
+    function buildAppRedirectUrl(redirectTarget, handoffToken) {
+      const target = new URL(redirectTarget, window.location.origin);
+      const hash = target.hash || '#/entry';
+      target.hash = '';
+      target.searchParams.set('handoff_token', handoffToken);
+      target.hash = hash;
+      return target.toString();
+    }
+
     async function launchApp() {
       const redirectTarget =
         new URLSearchParams(window.location.search).get('redirect_url') ||
-        `${appWebUrl}/entry`;
+        `${appWebUrl}/#/entry`;
 
       if (!clerkPublishableKey) {
         showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
@@ -152,10 +161,10 @@ const clerkScriptSrc = clerkFrontendApi
           throw new Error('The backend did not return a handoff token.');
         }
 
-        const appUrl = new URL(redirectTarget, window.location.origin);
-        appUrl.searchParams.set('handoff_token', handoffToken);
         statusEl.textContent = 'Redirecting to the app…';
-        window.location.replace(appUrl.toString());
+        window.location.replace(
+          buildAppRedirectUrl(redirectTarget, handoffToken),
+        );
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Unable to open the app.');
       }
