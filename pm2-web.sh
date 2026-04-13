@@ -6,8 +6,8 @@ cd "$(cd "$(dirname "$0")" && pwd)"
 
 API_BASE_URL_VALUE="${API_BASE_URL:-https://api.winflowz.com}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
-APP_SITE_URL_VALUE="${APP_SITE_URL:-https://contentflow.com}"
-APP_WEB_URL_VALUE="${APP_WEB_URL:-https://app.winflowz.com}"
+APP_SITE_URL_VALUE="${APP_SITE_URL:-https://contentflow.winflowz.com}"
+APP_WEB_URL_VALUE="${APP_WEB_URL:-https://contentflow.winflowz.com}"
 PORT_VALUE="${PORT:-3050}"
 
 if [[ -z "${CLERK_PUBLISHABLE_KEY_VALUE}" ]]; then

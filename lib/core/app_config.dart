@@ -11,11 +11,11 @@ class AppConfig {
 
   static const siteUrl = String.fromEnvironment(
     'APP_SITE_URL',
-    defaultValue: 'https://contentflow.com',
+    defaultValue: 'https://contentflow.winflowz.com',
   );
 
   static const appWebUrl = String.fromEnvironment(
     'APP_WEB_URL',
-    defaultValue: 'https://app.winflowz.com',
+    defaultValue: 'https://contentflow.winflowz.com',
   );
 }
