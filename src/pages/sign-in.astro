@@ -3,6 +3,29 @@ import Layout from '../layouts/Layout.astro';
 
 const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
 const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.com';
+
+function getClerkFrontendApi(publishableKey: string) {
+  const encoded = publishableKey.split('_')[2];
+  if (!encoded) {
+    return '';
+  }
+
+  try {
+    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      '=',
+    );
+    return Buffer.from(padded, 'base64').toString('utf-8').replace(/\$$/, '');
+  } catch {
+    return '';
+  }
+}
+
+const clerkFrontendApi = getClerkFrontendApi(clerkPublishableKey);
+const clerkScriptSrc = clerkFrontendApi
+  ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
+  : '';
 ---
 
 <Layout
@@ -32,12 +55,16 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
     </div>
   </section>
 
-  <script
-    id="clerk-browser-script"
-    defer
-    crossorigin="anonymous"
-    src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
-  ></script>
+  {clerkScriptSrc && (
+    <script
+      id="clerk-browser-script"
+      async
+      crossorigin="anonymous"
+      data-clerk-publishable-key={clerkPublishableKey}
+      src={clerkScriptSrc}
+      type="text/javascript"
+    ></script>
+  )}
   <script define:vars={{ clerkPublishableKey, appWebUrl }}>
     const statusEl = document.getElementById('auth-status');
     const mountNode = document.getElementById('clerk-auth');
@@ -70,6 +97,7 @@ const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://contentflow.winflowz.c
         message,
         `Host: ${window.location.host}`,
         `Path: ${window.location.pathname}`,
+        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
         `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
       ].join('\n');
       statusEl.textContent = message;
