@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,6 +81,117 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
   Future<void> _openWebsiteLaunch() async {
     await launchUrl(Uri.parse('${AppConfig.siteUrl}/launch'));
+  }
+
+  String _maskToken(String? value) {
+    if (value == null || value.isEmpty) return 'none';
+    if (value.length <= 14) return value;
+    return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
+  }
+
+  Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
+    final handoffToken = kIsWeb ? Uri.base.queryParameters['handoff_token'] : null;
+    final lines = [
+      'ContentFlow entry diagnostics',
+      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
+      'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
+      'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
+      'API_BASE_URL: ${AppConfig.apiBaseUrl}',
+      'APP_SITE_URL: ${AppConfig.siteUrl}',
+      'APP_WEB_URL: ${AppConfig.appWebUrl}',
+      'Session state: ${authSession.status.name}',
+      'Session email: ${authSession.email ?? 'none'}',
+      'handoff_token: ${_maskToken(handoffToken)}',
+      'Last handoff error: ${_handoffError == null || _handoffError!.isEmpty ? 'none' : _handoffError}',
+    ];
+
+    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Entry diagnostics copied to clipboard.')),
+    );
+  }
+
+  Widget _buildWebRuntimeDiagnostics(AuthSession authSession) {
+    final handoffToken = kIsWeb ? Uri.base.queryParameters['handoff_token'] : null;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Entry Diagnostics',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => _copyEntryDiagnostics(authSession),
+                child: const Text('Copy'),
+              ),
+            ],
+          ),
+          Text(
+            'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'API_BASE_URL: ${AppConfig.apiBaseUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_SITE_URL: ${AppConfig.siteUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_WEB_URL: ${AppConfig.appWebUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Session state: ${authSession.status.name}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'handoff_token: ${_maskToken(handoffToken)}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          if (_handoffError != null && _handoffError!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Last handoff error: $_handoffError',
+              style: const TextStyle(
+                color: Colors.orange,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   @override
@@ -581,6 +693,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ref.read(authSessionProvider.notifier).signInDemo();
           context.go('/onboarding?intent=entry');
         },
+        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
       );
     }
 
@@ -614,6 +727,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: null,
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
       );
     }
 
@@ -644,6 +758,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 : '/onboarding?intent=entry',
           );
         },
+        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
       );
     }
 
@@ -708,6 +823,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             kIsWeb
             ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
             : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
+        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
       );
     }
 
@@ -722,6 +838,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     required String secondaryLabel,
     required VoidCallback onSecondary,
     String? caption,
+    Widget? extra,
   }) {
     return Container(
       padding: const EdgeInsets.all(28),
@@ -790,6 +907,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               ),
             ),
           ],
+          if (extra case final extraWidget?) ...[extraWidget],
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
