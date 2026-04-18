@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://contentflow.winflowz.com/sitemap-index.xml

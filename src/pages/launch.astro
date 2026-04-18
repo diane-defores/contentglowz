@@ -1,9 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { apiBaseUrl, appWebUrl } from '../config/site';
 
 const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
-const apiBaseUrl = import.meta.env.API_BASE_URL ?? 'https://api.winflowz.com';
-const appWebUrl = import.meta.env.APP_WEB_URL ?? 'https://app.contentflow.winflowz.com';
 
 function getClerkFrontendApi(publishableKey: string) {
   const encoded = publishableKey.split('_')[2];

@@ -27,6 +27,7 @@ Required environment variables:
 
 - `CLERK_PUBLISHABLE_KEY`
 - `API_BASE_URL`
+- `APP_SITE_URL`
 - `APP_WEB_URL`
 
 Key routes:

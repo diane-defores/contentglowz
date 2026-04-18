@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
+const siteUrl = (process.env.APP_SITE_URL || 'https://contentflow.winflowz.com').replace(/\/$/, '');
+
 export default defineConfig({
-  site: 'https://contentflow.winflowz.com',
+  site: siteUrl,
   base: '/',
   integrations: [
     sitemap({

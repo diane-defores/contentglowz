@@ -1,4 +1,6 @@
 ---
+import { siteUrl } from '../config/site';
+
 interface Props {
   title: string;
   description?: string;
@@ -23,9 +25,9 @@ const {
   noindex = false,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://contentflow.winflowz.com';
-const canonical = canonicalUrl ?? `${siteUrl}${Astro.url.pathname}`;
-const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+const resolvedSiteUrl = Astro.site?.toString().replace(/\/$/, '') ?? siteUrl;
+const canonical = canonicalUrl ?? `${resolvedSiteUrl}${Astro.url.pathname}`;
+const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${resolvedSiteUrl}${ogImage}`;
 
 const articleSchema = ogType === 'article' ? {
   "@context": "https://schema.org",
@@ -37,7 +39,7 @@ const articleSchema = ogType === 'article' ? {
   "publisher": {
     "@type": "Organization",
     "name": "ContentFlow",
-    "url": siteUrl,
+    "url": resolvedSiteUrl,
   },
   "datePublished": publishDate?.toISOString(),
   "keywords": tags.join(', '),
@@ -48,7 +50,7 @@ const orgSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "ContentFlow",
-  "url": siteUrl,
+  "url": resolvedSiteUrl,
   "description": "AI content pipeline — generate, review, and publish multi-format content",
 };
 
@@ -56,7 +58,7 @@ const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "ContentFlow",
-  "url": siteUrl,
+  "url": resolvedSiteUrl,
 };
 ---
 
