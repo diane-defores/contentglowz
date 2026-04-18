@@ -47,3 +47,4 @@ cd "$ROOT_DIR"
 flutter --version
 flutter pub get
 flutter build web --release $DART_DEFINES
+bash ./scripts/install-web-auth.sh "$ROOT_DIR/build/web"

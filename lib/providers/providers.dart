@@ -75,9 +75,13 @@ class ApiBaseUrlNotifier extends StateNotifier<String> {
 final apiServiceProvider = Provider<ApiService>((ref) {
   final baseUrl = ref.watch(apiBaseUrlProvider);
   final authSession = ref.watch(authSessionProvider);
+  final clerkAuthService = ref.watch(clerkAuthServiceProvider);
   return ApiService(
     baseUrl: baseUrl,
     authToken: authSession.bearerToken,
+    authTokenProvider: authSession.isAuthenticated
+        ? () async => clerkAuthService?.getFreshToken()
+        : null,
     allowDemoData: authSession.isDemo,
     onUnauthorized: () {
       ref.read(authSessionProvider.notifier).handleUnauthorized();

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ContentFlow Sign In</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="stylesheet" href="/clerk-auth.css" />
+    <script src="/clerk-runtime.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel">
+        <div class="eyebrow">ClerkJS Sign-In</div>
+        <h1>Continue with Google</h1>
+        <p>
+          ContentFlow web authentication now runs directly on the app domain with the
+          official Clerk JavaScript SDK. No site-to-app handoff is involved anymore.
+        </p>
+        <div class="stack">
+          <button id="google-button" class="button button-primary" disabled>
+            Continue with Google
+          </button>
+          <button id="entry-button" class="button button-secondary" type="button">
+            Back to app entry
+          </button>
+        </div>
+        <div id="status" class="status">Loading Clerk…</div>
+        <div id="meta" class="meta"></div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const bridge = window.contentflowClerkBridge;
+        const googleButton = document.getElementById('google-button');
+        const entryButton = document.getElementById('entry-button');
+        const statusEl = document.getElementById('status');
+        const metaEl = document.getElementById('meta');
+
+        function setStatus(message, isError) {
+          statusEl.textContent = message;
+          statusEl.classList.toggle('error', Boolean(isError));
+        }
+
+        function renderMeta() {
+          const diagnostics = bridge.getDiagnostics();
+          metaEl.innerHTML = [
+            `Build commit: ${diagnostics.buildCommitSha}`,
+            `Build environment: ${diagnostics.buildEnvironment}`,
+            `Build timestamp: ${diagnostics.buildTimestamp}`,
+            `Configured app URL: ${diagnostics.configuredAppWebUrl}`,
+            `Current origin: ${diagnostics.currentOrigin}`,
+            `Clerk frontend API: ${diagnostics.clerkFrontendApi}`,
+            `Key preview: ${diagnostics.keyPreview}`,
+          ]
+            .map((line) => `<div>${line}</div>`)
+            .join('');
+        }
+
+        async function bootstrap() {
+          try {
+            renderMeta();
+            await bridge.load();
+            if (await bridge.isSignedIn()) {
+              setStatus('Session already active. Redirecting…');
+              window.location.replace('/#/entry');
+              return;
+            }
+
+            googleButton.disabled = false;
+            setStatus('Ready.');
+          } catch (error) {
+            console.error('[ContentFlow] Clerk sign-in bootstrap failed.', error);
+            setStatus(String(error), true);
+          }
+        }
+
+        googleButton.addEventListener('click', async () => {
+          googleButton.disabled = true;
+          setStatus('Redirecting to Google…');
+          try {
+            await bridge.startGoogleSignIn();
+          } catch (error) {
+            console.error('[ContentFlow] Google redirect failed.', error);
+            googleButton.disabled = false;
+            setStatus(String(error), true);
+          }
+        });
+
+        entryButton.addEventListener('click', () => {
+          window.location.assign('/#/entry');
+        });
+
+        bootstrap();
+      })();
+    </script>
+  </body>
+</html>

@@ -19,7 +19,7 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
-  static const String _diagnosticsVersion = 'entry-diagnostics-v4-2026-04-18';
+  static const String _diagnosticsVersion = 'entry-diagnostics-v5-2026-04-18';
   bool _isExchangingHandoff = false;
   String? _handoffError;
   final List<String> _handoffTimeline = <String>[];
@@ -159,11 +159,17 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Future<void> _openWebsiteSignIn() async {
-    await launchUrl(Uri.parse('${AppConfig.effectiveSiteUrl}/sign-in'));
+    final url = kIsWeb
+        ? Uri.parse('${Uri.base.origin}/sign-in')
+        : Uri.parse('${AppConfig.appWebUrl}/sign-in');
+    await launchUrl(url);
   }
 
   Future<void> _openWebsiteLaunch() async {
-    await launchUrl(Uri.parse('${AppConfig.effectiveSiteUrl}/launch'));
+    final url = kIsWeb
+        ? Uri.parse('${Uri.base.origin}/#/entry')
+        : Uri.parse('${AppConfig.appWebUrl}/#/entry');
+    await launchUrl(url);
   }
 
   void _clearHandoffTokenFromUrl(String detail) {
@@ -527,7 +533,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.lock_open_rounded),
-                  label: Text(kIsWeb ? 'Sign In On Website' : 'Sign In'),
+                  label: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
                 ),
               ],
             ),
@@ -876,7 +882,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     vertical: 18,
                   ),
                 ),
-                child: Text(kIsWeb ? 'Sign In On Website' : 'Sign In'),
+                child: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
               ),
             ],
           ),
@@ -893,10 +899,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   ) {
     if (_isExchangingHandoff) {
       return _card(
-        eyebrow: 'Website handoff',
+        eyebrow: 'Legacy handoff',
         title: 'Opening your app session',
         description:
-            'ContentFlow is exchanging the secure website handoff for an app session before loading your workspace.',
+            'ContentFlow detected an old website handoff token and is exchanging it before loading your workspace. New sign-ins should now use the direct ClerkJS app flow instead.',
         icon: Icons.sync_rounded,
         accent: AppTheme.editColor,
         primaryLabel: 'Please wait',
@@ -953,7 +959,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             'Your Clerk session could not load the workspace bootstrap. Sign in again to refresh the bearer token.',
         icon: Icons.warning_amber_rounded,
         accent: Colors.orange,
-        primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In Again',
+        primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In Again',
         onPrimary: () {
           ref.read(authSessionProvider.notifier).signOut();
           if (kIsWeb) {
@@ -1014,26 +1020,26 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       eyebrow: 'Logged out',
       title: 'Create or reconnect your workspace',
       description: kIsWeb
-          ? 'You are not signed in yet. Continue on the main website to use Google sign-in and password-manager autofill, then the site will return you to this app.'
-          : 'You are not signed in yet. Use the custom in-app email and password flow to reconnect your workspace, or continue on the website for Google and account creation.',
+          ? 'You are not signed in yet. Continue with Google on the dedicated app-domain Clerk page, then Clerk will return you straight to this app.'
+          : 'You are not signed in yet. The Flutter beta auth path has been archived, so use the dedicated web sign-in flow instead.',
       icon: Icons.lock_outline_rounded,
       accent: Colors.orange,
-      primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In',
+      primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In',
       onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
-      secondaryLabel: kIsWeb ? 'I Already Signed In' : 'Open Demo Workspace',
+      secondaryLabel: kIsWeb ? 'Open App Entry' : 'Open Demo Workspace',
       onSecondary: kIsWeb
           ? _openWebsiteLaunch
           : () {
               ref.read(authSessionProvider.notifier).signInDemo();
               context.go(
-                authSession.onboardingComplete
-                    ? '/feed'
-                    : '/onboarding?intent=entry',
+            authSession.onboardingComplete
+                ? '/feed'
+                : '/onboarding?intent=entry',
               );
             },
       caption: kIsWeb
-          ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
-          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The embedded Clerk Flutter widget is no longer the primary auth path.',
+          ? 'The stable path is now ClerkJS on `app.contentflow.winflowz.com/sign-in`, with a standard OAuth callback on `/sso-callback`.'
+          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The old Flutter beta auth path now lives only in the legacy branch.',
       extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
     );
   }

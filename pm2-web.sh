@@ -29,4 +29,6 @@ flutter build web --release \
   --dart-define=BUILD_ENVIRONMENT="${BUILD_ENVIRONMENT_VALUE}" \
   --dart-define=BUILD_TIMESTAMP="${BUILD_TIMESTAMP_VALUE}"
 
+bash ./scripts/install-web-auth.sh ./build/web
+
 exec node server.js "${PORT_VALUE}"

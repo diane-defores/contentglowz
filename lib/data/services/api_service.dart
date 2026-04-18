@@ -45,6 +45,7 @@ class ApiService {
   ApiService({
     required String baseUrl,
     String? authToken,
+    this.authTokenProvider,
     this.allowDemoData = false,
     this.onUnauthorized,
   }) {
@@ -55,14 +56,28 @@ class ApiService {
         receiveTimeout: const Duration(seconds: 60),
         headers: {
           'Content-Type': 'application/json',
-          if (authToken != null && authToken.isNotEmpty)
-            'Authorization': 'Bearer $authToken',
         },
       ),
     );
 
+    if (authToken != null && authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
+    }
+
     _dio.interceptors.add(
       InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final provider = authTokenProvider;
+          if (provider != null) {
+            final token = await provider();
+            if (token == null || token.isEmpty) {
+              options.headers.remove('Authorization');
+            } else {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          }
+          handler.next(options);
+        },
         onError: (error, handler) {
           if (error.response?.statusCode == 401) {
             onUnauthorized?.call();
@@ -74,6 +89,7 @@ class ApiService {
   }
 
   late final Dio _dio;
+  final Future<String?> Function()? authTokenProvider;
   final bool allowDemoData;
   final void Function()? onUnauthorized;
 

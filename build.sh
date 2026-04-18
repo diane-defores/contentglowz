@@ -2,7 +2,7 @@
 # Build & serve ContentFlow Flutter app
 # Usage: ./build.sh [--serve]
 
-set -e
+set -euo pipefail
 
 export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 cd "$(dirname "$0")"
@@ -23,6 +23,7 @@ if [[ -z "${CLERK_PUBLISHABLE_KEY_VALUE}" ]]; then
 fi
 
 echo "🔨 Building Flutter web..."
+flutter pub get
 flutter build web --release \
   --dart-define=API_BASE_URL="${API_BASE_URL_VALUE}" \
   --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY_VALUE}" \
@@ -30,13 +31,14 @@ flutter build web --release \
   --dart-define=APP_WEB_URL="${APP_WEB_URL_VALUE}" \
   --dart-define=BUILD_COMMIT_SHA="${BUILD_COMMIT_SHA_VALUE}" \
   --dart-define=BUILD_ENVIRONMENT="${BUILD_ENVIRONMENT_VALUE}" \
-  --dart-define=BUILD_TIMESTAMP="${BUILD_TIMESTAMP_VALUE}" \
-  2>&1 | tail -3
+  --dart-define=BUILD_TIMESTAMP="${BUILD_TIMESTAMP_VALUE}"
+
+bash ./scripts/install-web-auth.sh ./build/web
 
 echo ""
 echo "✅ Build complete: build/web/"
 
-if [[ "$1" == "--serve" ]]; then
+if [[ "${1:-}" == "--serve" ]]; then
     echo ""
     echo "🚀 Starting server on port ${PORT_VALUE}..."
     # Kill existing if running

@@ -81,7 +81,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the custom sign-in flow and website auth handoff.',
+          'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -112,7 +112,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'Sign in to your workspace',
+          'Use the web sign-in flow',
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -121,7 +121,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'The embedded Clerk Flutter UI is no longer the primary auth path. Use the custom email and password flow here, or continue on the website for Google, browser password managers, and account creation.',
+          'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -135,42 +135,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           error: _error,
         ),
         const SizedBox(height: 24),
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.username, AutofillHints.email],
-          decoration: const InputDecoration(
-            labelText: 'Email',
-            hintText: 'you@example.com',
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _passwordController,
-          obscureText: true,
-          autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(labelText: 'Password'),
-          onSubmitted: (_) => _submitCustomSignIn(),
-        ),
-        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: _isSubmitting ? null : _submitCustomSignIn,
-            child: Text(_isSubmitting ? 'Signing in...' : 'Sign in'),
+            onPressed: _isSubmitting ? null : _openAppWebSignIn,
+            child: const Text('Continue with Google'),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: _isSubmitting ? null : _openWebsiteSignIn,
-            child: const Text('Continue On Website'),
+            onPressed: _isSubmitting ? null : _openAppWebEntry,
+            child: const Text('Open App Entry'),
           ),
         ),
         const SizedBox(height: 12),
         Text(
-          'Website auth is the hosted path for Google and account creation. Native deep-link return is not wired yet, so email and password stays the most reliable in-app sign-in path today.',
+          'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
           style: TextStyle(
             color: Colors.white.withAlpha(120),
             fontSize: 12,
@@ -190,14 +172,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildWebRedirectState(AuthSession authSession) {
-    final effectiveSiteUrl = AppConfig.effectiveSiteUrl;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'Sign in on the website',
+          'Sign in with Google',
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -206,7 +186,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'ContentFlow web authentication uses the hosted website flow. The embedded Clerk Flutter UI is intentionally disabled as the primary auth path.',
+          'ContentFlow web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -223,29 +203,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: () => launchUrl(Uri.parse('$effectiveSiteUrl/sign-in')),
-            child: const Text('Continue On Website'),
+            onPressed: _openAppWebSignIn,
+            child: const Text('Continue with Google'),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
           child: TextButton(
-            onPressed: () => launchUrl(Uri.parse('$effectiveSiteUrl/launch')),
+            onPressed: _openAppWebEntry,
             child: const Text('Already signed in? Open App'),
           ),
         ),
-        if (AppConfig.siteUrlPointsToAppHost) ...[
-          const SizedBox(height: 12),
-          Text(
-            'This build configured APP_SITE_URL to the app host, so website actions are falling back to ${AppConfig.effectiveSiteUrl}.',
-            style: TextStyle(
-              color: Colors.orange.withAlpha(220),
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -260,8 +229,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final currentHost = kIsWeb ? Uri.base.host : 'not-web';
     final currentPath = kIsWeb ? Uri.base.path : 'not-web';
     final primaryAuthMode = kIsWeb
-        ? 'hosted website handoff'
-        : 'custom email/password + hosted website';
+        ? 'clerkjs google oauth'
+        : 'web ClerkJS auth only';
 
     return Container(
       width: double.infinity,
@@ -499,8 +468,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required String? error,
   }) async {
     final primaryAuthMode = kIsWeb
-        ? 'hosted website handoff'
-        : 'custom email/password + hosted website';
+        ? 'clerkjs google oauth'
+        : 'web ClerkJS auth only';
     final lines = [
       'ContentFlow auth diagnostics',
       'Build commit: ${AppConfig.buildCommitSha}',
@@ -574,7 +543,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     if (lower.contains('oauth') && lower.contains('google')) {
-      return 'Google sign-in is handled on the website flow. Continue on the website instead of relying on the embedded Flutter path.';
+      return 'Google sign-in is handled on the dedicated ClerkJS route. Continue on the app sign-in page instead of relying on the old embedded Flutter path.';
     }
 
     if (lower.contains('not configured')) {
@@ -621,9 +590,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _openWebsiteSignIn() async {
-    await launchUrl(
-      Uri.parse('${AppConfig.effectiveSiteUrl}/sign-in'),
-      mode: LaunchMode.externalApplication,
-    );
+    await _openAppWebSignIn();
+  }
+
+  Future<void> _openAppWebSignIn() async {
+    final url = kIsWeb
+        ? Uri.parse('${Uri.base.origin}/sign-in')
+        : Uri.parse('${AppConfig.appWebUrl}/sign-in');
+    await launchUrl(url, mode: LaunchMode.platformDefault);
+  }
+
+  Future<void> _openAppWebEntry() async {
+    final url = kIsWeb
+        ? Uri.parse('${Uri.base.origin}/#/entry')
+        : Uri.parse('${AppConfig.appWebUrl}/#/entry');
+    await launchUrl(url, mode: LaunchMode.platformDefault);
   }
 }

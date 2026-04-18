@@ -14,17 +14,16 @@ The target architecture is:
 The migration away from the legacy JavaScript runtime is advanced but not fully finished.
 
 What is already in place:
-- real Clerk auth screen in Flutter
+- ClerkJS web sign-in routes on the app domain (`/sign-in`, `/sso-callback`)
 - Clerk session restore and bootstrap-driven entry gate
-- website-driven web login handoff via `contentflow_site -> contentflow_lab -> contentflow_app`
 - FastAPI-backed `projects`, `settings`, `creator-profile`, `personas`, and content/status flows
 - real onboarding path that creates a workspace in FastAPI
 - explicit demo mode separated from the authenticated flow
 - centralized `401` handling instead of silent private-route mock fallbacks
 
 What still blocks deleting the JavaScript app/runtime:
-- real runtime verification of the Clerk flow is still pending
-- OAuth channel connection flow is not finished
+- full runtime verification of the new ClerkJS web path is still pending
+- native auth remains intentionally disabled until Clerk ships a stable Flutter SDK
 - publish metadata persistence is not finished in the backend
 - Next.js decommission has not been validated end-to-end yet
 
@@ -119,9 +118,9 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
 - `CLERK_PUBLISHABLE_KEY`
   Clerk publishable key injected into Flutter with `--dart-define`
 - `APP_SITE_URL`
-  Marketing/auth website URL used by Flutter web for sign-in redirects
+  Marketing website URL kept for non-auth links and historical diagnostics
 - `APP_WEB_URL`
-  Public Flutter web URL used by the website handoff flow
+  Public app URL used by the dedicated ClerkJS auth routes
 - `PORT`
   Port used by `server.js` / `pm2-web.sh` / `build.sh --serve`
 
@@ -143,9 +142,11 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   build + serve helper for PM2/runtime usage
 - `server.js`
   static SPA server for the Flutter web build
+- `web_auth/`
+  ClerkJS auth pages and shared runtime copied into `build/web` after each build
 
 ## Development Notes
 
 - The app still supports a fixed demo workspace for product walkthroughs.
 - Do not treat demo mode as the source of truth for authenticated users.
-- Do not delete the legacy JavaScript app yet. The Flutter/FastAPI path is close, but final runtime validation is still pending.
+- The legacy Clerk Flutter beta path has been archived to branch `legacy/clerk-flutter-beta-auth`.

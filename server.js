@@ -33,7 +33,11 @@ const server = http.createServer((req, res) => {
   // CORS for API proxy
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  let filePath = path.join(BUILD_DIR, req.url === '/' ? 'index.html' : req.url);
+  const requestPath = new URL(req.url, 'http://localhost').pathname;
+  let filePath = path.join(
+    BUILD_DIR,
+    requestPath === '/' ? 'index.html' : requestPath,
+  );
 
   // Security: prevent directory traversal
   if (!filePath.startsWith(BUILD_DIR)) {
@@ -58,6 +62,19 @@ const server = http.createServer((req, res) => {
     });
     fs.createReadStream(filePath).pipe(res);
     return;
+  }
+
+  // Directory index support for auth routes like /sign-in and /sso-callback
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    const nestedIndexPath = path.join(filePath, 'index.html');
+    if (fs.existsSync(nestedIndexPath) && fs.statSync(nestedIndexPath).isFile()) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-cache',
+      });
+      fs.createReadStream(nestedIndexPath).pipe(res);
+      return;
+    }
   }
 
   // SPA fallback: serve index.html for all routes (GoRouter handles client-side)

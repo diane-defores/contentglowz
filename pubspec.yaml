@@ -23,8 +23,6 @@ dependencies:
 
   # HTTP client
   dio: ^5.7.0
-  clerk_auth: ^0.0.14-beta
-  clerk_flutter: ^0.0.14-beta
 
   # Markdown rendering
   flutter_markdown: ^0.7.6
