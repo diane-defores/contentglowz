@@ -15,17 +15,15 @@
         <h1>Continue with Google</h1>
         <p>
           ContentFlow web authentication now runs directly on the app domain with the
-          official Clerk JavaScript SDK. No site-to-app handoff is involved anymore.
+          official Clerk JavaScript SDK and Clerk's prebuilt sign-in component.
         </p>
         <div class="stack">
-          <button id="google-button" class="button button-primary" disabled>
-            Continue with Google
-          </button>
+          <div id="clerk-sign-in"></div>
           <button id="entry-button" class="button button-secondary" type="button">
             Back to app entry
           </button>
         </div>
-        <div id="status" class="status">Loading Clerk…</div>
+        <div id="status" class="status">Loading Clerk sign-in…</div>
         <div id="meta" class="meta"></div>
       </section>
     </main>
@@ -33,7 +31,7 @@
     <script>
       (function () {
         const bridge = window.contentflowClerkBridge;
-        const googleButton = document.getElementById('google-button');
+        const signInNode = document.getElementById('clerk-sign-in');
         const entryButton = document.getElementById('entry-button');
         const statusEl = document.getElementById('status');
         const metaEl = document.getElementById('meta');
@@ -68,25 +66,13 @@
               return;
             }
 
-            googleButton.disabled = false;
+            await bridge.mountSignIn(signInNode);
             setStatus('Ready.');
           } catch (error) {
             console.error('[ContentFlow] Clerk sign-in bootstrap failed.', error);
             setStatus(String(error), true);
           }
         }
-
-        googleButton.addEventListener('click', async () => {
-          googleButton.disabled = true;
-          setStatus('Redirecting to Google…');
-          try {
-            await bridge.startGoogleSignIn();
-          } catch (error) {
-            console.error('[ContentFlow] Google redirect failed.', error);
-            googleButton.disabled = false;
-            setStatus(String(error), true);
-          }
-        });
 
         entryButton.addEventListener('click', () => {
           window.location.assign('/#/entry');

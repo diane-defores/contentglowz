@@ -104,7 +104,11 @@
       }
 
       const clerk = await loadScript();
-      await clerk.load();
+      await clerk.load({
+        signInUrl: '/sign-in',
+        signUpUrl: '/sign-in',
+        afterSignOutUrl: '/#/entry',
+      });
       return clerk;
     })();
 
@@ -154,17 +158,35 @@
     return true;
   }
 
-  async function startGoogleSignIn(options) {
+  async function mountSignIn(node, options) {
     const clerk = await load();
-    const redirectUrl = new URL('/sso-callback', window.location.origin).toString();
     const redirectUrlComplete = resolveRedirectComplete(
       (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
     );
 
-    await clerk.signIn.authenticateWithRedirect({
-      strategy: 'oauth_google',
-      redirectUrl,
-      redirectUrlComplete,
+    clerk.mountSignIn(node, {
+      path: '/sign-in',
+      routing: 'path',
+      oauthFlow: 'redirect',
+      forceRedirectUrl: redirectUrlComplete,
+      fallbackRedirectUrl: redirectUrlComplete,
+      signUpForceRedirectUrl: redirectUrlComplete,
+      signUpFallbackRedirectUrl: redirectUrlComplete,
+      signUpUrl: '/sign-in',
+    });
+
+    return true;
+  }
+
+  async function startGoogleSignIn(options) {
+    const clerk = await load();
+    const redirectUrlComplete = resolveRedirectComplete(
+      (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
+    );
+
+    await clerk.redirectToSignIn({
+      signInForceRedirectUrl: redirectUrlComplete,
+      signUpForceRedirectUrl: redirectUrlComplete,
     });
   }
 
@@ -204,6 +226,7 @@
     getToken,
     getUser,
     signOut,
+    mountSignIn,
     startGoogleSignIn,
     handleRedirectCallback,
     getDiagnostics,
