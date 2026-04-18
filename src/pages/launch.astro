@@ -33,6 +33,7 @@ const clerkFrontendApi = getClerkFrontendApi(clerkPublishableKey);
 const clerkScriptSrc = clerkFrontendApi
   ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
   : '';
+const diagnosticsVersion = 'launch-diagnostics-v3-2026-04-18';
 ---
 
 <Layout
@@ -47,10 +48,13 @@ const clerkScriptSrc = clerkFrontendApi
       <p id="launch-status">
         ContentFlow is turning your website login into a short-lived app handoff.
       </p>
-      <button id="copy-launch-error" class="copy-error-button" type="button" hidden>
+      <p class="diagnostics-badge">
+        Diagnostics {diagnosticsVersion} · Build {buildCommitSha} · {buildTimestamp}
+      </p>
+      <button id="copy-launch-error" class="copy-error-button" type="button">
         Copy diagnostics
       </button>
-      <details id="launch-diagnostics" class="launch-diagnostics" hidden>
+      <details id="launch-diagnostics" class="launch-diagnostics" open>
         <summary>Technical diagnostics</summary>
         <pre id="launch-diagnostics-body"></pre>
       </details>
@@ -80,6 +84,7 @@ const clerkScriptSrc = clerkFrontendApi
       buildTimestamp,
       clerkFrontendApi,
       clerkPublishableKey,
+      diagnosticsVersion,
       siteUrl,
     }}
   >
@@ -89,10 +94,76 @@ const clerkScriptSrc = clerkFrontendApi
     const diagnosticsBodyEl = document.getElementById('launch-diagnostics-body');
     const clerkScript = document.getElementById('clerk-browser-script');
     const searchParams = new URLSearchParams(window.location.search);
-    const diagnosticsRequested = ['1', 'true', 'yes'].includes(
-      (searchParams.get('diag') || '').toLowerCase(),
-    );
+    const diagnosticsRequested = true;
+    const eventLog = [];
+    let lastRenderedExtraLines = [];
+    let currentStatus = statusEl.textContent?.trim() || 'unknown';
     let lastErrorText = '';
+
+    function maskValue(value, keepStart = 8, keepEnd = 4) {
+      if (!value) {
+        return 'none';
+      }
+      if (value.length <= keepStart + keepEnd + 3) {
+        return value;
+      }
+      return `${value.slice(0, keepStart)}...${value.slice(-keepEnd)}`;
+    }
+
+    function maskUrl(urlValue) {
+      if (!urlValue) {
+        return 'none';
+      }
+
+      try {
+        const url = new URL(urlValue, window.location.origin);
+        const directToken = url.searchParams.get('handoff_token');
+        if (directToken) {
+          url.searchParams.set('handoff_token', maskValue(directToken));
+        }
+
+        if (url.hash.includes('handoff_token=')) {
+          const [hashPath, hashQuery = ''] = url.hash.split('?');
+          if (hashQuery) {
+            const hashParams = new URLSearchParams(hashQuery);
+            const hashToken = hashParams.get('handoff_token');
+            if (hashToken) {
+              hashParams.set('handoff_token', maskValue(hashToken));
+            }
+            url.hash = `${hashPath}?${hashParams.toString()}`;
+          }
+        }
+
+        return url.toString();
+      } catch (_) {
+        return urlValue;
+      }
+    }
+
+    function truncateText(value, maxLength = 1600) {
+      if (!value) {
+        return 'none';
+      }
+      if (value.length <= maxLength) {
+        return value;
+      }
+      return `${value.slice(0, maxLength)}…`;
+    }
+
+    function appendEvent(label, detail = '') {
+      const line = `[${new Date().toISOString()}] ${label}${detail ? `: ${detail}` : ''}`;
+      eventLog.push(line);
+      if (eventLog.length > 24) {
+        eventLog.shift();
+      }
+    }
+
+    function setStatus(message) {
+      currentStatus = message;
+      statusEl.textContent = message;
+      appendEvent('Status', message);
+      renderDiagnostics();
+    }
 
     function configuredHost(url) {
       try {
@@ -119,10 +190,12 @@ const clerkScriptSrc = clerkFrontendApi
       const queryKeys = [...searchParams.keys()];
       return [
         'ContentFlow website launch diagnostics',
+        `Diagnostics version: ${diagnosticsVersion}`,
         `Build commit: ${buildCommitSha}`,
         `Build environment: ${buildEnvironment}`,
         `Build timestamp: ${buildTimestamp}`,
-        `Current URL: ${window.location.href}`,
+        `Current status: ${currentStatus}`,
+        `Current URL: ${maskUrl(window.location.href)}`,
         `Current origin: ${window.location.origin}`,
         `Current host: ${window.location.host}`,
         `Current path: ${window.location.pathname}`,
@@ -133,7 +206,7 @@ const clerkScriptSrc = clerkFrontendApi
         `User agent: ${navigator.userAgent}`,
         `Query keys: ${queryKeys.length > 0 ? queryKeys.join(', ') : 'none'}`,
         `redirect_url: ${searchParams.get('redirect_url') || 'missing'}`,
-        `Redirect target: ${redirectTarget}`,
+        `Redirect target: ${maskUrl(redirectTarget)}`,
         `Configured APP_SITE_URL: ${siteUrl}`,
         `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
         `Configured APP_WEB_URL: ${appWebUrl}`,
@@ -144,24 +217,28 @@ const clerkScriptSrc = clerkFrontendApi
         `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
         `Clerk global present: ${window.Clerk ? 'yes' : 'no'}`,
         `Clerk session present: ${window.Clerk?.session ? 'yes' : 'no'}`,
+        `Clerk session id: ${maskValue(window.Clerk?.session?.id || '')}`,
+        `Clerk user id: ${maskValue(window.Clerk?.user?.id || '')}`,
         `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
         ...extraLines,
+        'Event log:',
+        ...(eventLog.length > 0 ? eventLog : ['none']),
       ].join('\n');
     }
 
     function renderDiagnostics(extraLines = [], forceVisible = diagnosticsRequested) {
+      lastRenderedExtraLines = extraLines;
       const text = buildDiagnostics(extraLines);
       diagnosticsBodyEl.textContent = text;
       diagnosticsEl.hidden = !forceVisible;
       if (forceVisible) {
         diagnosticsEl.open = true;
       }
-      copyButton.hidden = !(forceVisible || lastErrorText);
       return text;
     }
 
     async function copyError() {
-      const diagnostics = lastErrorText || renderDiagnostics();
+      const diagnostics = lastErrorText || renderDiagnostics(lastRenderedExtraLines);
       if (!diagnostics) {
         return;
       }
@@ -178,6 +255,8 @@ const clerkScriptSrc = clerkFrontendApi
     }
 
     function showError(message, extraLines = []) {
+      currentStatus = message;
+      appendEvent('Error', message);
       lastErrorText = renderDiagnostics(
         [
           'Status: error',
@@ -189,31 +268,81 @@ const clerkScriptSrc = clerkFrontendApi
       statusEl.textContent = message;
     }
 
-    async function readErrorBody(response) {
-      try {
-        const body = await response.json();
-        if (body && typeof body.detail === 'string' && body.detail.trim()) {
-          return body.detail.trim();
+    async function readResponsePayload(response) {
+      const rawText = await response.text().catch(() => '');
+      let parsedJson = null;
+      let detail = '';
+
+      if (rawText) {
+        try {
+          parsedJson = JSON.parse(rawText);
+        } catch (_) {
+          parsedJson = null;
         }
-      } catch (_) {
-        // Fall back to raw text for non-JSON upstream errors.
       }
 
-      try {
-        const text = await response.text();
-        if (text.trim()) {
-          return text.trim();
+      if (parsedJson && typeof parsedJson === 'object') {
+        const maybeDetail = parsedJson.detail ?? parsedJson.message ?? parsedJson.error;
+        if (typeof maybeDetail === 'string' && maybeDetail.trim()) {
+          detail = maybeDetail.trim();
         }
-      } catch (_) {
-        // Ignore body parsing failures and use the generic HTTP status below.
       }
 
-      return '';
+      const interestingHeaders = [
+        'content-type',
+        'content-length',
+        'cf-ray',
+        'x-vercel-id',
+        'x-clerk-trace-id',
+        'x-contentflow-request-id',
+      ];
+      const headerPairs = interestingHeaders
+        .map((name) => {
+          const value = response.headers.get(name);
+          return value ? `${name}=${value}` : null;
+        })
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        contentType: response.headers.get('content-type') || 'missing',
+        headers: headerPairs || 'none',
+        rawText: rawText || 'empty',
+        detail,
+        parsedJson,
+      };
     }
 
     copyButton.addEventListener('click', copyError);
+    clerkScript?.addEventListener('load', () => {
+      appendEvent('Clerk script', 'loaded');
+      renderDiagnostics();
+    });
     clerkScript?.addEventListener('error', () => {
+      appendEvent('Clerk script', 'load failed');
       showError('Clerk CDN script failed to load in the browser.');
+    });
+    window.addEventListener('error', (event) => {
+      appendEvent(
+        'Window error',
+        `${event.message || 'unknown'} @ ${event.filename || 'inline'}:${event.lineno || 0}:${event.colno || 0}`,
+      );
+      renderDiagnostics();
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+      const reason = event.reason instanceof Error
+        ? event.reason.stack || event.reason.message
+        : String(event.reason);
+      appendEvent('Unhandled rejection', reason);
+      renderDiagnostics();
+    });
+    window.addEventListener('online', () => {
+      appendEvent('Browser network', 'online');
+      renderDiagnostics();
+    });
+    window.addEventListener('offline', () => {
+      appendEvent('Browser network', 'offline');
+      renderDiagnostics();
     });
 
     function buildAppRedirectUrl(redirectTarget, handoffToken) {
@@ -227,6 +356,11 @@ const clerkScriptSrc = clerkFrontendApi
 
     async function launchApp() {
       const redirectTarget = getRedirectTarget();
+      appendEvent('Launch flow', 'started');
+      renderDiagnostics([
+        'Status: Booting launch flow',
+        `Redirect target (masked): ${maskUrl(redirectTarget)}`,
+      ]);
 
       if (!clerkPublishableKey) {
         showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
@@ -239,9 +373,16 @@ const clerkScriptSrc = clerkFrontendApi
       }
 
       try {
+        const clerkLoadStarted = performance.now();
+        appendEvent('Clerk load', 'starting');
         renderDiagnostics(['Status: Loading Clerk browser SDK']);
         await window.Clerk.load({ publishableKey: clerkPublishableKey });
+        appendEvent(
+          'Clerk load',
+          `finished in ${Math.round(performance.now() - clerkLoadStarted)}ms`,
+        );
         if (!window.Clerk.session) {
+          appendEvent('Clerk session', 'missing on launch page');
           renderDiagnostics([
             'Status: No Clerk session on launch page',
             'Redirecting to sign-in page',
@@ -252,8 +393,15 @@ const clerkScriptSrc = clerkFrontendApi
           return;
         }
 
-        statusEl.textContent = 'Requesting a secure app handoff…';
+        setStatus('Requesting a secure app handoff…');
+        const tokenStarted = performance.now();
         const bearerToken = await window.Clerk.session.getToken();
+        appendEvent(
+          'Clerk token',
+          bearerToken
+            ? `received in ${Math.round(performance.now() - tokenStarted)}ms (${bearerToken.length} chars)`
+            : 'missing',
+        );
         if (!bearerToken) {
           throw new Error('Clerk did not return a session token for the app handoff.');
         }
@@ -261,11 +409,14 @@ const clerkScriptSrc = clerkFrontendApi
         renderDiagnostics([
           'Status: Clerk session found',
           'Bearer token present: yes',
+          `Bearer token length: ${bearerToken.length}`,
           'Requesting handoff API',
         ]);
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 12000);
         const endpoint = `${apiBaseUrl}/api/auth/web/handoff`;
+        const handoffStarted = performance.now();
+        appendEvent('Handoff request', endpoint);
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -276,33 +427,45 @@ const clerkScriptSrc = clerkFrontendApi
         }).finally(() => {
           window.clearTimeout(timeoutId);
         });
+        const responsePayload = await readResponsePayload(response);
+        const responseDuration = Math.round(performance.now() - handoffStarted);
+        appendEvent(
+          'Handoff response',
+          `${response.status}${response.statusText ? ` ${response.statusText}` : ''} in ${responseDuration}ms`,
+        );
 
         if (!response.ok) {
-          const detail = await readErrorBody(response);
-          throw new Error(detail || `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`);
+          throw new Error(
+            responsePayload.detail ||
+              `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
+          );
         }
 
         renderDiagnostics([
           'Status: Handoff API succeeded',
-          `HTTP status: ${response.status}`,
-          `Response content-type: ${response.headers.get('content-type') || 'missing'}`,
+          `HTTP status: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`,
+          `Response duration: ${responseDuration}ms`,
+          `Response content-type: ${responsePayload.contentType}`,
+          `Response headers: ${responsePayload.headers}`,
+          `Response body: ${truncateText(responsePayload.rawText)}`,
         ]);
 
-        const payload = await response.json();
+        const payload = responsePayload.parsedJson;
         const handoffToken = payload?.handoff_token;
         if (!handoffToken) {
           throw new Error('The backend did not return a handoff token.');
         }
 
-        statusEl.textContent = 'Redirecting to the app…';
+        const redirectDestination = buildAppRedirectUrl(redirectTarget, handoffToken);
+        appendEvent('Handoff token', maskValue(handoffToken));
+        appendEvent('Browser redirect', maskUrl(redirectDestination));
+        setStatus('Redirecting to the app…');
         renderDiagnostics([
           'Status: Redirecting to app',
           'handoff_token returned: yes',
-          `Redirect destination: ${buildAppRedirectUrl(redirectTarget, handoffToken)}`,
+          `Redirect destination: ${maskUrl(redirectDestination)}`,
         ]);
-        window.location.replace(
-          buildAppRedirectUrl(redirectTarget, handoffToken),
-        );
+        window.location.replace(redirectDestination);
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           showError(
@@ -321,6 +484,7 @@ const clerkScriptSrc = clerkFrontendApi
       }
     }
 
+    appendEvent('Page', 'launch diagnostics initialized');
     renderDiagnostics(['Status: Booting launch page']);
     window.addEventListener('load', launchApp);
   </script>
@@ -380,6 +544,13 @@ const clerkScriptSrc = clerkFrontendApi
     cursor: pointer;
   }
 
+  .diagnostics-badge {
+    margin-top: 1rem;
+    color: var(--color-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
   .launch-diagnostics {
     margin-top: 1rem;
     border: 1px solid rgba(15, 23, 42, 0.1);
@@ -396,6 +567,8 @@ const clerkScriptSrc = clerkFrontendApi
 
   .launch-diagnostics pre {
     margin: 0.9rem 0 0;
+    max-height: 24rem;
+    overflow: auto;
     white-space: pre-wrap;
     word-break: break-word;
     font-size: 0.78rem;
