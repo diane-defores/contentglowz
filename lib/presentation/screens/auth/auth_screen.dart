@@ -353,9 +353,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           controller: _passwordController,
           obscureText: true,
           autofillHints: const [AutofillHints.password],
-          decoration: const InputDecoration(
-            labelText: 'Password',
-          ),
+          decoration: const InputDecoration(labelText: 'Password'),
           onSubmitted: (_) => _submitHeadlessSignIn(),
         ),
         const SizedBox(height: 16),
@@ -419,7 +417,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: () => launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in')),
+            onPressed: () =>
+                launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in')),
             child: const Text('Continue On Website'),
           ),
         ),
@@ -427,7 +426,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: TextButton(
-            onPressed: () => launchUrl(Uri.parse('${AppConfig.siteUrl}/launch')),
+            onPressed: () =>
+                launchUrl(Uri.parse('${AppConfig.siteUrl}/launch')),
             child: const Text('Already signed in? Open App'),
           ),
         ),
@@ -483,6 +483,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         env?.oauthStrategies.map((s) => s.name).join(', ') ?? 'n/a';
     final socialConnections =
         env?.socialConnections.map((s) => s.name).join(', ') ?? 'n/a';
+    final currentUrl = kIsWeb ? Uri.base.toString() : 'not-web';
+    final currentHost = kIsWeb ? Uri.base.host : 'not-web';
+    final currentPath = kIsWeb ? Uri.base.path : 'not-web';
 
     return Container(
       width: double.infinity,
@@ -520,11 +523,48 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
           const SizedBox(height: 8),
           Text(
+            'Build commit: ${AppConfig.buildCommitSha}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build environment: ${AppConfig.buildEnvironment}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build timestamp: ${AppConfig.buildTimestamp}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build mode: ${_buildModeLabel()}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
             'API_BASE_URL: ${AppConfig.apiBaseUrl}',
-            style: TextStyle(
-              color: Colors.white.withAlpha(150),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_SITE_URL: ${AppConfig.siteUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_WEB_URL: ${AppConfig.appWebUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
@@ -538,18 +578,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           const SizedBox(height: 4),
           Text(
             'Key preview: $keyPreview',
-            style: TextStyle(
-              color: Colors.white.withAlpha(120),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
             'Session state: ${authSession.status.name}',
-            style: TextStyle(
-              color: Colors.white.withAlpha(120),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Bearer token: ${_maskToken(authSession.bearerToken)}',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Current URL: $currentUrl',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Current host: $currentHost',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Current path: $currentPath',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
           ),
           if (authState != null) ...[
             const SizedBox(height: 4),
@@ -637,6 +691,37 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return '${key.substring(0, 10)}...${key.substring(key.length - 5)} (len=${key.length})';
   }
 
+  String _maskToken(String? value) {
+    if (value == null || value.isEmpty) return 'none';
+    if (value.length <= 14) return value;
+    return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
+  }
+
+  String _buildModeLabel() {
+    if (kReleaseMode) return 'release';
+    if (kProfileMode) return 'profile';
+    return 'debug';
+  }
+
+  String _hostForUrl(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null || uri.host.isEmpty) {
+      return 'invalid';
+    }
+    return uri.host;
+  }
+
+  String _hostMatchLabel(String value) {
+    if (!kIsWeb) {
+      return 'not-web';
+    }
+    final host = _hostForUrl(value);
+    if (host == 'invalid') {
+      return 'invalid';
+    }
+    return host == Uri.base.host ? 'yes' : 'no (expected $host)';
+  }
+
   Future<void> _copyDiagnostics({
     required bool hasClerkKey,
     required AuthSession authSession,
@@ -644,11 +729,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }) async {
     final lines = [
       'ContentFlow auth diagnostics',
+      'Build commit: ${AppConfig.buildCommitSha}',
+      'Build environment: ${AppConfig.buildEnvironment}',
+      'Build timestamp: ${AppConfig.buildTimestamp}',
+      'Build mode: ${_buildModeLabel()}',
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
+      'APP_SITE_URL: ${AppConfig.siteUrl}',
+      'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+      'APP_WEB_URL: ${AppConfig.appWebUrl}',
+      'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
       'CLERK_PUBLISHABLE_KEY: ${hasClerkKey ? 'configured' : 'missing'}',
       'Key preview: ${hasClerkKey ? _maskPublishableKey() : 'missing'}',
       'Session state: ${authSession.status.name}',
       'Session email: ${authSession.email ?? 'none'}',
+      'Bearer token: ${_maskToken(authSession.bearerToken)}',
+      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
+      'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
+      'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
       'Last auth error: ${error == null || error.isEmpty ? 'none' : error}',
     ];
 
@@ -753,10 +850,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
 
     try {
-      await ref.read(authSessionProvider.notifier).signInWithPassword(
-        email: email,
-        password: password,
-      );
+      await ref
+          .read(authSessionProvider.notifier)
+          .signInWithPassword(email: email, password: password);
       if (!mounted) return;
       context.go('/entry');
     } catch (error) {

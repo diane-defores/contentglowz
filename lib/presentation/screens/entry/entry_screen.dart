@@ -54,10 +54,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         );
       }
 
-      ref.read(authSessionProvider.notifier).setAuthenticatedSession(
-        token,
-        email: email,
-      );
+      ref
+          .read(authSessionProvider.notifier)
+          .setAuthenticatedSession(token, email: email);
       if (!mounted) return;
       context.go('/entry');
     } catch (error) {
@@ -83,24 +82,61 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     await launchUrl(Uri.parse('${AppConfig.siteUrl}/launch'));
   }
 
+  String _buildModeLabel() {
+    if (kReleaseMode) return 'release';
+    if (kProfileMode) return 'profile';
+    return 'debug';
+  }
+
   String _maskToken(String? value) {
     if (value == null || value.isEmpty) return 'none';
     if (value.length <= 14) return value;
     return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
   }
 
+  String _hostForUrl(String value) {
+    final uri = Uri.tryParse(value);
+    if (uri == null || uri.host.isEmpty) {
+      return 'invalid';
+    }
+    return uri.host;
+  }
+
+  String _hostMatchLabel(String value) {
+    if (!kIsWeb) {
+      return 'not-web';
+    }
+    final host = _hostForUrl(value);
+    if (host == 'invalid') {
+      return 'invalid';
+    }
+    return host == Uri.base.host ? 'yes' : 'no (expected $host)';
+  }
+
   Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
-    final handoffToken = kIsWeb ? Uri.base.queryParameters['handoff_token'] : null;
+    final handoffToken = kIsWeb
+        ? Uri.base.queryParameters['handoff_token']
+        : null;
     final lines = [
       'ContentFlow entry diagnostics',
+      'Build commit: ${AppConfig.buildCommitSha}',
+      'Build environment: ${AppConfig.buildEnvironment}',
+      'Build timestamp: ${AppConfig.buildTimestamp}',
+      'Build mode: ${_buildModeLabel()}',
       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
+      'Current origin: ${kIsWeb ? Uri.base.origin : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
       'APP_SITE_URL: ${AppConfig.siteUrl}',
+      'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
       'APP_WEB_URL: ${AppConfig.appWebUrl}',
+      'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
       'Session state: ${authSession.status.name}',
       'Session email: ${authSession.email ?? 'none'}',
+      'Bearer token: ${_maskToken(authSession.bearerToken)}',
+      'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
+      'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
       'handoff_token: ${_maskToken(handoffToken)}',
       'Last handoff error: ${_handoffError == null || _handoffError!.isEmpty ? 'none' : _handoffError}',
     ];
@@ -113,7 +149,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Widget _buildWebRuntimeDiagnostics(AuthSession authSession) {
-    final handoffToken = kIsWeb ? Uri.base.queryParameters['handoff_token'] : null;
+    final handoffToken = kIsWeb
+        ? Uri.base.queryParameters['handoff_token']
+        : null;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 16),
@@ -145,6 +183,26 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ],
           ),
           Text(
+            'Build commit: ${AppConfig.buildCommitSha}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build environment: ${AppConfig.buildEnvironment}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build timestamp: ${AppConfig.buildTimestamp}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Build mode: ${_buildModeLabel()}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
             'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
             style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
           ),
@@ -165,12 +223,32 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 4),
           Text(
+            'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
             'APP_WEB_URL: ${AppConfig.appWebUrl}',
             style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
+            'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
             'Session state: ${authSession.status.name}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Bearer token: ${_maskToken(authSession.bearerToken)}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
             style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
           ),
           const SizedBox(height: 4),
@@ -241,11 +319,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     );
   }
 
-  Widget _buildHero(
-    BuildContext context,
-    WidgetRef ref,
-    Widget stateCard,
-  ) {
+  Widget _buildHero(BuildContext context, WidgetRef ref, Widget stateCard) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 900;
@@ -257,19 +331,25 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               label: 'AI content ops for founders, creators, and lean teams',
             ),
             const SizedBox(height: 20),
-            Builder(builder: (context) {
-              final sw = MediaQuery.sizeOf(context).width;
-              final heroSize = sw < 400 ? 28.0 : sw < 600 ? 36.0 : 48.0;
-              return Text(
-                'Turn one repo into a weekly content machine.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: heroSize,
-                  fontWeight: FontWeight.w800,
-                  height: 1.05,
-                ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final sw = MediaQuery.sizeOf(context).width;
+                final heroSize = sw < 400
+                    ? 28.0
+                    : sw < 600
+                    ? 36.0
+                    : 48.0;
+                return Text(
+                  'Turn one repo into a weekly content machine.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: heroSize,
+                    fontWeight: FontWeight.w800,
+                    height: 1.05,
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 16),
             Text(
               'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
@@ -312,7 +392,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.lock_open_rounded),
-                  label: Text(kIsWeb ? 'Sign In On Website' : 'Create Workspace'),
+                  label: Text(
+                    kIsWeb ? 'Sign In On Website' : 'Create Workspace',
+                  ),
                 ),
               ],
             ),
@@ -341,11 +423,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         if (compact) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              left,
-              const SizedBox(height: 24),
-              stateCard,
-            ],
+            children: [left, const SizedBox(height: 24), stateCard],
           );
         }
 
@@ -381,10 +459,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         runSpacing: 12,
         children: items
             .map(
-              (item) => _pill(
-                icon: Icons.check_circle_outline_rounded,
-                label: item,
-              ),
+              (item) =>
+                  _pill(icon: Icons.check_circle_outline_rounded, label: item),
             )
             .toList(),
       ),
@@ -478,28 +554,30 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          LayoutBuilder(builder: (context, constraints) {
-            final cardWidth = constraints.maxWidth < 700
-                ? constraints.maxWidth
-                : 320.0;
-            return Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: steps
-                  .map(
-                    (step) => SizedBox(
-                      width: cardWidth,
-                      child: _infoCard(
-                        title: step.$1,
-                        description: step.$2,
-                        icon: Icons.arrow_outward_rounded,
-                        accent: AppTheme.editColor,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final cardWidth = constraints.maxWidth < 700
+                  ? constraints.maxWidth
+                  : 320.0;
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: steps
+                    .map(
+                      (step) => SizedBox(
+                        width: cardWidth,
+                        child: _infoCard(
+                          title: step.$1,
+                          description: step.$2,
+                          icon: Icons.arrow_outward_rounded,
+                          accent: AppTheme.editColor,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
-            );
-          }),
+                    )
+                    .toList(),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -533,28 +611,30 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       ),
     ];
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final cardWidth = constraints.maxWidth < 750
-          ? constraints.maxWidth
-          : 350.0;
-      return Wrap(
-        spacing: 16,
-        runSpacing: 16,
-        children: items
-            .map(
-              (item) => SizedBox(
-                width: cardWidth,
-                child: _infoCard(
-                  title: item.$1,
-                  description: item.$2,
-                  icon: item.$3,
-                  accent: item.$4,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = constraints.maxWidth < 750
+            ? constraints.maxWidth
+            : 350.0;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: items
+              .map(
+                (item) => SizedBox(
+                  width: cardWidth,
+                  child: _infoCard(
+                    title: item.$1,
+                    description: item.$2,
+                    icon: item.$3,
+                    accent: item.$4,
+                  ),
                 ),
-              ),
-            )
-            .toList(),
-      );
-    });
+              )
+              .toList(),
+        );
+      },
+    );
   }
 
   Widget _buildFaqSection() {
@@ -797,35 +877,33 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       );
     }
 
-      return _card(
-        eyebrow: 'Logged out',
-        title: 'Create or reconnect your workspace',
-        description:
-            kIsWeb
-            ? 'You are not signed in yet. Continue on the main website to use Google sign-in and password-manager autofill, then the site will return you to this app.'
-            : 'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
-        icon: Icons.lock_outline_rounded,
-        accent: Colors.orange,
-        primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In / Sign Up',
-        onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
-        secondaryLabel: kIsWeb ? 'I Already Signed In' : 'Open Demo Workspace',
-        onSecondary: kIsWeb
-            ? _openWebsiteLaunch
-            : () {
-                ref.read(authSessionProvider.notifier).signInDemo();
-                context.go(
-                  authSession.onboardingComplete
-                      ? '/feed'
-                      : '/onboarding?intent=entry',
-                );
-              },
-        caption:
-            kIsWeb
-            ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
-            : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
-        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
-      );
-    }
+    return _card(
+      eyebrow: 'Logged out',
+      title: 'Create or reconnect your workspace',
+      description: kIsWeb
+          ? 'You are not signed in yet. Continue on the main website to use Google sign-in and password-manager autofill, then the site will return you to this app.'
+          : 'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
+      icon: Icons.lock_outline_rounded,
+      accent: Colors.orange,
+      primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In / Sign Up',
+      onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
+      secondaryLabel: kIsWeb ? 'I Already Signed In' : 'Open Demo Workspace',
+      onSecondary: kIsWeb
+          ? _openWebsiteLaunch
+          : () {
+              ref.read(authSessionProvider.notifier).signInDemo();
+              context.go(
+                authSession.onboardingComplete
+                    ? '/feed'
+                    : '/onboarding?intent=entry',
+              );
+            },
+      caption: kIsWeb
+          ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
+          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
+      extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
+    );
+  }
 
   Widget _card({
     required String eyebrow,
