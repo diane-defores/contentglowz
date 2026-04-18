@@ -1,8 +1,3 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:clerk_flutter/clerk_flutter.dart';
-import 'package:clerk_flutter/src/utils/clerk_file_cache.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -12,27 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_config.dart';
 import '../../../data/models/auth_session.dart';
-import '../../../data/services/clerk_auth_service.dart';
-import '../../../main.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
-
-class _NoopClerkFileCache implements ClerkFileCache {
-  const _NoopClerkFileCache();
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  void terminate() {}
-
-  @override
-  Stream<File> stream(
-    Uri uri, {
-    Duration ttl = ClerkFileCache.defaultTTL,
-    Map<String, String>? headers,
-  }) async* {}
-}
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -42,31 +18,20 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  late final ClerkAuthConfig _clerkConfig;
-  late final Future<ClerkAuthState> _clerkAuthStateFuture;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
-  ClerkAuthState? _ownedClerkAuthState;
   bool _isSubmitting = false;
   String? _error;
-  String? _lastSyncedSessionId;
 
   @override
   void initState() {
     super.initState();
-    _clerkConfig = ClerkAuthConfig(
-      publishableKey: AppConfig.clerkPublishableKey,
-      persistor: SharedPreferencesPersistor(ref.read(sharedPrefsProvider)),
-      fileCache: const _NoopClerkFileCache(),
-    );
-    _clerkAuthStateFuture = _initializeClerkAuthState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _ownedClerkAuthState?.terminate();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -92,7 +57,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 border: Border.all(color: Colors.white.withAlpha(20)),
               ),
               child: hasClerkKey
-                  ? _buildForm(context, authSession)
+                  ? _buildForm(authSession)
                   : _buildConfigMissing(authSession),
             ),
           ),
@@ -116,7 +81,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable real sign in and sign up.',
+          'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the custom sign-in flow and website auth handoff.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -133,111 +98,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  Widget _buildForm(BuildContext context, AuthSession authSession) {
+  Widget _buildForm(AuthSession authSession) {
     if (kIsWeb) {
       return _buildWebRedirectState(authSession);
     }
 
-    return FutureBuilder<ClerkAuthState>(
-      future: _clerkAuthStateFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return _buildSdkLoadingState(authSession);
-        }
-
-        if (snapshot.hasError || !snapshot.hasData) {
-          final error =
-              snapshot.error ??
-              StateError('Clerk SDK did not finish initialization.');
-          final message = _friendlyAuthError(error);
-          if (_shouldUseHeadlessFallback(error)) {
-            return _buildHeadlessFallbackState(authSession, message);
-          }
-          return _buildSdkErrorState(authSession, message);
-        }
-
-        return ClerkAuth(
-          authState: snapshot.data,
-          child: ClerkErrorListener(
-            handler: (context, error) async {
-              setState(() {
-                _error = _friendlyAuthError(error);
-              });
-            },
-            child: ClerkAuthBuilder(
-              signedInBuilder: (context, authState) {
-                unawaited(_syncFromClerkIfNeeded(authState));
-                return _buildSyncingState(authSession);
-              },
-              signedOutBuilder: (context, authState) {
-                if (_isEnvironmentEmpty(authState)) {
-                  return _buildHeadlessFallbackState(
-                    authSession,
-                    'Clerk initialized, but this publishable key returned no sign-in identifiers and no social providers to the Flutter SDK.',
-                    authState: authState,
-                  );
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Sign in to your workspace',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Use Clerk to sign in with your password manager, Google, or any provider enabled in your Clerk dashboard.',
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(150),
-                        fontSize: 15,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildRuntimeDiagnostics(
-                      hasClerkKey: true,
-                      authSession: authSession,
-                      error: _error,
-                      authState: authState,
-                    ),
-                    const SizedBox(height: 24),
-                    Theme(
-                      data: Theme.of(context).copyWith(
-                        extensions: [Theme.of(context).clerkThemeExtension],
-                      ),
-                      child: const ClerkAuthentication(),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: _isSubmitting ? null : _clearLocalSession,
-                        child: const Text('Clear Local Clerk Session'),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
+    return _buildNativeCustomState(authSession);
   }
 
-  Widget _buildSdkLoadingState(AuthSession authSession) {
+  Widget _buildNativeCustomState(AuthSession authSession) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         const Text(
-          'Loading Clerk',
+          'Sign in to your workspace',
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -246,7 +121,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'The app is initializing the Clerk SDK and loading your configured sign-in methods.',
+          'The embedded Clerk Flutter UI is no longer the primary auth path. Use the custom email and password flow here, or continue on the website for Google, browser password managers, and account creation.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -258,85 +133,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           hasClerkKey: true,
           authSession: authSession,
           error: _error,
-        ),
-        const SizedBox(height: 24),
-        const Center(child: CircularProgressIndicator()),
-      ],
-    );
-  }
-
-  Widget _buildSdkErrorState(AuthSession authSession, String message) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Clerk failed to initialize',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'The SDK did not reach a usable state, so the official Clerk UI could not be rendered.',
-          style: TextStyle(
-            color: Colors.white.withAlpha(150),
-            fontSize: 15,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildRuntimeDiagnostics(
-          hasClerkKey: true,
-          authSession: authSession,
-          error: message,
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: TextButton(
-            onPressed: _isSubmitting ? null : _clearLocalSession,
-            child: const Text('Clear Local Clerk Session'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeadlessFallbackState(
-    AuthSession authSession,
-    String message, {
-    ClerkAuthState? authState,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Clerk UI unavailable here',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'The official Clerk widget could not start on this runtime, so the app switched to a direct email/password sign-in path.',
-          style: TextStyle(
-            color: Colors.white.withAlpha(150),
-            fontSize: 15,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildRuntimeDiagnostics(
-          hasClerkKey: true,
-          authSession: authSession,
-          error: message,
-          authState: authState,
         ),
         const SizedBox(height: 24),
         TextField(
@@ -354,19 +150,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           obscureText: true,
           autofillHints: const [AutofillHints.password],
           decoration: const InputDecoration(labelText: 'Password'),
-          onSubmitted: (_) => _submitHeadlessSignIn(),
+          onSubmitted: (_) => _submitCustomSignIn(),
         ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: _isSubmitting ? null : _submitHeadlessSignIn,
+            onPressed: _isSubmitting ? null : _submitCustomSignIn,
             child: Text(_isSubmitting ? 'Signing in...' : 'Sign in'),
           ),
         ),
         const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _isSubmitting ? null : _openWebsiteSignIn,
+            child: const Text('Continue On Website'),
+          ),
+        ),
+        const SizedBox(height: 12),
         Text(
-          'Google and other Clerk social providers stay unavailable until the runtime supports the official Clerk widget path.',
+          'Website auth is the hosted path for Google and account creation. Native deep-link return is not wired yet, so email and password stays the most reliable in-app sign-in path today.',
           style: TextStyle(
             color: Colors.white.withAlpha(120),
             fontSize: 12,
@@ -402,7 +206,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'ContentFlow web authentication now runs on the main website so Google sign-in and browser password managers use a standard web flow before opening the Flutter app.',
+          'ContentFlow web authentication uses the hosted website flow. The embedded Clerk Flutter UI is intentionally disabled as the primary auth path.',
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -446,57 +250,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  Widget _buildSyncingState(AuthSession authSession) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Finalizing session',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Clerk accepted your sign-in. The app is now syncing the bearer token and workspace session.',
-          style: TextStyle(
-            color: Colors.white.withAlpha(150),
-            fontSize: 15,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildRuntimeDiagnostics(
-          hasClerkKey: true,
-          authSession: authSession,
-          error: _error,
-        ),
-        const SizedBox(height: 24),
-        const Center(child: CircularProgressIndicator()),
-      ],
-    );
-  }
-
   Widget _buildRuntimeDiagnostics({
     required bool hasClerkKey,
     required AuthSession authSession,
     required String? error,
-    ClerkAuthState? authState,
   }) {
     final keyPreview = hasClerkKey ? _maskPublishableKey() : 'missing';
-    final env = authState?.env;
-    final identificationStrategies =
-        env?.identificationStrategies.map((s) => s.name).join(', ') ?? 'n/a';
-    final oauthStrategies =
-        env?.oauthStrategies.map((s) => s.name).join(', ') ?? 'n/a';
-    final socialConnections =
-        env?.socialConnections.map((s) => s.name).join(', ') ?? 'n/a';
     final currentUrl = kIsWeb ? Uri.base.toString() : 'not-web';
     final currentHost = kIsWeb ? Uri.base.host : 'not-web';
     final currentPath = kIsWeb ? Uri.base.path : 'not-web';
+    final primaryAuthMode = kIsWeb
+        ? 'hosted website handoff'
+        : 'custom email/password + hosted website';
 
     return Container(
       width: double.infinity,
@@ -551,6 +316,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           Text(
             'Build mode: ${_buildModeLabel()}',
             style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Primary auth mode: $primaryAuthMode',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Embedded Clerk UI primary path: disabled',
+            style: TextStyle(color: Colors.orange, fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
@@ -636,32 +411,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             'Current path: $currentPath',
             style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
           ),
-          if (authState != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Clerk identification strategies: ${identificationStrategies.isEmpty ? 'none' : identificationStrategies}',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Clerk OAuth strategies: ${oauthStrategies.isEmpty ? 'none' : oauthStrategies}',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Clerk social connections: ${socialConnections.isEmpty ? 'none' : socialConnections}',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 12,
-              ),
-            ),
-          ],
           if (authSession.email != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -695,15 +444,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           const SizedBox(height: 8),
           Text(
             'Configured only means the key is present. It does not prove that frontend Clerk and backend JWT validation use the same Clerk project.',
-            style: TextStyle(
-              color: Colors.white.withAlpha(120),
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'If Google does not appear, enable the Google social connection in the same Clerk instance as this publishable key.',
             style: TextStyle(
               color: Colors.white.withAlpha(120),
               fontSize: 12,
@@ -758,12 +498,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required AuthSession authSession,
     required String? error,
   }) async {
+    final primaryAuthMode = kIsWeb
+        ? 'hosted website handoff'
+        : 'custom email/password + hosted website';
     final lines = [
       'ContentFlow auth diagnostics',
       'Build commit: ${AppConfig.buildCommitSha}',
       'Build environment: ${AppConfig.buildEnvironment}',
       'Build timestamp: ${AppConfig.buildTimestamp}',
       'Build mode: ${_buildModeLabel()}',
+      'Primary auth mode: $primaryAuthMode',
+      'Embedded Clerk UI primary path: disabled',
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
       'APP_SITE_URL: ${AppConfig.siteUrl}',
       'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
@@ -794,7 +539,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     setState(() {
       _error = null;
       _isSubmitting = true;
-      _lastSyncedSessionId = null;
     });
 
     try {
@@ -814,25 +558,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
-  Future<ClerkAuthState> _initializeClerkAuthState() async {
-    final authState = await ClerkAuthState.create(config: _clerkConfig).timeout(
-      const Duration(seconds: 8),
-      onTimeout: () => throw TimeoutException(
-        'Clerk SDK initialization timed out after 8 seconds. This usually means the publishable key is invalid for the current environment, or the app cannot reach the Clerk frontend API.',
-      ),
-    );
-    _ownedClerkAuthState = authState;
-    return authState;
-  }
-
   String _friendlyAuthError(Object error) {
     final raw = error.toString().replaceFirst('Exception: ', '').trim();
     final lower = raw.toLowerCase();
-
-    if (lower.contains('missingpluginexception') &&
-        lower.contains('getapplicationdocumentsdirectory')) {
-      return 'The runtime does not expose the filesystem plugin that the Clerk Flutter UI currently expects for its local cache. ContentFlow can still use Clerk through the direct email/password flow, but the embedded official Clerk widget cannot start on this platform as-is.';
-    }
 
     if (lower.contains('invalid base64') || lower.contains('base64')) {
       return 'The Clerk token returned to the app is malformed. This usually means a frontend/backend Clerk mismatch or a corrupted local session. Clear the local session and verify that the app key and backend Clerk issuer belong to the same Clerk project.';
@@ -846,7 +574,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     if (lower.contains('oauth') && lower.contains('google')) {
-      return 'Google sign-in did not complete. Verify that Google is enabled in Clerk for this exact publishable key and that the Clerk instance allows the callback used by the app.';
+      return 'Google sign-in is handled on the website flow. Continue on the website instead of relying on the embedded Flutter path.';
     }
 
     if (lower.contains('not configured')) {
@@ -856,18 +584,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return raw;
   }
 
-  bool _shouldUseHeadlessFallback(Object error) {
-    final raw = error.toString().toLowerCase();
-    return raw.contains('missingpluginexception') &&
-        raw.contains('getapplicationdocumentsdirectory');
-  }
-
-  bool _isEnvironmentEmpty(ClerkAuthState authState) {
-    return !authState.env.hasIdentificationStrategies &&
-        !authState.env.hasOauthStrategies;
-  }
-
-  Future<void> _submitHeadlessSignIn() async {
+  Future<void> _submitCustomSignIn() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -903,36 +620,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
-  Future<void> _syncFromClerkIfNeeded(ClerkAuthState authState) async {
-    final sessionId = authState.session?.id;
-    if (sessionId == null ||
-        sessionId == _lastSyncedSessionId ||
-        _isSubmitting) {
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-      _error = null;
-    });
-
-    try {
-      await ref.read(authSessionProvider.notifier).syncFromClerkSession();
-      _lastSyncedSessionId = sessionId;
-      if (!mounted) return;
-      context.go('/entry');
-    } catch (error) {
-      if (mounted) {
-        setState(() {
-          _error = _friendlyAuthError(error);
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
+  Future<void> _openWebsiteSignIn() async {
+    await launchUrl(
+      Uri.parse('${AppConfig.effectiveSiteUrl}/sign-in'),
+      mode: LaunchMode.externalApplication,
+    );
   }
 }

@@ -527,9 +527,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.lock_open_rounded),
-                  label: Text(
-                    kIsWeb ? 'Sign In On Website' : 'Create Workspace',
-                  ),
+                  label: Text(kIsWeb ? 'Sign In On Website' : 'Sign In'),
                 ),
               ],
             ),
@@ -878,7 +876,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     vertical: 18,
                   ),
                 ),
-                child: Text(kIsWeb ? 'Sign In On Website' : 'Create Workspace'),
+                child: Text(kIsWeb ? 'Sign In On Website' : 'Sign In'),
               ),
             ],
           ),
@@ -1017,10 +1015,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       title: 'Create or reconnect your workspace',
       description: kIsWeb
           ? 'You are not signed in yet. Continue on the main website to use Google sign-in and password-manager autofill, then the site will return you to this app.'
-          : 'You are not signed in yet. Use Clerk to reconnect your existing workspace, or open the fixed demo workspace.',
+          : 'You are not signed in yet. Use the custom in-app email and password flow to reconnect your workspace, or continue on the website for Google and account creation.',
       icon: Icons.lock_outline_rounded,
       accent: Colors.orange,
-      primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In / Sign Up',
+      primaryLabel: kIsWeb ? 'Continue On Website' : 'Sign In',
       onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
       secondaryLabel: kIsWeb ? 'I Already Signed In' : 'Open Demo Workspace',
       onSecondary: kIsWeb
@@ -1035,7 +1033,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             },
       caption: kIsWeb
           ? 'The website performs the real Clerk web login and sends you back here with a short-lived secure handoff.'
-          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace.',
+          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The embedded Clerk Flutter widget is no longer the primary auth path.',
       extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
     );
   }
