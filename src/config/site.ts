@@ -17,6 +17,10 @@ export const appWebUrl = normalizeUrl(
   'https://app.contentflow.winflowz.com',
 );
 
+export const appSignInUrl = `${appWebUrl}/sign-in`;
+
+export const appEntryUrl = `${appWebUrl}/#/entry`;
+
 export const apiBaseUrl = normalizeUrl(
   import.meta.env.API_BASE_URL,
   'https://api.winflowz.com',

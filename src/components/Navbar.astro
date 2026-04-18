@@ -1,4 +1,5 @@
 ---
+import { appEntryUrl, appSignInUrl } from '../config/site';
 ---
 
 <a href="#main-content" class="skip-nav">Skip to content</a>
@@ -15,17 +16,9 @@
       <a href="/#who-its-for">Who It's For</a>
       <a href="/#faq">FAQ</a>
       <a href="/blog">Blog</a>
-      <a href="/launch">Open App</a>
+      <a href={appEntryUrl}>Open App</a>
     </div>
-    <a
-      href="/sign-up"
-      class="cta-button"
-      data-auth-cta
-      data-signed-in-href="/launch"
-      data-signed-in-label="Open App"
-    >
-      Create Account
-    </a>
+    <a href={appSignInUrl} class="cta-button">Continue with Google</a>
     <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation menu">
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>

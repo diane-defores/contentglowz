@@ -1,4 +1,5 @@
 ---
+import { appEntryUrl, appSignInUrl } from '../config/site';
 ---
 
 <section id="main-content" class="hero">
@@ -19,16 +20,8 @@
         left to skip. Done.
       </p>
       <div class="hero-cta">
-        <a
-          href="/sign-up"
-          class="btn-primary"
-          data-auth-cta
-          data-signed-in-href="/launch"
-          data-signed-in-label="Open App"
-        >
-          Create Account
-        </a>
-        <a href="/launch" class="btn-secondary">Open App</a>
+        <a href={appSignInUrl} class="btn-primary">Continue with Google</a>
+        <a href={appEntryUrl} class="btn-secondary">Open App</a>
       </div>
       <div class="hero-stats">
         <div class="stat">

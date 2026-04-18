@@ -1,581 +1,77 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {
-  apiBaseUrl,
-  appWebUrl,
-  buildCommitSha,
-  buildEnvironment,
-  buildTimestamp,
-  siteUrl,
-} from '../config/site';
-
-const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
-
-function getClerkFrontendApi(publishableKey: string) {
-  const encoded = publishableKey.split('_')[2];
-  if (!encoded) {
-    return '';
-  }
-
-  try {
-    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      '=',
-    );
-    return Buffer.from(padded, 'base64').toString('utf-8').replace(/\$$/, '');
-  } catch {
-    return '';
-  }
-}
-
-const clerkFrontendApi = getClerkFrontendApi(clerkPublishableKey);
-const clerkScriptSrc = clerkFrontendApi
-  ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
-  : '';
-const diagnosticsVersion = 'launch-diagnostics-v4-2026-04-18';
+import { appEntryUrl, appSignInUrl } from '../config/site';
 ---
 
 <Layout
-  title="Opening App — ContentFlow"
-  description="Exchanging your website session for an app session."
+  title="Opening ContentFlow App"
+  description="Redirecting to the ContentFlow app."
   noindex={true}
 >
-  <section class="launch-shell">
-    <div class="launch-card">
-      <p class="eyebrow">App handoff</p>
-      <h1>Opening your workspace…</h1>
-      <p id="launch-status">
-        ContentFlow is turning your website login into a short-lived app handoff.
+  <section class="redirect-shell">
+    <div class="redirect-card">
+      <p class="eyebrow">Open app</p>
+      <h1>Opening the app entry…</h1>
+      <p>
+        The old website handoff has been retired. ContentFlow now opens the app
+        directly on the app domain, where sign-in and session restore both happen.
       </p>
-      <p class="diagnostics-badge">
-        Diagnostics {diagnosticsVersion} · Build {buildCommitSha} · {buildTimestamp}
-      </p>
-      <button id="copy-launch-error" class="copy-error-button" type="button">
-        Copy diagnostics
-      </button>
-      <details id="launch-diagnostics" class="launch-diagnostics" open>
-        <summary>Technical diagnostics</summary>
-        <pre id="launch-diagnostics-body"></pre>
-      </details>
-      <div class="launch-actions">
-        <a class="btn-secondary" href="/sign-in">Back to sign in</a>
-        <a class="btn-secondary" href={appWebUrl}>Open app home</a>
+      <div class="actions">
+        <a class="btn-primary" href={appEntryUrl}>Open app entry</a>
+        <a class="btn-secondary" href={appSignInUrl}>Go to sign-in</a>
       </div>
     </div>
   </section>
 
-  {clerkScriptSrc && (
-    <script
-      id="clerk-browser-script"
-      async
-      crossorigin="anonymous"
-      data-clerk-publishable-key={clerkPublishableKey}
-      src={clerkScriptSrc}
-      type="text/javascript"
-    ></script>
-  )}
-  <script
-    define:vars={{
-      apiBaseUrl,
-      appWebUrl,
-      buildCommitSha,
-      buildEnvironment,
-      buildTimestamp,
-      clerkFrontendApi,
-      clerkPublishableKey,
-      diagnosticsVersion,
-      siteUrl,
-    }}
-  >
-    const statusEl = document.getElementById('launch-status');
-    const copyButton = document.getElementById('copy-launch-error');
-    const diagnosticsEl = document.getElementById('launch-diagnostics');
-    const diagnosticsBodyEl = document.getElementById('launch-diagnostics-body');
-    const clerkScript = document.getElementById('clerk-browser-script');
-    const searchParams = new URLSearchParams(window.location.search);
-    const diagnosticsRequested = true;
-    const eventLog = [];
-    let lastRenderedExtraLines = [];
-    let currentStatus = statusEl.textContent?.trim() || 'unknown';
-    let lastErrorText = '';
-
-    function maskValue(value, keepStart = 8, keepEnd = 4) {
-      if (!value) {
-        return 'none';
-      }
-      if (value.length <= keepStart + keepEnd + 3) {
-        return value;
-      }
-      return `${value.slice(0, keepStart)}...${value.slice(-keepEnd)}`;
-    }
-
-    function maskUrl(urlValue) {
-      if (!urlValue) {
-        return 'none';
-      }
-
-      try {
-        const url = new URL(urlValue, window.location.origin);
-        const directToken = url.searchParams.get('handoff_token');
-        if (directToken) {
-          url.searchParams.set('handoff_token', maskValue(directToken));
-        }
-
-        if (url.hash.includes('handoff_token=')) {
-          const [hashPath, hashQuery = ''] = url.hash.split('?');
-          if (hashQuery) {
-            const hashParams = new URLSearchParams(hashQuery);
-            const hashToken = hashParams.get('handoff_token');
-            if (hashToken) {
-              hashParams.set('handoff_token', maskValue(hashToken));
-            }
-            url.hash = `${hashPath}?${hashParams.toString()}`;
-          }
-        }
-
-        return url.toString();
-      } catch (_) {
-        return urlValue;
-      }
-    }
-
-    function truncateText(value, maxLength = 1600) {
-      if (!value) {
-        return 'none';
-      }
-      if (value.length <= maxLength) {
-        return value;
-      }
-      return `${value.slice(0, maxLength)}…`;
-    }
-
-    function appendEvent(label, detail = '') {
-      const line = `[${new Date().toISOString()}] ${label}${detail ? `: ${detail}` : ''}`;
-      eventLog.push(line);
-      if (eventLog.length > 24) {
-        eventLog.shift();
-      }
-    }
-
-    function setStatus(message) {
-      currentStatus = message;
-      statusEl.textContent = message;
-      appendEvent('Status', message);
-      renderDiagnostics();
-    }
-
-    function configuredHost(url) {
-      try {
-        return new URL(url).host;
-      } catch (_) {
-        return 'invalid';
-      }
-    }
-
-    function hostMatchLabel(url) {
-      const host = configuredHost(url);
-      if (host === 'invalid') {
-        return `invalid (${url})`;
-      }
-      return host === window.location.host ? 'yes' : `no (expected ${host})`;
-    }
-
-    function getRedirectTarget() {
-      return searchParams.get('redirect_url') || `${appWebUrl}/#/entry`;
-    }
-
-    function buildDiagnostics(extraLines = []) {
-      const redirectTarget = getRedirectTarget();
-      const queryKeys = [...searchParams.keys()];
-      return [
-        'ContentFlow website launch diagnostics',
-        `Diagnostics version: ${diagnosticsVersion}`,
-        `Build commit: ${buildCommitSha}`,
-        `Build environment: ${buildEnvironment}`,
-        `Build timestamp: ${buildTimestamp}`,
-        `Current status: ${currentStatus}`,
-        `Current URL: ${maskUrl(window.location.href)}`,
-        `Current origin: ${window.location.origin}`,
-        `Current host: ${window.location.host}`,
-        `Current path: ${window.location.pathname}`,
-        `Referrer: ${document.referrer || 'none'}`,
-        `Online: ${navigator.onLine ? 'yes' : 'no'}`,
-        `Cookies enabled: ${navigator.cookieEnabled ? 'yes' : 'no'}`,
-        `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`,
-        `User agent: ${navigator.userAgent}`,
-        `Query keys: ${queryKeys.length > 0 ? queryKeys.join(', ') : 'none'}`,
-        `redirect_url: ${searchParams.get('redirect_url') || 'missing'}`,
-        `Redirect target: ${maskUrl(redirectTarget)}`,
-        `Configured APP_SITE_URL: ${siteUrl}`,
-        `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
-        `Configured APP_WEB_URL: ${appWebUrl}`,
-        `Configured APP_WEB_URL host: ${configuredHost(appWebUrl)}`,
-        `Configured API_BASE_URL: ${apiBaseUrl}`,
-        `Handoff endpoint: ${apiBaseUrl}/api/auth/web/handoff`,
-        `Clerk script src: ${clerkScript?.getAttribute('src') || 'missing'}`,
-        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
-        `Clerk global present: ${window.Clerk ? 'yes' : 'no'}`,
-        `Clerk session present: ${window.Clerk?.session ? 'yes' : 'no'}`,
-        `Clerk session id: ${maskValue(window.Clerk?.session?.id || '')}`,
-        `Clerk user id: ${maskValue(window.Clerk?.user?.id || '')}`,
-        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
-        ...extraLines,
-        'Event log:',
-        ...(eventLog.length > 0 ? eventLog : ['none']),
-      ].join('\n');
-    }
-
-    function renderDiagnostics(extraLines = [], forceVisible = diagnosticsRequested) {
-      lastRenderedExtraLines = extraLines;
-      const text = buildDiagnostics(extraLines);
-      diagnosticsBodyEl.textContent = text;
-      diagnosticsEl.hidden = !forceVisible;
-      if (forceVisible) {
-        diagnosticsEl.open = true;
-      }
-      return text;
-    }
-
-    async function copyError() {
-      const diagnostics = lastErrorText || renderDiagnostics(lastRenderedExtraLines);
-      if (!diagnostics) {
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(diagnostics);
-        copyButton.textContent = 'Copied';
-        window.setTimeout(() => {
-          copyButton.textContent = 'Copy diagnostics';
-        }, 1500);
-      } catch (_) {
-        copyButton.textContent = 'Copy failed';
-      }
-    }
-
-    function showError(message, extraLines = []) {
-      currentStatus = message;
-      appendEvent('Error', message);
-      lastErrorText = renderDiagnostics(
-        [
-          'Status: error',
-          `Error: ${message}`,
-          ...extraLines,
-        ],
-        true,
-      );
-      statusEl.textContent = message;
-    }
-
-    async function readResponsePayload(response) {
-      const rawText = await response.text().catch(() => '');
-      let parsedJson = null;
-      let detail = '';
-
-      if (rawText) {
-        try {
-          parsedJson = JSON.parse(rawText);
-        } catch (_) {
-          parsedJson = null;
-        }
-      }
-
-      if (parsedJson && typeof parsedJson === 'object') {
-        const maybeDetail = parsedJson.detail ?? parsedJson.message ?? parsedJson.error;
-        if (typeof maybeDetail === 'string' && maybeDetail.trim()) {
-          detail = maybeDetail.trim();
-        }
-      }
-
-      const interestingHeaders = [
-        'content-type',
-        'content-length',
-        'cf-ray',
-        'x-vercel-id',
-        'x-clerk-trace-id',
-        'x-contentflow-request-id',
-      ];
-      const headerPairs = interestingHeaders
-        .map((name) => {
-          const value = response.headers.get(name);
-          return value ? `${name}=${value}` : null;
-        })
-        .filter(Boolean)
-        .join(', ');
-
-      return {
-        contentType: response.headers.get('content-type') || 'missing',
-        headers: headerPairs || 'none',
-        rawText: rawText || 'empty',
-        detail,
-        parsedJson,
-      };
-    }
-
-    copyButton.addEventListener('click', copyError);
-    clerkScript?.addEventListener('load', () => {
-      appendEvent('Clerk script', 'loaded');
-      renderDiagnostics();
-    });
-    clerkScript?.addEventListener('error', () => {
-      appendEvent('Clerk script', 'load failed');
-      showError('Clerk CDN script failed to load in the browser.');
-    });
-    window.addEventListener('error', (event) => {
-      appendEvent(
-        'Window error',
-        `${event.message || 'unknown'} @ ${event.filename || 'inline'}:${event.lineno || 0}:${event.colno || 0}`,
-      );
-      renderDiagnostics();
-    });
-    window.addEventListener('unhandledrejection', (event) => {
-      const reason = event.reason instanceof Error
-        ? event.reason.stack || event.reason.message
-        : String(event.reason);
-      appendEvent('Unhandled rejection', reason);
-      renderDiagnostics();
-    });
-    window.addEventListener('online', () => {
-      appendEvent('Browser network', 'online');
-      renderDiagnostics();
-    });
-    window.addEventListener('offline', () => {
-      appendEvent('Browser network', 'offline');
-      renderDiagnostics();
-    });
-
-    function buildAppRedirectUrl(redirectTarget, handoffToken) {
-      const target = new URL(redirectTarget, window.location.origin);
-      const rawHash = target.hash.startsWith('#') ? target.hash.slice(1) : target.hash;
-      const [hashPathRaw, hashQueryRaw = ''] = (rawHash || '/entry').split('?');
-      const hashPath = hashPathRaw || '/entry';
-      const hashParams = new URLSearchParams(hashQueryRaw);
-      hashParams.set('handoff_token', handoffToken);
-      target.searchParams.delete('handoff_token');
-      target.hash = `${hashPath}?${hashParams.toString()}`;
-      return target.toString();
-    }
-
-    async function launchApp() {
-      const redirectTarget = getRedirectTarget();
-      appendEvent('Launch flow', 'started');
-      renderDiagnostics([
-        'Status: Booting launch flow',
-        `Redirect target (masked): ${maskUrl(redirectTarget)}`,
-      ]);
-
-      if (!clerkPublishableKey) {
-        showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
-        return;
-      }
-
-      if (!window.Clerk) {
-        showError('Clerk failed to load in the browser.');
-        return;
-      }
-
-      try {
-        const clerkLoadStarted = performance.now();
-        appendEvent('Clerk load', 'starting');
-        renderDiagnostics(['Status: Loading Clerk browser SDK']);
-        await window.Clerk.load({ publishableKey: clerkPublishableKey });
-        appendEvent(
-          'Clerk load',
-          `finished in ${Math.round(performance.now() - clerkLoadStarted)}ms`,
-        );
-        if (!window.Clerk.session) {
-          appendEvent('Clerk session', 'missing on launch page');
-          renderDiagnostics([
-            'Status: No Clerk session on launch page',
-            'Redirecting to sign-in page',
-          ]);
-          window.location.replace(
-            `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`,
-          );
-          return;
-        }
-
-        setStatus('Requesting a secure app handoff…');
-        const tokenStarted = performance.now();
-        const bearerToken = await window.Clerk.session.getToken();
-        appendEvent(
-          'Clerk token',
-          bearerToken
-            ? `received in ${Math.round(performance.now() - tokenStarted)}ms (${bearerToken.length} chars)`
-            : 'missing',
-        );
-        if (!bearerToken) {
-          throw new Error('Clerk did not return a session token for the app handoff.');
-        }
-
-        renderDiagnostics([
-          'Status: Clerk session found',
-          'Bearer token present: yes',
-          `Bearer token length: ${bearerToken.length}`,
-          'Requesting handoff API',
-        ]);
-        const controller = new AbortController();
-        const timeoutId = window.setTimeout(() => controller.abort(), 12000);
-        const endpoint = `${apiBaseUrl}/api/auth/web/handoff`;
-        const handoffStarted = performance.now();
-        appendEvent('Handoff request', endpoint);
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${bearerToken}`,
-          },
-          signal: controller.signal,
-        }).finally(() => {
-          window.clearTimeout(timeoutId);
-        });
-        const responsePayload = await readResponsePayload(response);
-        const responseDuration = Math.round(performance.now() - handoffStarted);
-        appendEvent(
-          'Handoff response',
-          `${response.status}${response.statusText ? ` ${response.statusText}` : ''} in ${responseDuration}ms`,
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            responsePayload.detail ||
-              `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
-          );
-        }
-
-        renderDiagnostics([
-          'Status: Handoff API succeeded',
-          `HTTP status: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`,
-          `Response duration: ${responseDuration}ms`,
-          `Response content-type: ${responsePayload.contentType}`,
-          `Response headers: ${responsePayload.headers}`,
-          `Response body: ${truncateText(responsePayload.rawText)}`,
-        ]);
-
-        const payload = responsePayload.parsedJson;
-        const handoffToken = payload?.handoff_token;
-        if (!handoffToken) {
-          throw new Error('The backend did not return a handoff token.');
-        }
-
-        const redirectDestination = buildAppRedirectUrl(redirectTarget, handoffToken);
-        appendEvent('Handoff token', maskValue(handoffToken));
-        appendEvent('Browser redirect', maskUrl(redirectDestination));
-        setStatus('Redirecting to the app…');
-        renderDiagnostics([
-          'Status: Redirecting to app',
-          'handoff_token returned: yes',
-          `Redirect destination: ${maskUrl(redirectDestination)}`,
-        ]);
-        window.location.replace(redirectDestination);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          showError(
-            `The app handoff API timed out after 12 seconds: ${apiBaseUrl}/api/auth/web/handoff`,
-            ['Failure class: AbortError'],
-          );
-          return;
-        }
-        if (error instanceof Error) {
-          showError(error.message, [
-            `Failure class: ${error.name || 'Error'}`,
-          ]);
-          return;
-        }
-        showError('Unable to open the app.');
-      }
-    }
-
-    appendEvent('Page', 'launch diagnostics initialized');
-    renderDiagnostics(['Status: Booting launch page']);
-    window.addEventListener('load', launchApp);
+  <script define:vars={{ appEntryUrl }}>
+    window.location.replace(appEntryUrl);
   </script>
 </Layout>
 
 <style>
-  .launch-shell {
+  .redirect-shell {
     min-height: 100vh;
     display: grid;
     place-items: center;
-    padding: 7rem 2rem 3rem;
-  }
-
-  .launch-card {
-    width: min(100%, 720px);
-    background: white;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 24px;
     padding: 2rem;
-    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+    background:
+      radial-gradient(circle at top, rgba(139, 92, 246, 0.12), transparent 45%),
+      linear-gradient(180deg, #f8f7ff 0%, #f1efff 100%);
   }
 
-  .launch-card h1 {
-    font-size: clamp(2rem, 1.2rem + 2vw, 3rem);
-    margin-bottom: 1rem;
-  }
-
-  .launch-card p {
-    color: var(--color-gray);
-    font-size: 1rem;
+  .redirect-card {
+    width: min(100%, 560px);
+    padding: 2rem;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    text-align: center;
   }
 
   .eyebrow {
-    color: var(--color-primary);
+    font-size: 0.8rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.82rem;
+    color: var(--color-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 1.4rem + 2vw, 2.8rem);
     margin-bottom: 1rem;
   }
 
-  .launch-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
-
-  .copy-error-button {
-    margin-top: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.14);
-    background: rgba(15, 23, 42, 0.04);
-    color: var(--color-dark);
-    border-radius: 999px;
-    padding: 0.55rem 0.9rem;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .diagnostics-badge {
-    margin-top: 1rem;
-    color: var(--color-primary);
-    font-size: 0.92rem;
-    font-weight: 600;
-  }
-
-  .launch-diagnostics {
-    margin-top: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    border-radius: 16px;
-    padding: 0.8rem 0.95rem;
-    background: rgba(15, 23, 42, 0.03);
-  }
-
-  .launch-diagnostics summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--color-dark);
-  }
-
-  .launch-diagnostics pre {
-    margin: 0.9rem 0 0;
-    max-height: 24rem;
-    overflow: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-size: 0.78rem;
-    line-height: 1.45;
+  p {
     color: var(--color-gray);
+    margin-bottom: 1.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 </style>

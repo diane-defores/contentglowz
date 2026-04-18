@@ -1,4 +1,5 @@
 ---
+import { appSignInUrl } from '../config/site';
 ---
 
 <section class="closing-cta">
@@ -6,15 +7,7 @@
     <h2>Ready to publish 6x more content?</h2>
     <p>Join solo founders who stopped writing and started shipping. Free plan, no credit card.</p>
     <div class="closing-cta-buttons">
-      <a
-        href="/sign-up"
-        class="btn-primary"
-        data-auth-cta
-        data-signed-in-href="/launch"
-        data-signed-in-label="Open App"
-      >
-        Start Free
-      </a>
+      <a href={appSignInUrl} class="btn-primary">Start Free</a>
       <a href="/blog" class="btn-secondary">Read the Blog</a>
     </div>
   </div>

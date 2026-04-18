@@ -1,515 +1,74 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import {
-  apiBaseUrl,
-  appWebUrl,
-  buildCommitSha,
-  buildEnvironment,
-  buildTimestamp,
-  siteUrl,
-} from '../config/site';
-
-const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
-
-function getClerkFrontendApi(publishableKey: string) {
-  const encoded = publishableKey.split('_')[2];
-  if (!encoded) {
-    return '';
-  }
-
-  try {
-    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      '=',
-    );
-    return Buffer.from(padded, 'base64').toString('utf-8').replace(/\$$/, '');
-  } catch {
-    return '';
-  }
-}
-
-const clerkFrontendApi = getClerkFrontendApi(clerkPublishableKey);
-const clerkScriptSrc = clerkFrontendApi
-  ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
-  : '';
+import { appSignInUrl } from '../config/site';
 ---
 
 <Layout
-  title="Sign In — ContentFlow"
-  description="Sign in to ContentFlow on the website, then continue into the app."
+  title="Redirecting to App Sign-In — ContentFlow"
+  description="Redirecting to the official ContentFlow app sign-in flow."
   noindex={true}
 >
-  <section class="auth-shell">
-    <div class="auth-copy">
-      <p class="eyebrow">Website login</p>
-      <h1>Sign in before opening the app.</h1>
+  <section class="redirect-shell">
+    <div class="redirect-card">
+      <p class="eyebrow">App auth</p>
+      <h1>Redirecting to the app sign-in…</h1>
       <p>
-        ContentFlow web login runs here so Google sign-in and browser password managers
-        use a normal web flow before sending you back to the Flutter app.
+        ContentFlow authentication now runs directly on
+        <strong>app.contentflow.winflowz.com</strong> with the official Clerk web
+        flow.
       </p>
-      <div class="auth-links">
-        <a class="btn-secondary" href="/sign-up">Create account</a>
-        <a class="btn-secondary" href="/launch">Already signed in? Open app</a>
-      </div>
-    </div>
-    <div class="auth-panel">
-      <div id="auth-status" class="auth-status">Loading secure sign-in…</div>
-      <button id="copy-auth-error" class="copy-error-button" type="button" hidden>
-        Copy diagnostics
-      </button>
-      <details id="auth-diagnostics" class="auth-diagnostics" hidden>
-        <summary>Technical diagnostics</summary>
-        <pre id="auth-diagnostics-body"></pre>
-      </details>
-      <div id="clerk-auth"></div>
+      <a class="btn-primary" href={appSignInUrl}>Continue with Google</a>
     </div>
   </section>
 
-  {clerkScriptSrc && (
-    <script
-      id="clerk-browser-script"
-      async
-      crossorigin="anonymous"
-      data-clerk-publishable-key={clerkPublishableKey}
-      src={clerkScriptSrc}
-      type="text/javascript"
-    ></script>
-  )}
-  <script
-    define:vars={{
-      appWebUrl,
-      apiBaseUrl,
-      buildCommitSha,
-      buildEnvironment,
-      buildTimestamp,
-      clerkPublishableKey,
-      siteUrl,
-    }}
-  >
-    const statusEl = document.getElementById('auth-status');
-    const mountNode = document.getElementById('clerk-auth');
-    const copyButton = document.getElementById('copy-auth-error');
-    const diagnosticsEl = document.getElementById('auth-diagnostics');
-    const diagnosticsBodyEl = document.getElementById('auth-diagnostics-body');
-    const clerkScript = document.getElementById('clerk-browser-script');
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectTarget =
-      searchParams.get('redirect_url') || `${appWebUrl}/#/entry`;
-    const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
-    const diagnosticsRequested = ['1', 'true', 'yes'].includes(
-      (searchParams.get('diag') || '').toLowerCase(),
-    );
-    let lastErrorText = '';
-
-    function maskValue(value, keepStart = 8, keepEnd = 4) {
-      if (!value) {
-        return 'none';
-      }
-      if (value.length <= keepStart + keepEnd + 3) {
-        return value;
-      }
-      return `${value.slice(0, keepStart)}...${value.slice(-keepEnd)}`;
+  <script define:vars={{ appSignInUrl }}>
+    const target = new URL(appSignInUrl);
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get('redirect_url');
+    if (redirectUrl) {
+      target.searchParams.set('redirect_url', redirectUrl);
     }
-
-    function truncateText(value, maxLength = 800) {
-      if (!value) {
-        return 'none';
-      }
-      if (value.length <= maxLength) {
-        return value;
-      }
-      return `${value.slice(0, maxLength)}...`;
-    }
-
-    function maskUrl(urlValue) {
-      if (!urlValue) {
-        return 'none';
-      }
-      try {
-        const url = new URL(urlValue, window.location.origin);
-        const directToken = url.searchParams.get('handoff_token');
-        if (directToken) {
-          url.searchParams.set('handoff_token', maskValue(directToken));
-        }
-        if (url.hash.includes('handoff_token=')) {
-          const [hashPath, hashQuery = ''] = url.hash.split('?');
-          const hashParams = new URLSearchParams(hashQuery);
-          const hashToken = hashParams.get('handoff_token');
-          if (hashToken) {
-            hashParams.set('handoff_token', maskValue(hashToken));
-          }
-          url.hash = `${hashPath}?${hashParams.toString()}`;
-        }
-        return url.toString();
-      } catch (_) {
-        return urlValue;
-      }
-    }
-
-    function buildAppRedirectUrl(redirectValue, handoffToken) {
-      const target = new URL(redirectValue, window.location.origin);
-      const rawHash = target.hash.startsWith('#') ? target.hash.slice(1) : target.hash;
-      const [hashPathRaw, hashQueryRaw = ''] = (rawHash || '/entry').split('?');
-      const hashPath = hashPathRaw || '/entry';
-      const hashParams = new URLSearchParams(hashQueryRaw);
-      hashParams.set('handoff_token', handoffToken);
-      target.searchParams.delete('handoff_token');
-      target.hash = `${hashPath}?${hashParams.toString()}`;
-      return target.toString();
-    }
-
-    async function readResponsePayload(response) {
-      const rawText = await response.text().catch(() => '');
-      let parsedJson = null;
-      let detail = '';
-
-      if (rawText) {
-        try {
-          parsedJson = JSON.parse(rawText);
-        } catch (_) {
-          parsedJson = null;
-        }
-      }
-
-      if (parsedJson && typeof parsedJson === 'object') {
-        const maybeDetail = parsedJson.detail ?? parsedJson.message ?? parsedJson.error;
-        if (typeof maybeDetail === 'string' && maybeDetail.trim()) {
-          detail = maybeDetail.trim();
-        }
-      }
-
-      return {
-        contentType: response.headers.get('content-type') || 'missing',
-        rawText: rawText || 'empty',
-        detail,
-        parsedJson,
-      };
-    }
-
-    function configuredHost(url) {
-      try {
-        return new URL(url).host;
-      } catch (_) {
-        return 'invalid';
-      }
-    }
-
-    function hostMatchLabel(url) {
-      const host = configuredHost(url);
-      if (host === 'invalid') {
-        return `invalid (${url})`;
-      }
-      return host === window.location.host ? 'yes' : `no (expected ${host})`;
-    }
-
-    function buildDiagnostics(extraLines = []) {
-      const queryKeys = [...searchParams.keys()];
-      return [
-        'ContentFlow website sign-in diagnostics',
-        `Build commit: ${buildCommitSha}`,
-        `Build environment: ${buildEnvironment}`,
-        `Build timestamp: ${buildTimestamp}`,
-        `Current URL: ${window.location.href}`,
-        `Current origin: ${window.location.origin}`,
-        `Current host: ${window.location.host}`,
-        `Current path: ${window.location.pathname}`,
-        `Referrer: ${document.referrer || 'none'}`,
-        `Online: ${navigator.onLine ? 'yes' : 'no'}`,
-        `Cookies enabled: ${navigator.cookieEnabled ? 'yes' : 'no'}`,
-        `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`,
-        `User agent: ${navigator.userAgent}`,
-        `Query keys: ${queryKeys.length > 0 ? queryKeys.join(', ') : 'none'}`,
-        `redirect_url: ${searchParams.get('redirect_url') || 'missing'}`,
-        `Redirect target: ${redirectTarget}`,
-        `Configured APP_SITE_URL: ${siteUrl}`,
-        `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
-        `Configured APP_WEB_URL: ${appWebUrl}`,
-        `Configured APP_WEB_URL host: ${configuredHost(appWebUrl)}`,
-        `Configured API_BASE_URL: ${apiBaseUrl}`,
-        `Continue URL: ${continueUrl}`,
-        `Clerk script src: ${clerkScript?.getAttribute('src') || 'missing'}`,
-        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
-        `Clerk global present: ${window.Clerk ? 'yes' : 'no'}`,
-        `Clerk session present: ${window.Clerk?.session ? 'yes' : 'no'}`,
-        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
-        ...extraLines,
-      ].join('\n');
-    }
-
-    function renderDiagnostics(extraLines = [], forceVisible = diagnosticsRequested) {
-      const text = buildDiagnostics(extraLines);
-      diagnosticsBodyEl.textContent = text;
-      diagnosticsEl.hidden = !forceVisible;
-      if (forceVisible) {
-        diagnosticsEl.open = true;
-      }
-      copyButton.hidden = !(forceVisible || lastErrorText);
-      return text;
-    }
-
-    async function requestAppHandoff(source) {
-      const session = window.Clerk?.session;
-      if (!session) {
-        throw new Error('Clerk session is missing on the sign-in page.');
-      }
-
-      statusEl.textContent = 'Preparing your app session…';
-      renderDiagnostics([
-        'Status: Requesting app handoff',
-        `Source: ${source}`,
-      ]);
-
-      const bearerToken = await session.getToken();
-      if (!bearerToken) {
-        throw new Error('Clerk did not return a session token for the app handoff.');
-      }
-
-      const response = await fetch(`${apiBaseUrl}/api/auth/web/handoff`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${bearerToken}`,
-        },
-      });
-      const payload = await readResponsePayload(response);
-      if (!response.ok) {
-        throw new Error(
-          payload.detail ||
-            `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
-        );
-      }
-
-      const handoffToken = payload.parsedJson?.handoff_token;
-      if (!handoffToken) {
-        throw new Error('The backend did not return a handoff token.');
-      }
-
-      const destination = buildAppRedirectUrl(redirectTarget, handoffToken);
-      renderDiagnostics([
-        'Status: Redirecting to app',
-        `Source: ${source}`,
-        `Handoff endpoint: ${apiBaseUrl}/api/auth/web/handoff`,
-        `Response content-type: ${payload.contentType}`,
-        `Response body: ${truncateText(payload.rawText)}`,
-        `handoff_token: ${maskValue(handoffToken)}`,
-        `Redirect destination: ${maskUrl(destination)}`,
-      ]);
-      window.location.replace(destination);
-    }
-
-    function renderSignedInState() {
-      const email =
-        window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
-        window.Clerk?.user?.emailAddresses?.[0]?.emailAddress ||
-        'your current account';
-      statusEl.textContent = `Already signed in as ${email}. Clerk will not show the sign-in form again until you sign out.`;
-      mountNode.innerHTML = `
-        <div class="signed-in-actions">
-          <button class="btn-secondary signed-in-open" type="button">Continue to app</button>
-          <button class="btn-secondary signed-in-signout" type="button">Sign out to switch account</button>
-        </div>
-      `;
-      const openButton = mountNode.querySelector('.signed-in-open');
-      const signOutButton = mountNode.querySelector('.signed-in-signout');
-      openButton?.addEventListener('click', async () => {
-        try {
-          await requestAppHandoff('existing-session');
-        } catch (error) {
-          showError(
-            error instanceof Error ? error.message : 'Unable to continue into the app.',
-          );
-        }
-      });
-      signOutButton?.addEventListener('click', async () => {
-        await window.Clerk.signOut();
-        window.location.reload();
-      });
-      renderDiagnostics([
-        'Status: Clerk session already exists',
-        `Resolved email: ${email}`,
-      ]);
-    }
-
-    async function copyError() {
-      const diagnostics = lastErrorText || renderDiagnostics();
-      if (!diagnostics) {
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(diagnostics);
-        copyButton.textContent = 'Copied';
-        window.setTimeout(() => {
-          copyButton.textContent = 'Copy diagnostics';
-        }, 1500);
-      } catch (_) {
-        copyButton.textContent = 'Copy failed';
-      }
-    }
-
-    function showError(message) {
-      lastErrorText = renderDiagnostics(
-        [
-          'Status: error',
-          `Error: ${message}`,
-        ],
-        true,
-      );
-      statusEl.textContent = message;
-    }
-
-    copyButton.addEventListener('click', copyError);
-    clerkScript?.addEventListener('error', () => {
-      showError('Clerk CDN script failed to load in the browser.');
-    });
-
-    async function bootSignIn() {
-      if (!clerkPublishableKey) {
-        showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
-        return;
-      }
-
-      if (!window.Clerk) {
-        showError('Clerk failed to load in the browser.');
-        return;
-      }
-
-      try {
-        renderDiagnostics(['Status: Loading Clerk browser SDK']);
-        await window.Clerk.load({ publishableKey: clerkPublishableKey });
-        if (window.Clerk.session) {
-          renderSignedInState();
-          return;
-        }
-
-        statusEl.textContent = 'Use your ContentFlow account to continue.';
-        renderDiagnostics([
-          'Status: Mounting Clerk sign-in',
-          'Clerk session present: no',
-        ]);
-        window.Clerk.mountSignIn(mountNode, {
-          signUpUrl: `/sign-up?redirect_url=${encodeURIComponent(redirectTarget)}`,
-        });
-
-        const sync = window.setInterval(async () => {
-          if (window.Clerk?.session) {
-            window.clearInterval(sync);
-            try {
-              await requestAppHandoff('post-sign-in');
-            } catch (error) {
-              renderSignedInState();
-              showError(
-                error instanceof Error
-                  ? error.message
-                  : 'Unable to continue into the app after sign-in.',
-              );
-            }
-          }
-        }, 800);
-      } catch (error) {
-        showError(
-          error instanceof Error ? error.message : 'Unable to render Clerk sign-in.',
-        );
-      }
-    }
-
-    renderDiagnostics(['Status: Booting sign-in page']);
-    window.addEventListener('load', bootSignIn);
+    window.location.replace(target.toString());
   </script>
 </Layout>
 
 <style>
-  .auth-shell {
+  .redirect-shell {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
-    gap: 2rem;
-    align-items: center;
-    padding: 7rem 2rem 3rem;
-    max-width: 1180px;
-    margin: 0 auto;
+    place-items: center;
+    padding: 2rem;
+    background:
+      radial-gradient(circle at top, rgba(59, 130, 246, 0.12), transparent 45%),
+      linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
   }
 
-  .auth-copy h1 {
-    font-size: clamp(2.2rem, 1.2rem + 3vw, 4rem);
-    margin-bottom: 1rem;
-  }
-
-  .auth-copy p {
-    color: var(--color-gray);
-    font-size: 1.05rem;
-    max-width: 44rem;
+  .redirect-card {
+    width: min(100%, 540px);
+    padding: 2rem;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    text-align: center;
   }
 
   .eyebrow {
-    color: var(--color-primary);
+    font-size: 0.8rem;
     font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.82rem;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 1.4rem + 2vw, 2.8rem);
     margin-bottom: 1rem;
   }
 
-  .auth-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
-
-  .auth-panel {
-    background: white;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 24px;
-    padding: 1.5rem;
-    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
-  }
-
-  .auth-status {
-    margin-bottom: 1rem;
+  p {
     color: var(--color-gray);
-    font-size: 0.95rem;
-  }
-
-  .copy-error-button {
-    margin-bottom: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.14);
-    background: rgba(15, 23, 42, 0.04);
-    color: var(--color-dark);
-    border-radius: 999px;
-    padding: 0.55rem 0.9rem;
-    font: inherit;
-    cursor: pointer;
-  }
-
-  .auth-diagnostics {
-    margin-bottom: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.1);
-    border-radius: 16px;
-    padding: 0.8rem 0.95rem;
-    background: rgba(15, 23, 42, 0.03);
-  }
-
-  .auth-diagnostics summary {
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--color-dark);
-  }
-
-  .auth-diagnostics pre {
-    margin: 0.9rem 0 0;
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    color: var(--color-gray);
-  }
-
-  @media (max-width: 900px) {
-    .auth-shell {
-      grid-template-columns: 1fr;
-      padding-top: 6rem;
-    }
+    margin-bottom: 1.5rem;
   }
 </style>
