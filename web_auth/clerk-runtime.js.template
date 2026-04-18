@@ -11,6 +11,8 @@
     loadPromise: null,
     scriptPromise: null,
   };
+  const CLERK_UI_SCRIPT_ID = 'contentflow-clerk-ui';
+  const CLERK_JS_SCRIPT_ID = 'contentflow-clerk-js';
 
   function deriveClerkDomain(publishableKey) {
     try {
@@ -84,26 +86,65 @@
         return;
       }
 
-      const existing = document.querySelector('script[data-contentflow-clerk="1"]');
-      if (existing) {
-        existing.addEventListener('load', () => resolve(window.Clerk), { once: true });
-        existing.addEventListener(
-          'error',
-          () => reject(new Error('Failed to load ClerkJS.')),
-          { once: true },
-        );
-        return;
-      }
+      const loadSingleScript = (src, options) =>
+        new Promise((resolveScript, rejectScript) => {
+          const existing =
+            (options.id ? document.getElementById(options.id) : null) ||
+            document.querySelector(`script[src="${src}"]`);
+          if (existing) {
+            if (existing.dataset.loaded === 'true') {
+              resolveScript();
+              return;
+            }
+            existing.addEventListener('load', () => resolveScript(), { once: true });
+            existing.addEventListener(
+              'error',
+              () => rejectScript(new Error(`Failed to load ${src}`)),
+              { once: true },
+            );
+            return;
+          }
 
-      const script = document.createElement('script');
-      script.defer = true;
-      script.crossOrigin = 'anonymous';
-      script.dataset.contentflowClerk = '1';
-      script.dataset.clerkPublishableKey = config.publishableKey;
-      script.src = `https://${frontendApi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`;
-      script.onload = () => resolve(window.Clerk);
-      script.onerror = () => reject(new Error('Failed to load ClerkJS.'));
-      document.head.appendChild(script);
+          const script = document.createElement('script');
+          if (options.id) {
+            script.id = options.id;
+          }
+          script.defer = true;
+          script.crossOrigin = 'anonymous';
+          script.type = 'text/javascript';
+          if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+              if (value) {
+                script.setAttribute(key, value);
+              }
+            });
+          }
+          script.src = src;
+          script.onload = () => {
+            script.dataset.loaded = 'true';
+            resolveScript();
+          };
+          script.onerror = () => rejectScript(new Error(`Failed to load ${src}`));
+          document.head.appendChild(script);
+        });
+
+      const uiSrc = `https://${frontendApi}/npm/@clerk/ui@1/dist/ui.browser.js`;
+      const clerkSrc = `https://${frontendApi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`;
+
+      window.__clerk_publishable_key = config.publishableKey;
+
+      Promise.resolve()
+        .then(() => loadSingleScript(uiSrc, { id: CLERK_UI_SCRIPT_ID }))
+        .then(() =>
+          loadSingleScript(clerkSrc, {
+            id: CLERK_JS_SCRIPT_ID,
+            attributes: {
+              'data-clerk-publishable-key': config.publishableKey,
+            },
+          }),
+        )
+        .then(() => resolve(window.Clerk))
+        .catch(reject);
     });
 
     return state.scriptPromise;
@@ -121,6 +162,9 @@
 
       const clerk = await loadScript();
       await clerk.load({
+        ui: window.__internal_ClerkUICtor
+          ? { ClerkUI: window.__internal_ClerkUICtor }
+          : undefined,
         signInUrl: '/sign-in',
         signUpUrl: '/sign-in',
         afterSignOutUrl: '/#/entry',
