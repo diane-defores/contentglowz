@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../demo/demo_seed.dart';
@@ -14,10 +16,23 @@ import '../models/ritual.dart';
 enum ApiErrorType { unauthorized, offline, server, invalidResponse, unknown }
 
 class ApiException implements Exception {
-  const ApiException(this.type, this.message);
+  const ApiException(
+    this.type,
+    this.message, {
+    this.statusCode,
+    this.responseBody,
+    this.responseHeaders = const <String, String>{},
+    this.method,
+    this.path,
+  });
 
   final ApiErrorType type;
   final String message;
+  final int? statusCode;
+  final String? responseBody;
+  final Map<String, String> responseHeaders;
+  final String? method;
+  final String? path;
 
   bool get isUnauthorized => type == ApiErrorType.unauthorized;
   bool get isOffline => type == ApiErrorType.offline;
@@ -114,10 +129,7 @@ class ApiService {
     try {
       await _dio.post(
         '/api/projects/onboard',
-        data: {
-          'github_url': githubUrl,
-          'name': name,
-        },
+        data: {'github_url': githubUrl, 'name': name},
       );
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -139,7 +151,12 @@ class ApiService {
         '/api/auth/web/exchange',
         data: {'handoff_token': handoffToken},
       );
-      return _asMap(response.data);
+      return {
+        ..._asMap(response.data),
+        '_http_status': response.statusCode,
+        '_response_headers': _flattenHeaders(response.headers),
+        '_raw_body': _stringifyResponseData(response.data),
+      };
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
@@ -298,11 +315,7 @@ class ApiService {
 
   Future<void> rejectContent(String id) => transitionContent(id, 'rejected');
 
-  Future<bool> updateContent(
-    String id, {
-    String? title,
-    String? body,
-  }) async {
+  Future<bool> updateContent(String id, {String? title, String? body}) async {
     if (allowDemoData) {
       return true;
     }
@@ -554,7 +567,9 @@ class ApiService {
   /// Poll pipeline dispatch status.
   Future<Map<String, dynamic>?> getPipelineStatus(String taskId) async {
     try {
-      final response = await _dio.get('/api/psychology/pipeline-status/$taskId');
+      final response = await _dio.get(
+        '/api/psychology/pipeline-status/$taskId',
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -708,8 +723,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> getReelsCookieStatus(String userId) async {
     try {
-      final response = await _dio.get('/api/reels/cookies/status',
-          queryParameters: {'user_id': userId});
+      final response = await _dio.get(
+        '/api/reels/cookies/status',
+        queryParameters: {'user_id': userId},
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       if (allowDemoData) return {'has_cookies': false};
@@ -726,8 +743,10 @@ class ApiService {
     try {
       final params = <String, dynamic>{'days_ahead': daysAhead};
       if (projectId != null) params['project_id'] = projectId;
-      final response = await _dio.get('/api/content/pending-validations',
-          queryParameters: params);
+      final response = await _dio.get(
+        '/api/content/pending-validations',
+        queryParameters: params,
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       if (allowDemoData) return {'total': 0, 'articles': []};
@@ -737,11 +756,16 @@ class ApiService {
 
   // ─── Work Domains ─────────────────────────────────────────
 
-  Future<List<Map<String, dynamic>>> fetchWorkDomains({String? projectId}) async {
+  Future<List<Map<String, dynamic>>> fetchWorkDomains({
+    String? projectId,
+  }) async {
     try {
       final params = <String, dynamic>{};
       if (projectId != null) params['projectId'] = projectId;
-      final response = await _dio.get('/api/work-domains', queryParameters: params);
+      final response = await _dio.get(
+        '/api/work-domains',
+        queryParameters: params,
+      );
       final data = response.data;
       if (data is List) return data.cast<Map<String, dynamic>>();
       return [];
@@ -784,7 +808,8 @@ class ApiService {
       final response = await _dio.get('/runs', queryParameters: params);
       final data = response.data;
       if (data is List) return data.cast<Map<String, dynamic>>();
-      return (_asMap(data)['runs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      return (_asMap(data)['runs'] as List?)?.cast<Map<String, dynamic>>() ??
+          [];
     } on DioException catch (error) {
       if (allowDemoData) return const [];
       throw _mapDioException(error);
@@ -798,7 +823,9 @@ class ApiService {
       final response = await _dio.get('/api/templates/defaults');
       final data = response.data;
       if (data is List) return data.cast<Map<String, dynamic>>();
-      return (_asMap(data)['templates'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      return (_asMap(data)['templates'] as List?)
+              ?.cast<Map<String, dynamic>>() ??
+          [];
     } on DioException catch (error) {
       if (allowDemoData) return const [];
       throw _mapDioException(error);
@@ -825,13 +852,16 @@ class ApiService {
     int maxSections = 5,
   }) async {
     try {
-      final response = await _dio.post('/api/newsletter/generate-async', data: {
-        'name': name,
-        'topics': topics,
-        'target_audience': targetAudience,
-        'tone': tone,
-        'max_sections': maxSections,
-      });
+      final response = await _dio.post(
+        '/api/newsletter/generate-async',
+        data: {
+          'name': name,
+          'topics': topics,
+          'target_audience': targetAudience,
+          'tone': tone,
+          'max_sections': maxSections,
+        },
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -855,11 +885,14 @@ class ApiService {
     List<String> keywords = const [],
   }) async {
     try {
-      final response = await _dio.post('/api/research/competitor-analysis', data: {
-        'target_url': targetUrl,
-        'competitors': competitors,
-        if (keywords.isNotEmpty) 'keywords': keywords,
-      });
+      final response = await _dio.post(
+        '/api/research/competitor-analysis',
+        data: {
+          'target_url': targetUrl,
+          'competitors': competitors,
+          if (keywords.isNotEmpty) 'keywords': keywords,
+        },
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -870,9 +903,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> analyzeMesh({required String repoUrl}) async {
     try {
-      final response = await _dio.post('/api/mesh/analyze', data: {
-        'repo_url': repoUrl,
-      });
+      final response = await _dio.post(
+        '/api/mesh/analyze',
+        data: {'repo_url': repoUrl},
+      );
       return _asMap(response.data);
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -945,10 +979,7 @@ class ApiService {
     int offset = 0,
   }) async {
     try {
-      final qp = <String, dynamic>{
-        'limit': limit,
-        'offset': offset,
-      };
+      final qp = <String, dynamic>{'limit': limit, 'offset': offset};
       if (status != null) qp['status'] = status;
       if (source != null) qp['source'] = source;
       if (minScore != null) qp['min_score'] = minScore;
@@ -1031,11 +1062,18 @@ class ApiService {
   ApiException _mapDioException(DioException error) {
     final statusCode = error.response?.statusCode;
     final message = _detailMessage(error);
+    final responseBody = _stringifyResponseData(error.response?.data);
+    final responseHeaders = _flattenHeaders(error.response?.headers);
 
     if (statusCode == 401) {
       return ApiException(
         ApiErrorType.unauthorized,
         message.isEmpty ? 'Your Clerk session expired.' : message,
+        statusCode: statusCode,
+        responseBody: responseBody.isEmpty ? null : responseBody,
+        responseHeaders: responseHeaders,
+        method: error.requestOptions.method,
+        path: error.requestOptions.path,
       );
     }
 
@@ -1046,6 +1084,11 @@ class ApiService {
       return ApiException(
         ApiErrorType.offline,
         message.isEmpty ? 'FastAPI is unreachable.' : message,
+        statusCode: statusCode,
+        responseBody: responseBody.isEmpty ? null : responseBody,
+        responseHeaders: responseHeaders,
+        method: error.requestOptions.method,
+        path: error.requestOptions.path,
       );
     }
 
@@ -1055,12 +1098,22 @@ class ApiService {
         message.isEmpty
             ? 'FastAPI returned an unexpected error ($statusCode).'
             : message,
+        statusCode: statusCode,
+        responseBody: responseBody.isEmpty ? null : responseBody,
+        responseHeaders: responseHeaders,
+        method: error.requestOptions.method,
+        path: error.requestOptions.path,
       );
     }
 
     return ApiException(
       ApiErrorType.unknown,
       message.isEmpty ? 'Unexpected API error.' : message,
+      statusCode: statusCode,
+      responseBody: responseBody.isEmpty ? null : responseBody,
+      responseHeaders: responseHeaders,
+      method: error.requestOptions.method,
+      path: error.requestOptions.path,
     );
   }
 
@@ -1076,6 +1129,34 @@ class ApiService {
     return error.message ?? '';
   }
 
+  Map<String, String> _flattenHeaders(Headers? headers) {
+    if (headers == null) {
+      return const <String, String>{};
+    }
+
+    final flattened = <String, String>{};
+    headers.map.forEach((key, values) {
+      if (values.isNotEmpty) {
+        flattened[key] = values.join(', ');
+      }
+    });
+    return flattened;
+  }
+
+  String _stringifyResponseData(Object? data) {
+    if (data == null) {
+      return '';
+    }
+    if (data is String) {
+      return data;
+    }
+    try {
+      return jsonEncode(data);
+    } catch (_) {
+      return data.toString();
+    }
+  }
+
   ContentItem? _demoContentById(String id) {
     for (final item in [..._mockContent(), ..._mockHistory()]) {
       if (item.id == id) {
@@ -1086,99 +1167,99 @@ class ApiService {
   }
 
   List<Project> _mockProjects() => [
-        Project(
-          id: DemoSeed.projectId,
-          name: DemoSeed.projectName,
-          url: DemoSeed.repoUrl,
-          description: DemoSeed.description,
-          isDefault: true,
-          settings: const ProjectSettings(
-            techStack: TechStackDetection(
-              framework: Framework.nextjs,
-              frameworkVersion: 'latest',
-              confidence: 0.95,
-            ),
-            onboardingStatus: OnboardingStatus.completed,
-          ),
-          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+    Project(
+      id: DemoSeed.projectId,
+      name: DemoSeed.projectName,
+      url: DemoSeed.repoUrl,
+      description: DemoSeed.description,
+      isDefault: true,
+      settings: const ProjectSettings(
+        techStack: TechStackDetection(
+          framework: Framework.nextjs,
+          frameworkVersion: 'latest',
+          confidence: 0.95,
         ),
-      ];
+        onboardingStatus: OnboardingStatus.completed,
+      ),
+      createdAt: DateTime.now().subtract(const Duration(days: 30)),
+    ),
+  ];
 
   List<Persona> _mockPersonas() => [
-        const Persona(
-          id: 'persona-1',
-          name: 'Tech-Savvy Solopreneur',
-          avatar: '🚀',
-          confidence: 72,
-          demographics: PersonaDemographics(
-            role: 'Indie developer / Solopreneur',
-            industry: 'SaaS / Tech',
-            ageRange: '25-40',
-            experienceLevel: '3-8 years',
-          ),
-          painPoints: [
-            'Overwhelmed by too many AI tools, can\'t decide which to use',
-            'Wants to ship faster but stuck in analysis paralysis',
-          ],
-          goals: [
-            'Build a profitable SaaS with minimal team',
-            'Use AI to multiply productivity without losing quality',
-          ],
-        ),
-      ];
+    const Persona(
+      id: 'persona-1',
+      name: 'Tech-Savvy Solopreneur',
+      avatar: '🚀',
+      confidence: 72,
+      demographics: PersonaDemographics(
+        role: 'Indie developer / Solopreneur',
+        industry: 'SaaS / Tech',
+        ageRange: '25-40',
+        experienceLevel: '3-8 years',
+      ),
+      painPoints: [
+        'Overwhelmed by too many AI tools, can\'t decide which to use',
+        'Wants to ship faster but stuck in analysis paralysis',
+      ],
+      goals: [
+        'Build a profitable SaaS with minimal team',
+        'Use AI to multiply productivity without losing quality',
+      ],
+    ),
+  ];
 
-  NarrativeSynthesisResult _mockNarrativeResult() =>
-      const NarrativeSynthesisResult(
-        narrativeSummary:
-            'This week\'s narrative centers around a shift from tool accumulation to tool mastery. '
-            'The creator is moving from "trying everything" to "mastering the few tools that matter." '
-            'This aligns with a new chapter: Radical Pragmatism — choosing depth over breadth.',
-        chapterTransition: true,
-        suggestedChapterTitle: 'Radical Pragmatism',
-        voiceDelta: {
-          'tone_shift': 'More direct and opinionated',
-          'new_vocabulary': ['ship it', 'good enough', 'pragmatic'],
-        },
-        positioningDelta: {
-          'angle_shift': 'From "AI enthusiast" to "pragmatic AI builder"',
-        },
-      );
+  NarrativeSynthesisResult
+  _mockNarrativeResult() => const NarrativeSynthesisResult(
+    narrativeSummary:
+        'This week\'s narrative centers around a shift from tool accumulation to tool mastery. '
+        'The creator is moving from "trying everything" to "mastering the few tools that matter." '
+        'This aligns with a new chapter: Radical Pragmatism — choosing depth over breadth.',
+    chapterTransition: true,
+    suggestedChapterTitle: 'Radical Pragmatism',
+    voiceDelta: {
+      'tone_shift': 'More direct and opinionated',
+      'new_vocabulary': ['ship it', 'good enough', 'pragmatic'],
+    },
+    positioningDelta: {
+      'angle_shift': 'From "AI enthusiast" to "pragmatic AI builder"',
+    },
+  );
 
   List<AngleSuggestion> _mockAngles() => [
-        const AngleSuggestion(
-          title: 'The Filter: I tested 50 AI tools, here are the 3 worth your time',
-          hook:
-              'Stop hoarding AI subscriptions. I burned \$500/month so you don\'t have to.',
-          angle:
-              'Pragmatic curation — position as the person who already did the hard work of filtering',
-          contentType: 'blog_post',
-          narrativeThread: 'Radical Pragmatism',
-          painPointAddressed: 'Overwhelmed by too many AI tools',
-          confidence: 87,
-        ),
-        const AngleSuggestion(
-          title: 'Your problem isn\'t the tools — it\'s clarity',
-          hook:
-              'You don\'t need another AI tool. You need to know what you\'re solving.',
-          angle:
-              'Confrontational mirror — challenge the assumption that more tools = more productivity',
-          contentType: 'social_post',
-          narrativeThread: 'Radical Pragmatism',
-          painPointAddressed: 'Analysis paralysis on tool selection',
-          confidence: 79,
-        ),
-        const AngleSuggestion(
-          title: 'My 5-minute AI tool decision framework',
-          hook:
-              'I\'ve been paralyzed by tool choice too. Here\'s how I broke free in 5 minutes.',
-          angle:
-              'Empathetic guide — share a personal framework, position as a peer who solved the same problem',
-          contentType: 'video_script',
-          narrativeThread: 'Radical Pragmatism',
-          painPointAddressed: 'Stuck in analysis paralysis',
-          confidence: 82,
-        ),
-      ];
+    const AngleSuggestion(
+      title: 'The Filter: I tested 50 AI tools, here are the 3 worth your time',
+      hook:
+          'Stop hoarding AI subscriptions. I burned \$500/month so you don\'t have to.',
+      angle:
+          'Pragmatic curation — position as the person who already did the hard work of filtering',
+      contentType: 'blog_post',
+      narrativeThread: 'Radical Pragmatism',
+      painPointAddressed: 'Overwhelmed by too many AI tools',
+      confidence: 87,
+    ),
+    const AngleSuggestion(
+      title: 'Your problem isn\'t the tools — it\'s clarity',
+      hook:
+          'You don\'t need another AI tool. You need to know what you\'re solving.',
+      angle:
+          'Confrontational mirror — challenge the assumption that more tools = more productivity',
+      contentType: 'social_post',
+      narrativeThread: 'Radical Pragmatism',
+      painPointAddressed: 'Analysis paralysis on tool selection',
+      confidence: 79,
+    ),
+    const AngleSuggestion(
+      title: 'My 5-minute AI tool decision framework',
+      hook:
+          'I\'ve been paralyzed by tool choice too. Here\'s how I broke free in 5 minutes.',
+      angle:
+          'Empathetic guide — share a personal framework, position as a peer who solved the same problem',
+      contentType: 'video_script',
+      narrativeThread: 'Radical Pragmatism',
+      painPointAddressed: 'Stuck in analysis paralysis',
+      confidence: 82,
+    ),
+  ];
 
   List<ContentItem> _mockContent() {
     final now = DateTime.now();
@@ -1307,7 +1388,10 @@ extension DripApi on ApiService {
     return _asMap(response.data);
   }
 
-  Future<Map<String, dynamic>> updateDripPlan(String planId, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> updateDripPlan(
+    String planId,
+    Map<String, dynamic> body,
+  ) async {
     final response = await _dio.patch('/api/drip/plans/$planId', data: body);
     return _asMap(response.data);
   }
@@ -1321,15 +1405,25 @@ extension DripApi on ApiService {
     return _asMap(response.data);
   }
 
-  Future<Map<String, dynamic>> importDripContent(String planId, String directory, {bool excludeDrafts = true}) async {
+  Future<Map<String, dynamic>> importDripContent(
+    String planId,
+    String directory, {
+    bool excludeDrafts = true,
+  }) async {
     final response = await _dio.post(
       '/api/drip/plans/$planId/import',
-      queryParameters: {'directory': directory, 'exclude_drafts': excludeDrafts},
+      queryParameters: {
+        'directory': directory,
+        'exclude_drafts': excludeDrafts,
+      },
     );
     return _asMap(response.data);
   }
 
-  Future<Map<String, dynamic>> clusterDripPlan(String planId, {String mode = 'directory'}) async {
+  Future<Map<String, dynamic>> clusterDripPlan(
+    String planId, {
+    String mode = 'directory',
+  }) async {
     final response = await _dio.post(
       '/api/drip/plans/$planId/cluster',
       queryParameters: {'mode': mode},

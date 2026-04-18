@@ -18,8 +18,18 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
+  static const String _diagnosticsVersion = 'entry-diagnostics-v2-2026-04-18';
   bool _isExchangingHandoff = false;
   String? _handoffError;
+  final List<String> _handoffTimeline = <String>[];
+  String? _lastHandoffEndpoint;
+  String? _lastHandoffStartedAt;
+  int? _lastHandoffDurationMs;
+  int? _lastHandoffStatusCode;
+  String? _lastHandoffContentType;
+  String? _lastHandoffRequestId;
+  String? _lastHandoffResponseHeaders;
+  String? _lastHandoffResponseBody;
 
   @override
   void initState() {
@@ -37,21 +47,64 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       return;
     }
 
+    final startedAt = DateTime.now();
+    final exchangeEndpoint =
+        '${ref.read(apiBaseUrlProvider)}/api/auth/web/exchange';
     setState(() {
       _isExchangingHandoff = true;
       _handoffError = null;
+      _lastHandoffEndpoint = exchangeEndpoint;
+      _lastHandoffStartedAt = startedAt.toIso8601String();
+      _lastHandoffDurationMs = null;
+      _lastHandoffStatusCode = null;
+      _lastHandoffContentType = null;
+      _lastHandoffRequestId = null;
+      _lastHandoffResponseHeaders = null;
+      _lastHandoffResponseBody = null;
+      _handoffTimeline.clear();
+      _appendHandoffTimeline('Starting handoff exchange');
+      _appendHandoffTimeline('Current URL', _maskedCurrentUrl());
+      _appendHandoffTimeline('Exchange endpoint', exchangeEndpoint);
+      _appendHandoffTimeline('handoff_token', _maskToken(handoffToken));
     });
 
     final api = ApiService(baseUrl: ref.read(apiBaseUrlProvider));
     try {
+      _appendTimelineWithSetState('POST /api/auth/web/exchange');
       final result = await api.exchangeWebHandoff(handoffToken);
       final token = result['bearer_token']?.toString();
       final email = result['email']?.toString();
+      final headers = _normalizeHeaders(result['_response_headers']);
+      final responseBody = result['_raw_body']?.toString();
+      final durationMs = DateTime.now().difference(startedAt).inMilliseconds;
       if (token == null || token.isEmpty) {
         throw const ApiException(
           ApiErrorType.invalidResponse,
           'The site handoff completed but did not return a bearer token.',
         );
+      }
+
+      if (mounted) {
+        setState(() {
+          _lastHandoffDurationMs = durationMs;
+          _lastHandoffStatusCode = _coerceInt(result['_http_status']);
+          _lastHandoffContentType = headers['content-type'];
+          _lastHandoffRequestId =
+              headers['x-contentflow-request-id'] ??
+              headers['x-request-id'] ??
+              headers['x-vercel-id'] ??
+              headers['cf-ray'];
+          _lastHandoffResponseHeaders = _formatHeaders(headers);
+          _lastHandoffResponseBody = _truncateForDiagnostics(responseBody);
+          _appendHandoffTimeline(
+            'Exchange response',
+            '${_lastHandoffStatusCode?.toString() ?? 'unknown'} in ${durationMs}ms',
+          );
+          if (_lastHandoffRequestId != null) {
+            _appendHandoffTimeline('Request id', _lastHandoffRequestId!);
+          }
+          _appendHandoffTimeline('bearer_token', _maskToken(token));
+        });
       }
 
       ref
@@ -63,8 +116,32 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       if (!mounted) return;
       setState(() {
         _handoffError = error.toString();
+        _lastHandoffDurationMs = DateTime.now()
+            .difference(startedAt)
+            .inMilliseconds;
+        if (error is ApiException) {
+          _lastHandoffStatusCode = error.statusCode;
+          _lastHandoffContentType = error.responseHeaders['content-type'];
+          _lastHandoffRequestId =
+              error.responseHeaders['x-contentflow-request-id'] ??
+              error.responseHeaders['x-request-id'] ??
+              error.responseHeaders['x-vercel-id'] ??
+              error.responseHeaders['cf-ray'];
+          _lastHandoffResponseHeaders = _formatHeaders(error.responseHeaders);
+          _lastHandoffResponseBody = _truncateForDiagnostics(
+            error.responseBody,
+          );
+          _appendHandoffTimeline(
+            'Exchange error',
+            '${error.statusCode?.toString() ?? 'no-status'} ${error.message}',
+          );
+          if (_lastHandoffRequestId != null) {
+            _appendHandoffTimeline('Request id', _lastHandoffRequestId!);
+          }
+        } else {
+          _appendHandoffTimeline('Exchange error', error.toString());
+        }
       });
-      context.go('/entry');
     } finally {
       if (mounted) {
         setState(() {
@@ -94,6 +171,82 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
   }
 
+  void _appendTimelineWithSetState(String event, [String? detail]) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _appendHandoffTimeline(event, detail);
+    });
+  }
+
+  void _appendHandoffTimeline(String event, [String? detail]) {
+    final line =
+        '[${DateTime.now().toIso8601String()}] '
+        '$event${detail == null || detail.isEmpty ? '' : ': $detail'}';
+    _handoffTimeline.add(line);
+    if (_handoffTimeline.length > 24) {
+      _handoffTimeline.removeAt(0);
+    }
+  }
+
+  String _maskedCurrentUrl() {
+    if (!kIsWeb) {
+      return 'not-web';
+    }
+    final uri = Uri.base;
+    final params = Map<String, String>.from(uri.queryParameters);
+    final token = params['handoff_token'];
+    if (token != null && token.isNotEmpty) {
+      params['handoff_token'] = _maskToken(token);
+    }
+    return uri
+        .replace(queryParameters: params.isEmpty ? null : params)
+        .toString();
+  }
+
+  int? _coerceInt(Object? value) {
+    if (value is int) {
+      return value;
+    }
+    return int.tryParse(value?.toString() ?? '');
+  }
+
+  Map<String, String> _normalizeHeaders(Object? value) {
+    if (value is! Map) {
+      return const <String, String>{};
+    }
+
+    final normalized = <String, String>{};
+    for (final entry in value.entries) {
+      final key = entry.key?.toString();
+      if (key == null || key.isEmpty) {
+        continue;
+      }
+      normalized[key.toLowerCase()] = entry.value?.toString() ?? '';
+    }
+    return normalized;
+  }
+
+  String _formatHeaders(Map<String, String> headers) {
+    if (headers.isEmpty) {
+      return 'none';
+    }
+    return headers.entries
+        .map((entry) => '${entry.key}: ${entry.value}')
+        .join(', ');
+  }
+
+  String _truncateForDiagnostics(String? value, {int maxLength = 1200}) {
+    if (value == null || value.isEmpty) {
+      return 'none';
+    }
+    if (value.length <= maxLength) {
+      return value;
+    }
+    return '${value.substring(0, maxLength)}...';
+  }
+
   String _hostForUrl(String value) {
     final uri = Uri.tryParse(value);
     if (uri == null || uri.host.isEmpty) {
@@ -113,17 +266,18 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     return host == Uri.base.host ? 'yes' : 'no (expected $host)';
   }
 
-  Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
+  List<String> _entryDiagnosticsLines(AuthSession authSession) {
     final handoffToken = kIsWeb
         ? Uri.base.queryParameters['handoff_token']
         : null;
-    final lines = [
+    return [
       'ContentFlow entry diagnostics',
+      'Version: $_diagnosticsVersion',
       'Build commit: ${AppConfig.buildCommitSha}',
       'Build environment: ${AppConfig.buildEnvironment}',
       'Build timestamp: ${AppConfig.buildTimestamp}',
       'Build mode: ${_buildModeLabel()}',
-      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
+      'Current URL: ${kIsWeb ? _maskedCurrentUrl() : 'not-web'}',
       'Current origin: ${kIsWeb ? Uri.base.origin : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
@@ -138,10 +292,24 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
       'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
       'handoff_token: ${_maskToken(handoffToken)}',
+      'Exchange endpoint: ${_lastHandoffEndpoint ?? '${AppConfig.apiBaseUrl}/api/auth/web/exchange'}',
+      'Last handoff started: ${_lastHandoffStartedAt ?? 'none'}',
+      'Last handoff duration_ms: ${_lastHandoffDurationMs?.toString() ?? 'none'}',
+      'Last handoff HTTP status: ${_lastHandoffStatusCode?.toString() ?? 'none'}',
+      'Last handoff content-type: ${_lastHandoffContentType ?? 'none'}',
+      'Last handoff request id: ${_lastHandoffRequestId ?? 'none'}',
+      'Last handoff response headers: ${_lastHandoffResponseHeaders ?? 'none'}',
+      'Last handoff response body: ${_lastHandoffResponseBody ?? 'none'}',
       'Last handoff error: ${_handoffError == null || _handoffError!.isEmpty ? 'none' : _handoffError}',
+      'Timeline:',
+      ...(_handoffTimeline.isEmpty ? const ['none'] : _handoffTimeline),
     ];
+  }
 
-    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+  Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
+    await Clipboard.setData(
+      ClipboardData(text: _entryDiagnosticsLines(authSession).join('\n')),
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Entry diagnostics copied to clipboard.')),
@@ -149,9 +317,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Widget _buildWebRuntimeDiagnostics(AuthSession authSession) {
-    final handoffToken = kIsWeb
-        ? Uri.base.queryParameters['handoff_token']
-        : null;
+    final lines = _entryDiagnosticsLines(authSession);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 16),
@@ -182,91 +348,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               ),
             ],
           ),
-          Text(
-            'Build commit: ${AppConfig.buildCommitSha}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build environment: ${AppConfig.buildEnvironment}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build timestamp: ${AppConfig.buildTimestamp}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build mode: ${_buildModeLabel()}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'API_BASE_URL: ${AppConfig.apiBaseUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_SITE_URL: ${AppConfig.siteUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_WEB_URL: ${AppConfig.appWebUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Session state: ${authSession.status.name}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Bearer token: ${_maskToken(authSession.bearerToken)}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'handoff_token: ${_maskToken(handoffToken)}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          if (_handoffError != null && _handoffError!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Last handoff error: $_handoffError',
-              style: const TextStyle(
-                color: Colors.orange,
-                fontSize: 12,
-                height: 1.4,
-              ),
+          const SizedBox(height: 8),
+          SelectableText(
+            lines.join('\n'),
+            style: TextStyle(
+              color: Colors.white.withAlpha(150),
+              fontSize: 12,
+              height: 1.45,
             ),
-          ],
+          ),
         ],
       ),
     );
