@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_config.dart';
+import '../../../core/web_handoff_url.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
@@ -18,10 +19,11 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
-  static const String _diagnosticsVersion = 'entry-diagnostics-v3-2026-04-18';
+  static const String _diagnosticsVersion = 'entry-diagnostics-v4-2026-04-18';
   bool _isExchangingHandoff = false;
   String? _handoffError;
   final List<String> _handoffTimeline = <String>[];
+  String? _capturedHandoffToken;
   String? _lastHandoffEndpoint;
   String? _lastHandoffStartedAt;
   int? _lastHandoffDurationMs;
@@ -30,6 +32,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   String? _lastHandoffRequestId;
   String? _lastHandoffResponseHeaders;
   String? _lastHandoffResponseBody;
+  bool _removedHandoffTokenFromUrl = false;
 
   @override
   void initState() {
@@ -42,7 +45,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Future<void> _consumeWebHandoffIfPresent() async {
-    final handoffToken = Uri.base.queryParameters['handoff_token'];
+    final handoffToken = readHandoffTokenFromCurrentUrl();
     if (!mounted || handoffToken == null || handoffToken.isEmpty) {
       return;
     }
@@ -53,6 +56,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     setState(() {
       _isExchangingHandoff = true;
       _handoffError = null;
+      _capturedHandoffToken = handoffToken;
       _lastHandoffEndpoint = exchangeEndpoint;
       _lastHandoffStartedAt = startedAt.toIso8601String();
       _lastHandoffDurationMs = null;
@@ -61,6 +65,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       _lastHandoffRequestId = null;
       _lastHandoffResponseHeaders = null;
       _lastHandoffResponseBody = null;
+      _removedHandoffTokenFromUrl = false;
       _handoffTimeline.clear();
       _appendHandoffTimeline('Starting handoff exchange');
       _appendHandoffTimeline('Current URL', _maskedCurrentUrl());
@@ -110,6 +115,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       ref
           .read(authSessionProvider.notifier)
           .setAuthenticatedSession(token, email: email);
+      _clearHandoffTokenFromUrl('removed handoff_token after successful exchange');
       if (!mounted) return;
       context.go('/entry');
     } catch (error) {
@@ -142,6 +148,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           _appendHandoffTimeline('Exchange error', error.toString());
         }
       });
+      _clearHandoffTokenFromUrl('removed handoff_token after failed exchange');
     } finally {
       if (mounted) {
         setState(() {
@@ -157,6 +164,20 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
   Future<void> _openWebsiteLaunch() async {
     await launchUrl(Uri.parse('${AppConfig.effectiveSiteUrl}/launch'));
+  }
+
+  void _clearHandoffTokenFromUrl(String detail) {
+    if (!kIsWeb || !mounted) {
+      return;
+    }
+    final removed = clearHandoffTokenFromCurrentUrl();
+    if (!removed) {
+      return;
+    }
+    setState(() {
+      _removedHandoffTokenFromUrl = true;
+      _appendHandoffTimeline('Browser URL cleanup', detail);
+    });
   }
 
   String _buildModeLabel() {
@@ -196,12 +217,32 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     }
     final uri = Uri.base;
     final params = Map<String, String>.from(uri.queryParameters);
-    final token = params['handoff_token'];
-    if (token != null && token.isNotEmpty) {
-      params['handoff_token'] = _maskToken(token);
+    final directToken = params['handoff_token'];
+    if (directToken != null && directToken.isNotEmpty) {
+      params['handoff_token'] = _maskToken(directToken);
+    }
+    String? fragment = uri.fragment;
+    if (fragment.isNotEmpty && fragment.contains('handoff_token=')) {
+      final normalized = fragment.startsWith('/') ? fragment : '/$fragment';
+      final hashUri = Uri.parse(normalized);
+      final hashParams = Map<String, String>.from(hashUri.queryParameters);
+      final hashToken = hashParams['handoff_token'];
+      if (hashToken != null && hashToken.isNotEmpty) {
+        hashParams['handoff_token'] = _maskToken(hashToken);
+        fragment = hashUri
+            .replace(
+              query: hashParams.isEmpty
+                  ? null
+                  : Uri(queryParameters: hashParams).query,
+            )
+            .toString();
+      }
     }
     return uri
-        .replace(queryParameters: params.isEmpty ? null : params)
+        .replace(
+          queryParameters: params.isEmpty ? null : params,
+          fragment: fragment?.isEmpty ?? true ? null : fragment,
+        )
         .toString();
   }
 
@@ -267,9 +308,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   List<String> _entryDiagnosticsLines(AuthSession authSession) {
-    final handoffToken = kIsWeb
-        ? Uri.base.queryParameters['handoff_token']
-        : null;
+    final handoffToken = _capturedHandoffToken ??
+        (kIsWeb ? readHandoffTokenFromCurrentUrl() : null);
     return [
       'ContentFlow entry diagnostics',
       'Version: $_diagnosticsVersion',
@@ -295,6 +335,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
       'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
       'handoff_token: ${_maskToken(handoffToken)}',
+      'URL currently contains handoff_token: ${kIsWeb && readHandoffTokenFromCurrentUrl() != null ? 'yes' : 'no'}',
+      'URL handoff_token removed after use: ${_removedHandoffTokenFromUrl ? 'yes' : 'no'}',
       'Exchange endpoint: ${_lastHandoffEndpoint ?? '${AppConfig.apiBaseUrl}/api/auth/web/exchange'}',
       'Last handoff started: ${_lastHandoffStartedAt ?? 'none'}',
       'Last handoff duration_ms: ${_lastHandoffDurationMs?.toString() ?? 'none'}',
