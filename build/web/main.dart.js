@@ -56789,9 +56789,9 @@ r=A.aD(16)
 q=A.dc(A.o(14,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),1)
 p=t.p
 o=A.aI(A.b([B.P9,A.b4d(B.RI,B.Ga,new A.aHS(a0,a8,a6,a7),a1)],p),B.l,B.f,B.j,0,a1,a1)
-n=A.n("Build commit: f9c895a",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
+n=A.n("Build commit: 34ec46f",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
 m=A.n("Build environment: local",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
-l=A.n("Build timestamp: 2026-04-18T21:20:21Z",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
+l=A.n("Build timestamp: 2026-04-18T22:17:46Z",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
 k=A.n("Build mode: "+a0.XC(),a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
 j=A.n("Primary auth mode: clerkjs google oauth",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
 i=A.n("API_BASE_URL: https://api.winflowz.com",a1,a1,a1,a1,A.a1(a1,a1,A.o(150,B.d.j()>>>16&255,B.d.j()>>>8&255,B.d.j()&255),a1,a1,a1,a1,a1,a1,a1,a1,12,a1,a1,a1,a1,a1,!0,a1,a1,a1,a1,a1,a1,a1,a1),a1,a1,a1)
@@ -56845,7 +56845,7 @@ m=m.geD(m)
 l=A.hb()
 l=l.gcr(l)
 s=3
-return A.z(A.zd(new A.qR(B.b.b6(A.b(["ContentFlow auth diagnostics","Build commit: f9c895a","Build environment: local","Build timestamp: 2026-04-18T21:20:21Z","Build mode: "+k,"Primary auth mode: clerkjs google oauth","Embedded Clerk UI primary path: disabled","API_BASE_URL: https://api.winflowz.com",u.W,"APP_SITE_URL host match: "+j,"APP_SITE_URL loops to app host: "+i,"Effective website URL: "+h,"Effective website URL host match: "+g,u.B,"APP_WEB_URL host match: "+f,"CLERK_PUBLISHABLE_KEY: "+e,"Key preview: "+d,"Session state: "+a.a.b,"Session email: "+c,"Bearer token: "+o,"Current URL: "+n,"Current host: "+m,"Current path: "+l,"Last auth error: none"],t.s),"\n"))),$async$Dc)
+return A.z(A.zd(new A.qR(B.b.b6(A.b(["ContentFlow auth diagnostics","Build commit: 34ec46f","Build environment: local","Build timestamp: 2026-04-18T22:17:46Z","Build mode: "+k,"Primary auth mode: clerkjs google oauth","Embedded Clerk UI primary path: disabled","API_BASE_URL: https://api.winflowz.com",u.W,"APP_SITE_URL host match: "+j,"APP_SITE_URL loops to app host: "+i,"Effective website URL: "+h,"Effective website URL host match: "+g,u.B,"APP_WEB_URL host match: "+f,"CLERK_PUBLISHABLE_KEY: "+e,"Key preview: "+d,"Session state: "+a.a.b,"Session email: "+c,"Bearer token: "+o,"Current URL: "+n,"Current host: "+m,"Current path: "+l,"Last auth error: none"],t.s),"\n"))),$async$Dc)
 case 3:k=p.c
 if(k==null){s=1
 break}k.Z(t.J).f.cW(B.a4S)
@@ -58250,7 +58250,7 @@ l=a.d
 if(l==null)l="none"
 k=i.ap3(a.b)
 j=a.c?"yes":"no"
-return A.b(["ContentFlow entry diagnostics","Version: entry-diagnostics-v6-2026-04-18","Build commit: f9c895a","Build environment: local","Build timestamp: 2026-04-18T21:20:21Z","Build mode: "+h,"Current URL: "+g,"Current origin: "+f,"Current host: "+s,"Current path: "+r,"API_BASE_URL: https://api.winflowz.com",u.W,"APP_SITE_URL host match: "+q,"APP_SITE_URL loops to app host: "+p,"Effective website URL: "+o,"Effective website URL host match: "+n,u.B,"APP_WEB_URL host match: "+m,"Session state: "+a.a.b,"Session email: "+l,"Bearer token: "+k,"Onboarding complete: "+j,"Primary web sign-in route: https://app.contentflow.winflowz.com/sign-in","Primary web callback route: https://app.contentflow.winflowz.com/sso-callback"],t.s)},
+return A.b(["ContentFlow entry diagnostics","Version: entry-diagnostics-v6-2026-04-18","Build commit: 34ec46f","Build environment: local","Build timestamp: 2026-04-18T22:17:46Z","Build mode: "+h,"Current URL: "+g,"Current origin: "+f,"Current host: "+s,"Current path: "+r,"API_BASE_URL: https://api.winflowz.com",u.W,"APP_SITE_URL host match: "+q,"APP_SITE_URL loops to app host: "+p,"Effective website URL: "+o,"Effective website URL host match: "+n,u.B,"APP_WEB_URL host match: "+m,"Session state: "+a.a.b,"Session email: "+l,"Bearer token: "+k,"Onboarding complete: "+j,"Primary web sign-in route: https://app.contentflow.winflowz.com/sign-in","Primary web callback route: https://app.contentflow.winflowz.com/sso-callback"],t.s)},
 Dd(a){return this.any(a)},
 any(a){var s=0,r=A.w(t.H),q,p=this,o
 var $async$Dd=A.x(function(b,c){if(b===1)return A.t(c,r)
