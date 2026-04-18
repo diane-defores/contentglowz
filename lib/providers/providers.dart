@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
-import '../core/web_handoff_url.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/drip_plan.dart';
 import '../data/models/app_bootstrap.dart';
@@ -139,10 +138,6 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     }
 
     try {
-      if (kIsWeb && readHandoffTokenFromCurrentUrl() != null) {
-        state = const AuthSession(status: AuthStatus.signedOut);
-        return;
-      }
       final restored = await service.restoreSession();
       if (restored == null) {
         _clearLegacyAuthPrefs();

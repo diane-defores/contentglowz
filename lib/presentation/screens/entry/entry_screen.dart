@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_config.dart';
-import '../../../core/web_handoff_url.dart';
-import '../../../data/services/api_service.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -19,144 +17,7 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
-  static const String _diagnosticsVersion = 'entry-diagnostics-v5-2026-04-18';
-  bool _isExchangingHandoff = false;
-  String? _handoffError;
-  final List<String> _handoffTimeline = <String>[];
-  String? _capturedHandoffToken;
-  String? _lastHandoffEndpoint;
-  String? _lastHandoffStartedAt;
-  int? _lastHandoffDurationMs;
-  int? _lastHandoffStatusCode;
-  String? _lastHandoffContentType;
-  String? _lastHandoffRequestId;
-  String? _lastHandoffResponseHeaders;
-  String? _lastHandoffResponseBody;
-  bool _removedHandoffTokenFromUrl = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (kIsWeb) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _consumeWebHandoffIfPresent();
-      });
-    }
-  }
-
-  Future<void> _consumeWebHandoffIfPresent() async {
-    final handoffToken = readHandoffTokenFromCurrentUrl();
-    if (!mounted || handoffToken == null || handoffToken.isEmpty) {
-      return;
-    }
-
-    final startedAt = DateTime.now();
-    final exchangeEndpoint =
-        '${ref.read(apiBaseUrlProvider)}/api/auth/web/exchange';
-    setState(() {
-      _isExchangingHandoff = true;
-      _handoffError = null;
-      _capturedHandoffToken = handoffToken;
-      _lastHandoffEndpoint = exchangeEndpoint;
-      _lastHandoffStartedAt = startedAt.toIso8601String();
-      _lastHandoffDurationMs = null;
-      _lastHandoffStatusCode = null;
-      _lastHandoffContentType = null;
-      _lastHandoffRequestId = null;
-      _lastHandoffResponseHeaders = null;
-      _lastHandoffResponseBody = null;
-      _removedHandoffTokenFromUrl = false;
-      _handoffTimeline.clear();
-      _appendHandoffTimeline('Starting handoff exchange');
-      _appendHandoffTimeline('Current URL', _maskedCurrentUrl());
-      _appendHandoffTimeline('Exchange endpoint', exchangeEndpoint);
-      _appendHandoffTimeline('handoff_token', _maskToken(handoffToken));
-    });
-
-    final api = ApiService(baseUrl: ref.read(apiBaseUrlProvider));
-    try {
-      _appendTimelineWithSetState('POST /api/auth/web/exchange');
-      final result = await api.exchangeWebHandoff(handoffToken);
-      final token = result['bearer_token']?.toString();
-      final email = result['email']?.toString();
-      final headers = _normalizeHeaders(result['_response_headers']);
-      final responseBody = result['_raw_body']?.toString();
-      final durationMs = DateTime.now().difference(startedAt).inMilliseconds;
-      if (token == null || token.isEmpty) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'The site handoff completed but did not return a bearer token.',
-        );
-      }
-
-      if (mounted) {
-        setState(() {
-          _lastHandoffDurationMs = durationMs;
-          _lastHandoffStatusCode = _coerceInt(result['_http_status']);
-          _lastHandoffContentType = headers['content-type'];
-          _lastHandoffRequestId =
-              headers['x-contentflow-request-id'] ??
-              headers['x-request-id'] ??
-              headers['x-vercel-id'] ??
-              headers['cf-ray'];
-          _lastHandoffResponseHeaders = _formatHeaders(headers);
-          _lastHandoffResponseBody = _truncateForDiagnostics(responseBody);
-          _appendHandoffTimeline(
-            'Exchange response',
-            '${_lastHandoffStatusCode?.toString() ?? 'unknown'} in ${durationMs}ms',
-          );
-          if (_lastHandoffRequestId != null) {
-            _appendHandoffTimeline('Request id', _lastHandoffRequestId!);
-          }
-          _appendHandoffTimeline('bearer_token', _maskToken(token));
-        });
-      }
-
-      ref
-          .read(authSessionProvider.notifier)
-          .setAuthenticatedSession(token, email: email);
-      _clearHandoffTokenFromUrl('removed handoff_token after successful exchange');
-      if (!mounted) return;
-      context.go('/entry');
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _handoffError = error.toString();
-        _lastHandoffDurationMs = DateTime.now()
-            .difference(startedAt)
-            .inMilliseconds;
-        if (error is ApiException) {
-          _lastHandoffStatusCode = error.statusCode;
-          _lastHandoffContentType = error.responseHeaders['content-type'];
-          _lastHandoffRequestId =
-              error.responseHeaders['x-contentflow-request-id'] ??
-              error.responseHeaders['x-request-id'] ??
-              error.responseHeaders['x-vercel-id'] ??
-              error.responseHeaders['cf-ray'];
-          _lastHandoffResponseHeaders = _formatHeaders(error.responseHeaders);
-          _lastHandoffResponseBody = _truncateForDiagnostics(
-            error.responseBody,
-          );
-          _appendHandoffTimeline(
-            'Exchange error',
-            '${error.statusCode?.toString() ?? 'no-status'} ${error.message}',
-          );
-          if (_lastHandoffRequestId != null) {
-            _appendHandoffTimeline('Request id', _lastHandoffRequestId!);
-          }
-        } else {
-          _appendHandoffTimeline('Exchange error', error.toString());
-        }
-      });
-      _clearHandoffTokenFromUrl('removed handoff_token after failed exchange');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isExchangingHandoff = false;
-        });
-      }
-    }
-  }
+  static const String _diagnosticsVersion = 'entry-diagnostics-v6-2026-04-18';
 
   Future<void> _openWebsiteSignIn() async {
     final url = kIsWeb
@@ -172,20 +33,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     await launchUrl(url);
   }
 
-  void _clearHandoffTokenFromUrl(String detail) {
-    if (!kIsWeb || !mounted) {
-      return;
-    }
-    final removed = clearHandoffTokenFromCurrentUrl();
-    if (!removed) {
-      return;
-    }
-    setState(() {
-      _removedHandoffTokenFromUrl = true;
-      _appendHandoffTimeline('Browser URL cleanup', detail);
-    });
-  }
-
   String _buildModeLabel() {
     if (kReleaseMode) return 'release';
     if (kProfileMode) return 'profile';
@@ -196,102 +43,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     if (value == null || value.isEmpty) return 'none';
     if (value.length <= 14) return value;
     return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
-  }
-
-  void _appendTimelineWithSetState(String event, [String? detail]) {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _appendHandoffTimeline(event, detail);
-    });
-  }
-
-  void _appendHandoffTimeline(String event, [String? detail]) {
-    final line =
-        '[${DateTime.now().toIso8601String()}] '
-        '$event${detail == null || detail.isEmpty ? '' : ': $detail'}';
-    _handoffTimeline.add(line);
-    if (_handoffTimeline.length > 24) {
-      _handoffTimeline.removeAt(0);
-    }
-  }
-
-  String _maskedCurrentUrl() {
-    if (!kIsWeb) {
-      return 'not-web';
-    }
-    final uri = Uri.base;
-    final params = Map<String, String>.from(uri.queryParameters);
-    final directToken = params['handoff_token'];
-    if (directToken != null && directToken.isNotEmpty) {
-      params['handoff_token'] = _maskToken(directToken);
-    }
-    String? fragment = uri.fragment;
-    if (fragment.isNotEmpty && fragment.contains('handoff_token=')) {
-      final normalized = fragment.startsWith('/') ? fragment : '/$fragment';
-      final hashUri = Uri.parse(normalized);
-      final hashParams = Map<String, String>.from(hashUri.queryParameters);
-      final hashToken = hashParams['handoff_token'];
-      if (hashToken != null && hashToken.isNotEmpty) {
-        hashParams['handoff_token'] = _maskToken(hashToken);
-        fragment = hashUri
-            .replace(
-              query: hashParams.isEmpty
-                  ? null
-                  : Uri(queryParameters: hashParams).query,
-            )
-            .toString();
-      }
-    }
-    return uri
-        .replace(
-          queryParameters: params.isEmpty ? null : params,
-          fragment: fragment?.isEmpty ?? true ? null : fragment,
-        )
-        .toString();
-  }
-
-  int? _coerceInt(Object? value) {
-    if (value is int) {
-      return value;
-    }
-    return int.tryParse(value?.toString() ?? '');
-  }
-
-  Map<String, String> _normalizeHeaders(Object? value) {
-    if (value is! Map) {
-      return const <String, String>{};
-    }
-
-    final normalized = <String, String>{};
-    for (final entry in value.entries) {
-      final key = entry.key?.toString();
-      if (key == null || key.isEmpty) {
-        continue;
-      }
-      normalized[key.toLowerCase()] = entry.value?.toString() ?? '';
-    }
-    return normalized;
-  }
-
-  String _formatHeaders(Map<String, String> headers) {
-    if (headers.isEmpty) {
-      return 'none';
-    }
-    return headers.entries
-        .map((entry) => '${entry.key}: ${entry.value}')
-        .join(', ');
-  }
-
-  String _truncateForDiagnostics(String? value, {int maxLength = 1200}) {
-    if (value == null || value.isEmpty) {
-      return 'none';
-    }
-    if (value.length <= maxLength) {
-      return value;
-    }
-    return '${value.substring(0, maxLength)}...';
   }
 
   String _hostForUrl(String value) {
@@ -314,8 +65,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   List<String> _entryDiagnosticsLines(AuthSession authSession) {
-    final handoffToken = _capturedHandoffToken ??
-        (kIsWeb ? readHandoffTokenFromCurrentUrl() : null);
     return [
       'ContentFlow entry diagnostics',
       'Version: $_diagnosticsVersion',
@@ -323,7 +72,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Build environment: ${AppConfig.buildEnvironment}',
       'Build timestamp: ${AppConfig.buildTimestamp}',
       'Build mode: ${_buildModeLabel()}',
-      'Current URL: ${kIsWeb ? _maskedCurrentUrl() : 'not-web'}',
+      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
       'Current origin: ${kIsWeb ? Uri.base.origin : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
@@ -339,21 +88,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Session email: ${authSession.email ?? 'none'}',
       'Bearer token: ${_maskToken(authSession.bearerToken)}',
       'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
-      'Handoff exchange active: ${_isExchangingHandoff ? 'yes' : 'no'}',
-      'handoff_token: ${_maskToken(handoffToken)}',
-      'URL currently contains handoff_token: ${kIsWeb && readHandoffTokenFromCurrentUrl() != null ? 'yes' : 'no'}',
-      'URL handoff_token removed after use: ${_removedHandoffTokenFromUrl ? 'yes' : 'no'}',
-      'Exchange endpoint: ${_lastHandoffEndpoint ?? '${AppConfig.apiBaseUrl}/api/auth/web/exchange'}',
-      'Last handoff started: ${_lastHandoffStartedAt ?? 'none'}',
-      'Last handoff duration_ms: ${_lastHandoffDurationMs?.toString() ?? 'none'}',
-      'Last handoff HTTP status: ${_lastHandoffStatusCode?.toString() ?? 'none'}',
-      'Last handoff content-type: ${_lastHandoffContentType ?? 'none'}',
-      'Last handoff request id: ${_lastHandoffRequestId ?? 'none'}',
-      'Last handoff response headers: ${_lastHandoffResponseHeaders ?? 'none'}',
-      'Last handoff response body: ${_lastHandoffResponseBody ?? 'none'}',
-      'Last handoff error: ${_handoffError == null || _handoffError!.isEmpty ? 'none' : _handoffError}',
-      'Timeline:',
-      ...(_handoffTimeline.isEmpty ? const ['none'] : _handoffTimeline),
+      'Primary web sign-in route: ${AppConfig.appWebUrl}/sign-in',
+      'Primary web callback route: ${AppConfig.appWebUrl}/sso-callback',
     ];
   }
 
@@ -897,25 +633,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     AuthSession authSession,
     AsyncValue<dynamic> bootstrap,
   ) {
-    if (_isExchangingHandoff) {
-      return _card(
-        eyebrow: 'Legacy handoff',
-        title: 'Opening your app session',
-        description:
-            'ContentFlow detected an old website handoff token and is exchanging it before loading your workspace. New sign-ins should now use the direct ClerkJS app flow instead.',
-        icon: Icons.sync_rounded,
-        accent: AppTheme.editColor,
-        primaryLabel: 'Please wait',
-        onPrimary: null,
-        secondaryLabel: 'Open Demo Workspace',
-        onSecondary: () {
-          ref.read(authSessionProvider.notifier).signInDemo();
-          context.go('/onboarding?intent=entry');
-        },
-        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
-      );
-    }
-
     if (authSession.isLoading) {
       return _card(
         eyebrow: 'Restoring session',
@@ -955,7 +672,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         eyebrow: 'Session error',
         title: 'Reconnect your account',
         description:
-            _handoffError ??
             'Your Clerk session could not load the workspace bootstrap. Sign in again to refresh the bearer token.',
         icon: Icons.warning_amber_rounded,
         accent: Colors.orange,
