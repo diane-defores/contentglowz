@@ -76,6 +76,25 @@ const clerkScriptSrc = clerkFrontendApi
     const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
     let lastErrorText = '';
 
+    function renderSignedInState() {
+      const email =
+        window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
+        window.Clerk?.user?.emailAddresses?.[0]?.emailAddress ||
+        'your current account';
+      statusEl.textContent = `Already signed in as ${email}. Open the app or sign out first to create another account.`;
+      mountNode.innerHTML = `
+        <div class="signed-in-actions">
+          <a class="btn-secondary" href="${continueUrl}">Open app</a>
+          <button class="btn-secondary signed-in-signout" type="button">Sign out</button>
+        </div>
+      `;
+      const signOutButton = mountNode.querySelector('.signed-in-signout');
+      signOutButton?.addEventListener('click', async () => {
+        await window.Clerk.signOut();
+        window.location.reload();
+      });
+    }
+
     async function copyError() {
       if (!lastErrorText) {
         return;
@@ -123,7 +142,7 @@ const clerkScriptSrc = clerkFrontendApi
       try {
         await window.Clerk.load({ publishableKey: clerkPublishableKey });
         if (window.Clerk.session) {
-          window.location.replace(continueUrl);
+          renderSignedInState();
           return;
         }
 
