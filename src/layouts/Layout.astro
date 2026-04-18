@@ -28,6 +28,36 @@ const {
 const resolvedSiteUrl = Astro.site?.toString().replace(/\/$/, '') ?? siteUrl;
 const canonical = canonicalUrl ?? `${resolvedSiteUrl}${Astro.url.pathname}`;
 const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${resolvedSiteUrl}${ogImage}`;
+const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
+const enableAuthCtaSync = !['/launch', '/sign-in', '/sign-up'].includes(
+  Astro.url.pathname,
+);
+
+function getClerkFrontendApi(publishableKey: string) {
+  const encoded = publishableKey.split('_')[2];
+  if (!encoded) {
+    return '';
+  }
+
+  try {
+    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      '=',
+    );
+    return Buffer.from(padded, 'base64').toString('utf-8').replace(/\$$/, '');
+  } catch {
+    return '';
+  }
+}
+
+const clerkFrontendApi =
+  enableAuthCtaSync && clerkPublishableKey
+    ? getClerkFrontendApi(clerkPublishableKey)
+    : '';
+const clerkScriptSrc = clerkFrontendApi
+  ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
+  : '';
 
 const articleSchema = ogType === 'article' ? {
   "@context": "https://schema.org",
@@ -111,6 +141,94 @@ const websiteSchema = {
   </head>
   <body>
     <slot />
+    {enableAuthCtaSync && clerkScriptSrc && (
+      <script
+        define:vars={{ clerkPublishableKey, clerkScriptSrc }}
+        type="text/javascript"
+      >
+        const authCtas = Array.from(document.querySelectorAll('[data-auth-cta]'));
+
+        function applySignedInState(email) {
+          for (const link of authCtas) {
+            if (!(link instanceof HTMLAnchorElement)) {
+              continue;
+            }
+            const signedInHref = link.dataset.signedInHref || '/launch';
+            const signedInLabel = link.dataset.signedInLabel || 'Open App';
+            link.href = signedInHref;
+            link.textContent = signedInLabel;
+            if (email) {
+              link.title = `Already signed in as ${email}`;
+            }
+          }
+          document.documentElement.dataset.authState = 'signed-in';
+        }
+
+        function ensureClerkScript() {
+          return new Promise((resolve, reject) => {
+            const existing = document.querySelector(
+              'script[data-contentflow-global-clerk="true"]',
+            );
+            if (existing) {
+              if (window.Clerk) {
+                resolve();
+                return;
+              }
+              existing.addEventListener('load', () => resolve(), { once: true });
+              existing.addEventListener(
+                'error',
+                () => reject(new Error('Clerk script failed to load.')),
+                { once: true },
+              );
+              return;
+            }
+
+            const script = document.createElement('script');
+            script.src = clerkScriptSrc;
+            script.async = true;
+            script.crossOrigin = 'anonymous';
+            script.dataset.contentflowGlobalClerk = 'true';
+            script.addEventListener('load', () => resolve(), { once: true });
+            script.addEventListener(
+              'error',
+              () => reject(new Error('Clerk script failed to load.')),
+              { once: true },
+            );
+            document.head.appendChild(script);
+          });
+        }
+
+        async function syncAuthCtas() {
+          if (authCtas.length === 0 || !clerkPublishableKey) {
+            return;
+          }
+
+          try {
+            if (!window.Clerk) {
+              await ensureClerkScript();
+            }
+            if (!window.Clerk) {
+              return;
+            }
+
+            await window.Clerk.load({ publishableKey: clerkPublishableKey });
+            if (!window.Clerk.session) {
+              return;
+            }
+
+            const email =
+              window.Clerk.user?.primaryEmailAddress?.emailAddress ||
+              window.Clerk.user?.emailAddresses?.[0]?.emailAddress ||
+              '';
+            applySignedInState(email);
+          } catch (_) {
+            // Keep the default signed-out CTA copy if Clerk fails here.
+          }
+        }
+
+        window.addEventListener('load', syncAuthCtas, { once: true });
+      </script>
+    )}
   </body>
 </html>
 

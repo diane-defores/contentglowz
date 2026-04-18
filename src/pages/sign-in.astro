@@ -165,11 +165,11 @@ const clerkScriptSrc = clerkFrontendApi
         window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
         window.Clerk?.user?.emailAddresses?.[0]?.emailAddress ||
         'your current account';
-      statusEl.textContent = `Already signed in as ${email}. Open the app or sign out first to switch account.`;
+      statusEl.textContent = `Already signed in as ${email}. Clerk will not show the sign-in form again until you sign out.`;
       mountNode.innerHTML = `
         <div class="signed-in-actions">
           <a class="btn-secondary" href="${continueUrl}">Open app</a>
-          <button class="btn-secondary signed-in-signout" type="button">Sign out</button>
+          <button class="btn-secondary signed-in-signout" type="button">Sign out to switch account</button>
         </div>
       `;
       const signOutButton = mountNode.querySelector('.signed-in-signout');
