@@ -18,7 +18,7 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
-  static const String _diagnosticsVersion = 'entry-diagnostics-v2-2026-04-18';
+  static const String _diagnosticsVersion = 'entry-diagnostics-v3-2026-04-18';
   bool _isExchangingHandoff = false;
   String? _handoffError;
   final List<String> _handoffTimeline = <String>[];
@@ -152,11 +152,11 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Future<void> _openWebsiteSignIn() async {
-    await launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in'));
+    await launchUrl(Uri.parse('${AppConfig.effectiveSiteUrl}/sign-in'));
   }
 
   Future<void> _openWebsiteLaunch() async {
-    await launchUrl(Uri.parse('${AppConfig.siteUrl}/launch'));
+    await launchUrl(Uri.parse('${AppConfig.effectiveSiteUrl}/launch'));
   }
 
   String _buildModeLabel() {
@@ -284,6 +284,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
       'APP_SITE_URL: ${AppConfig.siteUrl}',
       'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+      'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
+      'Effective website URL: ${AppConfig.effectiveSiteUrl}',
+      'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
       'APP_WEB_URL: ${AppConfig.appWebUrl}',
       'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
       'Session state: ${authSession.status.name}',

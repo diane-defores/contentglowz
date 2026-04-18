@@ -1,4 +1,6 @@
 class AppConfig {
+  static const canonicalSiteUrl = 'https://contentflow.winflowz.com';
+
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://api.winflowz.com',
@@ -11,7 +13,7 @@ class AppConfig {
 
   static const siteUrl = String.fromEnvironment(
     'APP_SITE_URL',
-    defaultValue: 'https://contentflow.winflowz.com',
+    defaultValue: canonicalSiteUrl,
   );
 
   static const appWebUrl = String.fromEnvironment(
@@ -33,4 +35,27 @@ class AppConfig {
     'BUILD_TIMESTAMP',
     defaultValue: 'unknown',
   );
+
+  static bool get siteUrlPointsToAppHost {
+    final configured = Uri.tryParse(siteUrl);
+    final app = Uri.tryParse(appWebUrl);
+    if (configured == null || configured.host.isEmpty) {
+      return false;
+    }
+    if (app == null || app.host.isEmpty) {
+      return false;
+    }
+    return configured.host == app.host;
+  }
+
+  static String get effectiveSiteUrl {
+    final configured = Uri.tryParse(siteUrl);
+    if (configured == null || configured.host.isEmpty) {
+      return canonicalSiteUrl;
+    }
+    if (siteUrlPointsToAppHost) {
+      return canonicalSiteUrl;
+    }
+    return siteUrl;
+  }
 }

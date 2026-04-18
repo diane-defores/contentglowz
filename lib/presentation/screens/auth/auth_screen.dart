@@ -386,6 +386,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildWebRedirectState(AuthSession authSession) {
+    final effectiveSiteUrl = AppConfig.effectiveSiteUrl;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -417,8 +419,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: () =>
-                launchUrl(Uri.parse('${AppConfig.siteUrl}/sign-in')),
+            onPressed: () => launchUrl(Uri.parse('$effectiveSiteUrl/sign-in')),
             child: const Text('Continue On Website'),
           ),
         ),
@@ -426,11 +427,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: TextButton(
-            onPressed: () =>
-                launchUrl(Uri.parse('${AppConfig.siteUrl}/launch')),
+            onPressed: () => launchUrl(Uri.parse('$effectiveSiteUrl/launch')),
             child: const Text('Already signed in? Open App'),
           ),
         ),
+        if (AppConfig.siteUrlPointsToAppHost) ...[
+          const SizedBox(height: 12),
+          Text(
+            'This build configured APP_SITE_URL to the app host, so website actions are falling back to ${AppConfig.effectiveSiteUrl}.',
+            style: TextStyle(
+              color: Colors.orange.withAlpha(220),
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -554,6 +565,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           const SizedBox(height: 4),
           Text(
             'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
+            style: TextStyle(
+              color: AppConfig.siteUrlPointsToAppHost
+                  ? Colors.orange.withAlpha(220)
+                  : Colors.white.withAlpha(120),
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Effective website URL: ${AppConfig.effectiveSiteUrl}',
+            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
             style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
           ),
           const SizedBox(height: 4),
@@ -736,6 +767,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       'API_BASE_URL: ${AppConfig.apiBaseUrl}',
       'APP_SITE_URL: ${AppConfig.siteUrl}',
       'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
+      'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
+      'Effective website URL: ${AppConfig.effectiveSiteUrl}',
+      'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
       'APP_WEB_URL: ${AppConfig.appWebUrl}',
       'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
       'CLERK_PUBLISHABLE_KEY: ${hasClerkKey ? 'configured' : 'missing'}',
