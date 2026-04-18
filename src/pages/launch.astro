@@ -61,7 +61,7 @@ const clerkScriptSrc = clerkFrontendApi
       type="text/javascript"
     ></script>
   )}
-  <script define:vars={{ clerkPublishableKey, apiBaseUrl, appWebUrl }}>
+  <script define:vars={{ clerkPublishableKey, clerkFrontendApi, apiBaseUrl, appWebUrl }}>
     const statusEl = document.getElementById('launch-status');
     const copyButton = document.getElementById('copy-launch-error');
     const clerkScript = document.getElementById('clerk-browser-script');
@@ -94,6 +94,28 @@ const clerkScriptSrc = clerkFrontendApi
       ].join('\n');
       statusEl.textContent = message;
       copyButton.hidden = false;
+    }
+
+    async function readErrorBody(response) {
+      try {
+        const body = await response.json();
+        if (body && typeof body.detail === 'string' && body.detail.trim()) {
+          return body.detail.trim();
+        }
+      } catch (_) {
+        // Fall back to raw text for non-JSON upstream errors.
+      }
+
+      try {
+        const text = await response.text();
+        if (text.trim()) {
+          return text.trim();
+        }
+      } catch (_) {
+        // Ignore body parsing failures and use the generic HTTP status below.
+      }
+
+      return '';
     }
 
     copyButton.addEventListener('click', copyError);
@@ -140,18 +162,24 @@ const clerkScriptSrc = clerkFrontendApi
           throw new Error('Clerk did not return a session token for the app handoff.');
         }
 
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 12000);
         const response = await fetch(`${apiBaseUrl}/api/auth/web/handoff`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${bearerToken}`,
           },
+          signal: controller.signal,
+        }).finally(() => {
+          window.clearTimeout(timeoutId);
         });
 
         if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
+          const detail = await readErrorBody(response);
           throw new Error(
-            body?.detail || 'The backend rejected the website handoff request.',
+            detail ||
+              `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
           );
         }
 
@@ -166,6 +194,10 @@ const clerkScriptSrc = clerkFrontendApi
           buildAppRedirectUrl(redirectTarget, handoffToken),
         );
       } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          showError(`The app handoff API timed out after 12 seconds: ${apiBaseUrl}/api/auth/web/handoff`);
+          return;
+        }
         showError(error instanceof Error ? error.message : 'Unable to open the app.');
       }
     }
