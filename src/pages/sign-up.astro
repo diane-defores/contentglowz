@@ -1,6 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { appWebUrl } from '../config/site';
+import {
+  appWebUrl,
+  buildCommitSha,
+  buildEnvironment,
+  buildTimestamp,
+  siteUrl,
+} from '../config/site';
 
 const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
 
@@ -49,8 +55,12 @@ const clerkScriptSrc = clerkFrontendApi
     <div class="auth-panel">
       <div id="auth-status" class="auth-status">Loading account creation…</div>
       <button id="copy-auth-error" class="copy-error-button" type="button" hidden>
-        Copy error
+        Copy diagnostics
       </button>
+      <details id="auth-diagnostics" class="auth-diagnostics" hidden>
+        <summary>Technical diagnostics</summary>
+        <pre id="auth-diagnostics-body"></pre>
+      </details>
       <div id="clerk-auth"></div>
     </div>
   </section>
@@ -65,16 +75,90 @@ const clerkScriptSrc = clerkFrontendApi
       type="text/javascript"
     ></script>
   )}
-  <script define:vars={{ clerkPublishableKey, appWebUrl }}>
+  <script
+    define:vars={{
+      appWebUrl,
+      buildCommitSha,
+      buildEnvironment,
+      buildTimestamp,
+      clerkPublishableKey,
+      siteUrl,
+    }}
+  >
     const statusEl = document.getElementById('auth-status');
     const mountNode = document.getElementById('clerk-auth');
     const copyButton = document.getElementById('copy-auth-error');
+    const diagnosticsEl = document.getElementById('auth-diagnostics');
+    const diagnosticsBodyEl = document.getElementById('auth-diagnostics-body');
     const clerkScript = document.getElementById('clerk-browser-script');
+    const searchParams = new URLSearchParams(window.location.search);
     const redirectTarget =
-      new URLSearchParams(window.location.search).get('redirect_url') ||
-      `${appWebUrl}/#/entry`;
+      searchParams.get('redirect_url') || `${appWebUrl}/#/entry`;
     const continueUrl = `/launch?redirect_url=${encodeURIComponent(redirectTarget)}`;
+    const diagnosticsRequested = ['1', 'true', 'yes'].includes(
+      (searchParams.get('diag') || '').toLowerCase(),
+    );
     let lastErrorText = '';
+
+    function configuredHost(url) {
+      try {
+        return new URL(url).host;
+      } catch (_) {
+        return 'invalid';
+      }
+    }
+
+    function hostMatchLabel(url) {
+      const host = configuredHost(url);
+      if (host === 'invalid') {
+        return `invalid (${url})`;
+      }
+      return host === window.location.host ? 'yes' : `no (expected ${host})`;
+    }
+
+    function buildDiagnostics(extraLines = []) {
+      const queryKeys = [...searchParams.keys()];
+      return [
+        'ContentFlow website sign-up diagnostics',
+        `Build commit: ${buildCommitSha}`,
+        `Build environment: ${buildEnvironment}`,
+        `Build timestamp: ${buildTimestamp}`,
+        `Current URL: ${window.location.href}`,
+        `Current origin: ${window.location.origin}`,
+        `Current host: ${window.location.host}`,
+        `Current path: ${window.location.pathname}`,
+        `Referrer: ${document.referrer || 'none'}`,
+        `Online: ${navigator.onLine ? 'yes' : 'no'}`,
+        `Cookies enabled: ${navigator.cookieEnabled ? 'yes' : 'no'}`,
+        `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`,
+        `User agent: ${navigator.userAgent}`,
+        `Query keys: ${queryKeys.length > 0 ? queryKeys.join(', ') : 'none'}`,
+        `redirect_url: ${searchParams.get('redirect_url') || 'missing'}`,
+        `Redirect target: ${redirectTarget}`,
+        `Configured APP_SITE_URL: ${siteUrl}`,
+        `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
+        `Configured APP_WEB_URL: ${appWebUrl}`,
+        `Configured APP_WEB_URL host: ${configuredHost(appWebUrl)}`,
+        `Continue URL: ${continueUrl}`,
+        `Clerk script src: ${clerkScript?.getAttribute('src') || 'missing'}`,
+        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
+        `Clerk global present: ${window.Clerk ? 'yes' : 'no'}`,
+        `Clerk session present: ${window.Clerk?.session ? 'yes' : 'no'}`,
+        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
+        ...extraLines,
+      ].join('\n');
+    }
+
+    function renderDiagnostics(extraLines = [], forceVisible = diagnosticsRequested) {
+      const text = buildDiagnostics(extraLines);
+      diagnosticsBodyEl.textContent = text;
+      diagnosticsEl.hidden = !forceVisible;
+      if (forceVisible) {
+        diagnosticsEl.open = true;
+      }
+      copyButton.hidden = !(forceVisible || lastErrorText);
+      return text;
+    }
 
     function renderSignedInState() {
       const email =
@@ -93,18 +177,23 @@ const clerkScriptSrc = clerkFrontendApi
         await window.Clerk.signOut();
         window.location.reload();
       });
+      renderDiagnostics([
+        'Status: Clerk session already exists',
+        `Resolved email: ${email}`,
+      ]);
     }
 
     async function copyError() {
-      if (!lastErrorText) {
+      const diagnostics = lastErrorText || renderDiagnostics();
+      if (!diagnostics) {
         return;
       }
 
       try {
-        await navigator.clipboard.writeText(lastErrorText);
+        await navigator.clipboard.writeText(diagnostics);
         copyButton.textContent = 'Copied';
         window.setTimeout(() => {
-          copyButton.textContent = 'Copy error';
+          copyButton.textContent = 'Copy diagnostics';
         }, 1500);
       } catch (_) {
         copyButton.textContent = 'Copy failed';
@@ -112,15 +201,14 @@ const clerkScriptSrc = clerkFrontendApi
     }
 
     function showError(message) {
-      lastErrorText = [
-        message,
-        `Host: ${window.location.host}`,
-        `Path: ${window.location.pathname}`,
-        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
-        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
-      ].join('\n');
+      lastErrorText = renderDiagnostics(
+        [
+          'Status: error',
+          `Error: ${message}`,
+        ],
+        true,
+      );
       statusEl.textContent = message;
-      copyButton.hidden = false;
     }
 
     copyButton.addEventListener('click', copyError);
@@ -140,6 +228,7 @@ const clerkScriptSrc = clerkFrontendApi
       }
 
       try {
+        renderDiagnostics(['Status: Loading Clerk browser SDK']);
         await window.Clerk.load({ publishableKey: clerkPublishableKey });
         if (window.Clerk.session) {
           renderSignedInState();
@@ -147,6 +236,10 @@ const clerkScriptSrc = clerkFrontendApi
         }
 
         statusEl.textContent = 'Create your account to continue.';
+        renderDiagnostics([
+          'Status: Mounting Clerk sign-up',
+          'Clerk session present: no',
+        ]);
         window.Clerk.mountSignUp(mountNode, {
           signInUrl: `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`,
         });
@@ -154,6 +247,10 @@ const clerkScriptSrc = clerkFrontendApi
         const sync = window.setInterval(() => {
           if (window.Clerk?.session) {
             window.clearInterval(sync);
+            renderDiagnostics([
+              'Status: Clerk session detected after mount',
+              'Redirecting to launch page',
+            ]);
             window.location.replace(continueUrl);
           }
         }, 800);
@@ -164,6 +261,7 @@ const clerkScriptSrc = clerkFrontendApi
       }
     }
 
+    renderDiagnostics(['Status: Booting sign-up page']);
     window.addEventListener('load', bootSignUp);
   </script>
 </Layout>
@@ -230,6 +328,29 @@ const clerkScriptSrc = clerkFrontendApi
     padding: 0.55rem 0.9rem;
     font: inherit;
     cursor: pointer;
+  }
+
+  .auth-diagnostics {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 16px;
+    padding: 0.8rem 0.95rem;
+    background: rgba(15, 23, 42, 0.03);
+  }
+
+  .auth-diagnostics summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-dark);
+  }
+
+  .auth-diagnostics pre {
+    margin: 0.9rem 0 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--color-gray);
   }
 
   @media (max-width: 900px) {

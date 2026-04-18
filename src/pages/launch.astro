@@ -1,6 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { apiBaseUrl, appWebUrl } from '../config/site';
+import {
+  apiBaseUrl,
+  appWebUrl,
+  buildCommitSha,
+  buildEnvironment,
+  buildTimestamp,
+  siteUrl,
+} from '../config/site';
 
 const clerkPublishableKey = import.meta.env.CLERK_PUBLISHABLE_KEY ?? '';
 
@@ -41,8 +48,12 @@ const clerkScriptSrc = clerkFrontendApi
         ContentFlow is turning your website login into a short-lived app handoff.
       </p>
       <button id="copy-launch-error" class="copy-error-button" type="button" hidden>
-        Copy error
+        Copy diagnostics
       </button>
+      <details id="launch-diagnostics" class="launch-diagnostics" hidden>
+        <summary>Technical diagnostics</summary>
+        <pre id="launch-diagnostics-body"></pre>
+      </details>
       <div class="launch-actions">
         <a class="btn-secondary" href="/sign-in">Back to sign in</a>
         <a class="btn-secondary" href={appWebUrl}>Open app home</a>
@@ -60,39 +71,122 @@ const clerkScriptSrc = clerkFrontendApi
       type="text/javascript"
     ></script>
   )}
-  <script define:vars={{ clerkPublishableKey, clerkFrontendApi, apiBaseUrl, appWebUrl }}>
+  <script
+    define:vars={{
+      apiBaseUrl,
+      appWebUrl,
+      buildCommitSha,
+      buildEnvironment,
+      buildTimestamp,
+      clerkFrontendApi,
+      clerkPublishableKey,
+      siteUrl,
+    }}
+  >
     const statusEl = document.getElementById('launch-status');
     const copyButton = document.getElementById('copy-launch-error');
+    const diagnosticsEl = document.getElementById('launch-diagnostics');
+    const diagnosticsBodyEl = document.getElementById('launch-diagnostics-body');
     const clerkScript = document.getElementById('clerk-browser-script');
+    const searchParams = new URLSearchParams(window.location.search);
+    const diagnosticsRequested = ['1', 'true', 'yes'].includes(
+      (searchParams.get('diag') || '').toLowerCase(),
+    );
     let lastErrorText = '';
 
+    function configuredHost(url) {
+      try {
+        return new URL(url).host;
+      } catch (_) {
+        return 'invalid';
+      }
+    }
+
+    function hostMatchLabel(url) {
+      const host = configuredHost(url);
+      if (host === 'invalid') {
+        return `invalid (${url})`;
+      }
+      return host === window.location.host ? 'yes' : `no (expected ${host})`;
+    }
+
+    function getRedirectTarget() {
+      return searchParams.get('redirect_url') || `${appWebUrl}/#/entry`;
+    }
+
+    function buildDiagnostics(extraLines = []) {
+      const redirectTarget = getRedirectTarget();
+      const queryKeys = [...searchParams.keys()];
+      return [
+        'ContentFlow website launch diagnostics',
+        `Build commit: ${buildCommitSha}`,
+        `Build environment: ${buildEnvironment}`,
+        `Build timestamp: ${buildTimestamp}`,
+        `Current URL: ${window.location.href}`,
+        `Current origin: ${window.location.origin}`,
+        `Current host: ${window.location.host}`,
+        `Current path: ${window.location.pathname}`,
+        `Referrer: ${document.referrer || 'none'}`,
+        `Online: ${navigator.onLine ? 'yes' : 'no'}`,
+        `Cookies enabled: ${navigator.cookieEnabled ? 'yes' : 'no'}`,
+        `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`,
+        `User agent: ${navigator.userAgent}`,
+        `Query keys: ${queryKeys.length > 0 ? queryKeys.join(', ') : 'none'}`,
+        `redirect_url: ${searchParams.get('redirect_url') || 'missing'}`,
+        `Redirect target: ${redirectTarget}`,
+        `Configured APP_SITE_URL: ${siteUrl}`,
+        `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
+        `Configured APP_WEB_URL: ${appWebUrl}`,
+        `Configured APP_WEB_URL host: ${configuredHost(appWebUrl)}`,
+        `Configured API_BASE_URL: ${apiBaseUrl}`,
+        `Handoff endpoint: ${apiBaseUrl}/api/auth/web/handoff`,
+        `Clerk script src: ${clerkScript?.getAttribute('src') || 'missing'}`,
+        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
+        `Clerk global present: ${window.Clerk ? 'yes' : 'no'}`,
+        `Clerk session present: ${window.Clerk?.session ? 'yes' : 'no'}`,
+        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
+        ...extraLines,
+      ].join('\n');
+    }
+
+    function renderDiagnostics(extraLines = [], forceVisible = diagnosticsRequested) {
+      const text = buildDiagnostics(extraLines);
+      diagnosticsBodyEl.textContent = text;
+      diagnosticsEl.hidden = !forceVisible;
+      if (forceVisible) {
+        diagnosticsEl.open = true;
+      }
+      copyButton.hidden = !(forceVisible || lastErrorText);
+      return text;
+    }
+
     async function copyError() {
-      if (!lastErrorText) {
+      const diagnostics = lastErrorText || renderDiagnostics();
+      if (!diagnostics) {
         return;
       }
 
       try {
-        await navigator.clipboard.writeText(lastErrorText);
+        await navigator.clipboard.writeText(diagnostics);
         copyButton.textContent = 'Copied';
         window.setTimeout(() => {
-          copyButton.textContent = 'Copy error';
+          copyButton.textContent = 'Copy diagnostics';
         }, 1500);
       } catch (_) {
         copyButton.textContent = 'Copy failed';
       }
     }
 
-    function showError(message) {
-      lastErrorText = [
-        message,
-        `Host: ${window.location.host}`,
-        `Path: ${window.location.pathname}`,
-        `API base: ${apiBaseUrl}`,
-        `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
-        `Key preview: ${clerkPublishableKey ? `${clerkPublishableKey.slice(0, 12)}...${clerkPublishableKey.slice(-5)}` : 'missing'}`,
-      ].join('\n');
+    function showError(message, extraLines = []) {
+      lastErrorText = renderDiagnostics(
+        [
+          'Status: error',
+          `Error: ${message}`,
+          ...extraLines,
+        ],
+        true,
+      );
       statusEl.textContent = message;
-      copyButton.hidden = false;
     }
 
     async function readErrorBody(response) {
@@ -132,9 +226,7 @@ const clerkScriptSrc = clerkFrontendApi
     }
 
     async function launchApp() {
-      const redirectTarget =
-        new URLSearchParams(window.location.search).get('redirect_url') ||
-        `${appWebUrl}/#/entry`;
+      const redirectTarget = getRedirectTarget();
 
       if (!clerkPublishableKey) {
         showError('CLERK_PUBLISHABLE_KEY is missing on the website deployment.');
@@ -147,8 +239,13 @@ const clerkScriptSrc = clerkFrontendApi
       }
 
       try {
+        renderDiagnostics(['Status: Loading Clerk browser SDK']);
         await window.Clerk.load({ publishableKey: clerkPublishableKey });
         if (!window.Clerk.session) {
+          renderDiagnostics([
+            'Status: No Clerk session on launch page',
+            'Redirecting to sign-in page',
+          ]);
           window.location.replace(
             `/sign-in?redirect_url=${encodeURIComponent(redirectTarget)}`,
           );
@@ -161,9 +258,15 @@ const clerkScriptSrc = clerkFrontendApi
           throw new Error('Clerk did not return a session token for the app handoff.');
         }
 
+        renderDiagnostics([
+          'Status: Clerk session found',
+          'Bearer token present: yes',
+          'Requesting handoff API',
+        ]);
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 12000);
-        const response = await fetch(`${apiBaseUrl}/api/auth/web/handoff`, {
+        const endpoint = `${apiBaseUrl}/api/auth/web/handoff`;
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -176,11 +279,14 @@ const clerkScriptSrc = clerkFrontendApi
 
         if (!response.ok) {
           const detail = await readErrorBody(response);
-          throw new Error(
-            detail ||
-              `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
-          );
+          throw new Error(detail || `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`);
         }
+
+        renderDiagnostics([
+          'Status: Handoff API succeeded',
+          `HTTP status: ${response.status}`,
+          `Response content-type: ${response.headers.get('content-type') || 'missing'}`,
+        ]);
 
         const payload = await response.json();
         const handoffToken = payload?.handoff_token;
@@ -189,18 +295,33 @@ const clerkScriptSrc = clerkFrontendApi
         }
 
         statusEl.textContent = 'Redirecting to the app…';
+        renderDiagnostics([
+          'Status: Redirecting to app',
+          'handoff_token returned: yes',
+          `Redirect destination: ${buildAppRedirectUrl(redirectTarget, handoffToken)}`,
+        ]);
         window.location.replace(
           buildAppRedirectUrl(redirectTarget, handoffToken),
         );
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
-          showError(`The app handoff API timed out after 12 seconds: ${apiBaseUrl}/api/auth/web/handoff`);
+          showError(
+            `The app handoff API timed out after 12 seconds: ${apiBaseUrl}/api/auth/web/handoff`,
+            ['Failure class: AbortError'],
+          );
           return;
         }
-        showError(error instanceof Error ? error.message : 'Unable to open the app.');
+        if (error instanceof Error) {
+          showError(error.message, [
+            `Failure class: ${error.name || 'Error'}`,
+          ]);
+          return;
+        }
+        showError('Unable to open the app.');
       }
     }
 
+    renderDiagnostics(['Status: Booting launch page']);
     window.addEventListener('load', launchApp);
   </script>
 </Layout>
@@ -257,5 +378,28 @@ const clerkScriptSrc = clerkFrontendApi
     padding: 0.55rem 0.9rem;
     font: inherit;
     cursor: pointer;
+  }
+
+  .launch-diagnostics {
+    margin-top: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 16px;
+    padding: 0.8rem 0.95rem;
+    background: rgba(15, 23, 42, 0.03);
+  }
+
+  .launch-diagnostics summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-dark);
+  }
+
+  .launch-diagnostics pre {
+    margin: 0.9rem 0 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--color-gray);
   }
 </style>
