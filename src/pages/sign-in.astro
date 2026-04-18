@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import {
+  apiBaseUrl,
   appWebUrl,
   buildCommitSha,
   buildEnvironment,
@@ -78,6 +79,7 @@ const clerkScriptSrc = clerkFrontendApi
   <script
     define:vars={{
       appWebUrl,
+      apiBaseUrl,
       buildCommitSha,
       buildEnvironment,
       buildTimestamp,
@@ -99,6 +101,91 @@ const clerkScriptSrc = clerkFrontendApi
       (searchParams.get('diag') || '').toLowerCase(),
     );
     let lastErrorText = '';
+
+    function maskValue(value, keepStart = 8, keepEnd = 4) {
+      if (!value) {
+        return 'none';
+      }
+      if (value.length <= keepStart + keepEnd + 3) {
+        return value;
+      }
+      return `${value.slice(0, keepStart)}...${value.slice(-keepEnd)}`;
+    }
+
+    function truncateText(value, maxLength = 800) {
+      if (!value) {
+        return 'none';
+      }
+      if (value.length <= maxLength) {
+        return value;
+      }
+      return `${value.slice(0, maxLength)}...`;
+    }
+
+    function maskUrl(urlValue) {
+      if (!urlValue) {
+        return 'none';
+      }
+      try {
+        const url = new URL(urlValue, window.location.origin);
+        const directToken = url.searchParams.get('handoff_token');
+        if (directToken) {
+          url.searchParams.set('handoff_token', maskValue(directToken));
+        }
+        if (url.hash.includes('handoff_token=')) {
+          const [hashPath, hashQuery = ''] = url.hash.split('?');
+          const hashParams = new URLSearchParams(hashQuery);
+          const hashToken = hashParams.get('handoff_token');
+          if (hashToken) {
+            hashParams.set('handoff_token', maskValue(hashToken));
+          }
+          url.hash = `${hashPath}?${hashParams.toString()}`;
+        }
+        return url.toString();
+      } catch (_) {
+        return urlValue;
+      }
+    }
+
+    function buildAppRedirectUrl(redirectValue, handoffToken) {
+      const target = new URL(redirectValue, window.location.origin);
+      const rawHash = target.hash.startsWith('#') ? target.hash.slice(1) : target.hash;
+      const [hashPathRaw, hashQueryRaw = ''] = (rawHash || '/entry').split('?');
+      const hashPath = hashPathRaw || '/entry';
+      const hashParams = new URLSearchParams(hashQueryRaw);
+      hashParams.set('handoff_token', handoffToken);
+      target.searchParams.delete('handoff_token');
+      target.hash = `${hashPath}?${hashParams.toString()}`;
+      return target.toString();
+    }
+
+    async function readResponsePayload(response) {
+      const rawText = await response.text().catch(() => '');
+      let parsedJson = null;
+      let detail = '';
+
+      if (rawText) {
+        try {
+          parsedJson = JSON.parse(rawText);
+        } catch (_) {
+          parsedJson = null;
+        }
+      }
+
+      if (parsedJson && typeof parsedJson === 'object') {
+        const maybeDetail = parsedJson.detail ?? parsedJson.message ?? parsedJson.error;
+        if (typeof maybeDetail === 'string' && maybeDetail.trim()) {
+          detail = maybeDetail.trim();
+        }
+      }
+
+      return {
+        contentType: response.headers.get('content-type') || 'missing',
+        rawText: rawText || 'empty',
+        detail,
+        parsedJson,
+      };
+    }
 
     function configuredHost(url) {
       try {
@@ -139,6 +226,7 @@ const clerkScriptSrc = clerkFrontendApi
         `Configured APP_SITE_URL host match: ${hostMatchLabel(siteUrl)}`,
         `Configured APP_WEB_URL: ${appWebUrl}`,
         `Configured APP_WEB_URL host: ${configuredHost(appWebUrl)}`,
+        `Configured API_BASE_URL: ${apiBaseUrl}`,
         `Continue URL: ${continueUrl}`,
         `Clerk script src: ${clerkScript?.getAttribute('src') || 'missing'}`,
         `Clerk frontend API: ${clerkFrontendApi || 'missing'}`,
@@ -160,6 +248,56 @@ const clerkScriptSrc = clerkFrontendApi
       return text;
     }
 
+    async function requestAppHandoff(source) {
+      const session = window.Clerk?.session;
+      if (!session) {
+        throw new Error('Clerk session is missing on the sign-in page.');
+      }
+
+      statusEl.textContent = 'Preparing your app session…';
+      renderDiagnostics([
+        'Status: Requesting app handoff',
+        `Source: ${source}`,
+      ]);
+
+      const bearerToken = await session.getToken();
+      if (!bearerToken) {
+        throw new Error('Clerk did not return a session token for the app handoff.');
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/auth/web/handoff`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${bearerToken}`,
+        },
+      });
+      const payload = await readResponsePayload(response);
+      if (!response.ok) {
+        throw new Error(
+          payload.detail ||
+            `The app handoff API returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}.`,
+        );
+      }
+
+      const handoffToken = payload.parsedJson?.handoff_token;
+      if (!handoffToken) {
+        throw new Error('The backend did not return a handoff token.');
+      }
+
+      const destination = buildAppRedirectUrl(redirectTarget, handoffToken);
+      renderDiagnostics([
+        'Status: Redirecting to app',
+        `Source: ${source}`,
+        `Handoff endpoint: ${apiBaseUrl}/api/auth/web/handoff`,
+        `Response content-type: ${payload.contentType}`,
+        `Response body: ${truncateText(payload.rawText)}`,
+        `handoff_token: ${maskValue(handoffToken)}`,
+        `Redirect destination: ${maskUrl(destination)}`,
+      ]);
+      window.location.replace(destination);
+    }
+
     function renderSignedInState() {
       const email =
         window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
@@ -168,11 +306,21 @@ const clerkScriptSrc = clerkFrontendApi
       statusEl.textContent = `Already signed in as ${email}. Clerk will not show the sign-in form again until you sign out.`;
       mountNode.innerHTML = `
         <div class="signed-in-actions">
-          <a class="btn-secondary" href="${continueUrl}">Open app</a>
+          <button class="btn-secondary signed-in-open" type="button">Continue to app</button>
           <button class="btn-secondary signed-in-signout" type="button">Sign out to switch account</button>
         </div>
       `;
+      const openButton = mountNode.querySelector('.signed-in-open');
       const signOutButton = mountNode.querySelector('.signed-in-signout');
+      openButton?.addEventListener('click', async () => {
+        try {
+          await requestAppHandoff('existing-session');
+        } catch (error) {
+          showError(
+            error instanceof Error ? error.message : 'Unable to continue into the app.',
+          );
+        }
+      });
       signOutButton?.addEventListener('click', async () => {
         await window.Clerk.signOut();
         window.location.reload();
@@ -244,14 +392,19 @@ const clerkScriptSrc = clerkFrontendApi
           signUpUrl: `/sign-up?redirect_url=${encodeURIComponent(redirectTarget)}`,
         });
 
-        const sync = window.setInterval(() => {
+        const sync = window.setInterval(async () => {
           if (window.Clerk?.session) {
             window.clearInterval(sync);
-            renderDiagnostics([
-              'Status: Clerk session detected after mount',
-              'Redirecting to launch page',
-            ]);
-            window.location.replace(continueUrl);
+            try {
+              await requestAppHandoff('post-sign-in');
+            } catch (error) {
+              renderSignedInState();
+              showError(
+                error instanceof Error
+                  ? error.message
+                  : 'Unable to continue into the app after sign-in.',
+              );
+            }
           }
         }, 800);
       } catch (error) {
