@@ -51,6 +51,22 @@
     return resolveRedirectComplete(redirectUrl);
   }
 
+  function configuredAppHost() {
+    try {
+      return new URL(config.configuredAppWebUrl).host;
+    } catch (_) {
+      return 'invalid';
+    }
+  }
+
+  function currentOriginMatchesConfiguredApp() {
+    const host = configuredAppHost();
+    if (host === 'invalid') {
+      return 'invalid';
+    }
+    return window.location.host === host ? 'yes' : `no (expected ${host})`;
+  }
+
   function loadScript() {
     if (state.scriptPromise) {
       return state.scriptPromise;
@@ -210,8 +226,12 @@
       buildEnvironment: config.buildEnvironment,
       buildTimestamp: config.buildTimestamp,
       configuredAppWebUrl: config.configuredAppWebUrl,
+      configuredAppHost: configuredAppHost(),
       currentOrigin: window.location.origin,
+      currentHost: window.location.host,
+      currentPath: window.location.pathname,
       currentUrl: window.location.href,
+      currentOriginMatchesConfiguredApp: currentOriginMatchesConfiguredApp(),
       redirectUrlComplete: readRedirectCompleteFromLocation(),
       clerkFrontendApi: deriveClerkDomain(config.publishableKey),
       keyPreview: config.publishableKey

@@ -19,6 +19,9 @@
         </p>
         <div class="stack">
           <div id="clerk-sign-in"></div>
+          <button id="copy-button" class="button button-secondary" type="button">
+            Copy diagnostics
+          </button>
           <button id="entry-button" class="button button-secondary" type="button">
             Back to app entry
           </button>
@@ -32,13 +35,51 @@
       (function () {
         const bridge = window.contentflowClerkBridge;
         const signInNode = document.getElementById('clerk-sign-in');
+        const copyButton = document.getElementById('copy-button');
         const entryButton = document.getElementById('entry-button');
         const statusEl = document.getElementById('status');
         const metaEl = document.getElementById('meta');
+        let lastError = '';
 
         function setStatus(message, isError) {
           statusEl.textContent = message;
           statusEl.classList.toggle('error', Boolean(isError));
+          if (isError) {
+            lastError = message;
+          }
+        }
+
+        function buildDiagnostics() {
+          const diagnostics = bridge.getDiagnostics();
+          return [
+            'ContentFlow sign-in diagnostics',
+            `Build commit: ${diagnostics.buildCommitSha}`,
+            `Build environment: ${diagnostics.buildEnvironment}`,
+            `Build timestamp: ${diagnostics.buildTimestamp}`,
+            `Configured app URL: ${diagnostics.configuredAppWebUrl}`,
+            `Configured app host: ${diagnostics.configuredAppHost}`,
+            `Current origin: ${diagnostics.currentOrigin}`,
+            `Current host: ${diagnostics.currentHost}`,
+            `Current path: ${diagnostics.currentPath}`,
+            `Current origin matches configured app: ${diagnostics.currentOriginMatchesConfiguredApp}`,
+            `Clerk frontend API: ${diagnostics.clerkFrontendApi}`,
+            `Key preview: ${diagnostics.keyPreview}`,
+            `Status: ${statusEl.textContent || 'unknown'}`,
+            `Last error: ${lastError || 'none'}`,
+          ].join('\n');
+        }
+
+        async function copyDiagnostics() {
+          const text = buildDiagnostics();
+          try {
+            await navigator.clipboard.writeText(text);
+            copyButton.textContent = 'Copied';
+            window.setTimeout(() => {
+              copyButton.textContent = 'Copy diagnostics';
+            }, 1500);
+          } catch (_) {
+            copyButton.textContent = 'Copy failed';
+          }
         }
 
         function renderMeta() {
@@ -49,6 +90,7 @@
             `Build timestamp: ${diagnostics.buildTimestamp}`,
             `Configured app URL: ${diagnostics.configuredAppWebUrl}`,
             `Current origin: ${diagnostics.currentOrigin}`,
+            `Origin matches configured app: ${diagnostics.currentOriginMatchesConfiguredApp}`,
             `Clerk frontend API: ${diagnostics.clerkFrontendApi}`,
             `Key preview: ${diagnostics.keyPreview}`,
           ]
@@ -73,6 +115,8 @@
             setStatus(String(error), true);
           }
         }
+
+        copyButton.addEventListener('click', copyDiagnostics);
 
         entryButton.addEventListener('click', () => {
           window.location.assign('/#/entry');
