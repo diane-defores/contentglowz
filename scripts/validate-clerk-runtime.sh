@@ -7,6 +7,8 @@ export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 
 API_BASE_URL_VALUE="${API_BASE_URL:-https://api.winflowz.com}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
+APP_SITE_URL_VALUE="${APP_SITE_URL:-https://contentflow.winflowz.com}"
+APP_WEB_URL_VALUE="${APP_WEB_URL:-https://app.contentflow.winflowz.com}"
 PORT_VALUE="${PORT:-3050}"
 
 cd "$ROOT_DIR"
@@ -14,6 +16,8 @@ cd "$ROOT_DIR"
 echo "== ContentFlow Clerk Runtime Validation =="
 echo "Project: $ROOT_DIR"
 echo "API_BASE_URL: $API_BASE_URL_VALUE"
+echo "APP_SITE_URL: $APP_SITE_URL_VALUE"
+echo "APP_WEB_URL: $APP_WEB_URL_VALUE"
 echo "PORT: $PORT_VALUE"
 
 if [[ -z "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then
@@ -24,6 +28,8 @@ if [[ -z "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then
   echo "Example:"
   echo "  API_BASE_URL=https://api.winflowz.com \\"
   echo "  CLERK_PUBLISHABLE_KEY=pk_test_xxx \\"
+  echo "  APP_SITE_URL=https://contentflow.winflowz.com \\"
+  echo "  APP_WEB_URL=https://app.contentflow.winflowz.com \\"
   echo "  PORT=3050 \\"
   echo "  ./scripts/validate-clerk-runtime.sh"
   exit 1
@@ -45,7 +51,9 @@ echo ""
 echo "4. Web build with Clerk config"
 flutter build web --release \
   --dart-define=API_BASE_URL="${API_BASE_URL_VALUE}" \
-  --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY_VALUE}"
+  --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY_VALUE}" \
+  --dart-define=APP_SITE_URL="${APP_SITE_URL_VALUE}" \
+  --dart-define=APP_WEB_URL="${APP_WEB_URL_VALUE}"
 
 echo ""
 echo "5. Serving build/web on http://localhost:${PORT_VALUE}"
