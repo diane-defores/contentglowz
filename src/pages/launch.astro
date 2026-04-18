@@ -33,7 +33,7 @@ const clerkFrontendApi = getClerkFrontendApi(clerkPublishableKey);
 const clerkScriptSrc = clerkFrontendApi
   ? `https://${clerkFrontendApi}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
   : '';
-const diagnosticsVersion = 'launch-diagnostics-v3-2026-04-18';
+const diagnosticsVersion = 'launch-diagnostics-v4-2026-04-18';
 ---
 
 <Layout
@@ -347,10 +347,13 @@ const diagnosticsVersion = 'launch-diagnostics-v3-2026-04-18';
 
     function buildAppRedirectUrl(redirectTarget, handoffToken) {
       const target = new URL(redirectTarget, window.location.origin);
-      const hash = target.hash || '#/entry';
-      target.hash = '';
-      target.searchParams.set('handoff_token', handoffToken);
-      target.hash = hash;
+      const rawHash = target.hash.startsWith('#') ? target.hash.slice(1) : target.hash;
+      const [hashPathRaw, hashQueryRaw = ''] = (rawHash || '/entry').split('?');
+      const hashPath = hashPathRaw || '/entry';
+      const hashParams = new URLSearchParams(hashQueryRaw);
+      hashParams.set('handoff_token', handoffToken);
+      target.searchParams.delete('handoff_token');
+      target.hash = `${hashPath}?${hashParams.toString()}`;
       return target.toString();
     }
 
