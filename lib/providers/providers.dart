@@ -94,24 +94,29 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   );
 });
 
-final feedbackLocalStoreProvider = Provider<FeedbackLocalStore>((ref) {
-  return FeedbackLocalStore(ref.read(sharedPrefsProvider));
-});
+final Provider<FeedbackLocalStore> feedbackLocalStoreProvider =
+    Provider<FeedbackLocalStore>((ref) {
+      return FeedbackLocalStore(ref.read(sharedPrefsProvider));
+    });
 
-final feedbackServiceProvider = Provider<FeedbackService>((ref) {
-  return FeedbackService(
-    api: () => ref.read(apiServiceProvider),
-    localStore: () => ref.read(feedbackLocalStoreProvider),
-    authSession: () => ref.read(authSessionProvider),
-    language: () => ref.read(currentUserSettingsProvider).valueOrNull?.language,
-    invalidateRecentSubmissions: () {
-      ref.invalidate(feedbackRecentSubmissionsProvider);
-    },
-    invalidateDefaultAdminEntries: () {
-      ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
-    },
-  );
-});
+final Provider<FeedbackService> feedbackServiceProvider =
+    Provider<FeedbackService>((ref) {
+      return FeedbackService(
+        api: () => ref.read(apiServiceProvider),
+        localStore: () => ref.read(feedbackLocalStoreProvider),
+        authSession: () => ref.read(authSessionProvider),
+        language: () =>
+            ref.read(currentUserSettingsProvider).valueOrNull?.language,
+        invalidateRecentSubmissions: () {
+          ref.invalidate(feedbackRecentSubmissionsProvider);
+        },
+        invalidateDefaultAdminEntries: () {
+          ref.invalidate(
+            feedbackAdminEntriesProvider(const FeedbackAdminQuery()),
+          );
+        },
+      );
+    });
 
 final isFeedbackAdminProvider = Provider<bool>((ref) {
   final session = ref.watch(authSessionProvider);
@@ -122,22 +127,24 @@ final isFeedbackAdminProvider = Provider<bool>((ref) {
   return AppConfig.feedbackAdminEmails.contains(email);
 });
 
-final feedbackDraftProvider = Provider<String>((ref) {
+final Provider<String> feedbackDraftProvider = Provider<String>((ref) {
   return ref.read(feedbackServiceProvider).loadDraftMessage();
 });
 
-final feedbackRecentSubmissionsProvider =
-    FutureProvider<List<LocalFeedbackSubmission>>((ref) async {
-      return ref.read(feedbackServiceProvider).loadRecentSubmissions();
-    });
+final FutureProvider<List<LocalFeedbackSubmission>>
+    feedbackRecentSubmissionsProvider =
+        FutureProvider<List<LocalFeedbackSubmission>>((ref) async {
+          return ref.read(feedbackServiceProvider).loadRecentSubmissions();
+        });
 
-final feedbackAdminEntriesProvider =
-    FutureProvider.family<List<FeedbackEntry>, FeedbackAdminQuery>((
-      ref,
-      query,
-    ) async {
-      return ref.read(feedbackServiceProvider).listAdmin(query: query);
-    });
+final FutureProviderFamily<List<FeedbackEntry>, FeedbackAdminQuery>
+    feedbackAdminEntriesProvider =
+        FutureProvider.family<List<FeedbackEntry>, FeedbackAdminQuery>((
+          ref,
+          query,
+        ) async {
+          return ref.read(feedbackServiceProvider).listAdmin(query: query);
+        });
 
 final clerkPublishableKeyProvider = Provider<String>(
   (ref) => AppConfig.clerkPublishableKey,
