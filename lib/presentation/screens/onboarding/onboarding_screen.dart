@@ -453,6 +453,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
 
+    final authSession = ref.read(authSessionProvider);
+    if (!authSession.isAuthenticated) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sign in with Google before creating a workspace.'),
+        ),
+      );
+      context.go('/entry');
+      return;
+    }
+
     setState(() => _isFinishing = true);
     try {
       final api = ref.read(apiServiceProvider);

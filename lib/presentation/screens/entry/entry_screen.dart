@@ -774,9 +774,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
     return _card(
       eyebrow: 'Logged out',
-      title: 'Create or reconnect your workspace',
+      title: 'Sign in to access your workspace',
       description: kIsWeb
-          ? 'You are not signed in yet. Continue with Google on the dedicated app-domain Clerk page, then Clerk will return you straight to this app.'
+          ? 'You are not signed in yet. Continue with Google on the dedicated app-domain Clerk page. Workspace creation and onboarding are only available after authentication.'
           : 'You are not signed in yet. The Flutter beta auth path has been archived, so use the dedicated web sign-in flow instead.',
       icon: Icons.lock_outline_rounded,
       accent: Colors.orange,
