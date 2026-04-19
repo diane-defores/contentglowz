@@ -265,7 +265,6 @@ class ApiService {
   Future<bool> saveContentBody(
     String id,
     String body, {
-    String editedBy = 'flutter_app',
     String? editNote,
   }) async {
     if (allowDemoData) {
@@ -277,7 +276,6 @@ class ApiService {
         '/api/status/content/$id/body',
         data: _compactMap({
           'body': body,
-          'edited_by': editedBy,
           'edit_note': editNote,
         }),
       );
@@ -301,7 +299,6 @@ class ApiService {
         '/api/status/content/$id/transition',
         data: _compactMap({
           'to_status': toStatus,
-          'changed_by': 'flutter_app',
           'reason': reason,
         }),
       );

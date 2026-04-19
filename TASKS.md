@@ -3,7 +3,7 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 7 — Domain Migration Complete
+**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 8 — Web Auth Stabilized
 
 **Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
 
@@ -62,7 +62,8 @@
 | ✅ | Flutter auth headless Clerk, session restore, onboarding réel, 401 handling | ✅ done |
 | ✅ | Écran auth Clerk officiel + fallback diagnostics quand le SDK reste bloqué au chargement | ✅ done |
 | ✅ | Auth web déportée sur ContentFlow Site + handoff sécurisé vers Flutter web (`/entry` + exchange backend) | ✅ done |
-| 🟠 | Vérifier runtime Clerk réel en environnement Flutter | 📋 todo |
+| ✅ | Vérifier runtime Clerk réel en environnement Flutter | ✅ done |
+| ✅ | Remplacer l'auth web Flutter beta / handoff par ClerkJS officiel sur le domaine app (`/sign-in`, `/sso-callback`, Google direct) | ✅ done |
 
 ---
 
@@ -163,12 +164,13 @@
 | Pri | Task | Impact | Effort | Notes |
 |-----|------|--------|--------|-------|
 | ✅ | Regrouper les 17 tabs en sections (Content, Create, Analyze, System) | High | Low | ✅ done — dividers visuels entre sections |
-| 🟠 | Validation runtime Clerk (site sign-in réel, handoff web, restore session, `/api/bootstrap`) | High | Medium | Handoff web branché; reste à valider en production avec Clerk réel |
+| ✅ | Validation runtime Clerk (site sign-in réel, handoff web, restore session, `/api/bootstrap`) | High | Medium | ✅ done — auth web directe via ClerkJS sur le domaine app, bootstrap validé |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
-| 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Bloqué par Auth Clerk |
+| 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Débloqué maintenant que l'auth Clerk web est stable |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
 | 🟡 | DataForSEO — credentials OK dans Doppler, ajouter credits au compte DFS | High | Low | Auth OK (20000), mais 402 Payment Required — ajouter credits sur dataforseo.com/billing |
+| 🟠 | Exposer l'audit structuré des actions (`actor_type/id/label`) dans l'UI debug/admin | High | Medium | Le backend persiste déjà transitions, edits et reviews avec acteurs structurés |
 
 ### 🟡 P2 — Polish & Engagement
 
@@ -209,6 +211,6 @@
 
 ---
 
-> **Priority last updated**: 2026-04-12
+> **Priority last updated**: 2026-04-19
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Valider le handoff web Clerk réel de bout en bout, puis Polar billing, puis crédits DataForSEO
+> **Recommended next**: Brancher Polar billing, exposer l'audit structuré dans l'UI debug/admin, puis finaliser les crédits DataForSEO

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-19]
+
+### Changed
+- Stopped sending `edited_by` and `changed_by` from the Flutter client for content body saves and status transitions so the backend becomes the sole source of truth for audit attribution.
+
 ## [2026-04-13]
 
 ### Added
