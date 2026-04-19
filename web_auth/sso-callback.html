@@ -64,6 +64,7 @@
             `Current host: ${diagnostics.currentHost}`,
             `Current path: ${diagnostics.currentPath}`,
             `Current origin matches configured app: ${diagnostics.currentOriginMatchesConfiguredApp}`,
+            `OAuth callback URL: ${diagnostics.oauthCallbackUrl}`,
             `Redirect complete URL: ${diagnostics.redirectUrlComplete}`,
             `Clerk frontend API: ${diagnostics.clerkFrontendApi}`,
             `Status: ${statusEl.textContent || 'unknown'}`,
@@ -92,6 +93,7 @@
             `Build timestamp: ${diagnostics.buildTimestamp}`,
             `Current URL: ${diagnostics.currentUrl}`,
             `Origin matches configured app: ${diagnostics.currentOriginMatchesConfiguredApp}`,
+            `OAuth callback URL: ${diagnostics.oauthCallbackUrl}`,
             `Redirect complete URL: ${diagnostics.redirectUrlComplete}`,
           ]
             .map((line) => `<div>${line}</div>`)

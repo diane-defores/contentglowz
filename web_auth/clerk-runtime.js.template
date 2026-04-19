@@ -27,6 +27,12 @@
     return new URL('/#/entry', window.location.origin).toString();
   }
 
+  function buildOAuthCallbackUrl(redirectComplete) {
+    const callbackUrl = new URL('/sso-callback', window.location.origin);
+    callbackUrl.searchParams.set('redirect_url', redirectComplete);
+    return callbackUrl.toString();
+  }
+
   function resolveRedirectComplete(candidate) {
     if (!candidate) {
       return defaultRedirectComplete();
@@ -223,11 +229,13 @@
     const redirectUrlComplete = resolveRedirectComplete(
       (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
     );
+    const redirectUrl = buildOAuthCallbackUrl(redirectUrlComplete);
 
     clerk.mountSignIn(node, {
       path: '/sign-in',
       routing: 'path',
       oauthFlow: 'redirect',
+      redirectUrl,
       forceRedirectUrl: redirectUrlComplete,
       fallbackRedirectUrl: redirectUrlComplete,
       signUpForceRedirectUrl: redirectUrlComplete,
@@ -243,10 +251,14 @@
     const redirectUrlComplete = resolveRedirectComplete(
       (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
     );
+    const redirectUrl = buildOAuthCallbackUrl(redirectUrlComplete);
 
     await clerk.redirectToSignIn({
+      redirectUrl,
       signInForceRedirectUrl: redirectUrlComplete,
+      signInFallbackRedirectUrl: redirectUrlComplete,
       signUpForceRedirectUrl: redirectUrlComplete,
+      signUpFallbackRedirectUrl: redirectUrlComplete,
     });
   }
 
@@ -276,6 +288,7 @@
       currentPath: window.location.pathname,
       currentUrl: window.location.href,
       currentOriginMatchesConfiguredApp: currentOriginMatchesConfiguredApp(),
+      oauthCallbackUrl: buildOAuthCallbackUrl(readRedirectCompleteFromLocation()),
       redirectUrlComplete: readRedirectCompleteFromLocation(),
       clerkFrontendApi: deriveClerkDomain(config.publishableKey),
       keyPreview: config.publishableKey
