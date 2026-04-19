@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/models/feedback_entry.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -11,7 +12,8 @@ class FeedbackAdminScreen extends ConsumerStatefulWidget {
   const FeedbackAdminScreen({super.key});
 
   @override
-  ConsumerState<FeedbackAdminScreen> createState() => _FeedbackAdminScreenState();
+  ConsumerState<FeedbackAdminScreen> createState() =>
+      _FeedbackAdminScreenState();
 }
 
 class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
@@ -20,10 +22,8 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
   FeedbackAdminTypeFilter _typeFilter = FeedbackAdminTypeFilter.all;
   String? _playingEntryId;
 
-  FeedbackAdminQuery get _query => FeedbackAdminQuery(
-    status: _statusFilter,
-    type: _typeFilter,
-  );
+  FeedbackAdminQuery get _query =>
+      FeedbackAdminQuery(status: _statusFilter, type: _typeFilter);
 
   @override
   void initState() {
@@ -45,7 +45,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
     final authSession = ref.watch(authSessionProvider);
     if (authSession.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Feedback Admin')),
+        appBar: AppBar(title: Text(context.tr('Feedback Admin'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -53,12 +53,14 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
     final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
     if (!isFeedbackAdmin) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Feedback Admin')),
-        body: const Center(
+        appBar: AppBar(title: Text(context.tr('Feedback Admin'))),
+        body: Center(
           child: Padding(
             padding: EdgeInsets.all(24),
             child: Text(
-              'Accès refusé. Cette vue n’est visible que pour les comptes allowlistés.',
+              context.tr(
+                'Access denied. This view is visible only to allowlisted accounts.',
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -70,7 +72,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feedback Admin'),
+        title: Text(context.tr('Feedback Admin')),
         actions: [
           IconButton(
             onPressed: () {
@@ -84,8 +86,12 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Retours utilisateurs reçus par le backend. Le contrôle d’accès réel reste côté serveur.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+            context.tr(
+              'User feedback received by the backend. Real access control still lives server-side.',
+            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -94,7 +100,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
             children: [
               for (final filter in FeedbackAdminStatusFilter.values)
                 ChoiceChip(
-                  label: Text(_statusLabel(filter)),
+                  label: Text(context.tr(_statusLabel(filter))),
                   selected: _statusFilter == filter,
                   onSelected: (_) => setState(() => _statusFilter = filter),
                 ),
@@ -107,7 +113,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
             children: [
               for (final filter in FeedbackAdminTypeFilter.values)
                 ChoiceChip(
-                  label: Text(_typeLabel(filter)),
+                  label: Text(context.tr(_typeLabel(filter))),
                   selected: _typeFilter == filter,
                   onSelected: (_) => setState(() => _typeFilter = filter),
                 ),
@@ -117,20 +123,22 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
           entriesAsync.when(
             data: (entries) {
               if (entries.isEmpty) {
-                return const Text('Aucun feedback pour ce filtre.');
+                return Text(context.tr('No feedback for this filter.'));
               }
               return Column(
                 children: [
-                  for (final entry in entries) _FeedbackEntryCard(
-                    entry: entry,
-                    isPlaying: _playingEntryId == entry.id,
-                    onTogglePlayback: entry.audioUrl == null
-                        ? null
-                        : () => _togglePlayback(entry),
-                    onMarkReviewed: entry.status == FeedbackEntryStatus.reviewed
-                        ? null
-                        : () => _markReviewed(entry.id),
-                  ),
+                  for (final entry in entries)
+                    _FeedbackEntryCard(
+                      entry: entry,
+                      isPlaying: _playingEntryId == entry.id,
+                      onTogglePlayback: entry.audioUrl == null
+                          ? null
+                          : () => _togglePlayback(entry),
+                      onMarkReviewed:
+                          entry.status == FeedbackEntryStatus.reviewed
+                          ? null
+                          : () => _markReviewed(entry.id),
+                    ),
                 ],
               );
             },
@@ -142,7 +150,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
               padding: const EdgeInsets.all(16),
               child: AppErrorView(
                 scope: 'feedback_admin.load',
-                title: 'Impossible de charger les feedbacks',
+                title: context.tr('Could not load feedback'),
                 error: error,
                 stackTrace: stackTrace,
                 compact: true,
@@ -160,7 +168,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
   Future<void> _togglePlayback(FeedbackEntry entry) async {
     final audioUrl = entry.audioUrl;
     if (audioUrl == null || audioUrl.isEmpty) {
-      _showSnack('Aucune URL audio fournie par le backend.');
+      _showSnack(context.tr('No audio URL provided by backend.'));
       return;
     }
 
@@ -182,10 +190,10 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
       await ref.read(feedbackServiceProvider).markReviewed(feedbackId);
       ref.invalidate(feedbackAdminEntriesProvider(_query));
       ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
-      _showSnack('Feedback marqué comme lu.');
+      _showSnack(context.tr('Feedback marked as read.'));
     } catch (error, stackTrace) {
       _showSnack(
-        'Échec de mise à jour: $error',
+        context.tr('Failed to update: {error}', {'error': error}),
         error: error,
         stackTrace: stackTrace,
         scope: 'feedback_admin.mark_reviewed',
@@ -211,7 +219,9 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -242,7 +252,7 @@ class _FeedbackEntryCard extends StatelessWidget {
             Row(
               children: [
                 Chip(
-                  label: Text(entry.isAudio ? 'Audio' : 'Texte'),
+                  label: Text(context.tr(entry.isAudio ? 'Audio' : 'Text')),
                   avatar: Icon(
                     entry.isAudio ? Icons.mic_rounded : Icons.notes_rounded,
                     size: 18,
@@ -254,7 +264,11 @@ class _FeedbackEntryCard extends StatelessWidget {
                       ? theme.colorScheme.surfaceContainerHighest
                       : theme.colorScheme.primaryContainer,
                   label: Text(
-                    entry.status == FeedbackEntryStatus.reviewed ? 'Lu' : 'Nouveau',
+                    context.tr(
+                      entry.status == FeedbackEntryStatus.reviewed
+                          ? 'Read'
+                          : 'New',
+                    ),
                   ),
                 ),
               ],
@@ -263,7 +277,7 @@ class _FeedbackEntryCard extends StatelessWidget {
             Text(
               entry.message?.trim().isNotEmpty == true
                   ? entry.message!
-                  : 'Feedback audio',
+                  : context.tr('Audio feedback'),
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 12),
@@ -271,10 +285,18 @@ class _FeedbackEntryCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _MetaChip(label: DateFormat.yMMMd().add_Hm().format(entry.createdAt.toLocal())),
+                _MetaChip(
+                  label: DateFormat.yMMMd(
+                    context.localeTag,
+                  ).add_Hm().format(entry.createdAt.toLocal()),
+                ),
                 _MetaChip(label: entry.platform),
                 _MetaChip(label: entry.locale),
-                _MetaChip(label: entry.userEmail?.isNotEmpty == true ? entry.userEmail! : 'anonyme'),
+                _MetaChip(
+                  label: entry.userEmail?.isNotEmpty == true
+                      ? entry.userEmail!
+                      : context.tr('anonymous'),
+                ),
                 if (entry.durationMs != null)
                   _MetaChip(label: _formatDuration(entry.durationMs!)),
               ],
@@ -285,13 +307,17 @@ class _FeedbackEntryCard extends StatelessWidget {
                 children: [
                   FilledButton.tonalIcon(
                     onPressed: onTogglePlayback,
-                    icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
-                    label: Text(isPlaying ? 'Pause' : 'Lire'),
+                    icon: Icon(
+                      isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                    ),
+                    label: Text(context.tr(isPlaying ? 'Pause' : 'Play')),
                   ),
                   if (entry.audioUrl == null || entry.audioUrl!.isEmpty) ...[
                     const SizedBox(width: 12),
                     Text(
-                      'Audio indisponible',
+                      context.tr('Audio unavailable'),
                       style: theme.textTheme.bodySmall,
                     ),
                   ],
@@ -304,7 +330,7 @@ class _FeedbackEntryCard extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onMarkReviewed,
                 icon: const Icon(Icons.done_all_rounded),
-                label: const Text('Marquer comme lu'),
+                label: Text(context.tr('Mark as read')),
               ),
             ),
           ],
@@ -333,14 +359,14 @@ class _MetaChip extends StatelessWidget {
 }
 
 String _statusLabel(FeedbackAdminStatusFilter filter) => switch (filter) {
-  FeedbackAdminStatusFilter.all => 'Tous',
-  FeedbackAdminStatusFilter.unread => 'Non lus',
-  FeedbackAdminStatusFilter.reviewed => 'Lus',
+  FeedbackAdminStatusFilter.all => 'All',
+  FeedbackAdminStatusFilter.unread => 'Unread',
+  FeedbackAdminStatusFilter.reviewed => 'Read',
 };
 
 String _typeLabel(FeedbackAdminTypeFilter filter) => switch (filter) {
-  FeedbackAdminTypeFilter.all => 'Tous types',
-  FeedbackAdminTypeFilter.text => 'Texte',
+  FeedbackAdminTypeFilter.all => 'All types',
+  FeedbackAdminTypeFilter.text => 'Text',
   FeedbackAdminTypeFilter.audio => 'Audio',
 };
 

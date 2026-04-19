@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 
 const _cadenceModes = ['fixed', 'ramp_up'];
@@ -10,7 +11,6 @@ const _clusterModes = ['directory', 'tags', 'auto', 'none'];
 const _frameworks = ['astro', 'next', 'hugo', 'jekyll', 'eleventy'];
 const _gatingMethods = ['future_date', 'draft_flag', 'both'];
 const _rebuildMethods = ['webhook', 'github_actions', 'manual'];
-const _weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 class DripWizardSheet extends ConsumerStatefulWidget {
   const DripWizardSheet({super.key, this.onCreated});
@@ -82,7 +82,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    'New Drip Plan — Step ${_step + 1}/4',
+                    context.tr('New Drip Plan — Step {step}/4', {'step': _step + 1}),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -134,20 +134,20 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                 if (_step > 0)
                   TextButton(
                     onPressed: () => setState(() => _step--),
-                    child: const Text('Back'),
+                    child: Text(context.tr('Back')),
                   ),
                 const Spacer(),
                 if (_step < 3)
                   FilledButton(
                     onPressed: _canAdvance ? () => setState(() => _step++) : null,
-                    child: const Text('Next'),
+                    child: Text(context.tr('Next')),
                   ),
                 if (_step == 3)
                   FilledButton(
                     onPressed: _submitting ? null : _submit,
                     child: _submitting
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Create Plan'),
+                        : Text(context.tr('Create Plan')),
                   ),
               ],
             ),
@@ -164,30 +164,41 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
     _ => true,
   };
 
+  String _localizedWeekDay(int index) => switch (index) {
+        0 => context.tr('Mon'),
+        1 => context.tr('Tue'),
+        2 => context.tr('Wed'),
+        3 => context.tr('Thu'),
+        4 => context.tr('Fri'),
+        5 => context.tr('Sat'),
+        _ => context.tr('Sun'),
+      };
+
   // ─── Step 1: Basics ──────────────────────────────
 
   Widget _buildStep1() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Name & Source', style: Theme.of(context).textTheme.titleSmall),
+      Text(context.tr('Name & Source'),
+          style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 16),
       TextField(
         controller: _nameCtrl,
-        decoration: const InputDecoration(
-          labelText: 'Plan name',
-          hintText: 'e.g. GoCharbon Launch',
-          border: OutlineInputBorder(),
+        decoration: InputDecoration(
+          labelText: context.tr('Plan name'),
+          hintText: context.tr('e.g. GoCharbon Launch'),
+          border: const OutlineInputBorder(),
         ),
         onChanged: (_) => setState(() {}),
       ),
       const SizedBox(height: 16),
       TextField(
         controller: _directoryCtrl,
-        decoration: const InputDecoration(
-          labelText: 'Content directory',
-          hintText: 'e.g. src/data',
-          border: OutlineInputBorder(),
-          helperText: 'Absolute path to the Markdown files',
+        decoration: InputDecoration(
+          labelText: context.tr('Content directory'),
+          hintText: context.tr('e.g. src/data'),
+          border: const OutlineInputBorder(),
+          helperText: context.tr('Absolute path to the Markdown files'),
         ),
       ),
     ],
@@ -198,10 +209,21 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep2() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Cadence', style: Theme.of(context).textTheme.titleSmall),
+      Text(context.tr('Cadence'), style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 16),
       SegmentedButton<String>(
-        segments: _cadenceModes.map((m) => ButtonSegment(value: m, label: Text(m == 'ramp_up' ? 'Ramp up' : 'Fixed'))).toList(),
+        segments: _cadenceModes
+            .map(
+              (m) => ButtonSegment(
+                value: m,
+                label: Text(
+                  m == 'ramp_up'
+                      ? context.tr('Ramp up')
+                      : context.tr('Fixed'),
+                ),
+              ),
+            )
+            .toList(),
         selected: {_cadenceMode},
         onSelectionChanged: (s) => setState(() => _cadenceMode = s.first),
       ),
@@ -210,9 +232,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         children: [
           Expanded(
             child: TextField(
-              decoration: const InputDecoration(
-                labelText: 'Articles/day',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: context.tr('Articles/day'),
+                border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
               controller: TextEditingController(text: '$_itemsPerDay'),
@@ -223,10 +245,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           Expanded(
             child: TextField(
               controller: _startDateCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Start date',
-                border: OutlineInputBorder(),
-                hintText: 'YYYY-MM-DD',
+              decoration: InputDecoration(
+                labelText: context.tr('Start date'),
+                border: const OutlineInputBorder(),
+                hintText: context.tr('YYYY-MM-DD'),
               ),
             ),
           ),
@@ -235,19 +257,20 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       const SizedBox(height: 16),
       TextField(
         controller: _publishTimeCtrl,
-        decoration: const InputDecoration(
-          labelText: 'Publish time',
-          border: OutlineInputBorder(),
-          hintText: 'HH:MM',
+        decoration: InputDecoration(
+          labelText: context.tr('Publish time'),
+          border: const OutlineInputBorder(),
+          hintText: context.tr('HH:MM'),
         ),
       ),
       const SizedBox(height: 16),
-      Text('Publish days', style: Theme.of(context).textTheme.bodyMedium),
+      Text(context.tr('Publish days'),
+          style: Theme.of(context).textTheme.bodyMedium),
       const SizedBox(height: 8),
       Wrap(
         spacing: 8,
         children: List.generate(7, (i) => FilterChip(
-          label: Text(_weekDays[i]),
+          label: Text(_localizedWeekDay(i)),
           selected: _publishDays.contains(i),
           onSelected: (selected) {
             setState(() {
@@ -269,7 +292,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep3() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Clustering Strategy', style: Theme.of(context).textTheme.titleSmall),
+      Text(context.tr('Clustering Strategy'),
+          style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 16),
       ...(_clusterModes.map((m) => ListTile(
         leading: Icon(
@@ -277,24 +301,24 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           color: _clusterMode == m ? Theme.of(context).colorScheme.primary : null,
         ),
         title: Text(switch (m) {
-          'directory' => 'By directory structure',
-          'tags' => 'By frontmatter tags',
-          'auto' => 'Auto (AI detects semantic cocoons)',
-          'none' => 'No clustering (alphabetical)',
+          'directory' => context.tr('By directory structure'),
+          'tags' => context.tr('By frontmatter tags'),
+          'auto' => context.tr('Auto (AI detects semantic cocoons)'),
+          'none' => context.tr('No clustering (alphabetical)'),
           _ => m,
         }),
         subtitle: Text(switch (m) {
-          'directory' => 'Each folder becomes a cluster. index.md = pillar.',
-          'tags' => 'First tag = cluster. Most tags = pillar.',
-          'auto' => 'Topical Mesh Architect detects pillars & spokes.',
-          'none' => 'Articles published in file order.',
+          'directory' => context.tr('Each folder becomes a cluster. index.md = pillar.'),
+          'tags' => context.tr('First tag = cluster. Most tags = pillar.'),
+          'auto' => context.tr('Topical Mesh Architect detects pillars & spokes.'),
+          'none' => context.tr('Articles published in file order.'),
           _ => '',
         }, style: const TextStyle(fontSize: 12)),
         onTap: () => setState(() => _clusterMode = m),
       ))),
       const SizedBox(height: 8),
       SwitchListTile(
-        title: const Text('Publish pillar before spokes'),
+        title: Text(context.tr('Publish pillar before spokes')),
         value: _pillarFirst,
         onChanged: (v) => setState(() => _pillarFirst = v),
       ),
@@ -306,24 +330,28 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep4() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text('Deployment', style: Theme.of(context).textTheme.titleSmall),
+      Text(context.tr('Deployment'), style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _framework,
-        decoration: const InputDecoration(labelText: 'SSG Framework', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: context.tr('SSG Framework'),
+            border: const OutlineInputBorder()),
         items: _frameworks.map((f) => DropdownMenuItem(value: f, child: Text(f[0].toUpperCase() + f.substring(1)))).toList(),
         onChanged: (v) => setState(() => _framework = v!),
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _gatingMethod,
-        decoration: const InputDecoration(labelText: 'Gating method', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: context.tr('Gating method'),
+            border: const OutlineInputBorder()),
         items: _gatingMethods.map((g) => DropdownMenuItem(
           value: g,
           child: Text(switch (g) {
-            'future_date' => 'Future pubDate (recommended)',
-            'draft_flag' => 'Draft flag',
-            'both' => 'Both',
+            'future_date' => context.tr('Future pubDate (recommended)'),
+            'draft_flag' => context.tr('Draft flag'),
+            'both' => context.tr('Both'),
             _ => g,
           }),
         )).toList(),
@@ -332,13 +360,15 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _rebuildMethod,
-        decoration: const InputDecoration(labelText: 'Rebuild method', border: OutlineInputBorder()),
+        decoration: InputDecoration(
+            labelText: context.tr('Rebuild method'),
+            border: const OutlineInputBorder()),
         items: _rebuildMethods.map((r) => DropdownMenuItem(
           value: r,
           child: Text(switch (r) {
-            'webhook' => 'Webhook (Vercel/Netlify)',
-            'github_actions' => 'GitHub Actions',
-            'manual' => 'Manual',
+            'webhook' => context.tr('Webhook (Vercel/Netlify)'),
+            'github_actions' => context.tr('GitHub Actions'),
+            'manual' => context.tr('Manual'),
             _ => r,
           }),
         )).toList(),
@@ -348,10 +378,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         const SizedBox(height: 16),
         TextField(
           controller: _webhookUrlCtrl,
-          decoration: const InputDecoration(
-            labelText: 'Webhook URL',
-            border: OutlineInputBorder(),
-            hintText: 'https://api.vercel.com/v1/integrations/deploy/...',
+          decoration: InputDecoration(
+            labelText: context.tr('Webhook URL'),
+            border: const OutlineInputBorder(),
+            hintText: context.tr('https://api.vercel.com/v1/integrations/deploy/...'),
           ),
         ),
       ],
@@ -359,10 +389,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         const SizedBox(height: 16),
         TextField(
           controller: _githubRepoCtrl,
-          decoration: const InputDecoration(
-            labelText: 'GitHub repo',
-            border: OutlineInputBorder(),
-            hintText: 'owner/repo',
+          decoration: InputDecoration(
+            labelText: context.tr('GitHub repo'),
+            border: const OutlineInputBorder(),
+            hintText: context.tr('owner/repo'),
           ),
         ),
       ],
@@ -404,7 +434,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         widget.onCreated?.call();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Drip plan created! Import content to get started.')),
+          SnackBar(
+            content:
+                Text(context.tr('Drip plan created! Import content to get started.')),
+          ),
         );
       }
     } catch (error, stackTrace) {
@@ -412,7 +445,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Error: $error',
+          message: context.tr('Error: {error}', {'error': '$error'}),
           scope: 'drip.create_plan',
           error: error,
           stackTrace: stackTrace,

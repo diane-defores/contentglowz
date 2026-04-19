@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/drip_plan.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 import 'drip_plan_detail_screen.dart';
 import 'drip_wizard_sheet.dart';
@@ -16,7 +17,7 @@ class DripScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Content Drip'),
+        title: Text(context.tr('Content Drip')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -29,7 +30,7 @@ class DripScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'drip.plans.load',
-            title: 'Failed to load drip plans',
+            title: context.tr('Failed to load drip plans'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(dripPlansProvider),
@@ -89,10 +90,12 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.water_drop_outlined, size: 64, color: colorScheme.primary.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
-            Text('No drip plans yet', style: Theme.of(context).textTheme.titleLarge),
+            Text(context.tr('No drip plans yet'),
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
-              'Create a plan to progressively publish your content.\nGoogle will see a natural publishing rhythm.',
+              context.tr(
+                  'Create a plan to progressively publish your content.\nGoogle will see a natural publishing rhythm.'),
               textAlign: TextAlign.center,
               style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
@@ -100,7 +103,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onCreatePressed,
               icon: const Icon(Icons.add),
-              label: const Text('Create drip plan'),
+              label: Text(context.tr('Create drip plan')),
             ),
           ],
         ),
@@ -141,7 +144,7 @@ class _PlanCard extends ConsumerWidget {
 
               // Config summary
               Text(
-                '${plan.totalItems} articles  ·  ${plan.itemsPerDay}/day  ·  ${plan.clusterMode}  ·  ${plan.ssgFramework}',
+                '${plan.totalItems} ${context.tr('articles')}  ·  ${plan.itemsPerDay}/${context.tr('day')}  ·  ${context.tr(plan.clusterMode)}  ·  ${context.tr(plan.ssgFramework)}',
                 style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.6)),
               ),
               const SizedBox(height: 12),
@@ -178,7 +181,9 @@ class _PlanCard extends ConsumerWidget {
                     Icon(Icons.schedule, size: 14, color: colorScheme.primary),
                     const SizedBox(width: 4),
                     Text(
-                      'Next drip: ${plan.nextDripAt!.substring(0, 10)}',
+                      context.tr('Next drip: {date}', {
+                        'date': plan.nextDripAt!.substring(0, 10),
+                      }),
                       style: TextStyle(fontSize: 12, color: colorScheme.primary),
                     ),
                   ],
@@ -208,7 +213,7 @@ class _StatusChip extends StatelessWidget {
 
     return Chip(
       avatar: Icon(icon, size: 16, color: color),
-      label: Text(status, style: TextStyle(fontSize: 12, color: color)),
+      label: Text(context.tr(status), style: TextStyle(fontSize: 12, color: color)),
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

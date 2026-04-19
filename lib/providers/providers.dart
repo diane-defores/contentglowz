@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
 import '../core/app_diagnostics.dart';
+import '../core/app_language.dart';
+import '../core/shared_preferences_provider.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/drip_plan.dart';
 import '../data/models/app_access_state.dart';
@@ -22,9 +23,9 @@ import '../data/services/api_service.dart';
 import '../data/services/clerk_auth_service.dart';
 import '../data/services/feedback_local_store.dart';
 import '../data/services/feedback_service.dart';
-import '../main.dart';
 
 const _apiBaseUrlKey = 'api_base_url';
+const _appLanguagePreferenceKey = 'app_language_preference';
 const _demoModeKey = 'demo_mode_enabled';
 const _demoOnboardingKey = 'demo_onboarding_complete';
 
@@ -33,6 +34,11 @@ final apiBaseUrlProvider = StateNotifierProvider<ApiBaseUrlNotifier, String>((
 ) {
   return ApiBaseUrlNotifier(ref);
 });
+
+final appLanguagePreferenceProvider =
+    StateNotifierProvider<AppLanguagePreferenceNotifier, String>((ref) {
+      return AppLanguagePreferenceNotifier(ref);
+    });
 
 String _normalizeApiBaseUrl(String? raw) {
   final fallback = AppConfig.apiBaseUrl;
@@ -73,6 +79,25 @@ class ApiBaseUrlNotifier extends StateNotifier<String> {
     final normalized = _normalizeApiBaseUrl(url);
     state = normalized;
     await ref.read(sharedPrefsProvider).setString(_apiBaseUrlKey, normalized);
+  }
+}
+
+class AppLanguagePreferenceNotifier extends StateNotifier<String> {
+  AppLanguagePreferenceNotifier(this.ref)
+    : super(
+        normalizeAppLanguagePreference(
+          ref.read(sharedPrefsProvider).getString(_appLanguagePreferenceKey),
+        ),
+      );
+
+  final Ref ref;
+
+  Future<void> update(String language) async {
+    final normalized = normalizeAppLanguagePreference(language);
+    state = normalized;
+    await ref
+        .read(sharedPrefsProvider)
+        .setString(_appLanguagePreferenceKey, normalized);
   }
 }
 
@@ -132,19 +157,19 @@ final Provider<String> feedbackDraftProvider = Provider<String>((ref) {
 });
 
 final FutureProvider<List<LocalFeedbackSubmission>>
-    feedbackRecentSubmissionsProvider =
-        FutureProvider<List<LocalFeedbackSubmission>>((ref) async {
-          return ref.read(feedbackServiceProvider).loadRecentSubmissions();
-        });
+feedbackRecentSubmissionsProvider =
+    FutureProvider<List<LocalFeedbackSubmission>>((ref) async {
+      return ref.read(feedbackServiceProvider).loadRecentSubmissions();
+    });
 
 final FutureProviderFamily<List<FeedbackEntry>, FeedbackAdminQuery>
-    feedbackAdminEntriesProvider =
-        FutureProvider.family<List<FeedbackEntry>, FeedbackAdminQuery>((
-          ref,
-          query,
-        ) async {
-          return ref.read(feedbackServiceProvider).listAdmin(query: query);
-        });
+feedbackAdminEntriesProvider =
+    FutureProvider.family<List<FeedbackEntry>, FeedbackAdminQuery>((
+      ref,
+      query,
+    ) async {
+      return ref.read(feedbackServiceProvider).listAdmin(query: query);
+    });
 
 final clerkPublishableKeyProvider = Provider<String>(
   (ref) => AppConfig.clerkPublishableKey,
@@ -197,9 +222,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       diagnostics.info(
         scope: 'auth.restore',
         message: 'Restored demo session.',
-        context: {
-          'onboardingComplete': state.onboardingComplete,
-        },
+        context: {'onboardingComplete': state.onboardingComplete},
       );
       ref.invalidate(appBootstrapProvider);
       return;
@@ -237,9 +260,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       diagnostics.info(
         scope: 'auth.restore',
         message: 'Restored authenticated Clerk session.',
-        context: {
-          'email': restored.email ?? 'none',
-        },
+        context: {'email': restored.email ?? 'none'},
       );
       _invalidateAuthenticatedState();
     } catch (error, stackTrace) {
@@ -263,10 +284,9 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       status: AuthStatus.demo,
       onboardingComplete: false,
     );
-    ref.read(appDiagnosticsProvider).info(
-      scope: 'auth.session',
-      message: 'Signed in to demo workspace.',
-    );
+    ref
+        .read(appDiagnosticsProvider)
+        .info(scope: 'auth.session', message: 'Signed in to demo workspace.');
     _invalidateAuthenticatedState();
   }
 
@@ -281,13 +301,13 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       bearerToken: token,
       email: email,
     );
-    ref.read(appDiagnosticsProvider).info(
-      scope: 'auth.session',
-      message: 'Authenticated session established.',
-      context: {
-        'email': email ?? 'none',
-      },
-    );
+    ref
+        .read(appDiagnosticsProvider)
+        .info(
+          scope: 'auth.session',
+          message: 'Authenticated session established.',
+          context: {'email': email ?? 'none'},
+        );
     _invalidateAuthenticatedState();
   }
 
@@ -361,11 +381,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     diagnostics.info(
       scope: 'auth.sign_up',
       message: 'Attempting password sign-up.',
-      context: {
-        'email': email,
-        'firstName': firstName,
-        'lastName': lastName,
-      },
+      context: {'email': email, 'firstName': firstName, 'lastName': lastName},
     );
 
     try {
@@ -382,11 +398,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
         message: 'Password sign-up failed.',
         error: error,
         stackTrace: stackTrace,
-        context: {
-          'email': email,
-          'firstName': firstName,
-          'lastName': lastName,
-        },
+        context: {'email': email, 'firstName': firstName, 'lastName': lastName},
       );
       rethrow;
     }
@@ -463,10 +475,9 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
   }
 
   void signOut() {
-    ref.read(appDiagnosticsProvider).info(
-      scope: 'auth.sign_out',
-      message: 'Sign-out requested.',
-    );
+    ref
+        .read(appDiagnosticsProvider)
+        .info(scope: 'auth.sign_out', message: 'Sign-out requested.');
     unawaited(_signOut(remote: true));
   }
 
@@ -474,10 +485,12 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     if (!state.isAuthenticated) {
       return;
     }
-    ref.read(appDiagnosticsProvider).warning(
-      scope: 'auth.unauthorized',
-      message: 'Backend returned unauthorized for active session.',
-    );
+    ref
+        .read(appDiagnosticsProvider)
+        .warning(
+          scope: 'auth.unauthorized',
+          message: 'Backend returned unauthorized for active session.',
+        );
     unawaited(_signOut(remote: false));
   }
 
@@ -487,12 +500,14 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       try {
         await service?.signOut();
       } catch (error, stackTrace) {
-        ref.read(appDiagnosticsProvider).warning(
-          scope: 'auth.sign_out',
-          message: 'Remote sign-out failed. Clearing local session anyway.',
-          error: error,
-          stackTrace: stackTrace,
-        );
+        ref
+            .read(appDiagnosticsProvider)
+            .warning(
+              scope: 'auth.sign_out',
+              message: 'Remote sign-out failed. Clearing local session anyway.',
+              error: error,
+              stackTrace: stackTrace,
+            );
       }
     }
 
@@ -502,11 +517,13 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     _clearLegacyAuthPrefs();
 
     state = const AuthSession(status: AuthStatus.signedOut);
-    ref.read(appDiagnosticsProvider).info(
-      scope: 'auth.sign_out',
-      message: 'Session signed out locally.',
-      context: {'remote': remote},
-    );
+    ref
+        .read(appDiagnosticsProvider)
+        .info(
+          scope: 'auth.sign_out',
+          message: 'Session signed out locally.',
+          context: {'remote': remote},
+        );
     _invalidateAuthenticatedState();
   }
 
@@ -596,9 +613,7 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
       diagnostics.warning(
         scope: 'app_access.resolve',
         message: 'Backend health check reported unavailable status.',
-        context: {
-          'backendStatus': health['status'],
-        },
+        context: {'backendStatus': health['status']},
       );
       return AppAccessState(
         stage: AppAccessStage.apiUnavailable,
@@ -938,10 +953,11 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     }
 
     if (authSession.isDemo) {
-      return const AppSettings(
+      return AppSettings(
         id: 'demo-settings',
         userId: 'demo-user',
         theme: 'system',
+        language: ref.read(appLanguagePreferenceProvider),
         emailNotifications: true,
       );
     }
@@ -951,7 +967,14 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     }
 
     final api = ref.read(apiServiceProvider);
-    return api.fetchSettings();
+    final settings = await api.fetchSettings();
+    final normalizedLanguage = normalizeAppLanguagePreference(
+      settings.language,
+    );
+    await ref
+        .read(appLanguagePreferenceProvider.notifier)
+        .update(normalizedLanguage);
+    return settings.copyWith(language: normalizedLanguage);
   }
 
   Future<void> toggleNotifications(bool enabled) async {
@@ -989,6 +1012,32 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
       return api.updateSettings({
         'robotSettings': {'ideaPoolEnabled': enabled},
       });
+    });
+  }
+
+  Future<void> updateLanguage(String language) async {
+    final normalizedLanguage = normalizeAppLanguagePreference(language);
+    await ref
+        .read(appLanguagePreferenceProvider.notifier)
+        .update(normalizedLanguage);
+
+    final current = state.valueOrNull;
+    if (current == null) {
+      return;
+    }
+
+    if (ref.read(authSessionProvider).isDemo) {
+      state = AsyncData(current.copyWith(language: normalizedLanguage));
+      return;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      final settings = await api.updateSettings({
+        'language': normalizedLanguage,
+      });
+      return settings.copyWith(language: normalizedLanguage);
     });
   }
 }

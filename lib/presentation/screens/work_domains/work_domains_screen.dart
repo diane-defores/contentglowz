@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 
 final _workDomainsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
@@ -19,7 +20,7 @@ class WorkDomainsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Work Domains'),
+        title: Text(context.tr('Work Domains')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -32,7 +33,7 @@ class WorkDomainsScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'work_domains.load',
-            title: 'Failed to load work domains',
+            title: context.tr('Failed to load work domains'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(_workDomainsProvider),
@@ -47,10 +48,10 @@ class WorkDomainsScreen extends ConsumerWidget {
                   Icon(Icons.workspaces_outlined, size: 64,
                       color: theme.colorScheme.outlineVariant),
                   const SizedBox(height: 16),
-                  Text('No work domains configured',
+                  Text(context.tr('No work domains configured'),
                       style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 4),
-                  Text('Domains are created when robots run on a project',
+                  Text(context.tr('Domains are created when robots run on a project'),
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: theme.colorScheme.outlineVariant)),
                 ],
@@ -130,7 +131,7 @@ class _DomainCard extends StatelessWidget {
                           color: statusColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(status,
+                        child: Text(context.tr(status),
                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: statusColor)),
                       ),
                     ],
@@ -138,12 +139,16 @@ class _DomainCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _Stat(label: 'Pending', value: '$pending', color: Colors.orange),
+                      _Stat(label: context.tr('Pending'), value: '$pending', color: Colors.orange),
                       const SizedBox(width: 16),
-                      _Stat(label: 'Done', value: '$completed', color: Colors.green),
+                      _Stat(label: context.tr('Done'), value: '$completed', color: Colors.green),
                       if (lastRunStatus != null) ...[
                         const SizedBox(width: 16),
-                        _Stat(label: 'Last', value: lastRunStatus, color: theme.colorScheme.onSurfaceVariant),
+                        _Stat(
+                          label: context.tr('Last'),
+                          value: context.tr(lastRunStatus),
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ],
                     ],
                   ),

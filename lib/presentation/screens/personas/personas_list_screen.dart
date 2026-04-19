@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -13,7 +15,7 @@ class PersonasListScreen extends ConsumerWidget {
     final personasAsync = ref.watch(personasProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Personas')),
+      appBar: AppBar(title: Text(context.tr('Personas'))),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/personas/new'),
         child: const Icon(Icons.add),
@@ -23,7 +25,7 @@ class PersonasListScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'personas.load',
-            title: 'Failed to load personas',
+            title: context.tr('Failed to load personas'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(personasProvider),
@@ -38,13 +40,15 @@ class PersonasListScreen extends ConsumerWidget {
                   Icon(Icons.people_outline,
                       size: 64, color: Colors.white.withAlpha(40)),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No personas yet',
+                  Text(
+                    context.tr('No personas yet'),
                     style: TextStyle(fontSize: 18, color: Colors.white70),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Create a customer persona to help\nthe AI generate targeted content',
+                    context.tr(
+                      'Create a customer persona to help\nthe AI generate targeted content',
+                    ),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 14, color: Colors.white.withAlpha(100)),
@@ -53,7 +57,7 @@ class PersonasListScreen extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: () => context.push('/personas/new'),
                     icon: const Icon(Icons.add),
-                    label: const Text('Create Persona'),
+                    label: Text(context.tr('Create Persona')),
                   ),
                 ],
               ),
@@ -87,7 +91,7 @@ class PersonasListScreen extends ConsumerWidget {
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w600)),
                   subtitle: Text(
-                    p.demographics?.role ?? 'No role defined',
+                    p.demographics?.role ?? context.tr('No role defined'),
                     style: TextStyle(color: Colors.white.withAlpha(100)),
                   ),
                   trailing: _confidenceBadge(p.confidence),

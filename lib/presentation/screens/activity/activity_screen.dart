@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
-final _activityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final _activityProvider = FutureProvider<List<Map<String, dynamic>>>((
+  ref,
+) async {
   final api = ref.read(apiServiceProvider);
   return api.fetchActivity(limit: 50);
 });
@@ -19,7 +22,7 @@ class ActivityScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Activity'),
+        title: Text(context.tr('Activity')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -32,7 +35,7 @@ class ActivityScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'activity.load',
-            title: 'Failed to load activity',
+            title: context.tr('Failed to load activity'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(_activityProvider),
@@ -44,15 +47,25 @@ class ActivityScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.timeline_outlined, size: 64,
-                      color: theme.colorScheme.outlineVariant),
+                  Icon(
+                    Icons.timeline_outlined,
+                    size: 64,
+                    color: theme.colorScheme.outlineVariant,
+                  ),
                   const SizedBox(height: 16),
-                  Text('No activity yet',
-                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    context.tr('No activity yet'),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Actions from robots and your work will appear here',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outlineVariant)),
+                  Text(
+                    context.tr(
+                      'Actions from robots and your work will appear here',
+                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -117,7 +130,7 @@ class _ActivityItem extends StatelessWidget {
         subtitle: Text(
           [
             robotId,
-            status,
+            context.tr(status),
             createdAt.isNotEmpty ? createdAt.split('T').first : null,
           ].whereType<String>().join(' · '),
           style: theme.textTheme.bodySmall,

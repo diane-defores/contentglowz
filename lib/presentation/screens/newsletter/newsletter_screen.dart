@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -38,7 +39,7 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Newsletter')),
+      appBar: AppBar(title: Text(context.tr('Newsletter'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -47,7 +48,7 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
             loading: () => const LinearProgressIndicator(),
             error: (error, stackTrace) => AppErrorView(
               scope: 'newsletter.config',
-              title: 'Could not check newsletter config',
+              title: context.tr('Could not check newsletter config'),
               error: error,
               stackTrace: stackTrace,
               compact: true,
@@ -73,8 +74,10 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
                       Expanded(
                         child: Text(
                           configured
-                              ? 'Newsletter agent configured'
-                              : 'Newsletter agent not fully configured',
+                              ? context.tr('Newsletter agent configured')
+                              : context.tr(
+                                  'Newsletter agent not fully configured',
+                                ),
                           style: const TextStyle(fontSize: 13),
                         ),
                       ),
@@ -86,44 +89,59 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
           ),
           const SizedBox(height: 20),
 
-          Text('Generate Newsletter', style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Generate Newsletter'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
 
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Newsletter name',
-              hintText: 'Weekly Tech Digest #43',
+            decoration: InputDecoration(
+              labelText: context.tr('Newsletter name'),
+              hintText: context.tr('Weekly Tech Digest #43'),
             ),
           ),
           const SizedBox(height: 12),
 
           TextField(
             controller: _topicsCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Topics (comma-separated)',
-              hintText: 'AI, Flutter, SaaS',
+            decoration: InputDecoration(
+              labelText: context.tr('Topics (comma-separated)'),
+              hintText: context.tr('AI, Flutter, SaaS'),
             ),
           ),
           const SizedBox(height: 12),
 
           TextField(
             controller: _audienceCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Target audience',
-              hintText: 'Indie developers building SaaS products',
+            decoration: InputDecoration(
+              labelText: context.tr('Target audience'),
+              hintText: context.tr('Indie developers building SaaS products'),
             ),
           ),
           const SizedBox(height: 12),
 
           DropdownButtonFormField<String>(
             initialValue: _tone,
-            decoration: const InputDecoration(labelText: 'Tone'),
-            items: const [
-              DropdownMenuItem(value: 'professional', child: Text('Professional')),
-              DropdownMenuItem(value: 'casual', child: Text('Casual')),
-              DropdownMenuItem(value: 'technical', child: Text('Technical')),
-              DropdownMenuItem(value: 'inspirational', child: Text('Inspirational')),
+            decoration: InputDecoration(labelText: context.tr('Tone')),
+            items: [
+              DropdownMenuItem(
+                value: 'professional',
+                child: Text(context.tr('Professional')),
+              ),
+              DropdownMenuItem(
+                value: 'casual',
+                child: Text(context.tr('Casual')),
+              ),
+              DropdownMenuItem(
+                value: 'technical',
+                child: Text(context.tr('Technical')),
+              ),
+              DropdownMenuItem(
+                value: 'inspirational',
+                child: Text(context.tr('Inspirational')),
+              ),
             ],
             onChanged: (v) => setState(() => _tone = v ?? 'professional'),
           ),
@@ -133,10 +151,12 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
             onPressed: _generating ? null : _generate,
             icon: _generating
                 ? const SizedBox(
-                    height: 18, width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.auto_awesome),
-            label: Text(_generating ? 'Generating...' : 'Generate'),
+            label: Text(context.tr(_generating ? 'Generating...' : 'Generate')),
           ),
 
           if (_result != null) ...[
@@ -147,12 +167,23 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Job started', style: theme.textTheme.titleSmall),
+                    Text(
+                      context.tr('Job started'),
+                      style: theme.textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 8),
-                    Text('Job ID: ${_result!['job_id'] ?? 'unknown'}',
-                        style: theme.textTheme.bodySmall),
-                    Text('Status: ${_result!['status'] ?? 'queued'}',
-                        style: theme.textTheme.bodySmall),
+                    Text(
+                      context.tr('Job ID: {jobId}', {
+                        'jobId': _result!['job_id'] ?? context.tr('unknown'),
+                      }),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      context.tr('Status: {status}', {
+                        'status': _result!['status'] ?? context.tr('queued'),
+                      }),
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
@@ -166,7 +197,7 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
   Future<void> _generate() async {
     if (_nameCtrl.text.trim().isEmpty || _topicsCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name and topics are required')),
+        SnackBar(content: Text(context.tr('Name and topics are required'))),
       );
       return;
     }
@@ -180,9 +211,13 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
       final api = ref.read(apiServiceProvider);
       final result = await api.generateNewsletter(
         name: _nameCtrl.text.trim(),
-        topics: _topicsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList(),
+        topics: _topicsCtrl.text
+            .split(',')
+            .map((t) => t.trim())
+            .where((t) => t.isNotEmpty)
+            .toList(),
         targetAudience: _audienceCtrl.text.trim().isEmpty
-            ? 'General audience'
+            ? context.tr('General audience')
             : _audienceCtrl.text.trim(),
         tone: _tone,
       );
@@ -192,7 +227,7 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Generation failed: $error',
+          message: context.tr('Generation failed: {error}', {'error': error}),
           scope: 'newsletter.generate',
           error: error,
           stackTrace: stackTrace,

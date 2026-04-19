@@ -5,6 +5,7 @@ import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import 'affiliation_form_sheet.dart';
+import '../../../l10n/app_localizations.dart';
 
 const _statusFilters = ['all', 'active', 'paused', 'expired'];
 
@@ -26,7 +27,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Affiliations'),
+        title: Text(context.tr('Affiliations')),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -39,7 +40,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'affiliations.load',
-            title: 'Failed to load affiliations',
+            title: context.tr('Failed to load affiliations'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(affiliationsProvider),
@@ -67,7 +68,15 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
                       children: _statusFilters.map((filter) {
                         final isSelected = _statusFilter == filter;
                         return FilterChip(
-                          label: Text(filter[0].toUpperCase() + filter.substring(1)),
+                      label: Text(context.tr(
+                        switch (filter) {
+                          'all' => 'All',
+                          'active' => 'Active',
+                          'paused' => 'Paused',
+                          'expired' => 'Expired',
+                          _ => filter,
+                        },
+                      )),
                           selected: isSelected,
                           onSelected: (_) =>
                               setState(() => _statusFilter = filter),
@@ -120,19 +129,20 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete affiliate link?'),
-        content: Text('Remove "${affiliation.name}"? This cannot be undone.'),
+        title: Text(context.tr('Delete affiliate link?')),
+        content: Text(context.tr('Remove "{name}"? This cannot be undone.',
+            {'name': affiliation.name})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(context.tr('Delete')),
           ),
         ],
       ),
@@ -145,7 +155,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
       ref.invalidate(affiliationsProvider);
       if (mounted) {
         messenger.showSnackBar(
-          SnackBar(content: Text('Deleted "${affiliation.name}"')),
+          SnackBar(content: Text(context.tr('Deleted "{name}"', {'name': affiliation.name}))),
         );
       }
     } catch (error, stackTrace) {
@@ -153,7 +163,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Failed to delete: $error',
+          message: context.tr('Failed to delete: {error}', {'error': '$error'}),
           scope: 'affiliations.delete',
           error: error,
           stackTrace: stackTrace,
@@ -179,13 +189,13 @@ class _StatsRow extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Row(
         children: [
-          _StatChip(label: 'Total', value: '${affiliations.length}', color: colorScheme.primary),
+          _StatChip(label: context.tr('Total'), value: '${affiliations.length}', color: colorScheme.primary),
           const SizedBox(width: 8),
-          _StatChip(label: 'Active', value: '$active', color: Colors.green),
+          _StatChip(label: context.tr('Active'), value: '$active', color: Colors.green),
           const SizedBox(width: 8),
-          _StatChip(label: 'Paused', value: '$paused', color: Colors.orange),
+          _StatChip(label: context.tr('Paused'), value: '$paused', color: Colors.orange),
           const SizedBox(width: 8),
-          _StatChip(label: 'Expired', value: '$expired', color: Colors.red),
+          _StatChip(label: context.tr('Expired'), value: '$expired', color: Colors.red),
         ],
       ),
     );
@@ -359,8 +369,8 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             hasFilter
-                ? 'No affiliate links match this filter'
-                : 'No affiliate links yet',
+                ? context.tr('No affiliate links match this filter')
+                : context.tr('No affiliate links yet'),
             style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
           if (!hasFilter) ...[
@@ -368,7 +378,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              label: const Text('Add first link'),
+              label: Text(context.tr('Add first link')),
             ),
           ],
         ],

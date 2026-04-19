@@ -174,6 +174,7 @@
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
 | ✅ | Feedback Admin v1 côté Flutter — soumission texte/audio, historique local léger, accès anonyme et écran admin in-app | High | Medium | ✅ done — client FastAPI prêt, build-time allowlist + docs ajoutés |
+| ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | High | Medium | ✅ done — AppLanguage, persistance SharedPreferences et passe UI sur settings/editor/drip/uptime/work domains/runs/research |
 | 🟠 | Déployer le backend FastAPI feedback (`/api/feedback/*`), le stockage audio S3-compatible et les URLs signées de lecture admin sur le serveur | High | Medium | 🔄 in progress — contrat backend rédigé, implémentation serveur hors repo |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Débloqué maintenant que l'auth Clerk web est stable |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
@@ -193,6 +194,7 @@
 | ✅ | Diagnostics centralisés + copie d'erreurs/logs exportables dans l'app (runtime, API, auth, Riverpod, snackbars) | ✅ done |
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
+| ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | ✅ done |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
@@ -203,7 +205,8 @@
 | ✅ | Étape 3 — Scheduling + Execution : cadence fixe/ramp-up, frontmatter updater, rebuild trigger, cron tick, plan lifecycle (activate/pause/resume/cancel) | ✅ done |
 | ✅ | Étape 4 — Clustering avancé : cluster_by_tags + cluster_auto via Topical Mesh Architect (fallback gracieux si crewai absent) | ✅ done |
 | ✅ | Étape 5 — GSC : GSCClient (Indexing API submit + URL Inspection API check), endpoints /gsc/submit-urls et /gsc/indexation-status, auto-submit dans execute-tick | ✅ done |
-| 🟠 | Étape 6 — Flutter UI : écran liste plans + wizard création + dashboard progression + actions lifecycle | 🔄 in progress |
+| 🟠 | Étape 6 — Flutter UI : écran liste plans + wizard création + dashboard progression + actions lifecycle | ✅ done |
+| 🟡 | Étape 7 — Passe i18n complémentaire sur les écrans secondaires et harmonisation des clés de traduction | 📋 todo |
 
 ### 🟢 P3 — Backlog
 

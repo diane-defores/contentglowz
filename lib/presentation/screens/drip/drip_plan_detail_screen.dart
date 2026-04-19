@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/drip_plan.dart';
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 
 class DripPlanDetailScreen extends ConsumerStatefulWidget {
@@ -31,8 +32,8 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
       appBar: AppBar(
         title: plan.when(
           data: (p) => Text(p.name),
-          loading: () => const Text('Loading...'),
-          error: (error, stackTrace) => const Text('Error'),
+          loading: () => Text(context.tr('Loading...')),
+          error: (error, stackTrace) => Text(context.tr('Error')),
         ),
         actions: [
           plan.when(
@@ -47,7 +48,7 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'drip.plan_detail.load',
-            title: 'Failed to load drip plan',
+            title: context.tr('Failed to load drip plan'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () {
@@ -114,34 +115,42 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         case 'import':
           final dir = plan.ssgConfig['content_directory'] as String? ?? 'src/data';
           final result = await api.importDripContent(plan.id, dir);
-          message = 'Imported ${result['items_imported']} articles';
+          message = context.tr('Imported {count} articles', {
+            'count': '${result['items_imported']}',
+          });
         case 'cluster':
           final result = await api.clusterDripPlan(plan.id, mode: plan.clusterMode);
-          message = 'Clustered into ${result['total_clusters']} groups';
+          message = context.tr('Clustered into {count} groups', {
+            'count': '${result['total_clusters']}',
+          });
         case 'schedule':
           final result = await api.scheduleDripPlan(plan.id);
-          message = 'Scheduled ${result['total_items']} items';
+          message = context.tr('Scheduled {count} items', {
+            'count': '${result['total_items']}',
+          });
         case 'activate':
           await api.activateDripPlan(plan.id);
-          message = 'Plan activated — dripping starts!';
+          message = context.tr('Plan activated — dripping starts!');
         case 'pause':
           await api.pauseDripPlan(plan.id);
-          message = 'Plan paused';
+          message = context.tr('Plan paused');
         case 'resume':
           await api.resumeDripPlan(plan.id);
-          message = 'Plan resumed';
+          message = context.tr('Plan resumed');
         case 'cancel':
           await api.cancelDripPlan(plan.id);
-          message = 'Plan cancelled';
+          message = context.tr('Plan cancelled');
         case 'execute':
           final result = await api.executeDripTick(plan.id);
-          message = 'Published ${result['published']} articles';
+          message = context.tr('Published {count} articles', {
+            'count': '${result['published']}',
+          });
         case 'delete':
           await api.deleteDripPlan(plan.id);
           if (mounted) Navigator.pop(context);
-          message = 'Plan deleted';
+          message = context.tr('Plan deleted');
         default:
-          message = 'Unknown action';
+          message = context.tr('Unknown action');
       }
 
       ref.invalidate(dripPlansProvider);
@@ -154,7 +163,7 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Action failed: $error',
+          message: context.tr('Action failed: {error}', {'error': '$error'}),
           scope: 'drip.plan_detail.action',
           error: error,
           stackTrace: stackTrace,
@@ -186,7 +195,7 @@ class _StatusHeader extends StatelessWidget {
                 _statusIcon(plan.status),
                 const SizedBox(width: 8),
                 Text(
-                  plan.status.toUpperCase(),
+                  context.tr(plan.status),
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: _statusColor(plan.status),
                     fontWeight: FontWeight.bold,
@@ -195,13 +204,19 @@ class _StatusHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            _infoRow('Articles', '${plan.totalItems}'),
-            _infoRow('Cadence', '${plan.itemsPerDay}/day (${plan.cadenceMode})'),
-            _infoRow('Start', plan.startDate),
+            _infoRow(context.tr('Articles'), '${plan.totalItems}'),
+            _infoRow(
+              context.tr('Cadence'),
+              '${plan.itemsPerDay}/${context.tr('day')} (${context.tr(plan.cadenceMode)})',
+            ),
+            _infoRow(context.tr('Start'), plan.startDate),
             if (plan.nextDripAt != null)
-              _infoRow('Next drip', plan.nextDripAt!.substring(0, 10)),
+              _infoRow(
+                context.tr('Next drip'),
+                plan.nextDripAt!.substring(0, 10),
+              ),
             if (plan.lastDripAt != null)
-              _infoRow('Last drip', plan.lastDripAt!.substring(0, 10)),
+              _infoRow(context.tr('Last drip'), plan.lastDripAt!.substring(0, 10)),
           ],
         ),
       ),
@@ -251,8 +266,9 @@ class _ProgressCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Progress', style: Theme.of(context).textTheme.titleSmall),
+            children: [
+            Text(context.tr('Progress'),
+                style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -264,7 +280,11 @@ class _ProgressCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${stats.published}/${stats.totalItems} published (${(stats.progressPercent * 100).toStringAsFixed(0)}%)',
+              context.tr('Published {published}/{total} ({percent}%)', {
+                'published': '${stats.published}',
+                'total': '${stats.totalItems}',
+                'percent': (stats.progressPercent * 100).toStringAsFixed(0),
+              }),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
@@ -280,7 +300,13 @@ class _ProgressCard extends StatelessWidget {
                     _ => Colors.grey,
                   },
                 ),
-                label: Text('${e.key}: ${e.value}', style: const TextStyle(fontSize: 12)),
+                label: Text(
+                  context.tr('{status}: {count}', {
+                    'status': context.tr(e.key),
+                    'count': '${e.value}',
+                  }),
+                  style: const TextStyle(fontSize: 12),
+                ),
                 visualDensity: VisualDensity.compact,
               )).toList(),
             ),
@@ -306,7 +332,8 @@ class _ClustersCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Clusters', style: Theme.of(context).textTheme.titleSmall),
+            Text(context.tr('Clusters'),
+                style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             ...stats.clusters.map((c) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
@@ -347,14 +374,15 @@ class _ConfigCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Configuration', style: Theme.of(context).textTheme.titleSmall),
+            Text(context.tr('Configuration'),
+                style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
-            _row('Framework', plan.ssgFramework),
-            _row('Gating', plan.ssgConfig['gating_method'] as String? ?? '?'),
-            _row('Rebuild', plan.rebuildMethod),
-            _row('Clustering', plan.clusterMode),
+            _row(context.tr('Framework'), plan.ssgFramework),
+            _row(context.tr('Gating'), plan.ssgConfig['gating_method'] as String? ?? '?'),
+            _row(context.tr('Rebuild'), plan.rebuildMethod),
+            _row(context.tr('Clustering'), context.tr(plan.clusterMode)),
             if (plan.gscConfig != null && plan.gscConfig!['enabled'] == true)
-              _row('GSC', 'Enabled'),
+              _row(context.tr('GSC'), context.tr('Enabled')),
           ],
         ),
       ),
@@ -394,51 +422,51 @@ class _ActionButtons extends StatelessWidget {
           FilledButton.icon(
             onPressed: () => onAction('import'),
             icon: const Icon(Icons.download),
-            label: const Text('Import Content'),
+            label: Text(context.tr('Import Content')),
           ),
           const SizedBox(height: 8),
           FilledButton.tonalIcon(
             onPressed: () => onAction('cluster'),
             icon: const Icon(Icons.hub),
-            label: const Text('Cluster Items'),
+            label: Text(context.tr('Cluster Items')),
           ),
           const SizedBox(height: 8),
           FilledButton.tonalIcon(
             onPressed: () => onAction('schedule'),
             icon: const Icon(Icons.calendar_month),
-            label: const Text('Generate Schedule'),
+            label: Text(context.tr('Generate Schedule')),
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () => onAction('activate'),
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Activate Plan'),
+            label: Text(context.tr('Activate Plan')),
           ),
         ],
         if (plan.isActive) ...[
           FilledButton.icon(
             onPressed: () => onAction('execute'),
             icon: const Icon(Icons.water_drop),
-            label: const Text('Execute Drip Now'),
+            label: Text(context.tr('Execute Drip Now')),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: () => onAction('pause'),
             icon: const Icon(Icons.pause),
-            label: const Text('Pause'),
+            label: Text(context.tr('Pause')),
           ),
         ],
         if (plan.isPaused) ...[
           FilledButton.icon(
             onPressed: () => onAction('resume'),
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Resume'),
+            label: Text(context.tr('Resume')),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: () => onAction('cancel'),
             icon: const Icon(Icons.cancel),
-            label: const Text('Cancel Plan'),
+            label: Text(context.tr('Cancel Plan')),
           ),
         ],
       ],
@@ -456,13 +484,13 @@ class _ActionMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       onSelected: onAction,
       itemBuilder: (_) => [
-        if (plan.isDraft)
-          const PopupMenuItem(value: 'delete', child: Text('Delete plan')),
+          if (plan.isDraft)
+          PopupMenuItem(value: 'delete', child: Text(context.tr('Delete plan'))),
         if (plan.isActive)
-          const PopupMenuItem(value: 'cancel', child: Text('Cancel plan')),
+          PopupMenuItem(value: 'cancel', child: Text(context.tr('Cancel plan'))),
         if (plan.isPaused) ...[
-          const PopupMenuItem(value: 'resume', child: Text('Resume')),
-          const PopupMenuItem(value: 'cancel', child: Text('Cancel')),
+          PopupMenuItem(value: 'resume', child: Text(context.tr('Resume'))),
+          PopupMenuItem(value: 'cancel', child: Text(context.tr('Cancel'))),
         ],
       ],
     );

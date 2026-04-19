@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/models/idea.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -26,7 +27,7 @@ class IdeaPoolScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Idea Pool'),
+        title: Text(context.tr('Idea Pool')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -39,7 +40,7 @@ class IdeaPoolScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'idea_pool.load',
-            title: 'Failed to load ideas',
+            title: context.tr('Failed to load ideas'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(ideasProvider),
@@ -61,15 +62,13 @@ class IdeaPoolScreen extends ConsumerWidget {
                       child: Row(
                         children: _statusFilters.map((filter) {
                           final selected = notifier.statusFilter == filter;
+                          final label = filter == 'all'
+                              ? 'All'
+                              : filter[0].toUpperCase() + filter.substring(1);
                           return Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: FilterChip(
-                              label: Text(
-                                filter == 'all'
-                                    ? 'All'
-                                    : filter[0].toUpperCase() +
-                                        filter.substring(1),
-                              ),
+                              label: Text(context.tr(label)),
                               selected: selected,
                               onSelected: (_) =>
                                   notifier.setStatusFilter(filter),
@@ -90,7 +89,7 @@ class IdeaPoolScreen extends ConsumerWidget {
                         children: _sourceFilters.map((filter) {
                           final selected = notifier.sourceFilter == filter;
                           final label = filter == 'all'
-                              ? 'All sources'
+                              ? context.tr('All sources')
                               : Idea(
                                   id: '',
                                   source: filter,
@@ -143,19 +142,24 @@ class IdeaPoolScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete idea?'),
-        content: Text('Remove "${idea.title}"? This cannot be undone.'),
+        title: Text(context.tr('Delete idea?')),
+        content: Text(
+          context.tr(
+            'Remove "{title}"? This cannot be undone.',
+            {'title': idea.title},
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(context.tr('Delete')),
           ),
         ],
       ),
@@ -223,7 +227,7 @@ class _StatChip extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 20, fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 2),
-            Text(label,
+            Text(context.tr(label),
                 style: TextStyle(fontSize: 11, color: color.withAlpha(180))),
           ],
         ),
@@ -251,7 +255,7 @@ class _IdeaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final dateFormat = DateFormat('MMM d, y');
+    final dateFormat = DateFormat('MMM d, y', context.localeTag);
 
     final statusColor = switch (idea.status) {
       'raw' => const Color(0xFFFDAA5E),
@@ -321,19 +325,28 @@ class _IdeaCard extends StatelessWidget {
                 if (idea.priorityScore != null)
                   _MetaChip(
                     icon: Icons.trending_up,
-                    text: 'Score ${idea.priorityScore!.toStringAsFixed(0)}',
+                    text: context.tr(
+                      'Score {score}',
+                      {'score': idea.priorityScore!.toStringAsFixed(0)},
+                    ),
                     color: const Color(0xFF00B894),
                   ),
                 if (idea.searchVolume != null)
                   _MetaChip(
                     icon: Icons.search,
-                    text: '${idea.searchVolume} vol',
+                    text: context.tr(
+                      '{volume} vol',
+                      {'volume': idea.searchVolume},
+                    ),
                     color: const Color(0xFF0984E3),
                   ),
                 if (idea.keywordDifficulty != null)
                   _MetaChip(
                     icon: Icons.speed,
-                    text: 'KD ${idea.keywordDifficulty!.toStringAsFixed(0)}',
+                    text: context.tr(
+                      'KD {score}',
+                      {'score': idea.keywordDifficulty!.toStringAsFixed(0)},
+                    ),
                     color: const Color(0xFFE17055),
                   ),
                 _MetaChip(
@@ -462,7 +475,7 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: color),
             const SizedBox(width: 6),
-            Text(label,
+            Text(context.tr(label),
                 style: TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w500, color: color)),
           ],
@@ -488,13 +501,15 @@ class _EmptyState extends StatelessWidget {
               size: 64, color: colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
-            'No ideas yet',
+            context.tr('No ideas yet'),
             style:
                 TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
           ),
           const SizedBox(height: 8),
           Text(
-            'Ideas from newsletters, SEO, competitors\nand social listening will appear here.',
+            context.tr(
+              'Ideas from newsletters, SEO, competitors\nand social listening will appear here.',
+            ),
             textAlign: TextAlign.center,
             style:
                 TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),

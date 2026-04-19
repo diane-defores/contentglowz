@@ -1,6 +1,6 @@
-import 'dart:html' as html;
-import 'dart:js_util' as js_util;
-
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+import 'package:web/web.dart' as web;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ClerkAuthResult {
@@ -48,14 +48,17 @@ class ClerkAuthService {
 
   Future<void> signOut() async {
     final bridge = await _loadBridge();
-    await _promiseToFuture(js_util.callMethod<Object?>(bridge, 'signOut', []));
+    await _promiseToFuture<JSAny?>(
+      bridge.callMethodVarArgs('signOut'.toJS, <JSAny?>[]),
+    );
   }
 
   Future<ClerkAuthResult?> restoreSession() async {
     final bridge = await _loadBridge();
-    final signedIn = await _promiseToFuture<bool>(
-      js_util.callMethod<Object?>(bridge, 'isSignedIn', []),
-    );
+    final signedIn = (await _promiseToFuture<JSBoolean>(
+      bridge.callMethodVarArgs('isSignedIn'.toJS, <JSAny?>[]),
+    ))
+        .toDart;
     if (!signedIn) {
       return null;
     }
@@ -65,8 +68,8 @@ class ClerkAuthService {
       return null;
     }
 
-    final user = await _promiseToFuture<Object?>(
-      js_util.callMethod<Object?>(bridge, 'getUser', []),
+    final user = await _promiseToFuture<JSAny?>(
+      bridge.callMethodVarArgs('getUser'.toJS, <JSAny?>[]),
     );
     final userMap = _mapFromJs(user);
     final userId = userMap['id']?.toString() ?? '';
@@ -83,14 +86,12 @@ class ClerkAuthService {
 
   Future<String?> getFreshToken({bool skipCache = false}) async {
     final bridge = await _loadBridge();
-    final token = await _promiseToFuture<Object?>(
-      js_util.callMethod<Object?>(
-        bridge,
-        'getToken',
-        [js_util.jsify({'skipCache': skipCache})],
-      ),
+    final token = await _promiseToFuture<JSAny?>(
+      bridge.callMethodVarArgs('getToken'.toJS, <JSAny?>[
+        <String, Object?>{'skipCache': skipCache}.jsify(),
+      ]),
     );
-    final value = token?.toString();
+    final value = token?.dartify()?.toString();
     if (value == null || value.isEmpty || value == 'null') {
       return null;
     }
@@ -99,8 +100,10 @@ class ClerkAuthService {
 
   void terminate() {}
 
-  Future<Object> _loadBridge() async {
-    final bridge = js_util.getProperty<Object?>(html.window, 'contentflowClerkBridge');
+  Future<JSObject> _loadBridge() async {
+    final bridge = JSObject.fromInteropObject(
+      web.window,
+    )['contentflowClerkBridge'];
     if (bridge == null) {
       throw StateError(
         'ClerkJS bridge is missing from the web runtime. '
@@ -108,25 +111,28 @@ class ClerkAuthService {
       );
     }
 
-    await _promiseToFuture(js_util.callMethod<Object?>(bridge, 'load', []));
-    return bridge;
+    final bridgeObject = bridge as JSObject;
+    await _promiseToFuture<JSAny?>(
+      bridgeObject.callMethodVarArgs('load'.toJS, <JSAny?>[]),
+    );
+    return bridgeObject;
   }
 
-  Future<T> _promiseToFuture<T>(Object? promise) {
+  Future<T> _promiseToFuture<T extends JSAny?>(JSAny? promise) {
     if (promise == null) {
       return Future<T>.error(
         StateError('ClerkJS bridge returned no value.'),
       );
     }
-    return js_util.promiseToFuture<T>(promise);
+    return (promise as JSPromise<T>).toDart;
   }
 
-  Map<String, dynamic> _mapFromJs(Object? value) {
+  Map<String, dynamic> _mapFromJs(JSAny? value) {
     if (value == null) {
       return const <String, dynamic>{};
     }
 
-    final dartValue = js_util.dartify(value);
+    final dartValue = value.dartify();
     if (dartValue is Map) {
       return Map<String, dynamic>.from(dartValue);
     }

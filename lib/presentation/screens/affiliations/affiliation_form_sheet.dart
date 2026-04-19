@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
+import '../../../l10n/app_localizations.dart';
 
 const _categories = [
   'tech',
@@ -110,7 +111,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
               ),
               const SizedBox(height: 16),
               Text(
-                _isEditing ? 'Edit Affiliate Link' : 'New Affiliate Link',
+                _isEditing ? context.tr('Edit Affiliate Link') : context.tr('New Affiliate Link'),
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
@@ -118,34 +119,34 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
               // Name
               TextFormField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Name *',
-                  hintText: 'Amazon Associates',
+                decoration: InputDecoration(
+                  labelText: context.tr('Name *'),
+                  hintText: context.tr('Amazon Associates'),
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? context.tr('Required') : null,
               ),
               const SizedBox(height: 12),
 
               // URL
               TextFormField(
                 controller: _urlCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'URL *',
-                  hintText: 'https://affiliate.example.com/ref=123',
+                decoration: InputDecoration(
+                  labelText: context.tr('URL *'),
+                  hintText: context.tr('https://affiliate.example.com/ref=123'),
                 ),
                 keyboardType: TextInputType.url,
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? context.tr('Required') : null,
               ),
               const SizedBox(height: 12),
 
               // Description
               TextFormField(
                 controller: _descriptionCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Brief description of the program...',
+                decoration: InputDecoration(
+                  labelText: context.tr('Description'),
+                  hintText: context.tr('Brief description of the program...'),
                 ),
                 maxLines: 2,
               ),
@@ -157,7 +158,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _category.isEmpty ? null : _category,
-                      decoration: const InputDecoration(labelText: 'Category'),
+                      decoration: InputDecoration(labelText: context.tr('Category')),
                       items: _categories
                           .map((c) => DropdownMenuItem(
                               value: c,
@@ -171,9 +172,9 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _commissionCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Commission',
-                        hintText: '5% or 10/sale',
+                      decoration: InputDecoration(
+                        labelText: context.tr('Commission'),
+                        hintText: context.tr('5% or 10/sale'),
                       ),
                     ),
                   ),
@@ -187,8 +188,8 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _contactUrlCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Contact URL',
+                      decoration: InputDecoration(
+                        labelText: context.tr('Contact URL'),
                       ),
                       keyboardType: TextInputType.url,
                     ),
@@ -197,8 +198,8 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _loginUrlCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Login URL',
+                      decoration: InputDecoration(
+                        labelText: context.tr('Login URL'),
                       ),
                       keyboardType: TextInputType.url,
                     ),
@@ -210,10 +211,10 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
               // Keywords
               TextFormField(
                 controller: _keywordsCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Keywords (comma-separated)',
-                  hintText: 'hosting, wordpress, website',
-                  helperText: 'AI uses these to match content topics',
+                decoration: InputDecoration(
+                  labelText: context.tr('Keywords (comma-separated)'),
+                  hintText: context.tr('hosting, wordpress, website'),
+                  helperText: context.tr('AI uses these to match content topics'),
                 ),
               ),
               const SizedBox(height: 12),
@@ -224,7 +225,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _status,
-                      decoration: const InputDecoration(labelText: 'Status'),
+                      decoration: InputDecoration(labelText: context.tr('Status')),
                       items: _statuses
                           .map((s) => DropdownMenuItem(
                               value: s,
@@ -241,11 +242,11 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                       onTap: _pickDate,
                       child: InputDecorator(
                         decoration:
-                            const InputDecoration(labelText: 'Expires'),
+                            InputDecoration(labelText: context.tr('Expires')),
                         child: Text(
                           _expiresAt != null
                               ? '${_expiresAt!.year}-${_expiresAt!.month.toString().padLeft(2, '0')}-${_expiresAt!.day.toString().padLeft(2, '0')}'
-                              : 'No date',
+                              : context.tr('No date'),
                           style: TextStyle(
                             color: _expiresAt != null
                                 ? null
@@ -262,9 +263,9 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
               // Notes
               TextFormField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notes for AI',
-                  hintText: 'When and how to use this link...',
+                decoration: InputDecoration(
+                  labelText: context.tr('Notes for AI'),
+                  hintText: context.tr('When and how to use this link...'),
                 ),
                 maxLines: 3,
               ),
@@ -277,7 +278,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                     child: OutlinedButton(
                       onPressed:
                           _saving ? null : () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
+                      child: Text(context.tr('Cancel')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -290,7 +291,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : Text(_isEditing ? 'Update' : 'Create'),
+                          : Text(_isEditing ? context.tr('Update') : context.tr('Create')),
                     ),
                   ),
                 ],
@@ -358,7 +359,7 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Failed to save: $error',
+          message: context.tr('Failed to save: {error}', {'error': '$error'}),
           scope: 'affiliations.save',
           error: error,
           stackTrace: stackTrace,

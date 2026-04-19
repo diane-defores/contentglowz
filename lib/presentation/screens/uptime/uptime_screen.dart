@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/app_access_state.dart';
-import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 
 class UptimeScreen extends ConsumerStatefulWidget {
@@ -35,7 +34,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Uptime'),
+        title: Text(context.tr('Uptime')),
         actions: [
           IconButton(
             icon: _checking
@@ -56,19 +55,25 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Access State', style: theme.textTheme.titleSmall),
+                  Text(context.tr('Access State'), style: theme.textTheme.titleSmall),
                   const SizedBox(height: 8),
-                  Text('Stage: ${accessState?.diagnosticsLabel ?? 'loading'}'),
+                  Text(context.tr('Stage: {stage}', {
+                    'stage': accessState?.diagnosticsLabel ?? context.tr('loading'),
+                  })),
                   const SizedBox(height: 4),
-                  Text('Session: ${authSession.status.name}'),
+                  Text(context.tr('Session: {state}', {
+                    'state': authSession.status.name,
+                  })),
                   if (authSession.email != null) ...[
                     const SizedBox(height: 4),
-                    Text('Email: ${authSession.email}'),
+                    Text(context.tr('Email: {email}', {
+                      'email': '${authSession.email}',
+                    })),
                   ],
                   if (accessState?.message case final message?) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Last backend message: $message',
+                      context.tr('Last backend message: {message}', {'message': message}),
                       style: theme.textTheme.bodySmall,
                     ),
                   ],
@@ -86,12 +91,12 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                 const SizedBox(height: 12),
                 AppErrorView(
                   scope: 'uptime.status_check',
-                  title: 'Backend status check failed',
+                  title: context.tr('Backend status check failed'),
                   error: error,
                   stackTrace: stackTrace,
                   compact: true,
                   showIcon: false,
-                  copyLabel: 'Copy diagnostics',
+                  copyLabel: context.tr('Copy diagnostics'),
                   onRetry: _refreshAccessState,
                 ),
               ],
@@ -114,7 +119,8 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('API Details', style: theme.textTheme.titleSmall),
+                      Text(context.tr('API Details'),
+                          style: theme.textTheme.titleSmall),
                       const SizedBox(height: 8),
                       ...data.entries
                           .where((e) => e.key != 'status')
@@ -147,14 +153,14 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
               FilledButton.icon(
                 onPressed: _checking ? null : _refreshAccessState,
                 icon: const Icon(Icons.sync_rounded),
-                label: const Text('Retry backend'),
+                  label: Text(context.tr('Retry backend')),
               ),
               OutlinedButton.icon(
                 onPressed: () {
                   copyDiagnosticsToClipboard(
                     context,
                     ref,
-                    title: 'ContentFlow system status diagnostics',
+                    title: context.tr('ContentFlow system status diagnostics'),
                     scope: 'uptime.copy_diagnostics',
                     currentError: accessState?.message,
                     contextData: {
@@ -165,12 +171,12 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   );
                 },
                 icon: const Icon(Icons.copy_rounded),
-                label: const Text('Copy diagnostics'),
+                  label: Text(context.tr('Copy diagnostics')),
               ),
               OutlinedButton.icon(
                 onPressed: () => ref.read(authSessionProvider.notifier).signOut(),
                 icon: const Icon(Icons.logout_rounded),
-                label: const Text('Sign out'),
+                  label: Text(context.tr('Sign out')),
               ),
             ],
           ),
@@ -178,7 +184,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
 
           // Ping history
           if (_history.isNotEmpty) ...[
-            Text('Ping History', style: theme.textTheme.titleMedium),
+            Text(context.tr('Ping History'), style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             ..._history.reversed.map((ping) => Card(
                   margin: const EdgeInsets.only(bottom: 6),
@@ -190,7 +196,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                       size: 20,
                     ),
                     title: Text(
-                      ping.online ? 'Online' : 'Offline',
+                      ping.online ? context.tr('Online') : context.tr('Offline'),
                       style: const TextStyle(fontSize: 13),
                     ),
                     subtitle: Text(
@@ -205,7 +211,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
           OutlinedButton.icon(
             onPressed: _checking ? null : _refreshAccessState,
             icon: const Icon(Icons.speed),
-            label: const Text('Ping again'),
+              label: Text(context.tr('Ping again')),
           ),
         ],
       ),
@@ -282,7 +288,7 @@ class _StatusBanner extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            online ? 'API Online' : 'API Offline',
+            online ? context.tr('API Online') : context.tr('API Offline'),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PlatformPreviewSheet extends StatelessWidget {
   const PlatformPreviewSheet({
@@ -18,7 +19,7 @@ class PlatformPreviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final previews = _buildPreviews();
+    final previews = _buildPreviews(context);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -41,7 +42,7 @@ class PlatformPreviewSheet extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Platform Previews',
+            child: Text(context.tr('Platform Previews'),
                 style: theme.textTheme.titleMedium),
           ),
           const SizedBox(height: 12),
@@ -58,7 +59,7 @@ class PlatformPreviewSheet extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildPreviews() {
+  List<Widget> _buildPreviews(BuildContext context) {
     final previews = <Widget>[];
     final plainBody = _stripMarkdown(body);
     final truncated = plainBody.length > 280
@@ -132,7 +133,7 @@ class _TwitterPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final overLimit = charCount > 280;
     return _PreviewCard(
-      platform: 'Twitter / X',
+      platform: context.tr('Twitter / X'),
       icon: Icons.alternate_email,
       color: const Color(0xFF1DA1F2),
       child: Column(
@@ -146,7 +147,8 @@ class _TwitterPreview extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Your Name', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                  Text(context.tr('Your Name'),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   Text('@yourhandle', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
@@ -184,7 +186,7 @@ class _LinkedInPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PreviewCard(
-      platform: 'LinkedIn',
+      platform: context.tr('LinkedIn'),
       icon: Icons.work_outline,
       color: const Color(0xFF0A66C2),
       child: Column(
@@ -195,11 +197,13 @@ class _LinkedInPreview extends StatelessWidget {
               CircleAvatar(radius: 22, backgroundColor: Colors.grey[300],
                   child: const Icon(Icons.person, size: 24)),
               const SizedBox(width: 10),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Your Name', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                  Text('Your Headline', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(context.tr('Your Name'),
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                  Text(context.tr('Your Headline'),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ],
@@ -211,10 +215,10 @@ class _LinkedInPreview extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _LinkedInAction(icon: Icons.thumb_up_outlined, label: 'Like'),
-              _LinkedInAction(icon: Icons.comment_outlined, label: 'Comment'),
-              _LinkedInAction(icon: Icons.repeat, label: 'Repost'),
-              _LinkedInAction(icon: Icons.send_outlined, label: 'Send'),
+              _LinkedInAction(icon: Icons.thumb_up_outlined, label: context.tr('Like')),
+              _LinkedInAction(icon: Icons.comment_outlined, label: context.tr('Comment')),
+              _LinkedInAction(icon: Icons.repeat, label: context.tr('Repost')),
+              _LinkedInAction(icon: Icons.send_outlined, label: context.tr('Send')),
             ],
           ),
         ],
@@ -250,7 +254,7 @@ class _InstagramPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PreviewCard(
-      platform: 'Instagram',
+      platform: context.tr('Instagram'),
       icon: Icons.camera_alt_outlined,
       color: const Color(0xFFE4405F),
       child: Column(
@@ -272,7 +276,7 @@ class _InstagramPreview extends StatelessWidget {
             text: TextSpan(
               style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.5),
               children: [
-                const TextSpan(text: 'yourhandle ', style: TextStyle(fontWeight: FontWeight.w700)),
+                TextSpan(text: '${context.tr('yourhandle')} ', style: const TextStyle(fontWeight: FontWeight.w700)),
                 TextSpan(text: body),
               ],
             ),
@@ -294,7 +298,7 @@ class _BlogPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PreviewCard(
-      platform: platform == 'ghost' ? 'Ghost' : 'WordPress',
+      platform: platform == 'ghost' ? context.tr('Ghost') : context.tr('WordPress'),
       icon: platform == 'ghost' ? Icons.edit_note : Icons.language,
       color: platform == 'ghost' ? const Color(0xFF15171A) : const Color(0xFF21759B),
       child: Column(
@@ -320,7 +324,7 @@ class _YouTubePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PreviewCard(
-      platform: 'YouTube',
+      platform: context.tr('YouTube'),
       icon: Icons.play_circle_outline,
       color: const Color(0xFFFF0000),
       child: Column(
@@ -354,7 +358,7 @@ class _TikTokPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PreviewCard(
-      platform: 'TikTok',
+      platform: context.tr('TikTok'),
       icon: Icons.music_note,
       color: const Color(0xFF010101),
       child: Container(
@@ -368,7 +372,8 @@ class _TikTokPreview extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('@yourhandle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+            Text('@${context.tr('yourhandle')}',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
             const SizedBox(height: 4),
             Text(caption, style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 3, overflow: TextOverflow.ellipsis),
           ],

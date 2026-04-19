@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_config.dart';
 import '../../../core/app_diagnostics.dart';
 import '../../../data/models/auth_session.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -43,7 +44,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final authSession = ref.watch(authSessionProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Authentication')),
+      appBar: AppBar(title: Text(context.tr('Authentication'))),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
@@ -71,8 +72,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Clerk is not configured',
+        Text(
+          context.tr('Clerk is not configured'),
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -81,7 +82,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.',
+          context.tr(
+            'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.',
+          ),
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -111,8 +114,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Use the web sign-in flow',
+        Text(
+          context.tr('Use the web sign-in flow'),
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -121,7 +124,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
+          context.tr(
+            'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
+          ),
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -141,7 +146,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           width: double.infinity,
           child: FilledButton(
             onPressed: _isSubmitting ? null : _openAppWebSignIn,
-            child: const Text('Continue with Google'),
+            child: Text(context.tr('Continue with Google')),
           ),
         ),
         const SizedBox(height: 12),
@@ -149,12 +154,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           width: double.infinity,
           child: OutlinedButton(
             onPressed: _isSubmitting ? null : _openAppWebEntry,
-            child: const Text('Open App Entry'),
+            child: Text(context.tr('Open App Entry')),
           ),
         ),
         const SizedBox(height: 12),
         Text(
-          'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
+          context.tr(
+            'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
+          ),
           style: TextStyle(
             color: Colors.white.withAlpha(120),
             fontSize: 12,
@@ -166,7 +173,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           width: double.infinity,
           child: TextButton(
             onPressed: _isSubmitting ? null : _clearLocalSession,
-            child: const Text('Clear Local Clerk Session'),
+            child: Text(context.tr('Clear Local Clerk Session')),
           ),
         ),
       ],
@@ -178,8 +185,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Sign in with Google',
+        Text(
+          context.tr('Sign in with Google'),
           style: TextStyle(
             color: Colors.white,
             fontSize: 28,
@@ -188,7 +195,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'ContentFlow web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.',
+          context.tr(
+            'ContentFlow web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.',
+          ),
           style: TextStyle(
             color: Colors.white.withAlpha(150),
             fontSize: 15,
@@ -200,7 +209,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           width: double.infinity,
           child: FilledButton(
             onPressed: _openAppWebSignIn,
-            child: const Text('Continue with Google'),
+            child: Text(context.tr('Continue with Google')),
           ),
         ),
         const SizedBox(height: 12),
@@ -208,7 +217,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           width: double.infinity,
           child: TextButton(
             onPressed: _openAppWebEntry,
-            child: const Text('Already signed in? Open App'),
+            child: Text(context.tr('Already signed in? Open App')),
           ),
         ),
       ],
@@ -252,8 +261,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       await ref.read(authSessionProvider.notifier).clearLocalSession();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Local Clerk session cleared. Try signing in again.'),
+        SnackBar(
+          content: Text(
+            context.tr('Local Clerk session cleared. Try signing in again.'),
+          ),
         ),
       );
     } finally {
@@ -314,13 +325,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (!mounted) return;
       context.go('/entry');
     } catch (error, stackTrace) {
-      ref.read(appDiagnosticsProvider).error(
-        scope: 'auth.inline_sign_in',
-        message: 'Inline sign-in failed.',
-        error: error,
-        stackTrace: stackTrace,
-        context: {'email': email},
-      );
+      ref
+          .read(appDiagnosticsProvider)
+          .error(
+            scope: 'auth.inline_sign_in',
+            message: 'Inline sign-in failed.',
+            error: error,
+            stackTrace: stackTrace,
+            context: {'email': email},
+          );
       if (!mounted) return;
       setState(() {
         _error = _friendlyAuthError(error);

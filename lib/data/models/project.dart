@@ -1,12 +1,4 @@
-enum Framework {
-  astro,
-  nextjs,
-  gatsby,
-  nuxt,
-  hugo,
-  jekyll,
-  unknown,
-}
+enum Framework { astro, nextjs, gatsby, nuxt, hugo, jekyll, unknown }
 
 enum OnboardingStatus {
   pending,
@@ -39,19 +31,19 @@ class Project {
   });
 
   factory Project.fromJson(Map<String, dynamic> json) => Project(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        url: json['url'] as String,
-        description: json['description'] as String?,
-        isDefault: json['is_default'] as bool? ?? false,
-        settings: json['settings'] != null
-            ? ProjectSettings.fromJson(json['settings'] as Map<String, dynamic>)
-            : null,
-        lastAnalyzedAt: json['last_analyzed_at'] != null
-            ? DateTime.parse(json['last_analyzed_at'] as String)
-            : null,
-        createdAt: DateTime.parse(json['created_at'] as String),
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    url: json['url'] as String,
+    description: json['description'] as String?,
+    isDefault: json['is_default'] as bool? ?? false,
+    settings: json['settings'] != null
+        ? ProjectSettings.fromJson(json['settings'] as Map<String, dynamic>)
+        : null,
+    lastAnalyzedAt: json['last_analyzed_at'] != null
+        ? DateTime.parse(json['last_analyzed_at'] as String)
+        : null,
+    createdAt: DateTime.parse(json['created_at'] as String),
+  );
 }
 
 class ProjectSettings {
@@ -67,7 +59,8 @@ class ProjectSettings {
       ProjectSettings(
         techStack: json['tech_stack'] != null
             ? TechStackDetection.fromJson(
-                json['tech_stack'] as Map<String, dynamic>)
+                json['tech_stack'] as Map<String, dynamic>,
+              )
             : null,
         onboardingStatus: OnboardingStatus.values.firstWhere(
           (e) => e.name == (json['onboarding_status'] as String? ?? 'pending'),
@@ -131,45 +124,45 @@ class ContentTypeConfig {
   }
 
   static List<ContentTypeConfig> defaults() => [
-        const ContentTypeConfig(
-          type: 'blog_post',
-          label: 'Articles de blog',
-          icon: 'article',
-          enabled: true,
-          frequencyPerWeek: 2,
-          channels: ['wordpress'],
-        ),
-        const ContentTypeConfig(
-          type: 'newsletter',
-          label: 'Newsletters',
-          icon: 'email',
-          enabled: true,
-          frequencyPerWeek: 1,
-          channels: ['email'],
-        ),
-        const ContentTypeConfig(
-          type: 'social_post',
-          label: 'Posts réseaux sociaux',
-          icon: 'chat',
-          enabled: true,
-          frequencyPerWeek: 5,
-          channels: ['twitter', 'linkedin'],
-        ),
-        const ContentTypeConfig(
-          type: 'video_script',
-          label: 'Scripts vidéo',
-          icon: 'videocam',
-          enabled: false,
-          frequencyPerWeek: 1,
-          channels: ['youtube'],
-        ),
-        const ContentTypeConfig(
-          type: 'reel',
-          label: 'Reels / Shorts',
-          icon: 'slow_motion_video',
-          enabled: false,
-          frequencyPerWeek: 3,
-          channels: ['instagram', 'tiktok'],
-        ),
-      ];
+    const ContentTypeConfig(
+      type: 'blog_post',
+      label: 'Blog articles',
+      icon: 'article',
+      enabled: true,
+      frequencyPerWeek: 2,
+      channels: ['wordpress'],
+    ),
+    const ContentTypeConfig(
+      type: 'newsletter',
+      label: 'Newsletters',
+      icon: 'email',
+      enabled: true,
+      frequencyPerWeek: 1,
+      channels: ['email'],
+    ),
+    const ContentTypeConfig(
+      type: 'social_post',
+      label: 'Social posts',
+      icon: 'chat',
+      enabled: true,
+      frequencyPerWeek: 5,
+      channels: ['twitter', 'linkedin'],
+    ),
+    const ContentTypeConfig(
+      type: 'video_script',
+      label: 'Video scripts',
+      icon: 'videocam',
+      enabled: false,
+      frequencyPerWeek: 1,
+      channels: ['youtube'],
+    ),
+    const ContentTypeConfig(
+      type: 'reel',
+      label: 'Reels / Shorts',
+      icon: 'slow_motion_video',
+      enabled: false,
+      frequencyPerWeek: 3,
+      channels: ['instagram', 'tiktok'],
+    ),
+  ];
 }

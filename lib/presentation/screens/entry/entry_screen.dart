@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../../core/app_config.dart';
 import '../../../data/models/app_access_state.dart';
 import '../../../data/models/auth_session.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -133,7 +135,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ? 36.0
                     : 48.0;
                 return Text(
-                  'Turn one repo into a weekly content machine.',
+                  context.tr('Turn one repo into a weekly content machine.'),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: heroSize,
@@ -145,7 +147,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
+              context.tr(
+                'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
+              ),
               style: TextStyle(
                 color: Colors.white.withAlpha(170),
                 fontSize: 17,
@@ -170,7 +174,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Open Interactive Demo'),
+                  label: Text(context.tr('Open Interactive Demo')),
                 ),
                 OutlinedButton.icon(
                   onPressed: kIsWeb
@@ -185,7 +189,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.lock_open_rounded),
-                  label: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
+                  label: Text(
+                    context.tr(kIsWeb ? 'Continue with Google' : 'Sign In'),
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () => context.push('/feedback'),
@@ -197,7 +203,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.forum_outlined),
-                  label: const Text('Share Feedback'),
+                  label: Text(context.tr('Share Feedback')),
                 ),
               ],
             ),
@@ -339,8 +345,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'How the workflow actually works',
+          Text(
+            context.tr('How the workflow actually works'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -349,7 +355,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'The promise is not "AI writes for you". The promise is a tighter system from source material to published output.',
+            context.tr(
+              'The promise is not "AI writes for you". The promise is a tighter system from source material to published output.',
+            ),
             style: TextStyle(
               color: Colors.white.withAlpha(150),
               fontSize: 15,
@@ -466,8 +474,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Common objections',
+          Text(
+            context.tr('Common objections'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -498,8 +506,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'See the workflow before you commit',
+          Text(
+            context.tr('See the workflow before you commit'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -508,7 +516,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Start with the stable demo workspace to inspect the flow, then create your own workspace when you are ready to connect a real product.',
+            context.tr(
+              'Start with the stable demo workspace to inspect the flow, then create your own workspace when you are ready to connect a real product.',
+            ),
             style: TextStyle(
               color: Colors.white.withAlpha(150),
               fontSize: 15,
@@ -532,7 +542,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     vertical: 18,
                   ),
                 ),
-                child: const Text('Open Demo Workspace'),
+                child: Text(context.tr('Open Demo Workspace')),
               ),
               OutlinedButton(
                 onPressed: kIsWeb
@@ -546,7 +556,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     vertical: 18,
                   ),
                 ),
-                child: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
+                child: Text(
+                  context.tr(kIsWeb ? 'Continue with Google' : 'Sign In'),
+                ),
               ),
               TextButton(
                 onPressed: () => context.push('/feedback'),
@@ -557,7 +569,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     vertical: 18,
                   ),
                 ),
-                child: const Text('Share Feedback'),
+                child: Text(context.tr('Share Feedback')),
               ),
             ],
           ),
@@ -679,7 +691,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       );
     }
 
-    if (stage == AppAccessStage.needsOnboarding || stage == AppAccessStage.demo) {
+    if (stage == AppAccessStage.needsOnboarding ||
+        stage == AppAccessStage.demo) {
       return _card(
         eyebrow: 'Setup required',
         title: 'Finish onboarding before entering the app',
@@ -710,9 +723,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           : () {
               ref.read(authSessionProvider.notifier).signInDemo();
               context.go(
-            authSession.onboardingComplete
-                ? '/feed'
-                : '/onboarding?intent=entry',
+                authSession.onboardingComplete
+                    ? '/feed'
+                    : '/onboarding?intent=entry',
               );
             },
       caption: kIsWeb
@@ -763,7 +776,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            eyebrow.toUpperCase(),
+            context.tr(eyebrow).toUpperCase(),
             style: TextStyle(
               color: accent,
               fontSize: 12,
@@ -773,7 +786,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            title,
+            context.tr(title),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -783,7 +796,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            description,
+            context.tr(description),
             style: TextStyle(
               color: Colors.white.withAlpha(150),
               fontSize: 15,
@@ -793,7 +806,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           if (caption != null) ...[
             const SizedBox(height: 12),
             Text(
-              caption,
+              context.tr(caption),
               style: TextStyle(
                 color: Colors.white.withAlpha(110),
                 fontSize: 12,
@@ -814,7 +827,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Text(primaryLabel),
+              child: Text(context.tr(primaryLabel)),
             ),
           ),
           const SizedBox(height: 12),
@@ -830,7 +843,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Text(secondaryLabel),
+              child: Text(context.tr(secondaryLabel)),
             ),
           ),
         ],
@@ -853,7 +866,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              label,
+              context.tr(label),
               style: TextStyle(
                 color: Colors.white.withAlpha(190),
                 fontSize: 13,
@@ -882,7 +895,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
+            context.tr(title),
             style: TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -900,7 +913,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      item,
+                      context.tr(item),
                       style: TextStyle(
                         color: Colors.white.withAlpha(155),
                         fontSize: 15,
@@ -944,7 +957,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            title,
+            context.tr(title),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -953,7 +966,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            description,
+            context.tr(description),
             style: TextStyle(
               color: Colors.white.withAlpha(145),
               fontSize: 14,
@@ -977,7 +990,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            question,
+            context.tr(question),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 17,
@@ -986,7 +999,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            answer,
+            context.tr(answer),
             style: TextStyle(
               color: Colors.white.withAlpha(145),
               fontSize: 14,
@@ -1027,7 +1040,7 @@ class _MetricChip extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            label,
+            context.tr(label),
             style: TextStyle(
               color: Colors.white.withAlpha(150),
               fontSize: 13,

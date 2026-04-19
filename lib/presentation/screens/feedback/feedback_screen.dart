@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 
 import '../../../data/models/feedback_entry.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -55,20 +56,26 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     final isSignedIn = session.isAuthenticated;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Feedback')),
+      appBar: AppBar(title: Text(context.tr('Feedback'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Envoyez un retour produit directement depuis l’app. Les feedbacks texte et audio sont transmis au backend, et restent anonymes si aucun compte n’est connecté.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+            context.tr(
+              'Send product feedback directly from the app. Text and audio feedback are sent to the backend and stay anonymous when no account is connected.',
+            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
           ),
           const SizedBox(height: 20),
           _FeedbackCard(
-            title: 'Feedback texte',
+            title: 'Text Feedback',
             subtitle: isSignedIn
-                ? 'Envoyé avec ${session.email ?? 'votre compte'}'
-                : 'Envoyé de manière anonyme',
+                ? context.tr('Sent with {account}', {
+                    'account': session.email ?? context.tr('your account'),
+                  })
+                : context.tr('Sent anonymously'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -76,8 +83,10 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                   controller: _messageController,
                   minLines: 5,
                   maxLines: 8,
-                  decoration: const InputDecoration(
-                    hintText: 'Qu’est-ce qui vous bloque, manque, ou pourrait être amélioré ?',
+                  decoration: InputDecoration(
+                    hintText: context.tr(
+                      'What is blocking you, missing, or could be improved?',
+                    ),
                   ),
                   onChanged: (value) {
                     unawaited(
@@ -97,7 +106,9 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.send_rounded),
-                    label: Text(_isSubmittingText ? 'Envoi...' : 'Envoyer'),
+                    label: Text(
+                      context.tr(_isSubmittingText ? 'Sending...' : 'Send'),
+                    ),
                   ),
                 ),
               ],
@@ -105,8 +116,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           ),
           const SizedBox(height: 16),
           _FeedbackCard(
-            title: 'Feedback audio',
-            subtitle: 'Enregistrez un message vocal court, puis envoyez-le.',
+            title: 'Audio Feedback',
+            subtitle: 'Record a short voice message, then send it.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -129,13 +140,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             ? Icons.stop_circle_outlined
                             : Icons.mic_none_rounded,
                       ),
-                      label: Text(_isRecording ? 'Arrêter' : 'Enregistrer'),
+                      label: Text(context.tr(_isRecording ? 'Stop' : 'Record')),
                     ),
                     if (_wavBytes != null && !_isRecording)
                       OutlinedButton.icon(
                         onPressed: _isSubmittingAudio ? null : _clearRecording,
                         icon: const Icon(Icons.delete_outline_rounded),
-                        label: const Text('Supprimer'),
+                        label: Text(context.tr('Delete')),
                       ),
                     if (_wavBytes != null && !_isRecording)
                       FilledButton.icon(
@@ -144,16 +155,22 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.cloud_upload_outlined),
-                        label: Text(_isSubmittingAudio ? 'Upload...' : 'Envoyer'),
+                        label: Text(
+                          context.tr(
+                            _isSubmittingAudio ? 'Uploading...' : 'Send',
+                          ),
+                        ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  _audioStatusText(),
+                  _audioStatusText(context),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
@@ -161,14 +178,16 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Derniers feedbacks envoyés',
+            context.tr('Recent feedback sent'),
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           recentSubmissions.when(
             data: (items) {
               if (items.isEmpty) {
-                return const Text('Aucun feedback envoyé récemment depuis cet appareil.');
+                return Text(
+                  context.tr('No feedback sent recently from this device.'),
+                );
               }
               return Column(
                 children: [
@@ -184,14 +203,17 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                       ),
                       title: Text(
                         item.type == FeedbackEntryType.audio
-                            ? 'Message audio'
-                            : (item.messagePreview ?? 'Message texte'),
+                            ? context.tr('Audio message')
+                            : (item.messagePreview ??
+                                  context.tr('Text message')),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
                         [
-                          DateFormat.yMMMd().add_Hm().format(item.createdAt.toLocal()),
+                          DateFormat.yMMMd(
+                            context.localeTag,
+                          ).add_Hm().format(item.createdAt.toLocal()),
                           if (item.durationMs != null)
                             _formatDuration(item.durationMs!),
                         ].join(' • '),
@@ -203,7 +225,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stackTrace) => AppErrorView(
               scope: 'feedback.local_history',
-              title: 'Impossible de charger l’historique local',
+              title: context.tr('Could not load local history'),
               error: error,
               stackTrace: stackTrace,
               compact: true,
@@ -219,7 +241,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
   Future<void> _submitText() async {
     final message = _messageController.text.trim();
     if (message.isEmpty) {
-      _showSnack('Le message est vide.');
+      _showSnack(context.tr('Message is empty.'));
       return;
     }
 
@@ -228,10 +250,10 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       await ref.read(feedbackServiceProvider).submitText(message);
       if (!mounted) return;
       _messageController.clear();
-      _showSnack('Feedback envoyé.');
+      _showSnack(context.tr('Feedback sent.'));
     } catch (error, stackTrace) {
       _showSnack(
-        'Échec de l’envoi: $error',
+        context.tr('Failed to send: {error}', {'error': error}),
         error: error,
         stackTrace: stackTrace,
         scope: 'feedback.submit_text',
@@ -246,7 +268,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
   Future<void> _startRecording() async {
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
-      _showSnack('Accès micro refusé.');
+      _showSnack(context.tr('Microphone access denied.'));
       return;
     }
 
@@ -302,22 +324,21 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
   Future<void> _submitAudio() async {
     final wavBytes = _wavBytes;
     if (wavBytes == null || wavBytes.isEmpty) {
-      _showSnack('Aucun audio prêt à envoyer.');
+      _showSnack(context.tr('No audio ready to send.'));
       return;
     }
 
     setState(() => _isSubmittingAudio = true);
     try {
-      await ref.read(feedbackServiceProvider).submitAudio(
-        wavBytes: wavBytes,
-        durationMs: _recordedDurationMs,
-      );
+      await ref
+          .read(feedbackServiceProvider)
+          .submitAudio(wavBytes: wavBytes, durationMs: _recordedDurationMs);
       if (!mounted) return;
       _clearRecording();
-      _showSnack('Feedback audio envoyé.');
+      _showSnack(context.tr('Audio feedback sent.'));
     } catch (error, stackTrace) {
       _showSnack(
-        'Échec de l’envoi audio: $error',
+        context.tr('Failed to send audio: {error}', {'error': error}),
         error: error,
         stackTrace: stackTrace,
         scope: 'feedback.submit_audio',
@@ -337,14 +358,18 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     });
   }
 
-  String _audioStatusText() {
+  String _audioStatusText(BuildContext context) {
     if (_isRecording) {
-      return 'Enregistrement en cours: ${_formatDuration(_recordedDurationMs)}';
+      return context.tr('Recording in progress: {duration}', {
+        'duration': _formatDuration(_recordedDurationMs),
+      });
     }
     if (_wavBytes != null) {
-      return 'Audio prêt: ${_formatDuration(_recordedDurationMs)}';
+      return context.tr('Audio ready: {duration}', {
+        'duration': _formatDuration(_recordedDurationMs),
+      });
     }
-    return 'Aucun audio enregistré.';
+    return context.tr('No audio recorded.');
   }
 
   void _showSnack(
@@ -365,7 +390,9 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -388,11 +415,16 @@ class _FeedbackCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              context.tr(title),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.4),
+              context.tr(subtitle),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.4),
             ),
             const SizedBox(height: 16),
             child,
@@ -436,10 +468,7 @@ Uint8List _encodePcmToWav({
   }
 
   void writeInt16(int value) {
-    bytes.add([
-      value & 0xff,
-      (value >> 8) & 0xff,
-    ]);
+    bytes.add([value & 0xff, (value >> 8) & 0xff]);
   }
 
   writeString('RIFF');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 
 final _runsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
@@ -19,7 +20,7 @@ class RunsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Robot Runs'),
+        title: Text(context.tr('Robot Runs')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -32,7 +33,7 @@ class RunsScreen extends ConsumerWidget {
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'runs.load',
-            title: 'Failed to load runs',
+            title: context.tr('Failed to load runs'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(_runsProvider),
@@ -47,7 +48,7 @@ class RunsScreen extends ConsumerWidget {
                   Icon(Icons.smart_toy_outlined, size: 64,
                       color: theme.colorScheme.outlineVariant),
                   const SizedBox(height: 16),
-                  Text('No robot runs yet',
+                  Text(context.tr('No robot runs yet'),
                       style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),

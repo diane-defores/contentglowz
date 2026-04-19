@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/project_onboarding_validation.dart';
 import '../../../data/demo/demo_seed.dart';
 import '../../../data/models/project.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -73,14 +75,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         isValidGithubRepositoryUrl(_repoUrl)) {
       return null;
     }
-    return 'Enter a valid GitHub repository URL.';
+    return context.tr('Enter a valid GitHub repository URL.');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setup'),
+        title: Text(context.tr('Setup')),
         leading: _currentPage > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -140,8 +142,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       padding: const EdgeInsets.all(24),
       children: [
         if (_isDemoMode) ...[_buildDemoBanner(), const SizedBox(height: 24)],
-        const Text(
-          'Connect your project',
+        Text(
+          context.tr('Connect your project'),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -150,7 +152,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Link your GitHub repository so the AI can analyze your codebase and generate relevant content.',
+          context.tr(
+            'Link your GitHub repository so the AI can analyze your codebase and generate relevant content.',
+          ),
           style: TextStyle(
             fontSize: 15,
             color: Colors.white.withAlpha(150),
@@ -161,9 +165,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         TextField(
           controller: _projectNameController,
           readOnly: _isDemoMode,
-          decoration: const InputDecoration(
-            labelText: 'Project name',
-            hintText: 'My Tech Blog',
+          decoration: InputDecoration(
+            labelText: context.tr('Project name'),
+            hintText: context.tr('My Tech Blog'),
             prefixIcon: Icon(Icons.folder_outlined),
           ),
         ),
@@ -172,7 +176,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           controller: _repoUrlController,
           readOnly: _isDemoMode,
           decoration: InputDecoration(
-            labelText: 'GitHub URL',
+            labelText: context.tr('GitHub URL'),
             hintText: 'https://github.com/user/repo',
             prefixIcon: const Icon(Icons.link),
             errorText: _repoUrlErrorText,
@@ -186,7 +190,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: AppTheme.approveColor,
           ),
-          child: Text(_isDemoMode ? 'Review Demo Setup' : 'Continue'),
+          child: Text(
+            context.tr(_isDemoMode ? 'Review Demo Setup' : 'Continue'),
+          ),
         ),
       ],
     );
@@ -203,8 +209,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Demo workspace locked',
+          Text(
+            context.tr('Demo workspace locked'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -213,8 +219,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'This onboarding uses a fixed public repo and pre-generated content. '
-            'Users can explore the flow, but the demo data is intentionally read-only.',
+            context.tr(
+              'This onboarding uses a fixed public repo and pre-generated content. Users can explore the flow, but the demo data is intentionally read-only.',
+            ),
             style: TextStyle(
               color: Colors.white.withAlpha(150),
               fontSize: 14,
@@ -232,8 +239,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'What content do you want?',
+        Text(
+          context.tr('What content do you want?'),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -242,7 +249,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Choose the types of content the AI should generate for you, and how often.',
+          context.tr(
+            'Choose the types of content the AI should generate for you, and how often.',
+          ),
           style: TextStyle(
             fontSize: 15,
             color: Colors.white.withAlpha(150),
@@ -261,7 +270,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: AppTheme.approveColor,
           ),
-          child: const Text('Continue'),
+          child: Text(context.tr('Continue')),
         ),
       ],
     );
@@ -289,7 +298,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               color: ct.enabled ? color : Colors.white.withAlpha(80),
             ),
             title: Text(
-              ct.label,
+              context.tr(ct.label),
               style: TextStyle(
                 color: ct.enabled ? Colors.white : Colors.white54,
               ),
@@ -313,7 +322,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Row(
                 children: [
                   Text(
-                    '${ct.frequencyPerWeek}/week',
+                    '${ct.frequencyPerWeek}${context.tr('/week')}',
                     style: TextStyle(
                       color: color,
                       fontWeight: FontWeight.w600,
@@ -358,8 +367,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text(
-          'Ready to go!',
+        Text(
+          context.tr('Ready to go!'),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -369,8 +378,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 8),
         Text(
           _isDemoMode
-              ? 'Here is the fixed demo workspace that will be served to every demo user.'
-              : 'Here\'s your content plan. You can change it anytime in Settings.',
+              ? context.tr(
+                  'Here is the fixed demo workspace that will be served to every demo user.',
+                )
+              : context.tr(
+                  'Here\'s your content plan. You can change it anytime in Settings.',
+                ),
           style: TextStyle(
             fontSize: 15,
             color: Colors.white.withAlpha(150),
@@ -382,10 +395,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _summaryCard(
           icon: Icons.folder_outlined,
           title: _projectNameController.text.isEmpty
-              ? 'Project'
+              ? context.tr('Project')
               : _projectNameController.text,
           subtitle: _repoUrlController.text.isEmpty
-              ? 'No repo linked'
+              ? context.tr('No repo linked')
               : _isDemoMode
               ? '${_repoUrlController.text}\nLive demo: ${DemoSeed.siteUrl}'
               : _repoUrlController.text,
@@ -394,16 +407,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // Content summary
         _summaryCard(
           icon: Icons.auto_awesome,
-          title: '$totalPerWeek contents/week',
-          subtitle: enabled.map((c) => c.label).join(', '),
+          title: context.tr('{count} contents/week', {'count': totalPerWeek}),
+          subtitle: enabled.map((c) => context.tr(c.label)).join(', '),
         ),
         const SizedBox(height: 12),
         // Next steps
         _summaryCard(
           icon: Icons.checklist,
-          title: 'Next steps',
-          subtitle:
-              '1. Set up your brand voice (weekly ritual)\n2. Create a customer persona\n3. Content starts flowing!',
+          title: context.tr('Next steps'),
+          subtitle: context.tr(
+            '1. Set up your brand voice (weekly ritual)\n2. Create a customer persona\n3. Content starts flowing!',
+          ),
         ),
         const SizedBox(height: 32),
         FilledButton(
@@ -421,7 +435,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     color: Colors.white,
                   ),
                 )
-              : Text(_isDemoMode ? 'Open Demo Workspace' : 'Start'),
+              : Text(context.tr(_isDemoMode ? 'Open Demo Workspace' : 'Start')),
         ),
       ],
     );
@@ -505,8 +519,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     if (!_hasValidProjectStep) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enter a valid GitHub repository URL to continue.'),
+        SnackBar(
+          content: Text(
+            context.tr('Enter a valid GitHub repository URL to continue.'),
+          ),
         ),
       );
       _pageController.animateToPage(
@@ -521,8 +537,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (!authSession.isAuthenticated) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sign in with Google before creating a workspace.'),
+        SnackBar(
+          content: Text(
+            context.tr('Sign in with Google before creating a workspace.'),
+          ),
         ),
       );
       context.go('/entry');

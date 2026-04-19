@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -44,21 +46,26 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Content Feed'),
+        title: Text(context.tr('Content Feed')),
         actions: [
           if (contentAsync.valueOrNull != null &&
               contentAsync.valueOrNull!.length > 1)
             TextButton.icon(
               onPressed: () => _bulkApprove(contentAsync.valueOrNull!),
               icon: const Icon(Icons.done_all, size: 18),
-              label: Text('All (${contentAsync.valueOrNull!.length})'),
+              label: Text(
+                context.tr('All ({count})', {
+                  'count': contentAsync.valueOrNull!.length,
+                }),
+              ),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.approveColor,
               ),
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(pendingContentProvider.notifier).refresh(),
+            onPressed: () =>
+                ref.read(pendingContentProvider.notifier).refresh(),
           ),
         ],
       ),
@@ -67,7 +74,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         error: (err, stackTrace) => Center(
           child: AppErrorView(
             scope: 'feed.load_pending',
-            title: 'Could not load the review queue',
+            title: context.tr('Could not load the review queue'),
             error: err,
             stackTrace: stackTrace,
             onRetry: () => ref.read(pendingContentProvider.notifier).refresh(),
@@ -88,11 +95,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_outline,
-              size: 72, color: Color(0xFF00B894)),
+          const Icon(
+            Icons.check_circle_outline,
+            size: 72,
+            color: Color(0xFF00B894),
+          ),
           const SizedBox(height: 24),
-          const Text(
-            'All caught up!',
+          Text(
+            context.tr('All caught up!'),
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -101,18 +111,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'No content waiting for review',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white.withAlpha(120),
-            ),
+            context.tr('No content waiting for review'),
+            style: TextStyle(fontSize: 16, color: Colors.white.withAlpha(120)),
           ),
           const SizedBox(height: 32),
           FilledButton.icon(
             onPressed: () =>
                 ref.read(pendingContentProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
-            label: const Text('Check for new content'),
+            label: Text(context.tr('Check for new content')),
           ),
         ],
       ),
@@ -147,24 +154,20 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 }
               });
             },
-            cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
-              if (index >= items.length) return const SizedBox.shrink();
-              return ContentCard(
-                item: items[index],
-                onTap: () => _openEditor(items[index]),
-              );
-            },
+            cardBuilder:
+                (context, index, percentThresholdX, percentThresholdY) {
+                  if (index >= items.length) return const SizedBox.shrink();
+                  return ContentCard(
+                    item: items[index],
+                    onTap: () => _openEditor(items[index]),
+                  );
+                },
           ),
         ),
         // Swipe direction overlay
         if (_swipeOverlay != null) _buildOverlay(),
         // Bottom action buttons
-        Positioned(
-          bottom: 24,
-          left: 0,
-          right: 0,
-          child: _buildActionButtons(),
-        ),
+        Positioned(bottom: 24, left: 0, right: 0, child: _buildActionButtons()),
       ],
     );
   }
@@ -200,7 +203,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   Icon(icon, color: color, size: 28),
                   const SizedBox(width: 12),
                   Text(
-                    label,
+                    context.tr(label),
                     style: TextStyle(
                       color: color,
                       fontSize: 24,
@@ -273,7 +276,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         ),
         const SizedBox(height: 6),
         Text(
-          label,
+          context.tr(label),
           style: TextStyle(
             color: color.withAlpha(180),
             fontSize: 12,
@@ -288,21 +291,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Approve all?'),
+        title: Text(context.tr('Approve all?')),
         content: Text(
-          'This will approve and publish ${items.length} content item${items.length > 1 ? 's' : ''}.',
+          context.tr('This will approve and publish {count} content item(s).', {
+            'count': items.length,
+          }),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.approveColor,
             ),
-            child: Text('Approve ${items.length}'),
+            child: Text(context.tr('Approve {count}', {'count': items.length})),
           ),
         ],
       ),
@@ -325,14 +330,20 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     if (mounted) {
       final msg = failed == 0
-          ? 'Approved $approved items'
-          : 'Approved $approved, failed $failed';
+          ? context.tr('Approved {approved} items', {'approved': approved})
+          : context.tr('Approved {approved}, failed {failed}', {
+              'approved': approved,
+              'failed': failed,
+            });
       _showSnackBar(msg, failed == 0 ? AppTheme.approveColor : Colors.orange);
     }
   }
 
   bool _onSwipe(
-      List<ContentItem> items, int prevIndex, CardSwiperDirection direction) {
+    List<ContentItem> items,
+    int prevIndex,
+    CardSwiperDirection direction,
+  ) {
     if (prevIndex >= items.length) return false;
     final item = items[prevIndex];
 
@@ -341,16 +352,24 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     switch (direction) {
       case CardSwiperDirection.right:
         // Approve & publish
-        ref.read(pendingContentProvider.notifier).approve(item.id).then((result) {
+        ref.read(pendingContentProvider.notifier).approve(item.id).then((
+          result,
+        ) {
           if (!mounted) return;
-          _showSnackBar(result.message, _colorForApproveSeverity(result.severity));
+          _showSnackBar(
+            result.message,
+            _colorForApproveSeverity(result.severity),
+          );
         });
         return true;
 
       case CardSwiperDirection.left:
         // Reject
         ref.read(pendingContentProvider.notifier).reject(item.id);
-        _showSnackBar('Skipped: ${item.title}', AppTheme.rejectColor);
+        _showSnackBar(
+          context.tr('Skipped: {title}', {'title': item.title}),
+          AppTheme.rejectColor,
+        );
         return true;
 
       case CardSwiperDirection.top:
@@ -379,7 +398,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     );
   }
 
-  Color _colorForApproveSeverity(ApproveSeverity severity) => switch (severity) {
+  Color _colorForApproveSeverity(ApproveSeverity severity) =>
+      switch (severity) {
         ApproveSeverity.success => AppTheme.approveColor,
         ApproveSeverity.info => Colors.blue,
         ApproveSeverity.warning => Colors.orange,

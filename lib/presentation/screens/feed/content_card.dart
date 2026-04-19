@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 
 class ContentCard extends StatelessWidget {
@@ -19,10 +21,7 @@ class ContentCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: typeColor.withAlpha(80),
-            width: 1.5,
-          ),
+          border: Border.all(color: typeColor.withAlpha(80), width: 1.5),
           boxShadow: [
             BoxShadow(
               color: typeColor.withAlpha(30),
@@ -106,21 +105,43 @@ class ContentCard extends StatelessWidget {
     if (item.seoKeyword != null) {
       chips.add(_metaChip(Icons.search, item.seoKeyword!, typeColor));
       if (item.seoVolume != null) {
-        final diffLabel = item.seoDifficulty != null ? ' / KD ${item.seoDifficulty}' : '';
-        chips.add(_metaChip(Icons.trending_up, '${item.seoVolume} vol$diffLabel', Colors.green));
+        final diffLabel = item.seoDifficulty != null
+            ? ' / KD ${item.seoDifficulty}'
+            : '';
+        chips.add(
+          _metaChip(
+            Icons.trending_up,
+            '${item.seoVolume} vol$diffLabel',
+            Colors.green,
+          ),
+        );
       }
     }
 
     // Generation reason chip (why this content was created)
     if (item.generationReason != null && item.seoKeyword == null) {
-      chips.add(_metaChip(Icons.lightbulb_outline, item.generationReason!, Colors.amber));
+      chips.add(
+        _metaChip(
+          Icons.lightbulb_outline,
+          item.generationReason!,
+          Colors.amber,
+        ),
+      );
     }
 
     // Short platform + duration
     if (item.shortPlatform != null) {
-      chips.add(_metaChip(Icons.play_arrow_rounded, item.shortPlatform!, typeColor));
+      chips.add(
+        _metaChip(Icons.play_arrow_rounded, item.shortPlatform!, typeColor),
+      );
       if (item.shortDuration != null) {
-        chips.add(_metaChip(Icons.timer_outlined, '${item.shortDuration}s', Colors.orange));
+        chips.add(
+          _metaChip(
+            Icons.timer_outlined,
+            '${item.shortDuration}s',
+            Colors.orange,
+          ),
+        );
       }
     }
 
@@ -133,18 +154,20 @@ class ContentCard extends StatelessWidget {
 
     // Narrative thread
     if (item.narrativeThread != null) {
-      chips.add(_metaChip(Icons.auto_stories, item.narrativeThread!, Colors.purple.shade200));
+      chips.add(
+        _metaChip(
+          Icons.auto_stories,
+          item.narrativeThread!,
+          Colors.purple.shade200,
+        ),
+      );
     }
 
     if (chips.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 4,
-        children: chips,
-      ),
+      child: Wrap(spacing: 6, runSpacing: 4, children: chips),
     );
   }
 
@@ -246,14 +269,16 @@ class ContentCard extends StatelessWidget {
       child: Row(
         children: [
           // Channel icons
-          ...item.channels.map((channel) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Icon(
-                  _iconForChannel(channel),
-                  size: 18,
-                  color: Colors.white.withAlpha(120),
-                ),
-              )),
+          ...item.channels.map(
+            (channel) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(
+                _iconForChannel(channel),
+                size: 18,
+                color: Colors.white.withAlpha(120),
+              ),
+            ),
+          ),
           const Spacer(),
           // Swipe hints — hidden on very narrow screens to prevent overflow
           if (showHints)
@@ -261,29 +286,47 @@ class ContentCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.arrow_back_rounded,
-                      size: 14, color: AppTheme.rejectColor.withAlpha(150)),
+                  Icon(
+                    Icons.arrow_back_rounded,
+                    size: 14,
+                    color: AppTheme.rejectColor.withAlpha(150),
+                  ),
                   const SizedBox(width: 3),
-                  Text('Skip',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: AppTheme.rejectColor.withAlpha(150))),
+                  Text(
+                    context.tr('Skip'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.rejectColor.withAlpha(150),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Icon(Icons.arrow_upward_rounded,
-                      size: 14, color: AppTheme.editColor.withAlpha(150)),
+                  Icon(
+                    Icons.arrow_upward_rounded,
+                    size: 14,
+                    color: AppTheme.editColor.withAlpha(150),
+                  ),
                   const SizedBox(width: 3),
-                  Text('Edit',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: AppTheme.editColor.withAlpha(150))),
+                  Text(
+                    context.tr('Edit'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.editColor.withAlpha(150),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Text('Publish',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: AppTheme.approveColor.withAlpha(150))),
+                  Text(
+                    context.tr('Publish'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.approveColor.withAlpha(150),
+                    ),
+                  ),
                   const SizedBox(width: 3),
-                  Icon(Icons.arrow_forward_rounded,
-                      size: 14, color: AppTheme.approveColor.withAlpha(150)),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 14,
+                    color: AppTheme.approveColor.withAlpha(150),
+                  ),
                 ],
               ),
             ),

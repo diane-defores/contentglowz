@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/app_language.dart';
+import '../../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 
@@ -35,15 +39,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final backendStatus = ref.watch(backendStatusProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
+    final languagePreference = ref.watch(appLanguagePreferenceProvider);
     final userSettings = ref.watch(currentUserSettingsProvider);
     final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
+    final tour = ref.watch(inAppTourProvider);
 
     if (_apiUrlController.text.isEmpty) {
       _apiUrlController.text = apiBaseUrl;
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(context.tr('Settings'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -76,8 +82,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             const SizedBox(width: 8),
                             Text(
                               isOnline
-                                  ? 'Connected'
-                                  : 'Offline (using mock data)',
+                                  ? context.tr('Connected')
+                                  : context.tr('Offline (using mock data)'),
                               style: TextStyle(
                                 color: isOnline
                                     ? AppTheme.approveColor
@@ -89,7 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ],
                         );
                       },
-                      loading: () => const Row(
+                      loading: () => Row(
                         children: [
                           SizedBox(
                             width: 14,
@@ -97,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                           SizedBox(width: 8),
-                          Text('Checking...'),
+                          Text(context.tr('Checking...')),
                         ],
                       ),
                       error: (_, _) => Row(
@@ -111,8 +117,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            'Error checking status',
+                          Text(
+                            context.tr('Error checking status'),
                             style: TextStyle(color: Colors.orange),
                           ),
                         ],
@@ -123,7 +129,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (appAccess?.isDegraded == true) ...[
                   const SizedBox(height: 12),
                   Text(
-                    'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.',
+                    context.tr(
+                      'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.',
+                    ),
                     style: TextStyle(
                       color: Colors.orange.withAlpha(220),
                       fontSize: 12,
@@ -136,7 +144,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 TextField(
                   controller: _apiUrlController,
                   decoration: InputDecoration(
-                    labelText: 'API URL',
+                    labelText: context.tr('API URL'),
                     hintText: 'http://localhost:8000',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.check_rounded),
@@ -155,6 +163,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
+
+          const SizedBox(height: 28),
+
+          _sectionHeader('Language'),
+          const SizedBox(height: 12),
+          _buildLanguageCard(languagePreference),
 
           const SizedBox(height: 28),
 
@@ -192,6 +206,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: const Color(0xFF00B894),
             onTap: () => context.push('/onboarding?intent=entry'),
           ),
+          const SizedBox(height: 8),
+          _buildTourTile(tour),
 
           const SizedBox(height: 28),
 
@@ -262,12 +278,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Content Approval Pipeline v0.1.0',
+                  context.tr('Content Approval Pipeline v0.1.0'),
                   style: TextStyle(color: Colors.white.withAlpha(120)),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'AI generates content, you swipe to publish.',
+                  context.tr('AI generates content, you swipe to publish.'),
                   style: TextStyle(
                     color: Colors.white.withAlpha(160),
                     fontSize: 14,
@@ -284,7 +300,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _sectionHeader(String title) {
     return Text(
-      title,
+      context.tr(title),
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
@@ -294,18 +310,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildLanguageCard(String languagePreference) {
+    final selected = normalizeAppLanguagePreference(languagePreference);
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr(
+              'Choose how ContentFlow chooses its interface language.',
+            ),
+            style: TextStyle(
+              color: Colors.white.withAlpha(140),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            initialValue: selected,
+            decoration: InputDecoration(labelText: context.tr('App language')),
+            dropdownColor: const Color(0xFF1A1A2E),
+            items: [
+              DropdownMenuItem(
+                value: appLanguageSystem,
+                child: Text(context.tr('Follow system language')),
+              ),
+              DropdownMenuItem(
+                value: appLanguageEnglish,
+                child: Text(context.tr('English')),
+              ),
+              DropdownMenuItem(
+                value: appLanguageFrench,
+                child: Text(context.tr('French')),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              ref
+                  .read(currentUserSettingsProvider.notifier)
+                  .updateLanguage(value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNotificationsCard(AsyncValue<AppSettings?> userSettings) {
     return _buildCard(
       child: userSettings.when(
         data: (settings) => SwitchListTile(
-          title: const Text(
-            'Push notifications',
+          title: Text(
+            context.tr('Push notifications'),
             style: TextStyle(color: Colors.white),
           ),
           subtitle: Text(
             settings == null
-                ? 'Sign in to sync notification preferences'
-                : 'Get notified when new content is ready',
+                ? context.tr('Sign in to sync notification preferences')
+                : context.tr('Get notified when new content is ready'),
             style: TextStyle(color: Colors.white.withAlpha(100)),
           ),
           value: settings?.notificationsEnabled ?? false,
@@ -319,10 +385,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           activeTrackColor: AppTheme.approveColor,
           contentPadding: EdgeInsets.zero,
         ),
-        loading: () => const ListTile(
+        loading: () => ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(
-            'Loading notification preferences',
+            context.tr('Loading notification preferences'),
             style: TextStyle(color: Colors.white),
           ),
           trailing: SizedBox(
@@ -333,8 +399,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         error: (error, _) => ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text(
-            'Notification preferences unavailable',
+          title: Text(
+            context.tr('Notification preferences unavailable'),
             style: TextStyle(color: Colors.white),
           ),
           subtitle: Text(
@@ -355,14 +421,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SwitchListTile(
-                title: const Text(
-                  'Curate ideas before generation',
+                title: Text(
+                  context.tr('Curate ideas before generation'),
                   style: TextStyle(color: Colors.white),
                 ),
                 subtitle: Text(
                   enabled
-                      ? 'Content generation waits for your review'
-                      : 'Content is generated automatically',
+                      ? context.tr('Content generation waits for your review')
+                      : context.tr('Content is generated automatically'),
                   style: TextStyle(color: Colors.white.withAlpha(100)),
                 ),
                 value: enabled,
@@ -379,8 +445,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (enabled) ...[
                 const SizedBox(height: 12),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFDAA5E).withAlpha(15),
                     borderRadius: BorderRadius.circular(10),
@@ -398,7 +466,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.',
+                          context.tr(
+                            'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.',
+                          ),
                           style: TextStyle(
                             color: Colors.white.withAlpha(160),
                             fontSize: 12,
@@ -415,7 +485,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => context.push('/idea-pool'),
                     icon: const Icon(Icons.lightbulb_outline, size: 18),
-                    label: const Text('View Idea Pool'),
+                    label: Text(context.tr('View Idea Pool')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFFDAA5E),
                       side: BorderSide(
@@ -428,10 +498,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           );
         },
-        loading: () => const ListTile(
+        loading: () => ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text(
-            'Loading Idea Pool settings',
+            context.tr('Loading Idea Pool settings'),
             style: TextStyle(color: Colors.white),
           ),
           trailing: SizedBox(
@@ -441,7 +511,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         error: (_, _) => Text(
-          'Sign in to configure Idea Pool',
+          context.tr('Sign in to configure Idea Pool'),
           style: TextStyle(color: Colors.white.withAlpha(100)),
         ),
       ),
@@ -457,8 +527,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'How much content should the AI generate?',
-                style: TextStyle(color: Colors.white.withAlpha(140), fontSize: 13),
+                context.tr('How much content should the AI generate?'),
+                style: TextStyle(
+                  color: Colors.white.withAlpha(140),
+                  fontSize: 13,
+                ),
               ),
               const SizedBox(height: 16),
               _frequencyRow(
@@ -510,7 +583,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         error: (_, _) => Text(
-          'Sign in to configure content frequency',
+          context.tr('Sign in to configure content frequency'),
           style: TextStyle(color: Colors.white.withAlpha(100)),
         ),
       ),
@@ -526,65 +599,73 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required Color color,
     required ValueChanged<int> onChanged,
   }) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final compact = constraints.maxWidth < 360;
-      final slider = SliderTheme(
-        data: SliderThemeData(
-          activeTrackColor: color,
-          inactiveTrackColor: color.withAlpha(30),
-          thumbColor: color,
-          overlayColor: color.withAlpha(30),
-          trackHeight: 4,
-        ),
-        child: Slider(
-          value: value.toDouble(),
-          min: 0,
-          max: max.toDouble(),
-          divisions: max,
-          onChanged: (v) => onChanged(v.round()),
-        ),
-      );
-      final valueText = Text(
-        value == 0 ? 'Off' : '$value$unit',
-        textAlign: TextAlign.right,
-        style: TextStyle(
-          color: value == 0 ? Colors.white.withAlpha(60) : color,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-      );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 360;
+        final slider = SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: color,
+            inactiveTrackColor: color.withAlpha(30),
+            thumbColor: color,
+            overlayColor: color.withAlpha(30),
+            trackHeight: 4,
+          ),
+          child: Slider(
+            value: value.toDouble(),
+            min: 0,
+            max: max.toDouble(),
+            divisions: max,
+            onChanged: (v) => onChanged(v.round()),
+          ),
+        );
+        final valueText = Text(
+          value == 0 ? context.tr('Off') : '$value${context.tr(unit)}',
+          textAlign: TextAlign.right,
+          style: TextStyle(
+            color: value == 0 ? Colors.white.withAlpha(60) : color,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        );
 
-      if (compact) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 20, color: color),
+                  const SizedBox(width: 8),
+                  Text(
+                    context.tr(label),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  const Spacer(),
+                  valueText,
+                ],
+              ),
+              slider,
+            ],
+          );
+        }
+
+        return Row(
           children: [
-            Row(
-              children: [
-                Icon(icon, size: 20, color: color),
-                const SizedBox(width: 8),
-                Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                const Spacer(),
-                valueText,
-              ],
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 100,
+              child: Text(
+                context.tr(label),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
             ),
-            slider,
+            Expanded(child: slider),
+            SizedBox(width: 55, child: valueText),
           ],
         );
-      }
-
-      return Row(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 100,
-            child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ),
-          Expanded(child: slider),
-          SizedBox(width: 55, child: valueText),
-        ],
-      );
-    });
+      },
+    );
   }
 
   Future<void> _updateFrequency(String key, int value) async {
@@ -613,6 +694,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildTourTile(InAppTourState tour) {
+    final String title;
+    final String subtitle;
+    final VoidCallback onTap;
+    final controller = ref.read(inAppTourProvider.notifier);
+
+    if (tour.completed) {
+      title = 'Visite guidée de l\'app';
+      subtitle = 'Relancer la visite depuis le début';
+      onTap = () => controller.start(context);
+    } else if (tour.stepIndex > 0) {
+      title = 'Reprendre la visite guidée';
+      subtitle = 'Étape ${tour.stepIndex + 1}/${tour.totalSteps} — '
+          '${tour.currentStep.title}';
+      onTap = () => controller.resume(context);
+    } else {
+      title = 'Visite guidée de l\'app';
+      subtitle = 'Découvrir les écrans pas à pas';
+      onTap = () => controller.start(context);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withAlpha(15)),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppTheme.approveColor.withAlpha(25),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.tour_rounded,
+            color: AppTheme.approveColor,
+            size: 22,
+          ),
+        ),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.white.withAlpha(80), fontSize: 12),
+        ),
+        trailing: Icon(Icons.chevron_right, color: Colors.white.withAlpha(40)),
+        onTap: onTap,
+      ),
+    );
+  }
+
   Widget _buildActionTile({
     required IconData icon,
     required String title,
@@ -636,9 +769,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           child: Icon(icon, color: color, size: 22),
         ),
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        title: Text(
+          context.tr(title),
+          style: const TextStyle(color: Colors.white),
+        ),
         subtitle: Text(
-          subtitle,
+          context.tr(subtitle),
           style: TextStyle(color: Colors.white.withAlpha(80), fontSize: 12),
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.white.withAlpha(40)),
@@ -705,18 +841,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required PublishAccount? account,
   }) {
     if (accountsAsync.isLoading) {
-      return 'Loading connected accounts...';
+      return context.tr('Loading connected accounts...');
     }
     if (accountsAsync.hasError) {
-      return 'Could not fetch connected accounts';
+      return context.tr('Could not fetch connected accounts');
     }
     if (platform == null) {
-      return 'Not wired to LATE publish flow yet';
+      return context.tr('Not wired to LATE publish flow yet');
     }
     if (connected && account != null) {
       return '${account.displayName} @${account.username}';
     }
-    return 'No connected account found';
+    return context.tr('No connected account found');
   }
 
   Widget _buildChannelTrailing({
@@ -735,7 +871,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (platform == null) {
       return Text(
-        'Not wired',
+        context.tr('Not wired'),
         style: TextStyle(color: Colors.orange.withAlpha(180), fontSize: 12),
       );
     }
@@ -751,14 +887,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Connected',
+              context.tr('Connected'),
               style: TextStyle(color: AppTheme.approveColor, fontSize: 12),
             ),
           ),
           const SizedBox(width: 4),
           IconButton(
-            icon: Icon(Icons.link_off, size: 18, color: Colors.white.withAlpha(80)),
-            tooltip: 'Disconnect',
+            icon: Icon(
+              Icons.link_off,
+              size: 18,
+              color: Colors.white.withAlpha(80),
+            ),
+            tooltip: context.tr('Disconnect'),
             onPressed: () => _disconnectChannel(name, platform),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: EdgeInsets.zero,
@@ -775,7 +915,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         minimumSize: const Size(0, 34),
       ),
-      child: const Text('Connect', style: TextStyle(fontSize: 12)),
+      child: Text(context.tr('Connect'), style: const TextStyle(fontSize: 12)),
     );
   }
 
@@ -783,9 +923,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (platform == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$channelName is not supported for direct connection yet'),
+          content: Text(
+            context.tr(
+              '{channelName} is not supported for direct connection yet',
+              {'channelName': channelName},
+            ),
+          ),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -799,10 +946,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (connectUrl == null || connectUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not get connect URL for $channelName'),
+          content: Text(
+            context.tr('Could not get connect URL for {channelName}', {
+              'channelName': channelName,
+            }),
+          ),
           backgroundColor: AppTheme.rejectColor.withAlpha(200),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -819,22 +972,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A2E),
-          title: Text('Connecting $channelName'),
+          title: Text(
+            context.tr('Connecting {channelName}', {
+              'channelName': channelName,
+            }),
+          ),
           content: Text(
-            'A browser window has opened for you to authorize $channelName.\n\nOnce done, tap "Refresh" to see your connected account.',
+            context.tr(
+              'A browser window has opened for you to authorize {channelName}.\n\nOnce done, tap "Refresh" to see your connected account.',
+              {'channelName': channelName},
+            ),
             style: TextStyle(color: Colors.white.withAlpha(180)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(context.tr('Cancel')),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 ref.invalidate(publishAccountsProvider);
               },
-              child: const Text('Refresh'),
+              child: Text(context.tr('Refresh')),
             ),
           ],
         ),
@@ -842,10 +1002,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not open browser for $channelName authorization'),
+          content: Text(
+            context.tr(
+              'Could not open browser for {channelName} authorization',
+              {'channelName': channelName},
+            ),
+          ),
           backgroundColor: AppTheme.rejectColor.withAlpha(200),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -860,22 +1027,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: Text('Disconnect $channelName?'),
+        title: Text(
+          context.tr('Disconnect {channelName}?', {'channelName': channelName}),
+        ),
         content: Text(
-          'This will remove the connection to ${account.displayName}.',
+          context.tr('This will remove the connection to {displayName}.', {
+            'displayName': account.displayName,
+          }),
           style: TextStyle(color: Colors.white.withAlpha(180)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.tr('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.rejectColor,
             ),
-            child: const Text('Disconnect'),
+            child: Text(context.tr('Disconnect')),
           ),
         ],
       ),
@@ -891,18 +1062,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ref.invalidate(publishAccountsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Disconnected $channelName'),
+            content: Text(
+              context.tr('Disconnected {channelName}', {
+                'channelName': channelName,
+              }),
+            ),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to disconnect $channelName'),
+            content: Text(
+              context.tr('Failed to disconnect {channelName}', {
+                'channelName': channelName,
+              }),
+            ),
             backgroundColor: AppTheme.rejectColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }

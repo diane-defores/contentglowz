@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
+import '../../../l10n/app_localizations.dart';
 
 final _templatesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -18,13 +19,13 @@ class TemplatesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Templates')),
+      appBar: AppBar(title: Text(context.tr('Templates'))),
       body: templatesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'templates.load',
-            title: 'Failed to load templates',
+            title: context.tr('Failed to load templates'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(_templatesProvider),
@@ -39,7 +40,7 @@ class TemplatesScreen extends ConsumerWidget {
                   Icon(Icons.description_outlined, size: 64,
                       color: theme.colorScheme.outlineVariant),
                   const SizedBox(height: 16),
-                  Text('No templates available',
+                  Text(context.tr('No templates available'),
                       style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),
@@ -113,14 +114,14 @@ class _TemplateCard extends StatelessWidget {
                     children: [
                       if (contentType.isNotEmpty)
                         Chip(
-                          label: Text(contentType.replaceAll('_', ' '),
+                      label: Text(context.tr(contentType.replaceAll('_', ' ')),
                               style: const TextStyle(fontSize: 11)),
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,
                         ),
                       if (sections > 0)
                         Chip(
-                          label: Text('$sections sections',
+                      label: Text(context.tr('{count} sections', {'count': sections}),
                               style: const TextStyle(fontSize: 11)),
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,

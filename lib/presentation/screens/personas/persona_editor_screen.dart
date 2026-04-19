@@ -5,6 +5,7 @@ import '../../../data/models/persona.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PersonaEditorScreen extends ConsumerStatefulWidget {
   final String? personaId;
@@ -74,7 +75,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            widget.personaId != null ? 'Edit Persona' : 'New Persona'),
+            widget.personaId != null
+                ? context.tr('Edit Persona')
+                : context.tr('New Persona')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -88,7 +91,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save'),
+                : Text(context.tr('Save')),
           ),
         ],
       ),
@@ -96,13 +99,13 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // Name
-          _sectionLabel('Identity'),
+          _sectionLabel(context.tr('Identity')),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Persona name',
-              hintText: 'e.g. Tech-Savvy Solopreneur',
+            decoration: InputDecoration(
+              labelText: context.tr('Persona name'),
+              hintText: context.tr('e.g. Tech-Savvy Solopreneur'),
               prefixIcon: Icon(Icons.person_outline),
             ),
           ),
@@ -110,13 +113,13 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 28),
 
           // Demographics
-          _sectionLabel('Demographics'),
+          _sectionLabel(context.tr('Demographics')),
           const SizedBox(height: 12),
           TextField(
             controller: _roleController,
-            decoration: const InputDecoration(
-              labelText: 'Role',
-              hintText: 'e.g. Indie developer, CTO, Content creator',
+              decoration: InputDecoration(
+                labelText: context.tr('Role'),
+                hintText: context.tr('e.g. Indie developer, CTO, Content creator'),
             ),
           ),
           const SizedBox(height: 12),
@@ -125,9 +128,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
               Expanded(
                 child: TextField(
                   controller: _industryController,
-                  decoration: const InputDecoration(
-                    labelText: 'Industry',
-                    hintText: 'SaaS, E-commerce...',
+                  decoration: InputDecoration(
+                    labelText: context.tr('Industry'),
+                    hintText: context.tr('SaaS, E-commerce...'),
                   ),
                 ),
               ),
@@ -135,9 +138,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
               Expanded(
                 child: TextField(
                   controller: _ageRangeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Age range',
-                    hintText: '25-40',
+                  decoration: InputDecoration(
+                    labelText: context.tr('Age range'),
+                    hintText: context.tr('25-40'),
                   ),
                 ),
               ),
@@ -146,26 +149,26 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _experienceController,
-            decoration: const InputDecoration(
-              labelText: 'Experience level',
-              hintText: '3-8 years',
+            decoration: InputDecoration(
+              labelText: context.tr('Experience level'),
+              hintText: context.tr('3-8 years'),
             ),
           ),
 
           const SizedBox(height: 28),
 
           // Pain Points
-          _sectionLabel('Pain Points (min. 2)'),
+          _sectionLabel(context.tr('Pain Points (min. 2)')),
           const SizedBox(height: 4),
           Text(
-            'Deep, real problems — not surface-level symptoms',
+            context.tr('Deep, real problems — not surface-level symptoms'),
             style:
                 TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _painPointControllers,
-            hintPrefix: 'Pain point',
+            hintPrefix: context.tr('Pain point'),
             color: AppTheme.rejectColor,
             onAdd: () => setState(
                 () => _painPointControllers.add(TextEditingController())),
@@ -174,17 +177,17 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 28),
 
           // Goals
-          _sectionLabel('Goals (min. 2)'),
+          _sectionLabel(context.tr('Goals (min. 2)')),
           const SizedBox(height: 4),
           Text(
-            'Aspirations and desired outcomes',
+            context.tr('Aspirations and desired outcomes'),
             style:
                 TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _goalControllers,
-            hintPrefix: 'Goal',
+            hintPrefix: context.tr('Goal'),
             color: AppTheme.approveColor,
             onAdd: () => setState(
                 () => _goalControllers.add(TextEditingController())),
@@ -193,17 +196,17 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 28),
 
           // Language — Vocabulary
-          _sectionLabel('Vocabulary'),
+          _sectionLabel(context.tr('Vocabulary')),
           const SizedBox(height: 4),
           Text(
-            'Words and expressions this persona actually uses',
+            context.tr('Words and expressions this persona actually uses'),
             style:
                 TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _vocabularyControllers,
-            hintPrefix: 'Word or phrase',
+            hintPrefix: context.tr('Word or phrase'),
             color: const Color(0xFF0984E3),
             onAdd: () => setState(
                 () => _vocabularyControllers.add(TextEditingController())),
@@ -212,17 +215,17 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 28),
 
           // Language — Objections
-          _sectionLabel('Objections'),
+          _sectionLabel(context.tr('Objections')),
           const SizedBox(height: 4),
           Text(
-            'Common pushbacks or doubts this persona has',
+            context.tr('Common pushbacks or doubts this persona has'),
             style:
                 TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _objectionControllers,
-            hintPrefix: 'Objection',
+            hintPrefix: context.tr('Objection'),
             color: const Color(0xFFFDAA5E),
             onAdd: () => setState(
                 () => _objectionControllers.add(TextEditingController())),
@@ -302,7 +305,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
       TextButton.icon(
         onPressed: onAdd,
         icon: Icon(Icons.add, size: 18, color: color),
-        label: Text('Add', style: TextStyle(color: color)),
+        label: Text(context.tr('Add'), style: TextStyle(color: color)),
       ),
     ];
   }
@@ -310,7 +313,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
   Future<void> _save() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a persona name')),
+        SnackBar(content: Text(context.tr('Please enter a persona name'))),
       );
       return;
     }
@@ -360,7 +363,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Persona "${persona.name}" saved'),
+            content:
+                Text(context.tr('Persona "{name}" saved', {'name': persona.name})),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
             shape:
@@ -374,7 +378,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Failed to save persona: $error',
+          message: context.tr('Failed to save persona: {error}', {'error': '$error'}),
           scope: 'persona.save',
           error: error,
           stackTrace: stackTrace,

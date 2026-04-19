@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/ritual.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -44,7 +45,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Weekly Ritual'),
+        title: Text(context.tr('Weekly Ritual')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -67,13 +68,13 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           child: Row(
             children: [
               Text(
-                '$filledCount/${_entries.length} entries',
+                '${context.tr('Progress')}: $filledCount/${_entries.length}',
                 style: TextStyle(
                     color: Colors.white.withAlpha(100), fontSize: 13),
               ),
               const Spacer(),
               Text(
-                'Fill at least 2',
+                context.tr('Fill at least {count}', {'count': '2'}),
                 style: TextStyle(
                     color: Colors.white.withAlpha(60), fontSize: 13),
               ),
@@ -111,7 +112,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Synthesize Narrative'),
+                : Text(context.tr('Synthesize Narrative')),
           ),
         ),
       ],
@@ -144,7 +145,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                 Text(entry.emoji, style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 10),
                 Text(
-                  entry.label,
+                  _localizedLabel(entry.type),
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.w600,
@@ -164,7 +165,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
               style: TextStyle(
                   color: Colors.white.withAlpha(220), fontSize: 14, height: 1.6),
               decoration: InputDecoration(
-                hintText: entry.hint,
+                hintText: _localizedHint(entry.type),
                 hintStyle: TextStyle(color: Colors.white.withAlpha(40)),
                 border: InputBorder.none,
                 filled: false,
@@ -209,7 +210,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'New Chapter Detected',
+                        context.tr('New Chapter Detected'),
                         style: TextStyle(
                             color: Colors.white.withAlpha(150), fontSize: 12),
                       ),
@@ -230,8 +231,8 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           ),
 
         // Narrative summary
-        const Text(
-          'Narrative Summary',
+        Text(
+          context.tr('Narrative Summary'),
           style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -258,8 +259,8 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
         // Voice changes
         if (result.voiceDelta.isNotEmpty) ...[
           const SizedBox(height: 24),
-          const Text(
-            'Voice Evolution',
+          Text(
+            context.tr('Voice Evolution'),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -274,8 +275,8 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
         // Positioning changes
         if (result.positioningDelta.isNotEmpty) ...[
           const SizedBox(height: 16),
-          const Text(
-            'Positioning Shift',
+          Text(
+            context.tr('Positioning Shift'),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -299,7 +300,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   side: BorderSide(color: Colors.white.withAlpha(40)),
                 ),
-                child: const Text('Edit Entries'),
+                child: Text(context.tr('Edit Entries')),
               ),
             ),
             const SizedBox(width: 12),
@@ -311,7 +312,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: AppTheme.approveColor,
                 ),
-                child: const Text('Validate & Save'),
+                child: Text(context.tr('Validate & Save')),
               ),
             ),
           ],
@@ -368,6 +369,27 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
       key.replaceAll('_', ' ').replaceFirstMapped(
           RegExp(r'^[a-z]'), (m) => m.group(0)!.toUpperCase());
 
+  String _localizedLabel(EntryType type) => switch (type) {
+        EntryType.reflection => context.tr('Reflection'),
+        EntryType.win => context.tr('Win'),
+        EntryType.struggle => context.tr('Struggle'),
+        EntryType.idea => context.tr('Idea'),
+        EntryType.pivot => context.tr('Pivot'),
+      };
+
+  String _localizedHint(EntryType type) => switch (type) {
+        EntryType.reflection => context.tr(
+            'What have you been thinking about this week regarding your work, your audience, your direction?'),
+        EntryType.win => context.tr(
+            'What went well? A milestone, a positive reaction, a breakthrough?'),
+        EntryType.struggle => context.tr(
+            'What was difficult? A blocker, a doubt, a frustration?'),
+        EntryType.idea => context.tr(
+            'Any new ideas? Content topics, product features, collaborations?'),
+        EntryType.pivot => context.tr(
+            'Are you reconsidering something? A strategy shift, a new angle?'),
+      };
+
   Color _colorForType(EntryType type) => switch (type) {
         EntryType.reflection => const Color(0xFF6C5CE7),
         EntryType.win => const Color(0xFF00B894),
@@ -405,7 +427,9 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
       showDiagnosticSnackBar(
         context,
         ref,
-        message: 'Narrative synthesis failed: $error',
+        message: context.tr('Narrative synthesis failed: {error}', {
+          'error': '$error',
+        }),
         scope: 'ritual.synthesize',
         error: error,
         stackTrace: stackTrace,
@@ -429,7 +453,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Narrative validated and saved!'),
+        content: Text(context.tr('Narrative validated and saved!')),
         backgroundColor: AppTheme.approveColor.withAlpha(200),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

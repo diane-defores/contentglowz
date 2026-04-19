@@ -1,8 +1,7 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../core/app_language.dart';
 import '../../core/app_config.dart';
 import '../models/auth_session.dart';
 import '../models/feedback_entry.dart';
@@ -93,7 +92,11 @@ class FeedbackService {
       );
     }
 
-    await api.uploadFeedbackAudio(uploadTarget, wavBytes, mimeType: 'audio/wav');
+    await api.uploadFeedbackAudio(
+      uploadTarget,
+      wavBytes,
+      mimeType: 'audio/wav',
+    );
     final entry = await api.createAudioFeedback(
       storageId: storageId,
       durationMs: durationMs,
@@ -129,11 +132,10 @@ class FeedbackService {
   }
 
   String _currentLocale() {
-    final settingsLocale = _language();
-    if (settingsLocale != null && settingsLocale.trim().isNotEmpty) {
-      return settingsLocale.trim();
-    }
-    return WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag();
+    return resolvedLocaleTagForPreference(
+      _language(),
+      WidgetsBinding.instance.platformDispatcher.locale,
+    );
   }
 
   String _currentPlatform() {

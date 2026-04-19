@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
@@ -20,7 +21,7 @@ class AnalyticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analytics'),
+        title: Text(context.tr('Analytics')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -36,16 +37,26 @@ class AnalyticsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.insights_outlined, size: 64,
-                      color: theme.colorScheme.outlineVariant),
+                  Icon(
+                    Icons.insights_outlined,
+                    size: 64,
+                    color: theme.colorScheme.outlineVariant,
+                  ),
                   const SizedBox(height: 16),
-                  Text('No data yet',
-                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+                  Text(
+                    context.tr('No data yet'),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Analytics will appear as content flows through the pipeline',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outlineVariant),
-                      textAlign: TextAlign.center),
+                  Text(
+                    context.tr(
+                      'Analytics will appear as content flows through the pipeline',
+                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             )
@@ -79,25 +90,58 @@ class _PipelineFunnel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = content.length;
-    final pending = content.where((c) => c.status == ContentStatus.pending).length;
-    final published = content.where((c) => c.status == ContentStatus.published).length;
-    final rejected = content.where((c) => c.status == ContentStatus.rejected).length;
-    final approved = content.where((c) => c.status == ContentStatus.approved).length;
+    final pending = content
+        .where((c) => c.status == ContentStatus.pending)
+        .length;
+    final published = content
+        .where((c) => c.status == ContentStatus.published)
+        .length;
+    final rejected = content
+        .where((c) => c.status == ContentStatus.rejected)
+        .length;
+    final approved = content
+        .where((c) => c.status == ContentStatus.approved)
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Pipeline Funnel', style: theme.textTheme.titleMedium),
+        Text(context.tr('Pipeline Funnel'), style: theme.textTheme.titleMedium),
         const SizedBox(height: 12),
-        _FunnelBar(label: 'Total', count: total, maxCount: total, color: theme.colorScheme.primary),
+        _FunnelBar(
+          label: 'Total',
+          count: total,
+          maxCount: total,
+          color: theme.colorScheme.primary,
+        ),
         const SizedBox(height: 6),
-        _FunnelBar(label: 'Pending Review', count: pending, maxCount: total, color: Colors.orange),
+        _FunnelBar(
+          label: 'Pending Review',
+          count: pending,
+          maxCount: total,
+          color: Colors.orange,
+        ),
         const SizedBox(height: 6),
-        _FunnelBar(label: 'Approved', count: approved, maxCount: total, color: Colors.blue),
+        _FunnelBar(
+          label: 'Approved',
+          count: approved,
+          maxCount: total,
+          color: Colors.blue,
+        ),
         const SizedBox(height: 6),
-        _FunnelBar(label: 'Published', count: published, maxCount: total, color: Colors.green),
+        _FunnelBar(
+          label: 'Published',
+          count: published,
+          maxCount: total,
+          color: Colors.green,
+        ),
         const SizedBox(height: 6),
-        _FunnelBar(label: 'Rejected', count: rejected, maxCount: total, color: Colors.red),
+        _FunnelBar(
+          label: 'Rejected',
+          count: rejected,
+          maxCount: total,
+          color: Colors.red,
+        ),
       ],
     );
   }
@@ -122,7 +166,7 @@ class _FunnelBar extends StatelessWidget {
       children: [
         SizedBox(
           width: 110,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
+          child: Text(context.tr(label), style: const TextStyle(fontSize: 12)),
         ),
         Expanded(
           child: ClipRRect(
@@ -138,9 +182,15 @@ class _FunnelBar extends StatelessWidget {
         const SizedBox(width: 8),
         SizedBox(
           width: 30,
-          child: Text('$count',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color),
-              textAlign: TextAlign.right),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+            textAlign: TextAlign.right,
+          ),
         ),
       ],
     );
@@ -165,7 +215,7 @@ class _ContentByType extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Content by Type', style: theme.textTheme.titleMedium),
+        Text(context.tr('Content by Type'), style: theme.textTheme.titleMedium),
         const SizedBox(height: 12),
         ...sorted.map((e) {
           final label = e.key.name
@@ -206,20 +256,32 @@ class _ChannelDistribution extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Channel Distribution', style: theme.textTheme.titleMedium),
+        Text(
+          context.tr('Channel Distribution'),
+          style: theme.textTheme.titleMedium,
+        ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: sorted.map((e) => Chip(
-                avatar: CircleAvatar(
-                  radius: 12,
-                  backgroundColor: theme.colorScheme.tertiaryContainer,
-                  child: Text('${e.value}',
-                      style: TextStyle(fontSize: 10, color: theme.colorScheme.onTertiaryContainer)),
+          children: sorted
+              .map(
+                (e) => Chip(
+                  avatar: CircleAvatar(
+                    radius: 12,
+                    backgroundColor: theme.colorScheme.tertiaryContainer,
+                    child: Text(
+                      '${e.value}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: theme.colorScheme.onTertiaryContainer,
+                      ),
+                    ),
+                  ),
+                  label: Text(e.key, style: const TextStyle(fontSize: 12)),
                 ),
-                label: Text(e.key, style: const TextStyle(fontSize: 12)),
-              )).toList(),
+              )
+              .toList(),
         ),
       ],
     );
@@ -233,10 +295,14 @@ class _PublishingTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final published = content
-        .where((c) => c.status == ContentStatus.published && c.publishedAt != null)
-        .toList()
-      ..sort((a, b) => b.publishedAt!.compareTo(a.publishedAt!));
+    final published =
+        content
+            .where(
+              (c) =>
+                  c.status == ContentStatus.published && c.publishedAt != null,
+            )
+            .toList()
+          ..sort((a, b) => b.publishedAt!.compareTo(a.publishedAt!));
 
     if (published.isEmpty) return const SizedBox.shrink();
 
@@ -253,29 +319,45 @@ class _PublishingTimeline extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Publishing Timeline', style: theme.textTheme.titleMedium),
+        Text(
+          context.tr('Publishing Timeline'),
+          style: theme.textTheme.titleMedium,
+        ),
         const SizedBox(height: 12),
-        ...sortedDays.take(14).map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                children: [
-                  SizedBox(width: 90, child: Text(e.key, style: const TextStyle(fontSize: 12))),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: e.value / (sortedDays.first.value),
-                        backgroundColor: Colors.green.withValues(alpha: 0.1),
-                        color: Colors.green,
-                        minHeight: 16,
+        ...sortedDays
+            .take(14)
+            .map(
+              (e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 90,
+                      child: Text(e.key, style: const TextStyle(fontSize: 12)),
+                    ),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: e.value / (sortedDays.first.value),
+                          backgroundColor: Colors.green.withValues(alpha: 0.1),
+                          color: Colors.green,
+                          minHeight: 16,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('${e.value}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      '${e.value}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
       ],
     );
   }

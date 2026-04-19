@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ReelsScreen extends ConsumerStatefulWidget {
   const ReelsScreen({super.key});
@@ -27,7 +28,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reels')),
+      appBar: AppBar(title: Text(context.tr('Reels'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -45,11 +46,11 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Reel Repurposing',
+                        Text(context.tr('Reel Repurposing'),
                             style: theme.textTheme.titleSmall),
                         const SizedBox(height: 2),
                         Text(
-                          'Download Instagram reels, extract audio, upload to CDN',
+                          context.tr('Download Instagram reels, extract audio, upload to CDN'),
                           style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant),
                         ),
@@ -62,15 +63,15 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
           ),
           const SizedBox(height: 20),
 
-          Text('Download Reel', style: theme.textTheme.titleMedium),
+          Text(context.tr('Download Reel'), style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
 
           TextField(
             controller: _urlCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Instagram Reel URL',
-              hintText: 'https://www.instagram.com/reel/...',
-              prefixIcon: Icon(Icons.link),
+            decoration: InputDecoration(
+              labelText: context.tr('Instagram Reel URL'),
+              hintText: context.tr('https://www.instagram.com/reel/...'),
+              prefixIcon: const Icon(Icons.link),
             ),
             keyboardType: TextInputType.url,
           ),
@@ -83,7 +84,9 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
                     height: 18, width: 18,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.download),
-            label: Text(_downloading ? 'Downloading...' : 'Download & Extract'),
+            label: Text(_downloading
+                ? context.tr('Downloading...')
+                : context.tr('Download & Extract')),
           ),
 
           if (_result != null) ...[
@@ -98,7 +101,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   Future<void> _download() async {
     if (_urlCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an Instagram Reel URL')),
+        SnackBar(content: Text(context.tr('Enter an Instagram Reel URL'))),
       );
       return;
     }
@@ -120,7 +123,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Download failed: $error',
+          message: context.tr('Download failed: {error}', {'error': '$error'}),
           scope: 'reels.download',
           error: error,
           stackTrace: stackTrace,
@@ -157,23 +160,25 @@ class _ResultCard extends StatelessWidget {
               children: [
                 Icon(Icons.check_circle, color: Colors.green, size: 20),
                 const SizedBox(width: 8),
-                Text('Download Complete',
+                Text(context.tr('Download Complete'),
                     style: theme.textTheme.titleSmall
                         ?.copyWith(color: Colors.green)),
               ],
             ),
             const SizedBox(height: 12),
-            if (author != null) _InfoRow(label: 'Author', value: author),
-            if (reelId.isNotEmpty) _InfoRow(label: 'Reel ID', value: reelId),
+            if (author != null) _InfoRow(label: context.tr('Author'), value: author),
+            if (reelId.isNotEmpty)
+              _InfoRow(label: context.tr('Reel ID'), value: reelId),
             if (duration != null)
-              _InfoRow(label: 'Duration', value: '${duration.toInt()}s'),
+              _InfoRow(label: context.tr('Duration'),
+                  value: '${duration.toInt()}s'),
             if (videoUrl.isNotEmpty)
-              _InfoRow(label: 'Video', value: videoUrl, isUrl: true),
+              _InfoRow(label: context.tr('Video'), value: videoUrl, isUrl: true),
             if (audioUrl.isNotEmpty)
-              _InfoRow(label: 'Audio', value: audioUrl, isUrl: true),
+              _InfoRow(label: context.tr('Audio'), value: audioUrl, isUrl: true),
             if (caption != null && caption.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Caption', style: theme.textTheme.labelSmall),
+              Text(context.tr('Caption'), style: theme.textTheme.labelSmall),
               const SizedBox(height: 4),
               Text(caption,
                   style: theme.textTheme.bodySmall,

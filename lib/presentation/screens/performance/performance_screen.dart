@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 
 class PerformanceScreen extends ConsumerWidget {
@@ -15,7 +16,7 @@ class PerformanceScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Performance'),
+        title: Text(context.tr('Performance')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -34,30 +35,39 @@ class PerformanceScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Content by type
-          Text('Content by Type', style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Content by Type'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
-          _buildTypeBreakdown(theme, historyAsync),
+          _buildTypeBreakdown(context, theme, historyAsync),
 
           const SizedBox(height: 20),
 
           // Publish destinations
-          Text('Publish Destinations', style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Publish Destinations'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
-          _buildPublishDestinations(theme, historyAsync),
+          _buildPublishDestinations(context, theme, historyAsync),
 
           const SizedBox(height: 20),
 
           // Approval rate
-          Text('Approval Rate', style: theme.textTheme.titleMedium),
+          Text(context.tr('Approval Rate'), style: theme.textTheme.titleMedium),
           const SizedBox(height: 12),
-          _buildApprovalRate(theme, historyAsync),
+          _buildApprovalRate(context, theme, historyAsync),
 
           const SizedBox(height: 20),
 
           // Recent published
-          Text('Recently Published', style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Recently Published'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
-          _buildRecentPublished(theme, historyAsync),
+          _buildRecentPublished(context, theme, historyAsync),
         ],
       ),
     );
@@ -70,13 +80,21 @@ class PerformanceScreen extends ConsumerWidget {
   ) {
     final pending = pendingAsync.valueOrNull?.length ?? 0;
     final history = historyAsync.valueOrNull ?? [];
-    final published = history.where((c) => c.status == ContentStatus.published).length;
-    final rejected = history.where((c) => c.status == ContentStatus.rejected).length;
+    final published = history
+        .where((c) => c.status == ContentStatus.published)
+        .length;
+    final rejected = history
+        .where((c) => c.status == ContentStatus.rejected)
+        .length;
     final total = pending + history.length;
 
     return Row(
       children: [
-        _StatCard(label: 'Total', value: '$total', color: theme.colorScheme.primary),
+        _StatCard(
+          label: 'Total',
+          value: '$total',
+          color: theme.colorScheme.primary,
+        ),
         const SizedBox(width: 8),
         _StatCard(label: 'Pending', value: '$pending', color: Colors.orange),
         const SizedBox(width: 8),
@@ -88,13 +106,16 @@ class PerformanceScreen extends ConsumerWidget {
   }
 
   Widget _buildTypeBreakdown(
+    BuildContext context,
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
     final history = historyAsync.valueOrNull ?? [];
     if (history.isEmpty) {
-      return Text('No content data yet',
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant));
+      return Text(
+        context.tr('No content data yet'),
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
     }
 
     final typeCounts = <ContentType, int>{};
@@ -106,16 +127,20 @@ class PerformanceScreen extends ConsumerWidget {
       spacing: 8,
       runSpacing: 8,
       children: typeCounts.entries.map((e) {
-        final typeLabel = e.key.name.replaceAllMapped(
-          RegExp(r'[A-Z]'),
-          (m) => ' ${m.group(0)}',
-        ).trim();
+        final typeLabel = e.key.name
+            .replaceAllMapped(RegExp(r'[A-Z]'), (m) => ' ${m.group(0)}')
+            .trim();
         return Chip(
           avatar: CircleAvatar(
             radius: 12,
             backgroundColor: theme.colorScheme.primaryContainer,
-            child: Text('${e.value}',
-                style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimaryContainer)),
+            child: Text(
+              '${e.value}',
+              style: TextStyle(
+                fontSize: 10,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
           ),
           label: Text(typeLabel, style: const TextStyle(fontSize: 12)),
         );
@@ -124,6 +149,7 @@ class PerformanceScreen extends ConsumerWidget {
   }
 
   Widget _buildPublishDestinations(
+    BuildContext context,
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
@@ -132,15 +158,18 @@ class PerformanceScreen extends ConsumerWidget {
         .toList();
 
     if (published.isEmpty) {
-      return Text('No published content yet',
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant));
+      return Text(
+        context.tr('No published content yet'),
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
     }
 
     // Count by channel
     final channelCounts = <String, int>{};
     for (final item in published) {
       final publishMeta = item.metadata?['publish'] as Map<String, dynamic>?;
-      final platformUrls = publishMeta?['platform_urls'] as Map<String, dynamic>?;
+      final platformUrls =
+          publishMeta?['platform_urls'] as Map<String, dynamic>?;
       if (platformUrls != null) {
         for (final platform in platformUrls.keys) {
           channelCounts[platform] = (channelCounts[platform] ?? 0) + 1;
@@ -154,8 +183,10 @@ class PerformanceScreen extends ConsumerWidget {
     }
 
     if (channelCounts.isEmpty) {
-      return Text('No destination data available',
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant));
+      return Text(
+        context.tr('No destination data available'),
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
     }
 
     final sorted = channelCounts.entries.toList()
@@ -177,7 +208,10 @@ class PerformanceScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
             children: [
-              SizedBox(width: 90, child: Text(e.key, style: const TextStyle(fontSize: 13))),
+              SizedBox(
+                width: 90,
+                child: Text(e.key, style: const TextStyle(fontSize: 13)),
+              ),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
@@ -192,9 +226,15 @@ class PerformanceScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               SizedBox(
                 width: 30,
-                child: Text('${e.value}',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: platformColor),
-                    textAlign: TextAlign.right),
+                child: Text(
+                  '${e.value}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: platformColor,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
               ),
             ],
           ),
@@ -204,17 +244,24 @@ class PerformanceScreen extends ConsumerWidget {
   }
 
   Widget _buildApprovalRate(
+    BuildContext context,
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
     final history = historyAsync.valueOrNull ?? [];
     if (history.isEmpty) {
-      return Text('No data yet',
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant));
+      return Text(
+        context.tr('No data yet'),
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
     }
 
-    final published = history.where((c) => c.status == ContentStatus.published).length;
-    final rejected = history.where((c) => c.status == ContentStatus.rejected).length;
+    final published = history
+        .where((c) => c.status == ContentStatus.published)
+        .length;
+    final rejected = history
+        .where((c) => c.status == ContentStatus.rejected)
+        .length;
     final total = published + rejected;
     final rate = total > 0 ? (published / total * 100).round() : 0;
 
@@ -229,10 +276,19 @@ class PerformanceScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                Text('$rate%',
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.green)),
+                Text(
+                  '$rate%',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.green,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                const Text('Approval Rate', style: TextStyle(fontSize: 12, color: Colors.green)),
+                Text(
+                  context.tr('Approval Rate'),
+                  style: const TextStyle(fontSize: 12, color: Colors.green),
+                ),
               ],
             ),
           ),
@@ -247,10 +303,22 @@ class PerformanceScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                Text('$total',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: theme.colorScheme.primary)),
+                Text(
+                  '$total',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Total Reviewed', style: TextStyle(fontSize: 12, color: theme.colorScheme.primary)),
+                Text(
+                  context.tr('Total Reviewed'),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -260,6 +328,7 @@ class PerformanceScreen extends ConsumerWidget {
   }
 
   Widget _buildRecentPublished(
+    BuildContext context,
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
@@ -269,35 +338,47 @@ class PerformanceScreen extends ConsumerWidget {
         .toList();
 
     if (published.isEmpty) {
-      return Text('No published content yet',
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant));
+      return Text(
+        context.tr('No published content yet'),
+        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+      );
     }
 
     return Column(
       children: published
-          .map((item) => Card(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: ListTile(
-                  dense: true,
-                  leading: Icon(Icons.check_circle, color: Colors.green, size: 20),
-                  title: Text(item.title, style: const TextStyle(fontSize: 13)),
-                  subtitle: Text(
-                    [
-                      item.type.name,
-                      if (item.publishedAt != null)
-                        item.publishedAt!.toIso8601String().split('T').first,
-                    ].join(' · '),
-                    style: theme.textTheme.bodySmall,
-                  ),
+          .map(
+            (item) => Card(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: ListTile(
+                dense: true,
+                leading: Icon(
+                  Icons.check_circle,
+                  color: Colors.green,
+                  size: 20,
                 ),
-              ))
+                title: Text(item.title, style: const TextStyle(fontSize: 13)),
+                subtitle: Text(
+                  [
+                    item.type.name,
+                    if (item.publishedAt != null)
+                      item.publishedAt!.toIso8601String().split('T').first,
+                  ].join(' · '),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            ),
+          )
           .toList(),
     );
   }
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.color});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
   final String label;
   final String value;
   final Color color;
@@ -313,9 +394,22 @@ class _StatCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8))),
+            Text(
+              context.tr(label),
+              style: TextStyle(
+                fontSize: 11,
+                color: color.withValues(alpha: 0.8),
+              ),
+            ),
           ],
         ),
       ),

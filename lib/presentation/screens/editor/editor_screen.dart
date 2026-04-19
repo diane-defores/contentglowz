@@ -4,6 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/content_audit.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
@@ -80,7 +81,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Could not load full content: $error',
+          message: context.tr('Could not load full content: {error}', {'error': '$error'}),
           scope: 'editor.load_full_content',
           error: error,
           stackTrace: stackTrace,
@@ -98,11 +99,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stackTrace) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(title: Text(context.tr('Error'))),
         body: Center(
           child: AppErrorView(
             scope: 'editor.load_pending_content',
-            title: 'Could not open the editor',
+            title: context.tr('Could not open the editor'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(pendingContentProvider),
@@ -114,7 +115,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         if (item == null) {
           return Scaffold(
             appBar: AppBar(),
-            body: const Center(child: Text('Content not found')),
+            body: Center(child: Text(context.tr('Content not found'))),
           );
         }
 
@@ -174,13 +175,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         if (item.channels.isNotEmpty)
           IconButton(
             icon: const Icon(Icons.devices_rounded),
-            tooltip: 'Platform preview',
+            tooltip: context.tr('Platform preview'),
             onPressed: () => _showPlatformPreview(item),
           ),
         // Toggle edit/preview
-        IconButton(
-          icon: Icon(_isPreview ? Icons.edit_rounded : Icons.visibility_rounded),
-          tooltip: _isPreview ? 'Edit' : 'Preview',
+          IconButton(
+            icon: Icon(_isPreview ? Icons.edit_rounded : Icons.visibility_rounded),
+          tooltip: _isPreview ? context.tr('Edit') : context.tr('Preview'),
           onPressed: () => setState(() {
             _isPreview = !_isPreview;
             _isEditing = !_isPreview;
@@ -204,8 +205,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: 'Title',
+                  decoration: InputDecoration(
+                    hintText: context.tr('Title'),
                     border: InputBorder.none,
                     filled: false,
                   ),
@@ -266,8 +267,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       color: Colors.white.withAlpha(220),
                       height: 1.7,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: 'Content body...',
+                    decoration: InputDecoration(
+                      hintText: context.tr('Content body...'),
                       border: InputBorder.none,
                       filled: false,
                     ),
@@ -418,7 +419,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Loading audit trail...',
+                    context.tr('Loading audit trail...'),
                     style: TextStyle(color: Colors.white.withAlpha(150)),
                   ),
                 ],
@@ -429,7 +430,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           if (snapshot.hasError) {
             return _auditContainer(
               child: Text(
-                'Audit trail unavailable: ${snapshot.error}',
+                context.tr(
+                  'Audit trail unavailable: {error}',
+                  {'error': '${snapshot.error}'},
+                ),
                 style: TextStyle(color: AppTheme.rejectColor),
               ),
             );
@@ -439,7 +443,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           if (trail.isEmpty) {
             return _auditContainer(
               child: Text(
-                'No audit events yet.',
+                context.tr('No audit events yet.'),
                 style: TextStyle(color: Colors.white.withAlpha(150)),
               ),
             );
@@ -451,29 +455,29 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 childrenPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Audit Trail',
+                title: Text(
+                  context.tr('Audit Trail'),
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 subtitle: Text(
-                  '${trail.transitions.length} transitions • ${trail.edits.length} edits',
+                  '${trail.transitions.length} ${context.tr('transitions')} • ${trail.edits.length} ${context.tr('edits')}',
                   style: TextStyle(color: Colors.white.withAlpha(130)),
                 ),
                 trailing: IconButton(
-                  tooltip: 'Copy audit trail',
+                  tooltip: context.tr('Copy audit trail'),
                   onPressed: () => _copyAuditTrail(trail),
                   icon: Icon(Icons.copy_rounded, color: Colors.white.withAlpha(170)),
                 ),
                 children: [
                   if (trail.transitions.isNotEmpty) ...[
-                    _auditSectionTitle('Status transitions'),
+                    _auditSectionTitle(context.tr('Status transitions')),
                     ...trail.transitions.take(8).map(_buildTransitionTile),
                   ],
                   if (trail.edits.isNotEmpty) ...[
-                    _auditSectionTitle('Body edits'),
+                    _auditSectionTitle(context.tr('Body edits')),
                     ...trail.edits.take(8).map(_buildEditTile),
                   ],
                 ],
@@ -635,7 +639,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Audit trail copied'),
+        content: Text(context.tr('Audit trail copied')),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -657,7 +661,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             child: OutlinedButton.icon(
               onPressed: () => _reject(item),
               icon: const Icon(Icons.close_rounded),
-              label: const Text('Skip'),
+              label: Text(context.tr('Skip')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.rejectColor,
                 side: BorderSide(color: AppTheme.rejectColor.withAlpha(100)),
@@ -675,7 +679,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             child: FilledButton.icon(
               onPressed: () => _publish(item),
               icon: const Icon(Icons.send_rounded),
-              label: Text(_hasChanges ? 'Save & Publish' : 'Publish'),
+              label: Text(_hasChanges
+                  ? context.tr('Save & Publish')
+                  : context.tr('Publish')),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.approveColor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -707,7 +713,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Could not save changes: $error',
+          message: context.tr('Could not save changes: {error}', {'error': '$error'}),
           scope: 'editor.save_changes',
           error: error,
           stackTrace: stackTrace,
@@ -735,7 +741,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     ref.read(pendingContentProvider.notifier).reject(item.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Skipped: ${item.title}'),
+        content: Text(context.tr('Skipped: {title}', {'title': item.title})),
         backgroundColor: AppTheme.rejectColor.withAlpha(200),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -763,19 +769,19 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text('Discard changes?'),
-        content: const Text('You have unsaved edits.'),
+        title: Text(context.tr('Discard changes?')),
+        content: Text(context.tr('You have unsaved edits.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Keep editing'),
+            child: Text(context.tr('Keep editing')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.pop();
             },
-            child: Text('Discard',
+            child: Text(context.tr('Discard'),
                 style: TextStyle(color: AppTheme.rejectColor)),
           ),
         ],

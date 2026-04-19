@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -31,22 +32,23 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Research')),
+      appBar: AppBar(title: Text(context.tr('Research'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Competitor Analysis', style: theme.textTheme.titleMedium),
+          Text(context.tr('Competitor Analysis'), style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
-          Text('Analyze your site against competitors',
+          Text(
+            context.tr('Analyze your site against competitors'),
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
 
           TextField(
             controller: _targetUrlCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Your site URL',
-              hintText: 'https://yoursite.com',
+            decoration: InputDecoration(
+              labelText: context.tr('Your site URL'),
+              hintText: context.tr('https://yoursite.com'),
             ),
             keyboardType: TextInputType.url,
           ),
@@ -54,9 +56,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
 
           TextField(
             controller: _competitorsCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Competitor URLs (one per line)',
-              hintText: 'https://competitor1.com\nhttps://competitor2.com',
+            decoration: InputDecoration(
+              labelText: context.tr('Competitor URLs (one per line)'),
+              hintText: context.tr('https://competitor1.com\nhttps://competitor2.com'),
             ),
             maxLines: 3,
             keyboardType: TextInputType.url,
@@ -65,9 +67,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
 
           TextField(
             controller: _keywordsCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Keywords (comma-separated, optional)',
-              hintText: 'saas, flutter, ai',
+            decoration: InputDecoration(
+              labelText: context.tr('Keywords (comma-separated, optional)'),
+              hintText: context.tr('saas, flutter, ai'),
             ),
           ),
           const SizedBox(height: 20),
@@ -79,7 +81,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                     height: 18, width: 18,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.analytics),
-            label: Text(_analyzing ? 'Analyzing...' : 'Analyze'),
+            label: Text(_analyzing ? context.tr('Analyzing...') : context.tr('Analyze')),
           ),
 
           if (_result != null) ...[
@@ -90,7 +92,8 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Analysis Results', style: theme.textTheme.titleSmall),
+                    Text(context.tr('Analysis Results'),
+                        style: theme.textTheme.titleSmall),
                     const SizedBox(height: 8),
                     ..._buildResults(),
                   ],
@@ -109,25 +112,28 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     return [
       for (final comp in competitors) ...[
         Text(
-          (comp as Map)['name']?.toString() ?? 'Unknown',
+          (comp as Map)['name']?.toString() ?? context.tr('Unknown'),
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         ),
         if (comp['strengths'] case final List strengths when strengths.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),
-            child: Text('Strengths: ${strengths.join(', ')}',
+            child: Text(
+                context.tr('Strengths: {list}', {'list': strengths.join(', ')}),
                 style: const TextStyle(fontSize: 12)),
           ),
         if (comp['weaknesses'] case final List weaknesses when weaknesses.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 2),
-            child: Text('Weaknesses: ${weaknesses.join(', ')}',
+            child: Text(
+                context.tr(
+                    'Weaknesses: {list}', {'list': weaknesses.join(', ')}),
                 style: const TextStyle(fontSize: 12)),
           ),
         const SizedBox(height: 8),
       ],
       if (competitors.isEmpty)
-        Text('No competitor data returned.',
+        Text(context.tr('No competitor data returned.'),
             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
     ];
   }
@@ -135,7 +141,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
   Future<void> _analyze() async {
     if (_targetUrlCtrl.text.trim().isEmpty || _competitorsCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Site URL and at least one competitor are required')),
+        SnackBar(
+            content: Text(
+                context.tr('Site URL and at least one competitor are required'))),
       );
       return;
     }
@@ -166,7 +174,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: 'Analysis failed: $error',
+          message: context.tr('Analysis failed: {error}', {'error': '$error'}),
           scope: 'research.competitor_analysis',
           error: error,
           stackTrace: stackTrace,

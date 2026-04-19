@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -14,13 +16,13 @@ class HistoryScreen extends ConsumerWidget {
     final historyAsync = ref.watch(contentHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(title: Text(context.tr('History'))),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'history.load',
-            title: 'Failed to load history',
+            title: context.tr('Failed to load history'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(contentHistoryProvider),
@@ -32,11 +34,14 @@ class HistoryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.history,
-                      size: 64, color: Colors.white.withAlpha(40)),
+                  Icon(
+                    Icons.history,
+                    size: 64,
+                    color: Colors.white.withAlpha(40),
+                  ),
                   const SizedBox(height: 16),
                   Text(
-                    'No history yet',
+                    context.tr('No history yet'),
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white.withAlpha(120),
@@ -66,7 +71,7 @@ class _HistoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
     final statusColor = _statusColor(item.status);
-    final dateFormat = DateFormat('MMM d, HH:mm');
+    final dateFormat = DateFormat('MMM d, HH:mm', context.localeTag);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -86,11 +91,7 @@ class _HistoryTile extends StatelessWidget {
               color: statusColor.withAlpha(30),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              _statusIcon(item.status),
-              color: statusColor,
-              size: 22,
-            ),
+            child: Icon(_statusIcon(item.status), color: statusColor, size: 22),
           ),
           const SizedBox(width: 14),
           // Content info
@@ -113,15 +114,16 @@ class _HistoryTile extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: typeColor.withAlpha(30),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         item.typeLabel,
-                        style:
-                            TextStyle(color: typeColor, fontSize: 11),
+                        style: TextStyle(color: typeColor, fontSize: 11),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -146,8 +148,12 @@ class _HistoryTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Reviewed by ${item.reviewActorDisplay}'
-                          '${item.reviewActorType == null ? '' : ' (${item.reviewActorType})'}',
+                          context.tr('Reviewed by {reviewer}{typeSuffix}', {
+                            'reviewer': item.reviewActorDisplay,
+                            'typeSuffix': item.reviewActorType == null
+                                ? ''
+                                : ' (${item.reviewActorType})',
+                          }),
                           style: TextStyle(
                             color: Colors.white.withAlpha(110),
                             fontSize: 11,
@@ -170,7 +176,7 @@ class _HistoryTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              item.status.name,
+              context.tr(item.status.name),
               style: TextStyle(
                 color: statusColor,
                 fontSize: 12,

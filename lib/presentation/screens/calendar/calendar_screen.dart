@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../data/models/content_item.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -14,13 +16,13 @@ class CalendarScreen extends ConsumerWidget {
     final historyAsync = ref.watch(contentHistoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Schedule')),
+      appBar: AppBar(title: Text(context.tr('Schedule'))),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: AppErrorView(
             scope: 'calendar.load',
-            title: 'Failed to load the calendar',
+            title: context.tr('Failed to load the calendar'),
             error: error,
             stackTrace: stackTrace,
             onRetry: () => ref.invalidate(contentHistoryProvider),
@@ -38,8 +40,9 @@ class _CalendarBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final approvedItems =
-        items.where((i) => i.status == ContentStatus.approved).toList();
+    final approvedItems = items
+        .where((i) => i.status == ContentStatus.approved)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +56,7 @@ class _CalendarBody extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Ready to Schedule',
+              context.tr('Ready to Schedule'),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -80,7 +83,7 @@ class _CalendarBody extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Timeline',
+            context.tr('Timeline'),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -97,13 +100,18 @@ class _CalendarBody extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.calendar_today,
-                          size: 48, color: Colors.white.withAlpha(30)),
+                      Icon(
+                        Icons.calendar_today,
+                        size: 48,
+                        color: Colors.white.withAlpha(30),
+                      ),
                       const SizedBox(height: 12),
                       Text(
-                        'Nothing scheduled yet',
+                        context.tr('Nothing scheduled yet'),
                         style: TextStyle(
-                            color: Colors.white.withAlpha(80), fontSize: 16),
+                          color: Colors.white.withAlpha(80),
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
@@ -112,7 +120,7 @@ class _CalendarBody extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: items.length,
                   itemBuilder: (context, i) =>
-                      _buildScheduleItem(items[i]),
+                      _buildScheduleItem(context, items[i]),
                 ),
         ),
       ],
@@ -121,9 +129,11 @@ class _CalendarBody extends ConsumerWidget {
 
   Widget _buildWeekStrip(BuildContext context) {
     final now = DateTime.now();
-    final days =
-        List.generate(7, (i) => DateTime(now.year, now.month, now.day + i));
-    final dayFormat = DateFormat('EEE d');
+    final days = List.generate(
+      7,
+      (i) => DateTime(now.year, now.month, now.day + i),
+    );
+    final dayFormat = DateFormat('EEE d', context.localeTag);
 
     return SizedBox(
       height: 80,
@@ -198,7 +208,10 @@ class _CalendarBody extends ConsumerWidget {
   }
 
   Widget _buildScheduleChip(
-      BuildContext context, WidgetRef ref, ContentItem item) {
+    BuildContext context,
+    WidgetRef ref,
+    ContentItem item,
+  ) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
 
     return GestureDetector(
@@ -219,8 +232,10 @@ class _CalendarBody extends ConsumerWidget {
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: typeColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(6),
@@ -228,9 +243,10 @@ class _CalendarBody extends ConsumerWidget {
                   child: Text(
                     item.typeLabel,
                     style: TextStyle(
-                        color: typeColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600),
+                      color: typeColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -241,14 +257,19 @@ class _CalendarBody extends ConsumerWidget {
             Text(
               item.title,
               style: const TextStyle(
-                  color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             if (item.reviewActorDisplay != null) ...[
               const SizedBox(height: 4),
               Text(
-                'Reviewer: ${item.reviewActorDisplay}',
+                context.tr('Reviewer: {reviewer}', {
+                  'reviewer': item.reviewActorDisplay,
+                }),
                 style: TextStyle(
                   color: Colors.white.withAlpha(115),
                   fontSize: 10,
@@ -264,7 +285,10 @@ class _CalendarBody extends ConsumerWidget {
   }
 
   Future<void> _showSchedulePicker(
-      BuildContext context, WidgetRef ref, ContentItem item) async {
+    BuildContext context,
+    WidgetRef ref,
+    ContentItem item,
+  ) async {
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
@@ -298,8 +322,13 @@ class _CalendarBody extends ConsumerWidget {
     );
     if (time == null || !context.mounted) return;
 
-    final scheduledFor =
-        DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final scheduledFor = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
 
     try {
       final api = ref.read(apiServiceProvider);
@@ -310,11 +339,19 @@ class _CalendarBody extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Scheduled "${item.title}" for ${DateFormat('MMM d, HH:mm').format(scheduledFor)}'),
+              context.tr('Scheduled "{title}" for {date}', {
+                'title': item.title,
+                'date': DateFormat(
+                  'MMM d, HH:mm',
+                  context.localeTag,
+                ).format(scheduledFor),
+              }),
+            ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -322,21 +359,26 @@ class _CalendarBody extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to schedule. Check backend connection.'),
+            content: Text(
+              context.tr('Failed to schedule. Check backend connection.'),
+            ),
             backgroundColor: AppTheme.rejectColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     }
   }
 
-  Widget _buildScheduleItem(ContentItem item) {
+  Widget _buildScheduleItem(BuildContext context, ContentItem item) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
-    final time =
-        DateFormat('HH:mm').format(item.publishedAt ?? item.createdAt);
+    final time = DateFormat(
+      'HH:mm',
+      context.localeTag,
+    ).format(item.publishedAt ?? item.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -355,11 +397,7 @@ class _CalendarBody extends ConsumerWidget {
             ),
           ),
           // Line
-          Container(
-            width: 2,
-            height: 60,
-            color: typeColor.withAlpha(60),
-          ),
+          Container(width: 2, height: 60, color: typeColor.withAlpha(60)),
           const SizedBox(width: 14),
           // Content
           Expanded(
@@ -377,7 +415,9 @@ class _CalendarBody extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: typeColor.withAlpha(30),
                           borderRadius: BorderRadius.circular(6),
@@ -385,16 +425,19 @@ class _CalendarBody extends ConsumerWidget {
                         child: Text(
                           item.typeLabel,
                           style: TextStyle(
-                              color: typeColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600),
+                            color: typeColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const Spacer(),
                       Text(
                         item.channelLabels,
                         style: TextStyle(
-                            color: Colors.white.withAlpha(60), fontSize: 11),
+                          color: Colors.white.withAlpha(60),
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),

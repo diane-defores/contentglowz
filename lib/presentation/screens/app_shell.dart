@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../data/models/app_access_state.dart';
+import '../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../widgets/app_error_view.dart';
 
@@ -19,41 +22,116 @@ class _NavSection {
 }
 
 const _sections = [
-  _NavSection(label: 'Content', items: [
-    _NavItem(icon: Icons.dynamic_feed_rounded, label: 'Feed', path: '/feed'),
-    _NavItem(icon: Icons.calendar_month_rounded, label: 'Schedule', path: '/calendar'),
-    _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
-    _NavItem(icon: Icons.water_drop_rounded, label: 'Drip', path: '/drip'),
-    _NavItem(icon: Icons.build_circle_rounded, label: 'Tools', path: '/content-tools'),
-  ]),
-  _NavSection(label: 'Create', items: [
-    _NavItem(icon: Icons.description_rounded, label: 'Templates', path: '/templates'),
-    _NavItem(icon: Icons.email_rounded, label: 'Newsletter', path: '/newsletter'),
-    _NavItem(icon: Icons.slow_motion_video_rounded, label: 'Reels', path: '/reels'),
-    _NavItem(icon: Icons.link_rounded, label: 'Affiliations', path: '/affiliations'),
-  ]),
-  _NavSection(label: 'Analyze', items: [
-    _NavItem(icon: Icons.analytics_rounded, label: 'Research', path: '/research'),
-    _NavItem(icon: Icons.hub_rounded, label: 'SEO', path: '/seo'),
-    _NavItem(icon: Icons.insights_rounded, label: 'Analytics', path: '/analytics'),
-    _NavItem(icon: Icons.bar_chart_rounded, label: 'Perf', path: '/performance'),
-  ]),
-  _NavSection(label: 'System', items: [
-    _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
-    _NavItem(icon: Icons.timeline_rounded, label: 'Activity', path: '/activity'),
-    _NavItem(icon: Icons.workspaces_rounded, label: 'Domains', path: '/work-domains'),
-    _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
-    _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
-  ]),
+  _NavSection(
+    label: 'Content',
+    items: [
+      _NavItem(icon: Icons.dynamic_feed_rounded, label: 'Feed', path: '/feed'),
+      _NavItem(
+        icon: Icons.calendar_month_rounded,
+        label: 'Schedule',
+        path: '/calendar',
+      ),
+      _NavItem(icon: Icons.history_rounded, label: 'History', path: '/history'),
+      _NavItem(icon: Icons.water_drop_rounded, label: 'Drip', path: '/drip'),
+      _NavItem(
+        icon: Icons.build_circle_rounded,
+        label: 'Tools',
+        path: '/content-tools',
+      ),
+    ],
+  ),
+  _NavSection(
+    label: 'Create',
+    items: [
+      _NavItem(
+        icon: Icons.description_rounded,
+        label: 'Templates',
+        path: '/templates',
+      ),
+      _NavItem(
+        icon: Icons.email_rounded,
+        label: 'Newsletter',
+        path: '/newsletter',
+      ),
+      _NavItem(
+        icon: Icons.slow_motion_video_rounded,
+        label: 'Reels',
+        path: '/reels',
+      ),
+      _NavItem(
+        icon: Icons.link_rounded,
+        label: 'Affiliations',
+        path: '/affiliations',
+      ),
+    ],
+  ),
+  _NavSection(
+    label: 'Analyze',
+    items: [
+      _NavItem(
+        icon: Icons.analytics_rounded,
+        label: 'Research',
+        path: '/research',
+      ),
+      _NavItem(icon: Icons.hub_rounded, label: 'SEO', path: '/seo'),
+      _NavItem(
+        icon: Icons.insights_rounded,
+        label: 'Analytics',
+        path: '/analytics',
+      ),
+      _NavItem(
+        icon: Icons.bar_chart_rounded,
+        label: 'Perf',
+        path: '/performance',
+      ),
+    ],
+  ),
+  _NavSection(
+    label: 'System',
+    items: [
+      _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
+      _NavItem(
+        icon: Icons.timeline_rounded,
+        label: 'Activity',
+        path: '/activity',
+      ),
+      _NavItem(
+        icon: Icons.workspaces_rounded,
+        label: 'Domains',
+        path: '/work-domains',
+      ),
+      _NavItem(
+        icon: Icons.monitor_heart_rounded,
+        label: 'Uptime',
+        path: '/uptime',
+      ),
+      _NavItem(
+        icon: Icons.settings_rounded,
+        label: 'Settings',
+        path: '/settings',
+      ),
+    ],
+  ),
 ];
 
 final _allItems = _sections.expand((s) => s.items).toList();
 
 const _degradedSections = [
-  _NavSection(label: 'System', items: [
-    _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
-    _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
-  ]),
+  _NavSection(
+    label: 'System',
+    items: [
+      _NavItem(
+        icon: Icons.monitor_heart_rounded,
+        label: 'Uptime',
+        path: '/uptime',
+      ),
+      _NavItem(
+        icon: Icons.settings_rounded,
+        label: 'Settings',
+        path: '/settings',
+      ),
+    ],
+  ),
 ];
 
 final _allDegradedItems = _degradedSections.expand((s) => s.items).toList();
@@ -61,15 +139,36 @@ final _allDegradedItems = _degradedSections.expand((s) => s.items).toList();
 /// Breakpoint: above this width we show side rail instead of bottom nav.
 const _desktopBreakpoint = 800.0;
 
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   final Widget child;
 
   const AppShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  bool _autoStartChecked = false;
+
+  void _maybeAutoStartTour() {
+    if (_autoStartChecked) return;
+    _autoStartChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final tour = ref.read(inAppTourProvider);
+      if (tour.active || tour.completed || tour.stepIndex != 0) return;
+      ref.read(inAppTourProvider.notifier).start(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final degradedMode = appAccess?.isDegraded == true;
+    if (!degradedMode) {
+      _maybeAutoStartTour();
+    }
     final pendingCount = degradedMode ? 0 : ref.watch(pendingCountProvider);
     final currentRoute = GoRouterState.of(context).uri.path;
     final selectedPath = _selectedPath(
@@ -92,13 +191,16 @@ class AppShell extends ConsumerWidget {
               colorScheme: colorScheme,
               onNavigate: (path) => context.go(path),
             ),
-            VerticalDivider(width: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            VerticalDivider(
+              width: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
             Expanded(
               child: _ShellContent(
                 degradedMode: degradedMode,
                 appAccess: appAccess,
                 ref: ref,
-                child: child,
+                child: widget.child,
               ),
             ),
           ],
@@ -111,7 +213,7 @@ class AppShell extends ConsumerWidget {
         degradedMode: degradedMode,
         appAccess: appAccess,
         ref: ref,
-        child: child,
+        child: widget.child,
       ),
       bottomNavigationBar: _BottomNav(
         sections: sections,
@@ -155,12 +257,15 @@ class _ShellContent extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final message = switch (appAccess?.stage) {
-      AppAccessStage.apiUnavailable =>
+      AppAccessStage.apiUnavailable => context.tr(
         'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
-      AppAccessStage.bootstrapFailed =>
+      ),
+      AppAccessStage.bootstrapFailed => context.tr(
         'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
-      _ =>
+      ),
+      _ => context.tr(
         'ContentFlow is running in degraded mode while backend access is limited.',
+      ),
     };
 
     return Column(
@@ -192,12 +297,12 @@ class _ShellContent extends StatelessWidget {
                   TextButton(
                     onPressed: () => context.go('/uptime'),
                     child: Text(
-                      'Open Uptime',
+                      context.tr('Open Uptime'),
                       style: TextStyle(color: colorScheme.onErrorContainer),
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Copy diagnostics',
+                    tooltip: context.tr('Copy diagnostics'),
                     onPressed: () {
                       copyDiagnosticsToClipboard(
                         context,
@@ -206,7 +311,8 @@ class _ShellContent extends StatelessWidget {
                         scope: 'app_shell.degraded_mode',
                         currentError: message,
                         contextData: {
-                          'accessStage': appAccess?.diagnosticsLabel ?? 'unknown',
+                          'accessStage':
+                              appAccess?.diagnosticsLabel ?? 'unknown',
                           'backendStatus':
                               appAccess?.backendStatusLabel ?? 'unknown',
                         },
@@ -259,10 +365,14 @@ class _SideRail extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: colorScheme.primary, size: 24),
+                  Icon(
+                    Icons.auto_awesome,
+                    color: colorScheme.primary,
+                    size: 24,
+                  ),
                   const SizedBox(width: 8),
                   Text(
-                    'Content Flows',
+                    context.tr('Content Flows'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -282,7 +392,7 @@ class _SideRail extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 16, 12, 6),
                       child: Text(
-                        section.label.toUpperCase(),
+                        context.tr(section.label).toUpperCase(),
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -296,10 +406,9 @@ class _SideRail extends StatelessWidget {
                         icon: item.icon,
                         label: item.label,
                         isSelected: item.path == selectedPath,
-                        badgeCount:
-                            item.path == '/feed' && pendingCount > 0
-                                ? pendingCount
-                                : null,
+                        badgeCount: item.path == '/feed' && pendingCount > 0
+                            ? pendingCount
+                            : null,
                         colorScheme: colorScheme,
                         onTap: () => onNavigate(item.path),
                       ),
@@ -333,7 +442,9 @@ class _SideNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+    final color = isSelected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
     final bgColor = isSelected
         ? colorScheme.primary.withValues(alpha: 0.12)
         : Colors.transparent;
@@ -358,11 +469,13 @@ class _SideNavItem extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    label,
+                    context.tr(label),
                     style: TextStyle(
                       fontSize: 13,
                       color: color,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -471,70 +584,69 @@ class _BottomNav extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              for (final section in sections)
-                ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        section.label.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.outlineVariant,
-                          letterSpacing: 1.0,
-                        ),
+              for (final section in sections) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      context.tr(section.label).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.outlineVariant,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
-                  Wrap(
-                    spacing: 4,
-                    runSpacing: 4,
-                    children: section.items.map((item) {
-                      final isSelected = item.path == selectedPath;
-                      final color = isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant;
-                      final bgColor = isSelected
-                          ? colorScheme.primary.withValues(alpha: 0.12)
-                          : Colors.transparent;
-                      return Material(
-                        color: bgColor,
+                ),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: section.items.map((item) {
+                    final isSelected = item.path == selectedPath;
+                    final color = isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant;
+                    final bgColor = isSelected
+                        ? colorScheme.primary.withValues(alpha: 0.12)
+                        : Colors.transparent;
+                    return Material(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            onNavigate(item.path);
-                          },
-                          child: SizedBox(
-                            width: 80,
-                            height: 64,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(item.icon, color: color, size: 22),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: color,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          onNavigate(item.path);
+                        },
+                        child: SizedBox(
+                          width: 80,
+                          height: 64,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(item.icon, color: color, size: 22),
+                              const SizedBox(height: 4),
+                              Text(
+                                context.tr(item.label),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: color,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
                                 ),
-                              ],
-                            ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
           ),
         ),
@@ -562,7 +674,9 @@ class _NavTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+    final color = isSelected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: onTap,
@@ -578,7 +692,7 @@ class _NavTab extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              label,
+              context.tr(label),
               style: TextStyle(
                 fontSize: 12,
                 color: color,

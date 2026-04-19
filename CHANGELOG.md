@@ -11,12 +11,15 @@ The format is based on Keep a Changelog.
 - Added a Feedback Admin v1 client flow with text feedback, audio feedback recording/upload, local draft persistence, and lightweight local history for recently sent entries.
 - Added an in-app feedback admin screen with filters, audio playback, review actions, and supporting docs for the expected FastAPI feedback contract.
 - Added a centralized in-app diagnostics/log buffer plus reusable copy-to-clipboard error widgets so runtime, Riverpod, auth, bootstrap, and API failures can be exported directly from the UI.
+- Added app-level language preference handling with `system` / `english` / `french` options persisted via SharedPreferences and wired into the Flutter shell.
 
 ### Changed
 - Stopped sending `edited_by` and `changed_by` from the Flutter client for content body saves and status transitions so the backend becomes the sole source of truth for audit attribution.
 - Reworked entry, routing, uptime, and settings flows around explicit backend availability checks, richer diagnostics, and degraded-mode messaging when FastAPI is unavailable.
 - Wired the Flutter web build/runtime config to compile `FEEDBACK_ADMIN_EMAILS`, surface the feedback admin entry point for allowlisted emails, and expose a public feedback entry point from the landing screen.
 - Unified auth, entry, uptime, degraded-mode, and multiple screen-level error states around shared diagnostics panels and snackbars instead of one-off debug blocks.
+- Localized the editor, drip planning screens, platform previews, uptime, work domains, runs, research, and settings flows so the French UI is selectable throughout the current shell.
+- Completed the Flutter side of the Content Drip UI with the plan list, creation wizard, detail dashboard, lifecycle actions, and translated status/config copy.
 
 ### Fixed
 - Fixed the Clerk web OAuth redirect flow so Google sign-in returns through `/sso-callback` before landing on `/#/entry`, allowing Clerk session finalization to complete.

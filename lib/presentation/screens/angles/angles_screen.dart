@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/persona.dart';
 import '../../../data/models/ritual.dart';
 import '../../../providers/providers.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
@@ -96,7 +97,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Content Angles'),
+        title: Text(context.tr('Content Angles')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -139,7 +140,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         child: OutlinedButton.icon(
           onPressed: () => context.push('/personas/new'),
           icon: const Icon(Icons.person_add, size: 18),
-          label: const Text('Create a persona first'),
+          label: Text(context.tr('Create a persona first')),
         ),
       );
     }
@@ -201,7 +202,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Complete your weekly ritual for better angles',
+                    context.tr('Complete your weekly ritual for better angles'),
                     style: TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
                   ),
                 ),
@@ -228,7 +229,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                narrative.suggestedChapterTitle ?? 'Narrative loaded',
+                narrative.suggestedChapterTitle ?? context.tr('Narrative loaded'),
                 style: const TextStyle(color: Color(0xFF6C5CE7), fontSize: 13),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -248,15 +249,15 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
           Icon(Icons.lightbulb_outline,
               size: 64, color: Colors.white.withAlpha(40)),
           const SizedBox(height: 16),
-          const Text(
-            'No angles available',
+          Text(
+            context.tr('No angles available'),
             style: TextStyle(fontSize: 18, color: Colors.white70),
           ),
           const SizedBox(height: 8),
           Text(
             _selectedPersona == null
-                ? 'Select a persona above to generate angles'
-                : 'Try refreshing or complete your weekly ritual',
+                ? context.tr('Select a persona above to generate angles')
+                : context.tr('Try refreshing or complete your weekly ritual'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.white.withAlpha(100)),
           ),
@@ -265,7 +266,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             FilledButton.icon(
               onPressed: () => context.push('/personas/new'),
               icon: const Icon(Icons.person_add),
-              label: const Text('Create Persona'),
+              label: Text(context.tr('Create Persona')),
             ),
           ],
         ],
@@ -280,7 +281,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 16, left: 4),
           child: Text(
-            'Pick an angle to generate content',
+            context.tr('Pick an angle to generate content'),
             style:
                 TextStyle(color: Colors.white.withAlpha(120), fontSize: 14),
           ),
@@ -473,7 +474,11 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                     strokeWidth: 2, color: Colors.white),
               )
             : const Icon(Icons.auto_awesome),
-        label: Text(_isGenerating ? 'Creating...' : 'Generate Content'),
+        label: Text(
+          _isGenerating
+              ? context.tr('Creating...')
+              : context.tr('Generate Content'),
+        ),
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
           backgroundColor: const Color(0xFF6C5CE7),
@@ -508,7 +513,9 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '${_contentTypeLabel(format)} generating: "${angle.title}"'),
+              context.tr('Content generation in progress: "{contentType}"',
+                  {'contentType': _contentTypeLabel(format), 'title': angle.title}),
+            ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
             shape:
@@ -530,7 +537,9 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '${_contentTypeLabel(angle.contentType)} created: "${angle.title}"'),
+              context.tr('Content created: "{contentType}"',
+                  {'contentType': _contentTypeLabel(angle.contentType)}),
+            ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
             shape:
@@ -541,7 +550,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to create content. Check backend connection.'),
+            content: Text(context.tr('Failed to create content. Check backend connection.')),
             backgroundColor: AppTheme.rejectColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
             shape:
