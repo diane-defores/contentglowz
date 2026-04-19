@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
+import '../../core/app_diagnostics.dart';
 import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
 import '../models/app_bootstrap.dart';
@@ -50,6 +51,7 @@ class ApiService {
     String? authToken,
     this.authTokenProvider,
     this.allowDemoData = false,
+    this.diagnostics,
     this.onUnauthorized,
   }) {
     _dio = Dio(
@@ -79,9 +81,55 @@ class ApiService {
               options.headers['Authorization'] = 'Bearer $token';
             }
           }
+
+          final requestId = ++_requestSequence;
+          options.extra['requestId'] = requestId;
+          options.extra['requestStartedAtMs'] =
+              DateTime.now().millisecondsSinceEpoch;
+          diagnostics?.info(
+            scope: 'api.request',
+            message: '${options.method.toUpperCase()} ${options.path}',
+            context: {
+              'requestId': requestId,
+              'baseUrl': options.baseUrl,
+              'path': options.path,
+              'query': options.queryParameters.isEmpty
+                  ? 'none'
+                  : options.queryParameters,
+              'hasAuthorization':
+                  options.headers.containsKey('Authorization'),
+            },
+          );
           handler.next(options);
         },
+        onResponse: (response, handler) {
+          diagnostics?.info(
+            scope: 'api.response',
+            message:
+                '${response.requestOptions.method.toUpperCase()} ${response.requestOptions.path} -> ${response.statusCode ?? 'unknown'}',
+            context: {
+              'requestId': response.requestOptions.extra['requestId'],
+              'statusCode': response.statusCode,
+              'durationMs': _requestDurationMs(response.requestOptions),
+            },
+          );
+          handler.next(response);
+        },
         onError: (error, handler) {
+          diagnostics?.error(
+            scope: 'api.error',
+            message:
+                '${error.requestOptions.method.toUpperCase()} ${error.requestOptions.path} failed.',
+            error: error,
+            stackTrace: error.stackTrace,
+            context: {
+              'requestId': error.requestOptions.extra['requestId'],
+              'statusCode': error.response?.statusCode,
+              'durationMs': _requestDurationMs(error.requestOptions),
+              'responseBody': _stringifyResponseData(error.response?.data),
+              'responseHeaders': _flattenHeaders(error.response?.headers),
+            },
+          );
           if (error.response?.statusCode == 401) {
             onUnauthorized?.call();
           }
@@ -94,7 +142,9 @@ class ApiService {
   late final Dio _dio;
   final Future<String?> Function()? authTokenProvider;
   final bool allowDemoData;
+  final AppDiagnostics? diagnostics;
   final void Function()? onUnauthorized;
+  int _requestSequence = 0;
 
   void updateBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
@@ -1310,6 +1360,14 @@ class ApiService {
     }
 
     return error.message ?? '';
+  }
+
+  int? _requestDurationMs(RequestOptions options) {
+    final startedAt = options.extra['requestStartedAtMs'];
+    if (startedAt is! int) {
+      return null;
+    }
+    return DateTime.now().millisecondsSinceEpoch - startedAt;
   }
 
   Map<String, String> _flattenHeaders(Headers? headers) {

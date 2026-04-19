@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class ReelsScreen extends ConsumerStatefulWidget {
   const ReelsScreen({super.key});
@@ -114,10 +115,16 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
         userId: 'current',
       );
       setState(() => _result = result);
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download failed: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Download failed: $error',
+          scope: 'reels.download',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'url': _urlCtrl.text.trim()},
         );
       }
     } finally {

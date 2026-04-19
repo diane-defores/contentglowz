@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/ritual.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class RitualScreen extends ConsumerStatefulWidget {
   const RitualScreen({super.key});
@@ -398,11 +399,16 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
         _isSubmitting = false;
         _result = result;
       });
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Narrative synthesis failed: $error')),
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: 'Narrative synthesis failed: $error',
+        scope: 'ritual.synthesize',
+        error: error,
+        stackTrace: stackTrace,
       );
     }
   }

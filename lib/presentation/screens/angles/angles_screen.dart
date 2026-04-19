@@ -5,6 +5,7 @@ import '../../../data/models/persona.dart';
 import '../../../data/models/ritual.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class AnglesScreen extends ConsumerStatefulWidget {
   const AnglesScreen({super.key});
@@ -68,15 +69,23 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
           _isLoading = false;
         });
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
       setState(() {
         _angles = const [];
         _selectedIndex = null;
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Angle generation failed: $error')),
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: 'Angle generation failed: $error',
+        scope: 'angles.generate',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {
+          'persona': _selectedPersona?.name ?? 'none',
+        },
       );
     }
   }

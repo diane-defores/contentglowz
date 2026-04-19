@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 import 'affiliation_form_sheet.dart';
 
 const _statusFilters = ['all', 'active', 'paused', 'expired'];
@@ -35,20 +36,13 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
       ),
       body: affiliationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load affiliations',
-                  style: TextStyle(color: colorScheme.error)),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(affiliationsProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'affiliations.load',
+            title: 'Failed to load affiliations',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(affiliationsProvider),
           ),
         ),
         data: (affiliations) {
@@ -154,10 +148,16 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
           SnackBar(content: Text('Deleted "${affiliation.name}"')),
         );
       }
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('Failed to delete: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Failed to delete: $error',
+          scope: 'affiliations.delete',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'affiliationId': affiliation.id ?? 'unknown'},
         );
       }
     }

@@ -8,6 +8,7 @@ import 'package:record/record.dart';
 
 import '../../../data/models/feedback_entry.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class FeedbackScreen extends ConsumerStatefulWidget {
   const FeedbackScreen({super.key});
@@ -200,7 +201,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Text('Impossible de charger l’historique local: $error'),
+            error: (error, stackTrace) => AppErrorView(
+              scope: 'feedback.local_history',
+              title: 'Impossible de charger l’historique local',
+              error: error,
+              stackTrace: stackTrace,
+              compact: true,
+              showIcon: false,
+              onRetry: () => ref.invalidate(feedbackRecentSubmissionsProvider),
+            ),
           ),
         ],
       ),
@@ -220,8 +229,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       if (!mounted) return;
       _messageController.clear();
       _showSnack('Feedback envoyé.');
-    } catch (error) {
-      _showSnack('Échec de l’envoi: $error');
+    } catch (error, stackTrace) {
+      _showSnack(
+        'Échec de l’envoi: $error',
+        error: error,
+        stackTrace: stackTrace,
+        scope: 'feedback.submit_text',
+      );
     } finally {
       if (mounted) {
         setState(() => _isSubmittingText = false);
@@ -301,8 +315,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       if (!mounted) return;
       _clearRecording();
       _showSnack('Feedback audio envoyé.');
-    } catch (error) {
-      _showSnack('Échec de l’envoi audio: $error');
+    } catch (error, stackTrace) {
+      _showSnack(
+        'Échec de l’envoi audio: $error',
+        error: error,
+        stackTrace: stackTrace,
+        scope: 'feedback.submit_audio',
+      );
     } finally {
       if (mounted) {
         setState(() => _isSubmittingAudio = false);
@@ -328,8 +347,24 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     return 'Aucun audio enregistré.';
   }
 
-  void _showSnack(String message) {
+  void _showSnack(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    String scope = 'feedback.message',
+  }) {
     if (!mounted) return;
+    if (error != null) {
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: message,
+        scope: scope,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }

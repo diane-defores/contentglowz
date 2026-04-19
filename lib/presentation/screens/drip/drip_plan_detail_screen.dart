@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/drip_plan.dart';
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class DripPlanDetailScreen extends ConsumerStatefulWidget {
   const DripPlanDetailScreen({super.key, required this.planId});
@@ -43,7 +44,18 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
       ),
       body: plan.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'drip.plan_detail.load',
+            title: 'Failed to load drip plan',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () {
+              ref.invalidate(dripPlansProvider);
+              ref.invalidate(dripStatsProvider(widget.planId));
+            },
+          ),
+        ),
         data: (p) => RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(dripPlansProvider);
@@ -137,10 +149,16 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       }
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Action failed: $error',
+          scope: 'drip.plan_detail.action',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'planId': widget.planId},
         );
       }
     } finally {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class ResearchScreen extends ConsumerStatefulWidget {
   const ResearchScreen({super.key});
@@ -160,10 +161,19 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             .toList(),
       );
       setState(() => _result = result);
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Analysis failed: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Analysis failed: $error',
+          scope: 'research.competitor_analysis',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {
+            'targetUrl': _targetUrlCtrl.text.trim(),
+            'competitors': _competitorsCtrl.text.trim(),
+          },
         );
       }
     } finally {

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../data/models/idea.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 const _statusFilters = ['all', 'raw', 'enriched', 'used', 'dismissed'];
 const _sourceFilters = [
@@ -22,7 +23,6 @@ class IdeaPoolScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ideasAsync = ref.watch(ideasProvider);
     final notifier = ref.read(ideasProvider.notifier);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -36,24 +36,13 @@ class IdeaPoolScreen extends ConsumerWidget {
       ),
       body: ideasAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load ideas',
-                  style: TextStyle(color: colorScheme.error)),
-              const SizedBox(height: 4),
-              Text('$error',
-                  style: TextStyle(
-                      color: colorScheme.onSurfaceVariant, fontSize: 12)),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(ideasProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'idea_pool.load',
+            title: 'Failed to load ideas',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(ideasProvider),
           ),
         ),
         data: (ideas) {

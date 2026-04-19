@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 const _cadenceModes = ['fixed', 'ramp_up'];
 const _clusterModes = ['directory', 'tags', 'auto', 'none'];
@@ -406,10 +407,15 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           const SnackBar(content: Text('Drip plan created! Import content to get started.')),
         );
       }
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Error: $error',
+          scope: 'drip.create_plan',
+          error: error,
+          stackTrace: stackTrace,
         );
       }
     } finally {

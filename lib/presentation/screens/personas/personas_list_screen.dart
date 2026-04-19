@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class PersonasListScreen extends ConsumerWidget {
   const PersonasListScreen({super.key});
@@ -19,7 +20,15 @@ class PersonasListScreen extends ConsumerWidget {
       ),
       body: personasAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'personas.load',
+            title: 'Failed to load personas',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(personasProvider),
+          ),
+        ),
         data: (personas) {
           if (personas.isEmpty) {
             return Center(

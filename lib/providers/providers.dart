@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_config.dart';
+import '../core/app_diagnostics.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/drip_plan.dart';
 import '../data/models/app_access_state.dart';
@@ -86,6 +87,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
         ? () async => clerkAuthService?.getFreshToken()
         : null,
     allowDemoData: authSession.isDemo,
+    diagnostics: ref.watch(appDiagnosticsProvider),
     onUnauthorized: () {
       ref.read(authSessionProvider.notifier).handleUnauthorized();
     },
@@ -174,11 +176,23 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
   final Ref ref;
 
   Future<void> _restoreSession() async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
+    diagnostics.info(
+      scope: 'auth.restore',
+      message: 'Restoring stored session.',
+    );
     final prefs = ref.read(sharedPrefsProvider);
     if (prefs.getBool(_demoModeKey) == true) {
       state = AuthSession(
         status: AuthStatus.demo,
         onboardingComplete: prefs.getBool(_demoOnboardingKey) ?? false,
+      );
+      diagnostics.info(
+        scope: 'auth.restore',
+        message: 'Restored demo session.',
+        context: {
+          'onboardingComplete': state.onboardingComplete,
+        },
       );
       ref.invalidate(appBootstrapProvider);
       return;
@@ -188,6 +202,10 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     if (service == null) {
       _clearLegacyAuthPrefs();
       state = const AuthSession(status: AuthStatus.signedOut);
+      diagnostics.warning(
+        scope: 'auth.restore',
+        message: 'Clerk is not configured. Starting signed out.',
+      );
       return;
     }
 
@@ -196,6 +214,10 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       if (restored == null) {
         _clearLegacyAuthPrefs();
         state = const AuthSession(status: AuthStatus.signedOut);
+        diagnostics.info(
+          scope: 'auth.restore',
+          message: 'No active Clerk session found.',
+        );
         return;
       }
 
@@ -205,10 +227,23 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
         bearerToken: restored.bearerToken,
         email: restored.email,
       );
+      diagnostics.info(
+        scope: 'auth.restore',
+        message: 'Restored authenticated Clerk session.',
+        context: {
+          'email': restored.email ?? 'none',
+        },
+      );
       _invalidateAuthenticatedState();
-    } catch (_) {
+    } catch (error, stackTrace) {
       _clearLegacyAuthPrefs();
       state = const AuthSession(status: AuthStatus.signedOut);
+      diagnostics.error(
+        scope: 'auth.restore',
+        message: 'Failed to restore Clerk session.',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -220,6 +255,10 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     state = const AuthSession(
       status: AuthStatus.demo,
       onboardingComplete: false,
+    );
+    ref.read(appDiagnosticsProvider).info(
+      scope: 'auth.session',
+      message: 'Signed in to demo workspace.',
     );
     _invalidateAuthenticatedState();
   }
@@ -234,6 +273,13 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       status: AuthStatus.authenticated,
       bearerToken: token,
       email: email,
+    );
+    ref.read(appDiagnosticsProvider).info(
+      scope: 'auth.session',
+      message: 'Authenticated session established.',
+      context: {
+        'email': email ?? 'none',
+      },
     );
     _invalidateAuthenticatedState();
   }
@@ -253,16 +299,39 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     required String email,
     required String password,
   }) async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
     final service = ref.read(clerkAuthServiceProvider);
     if (service == null) {
+      diagnostics.warning(
+        scope: 'auth.sign_in',
+        message: 'Sign-in requested without Clerk configuration.',
+        context: {'email': email},
+      );
       throw StateError('Clerk is not configured. Set CLERK_PUBLISHABLE_KEY.');
     }
 
-    final result = await service.signInWithPassword(
-      email: email,
-      password: password,
+    diagnostics.info(
+      scope: 'auth.sign_in',
+      message: 'Attempting password sign-in.',
+      context: {'email': email},
     );
-    setAuthenticatedSession(result.bearerToken, email: result.email ?? email);
+
+    try {
+      final result = await service.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      setAuthenticatedSession(result.bearerToken, email: result.email ?? email);
+    } catch (error, stackTrace) {
+      diagnostics.error(
+        scope: 'auth.sign_in',
+        message: 'Password sign-in failed.',
+        error: error,
+        stackTrace: stackTrace,
+        context: {'email': email},
+      );
+      rethrow;
+    }
   }
 
   Future<void> signUpWithPassword({
@@ -271,40 +340,97 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     String? firstName,
     String? lastName,
   }) async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
     final service = ref.read(clerkAuthServiceProvider);
     if (service == null) {
+      diagnostics.warning(
+        scope: 'auth.sign_up',
+        message: 'Sign-up requested without Clerk configuration.',
+        context: {'email': email},
+      );
       throw StateError('Clerk is not configured. Set CLERK_PUBLISHABLE_KEY.');
     }
 
-    final result = await service.signUpWithPassword(
-      email: email,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
+    diagnostics.info(
+      scope: 'auth.sign_up',
+      message: 'Attempting password sign-up.',
+      context: {
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+      },
     );
-    setAuthenticatedSession(result.bearerToken, email: result.email ?? email);
+
+    try {
+      final result = await service.signUpWithPassword(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      );
+      setAuthenticatedSession(result.bearerToken, email: result.email ?? email);
+    } catch (error, stackTrace) {
+      diagnostics.error(
+        scope: 'auth.sign_up',
+        message: 'Password sign-up failed.',
+        error: error,
+        stackTrace: stackTrace,
+        context: {
+          'email': email,
+          'firstName': firstName,
+          'lastName': lastName,
+        },
+      );
+      rethrow;
+    }
   }
 
   Future<void> syncFromClerkSession() async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
     final service = ref.read(clerkAuthServiceProvider);
     if (service == null) {
+      diagnostics.warning(
+        scope: 'auth.sync',
+        message: 'Session sync requested without Clerk configuration.',
+      );
       throw StateError('Clerk is not configured. Set CLERK_PUBLISHABLE_KEY.');
     }
 
-    final restored = await service.restoreSession();
-    if (restored == null) {
-      throw StateError('Clerk did not return an active session.');
-    }
+    diagnostics.info(
+      scope: 'auth.sync',
+      message: 'Syncing from Clerk session.',
+    );
 
-    setAuthenticatedSession(restored.bearerToken, email: restored.email);
+    try {
+      final restored = await service.restoreSession();
+      if (restored == null) {
+        throw StateError('Clerk did not return an active session.');
+      }
+
+      setAuthenticatedSession(restored.bearerToken, email: restored.email);
+    } catch (error, stackTrace) {
+      diagnostics.error(
+        scope: 'auth.sync',
+        message: 'Failed to sync from Clerk session.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   Future<void> clearLocalSession() async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
     final service = ref.read(clerkAuthServiceProvider);
     try {
       await service?.signOut();
-    } catch (_) {
-      // Ignore remote/session API failures and clear local state anyway.
+    } catch (error, stackTrace) {
+      diagnostics.warning(
+        scope: 'auth.clear_session',
+        message: 'Remote sign-out failed while clearing local session.',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
 
     final prefs = ref.read(sharedPrefsProvider);
@@ -322,10 +448,18 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
 
     _clearLegacyAuthPrefs();
     state = const AuthSession(status: AuthStatus.signedOut);
+    diagnostics.info(
+      scope: 'auth.clear_session',
+      message: 'Local auth session cleared.',
+    );
     _invalidateAuthenticatedState();
   }
 
   void signOut() {
+    ref.read(appDiagnosticsProvider).info(
+      scope: 'auth.sign_out',
+      message: 'Sign-out requested.',
+    );
     unawaited(_signOut(remote: true));
   }
 
@@ -333,13 +467,26 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     if (!state.isAuthenticated) {
       return;
     }
+    ref.read(appDiagnosticsProvider).warning(
+      scope: 'auth.unauthorized',
+      message: 'Backend returned unauthorized for active session.',
+    );
     unawaited(_signOut(remote: false));
   }
 
   Future<void> _signOut({required bool remote}) async {
     if (remote) {
       final service = ref.read(clerkAuthServiceProvider);
-      await service?.signOut();
+      try {
+        await service?.signOut();
+      } catch (error, stackTrace) {
+        ref.read(appDiagnosticsProvider).warning(
+          scope: 'auth.sign_out',
+          message: 'Remote sign-out failed. Clearing local session anyway.',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
     }
 
     final prefs = ref.read(sharedPrefsProvider);
@@ -348,6 +495,11 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     _clearLegacyAuthPrefs();
 
     state = const AuthSession(status: AuthStatus.signedOut);
+    ref.read(appDiagnosticsProvider).info(
+      scope: 'auth.sign_out',
+      message: 'Session signed out locally.',
+      context: {'remote': remote},
+    );
     _invalidateAuthenticatedState();
   }
 
@@ -389,15 +541,24 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
   }
 
   Future<AppAccessState> _resolve(AuthSession authSession) async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
     if (authSession.isLoading) {
       return const AppAccessState(stage: AppAccessStage.restoringSession);
     }
 
     if (authSession.status == AuthStatus.signedOut) {
+      diagnostics.info(
+        scope: 'app_access.resolve',
+        message: 'Access resolution ended in signed-out state.',
+      );
       return const AppAccessState(stage: AppAccessStage.signedOut);
     }
 
     if (authSession.isDemo || authSession.bearerToken == null) {
+      diagnostics.info(
+        scope: 'app_access.resolve',
+        message: 'Access resolution entered demo mode.',
+      );
       return AppAccessState(
         stage: AppAccessStage.demo,
         bootstrap: AppBootstrap.demo(
@@ -408,6 +569,10 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
     }
 
     final api = ref.read(apiServiceProvider);
+    diagnostics.info(
+      scope: 'app_access.resolve',
+      message: 'Checking backend availability.',
+    );
     state = AsyncData(
       AppAccessState(
         stage: AppAccessStage.checkingBackend,
@@ -421,6 +586,13 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
         health['status'] == 'ok' || health['status'] == 'healthy';
 
     if (!backendReachable) {
+      diagnostics.warning(
+        scope: 'app_access.resolve',
+        message: 'Backend health check reported unavailable status.',
+        context: {
+          'backendStatus': health['status'],
+        },
+      );
       return AppAccessState(
         stage: AppAccessStage.apiUnavailable,
         backendHealth: health,
@@ -438,7 +610,17 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
     );
 
     try {
+      diagnostics.info(
+        scope: 'app_access.resolve',
+        message: 'Loading workspace bootstrap.',
+      );
       final bootstrap = await api.fetchBootstrap();
+      diagnostics.info(
+        scope: 'app_access.resolve',
+        message: bootstrap.shouldOnboard
+            ? 'Workspace requires onboarding.'
+            : 'Workspace bootstrap completed.',
+      );
       return AppAccessState(
         stage: bootstrap.shouldOnboard
             ? AppAccessStage.needsOnboarding
@@ -448,6 +630,18 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
         checkedAt: DateTime.now(),
       );
     } on ApiException catch (error) {
+      diagnostics.warning(
+        scope: 'app_access.resolve',
+        message: error.isUnauthorized
+            ? 'Workspace bootstrap was rejected by the backend.'
+            : 'Workspace bootstrap failed.',
+        error: error,
+        context: {
+          'statusCode': error.statusCode,
+          'path': error.path,
+          'method': error.method,
+        },
+      );
       return AppAccessState(
         stage: error.isUnauthorized
             ? AppAccessStage.bootstrapUnauthorized
@@ -457,7 +651,13 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
         message: error.message,
         checkedAt: DateTime.now(),
       );
-    } catch (error) {
+    } catch (error, stackTrace) {
+      diagnostics.error(
+        scope: 'app_access.resolve',
+        message: 'Workspace bootstrap failed unexpectedly.',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return AppAccessState(
         stage: AppAccessStage.bootstrapFailed,
         backendHealth: health,

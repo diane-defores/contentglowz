@@ -190,6 +190,7 @@
 | ✅ | Stats post-publication (destinations breakdown + approval rate) | ✅ done |
 | ✅ | Landing page rebrand (hero, features, pricing, use cases, FAQ) | ✅ done |
 | ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
+| ✅ | Diagnostics centralisés + copie d'erreurs/logs exportables dans l'app (runtime, API, auth, Riverpod, snackbars) | ✅ done |
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 

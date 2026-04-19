@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 final _activityProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -28,19 +29,13 @@ class ActivityScreen extends ConsumerWidget {
       ),
       body: activityAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load activity: $e'),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(_activityProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'activity.load',
+            title: 'Failed to load activity',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(_activityProvider),
           ),
         ),
         data: (activities) {

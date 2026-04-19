@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 import '../../widgets/skeleton_loader.dart';
 import 'content_card.dart';
 
@@ -63,21 +64,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       ),
       body: contentAsync.when(
         loading: () => const FeedSkeletonLoader(),
-        error: (err, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.white24),
-              const SizedBox(height: 16),
-              Text('Error: $err',
-                  style: TextStyle(color: Colors.white.withAlpha(120))),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () =>
-                    ref.read(pendingContentProvider.notifier).refresh(),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (err, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'feed.load_pending',
+            title: 'Could not load the review queue',
+            error: err,
+            stackTrace: stackTrace,
+            onRetry: () => ref.read(pendingContentProvider.notifier).refresh(),
           ),
         ),
         data: (items) {

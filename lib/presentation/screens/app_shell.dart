@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/models/app_access_state.dart';
 import '../../providers/providers.dart';
+import '../widgets/app_error_view.dart';
 
 class _NavItem {
   const _NavItem({required this.icon, required this.label, required this.path});
@@ -96,6 +97,7 @@ class AppShell extends ConsumerWidget {
               child: _ShellContent(
                 degradedMode: degradedMode,
                 appAccess: appAccess,
+                ref: ref,
                 child: child,
               ),
             ),
@@ -108,6 +110,7 @@ class AppShell extends ConsumerWidget {
       body: _ShellContent(
         degradedMode: degradedMode,
         appAccess: appAccess,
+        ref: ref,
         child: child,
       ),
       bottomNavigationBar: _BottomNav(
@@ -135,11 +138,13 @@ class _ShellContent extends StatelessWidget {
   const _ShellContent({
     required this.degradedMode,
     required this.appAccess,
+    required this.ref,
     required this.child,
   });
 
   final bool degradedMode;
   final AppAccessState? appAccess;
+  final WidgetRef ref;
   final Widget child;
 
   @override
@@ -189,6 +194,28 @@ class _ShellContent extends StatelessWidget {
                     child: Text(
                       'Open Uptime',
                       style: TextStyle(color: colorScheme.onErrorContainer),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Copy diagnostics',
+                    onPressed: () {
+                      copyDiagnosticsToClipboard(
+                        context,
+                        ref,
+                        title: 'ContentFlow degraded mode diagnostics',
+                        scope: 'app_shell.degraded_mode',
+                        currentError: message,
+                        contextData: {
+                          'accessStage': appAccess?.diagnosticsLabel ?? 'unknown',
+                          'backendStatus':
+                              appAccess?.backendStatusLabel ?? 'unknown',
+                        },
+                        successMessage: 'Degraded mode diagnostics copied.',
+                      );
+                    },
+                    icon: Icon(
+                      Icons.copy_rounded,
+                      color: colorScheme.onErrorContainer,
                     ),
                   ),
                 ],

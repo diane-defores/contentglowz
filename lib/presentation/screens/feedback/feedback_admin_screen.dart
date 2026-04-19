@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../data/models/feedback_entry.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class FeedbackAdminScreen extends ConsumerStatefulWidget {
   const FeedbackAdminScreen({super.key});
@@ -137,9 +138,18 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
               padding: EdgeInsets.all(32),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (error, _) => Padding(
+            error: (error, stackTrace) => Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Impossible de charger les feedbacks: $error'),
+              child: AppErrorView(
+                scope: 'feedback_admin.load',
+                title: 'Impossible de charger les feedbacks',
+                error: error,
+                stackTrace: stackTrace,
+                compact: true,
+                showIcon: false,
+                onRetry: () =>
+                    ref.invalidate(feedbackAdminEntriesProvider(_query)),
+              ),
             ),
           ),
         ],
@@ -173,13 +183,34 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
       ref.invalidate(feedbackAdminEntriesProvider(_query));
       ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
       _showSnack('Feedback marqué comme lu.');
-    } catch (error) {
-      _showSnack('Échec de mise à jour: $error');
+    } catch (error, stackTrace) {
+      _showSnack(
+        'Échec de mise à jour: $error',
+        error: error,
+        stackTrace: stackTrace,
+        scope: 'feedback_admin.mark_reviewed',
+      );
     }
   }
 
-  void _showSnack(String message) {
+  void _showSnack(
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    String scope = 'feedback_admin.message',
+  }) {
     if (!mounted) return;
+    if (error != null) {
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: message,
+        scope: scope,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 }

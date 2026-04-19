@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/drip_plan.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 import 'drip_plan_detail_screen.dart';
 import 'drip_wizard_sheet.dart';
 
@@ -12,7 +13,6 @@ class DripScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plansAsync = ref.watch(dripPlansProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -26,19 +26,13 @@ class DripScreen extends ConsumerWidget {
       ),
       body: plansAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load drip plans', style: TextStyle(color: colorScheme.error)),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(dripPlansProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'drip.plans.load',
+            title: 'Failed to load drip plans',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(dripPlansProvider),
           ),
         ),
         data: (plans) {

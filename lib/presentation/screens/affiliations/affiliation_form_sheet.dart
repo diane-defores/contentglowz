@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 const _categories = [
   'tech',
@@ -352,10 +353,19 @@ class _AffiliationFormSheetState extends ConsumerState<AffiliationFormSheet> {
         await api.createAffiliation(data);
       }
       if (mounted) Navigator.pop(context, true);
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Failed to save: $error',
+          scope: 'affiliations.save',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {
+            'isEditing': _isEditing,
+            'name': _nameCtrl.text.trim(),
+          },
         );
       }
     } finally {

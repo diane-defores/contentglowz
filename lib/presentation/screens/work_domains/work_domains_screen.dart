@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 final _workDomainsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -28,19 +29,13 @@ class WorkDomainsScreen extends ConsumerWidget {
       ),
       body: domainsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load: $e'),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(_workDomainsProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'work_domains.load',
+            title: 'Failed to load work domains',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(_workDomainsProvider),
           ),
         ),
         data: (domains) {

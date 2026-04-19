@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -16,7 +17,15 @@ class HistoryScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('History')),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'history.load',
+            title: 'Failed to load history',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(contentHistoryProvider),
+          ),
+        ),
         data: (items) {
           if (items.isEmpty) {
             return Center(

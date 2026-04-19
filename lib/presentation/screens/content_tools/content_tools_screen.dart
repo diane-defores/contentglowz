@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 final _validationsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -48,7 +49,15 @@ class _ValidationsTab extends ConsumerWidget {
 
     return validationsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (error, stackTrace) => Center(
+        child: AppErrorView(
+          scope: 'content_tools.load',
+          title: 'Failed to load content tools',
+          error: error,
+          stackTrace: stackTrace,
+          onRetry: () => ref.invalidate(_validationsProvider),
+        ),
+      ),
       data: (data) {
         final articles = (data['articles'] as List?) ?? [];
         final total = data['total'] as int? ?? 0;

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/persona.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class PersonaEditorScreen extends ConsumerStatefulWidget {
   final String? personaId;
@@ -368,10 +369,19 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         );
         context.pop();
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save persona: $error')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Failed to save persona: $error',
+          scope: 'persona.save',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {
+            'personaName': persona.name,
+            'personaId': widget.personaId ?? 'new',
+          },
         );
       }
     } finally {

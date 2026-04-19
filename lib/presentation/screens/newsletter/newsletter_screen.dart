@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 final _configProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -44,12 +45,14 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
           // Config status
           configAsync.when(
             loading: () => const LinearProgressIndicator(),
-            error: (error, stackTrace) => Card(
-              color: theme.colorScheme.errorContainer,
-              child: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Could not check newsletter config'),
-              ),
+            error: (error, stackTrace) => AppErrorView(
+              scope: 'newsletter.config',
+              title: 'Could not check newsletter config',
+              error: error,
+              stackTrace: stackTrace,
+              compact: true,
+              showIcon: false,
+              onRetry: () => ref.invalidate(_configProvider),
             ),
             data: (config) {
               final configured = config['configured'] == true;
@@ -184,10 +187,16 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
         tone: _tone,
       );
       setState(() => _result = result);
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Generation failed: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Generation failed: $error',
+          scope: 'newsletter.generate',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'name': _nameCtrl.text.trim()},
         );
       }
     } finally {

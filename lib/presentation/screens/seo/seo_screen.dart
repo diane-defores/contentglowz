@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class SeoScreen extends ConsumerStatefulWidget {
   const SeoScreen({super.key});
@@ -83,10 +84,16 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
       final api = ref.read(apiServiceProvider);
       final result = await api.analyzeMesh(repoUrl: _repoUrlCtrl.text.trim());
       setState(() => _result = result);
-    } catch (e) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Analysis failed: $e')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Analysis failed: $error',
+          scope: 'seo.analyze_mesh',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'repoUrl': _repoUrlCtrl.text.trim()},
         );
       }
     } finally {

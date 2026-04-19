@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
@@ -16,7 +17,15 @@ class CalendarScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Schedule')),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'calendar.load',
+            title: 'Failed to load the calendar',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(contentHistoryProvider),
+          ),
+        ),
         data: (items) => _CalendarBody(items: items),
       ),
     );

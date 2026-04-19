@@ -5,6 +5,7 @@ import '../../../data/demo/demo_seed.dart';
 import '../../../data/models/project.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -477,10 +478,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await ref.read(appAccessStateProvider.notifier).refresh();
       if (!mounted) return;
       context.go('/feed');
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Workspace creation failed: $error')),
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: 'Workspace creation failed: $error',
+        scope: 'onboarding.create_workspace',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {
+          'projectName': _projectNameController.text.trim(),
+          'repoUrl': _repoUrlController.text.trim(),
+        },
       );
     } finally {
       if (mounted) {

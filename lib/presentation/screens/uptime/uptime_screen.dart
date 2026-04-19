@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/app_access_state.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 class UptimeScreen extends ConsumerStatefulWidget {
   const UptimeScreen({super.key});
@@ -80,8 +80,22 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
           // Current status
           statusAsync.when(
             loading: () => const LinearProgressIndicator(),
-            error: (error, stackTrace) =>
+            error: (error, stackTrace) => Column(
+              children: [
                 _StatusBanner(online: false, theme: theme),
+                const SizedBox(height: 12),
+                AppErrorView(
+                  scope: 'uptime.status_check',
+                  title: 'Backend status check failed',
+                  error: error,
+                  stackTrace: stackTrace,
+                  compact: true,
+                  showIcon: false,
+                  copyLabel: 'Copy diagnostics',
+                  onRetry: _refreshAccessState,
+                ),
+              ],
+            ),
             data: (data) {
               final online = data['status'] == 'ok' || data['status'] == 'healthy';
               return _StatusBanner(online: online, theme: theme);
@@ -136,7 +150,20 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                 label: const Text('Retry backend'),
               ),
               OutlinedButton.icon(
-                onPressed: () => _copyDiagnostics(authSession, accessState),
+                onPressed: () {
+                  copyDiagnosticsToClipboard(
+                    context,
+                    ref,
+                    title: 'ContentFlow system status diagnostics',
+                    scope: 'uptime.copy_diagnostics',
+                    currentError: accessState?.message,
+                    contextData: {
+                      'sessionState': authSession.status.name,
+                      'sessionEmail': authSession.email ?? 'none',
+                      'accessStage': accessState?.diagnosticsLabel ?? 'loading',
+                    },
+                  );
+                },
                 icon: const Icon(Icons.copy_rounded),
                 label: const Text('Copy diagnostics'),
               ),
@@ -217,28 +244,6 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
   Future<void> _refreshAccessState() async {
     await _checkOnce();
     await ref.read(appAccessStateProvider.notifier).refresh();
-  }
-
-  Future<void> _copyDiagnostics(
-    AuthSession authSession,
-    AppAccessState? accessState,
-  ) async {
-    final lines = [
-      'ContentFlow system status diagnostics',
-      'Session state: ${authSession.status.name}',
-      'Session email: ${authSession.email ?? 'none'}',
-      'Access stage: ${accessState?.diagnosticsLabel ?? 'loading'}',
-      'Backend reachable: ${accessState?.backendReachable == true ? 'yes' : 'no'}',
-      'Backend status: ${accessState?.backendStatusLabel ?? 'unknown'}',
-      'Bootstrap status: ${accessState?.bootstrapStatusLabel ?? 'not_started'}',
-      'Last API status code: ${accessState?.statusCode?.toString() ?? 'none'}',
-      'Last API message: ${accessState?.message ?? 'none'}',
-    ];
-    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Diagnostics copied to clipboard.')),
-    );
   }
 }
 

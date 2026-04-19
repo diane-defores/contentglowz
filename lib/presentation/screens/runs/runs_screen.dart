@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../widgets/app_error_view.dart';
 
 final _runsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -28,19 +29,13 @@ class RunsScreen extends ConsumerWidget {
       ),
       body: runsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-              const SizedBox(height: 8),
-              Text('Failed to load runs: $e'),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => ref.invalidate(_runsProvider),
-                child: const Text('Retry'),
-              ),
-            ],
+        error: (error, stackTrace) => Center(
+          child: AppErrorView(
+            scope: 'runs.load',
+            title: 'Failed to load runs',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(_runsProvider),
           ),
         ),
         data: (runs) {

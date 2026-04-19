@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_config.dart';
+import '../../../core/app_diagnostics.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
-import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -92,7 +92,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         _buildRuntimeDiagnostics(
           hasClerkKey: false,
           authSession: authSession,
-          error: _error,
+          error: _error ?? 'Clerk is missing from runtime config.',
         ),
       ],
     );
@@ -129,12 +129,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildRuntimeDiagnostics(
-          hasClerkKey: true,
-          authSession: authSession,
-          error: _error,
-        ),
-        const SizedBox(height: 24),
+        if (_error != null && _error!.isNotEmpty) ...[
+          _buildRuntimeDiagnostics(
+            hasClerkKey: true,
+            authSession: authSession,
+            error: _error,
+          ),
+          const SizedBox(height: 24),
+        ],
         SizedBox(
           width: double.infinity,
           child: FilledButton(
@@ -194,12 +196,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        _buildRuntimeDiagnostics(
-          hasClerkKey: true,
-          authSession: authSession,
-          error: null,
-        ),
-        const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
@@ -224,283 +220,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required AuthSession authSession,
     required String? error,
   }) {
-    final keyPreview = hasClerkKey ? _maskPublishableKey() : 'missing';
-    final currentUrl = kIsWeb ? Uri.base.toString() : 'not-web';
-    final currentHost = kIsWeb ? Uri.base.host : 'not-web';
-    final currentPath = kIsWeb ? Uri.base.path : 'not-web';
-    final primaryAuthMode = kIsWeb
-        ? 'clerkjs google oauth'
-        : 'web ClerkJS auth only';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(14)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Runtime diagnostics',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () => _copyDiagnostics(
-                  hasClerkKey: hasClerkKey,
-                  authSession: authSession,
-                  error: error,
-                ),
-                icon: const Icon(Icons.copy_rounded, size: 16),
-                label: const Text('Copy'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Build commit: ${AppConfig.buildCommitSha}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build environment: ${AppConfig.buildEnvironment}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build timestamp: ${AppConfig.buildTimestamp}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Build mode: ${_buildModeLabel()}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Primary auth mode: $primaryAuthMode',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Embedded Clerk UI primary path: disabled',
-            style: TextStyle(color: Colors.orange, fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'API_BASE_URL: ${AppConfig.apiBaseUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_SITE_URL: ${AppConfig.siteUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
-            style: TextStyle(
-              color: AppConfig.siteUrlPointsToAppHost
-                  ? Colors.orange.withAlpha(220)
-                  : Colors.white.withAlpha(120),
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Effective website URL: ${AppConfig.effectiveSiteUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_WEB_URL: ${AppConfig.appWebUrl}',
-            style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'CLERK_PUBLISHABLE_KEY: ${hasClerkKey ? 'configured' : 'missing'}',
-            style: TextStyle(
-              color: hasClerkKey ? AppTheme.approveColor : Colors.orange,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Key preview: $keyPreview',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Session state: ${authSession.status.name}',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Bearer token: ${_maskToken(authSession.bearerToken)}',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Current URL: $currentUrl',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Current host: $currentHost',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Current path: $currentPath',
-            style: TextStyle(color: Colors.white.withAlpha(120), fontSize: 12),
-          ),
-          if (authSession.email != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Session email: ${authSession.email}',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 12,
-              ),
-            ),
-          ],
-          if (error != null && error.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Last auth error:',
-              style: TextStyle(
-                color: Colors.orange.withAlpha(220),
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              error,
-              style: TextStyle(
-                color: Colors.white.withAlpha(130),
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          Text(
-            'Configured only means the key is present. It does not prove that frontend Clerk and backend JWT validation use the same Clerk project.',
-            style: TextStyle(
-              color: Colors.white.withAlpha(120),
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _maskPublishableKey() {
-    final key = AppConfig.clerkPublishableKey;
-    if (key.isEmpty) return 'missing';
-    if (key.length <= 18) return key;
-    return '${key.substring(0, 10)}...${key.substring(key.length - 5)} (len=${key.length})';
-  }
-
-  String _maskToken(String? value) {
-    if (value == null || value.isEmpty) return 'none';
-    if (value.length <= 14) return value;
-    return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
-  }
-
-  String _buildModeLabel() {
-    if (kReleaseMode) return 'release';
-    if (kProfileMode) return 'profile';
-    return 'debug';
-  }
-
-  String _hostForUrl(String value) {
-    final uri = Uri.tryParse(value);
-    if (uri == null || uri.host.isEmpty) {
-      return 'invalid';
-    }
-    return uri.host;
-  }
-
-  String _hostMatchLabel(String value) {
-    if (!kIsWeb) {
-      return 'not-web';
-    }
-    final host = _hostForUrl(value);
-    if (host == 'invalid') {
-      return 'invalid';
-    }
-    return host == Uri.base.host ? 'yes' : 'no (expected $host)';
-  }
-
-  Future<void> _copyDiagnostics({
-    required bool hasClerkKey,
-    required AuthSession authSession,
-    required String? error,
-  }) async {
-    final primaryAuthMode = kIsWeb
-        ? 'clerkjs google oauth'
-        : 'web ClerkJS auth only';
-    final lines = [
-      'ContentFlow auth diagnostics',
-      'Build commit: ${AppConfig.buildCommitSha}',
-      'Build environment: ${AppConfig.buildEnvironment}',
-      'Build timestamp: ${AppConfig.buildTimestamp}',
-      'Build mode: ${_buildModeLabel()}',
-      'Primary auth mode: $primaryAuthMode',
-      'Embedded Clerk UI primary path: disabled',
-      'API_BASE_URL: ${AppConfig.apiBaseUrl}',
-      'APP_SITE_URL: ${AppConfig.siteUrl}',
-      'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
-      'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
-      'Effective website URL: ${AppConfig.effectiveSiteUrl}',
-      'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
-      'APP_WEB_URL: ${AppConfig.appWebUrl}',
-      'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
-      'CLERK_PUBLISHABLE_KEY: ${hasClerkKey ? 'configured' : 'missing'}',
-      'Key preview: ${hasClerkKey ? _maskPublishableKey() : 'missing'}',
-      'Session state: ${authSession.status.name}',
-      'Session email: ${authSession.email ?? 'none'}',
-      'Bearer token: ${_maskToken(authSession.bearerToken)}',
-      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
-      'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
-      'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
-      'Last auth error: ${error == null || error.isEmpty ? 'none' : error}',
-    ];
-
-    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Diagnostics copied to clipboard.')),
+    return AppErrorView(
+      scope: hasClerkKey ? 'auth.runtime' : 'auth.config_missing',
+      title: hasClerkKey ? 'Authentication error' : 'Clerk is not configured',
+      message: error,
+      compact: true,
+      showIcon: !hasClerkKey || (error != null && error.isNotEmpty),
+      copyLabel: 'Copy diagnostics',
+      helperText: hasClerkKey
+          ? 'Copy this report and send it back with the error message above.'
+          : 'Rebuild the app with a valid CLERK_PUBLISHABLE_KEY to enable the Clerk web flow.',
+      contextData: {
+        'hasClerkKey': hasClerkKey,
+        'sessionState': authSession.status.name,
+        'sessionEmail': authSession.email ?? 'none',
+        'appWebUrl': AppConfig.appWebUrl,
+        'siteUrl': AppConfig.siteUrl,
+        'apiBaseUrl': AppConfig.apiBaseUrl,
+        'currentPath': kIsWeb ? Uri.base.path : 'not-web',
+      },
     );
   }
 
@@ -575,7 +313,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           .signInWithPassword(email: email, password: password);
       if (!mounted) return;
       context.go('/entry');
-    } catch (error) {
+    } catch (error, stackTrace) {
+      ref.read(appDiagnosticsProvider).error(
+        scope: 'auth.inline_sign_in',
+        message: 'Inline sign-in failed.',
+        error: error,
+        stackTrace: stackTrace,
+        context: {'email': email},
+      );
       if (!mounted) return;
       setState(() {
         _error = _friendlyAuthError(error);

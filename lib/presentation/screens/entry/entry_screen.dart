@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +8,7 @@ import '../../../data/models/app_access_state.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 
 class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({super.key});
@@ -18,8 +18,6 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
-  static const String _diagnosticsVersion = 'entry-diagnostics-v6-2026-04-18';
-
   Future<void> _openWebsiteSignIn() async {
     final url = kIsWeb
         ? Uri.parse('${Uri.base.origin}/sign-in')
@@ -34,136 +32,31 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     await launchUrl(url);
   }
 
-  String _buildModeLabel() {
-    if (kReleaseMode) return 'release';
-    if (kProfileMode) return 'profile';
-    return 'debug';
-  }
-
-  String _maskToken(String? value) {
-    if (value == null || value.isEmpty) return 'none';
-    if (value.length <= 14) return value;
-    return '${value.substring(0, 8)}...${value.substring(value.length - 4)}';
-  }
-
-  String _hostForUrl(String value) {
-    final uri = Uri.tryParse(value);
-    if (uri == null || uri.host.isEmpty) {
-      return 'invalid';
-    }
-    return uri.host;
-  }
-
-  String _hostMatchLabel(String value) {
-    if (!kIsWeb) {
-      return 'not-web';
-    }
-    final host = _hostForUrl(value);
-    if (host == 'invalid') {
-      return 'invalid';
-    }
-    return host == Uri.base.host ? 'yes' : 'no (expected $host)';
-  }
-
-  List<String> _entryDiagnosticsLines(
+  Widget? _buildEntryErrorDiagnostics(
     AuthSession authSession,
     AppAccessState? accessState,
   ) {
-    return [
-      'ContentFlow entry diagnostics',
-      'Version: $_diagnosticsVersion',
-      'Build commit: ${AppConfig.buildCommitSha}',
-      'Build environment: ${AppConfig.buildEnvironment}',
-      'Build timestamp: ${AppConfig.buildTimestamp}',
-      'Build mode: ${_buildModeLabel()}',
-      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
-      'Current origin: ${kIsWeb ? Uri.base.origin : 'not-web'}',
-      'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
-      'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',
-      'API_BASE_URL: ${AppConfig.apiBaseUrl}',
-      'APP_SITE_URL: ${AppConfig.siteUrl}',
-      'APP_SITE_URL host match: ${_hostMatchLabel(AppConfig.siteUrl)}',
-      'APP_SITE_URL loops to app host: ${AppConfig.siteUrlPointsToAppHost ? 'yes' : 'no'}',
-      'Effective website URL: ${AppConfig.effectiveSiteUrl}',
-      'Effective website URL host match: ${_hostMatchLabel(AppConfig.effectiveSiteUrl)}',
-      'APP_WEB_URL: ${AppConfig.appWebUrl}',
-      'APP_WEB_URL host match: ${_hostMatchLabel(AppConfig.appWebUrl)}',
-      'Session state: ${authSession.status.name}',
-      'Session email: ${authSession.email ?? 'none'}',
-      'Bearer token: ${_maskToken(authSession.bearerToken)}',
-      'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
-      'Access stage: ${accessState?.diagnosticsLabel ?? 'loading'}',
-      'Backend reachable: ${accessState?.backendReachable == true ? 'yes' : 'no'}',
-      'Backend status: ${accessState?.backendStatusLabel ?? 'unknown'}',
-      'Bootstrap status: ${accessState?.bootstrapStatusLabel ?? 'not_started'}',
-      'Last API status code: ${accessState?.statusCode?.toString() ?? 'none'}',
-      'Last API message: ${accessState?.message ?? 'none'}',
-      'Primary web sign-in route: ${AppConfig.appWebUrl}/sign-in',
-      'Primary web callback route: ${AppConfig.appWebUrl}/sso-callback',
-    ];
-  }
+    final message = accessState?.message;
+    if (message == null || message.trim().isEmpty) {
+      return null;
+    }
 
-  Future<void> _copyEntryDiagnostics(
-    AuthSession authSession,
-    AppAccessState? accessState,
-  ) async {
-    await Clipboard.setData(
-      ClipboardData(
-        text: _entryDiagnosticsLines(authSession, accessState).join('\n'),
-      ),
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Entry diagnostics copied to clipboard.')),
-    );
-  }
-
-  Widget _buildWebRuntimeDiagnostics(
-    AuthSession authSession,
-    AppAccessState? accessState,
-  ) {
-    final lines = _entryDiagnosticsLines(authSession, accessState);
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(16)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Entry Diagnostics',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => _copyEntryDiagnostics(authSession, accessState),
-                child: const Text('Copy'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SelectableText(
-            lines.join('\n'),
-            style: TextStyle(
-              color: Colors.white.withAlpha(150),
-              fontSize: 12,
-              height: 1.45,
-            ),
-          ),
-        ],
-      ),
+    return AppErrorView(
+      scope: 'entry.${accessState?.diagnosticsLabel ?? 'unknown'}',
+      title: 'Copy this error',
+      message: message,
+      compact: true,
+      showIcon: false,
+      copyLabel: 'Copy diagnostics',
+      helperText:
+          'Copy this report and send it back so the failing auth/bootstrap state can be inspected.',
+      contextData: {
+        'accessStage': accessState?.diagnosticsLabel ?? 'unknown',
+        'statusCode': accessState?.statusCode?.toString() ?? 'none',
+        'backendStatus': accessState?.backendStatusLabel ?? 'unknown',
+        'sessionState': authSession.status.name,
+        'sessionEmail': authSession.email ?? 'none',
+      },
     );
   }
 
@@ -697,9 +590,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ref.read(authSessionProvider.notifier).signInDemo();
           context.go('/onboarding?intent=entry');
         },
-        extra: kIsWeb
-            ? _buildWebRuntimeDiagnostics(authSession, accessState)
-            : null,
       );
     }
 
@@ -719,9 +609,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: null,
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: kIsWeb
-            ? _buildWebRuntimeDiagnostics(authSession, accessState)
-            : null,
       );
     }
 
@@ -773,9 +660,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ref.read(appAccessStateProvider.notifier).refresh();
         },
         caption: 'Backend detail: ${accessState?.message ?? 'unknown'}',
-        extra: kIsWeb
-            ? _buildWebRuntimeDiagnostics(authSession, accessState)
-            : null,
+        extra: _buildEntryErrorDiagnostics(authSession, accessState),
       );
     }
 
@@ -791,9 +676,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/feed'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: kIsWeb
-            ? _buildWebRuntimeDiagnostics(authSession, accessState)
-            : null,
       );
     }
 
@@ -809,9 +691,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/onboarding?intent=entry'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: kIsWeb
-            ? _buildWebRuntimeDiagnostics(authSession, accessState)
-            : null,
       );
     }
 
@@ -839,9 +718,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       caption: kIsWeb
           ? 'The stable path is now ClerkJS on `app.contentflow.winflowz.com/sign-in`, with a standard OAuth callback on `/sso-callback`.'
           : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The old Flutter beta auth path now lives only in the legacy branch.',
-      extra: kIsWeb
-          ? _buildWebRuntimeDiagnostics(authSession, accessState)
-          : null,
     );
   }
 

@@ -8,6 +8,7 @@ import '../../../data/models/content_audit.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 import 'platform_preview_sheet.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
@@ -74,10 +75,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           _bodyLoaded = true;
         });
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not load full content: $error')),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Could not load full content: $error',
+          scope: 'editor.load_full_content',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'contentId': contentId},
         );
       }
     }
@@ -90,9 +97,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     return contentAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (err, _) => Scaffold(
+      error: (error, stackTrace) => Scaffold(
         appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text('Error: $err')),
+        body: Center(
+          child: AppErrorView(
+            scope: 'editor.load_pending_content',
+            title: 'Could not open the editor',
+            error: error,
+            stackTrace: stackTrace,
+            onRetry: () => ref.invalidate(pendingContentProvider),
+          ),
+        ),
       ),
       data: (items) {
         final item = items.where((c) => c.id == widget.contentId).firstOrNull;
@@ -687,16 +702,18 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           body: _bodyController.text,
         );
         ref.read(pendingContentProvider.notifier).updateItem(updated);
-      } catch (error) {
+      } catch (error, stackTrace) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not save changes: $error'),
-            backgroundColor: Colors.orange.withAlpha(200),
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        showDiagnosticSnackBar(
+          context,
+          ref,
+          message: 'Could not save changes: $error',
+          scope: 'editor.save_changes',
+          error: error,
+          stackTrace: stackTrace,
+          contextData: {'contentId': item.id},
+          backgroundColor: Colors.orange.withAlpha(200),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         );
         return;
       }
