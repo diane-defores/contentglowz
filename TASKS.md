@@ -44,15 +44,15 @@ Fait:
 - [x] Ajouter des tests d'intégration ciblés sur le flux feedback
 
 À faire côté serveur:
-- [ ] Push/merge les changements `contentflow_lab` sur la branche de déploiement du backend
+- [x] Push/merge les changements `contentflow_lab` sur la branche de déploiement du backend
+- [x] Déployer la nouvelle version du backend sur le serveur
+- [x] Redémarrer le process FastAPI après déploiement
+- [x] Vérifier que la table `FeedbackEntry` est bien créée
 - [ ] Vérifier que les variables déjà utilisées en prod sont bien présentes: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `BUNNY_STORAGE_API_KEY`, `BUNNY_STORAGE_ZONE`, `BUNNY_STORAGE_REGION`
 - [ ] Ajouter les nouvelles variables: `FEEDBACK_ADMIN_EMAILS`, `FEEDBACK_SIGNING_SECRET`
-- [ ] Déployer la nouvelle version du backend sur le serveur
-- [ ] Redémarrer le process FastAPI après déploiement
-- [ ] Vérifier au boot que la table `FeedbackEntry` est bien créée
 
 Validation après déploiement:
-- [ ] Tester un feedback texte anonyme depuis l'app
+- [x] Tester un feedback texte anonyme depuis l'app
 - [ ] Tester un feedback texte connecté depuis l'app
 - [ ] Tester un feedback audio depuis l'app
 - [ ] Vérifier qu'un email hors allowlist reçoit bien un `403` sur `/api/feedback/admin`
@@ -62,6 +62,9 @@ Note infra:
 - On ne rajoute pas une nouvelle base de données
 - Le flux feedback réutilise la base Turso/libsql déjà en place dans le backend
 - "Configurer Turso" ici veut seulement dire: vérifier que les variables Turso existantes sont bien présentes sur le serveur où tourne FastAPI
+- Le texte est déjà live sur `https://api.winflowz.com/api/feedback/text`
+- L'upload audio crée maintenant bien une `uploadUrl`, mais l'upload réel reste bloqué tant que `BUNNY_STORAGE_ZONE` et `BUNNY_STORAGE_API_KEY` ne sont pas configurés en prod
+- L'admin côté serveur reste bloqué tant que `FEEDBACK_ADMIN_EMAILS` n'est pas défini en prod
 
 ### Audit: Code (2026-04-07)
 
