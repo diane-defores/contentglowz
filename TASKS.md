@@ -3,9 +3,11 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 8 — Web Auth Stabilized
+**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 9 — Feedback Admin v1 app shipped
 
 **Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
+
+**Top priority**: Déployer les endpoints FastAPI feedback sur le serveur, puis reprendre Polar billing
 
 ---
 
@@ -171,6 +173,8 @@
 | ✅ | Validation runtime Clerk (site sign-in réel, handoff web, restore session, `/api/bootstrap`) | High | Medium | ✅ done — auth web directe via ClerkJS sur le domaine app, bootstrap validé |
 | ✅ | OAuth flow pour connecter les channels (via LATE/Zernio) | High | Medium | ✅ done — Connect + Disconnect complets |
 | ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
+| ✅ | Feedback Admin v1 côté Flutter — soumission texte/audio, historique local léger, accès anonyme et écran admin in-app | High | Medium | ✅ done — client FastAPI prêt, build-time allowlist + docs ajoutés |
+| 🟠 | Déployer le backend FastAPI feedback (`/api/feedback/*`), le stockage audio S3-compatible et les URLs signées de lecture admin sur le serveur | High | Medium | 🔄 in progress — contrat backend rédigé, implémentation serveur hors repo |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Débloqué maintenant que l'auth Clerk web est stable |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
 | 🟡 | DataForSEO — credentials OK dans Doppler, ajouter credits au compte DFS | High | Low | Auth OK (20000), mais 402 Payment Required — ajouter credits sur dataforseo.com/billing |
@@ -217,4 +221,4 @@
 
 > **Priority last updated**: 2026-04-19
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Brancher Polar billing, exposer l'audit structuré dans l'UI debug/admin, puis finaliser les crédits DataForSEO
+> **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing et finaliser les crédits DataForSEO

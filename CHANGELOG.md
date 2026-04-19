@@ -8,14 +8,18 @@ The format is based on Keep a Changelog.
 
 ### Added
 - Added a centralized app access state and degraded-mode shell so the Flutter app now distinguishes Clerk auth, FastAPI health, and workspace bootstrap instead of collapsing backend outages into fake sign-in failures.
+- Added a Feedback Admin v1 client flow with text feedback, audio feedback recording/upload, local draft persistence, and lightweight local history for recently sent entries.
+- Added an in-app feedback admin screen with filters, audio playback, review actions, and supporting docs for the expected FastAPI feedback contract.
 
 ### Changed
 - Stopped sending `edited_by` and `changed_by` from the Flutter client for content body saves and status transitions so the backend becomes the sole source of truth for audit attribution.
 - Reworked entry, routing, uptime, and settings flows around explicit backend availability checks, richer diagnostics, and degraded-mode messaging when FastAPI is unavailable.
+- Wired the Flutter web build/runtime config to compile `FEEDBACK_ADMIN_EMAILS`, surface the feedback admin entry point for allowlisted emails, and expose a public feedback entry point from the landing screen.
 
 ### Fixed
 - Fixed the Clerk web OAuth redirect flow so Google sign-in returns through `/sso-callback` before landing on `/#/entry`, allowing Clerk session finalization to complete.
 - Fixed onboarding/workspace creation guards so unauthenticated users can no longer create a workspace and backend outages no longer masquerade as broken Clerk sessions.
+- Fixed anonymous feedback access by moving the feedback route outside the authenticated shell so signed-out users can still submit product feedback.
 
 ## [2026-04-13]
 

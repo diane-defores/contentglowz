@@ -36,6 +36,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final backendStatus = ref.watch(backendStatusProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
     final userSettings = ref.watch(currentUserSettingsProvider);
+    final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
 
     if (_apiUrlController.text.isEmpty) {
       _apiUrlController.text = apiBaseUrl;
@@ -219,6 +220,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _sectionHeader('Notifications'),
           const SizedBox(height: 12),
           _buildNotificationsCard(userSettings),
+
+          const SizedBox(height: 28),
+
+          _sectionHeader('Feedback'),
+          const SizedBox(height: 12),
+          _buildActionTile(
+            icon: Icons.forum_outlined,
+            title: 'Send Feedback',
+            subtitle: 'Share text or audio product feedback',
+            color: const Color(0xFF7D5FFF),
+            onTap: () => context.push('/feedback'),
+          ),
+          if (isFeedbackAdmin) ...[
+            const SizedBox(height: 8),
+            _buildActionTile(
+              icon: Icons.admin_panel_settings_outlined,
+              title: 'Feedback Admin',
+              subtitle: 'Review incoming user feedback',
+              color: const Color(0xFF00CEC9),
+              onTap: () => context.push('/feedback-admin'),
+            ),
+          ],
 
           const SizedBox(height: 28),
 

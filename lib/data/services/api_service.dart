@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
@@ -9,6 +10,7 @@ import '../models/app_settings.dart';
 import '../models/content_audit.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
+import '../models/feedback_entry.dart';
 import '../models/idea.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
@@ -744,6 +746,135 @@ class ApiService {
         }),
       );
       return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Feedback ─────────────────────────────────────────────
+
+  Future<FeedbackEntry> createTextFeedback({
+    required String message,
+    required String platform,
+    required String locale,
+    String? userEmail,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/feedback/text',
+        data: _compactMap({
+          'message': message,
+          'platform': platform,
+          'locale': locale,
+          'userEmail': userEmail,
+        }),
+      );
+      return FeedbackEntry.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<FeedbackUploadTarget> getFeedbackUploadUrl({
+    required String mimeType,
+    required String fileName,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/feedback/audio/upload-url',
+        data: {
+          'mimeType': mimeType,
+          'fileName': fileName,
+        },
+      );
+      return FeedbackUploadTarget.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> uploadFeedbackAudio(
+    FeedbackUploadTarget target,
+    Uint8List bytes, {
+    required String mimeType,
+  }) async {
+    final headers = <String, dynamic>{
+      Headers.contentTypeHeader: mimeType,
+      ...target.headers,
+    };
+
+    try {
+      await Dio().request<void>(
+        target.uploadUrl,
+        data: bytes,
+        options: Options(
+          method: target.method,
+          headers: headers,
+          responseType: ResponseType.plain,
+        ),
+      );
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<FeedbackEntry> createAudioFeedback({
+    required String storageId,
+    required int durationMs,
+    required String platform,
+    required String locale,
+    String? userEmail,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/feedback/audio',
+        data: _compactMap({
+          'audioStorageId': storageId,
+          'durationMs': durationMs,
+          'platform': platform,
+          'locale': locale,
+          'userEmail': userEmail,
+        }),
+      );
+      return FeedbackEntry.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<FeedbackEntry>> listAdminFeedback({
+    String? status,
+    String? type,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/feedback/admin',
+        queryParameters: _compactMap({
+          'status': status,
+          'type': type,
+        }),
+      );
+      final data = response.data;
+      final items =
+          data is List ? data : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
+      if (items is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid admin feedback response from FastAPI.',
+        );
+      }
+      return items
+          .map((json) => FeedbackEntry.fromJson(json as Map<String, dynamic>))
+          .toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> markFeedbackReviewed(String feedbackId) async {
+    try {
+      await _dio.post('/api/feedback/admin/$feedbackId/review');
     } on DioException catch (error) {
       throw _mapDioException(error);
     }

@@ -6,6 +6,8 @@ import 'providers/providers.dart';
 import 'presentation/screens/app_shell.dart';
 import 'presentation/screens/feed/feed_screen.dart';
 import 'presentation/screens/editor/editor_screen.dart';
+import 'presentation/screens/feedback/feedback_admin_screen.dart';
+import 'presentation/screens/feedback/feedback_screen.dart';
 import 'presentation/screens/history/history_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
@@ -41,6 +43,8 @@ GoRouter createAppRouter(WidgetRef ref) {
       final location = state.uri.path;
       final isEntry = location == '/entry';
       final isAuth = location == '/auth';
+      final isFeedback = location == '/feedback';
+      final isFeedbackAdmin = location == '/feedback-admin';
       final isOnboarding = location == '/onboarding';
       final isUptime = location == '/uptime';
       final isSettings = location == '/settings';
@@ -49,7 +53,7 @@ GoRouter createAppRouter(WidgetRef ref) {
       final access = appAccessAsync.valueOrNull;
 
       if (appAccessAsync.isLoading || access == null) {
-        if (isEntry || isAuth) {
+        if (isEntry || isAuth || isFeedback || isFeedbackAdmin) {
           return null;
         }
         return '/entry';
@@ -59,13 +63,17 @@ GoRouter createAppRouter(WidgetRef ref) {
         case AppAccessStage.restoringSession:
         case AppAccessStage.checkingBackend:
         case AppAccessStage.checkingWorkspace:
-          if (!isEntry && !isUptime && !isSettings) {
+          if (!isEntry &&
+              !isUptime &&
+              !isSettings &&
+              !isFeedback &&
+              !isFeedbackAdmin) {
             return '/entry';
           }
           return null;
         case AppAccessStage.signedOut:
         case AppAccessStage.bootstrapUnauthorized:
-          if (!isEntry && !isAuth) {
+          if (!isEntry && !isAuth && !isFeedback) {
             return '/entry';
           }
           return null;
@@ -76,7 +84,10 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isOnboarding && !allowOnboarding) {
             return '/entry';
           }
-          if (access.bootstrap?.shouldOnboard == true && !isEntry && !isOnboarding) {
+          if (access.bootstrap?.shouldOnboard == true &&
+              !isEntry &&
+              !isOnboarding &&
+              !isFeedback) {
             return '/entry';
           }
           if (access.bootstrap?.shouldOnboard == false && isOnboarding) {
@@ -88,7 +99,11 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isAuth || isOnboarding) {
             return '/entry';
           }
-          if (!isEntry && !isUptime && !isSettings) {
+          if (!isEntry &&
+              !isUptime &&
+              !isSettings &&
+              !isFeedback &&
+              !isFeedbackAdmin) {
             return '/uptime';
           }
           return null;
@@ -99,7 +114,10 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isOnboarding && !allowOnboarding) {
             return '/entry';
           }
-          if (!isEntry && !isOnboarding) {
+          if (!isEntry &&
+              !isOnboarding &&
+              !isFeedback &&
+              !isFeedbackAdmin) {
             return '/entry';
           }
           return null;
@@ -227,6 +245,16 @@ GoRouter createAppRouter(WidgetRef ref) {
                 const NoTransitionPage(child: SettingsScreen()),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/feedback',
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: FeedbackScreen()),
+      ),
+      GoRoute(
+        path: '/feedback-admin',
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: FeedbackAdminScreen()),
       ),
       GoRoute(
         path: '/onboarding',

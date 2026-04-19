@@ -12,12 +12,15 @@ import '../data/models/app_settings.dart';
 import '../data/models/auth_session.dart';
 import '../data/models/content_item.dart';
 import '../data/models/creator_profile.dart';
+import '../data/models/feedback_entry.dart';
 import '../data/models/idea.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/ritual.dart';
 import '../data/services/api_service.dart';
 import '../data/services/clerk_auth_service.dart';
+import '../data/services/feedback_local_store.dart';
+import '../data/services/feedback_service.dart';
 import '../main.dart';
 
 const _apiBaseUrlKey = 'api_base_url';
@@ -88,6 +91,51 @@ final apiServiceProvider = Provider<ApiService>((ref) {
     },
   );
 });
+
+final feedbackLocalStoreProvider = Provider<FeedbackLocalStore>((ref) {
+  return FeedbackLocalStore(ref.read(sharedPrefsProvider));
+});
+
+final feedbackServiceProvider = Provider<FeedbackService>((ref) {
+  return FeedbackService(
+    api: () => ref.read(apiServiceProvider),
+    localStore: () => ref.read(feedbackLocalStoreProvider),
+    authSession: () => ref.read(authSessionProvider),
+    language: () => ref.read(currentUserSettingsProvider).valueOrNull?.language,
+    invalidateRecentSubmissions: () {
+      ref.invalidate(feedbackRecentSubmissionsProvider);
+    },
+    invalidateDefaultAdminEntries: () {
+      ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
+    },
+  );
+});
+
+final isFeedbackAdminProvider = Provider<bool>((ref) {
+  final session = ref.watch(authSessionProvider);
+  final email = session.email?.trim().toLowerCase();
+  if (email == null || email.isEmpty) {
+    return false;
+  }
+  return AppConfig.feedbackAdminEmails.contains(email);
+});
+
+final feedbackDraftProvider = Provider<String>((ref) {
+  return ref.read(feedbackServiceProvider).loadDraftMessage();
+});
+
+final feedbackRecentSubmissionsProvider =
+    FutureProvider<List<LocalFeedbackSubmission>>((ref) async {
+      return ref.read(feedbackServiceProvider).loadRecentSubmissions();
+    });
+
+final feedbackAdminEntriesProvider =
+    FutureProvider.family<List<FeedbackEntry>, FeedbackAdminQuery>((
+      ref,
+      query,
+    ) async {
+      return ref.read(feedbackServiceProvider).listAdmin(query: query);
+    });
 
 final clerkPublishableKeyProvider = Provider<String>(
   (ref) => AppConfig.clerkPublishableKey,
@@ -312,6 +360,9 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     ref.invalidate(pendingContentProvider);
     ref.invalidate(contentHistoryProvider);
     ref.invalidate(personasProvider);
+    ref.invalidate(isFeedbackAdminProvider);
+    ref.invalidate(feedbackRecentSubmissionsProvider);
+    ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
   }
 
   void _clearLegacyAuthPrefs() {

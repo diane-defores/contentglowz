@@ -294,6 +294,18 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   icon: const Icon(Icons.lock_open_rounded),
                   label: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
                 ),
+                TextButton.icon(
+                  onPressed: () => context.push('/feedback'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white.withAlpha(170),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 18,
+                    ),
+                  ),
+                  icon: const Icon(Icons.forum_outlined),
+                  label: const Text('Share Feedback'),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -642,6 +654,17 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   ),
                 ),
                 child: Text(kIsWeb ? 'Continue with Google' : 'Sign In'),
+              ),
+              TextButton(
+                onPressed: () => context.push('/feedback'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white.withAlpha(170),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
+                ),
+                child: const Text('Share Feedback'),
               ),
             ],
           ),

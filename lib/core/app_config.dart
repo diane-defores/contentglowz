@@ -36,6 +36,19 @@ class AppConfig {
     defaultValue: 'unknown',
   );
 
+  static const feedbackAdminEmailsEnv = String.fromEnvironment(
+    'FEEDBACK_ADMIN_EMAILS',
+    defaultValue: '',
+  );
+
+  static Set<String> get feedbackAdminEmails {
+    return feedbackAdminEmailsEnv
+        .split(',')
+        .map((value) => value.trim().toLowerCase())
+        .where((value) => value.isNotEmpty)
+        .toSet();
+  }
+
   static bool get siteUrlPointsToAppHost {
     final configured = Uri.tryParse(siteUrl);
     final app = Uri.tryParse(appWebUrl);

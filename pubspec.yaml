@@ -48,6 +48,10 @@ dependencies:
   # Google Fonts
   google_fonts: ^6.2.1
 
+  # Audio feedback
+  record: ^6.1.2
+  audioplayers: ^6.5.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
