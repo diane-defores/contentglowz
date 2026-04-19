@@ -32,6 +32,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final apiBaseUrl = ref.watch(apiBaseUrlProvider);
+    final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final backendStatus = ref.watch(backendStatusProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
     final userSettings = ref.watch(currentUserSettingsProvider);
@@ -118,6 +119,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ],
                 ),
+                if (appAccess?.isDegraded == true) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.',
+                    style: TextStyle(
+                      color: Colors.orange.withAlpha(220),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 // API URL
                 TextField(
@@ -132,6 +144,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             .read(apiBaseUrlProvider.notifier)
                             .update(_apiUrlController.text);
                         ref.invalidate(backendStatusProvider);
+                        ref.invalidate(appAccessStateProvider);
                         ref.invalidate(pendingContentProvider);
                         ref.invalidate(publishAccountsProvider);
                       },

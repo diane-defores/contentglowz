@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'data/models/auth_session.dart';
+import 'data/models/app_access_state.dart';
 import 'providers/providers.dart';
 import 'presentation/screens/app_shell.dart';
 import 'presentation/screens/feed/feed_screen.dart';
@@ -33,8 +33,7 @@ import 'presentation/screens/work_domains/work_domains_screen.dart';
 import 'presentation/screens/drip/drip_screen.dart';
 
 GoRouter createAppRouter(WidgetRef ref) {
-  final authSession = ref.watch(authSessionProvider);
-  final bootstrap = ref.watch(appBootstrapProvider);
+  final appAccessAsync = ref.watch(appAccessStateProvider);
 
   return GoRouter(
     initialLocation: '/entry',
@@ -43,66 +42,76 @@ GoRouter createAppRouter(WidgetRef ref) {
       final isEntry = location == '/entry';
       final isAuth = location == '/auth';
       final isOnboarding = location == '/onboarding';
+      final isUptime = location == '/uptime';
+      final isSettings = location == '/settings';
       final onboardingIntent = state.uri.queryParameters['intent'];
       final allowOnboarding = onboardingIntent == 'entry';
-      final isSignedOut = authSession.status == AuthStatus.signedOut;
+      final access = appAccessAsync.valueOrNull;
 
-      if (authSession.isLoading && !isEntry) {
+      if (appAccessAsync.isLoading || access == null) {
+        if (isEntry || isAuth) {
+          return null;
+        }
         return '/entry';
       }
 
-      if (isSignedOut && !isEntry && !isAuth) {
-        return '/entry';
+      switch (access.stage) {
+        case AppAccessStage.restoringSession:
+        case AppAccessStage.checkingBackend:
+        case AppAccessStage.checkingWorkspace:
+          if (!isEntry && !isUptime && !isSettings) {
+            return '/entry';
+          }
+          return null;
+        case AppAccessStage.signedOut:
+        case AppAccessStage.bootstrapUnauthorized:
+          if (!isEntry && !isAuth) {
+            return '/entry';
+          }
+          return null;
+        case AppAccessStage.demo:
+          if (isAuth) {
+            return '/entry';
+          }
+          if (isOnboarding && !allowOnboarding) {
+            return '/entry';
+          }
+          if (access.bootstrap?.shouldOnboard == true && !isEntry && !isOnboarding) {
+            return '/entry';
+          }
+          if (access.bootstrap?.shouldOnboard == false && isOnboarding) {
+            return '/entry';
+          }
+          return null;
+        case AppAccessStage.apiUnavailable:
+        case AppAccessStage.bootstrapFailed:
+          if (isAuth || isOnboarding) {
+            return '/entry';
+          }
+          if (!isEntry && !isUptime && !isSettings) {
+            return '/uptime';
+          }
+          return null;
+        case AppAccessStage.needsOnboarding:
+          if (isAuth) {
+            return '/entry';
+          }
+          if (isOnboarding && !allowOnboarding) {
+            return '/entry';
+          }
+          if (!isEntry && !isOnboarding) {
+            return '/entry';
+          }
+          return null;
+        case AppAccessStage.ready:
+          if (isAuth) {
+            return '/entry';
+          }
+          if (isOnboarding) {
+            return '/entry';
+          }
+          return null;
       }
-
-      if (authSession.isDemo) {
-        if (isAuth) {
-          return '/entry';
-        }
-
-        if (isOnboarding && !allowOnboarding) {
-          return '/entry';
-        }
-
-        if (!authSession.onboardingComplete && !isEntry && !isOnboarding) {
-          return '/entry';
-        }
-
-        if (authSession.onboardingComplete && isOnboarding) {
-          return '/entry';
-        }
-
-        return null;
-      }
-
-      if (bootstrap.isLoading && !isEntry) {
-        return '/entry';
-      }
-
-      if (bootstrap.hasError && !isEntry && !(isOnboarding && allowOnboarding)) {
-        return '/entry';
-      }
-
-      final data = bootstrap.valueOrNull;
-      if (authSession.isAuthenticated && data != null) {
-        if (isAuth) {
-          return '/entry';
-        }
-
-        if (isOnboarding && !allowOnboarding) {
-          return '/entry';
-        }
-
-        if (data.shouldOnboard && !isEntry && !isOnboarding) {
-          return '/entry';
-        }
-
-        if (!data.shouldOnboard && isOnboarding) {
-          return '/entry';
-        }
-      }
-
-      return null;
     },
     routes: [
       GoRoute(path: '/', redirect: (context, state) => '/entry'),

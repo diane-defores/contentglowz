@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/app_config.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/drip_plan.dart';
+import '../data/models/app_access_state.dart';
 import '../data/models/app_bootstrap.dart';
 import '../data/models/app_settings.dart';
 import '../data/models/auth_session.dart';
@@ -109,6 +110,11 @@ final clerkAuthServiceProvider = Provider<ClerkAuthService?>((ref) {
 final authSessionProvider =
     StateNotifierProvider<AuthSessionNotifier, AuthSession>(
       (ref) => AuthSessionNotifier(ref),
+    );
+
+final appAccessStateProvider =
+    AsyncNotifierProvider<AppAccessNotifier, AppAccessState>(
+      AppAccessNotifier.new,
     );
 
 class AuthSessionNotifier extends StateNotifier<AuthSession> {
@@ -318,20 +324,101 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
   }
 }
 
-final appBootstrapProvider = FutureProvider<AppBootstrap?>((ref) async {
-  final authSession = ref.watch(authSessionProvider);
-  if (authSession.isLoading || authSession.status == AuthStatus.signedOut) {
-    return null;
+class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
+  @override
+  Future<AppAccessState> build() async {
+    ref.watch(apiBaseUrlProvider);
+    final authSession = ref.watch(authSessionProvider);
+    return _resolve(authSession);
   }
 
-  if (authSession.isDemo || authSession.bearerToken == null) {
-    return AppBootstrap.demo(
-      onboardingComplete: authSession.onboardingComplete,
+  Future<void> refresh() async {
+    final authSession = ref.read(authSessionProvider);
+    state = await AsyncValue.guard(() => _resolve(authSession));
+  }
+
+  Future<AppAccessState> _resolve(AuthSession authSession) async {
+    if (authSession.isLoading) {
+      return const AppAccessState(stage: AppAccessStage.restoringSession);
+    }
+
+    if (authSession.status == AuthStatus.signedOut) {
+      return const AppAccessState(stage: AppAccessStage.signedOut);
+    }
+
+    if (authSession.isDemo || authSession.bearerToken == null) {
+      return AppAccessState(
+        stage: AppAccessStage.demo,
+        bootstrap: AppBootstrap.demo(
+          onboardingComplete: authSession.onboardingComplete,
+        ),
+        checkedAt: DateTime.now(),
+      );
+    }
+
+    final api = ref.read(apiServiceProvider);
+    state = AsyncData(
+      AppAccessState(
+        stage: AppAccessStage.checkingBackend,
+        checkedAt: DateTime.now(),
+      ),
     );
-  }
 
-  final api = ref.watch(apiServiceProvider);
-  return api.fetchBootstrap();
+    final health = await api.healthCheck();
+    final checkedAt = DateTime.now();
+    final backendReachable =
+        health['status'] == 'ok' || health['status'] == 'healthy';
+
+    if (!backendReachable) {
+      return AppAccessState(
+        stage: AppAccessStage.apiUnavailable,
+        backendHealth: health,
+        message: 'FastAPI health check did not return a healthy status.',
+        checkedAt: checkedAt,
+      );
+    }
+
+    state = AsyncData(
+      AppAccessState(
+        stage: AppAccessStage.checkingWorkspace,
+        backendHealth: health,
+        checkedAt: checkedAt,
+      ),
+    );
+
+    try {
+      final bootstrap = await api.fetchBootstrap();
+      return AppAccessState(
+        stage: bootstrap.shouldOnboard
+            ? AppAccessStage.needsOnboarding
+            : AppAccessStage.ready,
+        backendHealth: health,
+        bootstrap: bootstrap,
+        checkedAt: DateTime.now(),
+      );
+    } on ApiException catch (error) {
+      return AppAccessState(
+        stage: error.isUnauthorized
+            ? AppAccessStage.bootstrapUnauthorized
+            : AppAccessStage.bootstrapFailed,
+        backendHealth: health,
+        statusCode: error.statusCode,
+        message: error.message,
+        checkedAt: DateTime.now(),
+      );
+    } catch (error) {
+      return AppAccessState(
+        stage: AppAccessStage.bootstrapFailed,
+        backendHealth: health,
+        message: error.toString(),
+        checkedAt: DateTime.now(),
+      );
+    }
+  }
+}
+
+final appBootstrapProvider = Provider<AppBootstrap?>((ref) {
+  return ref.watch(appAccessStateProvider).valueOrNull?.bootstrap;
 });
 
 final projectsProvider = FutureProvider<List<Project>>((ref) async {
@@ -342,6 +429,10 @@ final projectsProvider = FutureProvider<List<Project>>((ref) async {
 final publishAccountsProvider = FutureProvider<List<PublishAccount>>((
   ref,
 ) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.isReady != true) {
+    return const <PublishAccount>[];
+  }
   final api = ref.watch(apiServiceProvider);
   return api.fetchPublishAccounts();
 });
@@ -566,6 +657,10 @@ final pendingCountProvider = Provider<int>((ref) {
 });
 
 final backendStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.backendHealth != null) {
+    return accessState!.backendHealth!;
+  }
   final api = ref.read(apiServiceProvider);
   return api.healthCheck();
 });
@@ -579,6 +674,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
   @override
   Future<AppSettings?> build() async {
     final authSession = ref.watch(authSessionProvider);
+    final accessState = ref.watch(appAccessStateProvider).valueOrNull;
     if (authSession.isLoading || authSession.status == AuthStatus.signedOut) {
       return null;
     }
@@ -590,6 +686,10 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
         theme: 'system',
         emailNotifications: true,
       );
+    }
+
+    if (accessState?.isReady != true) {
+      return null;
     }
 
     final api = ref.read(apiServiceProvider);

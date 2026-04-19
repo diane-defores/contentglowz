@@ -47,6 +47,15 @@ const _sections = [
 
 final _allItems = _sections.expand((s) => s.items).toList();
 
+const _degradedSections = [
+  _NavSection(label: 'System', items: [
+    _NavItem(icon: Icons.monitor_heart_rounded, label: 'Uptime', path: '/uptime'),
+    _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
+  ]),
+];
+
+final _allDegradedItems = _degradedSections.expand((s) => s.items).toList();
+
 /// Breakpoint: above this width we show side rail instead of bottom nav.
 const _desktopBreakpoint = 800.0;
 
@@ -57,17 +66,25 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pendingCount = ref.watch(pendingCountProvider);
+    final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
+    final degradedMode = appAccess?.isDegraded == true;
+    final pendingCount = degradedMode ? 0 : ref.watch(pendingCountProvider);
     final currentRoute = GoRouterState.of(context).uri.path;
-    final selectedPath = _selectedPath(currentRoute);
+    final selectedPath = _selectedPath(
+      currentRoute,
+      degradedMode: degradedMode,
+    );
     final colorScheme = Theme.of(context).colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= _desktopBreakpoint;
+    final sections = degradedMode ? _degradedSections : _sections;
+    final allItems = degradedMode ? _allDegradedItems : _allItems;
 
     if (isWide) {
       return Scaffold(
         body: Row(
           children: [
             _SideRail(
+              sections: sections,
               selectedPath: selectedPath,
               pendingCount: pendingCount,
               colorScheme: colorScheme,
@@ -83,6 +100,9 @@ class AppShell extends ConsumerWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: _BottomNav(
+        sections: sections,
+        items: allItems,
+        degradedMode: degradedMode,
         selectedPath: selectedPath,
         pendingCount: pendingCount,
         colorScheme: colorScheme,
@@ -91,11 +111,12 @@ class AppShell extends ConsumerWidget {
     );
   }
 
-  String _selectedPath(String route) {
-    for (final item in _allItems) {
+  String _selectedPath(String route, {required bool degradedMode}) {
+    final items = degradedMode ? _allDegradedItems : _allItems;
+    for (final item in items) {
       if (route.startsWith(item.path)) return item.path;
     }
-    return '/feed';
+    return degradedMode ? '/uptime' : '/feed';
   }
 }
 
@@ -103,12 +124,14 @@ class AppShell extends ConsumerWidget {
 
 class _SideRail extends StatelessWidget {
   const _SideRail({
+    required this.sections,
     required this.selectedPath,
     required this.pendingCount,
     required this.colorScheme,
     required this.onNavigate,
   });
 
+  final List<_NavSection> sections;
   final String selectedPath;
   final int pendingCount;
   final ColorScheme colorScheme;
@@ -146,7 +169,7 @@ class _SideRail extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 children: [
-                  for (final section in _sections) ...[
+                  for (final section in sections) ...[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 16, 12, 6),
                       child: Text(
@@ -250,12 +273,18 @@ const _mobileTabPaths = ['/feed', '/calendar', '/history', '/drip'];
 
 class _BottomNav extends StatelessWidget {
   const _BottomNav({
+    required this.sections,
+    required this.items,
+    required this.degradedMode,
     required this.selectedPath,
     required this.pendingCount,
     required this.colorScheme,
     required this.onNavigate,
   });
 
+  final List<_NavSection> sections;
+  final List<_NavItem> items;
+  final bool degradedMode;
   final String selectedPath;
   final int pendingCount;
   final ColorScheme colorScheme;
@@ -263,9 +292,11 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryItems =
-        _allItems.where((i) => _mobileTabPaths.contains(i.path)).toList();
+    final primaryItems = degradedMode
+        ? items
+        : items.where((i) => _mobileTabPaths.contains(i.path)).toList();
     final isMoreSelected = !_mobileTabPaths.contains(selectedPath);
+    final showMoreTab = !degradedMode;
 
     return Container(
       decoration: BoxDecoration(
@@ -293,15 +324,16 @@ class _BottomNav extends StatelessWidget {
                   onTap: () => onNavigate(item.path),
                 ),
               ),
-            Expanded(
-              child: _NavTab(
-                icon: Icons.grid_view_rounded,
-                label: 'More',
-                isSelected: isMoreSelected,
-                colorScheme: colorScheme,
-                onTap: () => _showMoreSheet(context),
+            if (showMoreTab)
+              Expanded(
+                child: _NavTab(
+                  icon: Icons.grid_view_rounded,
+                  label: 'More',
+                  isSelected: isMoreSelected,
+                  colorScheme: colorScheme,
+                  onTap: () => _showMoreSheet(context),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -330,7 +362,7 @@ class _BottomNav extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              for (final section in _sections)
+              for (final section in sections)
                 ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),

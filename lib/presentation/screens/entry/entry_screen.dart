@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_config.dart';
-import '../../../data/services/api_service.dart';
+import '../../../data/models/app_access_state.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -65,7 +65,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     return host == Uri.base.host ? 'yes' : 'no (expected $host)';
   }
 
-  List<String> _entryDiagnosticsLines(AuthSession authSession) {
+  List<String> _entryDiagnosticsLines(
+    AuthSession authSession,
+    AppAccessState? accessState,
+  ) {
     return [
       'ContentFlow entry diagnostics',
       'Version: $_diagnosticsVersion',
@@ -89,34 +92,25 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Session email: ${authSession.email ?? 'none'}',
       'Bearer token: ${_maskToken(authSession.bearerToken)}',
       'Onboarding complete: ${authSession.onboardingComplete ? 'yes' : 'no'}',
+      'Access stage: ${accessState?.diagnosticsLabel ?? 'loading'}',
+      'Backend reachable: ${accessState?.backendReachable == true ? 'yes' : 'no'}',
+      'Backend status: ${accessState?.backendStatusLabel ?? 'unknown'}',
+      'Bootstrap status: ${accessState?.bootstrapStatusLabel ?? 'not_started'}',
+      'Last API status code: ${accessState?.statusCode?.toString() ?? 'none'}',
+      'Last API message: ${accessState?.message ?? 'none'}',
       'Primary web sign-in route: ${AppConfig.appWebUrl}/sign-in',
       'Primary web callback route: ${AppConfig.appWebUrl}/sso-callback',
     ];
   }
 
-  ApiException? _extractApiException(Object? error) {
-    if (error is ApiException) {
-      return error;
-    }
-    return null;
-  }
-
-  String _bootstrapErrorSummary(Object? error) {
-    final apiError = _extractApiException(error);
-    if (apiError != null) {
-      final parts = <String>[
-        if (apiError.statusCode != null) 'status ${apiError.statusCode}',
-        if (apiError.path != null && apiError.path!.isNotEmpty) apiError.path!,
-        apiError.message,
-      ];
-      return parts.join(' • ');
-    }
-    return error?.toString() ?? 'unknown';
-  }
-
-  Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
+  Future<void> _copyEntryDiagnostics(
+    AuthSession authSession,
+    AppAccessState? accessState,
+  ) async {
     await Clipboard.setData(
-      ClipboardData(text: _entryDiagnosticsLines(authSession).join('\n')),
+      ClipboardData(
+        text: _entryDiagnosticsLines(authSession, accessState).join('\n'),
+      ),
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -124,8 +118,11 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     );
   }
 
-  Widget _buildWebRuntimeDiagnostics(AuthSession authSession) {
-    final lines = _entryDiagnosticsLines(authSession);
+  Widget _buildWebRuntimeDiagnostics(
+    AuthSession authSession,
+    AppAccessState? accessState,
+  ) {
+    final lines = _entryDiagnosticsLines(authSession, accessState);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 16),
@@ -151,7 +148,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () => _copyEntryDiagnostics(authSession),
+                onPressed: () => _copyEntryDiagnostics(authSession, accessState),
                 child: const Text('Copy'),
               ),
             ],
@@ -173,8 +170,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   @override
   Widget build(BuildContext context) {
     final authSession = ref.watch(authSessionProvider);
-    final bootstrap = ref.watch(appBootstrapProvider);
-    final stateCard = _buildStateCard(context, ref, authSession, bootstrap);
+    final appAccessAsync = ref.watch(appAccessStateProvider);
+    final stateCard = _buildStateCard(
+      context,
+      ref,
+      authSession,
+      appAccessAsync,
+    );
 
     return Scaffold(
       body: Container(
@@ -652,9 +654,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     BuildContext context,
     WidgetRef ref,
     AuthSession authSession,
-    AsyncValue<dynamic> bootstrap,
+    AsyncValue<AppAccessState> appAccessAsync,
   ) {
-    if (authSession.isLoading) {
+    final accessState = appAccessAsync.valueOrNull;
+    final stage = accessState?.stage;
+
+    if (appAccessAsync.isLoading || stage == AppAccessStage.restoringSession) {
       return _card(
         eyebrow: 'Restoring session',
         title: 'Checking Clerk session',
@@ -669,44 +674,56 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ref.read(authSessionProvider.notifier).signInDemo();
           context.go('/onboarding?intent=entry');
         },
+        extra: kIsWeb
+            ? _buildWebRuntimeDiagnostics(authSession, accessState)
+            : null,
       );
     }
 
-    if (authSession.status == AuthStatus.authenticated && bootstrap.isLoading) {
+    if (stage == AppAccessStage.checkingBackend ||
+        stage == AppAccessStage.checkingWorkspace) {
       return _card(
         eyebrow: 'Checking session',
-        title: 'Loading your workspace',
-        description:
-            'The app is validating your session and loading your workspace from FastAPI.',
+        title: stage == AppAccessStage.checkingBackend
+            ? 'Checking backend availability'
+            : 'Loading your workspace',
+        description: stage == AppAccessStage.checkingBackend
+            ? 'Your Clerk session is active. The app is confirming that FastAPI is reachable before asking for workspace state.'
+            : 'The app is validating your session and loading your workspace from FastAPI.',
         icon: Icons.sync_rounded,
         accent: AppTheme.editColor,
         primaryLabel: 'Please wait',
         onPrimary: null,
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
+        extra: kIsWeb
+            ? _buildWebRuntimeDiagnostics(authSession, accessState)
+            : null,
       );
     }
 
-    if (authSession.status == AuthStatus.authenticated && bootstrap.hasError) {
-      final apiError = _extractApiException(bootstrap.error);
-      final isUnauthorized = apiError?.isUnauthorized == true;
+    if (stage == AppAccessStage.apiUnavailable ||
+        stage == AppAccessStage.bootstrapFailed ||
+        stage == AppAccessStage.bootstrapUnauthorized) {
+      final isUnauthorized = stage == AppAccessStage.bootstrapUnauthorized;
       final title = isUnauthorized
           ? 'Reconnect your account'
-          : 'Continue to workspace setup';
+          : 'FastAPI is unavailable';
       final description = isUnauthorized
           ? 'Your Clerk session reached the app, but FastAPI rejected the bootstrap request. Sign in again to refresh the bearer token.'
-          : 'Your Clerk session is active, but FastAPI did not return a usable workspace bootstrap. Continue to onboarding to create or recover the workspace instead of being blocked on entry.';
+          : 'Your Clerk session is active, but ContentFlow cannot load product state from FastAPI right now. Use the degraded mode tools to inspect backend status, retry, or wait for the API to recover.';
 
       return _card(
-        eyebrow: 'Session error',
+        eyebrow: stage == AppAccessStage.apiUnavailable
+            ? 'API down'
+            : 'Session error',
         title: title,
         description: description,
         icon: Icons.warning_amber_rounded,
         accent: Colors.orange,
         primaryLabel: isUnauthorized
             ? (kIsWeb ? 'Continue with Google' : 'Sign In Again')
-            : 'Continue Onboarding',
+            : 'Open System Status',
         onPrimary: () {
           if (isUnauthorized) {
             ref.read(authSessionProvider.notifier).signOut();
@@ -717,9 +734,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             }
             return;
           }
-          context.go('/onboarding?intent=entry');
+          context.go('/uptime');
         },
-        secondaryLabel: isUnauthorized ? 'Open Demo Workspace' : 'Sign out',
+        secondaryLabel: isUnauthorized ? 'Open Demo Workspace' : 'Retry API',
         onSecondary: () {
           if (isUnauthorized) {
             ref.read(authSessionProvider.notifier).signInDemo();
@@ -730,19 +747,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             );
             return;
           }
-          ref.read(authSessionProvider.notifier).signOut();
+          ref.read(appAccessStateProvider.notifier).refresh();
         },
-        caption: 'Bootstrap error: ${_bootstrapErrorSummary(bootstrap.error)}',
-        extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
+        caption: 'Backend detail: ${accessState?.message ?? 'unknown'}',
+        extra: kIsWeb
+            ? _buildWebRuntimeDiagnostics(authSession, accessState)
+            : null,
       );
     }
 
-    final bootstrapData = bootstrap.valueOrNull;
-    final onboardingDone = authSession.isAuthenticated
-        ? (bootstrapData?.shouldOnboard == false)
-        : authSession.onboardingComplete;
-
-    if (authSession.isSignedIn && onboardingDone) {
+    if (stage == AppAccessStage.ready) {
       return _card(
         eyebrow: 'Session active',
         title: 'Welcome back to ContentFlow',
@@ -754,10 +768,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/feed'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+        extra: kIsWeb
+            ? _buildWebRuntimeDiagnostics(authSession, accessState)
+            : null,
       );
     }
 
-    if (authSession.isSignedIn && !onboardingDone) {
+    if (stage == AppAccessStage.needsOnboarding || stage == AppAccessStage.demo) {
       return _card(
         eyebrow: 'Setup required',
         title: 'Finish onboarding before entering the app',
@@ -769,6 +786,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/onboarding?intent=entry'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
+        extra: kIsWeb
+            ? _buildWebRuntimeDiagnostics(authSession, accessState)
+            : null,
       );
     }
 
@@ -796,7 +816,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       caption: kIsWeb
           ? 'The stable path is now ClerkJS on `app.contentflow.winflowz.com/sign-in`, with a standard OAuth callback on `/sso-callback`.'
           : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The old Flutter beta auth path now lives only in the legacy branch.',
-      extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
+      extra: kIsWeb
+          ? _buildWebRuntimeDiagnostics(authSession, accessState)
+          : null,
     );
   }
 
