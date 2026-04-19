@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/models/app_access_state.dart';
 import '../../providers/providers.dart';
 
 class _NavItem {
@@ -91,14 +92,24 @@ class AppShell extends ConsumerWidget {
               onNavigate: (path) => context.go(path),
             ),
             VerticalDivider(width: 1, color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-            Expanded(child: child),
+            Expanded(
+              child: _ShellContent(
+                degradedMode: degradedMode,
+                appAccess: appAccess,
+                child: child,
+              ),
+            ),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: child,
+      body: _ShellContent(
+        degradedMode: degradedMode,
+        appAccess: appAccess,
+        child: child,
+      ),
       bottomNavigationBar: _BottomNav(
         sections: sections,
         items: allItems,
@@ -117,6 +128,77 @@ class AppShell extends ConsumerWidget {
       if (route.startsWith(item.path)) return item.path;
     }
     return degradedMode ? '/uptime' : '/feed';
+  }
+}
+
+class _ShellContent extends StatelessWidget {
+  const _ShellContent({
+    required this.degradedMode,
+    required this.appAccess,
+    required this.child,
+  });
+
+  final bool degradedMode;
+  final AppAccessState? appAccess;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!degradedMode) {
+      return child;
+    }
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final message = switch (appAccess?.stage) {
+      AppAccessStage.apiUnavailable =>
+        'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
+      AppAccessStage.bootstrapFailed =>
+        'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
+      _ =>
+        'ContentFlow is running in degraded mode while backend access is limited.',
+    };
+
+    return Column(
+      children: [
+        Material(
+          color: colorScheme.errorContainer,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: colorScheme.onErrorContainer,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: TextStyle(
+                        color: colorScheme.onErrorContainer,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () => context.go('/uptime'),
+                    child: Text(
+                      'Open Uptime',
+                      style: TextStyle(color: colorScheme.onErrorContainer),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(child: child),
+      ],
+    );
   }
 }
 
