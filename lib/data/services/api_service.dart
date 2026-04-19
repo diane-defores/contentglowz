@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 
 import '../../core/app_diagnostics.dart';
+import '../../core/project_onboarding_validation.dart';
 import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
 import '../models/app_bootstrap.dart';
@@ -59,9 +60,7 @@ class ApiService {
         baseUrl: baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 60),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
 
@@ -96,8 +95,7 @@ class ApiService {
               'query': options.queryParameters.isEmpty
                   ? 'none'
                   : options.queryParameters,
-              'hasAuthorization':
-                  options.headers.containsKey('Authorization'),
+              'hasAuthorization': options.headers.containsKey('Authorization'),
             },
           );
           handler.next(options);
@@ -194,11 +192,14 @@ class ApiService {
     }
   }
 
-  Future<void> onboardProject(String githubUrl, String name) async {
+  Future<void> onboardProject(String? githubUrl, String name) async {
     try {
       await _dio.post(
         '/api/projects/onboard',
-        data: {'github_url': githubUrl, 'name': name},
+        data: _compactMap({
+          'github_url': normalizeOptionalText(githubUrl),
+          'name': name.trim(),
+        }),
       );
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -330,7 +331,10 @@ class ApiService {
         );
       }
       return data
-          .map((json) => ContentStatusChange.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) =>
+                ContentStatusChange.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -352,7 +356,9 @@ class ApiService {
         );
       }
       return data
-          .map((json) => ContentEditEvent.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => ContentEditEvent.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -382,10 +388,7 @@ class ApiService {
     try {
       await _dio.put(
         '/api/status/content/$id/body',
-        data: _compactMap({
-          'body': body,
-          'edit_note': editNote,
-        }),
+        data: _compactMap({'body': body, 'edit_note': editNote}),
       );
       return true;
     } on DioException catch (error) {
@@ -405,10 +408,7 @@ class ApiService {
     try {
       await _dio.post(
         '/api/status/content/$id/transition',
-        data: _compactMap({
-          'to_status': toStatus,
-          'reason': reason,
-        }),
+        data: _compactMap({'to_status': toStatus, 'reason': reason}),
       );
     } on DioException catch (error) {
       throw _mapDioException(error);
@@ -832,10 +832,7 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/feedback/audio/upload-url',
-        data: {
-          'mimeType': mimeType,
-          'fileName': fileName,
-        },
+        data: {'mimeType': mimeType, 'fileName': fileName},
       );
       return FeedbackUploadTarget.fromJson(_asMap(response.data));
     } on DioException catch (error) {
@@ -899,14 +896,12 @@ class ApiService {
     try {
       final response = await _dio.get(
         '/api/feedback/admin',
-        queryParameters: _compactMap({
-          'status': status,
-          'type': type,
-        }),
+        queryParameters: _compactMap({'status': status, 'type': type}),
       );
       final data = response.data;
-      final items =
-          data is List ? data : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
+      final items = data is List
+          ? data
+          : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
       if (items is! List) {
         throw const ApiException(
           ApiErrorType.invalidResponse,
@@ -1354,8 +1349,9 @@ class ApiService {
     final data = error.response?.data;
     if (data is Map<String, dynamic>) {
       final detail = data['detail'] ?? data['message'] ?? data['error'];
-      if (detail is String && detail.isNotEmpty) {
-        return detail;
+      final message = extractApiDetailMessage(detail);
+      if (message.isNotEmpty) {
+        return message;
       }
     }
 

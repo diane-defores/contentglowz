@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/project_onboarding_validation.dart';
 import '../../../data/demo/demo_seed.dart';
 import '../../../data/models/project.dart';
 import '../../../providers/providers.dart';
@@ -56,6 +57,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  String get _projectName => _projectNameController.text.trim();
+
+  String get _repoUrl => _repoUrlController.text.trim();
+
+  bool get _hasValidProjectStep =>
+      _projectName.isNotEmpty &&
+      (_isDemoMode || isValidGithubRepositoryUrl(_repoUrl));
+
+  String? get _repoUrlErrorText {
+    if (_isDemoMode ||
+        _repoUrl.isEmpty ||
+        isValidGithubRepositoryUrl(_repoUrl)) {
+      return null;
+    }
+    return 'Enter a valid GitHub repository URL.';
   }
 
   @override
@@ -121,20 +139,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        if (_isDemoMode) ...[
-          _buildDemoBanner(),
-          const SizedBox(height: 24),
-        ],
+        if (_isDemoMode) ...[_buildDemoBanner(), const SizedBox(height: 24)],
         const Text(
           'Connect your project',
           style: TextStyle(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Link your GitHub repository so the AI can analyze your codebase and generate relevant content.',
           style: TextStyle(
-              fontSize: 15, color: Colors.white.withAlpha(150), height: 1.5),
+            fontSize: 15,
+            color: Colors.white.withAlpha(150),
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 32),
         TextField(
@@ -150,16 +171,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         TextField(
           controller: _repoUrlController,
           readOnly: _isDemoMode,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'GitHub URL',
             hintText: 'https://github.com/user/repo',
-            prefixIcon: Icon(Icons.link),
+            prefixIcon: const Icon(Icons.link),
+            errorText: _repoUrlErrorText,
           ),
           keyboardType: TextInputType.url,
         ),
         const SizedBox(height: 32),
         FilledButton(
-          onPressed: _projectNameController.text.isNotEmpty ? _nextPage : null,
+          onPressed: _hasValidProjectStep ? _nextPage : null,
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: AppTheme.approveColor,
@@ -213,13 +235,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const Text(
           'What content do you want?',
           style: TextStyle(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'Choose the types of content the AI should generate for you, and how often.',
           style: TextStyle(
-              fontSize: 15, color: Colors.white.withAlpha(150), height: 1.5),
+            fontSize: 15,
+            color: Colors.white.withAlpha(150),
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 24),
         ...List.generate(_contentTypes.length, (i) {
@@ -228,8 +256,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         }),
         const SizedBox(height: 24),
         FilledButton(
-          onPressed:
-              _contentTypes.any((c) => c.enabled) ? _nextPage : null,
+          onPressed: _contentTypes.any((c) => c.enabled) ? _nextPage : null,
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             backgroundColor: AppTheme.approveColor,
@@ -247,9 +274,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: ct.enabled
-            ? color.withAlpha(15)
-            : const Color(0xFF1A1A2E),
+        color: ct.enabled ? color.withAlpha(15) : const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: ct.enabled ? color.withAlpha(80) : Colors.white.withAlpha(15),
@@ -259,21 +284,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           // Toggle row
           ListTile(
-            leading: Icon(iconData,
-                color: ct.enabled ? color : Colors.white.withAlpha(80)),
-            title: Text(ct.label,
-                style: TextStyle(
-                    color: ct.enabled ? Colors.white : Colors.white54)),
+            leading: Icon(
+              iconData,
+              color: ct.enabled ? color : Colors.white.withAlpha(80),
+            ),
+            title: Text(
+              ct.label,
+              style: TextStyle(
+                color: ct.enabled ? Colors.white : Colors.white54,
+              ),
+            ),
             trailing: Switch(
               value: ct.enabled,
               activeTrackColor: color,
               onChanged: _isDemoMode
                   ? null
                   : (val) {
-                setState(() {
-                  _contentTypes[index] = ct.copyWith(enabled: val);
-                });
-              },
+                      setState(() {
+                        _contentTypes[index] = ct.copyWith(enabled: val);
+                      });
+                    },
             ),
           ),
           // Frequency slider (if enabled)
@@ -282,11 +312,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Row(
                 children: [
-                  Text('${ct.frequencyPerWeek}/week',
-                      style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14)),
+                  Text(
+                    '${ct.frequencyPerWeek}/week',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
                   Expanded(
                     child: Slider(
                       value: ct.frequencyPerWeek.toDouble(),
@@ -297,11 +330,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onChanged: _isDemoMode
                           ? null
                           : (val) {
-                        setState(() {
-                          _contentTypes[index] =
-                              ct.copyWith(frequencyPerWeek: val.round());
-                        });
-                      },
+                              setState(() {
+                                _contentTypes[index] = ct.copyWith(
+                                  frequencyPerWeek: val.round(),
+                                );
+                              });
+                            },
                     ),
                   ),
                 ],
@@ -316,8 +350,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildSummaryPage() {
     final enabled = _contentTypes.where((c) => c.enabled).toList();
-    final totalPerWeek =
-        enabled.fold<int>(0, (sum, c) => sum + c.frequencyPerWeek);
+    final totalPerWeek = enabled.fold<int>(
+      0,
+      (sum, c) => sum + c.frequencyPerWeek,
+    );
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -325,7 +361,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const Text(
           'Ready to go!',
           style: TextStyle(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -333,7 +372,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ? 'Here is the fixed demo workspace that will be served to every demo user.'
               : 'Here\'s your content plan. You can change it anytime in Settings.',
           style: TextStyle(
-              fontSize: 15, color: Colors.white.withAlpha(150), height: 1.5),
+            fontSize: 15,
+            color: Colors.white.withAlpha(150),
+            height: 1.5,
+          ),
         ),
         const SizedBox(height: 24),
         // Project card
@@ -345,8 +387,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           subtitle: _repoUrlController.text.isEmpty
               ? 'No repo linked'
               : _isDemoMode
-                  ? '${_repoUrlController.text}\nLive demo: ${DemoSeed.siteUrl}'
-                  : _repoUrlController.text,
+              ? '${_repoUrlController.text}\nLive demo: ${DemoSeed.siteUrl}'
+              : _repoUrlController.text,
         ),
         const SizedBox(height: 12),
         // Content summary
@@ -385,10 +427,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _summaryCard(
-      {required IconData icon,
-      required String title,
-      required String subtitle}) {
+  Widget _summaryCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -405,17 +448,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(subtitle,
-                    style: TextStyle(
-                        color: Colors.white.withAlpha(120),
-                        fontSize: 14,
-                        height: 1.5)),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(120),
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
               ],
             ),
           ),
@@ -425,13 +474,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   IconData _iconForType(String icon) => switch (icon) {
-        'article' => Icons.article_outlined,
-        'email' => Icons.email_outlined,
-        'chat' => Icons.chat_bubble_outline,
-        'videocam' => Icons.videocam_outlined,
-        'slow_motion_video' => Icons.slow_motion_video,
-        _ => Icons.auto_awesome,
-      };
+    'article' => Icons.article_outlined,
+    'email' => Icons.email_outlined,
+    'chat' => Icons.chat_bubble_outline,
+    'videocam' => Icons.videocam_outlined,
+    'slow_motion_video' => Icons.slow_motion_video,
+    _ => Icons.auto_awesome,
+  };
 
   void _nextPage() {
     _pageController.nextPage(
@@ -454,6 +503,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
 
+    if (!_hasValidProjectStep) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a valid GitHub repository URL to continue.'),
+        ),
+      );
+      _pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+
     final authSession = ref.read(authSessionProvider);
     if (!authSession.isAuthenticated) {
       if (!mounted) return;
@@ -469,10 +532,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _isFinishing = true);
     try {
       final api = ref.read(apiServiceProvider);
-      await api.onboardProject(
-        _repoUrlController.text.trim(),
-        _projectNameController.text.trim(),
-      );
+      await api.onboardProject(_repoUrl, _projectName);
       ref.invalidate(projectsProvider);
       ref.invalidate(appBootstrapProvider);
       await ref.read(appAccessStateProvider.notifier).refresh();
@@ -487,10 +547,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         scope: 'onboarding.create_workspace',
         error: error,
         stackTrace: stackTrace,
-        contextData: {
-          'projectName': _projectNameController.text.trim(),
-          'repoUrl': _repoUrlController.text.trim(),
-        },
+        contextData: {'projectName': _projectName, 'repoUrl': _repoUrl},
       );
     } finally {
       if (mounted) {
