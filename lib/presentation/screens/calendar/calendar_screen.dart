@@ -236,6 +236,18 @@ class _CalendarBody extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+            if (item.reviewActorDisplay != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Reviewer: ${item.reviewActorDisplay}',
+                style: TextStyle(
+                  color: Colors.white.withAlpha(115),
+                  fontSize: 10,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
         ),
       ),

@@ -41,6 +41,11 @@ class ContentItem {
   final int priority;
   final List<String> tags;
   final String? sourceRobot;
+  final String? reviewedBy;
+  final String? reviewActorType;
+  final String? reviewActorId;
+  final String? reviewActorLabel;
+  final Map<String, dynamic>? reviewActorMetadata;
 
   const ContentItem({
     required this.id,
@@ -58,6 +63,11 @@ class ContentItem {
     this.priority = 3,
     this.tags = const [],
     this.sourceRobot,
+    this.reviewedBy,
+    this.reviewActorType,
+    this.reviewActorId,
+    this.reviewActorLabel,
+    this.reviewActorMetadata,
   });
 
   ContentItem copyWith({
@@ -73,6 +83,11 @@ class ContentItem {
     Map<String, dynamic>? metadata,
     DateTime? createdAt,
     DateTime? publishedAt,
+    String? reviewedBy,
+    String? reviewActorType,
+    String? reviewActorId,
+    String? reviewActorLabel,
+    Map<String, dynamic>? reviewActorMetadata,
   }) {
     return ContentItem(
       id: id ?? this.id,
@@ -90,6 +105,11 @@ class ContentItem {
       priority: priority,
       tags: tags,
       sourceRobot: sourceRobot,
+      reviewedBy: reviewedBy ?? this.reviewedBy,
+      reviewActorType: reviewActorType ?? this.reviewActorType,
+      reviewActorId: reviewActorId ?? this.reviewActorId,
+      reviewActorLabel: reviewActorLabel ?? this.reviewActorLabel,
+      reviewActorMetadata: reviewActorMetadata ?? this.reviewActorMetadata,
     );
   }
 
@@ -123,6 +143,11 @@ class ContentItem {
               .toList() ??
           [],
       sourceRobot: json['source_robot'] as String?,
+      reviewedBy: json['reviewed_by'] as String?,
+      reviewActorType: json['review_actor_type'] as String?,
+      reviewActorId: json['review_actor_id'] as String?,
+      reviewActorLabel: json['review_actor_label'] as String?,
+      reviewActorMetadata: json['review_actor_metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -143,6 +168,11 @@ class ContentItem {
         'priority': priority,
         'tags': tags,
         'source_robot': sourceRobot,
+        'reviewed_by': reviewedBy,
+        'review_actor_type': reviewActorType,
+        'review_actor_id': reviewActorId,
+        'review_actor_label': reviewActorLabel,
+        'review_actor_metadata': reviewActorMetadata,
       };
 
   String get typeLabel => switch (type) {
@@ -156,6 +186,9 @@ class ContentItem {
 
   String get channelLabels =>
       channels.map((c) => c.name).join(', ');
+
+  String? get reviewActorDisplay =>
+      reviewActorLabel ?? reviewActorId ?? reviewedBy;
 
   // ── Format-specific metadata helpers ──
 

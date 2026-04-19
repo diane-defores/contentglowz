@@ -6,6 +6,7 @@ import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
+import '../models/content_audit.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
 import '../models/idea.dart';
@@ -260,6 +261,61 @@ class ApiService {
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
+  }
+
+  Future<List<ContentStatusChange>> fetchContentStatusHistory(String id) async {
+    if (allowDemoData) {
+      return const [];
+    }
+
+    try {
+      final response = await _dio.get('/api/status/content/$id/history');
+      final data = response.data;
+      if (data is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid content history response from FastAPI.',
+        );
+      }
+      return data
+          .map((json) => ContentStatusChange.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<ContentEditEvent>> fetchContentEditHistory(String id) async {
+    if (allowDemoData) {
+      return const [];
+    }
+
+    try {
+      final response = await _dio.get('/api/status/content/$id/body/history');
+      final data = response.data;
+      if (data is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid content edit history response from FastAPI.',
+        );
+      }
+      return data
+          .map((json) => ContentEditEvent.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ContentAuditTrail> fetchContentAuditTrail(String id) async {
+    final results = await Future.wait([
+      fetchContentStatusHistory(id),
+      fetchContentEditHistory(id),
+    ]);
+    return ContentAuditTrail(
+      transitions: results[0] as List<ContentStatusChange>,
+      edits: results[1] as List<ContentEditEvent>,
+    );
   }
 
   Future<bool> saveContentBody(

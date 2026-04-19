@@ -125,6 +125,31 @@ class _HistoryTile extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (item.reviewActorDisplay != null) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.verified_user_outlined,
+                        size: 13,
+                        color: Colors.white.withAlpha(90),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Reviewed by ${item.reviewActorDisplay}'
+                          '${item.reviewActorType == null ? '' : ' (${item.reviewActorType})'}',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(110),
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

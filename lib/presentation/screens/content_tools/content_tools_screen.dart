@@ -274,9 +274,42 @@ class _AuditTab extends ConsumerWidget {
               const SizedBox(width: 8),
               _AuditStat(label: 'Issues', value: '${issues.length}',
                   color: issues.isEmpty ? Colors.green : Colors.orange),
+              const SizedBox(width: 8),
+              _AuditStat(
+                label: 'Reviewed',
+                value: '${allContent.where((item) => item.reviewActorDisplay != null).length}',
+                color: Colors.blue,
+              ),
             ],
           ),
           const SizedBox(height: 16),
+
+          Text('Recent review actors', style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          ...allContent
+              .where((item) => item.reviewActorDisplay != null)
+              .take(6)
+              .map((item) => Card(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    child: ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.verified_user_outlined, size: 20),
+                      title: Text(
+                        item.title.isEmpty ? '(no title)' : item.title,
+                        style: const TextStyle(fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        '${item.reviewActorDisplay}${item.reviewActorType == null ? '' : ' • ${item.reviewActorType}'}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  )),
+          const SizedBox(height: 8),
 
           if (issues.isEmpty)
             Card(

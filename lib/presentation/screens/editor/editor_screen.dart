@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../data/models/content_audit.dart';
 import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -25,6 +28,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   ContentItem? _item;
   bool _bodyLoaded = false;
+  Future<ContentAuditTrail>? _auditFuture;
 
   @override
   void initState() {
@@ -47,11 +51,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       _bodyController.text = item.body;
       _hasChanges = false;
       _bodyLoaded = item.body.isNotEmpty;
+      _auditFuture = _loadAuditTrail(item.id);
       // If body is empty/preview only, fetch full body from API
       if (!_bodyLoaded) {
         _loadFullBody(item.id);
       }
     }
+  }
+
+  Future<ContentAuditTrail> _loadAuditTrail(String contentId) async {
+    final api = ref.read(apiServiceProvider);
+    return api.fetchContentAuditTrail(contentId);
   }
 
   Future<void> _loadFullBody(String contentId) async {
@@ -224,6 +234,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ),
         // Format-specific metadata bar
         if (_item != null) _buildFormatMetaBar(_item!),
+        if (_auditFuture != null) _buildAuditPanel(),
         const SizedBox(height: 12),
         const Divider(height: 1, color: Colors.white12),
         // Body content
@@ -371,6 +382,247 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(160)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAuditPanel() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: FutureBuilder<ContentAuditTrail>(
+        future: _auditFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _auditContainer(
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Loading audit trail...',
+                    style: TextStyle(color: Colors.white.withAlpha(150)),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return _auditContainer(
+              child: Text(
+                'Audit trail unavailable: ${snapshot.error}',
+                style: TextStyle(color: AppTheme.rejectColor),
+              ),
+            );
+          }
+
+          final trail = snapshot.data ?? const ContentAuditTrail(transitions: [], edits: []);
+          if (trail.isEmpty) {
+            return _auditContainer(
+              child: Text(
+                'No audit events yet.',
+                style: TextStyle(color: Colors.white.withAlpha(150)),
+              ),
+            );
+          }
+
+          return _auditContainer(
+            child: Theme(
+              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                title: const Text(
+                  'Audit Trail',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                subtitle: Text(
+                  '${trail.transitions.length} transitions • ${trail.edits.length} edits',
+                  style: TextStyle(color: Colors.white.withAlpha(130)),
+                ),
+                trailing: IconButton(
+                  tooltip: 'Copy audit trail',
+                  onPressed: () => _copyAuditTrail(trail),
+                  icon: Icon(Icons.copy_rounded, color: Colors.white.withAlpha(170)),
+                ),
+                children: [
+                  if (trail.transitions.isNotEmpty) ...[
+                    _auditSectionTitle('Status transitions'),
+                    ...trail.transitions.take(8).map(_buildTransitionTile),
+                  ],
+                  if (trail.edits.isNotEmpty) ...[
+                    _auditSectionTitle('Body edits'),
+                    ...trail.edits.take(8).map(_buildEditTile),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _auditContainer({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withAlpha(18)),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _auditSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: Colors.white.withAlpha(180),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransitionTile(ContentStatusChange event) {
+    return _auditEventTile(
+      icon: Icons.swap_horiz_rounded,
+      accent: const Color(0xFFFDAA5E),
+      title: '${event.fromStatus} → ${event.toStatus}',
+      actor: event.actor,
+      timestamp: event.timestamp,
+      note: event.reason,
+    );
+  }
+
+  Widget _buildEditTile(ContentEditEvent event) {
+    return _auditEventTile(
+      icon: Icons.edit_note_rounded,
+      accent: AppTheme.editColor,
+      title: 'v${event.previousVersion} → v${event.newVersion}',
+      actor: event.actor,
+      timestamp: event.createdAt,
+      note: event.editNote,
+    );
+  }
+
+  Widget _auditEventTile({
+    required IconData icon,
+    required Color accent,
+    required String title,
+    required AuditActor actor,
+    required DateTime timestamp,
+    String? note,
+  }) {
+    final date = DateFormat('MMM d, HH:mm').format(timestamp.toLocal());
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withAlpha(10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: accent.withAlpha(30),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 16, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${actor.actorLabel} (${actor.actorType}:${actor.actorId})',
+                      style: TextStyle(
+                        color: Colors.white.withAlpha(150),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                date,
+                style: TextStyle(
+                  color: Colors.white.withAlpha(120),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          if (note != null && note.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              note.trim(),
+              style: TextStyle(
+                color: Colors.white.withAlpha(165),
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _copyAuditTrail(ContentAuditTrail trail) async {
+    final lines = <String>[
+      'ContentFlow audit trail',
+      if (_item != null) 'content_id: ${_item!.id}',
+      if (_item != null) 'title: ${_item!.title}',
+      'transitions: ${trail.transitions.length}',
+      ...trail.transitions.map(
+        (event) =>
+            '- transition ${event.fromStatus} -> ${event.toStatus} | actor=${event.actor.actorType}:${event.actor.actorId} | label=${event.actor.actorLabel} | at=${event.timestamp.toIso8601String()}${event.reason == null ? '' : ' | reason=${event.reason}'}',
+      ),
+      'edits: ${trail.edits.length}',
+      ...trail.edits.map(
+        (event) =>
+            '- edit v${event.previousVersion} -> v${event.newVersion} | actor=${event.actor.actorType}:${event.actor.actorId} | label=${event.actor.actorLabel} | at=${event.createdAt.toIso8601String()}${event.editNote == null ? '' : ' | note=${event.editNote}'}',
+      ),
+    ];
+    await Clipboard.setData(ClipboardData(text: lines.join('\n')));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Audit trail copied'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
