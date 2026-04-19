@@ -110,6 +110,9 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isOnboarding) {
             return '/entry';
           }
+          if (isEntry) {
+            return '/feed';
+          }
           return null;
       }
     },

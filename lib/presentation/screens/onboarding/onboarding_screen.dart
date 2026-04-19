@@ -474,8 +474,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       ref.invalidate(projectsProvider);
       ref.invalidate(appBootstrapProvider);
+      await ref.read(appAccessStateProvider.notifier).refresh();
       if (!mounted) return;
-      context.go('/entry');
+      context.go('/feed');
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
