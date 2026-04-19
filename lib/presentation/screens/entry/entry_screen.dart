@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_config.dart';
+import '../../../data/services/api_service.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -91,6 +92,26 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       'Primary web sign-in route: ${AppConfig.appWebUrl}/sign-in',
       'Primary web callback route: ${AppConfig.appWebUrl}/sso-callback',
     ];
+  }
+
+  ApiException? _extractApiException(Object? error) {
+    if (error is ApiException) {
+      return error;
+    }
+    return null;
+  }
+
+  String _bootstrapErrorSummary(Object? error) {
+    final apiError = _extractApiException(error);
+    if (apiError != null) {
+      final parts = <String>[
+        if (apiError.statusCode != null) 'status ${apiError.statusCode}',
+        if (apiError.path != null && apiError.path!.isNotEmpty) apiError.path!,
+        apiError.message,
+      ];
+      return parts.join(' • ');
+    }
+    return error?.toString() ?? 'unknown';
   }
 
   Future<void> _copyEntryDiagnostics(AuthSession authSession) async {
@@ -668,31 +689,50 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     }
 
     if (authSession.status == AuthStatus.authenticated && bootstrap.hasError) {
+      final apiError = _extractApiException(bootstrap.error);
+      final isUnauthorized = apiError?.isUnauthorized == true;
+      final title = isUnauthorized
+          ? 'Reconnect your account'
+          : 'Continue to workspace setup';
+      final description = isUnauthorized
+          ? 'Your Clerk session reached the app, but FastAPI rejected the bootstrap request. Sign in again to refresh the bearer token.'
+          : 'Your Clerk session is active, but FastAPI did not return a usable workspace bootstrap. Continue to onboarding to create or recover the workspace instead of being blocked on entry.';
+
       return _card(
         eyebrow: 'Session error',
-        title: 'Reconnect your account',
-        description:
-            'Your Clerk session could not load the workspace bootstrap. Sign in again to refresh the bearer token.',
+        title: title,
+        description: description,
         icon: Icons.warning_amber_rounded,
         accent: Colors.orange,
-        primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In Again',
+        primaryLabel: isUnauthorized
+            ? (kIsWeb ? 'Continue with Google' : 'Sign In Again')
+            : 'Continue Onboarding',
         onPrimary: () {
-          ref.read(authSessionProvider.notifier).signOut();
-          if (kIsWeb) {
-            _openWebsiteSignIn();
-          } else {
-            context.go('/auth');
+          if (isUnauthorized) {
+            ref.read(authSessionProvider.notifier).signOut();
+            if (kIsWeb) {
+              _openWebsiteSignIn();
+            } else {
+              context.go('/auth');
+            }
+            return;
           }
+          context.go('/onboarding?intent=entry');
         },
-        secondaryLabel: 'Open Demo Workspace',
+        secondaryLabel: isUnauthorized ? 'Open Demo Workspace' : 'Sign out',
         onSecondary: () {
-          ref.read(authSessionProvider.notifier).signInDemo();
-          context.go(
-            authSession.onboardingComplete
-                ? '/feed'
-                : '/onboarding?intent=entry',
-          );
+          if (isUnauthorized) {
+            ref.read(authSessionProvider.notifier).signInDemo();
+            context.go(
+              authSession.onboardingComplete
+                  ? '/feed'
+                  : '/onboarding?intent=entry',
+            );
+            return;
+          }
+          ref.read(authSessionProvider.notifier).signOut();
         },
+        caption: 'Bootstrap error: ${_bootstrapErrorSummary(bootstrap.error)}',
         extra: kIsWeb ? _buildWebRuntimeDiagnostics(authSession) : null,
       );
     }

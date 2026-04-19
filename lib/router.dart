@@ -79,7 +79,7 @@ GoRouter createAppRouter(WidgetRef ref) {
         return '/entry';
       }
 
-      if (bootstrap.hasError && !isEntry) {
+      if (bootstrap.hasError && !isEntry && !(isOnboarding && allowOnboarding)) {
         return '/entry';
       }
 
