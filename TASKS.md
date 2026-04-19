@@ -64,6 +64,10 @@
 | ✅ | Auth web déportée sur ContentFlow Site + handoff sécurisé vers Flutter web (`/entry` + exchange backend) | ✅ done |
 | ✅ | Vérifier runtime Clerk réel en environnement Flutter | ✅ done |
 | ✅ | Remplacer l'auth web Flutter beta / handoff par ClerkJS officiel sur le domaine app (`/sign-in`, `/sso-callback`, Google direct) | ✅ done |
+| ✅ | Corriger le callback OAuth Clerk web pour finaliser la session sur `/sso-callback` avant le retour vers `/#/entry` | ✅ done |
+| ✅ | Bloquer la création workspace/onboarding tant qu'aucune session Clerk authentifiée n'est présente | ✅ done |
+| ✅ | Introduire un `AppAccessState` central pour séparer session Clerk, health FastAPI et bootstrap workspace | ✅ done |
+| ✅ | Ajouter un mode dégradé avec shell limité, diagnostics enrichis et warning global quand FastAPI tombe | ✅ done |
 
 ---
 

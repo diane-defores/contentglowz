@@ -6,8 +6,16 @@ The format is based on Keep a Changelog.
 
 ## [2026-04-19]
 
+### Added
+- Added a centralized app access state and degraded-mode shell so the Flutter app now distinguishes Clerk auth, FastAPI health, and workspace bootstrap instead of collapsing backend outages into fake sign-in failures.
+
 ### Changed
 - Stopped sending `edited_by` and `changed_by` from the Flutter client for content body saves and status transitions so the backend becomes the sole source of truth for audit attribution.
+- Reworked entry, routing, uptime, and settings flows around explicit backend availability checks, richer diagnostics, and degraded-mode messaging when FastAPI is unavailable.
+
+### Fixed
+- Fixed the Clerk web OAuth redirect flow so Google sign-in returns through `/sso-callback` before landing on `/#/entry`, allowing Clerk session finalization to complete.
+- Fixed onboarding/workspace creation guards so unauthenticated users can no longer create a workspace and backend outages no longer masquerade as broken Clerk sessions.
 
 ## [2026-04-13]
 
