@@ -358,7 +358,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
 
           const SizedBox(height: 20),
           OutlinedButton.icon(
-            onPressed: _checking ? null : _refreshAccessState,
+            onPressed: _checking ? null : _checkOnce,
             icon: const Icon(Icons.speed),
             label: Text(context.tr('Ping again')),
           ),
