@@ -28,6 +28,8 @@ ContentFlow is not sold as a fully automated content factory. It is framed as an
 ## Language
 
 - Primary language in app copy is English.
+- When writing in French, use informal address ("tu") consistently (never "vous").
+- When writing in French, always keep proper French accents.
 - Use short, explicit labels in navigation and status surfaces.
 - Prefer terms already used in product UI: **workspace**, **onboarding**, **feed**, **drip**, **sync queue**.
 
