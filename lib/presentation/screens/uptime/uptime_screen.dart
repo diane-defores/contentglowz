@@ -48,7 +48,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.refresh),
-            onPressed: _checking ? null : _refreshAccessState,
+            onPressed: _checking ? null : _checkAgain,
           ),
         ],
       ),
@@ -185,7 +185,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   compact: true,
                   showIcon: false,
                   copyLabel: context.tr('Copy diagnostics'),
-                  onRetry: _refreshAccessState,
+                  onRetry: () => _checkAgain(),
                 ),
               ],
             ),
@@ -292,7 +292,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
             runSpacing: 12,
             children: [
               FilledButton.icon(
-                onPressed: _checking ? null : _refreshAccessState,
+                onPressed: _checking ? null : _checkAgain,
                 icon: const Icon(Icons.sync_rounded),
                 label: Text(context.tr('Retry backend')),
               ),
@@ -400,9 +400,9 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
     setState(() => _checking = false);
   }
 
-  Future<void> _refreshAccessState() async {
+  Future<void> _checkAgain() async {
     await _checkOnce();
-    await ref.read(appAccessStateProvider.notifier).refresh();
+    ref.invalidate(backendStatusProvider);
   }
 }
 
