@@ -50,7 +50,12 @@ GoRouter createAppRouter(WidgetRef ref) {
       final isUptime = location == '/uptime';
       final isSettings = location == '/settings';
       final onboardingIntent = state.uri.queryParameters['intent'];
-      final allowOnboarding = onboardingIntent == 'entry';
+      final onboardingMode = state.uri.queryParameters['mode'];
+      final allowOnboarding =
+          onboardingIntent == 'entry' ||
+          onboardingIntent == 'project-manage' ||
+          onboardingMode == 'create' ||
+          onboardingMode == 'edit';
       final access = appAccessAsync.valueOrNull;
 
       if (appAccessAsync.isLoading || access == null) {
