@@ -5,8 +5,33 @@ from datetime import datetime
 import sys
 import os
 from pathlib import Path
+import subprocess
 
 router = APIRouter(tags=["Health & Monitoring"])
+
+def _detect_git_sha() -> str | None:
+    sha = os.getenv("BACKEND_GIT_SHA") or os.getenv("GIT_SHA")
+    if sha:
+        return sha.strip() or None
+
+    try:
+        repo_root = Path(__file__).resolve().parents[2]
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            timeout=1,
+            check=False,
+        )
+        if result.returncode != 0:
+            return None
+        return result.stdout.strip() or None
+    except Exception:
+        return None
+
+
+_GIT_SHA = _detect_git_sha()
 
 
 @router.get(
@@ -19,6 +44,7 @@ async def root():
     return {
         "service": "SEO Robots API",
         "version": "1.0.0",
+        "git_sha": _GIT_SHA,
         "status": "operational",
         "docs": "/docs",
         "redoc": "/redoc",
@@ -73,6 +99,7 @@ async def health_check():
         "status": "healthy" if all_available else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
         "python_version": sys.version,
+        "git_sha": _GIT_SHA,
         "agents": agents_status,
         "components": {
             "api": "operational",
@@ -103,6 +130,7 @@ async def version():
     """Version information"""
     return {
         "version": "1.0.0",
+        "git_sha": _GIT_SHA,
         "build_date": "2026-01-14",
         "python_version": sys.version.split()[0],
         "fastapi_version": "0.128.0"
