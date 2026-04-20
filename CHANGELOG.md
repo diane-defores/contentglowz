@@ -11,6 +11,7 @@ The format is based on Keep a Changelog.
 - Added a shared editorial theme palette and semantic color tokens so surfaces, accents, and status tones can be reused consistently across the Flutter shell.
 - Added queue-aware offline sync badges on supported list surfaces so projects, personas, affiliations, content cards, and drip plans can show `Pending sync` or `Sync failed`.
 - Added the offline sync V2 reference spec in `specs/SPEC-offline-sync-v2.md` and aligned project documentation with the current degraded-mode behavior.
+- Added a multi-project management flow with a dedicated `Projects` screen, a global current-project switcher, and backend-aligned project selection persistence.
 
 ### Changed
 - Switched the Flutter app shell to load both light and dark themes and resolve `ThemeMode` from user settings instead of forcing a single dark theme.
@@ -18,11 +19,13 @@ The format is based on Keep a Changelog.
 - Migrated the Flutter screen layer to rely on `Theme.of(context)` and `AppTheme.paletteOf(context)` for most surfaces, borders, text, overlays, and status accents instead of local color constants.
 - Expanded degraded/offline mode from a limited shell into a broader client-side sync model with persisted cache, dependency-aware replay queue, and temp-ID reconciliation for supported creates.
 - Extended offline support to broad app flows including content creation from angles and drip plan create/update/lifecycle actions, while keeping uploads, deletes, and publish actions explicitly blocked offline.
+- Project selection now treats `settings.defaultProjectId` as the persisted “last opened project” and surfaces detected repository config such as content directories and configured sources in the Flutter project UI.
 
 ### Fixed
 - Fixed the light-theme rollout by removing the remaining hard-coded screen colors that were keeping multiple flows visually dark-only or low-contrast in light mode.
 - Fixed Drip reads to avoid masking non-offline failures as empty cached views; malformed backend payloads now raise actionable errors while cache fallback stays offline-safe.
 - Updated offline sync chips so `Retrying`, `Sync paused`, and `Waiting for dependency` now map to distinct user-visible badges instead of always showing `Pending sync` unless failed.
+- Removed unsupported project archive/unarchive affordances from the Flutter UI so project actions now match the real FastAPI backend contract.
 
 ## [2026-04-19]
 

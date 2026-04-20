@@ -337,8 +337,7 @@ class ApiService {
     final nextProjects = projects
         .map(
           (entry) => entry.copyWith(
-            isDefault:
-                defaultProjectId != null && entry.id == defaultProjectId,
+            isDefault: defaultProjectId != null && entry.id == defaultProjectId,
           ),
         )
         .toList();
@@ -370,7 +369,8 @@ class ApiService {
             ? currentProjectsCount
             : cachedProjectsCount);
     final resolvedWorkspaceExists =
-        workspaceExists ?? (resolvedProjectsCount > 0 || user['workspace_exists'] == true);
+        workspaceExists ??
+        (resolvedProjectsCount > 0 || user['workspace_exists'] == true);
 
     user['workspace_exists'] = resolvedWorkspaceExists;
     if (updateDefaultProject) {
@@ -425,7 +425,9 @@ class ApiService {
       final cached = await _readCachedList(cacheKey) ?? const <dynamic>[];
       final cachedLinks = cached
           .whereType<Map>()
-          .map((entry) => AffiliateLink.fromJson(Map<String, dynamic>.from(entry)))
+          .map(
+            (entry) => AffiliateLink.fromJson(Map<String, dynamic>.from(entry)),
+          )
           .toList();
       final next = [
         for (final entry in cachedLinks)
@@ -533,8 +535,9 @@ class ApiService {
     final idMappings = await _loadIdMappings();
     final rewrittenPath = rewriteOfflineIdsInString(path, idMappings);
     final rewrittenDedupeKey = rewriteOfflineIdsInString(dedupeKey, idMappings);
-    final rewrittenPayload =
-        _asMapOrNull(rewriteOfflineIdsInValue(payload, idMappings));
+    final rewrittenPayload = _asMapOrNull(
+      rewriteOfflineIdsInValue(payload, idMappings),
+    );
     final rewrittenQueryParameters = _asMapOrNull(
       rewriteOfflineIdsInValue(queryParameters, idMappings),
     );
@@ -760,10 +763,7 @@ class ApiService {
       'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
     });
     try {
-      final response = await _dio.post(
-        '/api/projects',
-        data: payload,
-      );
+      final response = await _dio.post('/api/projects', data: payload);
       final project = Project.fromJson(_asMap(response.data));
       await _upsertCachedProject(project);
       await _syncBootstrapCache(
@@ -912,22 +912,6 @@ class ApiService {
     }
   }
 
-  Future<void> archiveProject(String projectId) async {
-    try {
-      await _dio.post('/api/projects/$projectId/archive');
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
-  }
-
-  Future<void> unarchiveProject(String projectId) async {
-    try {
-      await _dio.post('/api/projects/$projectId/unarchive');
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
-  }
-
   Future<void> deleteProject(String projectId) async {
     try {
       await _dio.delete('/api/projects/$projectId');
@@ -970,10 +954,9 @@ class ApiService {
     final idMappings = await _loadIdMappings();
     final resolvedUpdates =
         _asMapOrNull(rewriteOfflineIdsInValue(updates, idMappings)) ?? updates;
-    final dependsOnTempIds = _dependsOnTempIdsForIds(
-      [updates['defaultProjectId']?.toString()],
-      idMappings,
-    );
+    final dependsOnTempIds = _dependsOnTempIdsForIds([
+      updates['defaultProjectId']?.toString(),
+    ], idMappings);
     try {
       final response = await _dio.patch('/api/settings', data: resolvedUpdates);
       final settings = AppSettings.fromJson(_asMap(response.data));
@@ -1198,10 +1181,7 @@ class ApiService {
     final payload = _compactMap({'body': body, 'edit_note': editNote});
 
     try {
-      await _dio.put(
-        '/api/status/content/$resolvedId/body',
-        data: payload,
-      );
+      await _dio.put('/api/status/content/$resolvedId/body', data: payload);
       await _writeCachedData('content.body.$resolvedId', payload);
       final current = await _readCachedPendingContentItems();
       final next = current
@@ -1489,8 +1469,7 @@ class ApiService {
               .toList();
       final nextPersonas = personas
           .map(
-            (entry) =>
-                entry.id == persona.id || entry.id == resolvedPersonaId
+            (entry) => entry.id == persona.id || entry.id == resolvedPersonaId
                 ? persona
                 : entry,
           )
@@ -1624,10 +1603,7 @@ class ApiService {
     final dependsOnTempIds = _dependsOnTempIdsForIds([projectId], idMappings);
 
     try {
-      final response = await _dio.post(
-        '/api/status/content',
-        data: payload,
-      );
+      final response = await _dio.post('/api/status/content', data: payload);
       final data = _asMap(response.data);
       if (data['id'] != null) {
         final created = ContentItem.fromJson({
@@ -2343,10 +2319,9 @@ class ApiService {
     final idMappings = await _loadIdMappings();
     final resolvedData =
         _asMapOrNull(rewriteOfflineIdsInValue(data, idMappings)) ?? data;
-    final dependsOnTempIds = _dependsOnTempIdsForIds(
-      [data['projectId']?.toString()],
-      idMappings,
-    );
+    final dependsOnTempIds = _dependsOnTempIdsForIds([
+      data['projectId']?.toString(),
+    ], idMappings);
     try {
       final response = await _dio.post('/api/affiliations', data: resolvedData);
       final affiliation = AffiliateLink.fromJson(_asMap(response.data));
@@ -2369,7 +2344,8 @@ class ApiService {
         loginUrl: resolvedData['loginUrl']?.toString(),
         category: resolvedData['category']?.toString(),
         commission: resolvedData['commission']?.toString(),
-        keywords: (resolvedData['keywords'] as List?)
+        keywords:
+            (resolvedData['keywords'] as List?)
                 ?.map((entry) => entry.toString())
                 .toList() ??
             const <String>[],
@@ -2410,10 +2386,10 @@ class ApiService {
     final resolvedId = _resolveEntityId(id, idMappings);
     final resolvedData =
         _asMapOrNull(rewriteOfflineIdsInValue(data, idMappings)) ?? data;
-    final dependsOnTempIds = _dependsOnTempIdsForIds(
-      [id, data['projectId']?.toString()],
-      idMappings,
-    );
+    final dependsOnTempIds = _dependsOnTempIdsForIds([
+      id,
+      data['projectId']?.toString(),
+    ], idMappings);
     try {
       final response = await _dio.put(
         '/api/affiliations/$resolvedId',
@@ -2424,7 +2400,9 @@ class ApiService {
       final cached = await _readCachedList(queryKey) ?? const <dynamic>[];
       final next = cached
           .map((entry) => AffiliateLink.fromJson(entry as Map<String, dynamic>))
-          .map((entry) => entry.id == id || entry.id == resolvedId ? saved : entry)
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId ? saved : entry,
+          )
           .toList();
       await _writeCachedData(
         queryKey,
@@ -2448,12 +2426,15 @@ class ApiService {
                     loginUrl: resolvedData['loginUrl']?.toString(),
                     category: resolvedData['category']?.toString(),
                     commission: resolvedData['commission']?.toString(),
-                    keywords: (resolvedData['keywords'] as List?)?.cast<String>(),
+                    keywords: (resolvedData['keywords'] as List?)
+                        ?.cast<String>(),
                     status: resolvedData['status']?.toString(),
                     notes: resolvedData['notes']?.toString(),
                     expiresAt: resolvedData['expiresAt'] == null
                         ? null
-                        : DateTime.tryParse(resolvedData['expiresAt'].toString()),
+                        : DateTime.tryParse(
+                            resolvedData['expiresAt'].toString(),
+                          ),
                   )
                 : entry,
           )
@@ -2994,7 +2975,8 @@ extension DripApi on ApiService {
     return DripPlan(
       id: id,
       userId: offlineScope,
-      projectId: body['project_id']?.toString() ?? body['projectId']?.toString(),
+      projectId:
+          body['project_id']?.toString() ?? body['projectId']?.toString(),
       name: body['name']?.toString() ?? 'Untitled drip plan',
       status: status ?? body['status']?.toString() ?? 'draft',
       cadenceConfig: _asMap(body['cadence_config'] ?? body['cadence']),
@@ -3095,10 +3077,10 @@ extension DripApi on ApiService {
     final idMappings = await _loadIdMappings();
     final resolvedBody =
         _asMapOrNull(rewriteOfflineIdsInValue(body, idMappings)) ?? body;
-    final dependsOnTempIds = _dependsOnTempIdsForIds(
-      [body['project_id']?.toString(), body['projectId']?.toString()],
-      idMappings,
-    );
+    final dependsOnTempIds = _dependsOnTempIdsForIds([
+      body['project_id']?.toString(),
+      body['projectId']?.toString(),
+    ], idMappings);
     try {
       final response = await _dio.post('/api/drip/plans', data: resolvedBody);
       final raw = _asMap(response.data);
@@ -3305,7 +3287,9 @@ extension DripApi on ApiService {
         await _readCachedDripPlan(planId) ??
         await _readCachedDripPlan(resolvedPlanId);
     try {
-      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/schedule');
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/schedule',
+      );
       final raw = _asMap(response.data);
       if (current != null) {
         await _upsertCachedDripPlan(
@@ -3365,7 +3349,9 @@ extension DripApi on ApiService {
         await _readCachedDripPlan(planId) ??
         await _readCachedDripPlan(resolvedPlanId);
     try {
-      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/activate');
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/activate',
+      );
       final raw = _asMap(response.data);
       if (current != null) {
         await _upsertCachedDripPlan(
@@ -3458,7 +3444,9 @@ extension DripApi on ApiService {
         await _readCachedDripPlan(planId) ??
         await _readCachedDripPlan(resolvedPlanId);
     try {
-      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/resume');
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/resume',
+      );
       final raw = _asMap(response.data);
       if (current != null) {
         await _upsertCachedDripPlan(
@@ -3502,7 +3490,9 @@ extension DripApi on ApiService {
         await _readCachedDripPlan(planId) ??
         await _readCachedDripPlan(resolvedPlanId);
     try {
-      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/cancel');
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/cancel',
+      );
       final raw = _asMap(response.data);
       if (current != null) {
         await _upsertCachedDripPlan(

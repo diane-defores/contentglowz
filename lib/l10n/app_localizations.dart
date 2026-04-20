@@ -330,6 +330,8 @@ class AppLocalizations {
     'Archive project': 'Archiver le projet',
     'Unarchive project': 'Désarchiver le projet',
     'Delete project': 'Supprimer le projet',
+    'Detected content directories': 'Dossiers de contenu détectés',
+    'Configured sources': 'Sources configurées',
     'Archived projects': 'Projets archivés',
     'Active project': 'Projet actif',
     'Active project updated.': 'Projet actif mis à jour.',
@@ -538,8 +540,7 @@ class AppLocalizations {
     'API Offline': 'API hors ligne',
     'Articles': 'Articles',
     'Articles/day': 'Articles/jour',
-    'Content queued: "{contentType}"':
-        'Contenu mis en file : "{contentType}"',
+    'Content queued: "{contentType}"': 'Contenu mis en file : "{contentType}"',
     'Drip plan queued. It will sync when FastAPI is back.':
         'Le plan drip a ete mis en file. Il sera synchronise quand FastAPI reviendra.',
     'Pending sync': 'Sync en attente',
@@ -550,8 +551,7 @@ class AppLocalizations {
     'Pending: {count}': 'En attente : {count}',
     'Paused for auth: {count}': 'En pause pour auth : {count}',
     'Failed: {count}': 'En echec : {count}',
-    'Waiting for dependencies: {count}':
-        'En attente de dependances : {count}',
+    'Waiting for dependencies: {count}': 'En attente de dependances : {count}',
     '{count} queued actions are waiting for dependency sync.':
         '{count} actions en file attendent la synchronisation d une dependance.',
     'Absolute path to the Markdown files':

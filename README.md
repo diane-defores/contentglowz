@@ -18,6 +18,7 @@ What is already in place:
 - Clerk session restore and bootstrap-driven entry gate
 - FastAPI-backed `projects`, `settings`, `creator-profile`, `personas`, and content/status flows
 - real onboarding path that creates a workspace in FastAPI
+- multi-project UI with a dedicated `Projects` screen and a global current-project switcher
 - degraded/offline mode with persisted cache, replay queue, and temp-ID reconciliation for supported flows
 - explicit demo mode separated from the authenticated flow
 - centralized `401` handling instead of silent private-route mock fallbacks
@@ -38,6 +39,24 @@ The intended entry gate is now:
 The decision should come from:
 - a valid Clerk session
 - real FastAPI bootstrap data
+- the last opened project persisted in `settings.defaultProjectId`
+
+## Multi-Project Behavior
+
+- The app reopens the **last opened project** for the signed-in user.
+- Technically, this is persisted through `PATCH /api/settings` on `defaultProjectId`.
+- The `Projects` screen is the canonical place to:
+  - list all projects
+  - switch the current project
+  - create a project
+  - edit a project
+  - delete a project
+- The project UI also surfaces backend-detected repository information when available:
+  - framework detection
+  - onboarding/analyze status
+  - detected content directories
+  - configured content/SEO/linking sources from backend settings
+- The Flutter app does not expose archive/unarchive project actions because the current FastAPI backend does not support them.
 
 ## Offline / Degraded Mode
 

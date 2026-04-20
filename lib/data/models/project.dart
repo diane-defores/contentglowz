@@ -114,11 +114,17 @@ class ProjectSettings {
   final TechStackDetection? techStack;
   final OnboardingStatus onboardingStatus;
   final List<ContentTypeConfig> contentTypes;
+  final List<ContentDirectoryConfig> contentDirectories;
+  final ProjectConfigOverrides? configOverrides;
+  final bool analyticsEnabled;
 
   const ProjectSettings({
     this.techStack,
     this.onboardingStatus = OnboardingStatus.pending,
     this.contentTypes = const <ContentTypeConfig>[],
+    this.contentDirectories = const <ContentDirectoryConfig>[],
+    this.configOverrides,
+    this.analyticsEnabled = false,
   });
 
   factory ProjectSettings.fromJson(Map<String, dynamic> json) =>
@@ -133,17 +139,30 @@ class ProjectSettings {
           orElse: () => OnboardingStatus.pending,
         ),
         contentTypes: _parseContentTypes(json),
+        contentDirectories: _parseContentDirectories(json),
+        configOverrides: json['config_overrides'] != null
+            ? ProjectConfigOverrides.fromJson(
+                json['config_overrides'] as Map<String, dynamic>,
+              )
+            : null,
+        analyticsEnabled: json['analytics_enabled'] as bool? ?? false,
       );
 
   ProjectSettings copyWith({
     TechStackDetection? techStack,
     OnboardingStatus? onboardingStatus,
     List<ContentTypeConfig>? contentTypes,
+    List<ContentDirectoryConfig>? contentDirectories,
+    ProjectConfigOverrides? configOverrides,
+    bool? analyticsEnabled,
   }) {
     return ProjectSettings(
       techStack: techStack ?? this.techStack,
       onboardingStatus: onboardingStatus ?? this.onboardingStatus,
       contentTypes: contentTypes ?? this.contentTypes,
+      contentDirectories: contentDirectories ?? this.contentDirectories,
+      configOverrides: configOverrides ?? this.configOverrides,
+      analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
     );
   }
 
@@ -152,6 +171,70 @@ class ProjectSettings {
       'tech_stack': techStack?.toJson(),
       'onboarding_status': onboardingStatus.name,
       'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+      'content_directories': contentDirectories
+          .map((entry) => entry.toJson())
+          .toList(),
+      'config_overrides': configOverrides?.toJson(),
+      'analytics_enabled': analyticsEnabled,
+    };
+  }
+}
+
+class ContentDirectoryConfig {
+  final String path;
+  final bool autoDetected;
+  final List<String> fileExtensions;
+
+  const ContentDirectoryConfig({
+    required this.path,
+    this.autoDetected = true,
+    this.fileExtensions = const <String>[],
+  });
+
+  factory ContentDirectoryConfig.fromJson(Map<String, dynamic> json) {
+    return ContentDirectoryConfig(
+      path: (json['path'] ?? '').toString(),
+      autoDetected: json['auto_detected'] as bool? ?? true,
+      fileExtensions: ((json['file_extensions'] as List?) ?? const <Object>[])
+          .map((entry) => entry.toString())
+          .where((entry) => entry.isNotEmpty)
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'path': path,
+      'auto_detected': autoDetected,
+      'file_extensions': fileExtensions,
+    };
+  }
+}
+
+class ProjectConfigOverrides {
+  final Map<String, dynamic>? seoConfig;
+  final Map<String, dynamic>? linkingConfig;
+  final Map<String, dynamic>? contentConfig;
+
+  const ProjectConfigOverrides({
+    this.seoConfig,
+    this.linkingConfig,
+    this.contentConfig,
+  });
+
+  factory ProjectConfigOverrides.fromJson(Map<String, dynamic> json) {
+    return ProjectConfigOverrides(
+      seoConfig: json['seo_config'] as Map<String, dynamic>?,
+      linkingConfig: json['linking_config'] as Map<String, dynamic>?,
+      contentConfig: json['content_config'] as Map<String, dynamic>?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'seo_config': seoConfig,
+      'linking_config': linkingConfig,
+      'content_config': contentConfig,
     };
   }
 }
@@ -299,5 +382,19 @@ List<ContentTypeConfig> _parseContentTypes(Map<String, dynamic> json) {
   return rawContentTypes
       .whereType<Map<String, dynamic>>()
       .map(ContentTypeConfig.fromJson)
+      .toList();
+}
+
+List<ContentDirectoryConfig> _parseContentDirectories(
+  Map<String, dynamic> json,
+) {
+  final rawContentDirectories = json['content_directories'];
+  if (rawContentDirectories is! List) {
+    return const <ContentDirectoryConfig>[];
+  }
+
+  return rawContentDirectories
+      .whereType<Map<String, dynamic>>()
+      .map(ContentDirectoryConfig.fromJson)
       .toList();
 }

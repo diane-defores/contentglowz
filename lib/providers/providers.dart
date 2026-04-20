@@ -299,7 +299,8 @@ OfflineEntitySyncStatus _offlineEntityStatusFromQueueStatus(
 
 final offlineEntitySyncMapProvider =
     Provider<Map<String, OfflineEntitySyncInfo>>((ref) {
-      final queue = ref.watch(offlineQueueEntriesProvider).valueOrNull ?? const [];
+      final queue =
+          ref.watch(offlineQueueEntriesProvider).valueOrNull ?? const [];
       final entries = <String, OfflineEntitySyncInfo>{};
 
       for (final action in queue) {
@@ -1035,7 +1036,9 @@ class OfflineQueueController extends AsyncNotifier<void> {
     }
 
     final idMappings = {tempId: realId};
-    await ref.read(offlineIdMappingStoreProvider).register(scope, tempId, realId);
+    await ref
+        .read(offlineIdMappingStoreProvider)
+        .register(scope, tempId, realId);
     await ref.read(offlineCacheStoreProvider).rewriteIds(scope, idMappings);
     ref.read(offlineSyncStateProvider.notifier).rewriteIds(idMappings);
     return queue.map((entry) => entry.rewriteIds(idMappings)).toList();
@@ -1208,16 +1211,7 @@ final projectsProvider = FutureProvider<List<Project>>((ref) async {
 
 final availableProjectsProvider = Provider<List<Project>>((ref) {
   final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
-  return projects
-      .where((project) => !project.isArchived && !project.isDeleted)
-      .toList();
-});
-
-final archivedProjectsProvider = Provider<List<Project>>((ref) {
-  final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
-  return projects
-      .where((project) => project.isArchived && !project.isDeleted)
-      .toList();
+  return projects.where((project) => !project.isDeleted).toList();
 });
 
 final activeProjectProvider = Provider<Project?>((ref) {
@@ -1899,41 +1893,6 @@ class ProjectMutationController extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> archiveProject(String projectId) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final api = ref.read(apiServiceProvider);
-      await api.archiveProject(projectId);
-      ref.invalidate(projectsStateProvider);
-      final activeProject = ref.read(activeProjectProvider);
-      if (activeProject?.id == projectId) {
-        final fallback = ref
-            .read(availableProjectsProvider)
-            .where((project) => project.id != projectId)
-            .cast<Project?>()
-            .firstWhere((_) => true, orElse: () => null);
-        await ref
-            .read(currentUserSettingsProvider.notifier)
-            .setDefaultProjectId(fallback?.id);
-      }
-    });
-    if (state.hasError) {
-      throw state.error!;
-    }
-  }
-
-  Future<void> unarchiveProject(String projectId) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final api = ref.read(apiServiceProvider);
-      await api.unarchiveProject(projectId);
-      ref.invalidate(projectsStateProvider);
-    });
-    if (state.hasError) {
-      throw state.error!;
-    }
-  }
-
   Future<void> deleteProject(String projectId) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -2042,7 +2001,8 @@ final dripPlansProvider = FutureProvider<List<DripPlan>>((ref) async {
     _logDegradedRead(
       ref,
       scope: 'drip.plans.degraded',
-      message: 'Drip plans fetch failed; keeping the offline drip list available.',
+      message:
+          'Drip plans fetch failed; keeping the offline drip list available.',
       error: error,
       stackTrace: stackTrace,
     );
