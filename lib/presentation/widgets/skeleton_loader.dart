@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 class SkeletonLoader extends StatefulWidget {
   final double width;
   final double height;
@@ -37,6 +39,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   @override
   Widget build(BuildContext context) {
+    final palette = AppTheme.paletteOf(context);
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -48,10 +51,10 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
             gradient: LinearGradient(
               begin: Alignment(-1.0 + 2.0 * _controller.value, 0),
               end: Alignment(1.0 + 2.0 * _controller.value, 0),
-              colors: const [
-                Color(0xFF1A1A2E),
-                Color(0xFF252540),
-                Color(0xFF1A1A2E),
+              colors: [
+                palette.surface,
+                palette.mutedSurface,
+                palette.surface,
               ],
             ),
           ),
@@ -66,13 +69,14 @@ class ContentCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = AppTheme.paletteOf(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withAlpha(10)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,

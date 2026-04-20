@@ -59,6 +59,8 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
     final filledCount = _entries
         .where((e) => _controllers[e.type]!.text.trim().isNotEmpty)
         .length;
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return Column(
       children: [
@@ -70,13 +72,13 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
               Text(
                 '${context.tr('Progress')}: $filledCount/${_entries.length}',
                 style: TextStyle(
-                    color: Colors.white.withAlpha(100), fontSize: 13),
+                    color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
               ),
               const Spacer(),
               Text(
                 context.tr('Fill at least {count}', {'count': '2'}),
                 style: TextStyle(
-                    color: Colors.white.withAlpha(60), fontSize: 13),
+                    color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
               ),
             ],
           ),
@@ -94,23 +96,27 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
         Container(
           padding: EdgeInsets.fromLTRB(
               24, 12, 24, 12 + MediaQuery.of(context).padding.bottom),
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A1A2E),
-            border: Border(top: BorderSide(color: Colors.white12)),
+          decoration: BoxDecoration(
+            color: palette.elevatedSurface,
+            border: Border(
+              top: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
           ),
           child: FilledButton(
             onPressed:
                 filledCount >= 2 && !_isSubmitting ? _submit : null,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundColor: AppTheme.colorForContentType('Article'),
             ),
             child: _isSubmitting
-                ? const SizedBox(
+                ? SizedBox(
                     height: 20,
                     width: 20,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
                   )
                 : Text(context.tr('Synthesize Narrative')),
           ),
@@ -122,16 +128,18 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
   Widget _buildEntryCard(RitualEntry entry) {
     final controller = _controllers[entry.type]!;
     final color = _colorForType(entry.type);
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: controller.text.trim().isNotEmpty
               ? color.withAlpha(60)
-              : Colors.white.withAlpha(15),
+              : palette.borderSubtle,
         ),
       ),
       child: Column(
@@ -163,10 +171,10 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
               maxLines: 3,
               minLines: 2,
               style: TextStyle(
-                  color: Colors.white.withAlpha(220), fontSize: 14, height: 1.6),
+                  color: theme.colorScheme.onSurface, fontSize: 14, height: 1.6),
               decoration: InputDecoration(
                 hintText: _localizedHint(entry.type),
-                hintStyle: TextStyle(color: Colors.white.withAlpha(40)),
+                hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 border: InputBorder.none,
                 filled: false,
                 contentPadding: EdgeInsets.zero,
@@ -181,6 +189,8 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
 
   Widget _buildResultView() {
     final result = _result!;
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -193,17 +203,22 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6C5CE7).withAlpha(30),
-                  const Color(0xFF0984E3).withAlpha(30),
+                  AppTheme.colorForContentType('Article').withAlpha(30),
+                  AppTheme.editColor.withAlpha(30),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF6C5CE7).withAlpha(60)),
+              border: Border.all(
+                color: AppTheme.colorForContentType('Article').withAlpha(60),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(Icons.auto_stories,
-                    color: Color(0xFF6C5CE7), size: 28),
+                Icon(
+                  Icons.auto_stories,
+                  color: AppTheme.colorForContentType('Article'),
+                  size: 28,
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -212,13 +227,13 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                       Text(
                         context.tr('New Chapter Detected'),
                         style: TextStyle(
-                            color: Colors.white.withAlpha(150), fontSize: 12),
+                            color: theme.colorScheme.onSurfaceVariant, fontSize: 12),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         result.suggestedChapterTitle!,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -236,20 +251,20 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.white54,
+              color: theme.colorScheme.onSurfaceVariant,
               letterSpacing: 1),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A2E),
+            color: palette.elevatedSurface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
             result.narrativeSummary,
             style: TextStyle(
-              color: Colors.white.withAlpha(200),
+              color: theme.colorScheme.onSurface,
               fontSize: 15,
               height: 1.7,
             ),
@@ -264,12 +279,12 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.white54,
+                color: theme.colorScheme.onSurfaceVariant,
                 letterSpacing: 1),
           ),
           const SizedBox(height: 12),
           _buildDeltaCard(result.voiceDelta, Icons.record_voice_over,
-              const Color(0xFF00B894)),
+              AppTheme.approveColor),
         ],
 
         // Positioning changes
@@ -280,12 +295,12 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.white54,
+                color: theme.colorScheme.onSurfaceVariant,
                 letterSpacing: 1),
           ),
           const SizedBox(height: 12),
           _buildDeltaCard(result.positioningDelta, Icons.my_location,
-              const Color(0xFF0984E3)),
+              AppTheme.editColor),
         ],
 
         const SizedBox(height: 32),
@@ -298,7 +313,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                 onPressed: () => setState(() => _result = null),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(color: Colors.white.withAlpha(40)),
+                  side: BorderSide(color: theme.colorScheme.outlineVariant),
                 ),
                 child: Text(context.tr('Edit Entries')),
               ),
@@ -351,8 +366,9 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                       ),
                       TextSpan(
                         text: value,
-                        style:
-                            TextStyle(color: Colors.white.withAlpha(180)),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     ]),
                   ),
@@ -391,11 +407,11 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
       };
 
   Color _colorForType(EntryType type) => switch (type) {
-        EntryType.reflection => const Color(0xFF6C5CE7),
-        EntryType.win => const Color(0xFF00B894),
-        EntryType.struggle => const Color(0xFFE17055),
-        EntryType.idea => const Color(0xFFFDAA5E),
-        EntryType.pivot => const Color(0xFF0984E3),
+        EntryType.reflection => AppTheme.colorForContentType('Article'),
+        EntryType.win => AppTheme.approveColor,
+        EntryType.struggle => AppTheme.rejectColor,
+        EntryType.idea => AppTheme.warningColor,
+        EntryType.pivot => AppTheme.editColor,
       };
 
   Future<void> _submit() async {

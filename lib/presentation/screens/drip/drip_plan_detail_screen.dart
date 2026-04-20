@@ -5,6 +5,7 @@ import '../../../data/models/drip_plan.dart';
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
 class DripPlanDetailScreen extends ConsumerStatefulWidget {
@@ -194,6 +195,8 @@ class _StatusHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -206,8 +209,8 @@ class _StatusHeader extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   context.tr(plan.status),
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: _statusColor(plan.status),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: _statusColor(plan.status, colorScheme),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -233,34 +236,54 @@ class _StatusHeader extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      children: [
-        SizedBox(width: 100, child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
-        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
-      ],
-    ),
-  );
-
-  Widget _statusIcon(String status) => Icon(
-    switch (status) {
-      'active' => Icons.play_circle_filled,
-      'paused' => Icons.pause_circle_filled,
-      'completed' => Icons.check_circle,
-      'cancelled' => Icons.cancel,
-      _ => Icons.circle_outlined,
+  Widget _infoRow(String label, String value) => Builder(
+    builder: (context) {
+      final theme = Theme.of(context);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(value, style: theme.textTheme.bodySmall),
+            ),
+          ],
+        ),
+      );
     },
-    color: _statusColor(status),
-    size: 20,
   );
 
-  Color _statusColor(String status) => switch (status) {
-    'active' => Colors.green,
-    'paused' => Colors.orange,
-    'completed' => Colors.blue,
-    'cancelled' => Colors.grey,
-    _ => Colors.grey,
+  Widget _statusIcon(String status) => Builder(
+    builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return Icon(
+        switch (status) {
+          'active' => Icons.play_circle_filled,
+          'paused' => Icons.pause_circle_filled,
+          'completed' => Icons.check_circle,
+          'cancelled' => Icons.cancel,
+          _ => Icons.circle_outlined,
+        },
+        color: _statusColor(status, colorScheme),
+        size: 20,
+      );
+    },
+  );
+
+  Color _statusColor(String status, ColorScheme colorScheme) => switch (status) {
+    'active' => AppTheme.approveColor,
+    'paused' => AppTheme.warningColor,
+    'completed' => AppTheme.infoColor,
+    'cancelled' => colorScheme.onSurfaceVariant,
+    _ => colorScheme.onSurfaceVariant,
   };
 }
 
@@ -303,12 +326,10 @@ class _ProgressCard extends StatelessWidget {
               children: stats.byStatus.entries.map((e) => Chip(
                 avatar: CircleAvatar(
                   radius: 6,
-                  backgroundColor: switch (e.key) {
-                    'published' => Colors.green,
-                    'scheduled' => Colors.blue,
-                    'approved' => Colors.orange,
-                    _ => Colors.grey,
-                  },
+                  backgroundColor: _statusDotColor(
+                    e.key,
+                    Theme.of(context).colorScheme,
+                  ),
                 ),
                 label: Text(
                   context.tr('{status}: {count}', {
@@ -352,7 +373,9 @@ class _ClustersCard extends StatelessWidget {
                   Icon(
                     c.isComplete ? Icons.check_circle : Icons.circle_outlined,
                     size: 18,
-                    color: c.isComplete ? Colors.green : colorScheme.onSurface.withValues(alpha: 0.4),
+                    color: c.isComplete
+                        ? AppTheme.approveColor
+                        : colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -399,14 +422,29 @@ class _ConfigCard extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      children: [
-        SizedBox(width: 100, child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
-        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
-      ],
-    ),
+  Widget _row(String label, String value) => Builder(
+    builder: (context) {
+      final theme = Theme.of(context);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(value, style: theme.textTheme.bodySmall),
+            ),
+          ],
+        ),
+      );
+    },
   );
 }
 
@@ -505,4 +543,13 @@ class _ActionMenu extends StatelessWidget {
       ],
     );
   }
+}
+
+Color _statusDotColor(String status, ColorScheme colorScheme) {
+  return switch (status) {
+    'published' => AppTheme.approveColor,
+    'scheduled' => AppTheme.infoColor,
+    'approved' => AppTheme.warningColor,
+    _ => colorScheme.onSurfaceVariant,
+  };
 }

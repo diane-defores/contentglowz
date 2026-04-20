@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -119,28 +120,28 @@ class _PipelineFunnel extends StatelessWidget {
           label: 'Pending Review',
           count: pending,
           maxCount: total,
-          color: Colors.orange,
+          color: AppTheme.warningColor,
         ),
         const SizedBox(height: 6),
         _FunnelBar(
           label: 'Approved',
           count: approved,
           maxCount: total,
-          color: Colors.blue,
+          color: AppTheme.editColor,
         ),
         const SizedBox(height: 6),
         _FunnelBar(
           label: 'Published',
           count: published,
           maxCount: total,
-          color: Colors.green,
+          color: AppTheme.approveColor,
         ),
         const SizedBox(height: 6),
         _FunnelBar(
           label: 'Rejected',
           count: rejected,
           maxCount: total,
-          color: Colors.red,
+          color: AppTheme.rejectColor,
         ),
       ],
     );
@@ -340,8 +341,10 @@ class _PublishingTimeline extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: e.value / (sortedDays.first.value),
-                          backgroundColor: Colors.green.withValues(alpha: 0.1),
-                          color: Colors.green,
+                          backgroundColor: AppTheme.approveColor.withValues(
+                            alpha: 0.1,
+                          ),
+                          color: AppTheme.approveColor,
                           minHeight: 16,
                         ),
                       ),

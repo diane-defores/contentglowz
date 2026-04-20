@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 
 class PerformanceScreen extends ConsumerWidget {
   const PerformanceScreen({super.key});
@@ -96,11 +97,23 @@ class PerformanceScreen extends ConsumerWidget {
           color: theme.colorScheme.primary,
         ),
         const SizedBox(width: 8),
-        _StatCard(label: 'Pending', value: '$pending', color: Colors.orange),
+        _StatCard(
+          label: 'Pending',
+          value: '$pending',
+          color: AppTheme.warningColor,
+        ),
         const SizedBox(width: 8),
-        _StatCard(label: 'Published', value: '$published', color: Colors.green),
+        _StatCard(
+          label: 'Published',
+          value: '$published',
+          color: AppTheme.approveColor,
+        ),
         const SizedBox(width: 8),
-        _StatCard(label: 'Rejected', value: '$rejected', color: Colors.red),
+        _StatCard(
+          label: 'Rejected',
+          value: '$rejected',
+          color: theme.colorScheme.error,
+        ),
       ],
     );
   }
@@ -194,16 +207,7 @@ class PerformanceScreen extends ConsumerWidget {
 
     return Column(
       children: sorted.map((e) {
-        final platformColor = switch (e.key) {
-          'twitter' => const Color(0xFF1DA1F2),
-          'linkedin' => const Color(0xFF0A66C2),
-          'instagram' => const Color(0xFFE4405F),
-          'tiktok' => const Color(0xFF010101),
-          'youtube' => const Color(0xFFFF0000),
-          'ghost' => const Color(0xFF15171A),
-          'wordpress' => const Color(0xFF21759B),
-          _ => theme.colorScheme.primary,
-        };
+        final platformColor = _platformColor(e.key, theme);
         return Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Row(
@@ -271,23 +275,26 @@ class PerformanceScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
+              color: AppTheme.approveColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
                 Text(
                   '$rate%',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
-                    color: Colors.green,
+                    color: AppTheme.approveColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   context.tr('Approval Rate'),
-                  style: const TextStyle(fontSize: 12, color: Colors.green),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.approveColor,
+                  ),
                 ),
               ],
             ),
@@ -353,7 +360,7 @@ class PerformanceScreen extends ConsumerWidget {
                 dense: true,
                 leading: Icon(
                   Icons.check_circle,
-                  color: Colors.green,
+                  color: AppTheme.approveColor,
                   size: 20,
                 ),
                 title: Text(item.title, style: const TextStyle(fontSize: 13)),
@@ -370,6 +377,17 @@ class PerformanceScreen extends ConsumerWidget {
           )
           .toList(),
     );
+  }
+
+  Color _platformColor(String platform, ThemeData theme) {
+    return switch (platform) {
+      'twitter' || 'linkedin' || 'wordpress' => AppTheme.infoColor,
+      'instagram' => AppTheme.colorForContentType('Reel'),
+      'tiktok' => AppTheme.editColor,
+      'youtube' => theme.colorScheme.error,
+      'ghost' => theme.colorScheme.onSurface,
+      _ => theme.colorScheme.primary,
+    };
   }
 }
 

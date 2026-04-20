@@ -7,6 +7,7 @@ import '../../../core/app_config.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -40,6 +41,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final hasClerkKey = AppConfig.clerkPublishableKey.isNotEmpty;
     final authSession = ref.watch(authSessionProvider);
+    final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('Authentication'))),
@@ -51,9 +53,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF121A2B),
+                color: palette.elevatedSurface,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withAlpha(20)),
+                border: Border.all(color: palette.borderSubtle),
               ),
               child: hasClerkKey
                   ? _buildForm(authSession)
@@ -66,6 +68,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildConfigMissing(AuthSession authSession) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -73,7 +76,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Text(
           context.tr('Clerk is not configured'),
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -84,7 +87,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.',
           ),
           style: TextStyle(
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             fontSize: 15,
             height: 1.5,
           ),
@@ -108,6 +111,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildNativeCustomState(AuthSession authSession) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -115,7 +119,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Text(
           context.tr('Use the web sign-in flow'),
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -126,7 +130,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
           ),
           style: TextStyle(
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             fontSize: 15,
             height: 1.5,
           ),
@@ -161,7 +165,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
           ),
           style: TextStyle(
-            color: Colors.white.withAlpha(120),
+            color: theme.colorScheme.onSurfaceVariant,
             fontSize: 12,
             height: 1.4,
           ),
@@ -179,6 +183,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _buildWebRedirectState(AuthSession authSession) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -186,7 +191,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Text(
           context.tr('Sign in with Google'),
           style: TextStyle(
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -197,7 +202,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             'ContentFlow web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.',
           ),
           style: TextStyle(
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             fontSize: 15,
             height: 1.5,
           ),

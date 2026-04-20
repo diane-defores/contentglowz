@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/drip_plan.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import 'drip_plan_detail_screen.dart';
 import 'drip_wizard_sheet.dart';
@@ -119,7 +120,8 @@ class _PlanCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final statsAsync = ref.watch(dripStatsProvider(plan.id));
 
     return Card(
@@ -167,7 +169,9 @@ class _PlanCard extends ConsumerWidget {
                     const SizedBox(height: 6),
                     Text(
                       '${stats.published}/${stats.totalItems} published',
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -203,12 +207,13 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final (color, icon) = switch (status) {
-      'active' => (Colors.green, Icons.play_circle_filled),
-      'paused' => (Colors.orange, Icons.pause_circle_filled),
-      'completed' => (Colors.blue, Icons.check_circle),
-      'cancelled' => (Colors.grey, Icons.cancel),
-      _ => (Colors.grey, Icons.circle_outlined), // draft
+      'active' => (AppTheme.approveColor, Icons.play_circle_filled),
+      'paused' => (AppTheme.warningColor, Icons.pause_circle_filled),
+      'completed' => (AppTheme.infoColor, Icons.check_circle),
+      'cancelled' => (colorScheme.onSurfaceVariant, Icons.cancel),
+      _ => (colorScheme.onSurfaceVariant, Icons.circle_outlined),
     };
 
     return Chip(

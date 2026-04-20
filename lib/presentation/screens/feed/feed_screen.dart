@@ -91,14 +91,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle_outline,
             size: 72,
-            color: Color(0xFF00B894),
+            color: AppTheme.approveColor,
           ),
           const SizedBox(height: 24),
           Text(
@@ -106,13 +107,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             context.tr('No content waiting for review'),
-            style: TextStyle(fontSize: 16, color: Colors.white.withAlpha(120)),
+            style: TextStyle(
+              fontSize: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 32),
           FilledButton.icon(
@@ -177,7 +181,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       'approve' => ('PUBLISH', AppTheme.approveColor, Icons.check_circle),
       'reject' => ('SKIP', AppTheme.rejectColor, Icons.cancel),
       'edit' => ('EDIT', AppTheme.editColor, Icons.edit),
-      _ => ('', Colors.transparent, Icons.circle),
+      _ => ('', Theme.of(context).colorScheme.surface.withValues(alpha: 0), Icons.circle),
     };
 
     return Positioned.fill(
@@ -185,7 +189,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         child: Container(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              colors: [color.withAlpha(30), Colors.transparent],
+              colors: [
+                color.withAlpha(30),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0),
+              ],
               radius: 1.5,
             ),
           ),
@@ -335,7 +342,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
               'approved': approved,
               'failed': failed,
             });
-      _showSnackBar(msg, failed == 0 ? AppTheme.approveColor : Colors.orange);
+      _showSnackBar(
+        msg,
+        failed == 0 ? AppTheme.approveColor : AppTheme.warningColor,
+      );
     }
   }
 
@@ -401,8 +411,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   Color _colorForApproveSeverity(ApproveSeverity severity) =>
       switch (severity) {
         ApproveSeverity.success => AppTheme.approveColor,
-        ApproveSeverity.info => Colors.blue,
-        ApproveSeverity.warning => Colors.orange,
+        ApproveSeverity.info => AppTheme.infoColor,
+        ApproveSeverity.warning => AppTheme.warningColor,
         ApproveSeverity.error => AppTheme.rejectColor,
       };
 }

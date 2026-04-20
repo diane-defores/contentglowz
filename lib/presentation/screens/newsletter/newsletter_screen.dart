@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
 final _configProvider = FutureProvider<Map<String, dynamic>>((ref) async {
@@ -37,6 +38,7 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
   Widget build(BuildContext context) {
     final configAsync = ref.watch(_configProvider);
     final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('Newsletter'))),
@@ -57,17 +59,20 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
             ),
             data: (config) {
               final configured = config['configured'] == true;
+              final statusColor = configured
+                  ? AppTheme.approveColor
+                  : AppTheme.warningColor;
               return Card(
                 color: configured
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : Colors.orange.withValues(alpha: 0.1),
+                    ? statusColor.withValues(alpha: 0.1)
+                    : palette.mutedSurface,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Icon(
                         configured ? Icons.check_circle : Icons.warning,
-                        color: configured ? Colors.green : Colors.orange,
+                        color: statusColor,
                         size: 20,
                       ),
                       const SizedBox(width: 8),

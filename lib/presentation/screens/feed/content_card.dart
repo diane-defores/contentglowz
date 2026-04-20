@@ -13,13 +13,14 @@ class ContentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
+    final palette = AppTheme.paletteOf(context);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: palette.elevatedSurface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: typeColor.withAlpha(80), width: 1.5),
           boxShadow: [
@@ -34,11 +35,11 @@ class ContentCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with type badge and project
-            _buildHeader(typeColor),
+            _buildHeader(context, typeColor),
             // Format-specific metadata chips
             if (_hasFormatMeta()) _buildFormatMeta(typeColor),
             // Image if present
-            if (item.imageUrl != null) _buildImage(),
+            if (item.imageUrl != null) _buildImage(context),
             // Content preview
             Expanded(child: _buildBody(context)),
             // Footer with channels and timestamp
@@ -49,7 +50,8 @@ class ContentCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(Color typeColor) {
+  Widget _buildHeader(BuildContext context, Color typeColor) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
@@ -81,7 +83,7 @@ class ContentCard extends StatelessWidget {
             Text(
               item.projectName!,
               style: TextStyle(
-                color: Colors.white.withAlpha(120),
+                color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 12,
               ),
             ),
@@ -112,7 +114,7 @@ class ContentCard extends StatelessWidget {
           _metaChip(
             Icons.trending_up,
             '${item.seoVolume} vol$diffLabel',
-            Colors.green,
+            AppTheme.approveColor,
           ),
         );
       }
@@ -124,7 +126,7 @@ class ContentCard extends StatelessWidget {
         _metaChip(
           Icons.lightbulb_outline,
           item.generationReason!,
-          Colors.amber,
+          AppTheme.warningColor,
         ),
       );
     }
@@ -139,7 +141,7 @@ class ContentCard extends StatelessWidget {
           _metaChip(
             Icons.timer_outlined,
             '${item.shortDuration}s',
-            Colors.orange,
+            AppTheme.warningColor,
           ),
         );
       }
@@ -158,7 +160,7 @@ class ContentCard extends StatelessWidget {
         _metaChip(
           Icons.auto_stories,
           item.narrativeThread!,
-          Colors.purple.shade200,
+          AppTheme.infoColor,
         ),
       );
     }
@@ -204,13 +206,14 @@ class ContentCard extends StatelessWidget {
     };
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
+    final palette = AppTheme.paletteOf(context);
     return Container(
       height: 180,
       margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white.withAlpha(10),
+        color: palette.mutedSurface,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -218,8 +221,12 @@ class ContentCard extends StatelessWidget {
           item.imageUrl!,
           fit: BoxFit.cover,
           width: double.infinity,
-          errorBuilder: (_, _, _) => const Center(
-            child: Icon(Icons.image_outlined, color: Colors.white24, size: 48),
+          errorBuilder: (_, _, _) => Center(
+            child: Icon(
+              Icons.image_outlined,
+              color: Theme.of(context).colorScheme.outlineVariant,
+              size: 48,
+            ),
           ),
         ),
       ),
@@ -227,6 +234,7 @@ class ContentCard extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Column(
@@ -234,8 +242,8 @@ class ContentCard extends StatelessWidget {
         children: [
           Text(
             item.title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
               height: 1.3,
@@ -248,7 +256,7 @@ class ContentCard extends StatelessWidget {
             child: Text(
               item.summary ?? _truncateBody(item.body),
               style: TextStyle(
-                color: Colors.white.withAlpha(170),
+                color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 14,
                 height: 1.6,
               ),
@@ -263,6 +271,7 @@ class ContentCard extends StatelessWidget {
   Widget _buildFooter(BuildContext context, Color typeColor) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final showHints = screenWidth > 380;
+    final theme = Theme.of(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
@@ -272,13 +281,13 @@ class ContentCard extends StatelessWidget {
           ...item.channels.map(
             (channel) => Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Icon(
-                _iconForChannel(channel),
-                size: 18,
-                color: Colors.white.withAlpha(120),
+                child: Icon(
+                  _iconForChannel(channel),
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
           const Spacer(),
           // Swipe hints — hidden on very narrow screens to prevent overflow
           if (showHints)

@@ -132,6 +132,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   PreferredSizeWidget _buildAppBar(ContentItem item) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
+    final theme = Theme.of(context);
 
     return AppBar(
       leading: IconButton(
@@ -164,7 +165,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               item.projectName!,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.white.withAlpha(120),
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -192,6 +193,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Widget _buildBody(ContentItem item) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Column(
       children: [
         // Title
@@ -200,10 +203,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           child: _isEditing
               ? TextField(
                   controller: _titleController,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: theme.colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
                     hintText: context.tr('Title'),
@@ -214,10 +217,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 )
               : Text(
                   _titleController.text,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
         ),
@@ -226,22 +229,25 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              Icon(Icons.send_rounded,
-                  size: 14, color: Colors.white.withAlpha(80)),
+              Icon(
+                Icons.send_rounded,
+                size: 14,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 8),
               ...item.channels.map((ch) => Container(
                     margin: const EdgeInsets.only(right: 6),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(15),
+                      color: palette.surface.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       ch.name,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.white.withAlpha(120),
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   )),
@@ -252,7 +258,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         if (_item != null) _buildFormatMetaBar(_item!),
         if (_auditFuture != null) _buildAuditPanel(),
         const SizedBox(height: 12),
-        const Divider(height: 1, color: Colors.white12),
+        Divider(height: 1, color: theme.colorScheme.outlineVariant),
         // Body content
         Expanded(
           child: _isEditing
@@ -264,7 +270,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     expands: true,
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.white.withAlpha(220),
+                      color: theme.colorScheme.onSurface,
                       height: 1.7,
                     ),
                     decoration: InputDecoration(
@@ -283,43 +289,43 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     styleSheet: MarkdownStyleSheet(
                       p: TextStyle(
                         fontSize: 15,
-                        color: Colors.white.withAlpha(220),
+                        color: theme.colorScheme.onSurface,
                         height: 1.7,
                       ),
-                      h1: const TextStyle(
+                      h1: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: theme.colorScheme.onSurface,
                       ),
-                      h2: const TextStyle(
+                      h2: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: theme.colorScheme.onSurface,
                       ),
-                      h3: const TextStyle(
+                      h3: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: theme.colorScheme.onSurface,
                       ),
                       code: TextStyle(
-                        backgroundColor: Colors.white.withAlpha(15),
-                        color: const Color(0xFF6C5CE7),
+                        backgroundColor: palette.surface.withValues(alpha: 0.8),
+                        color: AppTheme.colorForContentType('Article'),
                         fontSize: 14,
                       ),
                       codeblockDecoration: BoxDecoration(
-                        color: Colors.white.withAlpha(10),
+                        color: palette.surface.withValues(alpha: 0.75),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       blockquoteDecoration: BoxDecoration(
                         border: Border(
                           left: BorderSide(
-                            color: Colors.white.withAlpha(40),
+                            color: theme.colorScheme.outlineVariant,
                             width: 3,
                           ),
                         ),
                       ),
                       listBullet: TextStyle(
-                        color: Colors.white.withAlpha(180),
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -381,21 +387,26 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Widget _editorChip(IconData icon, String label) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(10),
+        color: palette.surface.withValues(alpha: 0.76),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withAlpha(25)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: Colors.white.withAlpha(140)),
+          Icon(icon, size: 13, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(160)),
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -403,6 +414,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Widget _buildAuditPanel() {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: FutureBuilder<ContentAuditTrail>(
@@ -420,7 +432,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   const SizedBox(width: 10),
                   Text(
                     context.tr('Loading audit trail...'),
-                    style: TextStyle(color: Colors.white.withAlpha(150)),
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -444,32 +456,37 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             return _auditContainer(
               child: Text(
                 context.tr('No audit events yet.'),
-                style: TextStyle(color: Colors.white.withAlpha(150)),
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
               ),
             );
           }
 
           return _auditContainer(
             child: Theme(
-              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+              data: Theme.of(context).copyWith(
+                dividerColor: theme.colorScheme.outlineVariant.withValues(alpha: 0),
+              ),
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
                 childrenPadding: EdgeInsets.zero,
                 title: Text(
                   context.tr('Audit Trail'),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 subtitle: Text(
                   '${trail.transitions.length} ${context.tr('transitions')} • ${trail.edits.length} ${context.tr('edits')}',
-                  style: TextStyle(color: Colors.white.withAlpha(130)),
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 trailing: IconButton(
                   tooltip: context.tr('Copy audit trail'),
                   onPressed: () => _copyAuditTrail(trail),
-                  icon: Icon(Icons.copy_rounded, color: Colors.white.withAlpha(170)),
+                  icon: Icon(
+                    Icons.copy_rounded,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 children: [
                   if (trail.transitions.isNotEmpty) ...[
@@ -490,25 +507,27 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Widget _auditContainer({required Widget child}) {
+    final palette = AppTheme.paletteOf(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
+        color: palette.surface.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withAlpha(18)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: child,
     );
   }
 
   Widget _auditSectionTitle(String title) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 4, bottom: 8),
       child: Text(
         title,
         style: TextStyle(
-          color: Colors.white.withAlpha(180),
+          color: theme.colorScheme.onSurface,
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
@@ -519,7 +538,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   Widget _buildTransitionTile(ContentStatusChange event) {
     return _auditEventTile(
       icon: Icons.swap_horiz_rounded,
-      accent: const Color(0xFFFDAA5E),
+      accent: AppTheme.warningColor,
       title: '${event.fromStatus} → ${event.toStatus}',
       actor: event.actor,
       timestamp: event.timestamp,
@@ -547,13 +566,15 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     String? note,
   }) {
     final date = DateFormat('MMM d, HH:mm').format(timestamp.toLocal());
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(6),
+        color: palette.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(10)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -577,8 +598,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -587,7 +608,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     Text(
                       '${actor.actorLabel} (${actor.actorType}:${actor.actorId})',
                       style: TextStyle(
-                        color: Colors.white.withAlpha(150),
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 11,
                       ),
                     ),
@@ -597,7 +618,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               Text(
                 date,
                 style: TextStyle(
-                  color: Colors.white.withAlpha(120),
+                  color: theme.colorScheme.onSurfaceVariant,
                   fontSize: 11,
                 ),
               ),
@@ -608,7 +629,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             Text(
               note.trim(),
               style: TextStyle(
-                color: Colors.white.withAlpha(165),
+                color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 height: 1.4,
               ),
@@ -647,12 +668,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 
   Widget _buildBottomBar(ContentItem item) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: EdgeInsets.fromLTRB(
           20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A2E),
-        border: Border(top: BorderSide(color: Colors.white12)),
+      decoration: BoxDecoration(
+        color: palette.elevatedSurface,
+        border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
       ),
       child: Row(
         children: [
@@ -718,7 +741,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           error: error,
           stackTrace: stackTrace,
           contextData: {'contentId': item.id},
-          backgroundColor: Colors.orange.withAlpha(200),
+          backgroundColor: AppTheme.warningColor.withAlpha(200),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         );
         return;
@@ -768,7 +791,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
         title: Text(context.tr('Discard changes?')),
         content: Text(context.tr('You have unsaved edits.')),
         actions: [
@@ -791,8 +813,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Color _colorForApproveSeverity(ApproveSeverity severity) => switch (severity) {
         ApproveSeverity.success => AppTheme.approveColor,
-        ApproveSeverity.info => Colors.blue,
-        ApproveSeverity.warning => Colors.orange,
+        ApproveSeverity.info => AppTheme.infoColor,
+        ApproveSeverity.warning => AppTheme.warningColor,
         ApproveSeverity.error => AppTheme.rejectColor,
       };
 }

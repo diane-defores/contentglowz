@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_language.dart';
+import '../../../core/app_theme_preference.dart';
 import '../../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/content_item.dart';
@@ -37,9 +38,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final apiBaseUrl = ref.watch(apiBaseUrlProvider);
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
+    final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
+    final publishAccountsState = ref.watch(publishAccountsStateProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
     final languagePreference = ref.watch(appLanguagePreferenceProvider);
+    final themePreference = ref.watch(appThemePreferenceProvider);
     final userSettings = ref.watch(currentUserSettingsProvider);
     final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
     final tour = ref.watch(inAppTourProvider);
@@ -111,15 +115,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           Container(
                             width: 10,
                             height: 10,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.orange,
+                              color: AppTheme.warningColor,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             context.tr('Error checking status'),
-                            style: TextStyle(color: Colors.orange),
+                            style: TextStyle(color: AppTheme.warningColor),
                           ),
                         ],
                       ),
@@ -133,7 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.',
                     ),
                     style: TextStyle(
-                      color: Colors.orange.withAlpha(220),
+                      color: AppTheme.warningColor.withAlpha(220),
                       fontSize: 12,
                       height: 1.4,
                     ),
@@ -172,6 +176,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 28),
 
+          _sectionHeader('Appearance'),
+          const SizedBox(height: 12),
+          _buildAppearanceCard(themePreference),
+
+          const SizedBox(height: 28),
+
           // Content Engine
           _sectionHeader('Content Engine'),
           const SizedBox(height: 12),
@@ -179,7 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.auto_stories,
             title: 'Weekly Ritual',
             subtitle: 'Feed your creator voice & narrative',
-            color: const Color(0xFF6C5CE7),
+            color: AppTheme.colorForContentType('Article'),
             onTap: () => context.push('/ritual'),
           ),
           const SizedBox(height: 8),
@@ -187,7 +197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.people_outline,
             title: 'Personas',
             subtitle: 'Manage customer personas',
-            color: const Color(0xFF0984E3),
+            color: AppTheme.editColor,
             onTap: () => context.push('/personas'),
           ),
           const SizedBox(height: 8),
@@ -195,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.lightbulb_outline,
             title: 'Content Angles',
             subtitle: 'Generate & pick content angles',
-            color: const Color(0xFFFDAA5E),
+            color: AppTheme.warningColor,
             onTap: () => context.push('/angles'),
           ),
           const SizedBox(height: 8),
@@ -203,8 +213,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.tune,
             title: 'Onboarding',
             subtitle: 'Change project & content type settings',
-            color: const Color(0xFF00B894),
+            color: AppTheme.approveColor,
             onTap: () => context.push('/onboarding?intent=entry'),
+          ),
+          const SizedBox(height: 8),
+          _buildActionTile(
+            icon: Icons.folder_copy_outlined,
+            title: 'Projects',
+            subtitle: 'Switch the active project or manage your workspace list',
+            color: AppTheme.infoColor,
+            onTap: () => context.push('/projects'),
           ),
           const SizedBox(height: 8),
           _buildTourTile(tour),
@@ -214,28 +232,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // Idea Pool
           _sectionHeader('Idea Pool'),
           const SizedBox(height: 12),
-          _buildIdeaPoolCard(userSettings),
+          _buildIdeaPoolCard(
+            userSettings,
+            isAuthenticated: authSession.isAuthenticated,
+          ),
 
           const SizedBox(height: 28),
 
           // Content frequency
           _sectionHeader('Content Frequency'),
           const SizedBox(height: 12),
-          _buildFrequencyCard(userSettings),
+          _buildFrequencyCard(
+            userSettings,
+            isAuthenticated: authSession.isAuthenticated,
+          ),
 
           const SizedBox(height: 28),
 
           // Publishing channels
           _sectionHeader('Publishing Channels'),
           const SizedBox(height: 12),
-          ..._buildChannelTiles(publishAccounts),
+          if (publishAccountsState.valueOrNull?.isUnavailable == true) ...[
+            _buildPublishAccountsNotice(
+              context.tr(
+                'Publish account connections are unavailable until the backend publish integration is configured.',
+              ),
+              detail: publishAccountsState.valueOrNull?.message,
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (publishAccountsState.valueOrNull?.hasError == true) ...[
+            _buildPublishAccountsNotice(
+              context.tr(
+                'Connected accounts could not be loaded right now. Publishing stays available only for already-resolved flows.',
+              ),
+              detail: publishAccountsState.valueOrNull?.message,
+              tone: AppTheme.warningColor,
+            ),
+            const SizedBox(height: 12),
+          ],
+          ..._buildChannelTiles(
+            accountsAsync: publishAccounts,
+            publishAccountsState: publishAccountsState,
+          ),
 
           const SizedBox(height: 28),
 
           // Notifications
           _sectionHeader('Notifications'),
           const SizedBox(height: 12),
-          _buildNotificationsCard(userSettings),
+          _buildNotificationsCard(
+            userSettings,
+            isAuthenticated: authSession.isAuthenticated,
+          ),
 
           const SizedBox(height: 28),
 
@@ -245,7 +294,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icons.forum_outlined,
             title: 'Send Feedback',
             subtitle: 'Share text or audio product feedback',
-            color: const Color(0xFF7D5FFF),
+            color: AppTheme.colorForContentType('Article'),
             onTap: () => context.push('/feedback'),
           ),
           if (isFeedbackAdmin) ...[
@@ -254,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.admin_panel_settings_outlined,
               title: 'Feedback Admin',
               subtitle: 'Review incoming user feedback',
-              color: const Color(0xFF00CEC9),
+              color: AppTheme.approveColor,
               onTap: () => context.push('/feedback-admin'),
             ),
           ],
@@ -268,24 +317,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'ContentFlow',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   context.tr('Content Approval Pipeline v0.1.0'),
-                  style: TextStyle(color: Colors.white.withAlpha(120)),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   context.tr('AI generates content, you swipe to publish.'),
                   style: TextStyle(
-                    color: Colors.white.withAlpha(160),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                   ),
                 ),
@@ -299,12 +350,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _sectionHeader(String title) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Text(
       context.tr(title),
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: Colors.white.withAlpha(100),
+        color: colorScheme.onSurfaceVariant,
         letterSpacing: 1.2,
       ),
     );
@@ -312,6 +364,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildLanguageCard(String languagePreference) {
     final selected = normalizeAppLanguagePreference(languagePreference);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return _buildCard(
       child: Column(
@@ -322,7 +375,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'Choose how ContentFlow chooses its interface language.',
             ),
             style: TextStyle(
-              color: Colors.white.withAlpha(140),
+              color: colorScheme.onSurfaceVariant,
               fontSize: 13,
               height: 1.4,
             ),
@@ -331,7 +384,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           DropdownButtonFormField<String>(
             initialValue: selected,
             decoration: InputDecoration(labelText: context.tr('App language')),
-            dropdownColor: const Color(0xFF1A1A2E),
             items: [
               DropdownMenuItem(
                 value: appLanguageSystem,
@@ -360,19 +412,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildNotificationsCard(AsyncValue<AppSettings?> userSettings) {
+  Widget _buildAppearanceCard(String themePreference) {
+    final selected = normalizeAppThemePreference(themePreference);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr(
+              'Choose whether ContentFlow stays bright, stays dark, or follows your device appearance automatically.',
+            ),
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            key: const Key('theme-mode-dropdown'),
+            initialValue: selected,
+            decoration: InputDecoration(labelText: context.tr('Theme')),
+            items: [
+              DropdownMenuItem(
+                value: appThemeSystem,
+                child: Text(context.tr('Follow system appearance')),
+              ),
+              DropdownMenuItem(
+                value: appThemeLight,
+                child: Text(context.tr('Light')),
+              ),
+              DropdownMenuItem(
+                value: appThemeDark,
+                child: Text(context.tr('Dark')),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              ref.read(currentUserSettingsProvider.notifier).updateTheme(value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsCard(
+    AsyncValue<AppSettings?> userSettings, {
+    required bool isAuthenticated,
+  }) {
+    final theme = Theme.of(context);
+    final unavailableMessage = isAuthenticated
+        ? context.tr('Notification preferences are temporarily unavailable')
+        : context.tr('Sign in to sync notification preferences');
     return _buildCard(
       child: userSettings.when(
         data: (settings) => SwitchListTile(
           title: Text(
             context.tr('Push notifications'),
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           subtitle: Text(
             settings == null
                 ? context.tr('Sign in to sync notification preferences')
                 : context.tr('Get notified when new content is ready'),
-            style: TextStyle(color: Colors.white.withAlpha(100)),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
           value: settings?.notificationsEnabled ?? false,
           onChanged: settings == null
@@ -389,7 +497,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           title: Text(
             context.tr('Loading notification preferences'),
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           trailing: SizedBox(
             width: 18,
@@ -401,18 +509,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           title: Text(
             context.tr('Notification preferences unavailable'),
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           subtitle: Text(
-            '$error',
-            style: TextStyle(color: Colors.white.withAlpha(100)),
+            unavailableMessage,
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildIdeaPoolCard(AsyncValue<AppSettings?> userSettings) {
+  Widget _buildIdeaPoolCard(
+    AsyncValue<AppSettings?> userSettings, {
+    required bool isAuthenticated,
+  }) {
+    final theme = Theme.of(context);
+    final unavailableMessage = isAuthenticated
+        ? context.tr('Idea Pool settings are temporarily unavailable')
+        : context.tr('Sign in to configure Idea Pool');
     return _buildCard(
       child: userSettings.when(
         data: (settings) {
@@ -423,13 +538,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               SwitchListTile(
                 title: Text(
                   context.tr('Curate ideas before generation'),
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
                 subtitle: Text(
                   enabled
                       ? context.tr('Content generation waits for your review')
                       : context.tr('Content is generated automatically'),
-                  style: TextStyle(color: Colors.white.withAlpha(100)),
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 value: enabled,
                 onChanged: settings == null
@@ -439,7 +554,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             .read(currentUserSettingsProvider.notifier)
                             .toggleIdeaPool(val);
                       },
-                activeTrackColor: const Color(0xFFFDAA5E),
+                activeTrackColor: AppTheme.warningColor,
                 contentPadding: EdgeInsets.zero,
               ),
               if (enabled) ...[
@@ -450,17 +565,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFDAA5E).withAlpha(15),
+                    color: AppTheme.warningColor.withAlpha(15),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(0xFFFDAA5E).withAlpha(40),
+                      color: AppTheme.warningColor.withAlpha(40),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.lightbulb_outline,
-                        color: Color(0xFFFDAA5E),
+                        color: AppTheme.warningColor,
                         size: 18,
                       ),
                       const SizedBox(width: 10),
@@ -470,7 +585,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.',
                           ),
                           style: TextStyle(
-                            color: Colors.white.withAlpha(160),
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontSize: 12,
                             height: 1.4,
                           ),
@@ -487,9 +602,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: const Icon(Icons.lightbulb_outline, size: 18),
                     label: Text(context.tr('View Idea Pool')),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFDAA5E),
+                      foregroundColor: AppTheme.warningColor,
                       side: BorderSide(
-                        color: const Color(0xFFFDAA5E).withAlpha(60),
+                        color: AppTheme.warningColor.withAlpha(60),
                       ),
                     ),
                   ),
@@ -502,7 +617,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           title: Text(
             context.tr('Loading Idea Pool settings'),
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.colorScheme.onSurface),
           ),
           trailing: SizedBox(
             width: 18,
@@ -511,14 +626,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         error: (_, _) => Text(
-          context.tr('Sign in to configure Idea Pool'),
-          style: TextStyle(color: Colors.white.withAlpha(100)),
+          unavailableMessage,
+          style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
         ),
       ),
     );
   }
 
-  Widget _buildFrequencyCard(AsyncValue<AppSettings?> userSettings) {
+  Widget _buildFrequencyCard(
+    AsyncValue<AppSettings?> userSettings, {
+    required bool isAuthenticated,
+  }) {
+    final theme = Theme.of(context);
+    final unavailableMessage = isAuthenticated
+        ? context.tr('Content frequency settings are temporarily unavailable')
+        : context.tr('Sign in to configure content frequency');
     return _buildCard(
       child: userSettings.when(
         data: (settings) {
@@ -529,7 +651,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text(
                 context.tr('How much content should the AI generate?'),
                 style: TextStyle(
-                  color: Colors.white.withAlpha(140),
+                  color: theme.colorScheme.onSurfaceVariant,
                   fontSize: 13,
                 ),
               ),
@@ -540,7 +662,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: freq['blog_posts_per_month'] as int? ?? 0,
                 unit: '/month',
                 max: 30,
-                color: const Color(0xFF6C5CE7),
+                color: AppTheme.colorForContentType('Article'),
                 onChanged: (v) => _updateFrequency('blog_posts_per_month', v),
               ),
               const SizedBox(height: 12),
@@ -550,7 +672,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: freq['newsletters_per_week'] as int? ?? 0,
                 unit: '/week',
                 max: 7,
-                color: const Color(0xFFFDAA5E),
+                color: AppTheme.warningColor,
                 onChanged: (v) => _updateFrequency('newsletters_per_week', v),
               ),
               const SizedBox(height: 12),
@@ -560,7 +682,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: freq['shorts_per_day'] as int? ?? 0,
                 unit: '/day',
                 max: 10,
-                color: const Color(0xFFFF6B6B),
+                color: AppTheme.colorForContentType('Short'),
                 onChanged: (v) => _updateFrequency('shorts_per_day', v),
               ),
               const SizedBox(height: 12),
@@ -570,7 +692,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: freq['social_posts_per_day'] as int? ?? 0,
                 unit: '/day',
                 max: 10,
-                color: const Color(0xFF0984E3),
+                color: AppTheme.editColor,
                 onChanged: (v) => _updateFrequency('social_posts_per_day', v),
               ),
             ],
@@ -583,8 +705,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         error: (_, _) => Text(
-          context.tr('Sign in to configure content frequency'),
-          style: TextStyle(color: Colors.white.withAlpha(100)),
+          unavailableMessage,
+          style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
         ),
       ),
     );
@@ -601,6 +723,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final theme = Theme.of(context);
         final compact = constraints.maxWidth < 360;
         final slider = SliderTheme(
           data: SliderThemeData(
@@ -622,7 +745,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           value == 0 ? context.tr('Off') : '$value${context.tr(unit)}',
           textAlign: TextAlign.right,
           style: TextStyle(
-            color: value == 0 ? Colors.white.withAlpha(60) : color,
+            color: value == 0 ? theme.colorScheme.onSurfaceVariant : color,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -638,7 +761,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(width: 8),
                   Text(
                     context.tr(label),
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 14,
+                    ),
                   ),
                   const Spacer(),
                   valueText,
@@ -657,7 +783,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: 100,
               child: Text(
                 context.tr(label),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
+                  fontSize: 14,
+                ),
               ),
             ),
             Expanded(child: slider),
@@ -683,12 +812,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildCard({required Widget child}) {
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: child,
     );
@@ -706,8 +836,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onTap = () => controller.start(context);
     } else if (tour.stepIndex > 0) {
       title = 'Reprendre la visite guidée';
-      subtitle = 'Étape ${tour.stepIndex + 1}/${tour.totalSteps} — '
-          '${tour.currentStep.title}';
+      subtitle =
+          'Étape ${tour.stepIndex + 1}/${tour.totalSteps} — '
+          '${context.tr(tour.currentStep.title)}';
       onTap = () => controller.resume(context);
     } else {
       title = 'Visite guidée de l\'app';
@@ -715,11 +846,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onTap = () => controller.start(context);
     }
 
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: ListTile(
         leading: Container(
@@ -735,12 +868,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             size: 22,
           ),
         ),
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        title: Text(title, style: TextStyle(color: theme.colorScheme.onSurface)),
         subtitle: Text(
           subtitle,
-          style: TextStyle(color: Colors.white.withAlpha(80), fontSize: 12),
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
         ),
-        trailing: Icon(Icons.chevron_right, color: Colors.white.withAlpha(40)),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
         onTap: onTap,
       ),
     );
@@ -753,11 +892,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: ListTile(
         leading: Container(
@@ -771,21 +912,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         title: Text(
           context.tr(title),
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: theme.colorScheme.onSurface),
         ),
         subtitle: Text(
           context.tr(subtitle),
-          style: TextStyle(color: Colors.white.withAlpha(80), fontSize: 12),
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
         ),
-        trailing: Icon(Icons.chevron_right, color: Colors.white.withAlpha(40)),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
         onTap: onTap,
       ),
     );
   }
 
-  List<Widget> _buildChannelTiles(
-    AsyncValue<List<PublishAccount>> accountsAsync,
-  ) {
+  Widget _buildPublishAccountsNotice(
+    String message, {
+    String? detail,
+    Color? tone,
+  }) {
+    final theme = Theme.of(context);
+    final resolvedTone = tone ?? AppTheme.rejectColor;
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message,
+            style: TextStyle(color: resolvedTone, fontSize: 13, height: 1.4),
+          ),
+          if (detail != null && detail.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              detail,
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildChannelTiles({
+    required AsyncValue<List<PublishAccount>> accountsAsync,
+    required AsyncValue<PublishAccountsState> publishAccountsState,
+  }) {
     final channels = [
       ('WordPress', PublishingChannel.wordpress, Icons.language),
       ('Twitter / X', PublishingChannel.twitter, Icons.alternate_email),
@@ -807,27 +985,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       return Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: AppTheme.paletteOf(context).elevatedSurface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withAlpha(15)),
+          border: Border.all(color: AppTheme.paletteOf(context).borderSubtle),
         ),
         child: ListTile(
-          leading: Icon(icon, color: Colors.white.withAlpha(180)),
-          title: Text(name, style: const TextStyle(color: Colors.white)),
+          leading: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
+          ),
+          title: Text(
+            name,
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          ),
           subtitle: Text(
             _channelSubtitle(
               accountsAsync: accountsAsync,
+              publishAccountsState: publishAccountsState,
               platform: platform,
               connected: connected,
               account: account,
             ),
-            style: TextStyle(color: Colors.white.withAlpha(80), fontSize: 12),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
           ),
           trailing: _buildChannelTrailing(
             name: name,
             platform: platform,
             connected: connected,
             isLoading: accountsAsync.isLoading,
+            publishAccountsState: publishAccountsState,
           ),
         ),
       );
@@ -836,6 +1025,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _channelSubtitle({
     required AsyncValue<List<PublishAccount>> accountsAsync,
+    required AsyncValue<PublishAccountsState> publishAccountsState,
     required String? platform,
     required bool connected,
     required PublishAccount? account,
@@ -843,7 +1033,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (accountsAsync.isLoading) {
       return context.tr('Loading connected accounts...');
     }
-    if (accountsAsync.hasError) {
+    if (publishAccountsState.valueOrNull?.isUnavailable == true) {
+      return context.tr('Publish connections unavailable');
+    }
+    if (publishAccountsState.valueOrNull?.hasError == true ||
+        accountsAsync.hasError) {
       return context.tr('Could not fetch connected accounts');
     }
     if (platform == null) {
@@ -860,6 +1054,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required String? platform,
     required bool connected,
     required bool isLoading,
+    required AsyncValue<PublishAccountsState> publishAccountsState,
   }) {
     if (isLoading) {
       return const SizedBox(
@@ -872,7 +1067,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (platform == null) {
       return Text(
         context.tr('Not wired'),
-        style: TextStyle(color: Colors.orange.withAlpha(180), fontSize: 12),
+        style: TextStyle(
+          color: AppTheme.warningColor.withAlpha(180),
+          fontSize: 12,
+        ),
+      );
+    }
+
+    if (publishAccountsState.valueOrNull?.isUnavailable == true) {
+      return Text(
+        context.tr('Unavailable'),
+        style: TextStyle(
+          color: AppTheme.warningColor.withAlpha(180),
+          fontSize: 12,
+        ),
+      );
+    }
+
+    if (publishAccountsState.valueOrNull?.hasError == true) {
+      return Text(
+        context.tr('Unavailable'),
+        style: TextStyle(
+          color: AppTheme.warningColor.withAlpha(180),
+          fontSize: 12,
+        ),
       );
     }
 
@@ -896,7 +1114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             icon: Icon(
               Icons.link_off,
               size: 18,
-              color: Colors.white.withAlpha(80),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: context.tr('Disconnect'),
             onPressed: () => _disconnectChannel(name, platform),
@@ -910,8 +1128,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return OutlinedButton(
       onPressed: () => _connectChannel(name, platform),
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white60,
-        side: BorderSide(color: Colors.white.withAlpha(40)),
+        foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.9),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         minimumSize: const Size(0, 34),
       ),
@@ -971,7 +1191,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A2E),
           title: Text(
             context.tr('Connecting {channelName}', {
               'channelName': channelName,
@@ -982,7 +1201,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               'A browser window has opened for you to authorize {channelName}.\n\nOnce done, tap "Refresh" to see your connected account.',
               {'channelName': channelName},
             ),
-            style: TextStyle(color: Colors.white.withAlpha(180)),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           actions: [
             TextButton(
@@ -1026,7 +1247,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
         title: Text(
           context.tr('Disconnect {channelName}?', {'channelName': channelName}),
         ),
@@ -1034,7 +1254,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           context.tr('This will remove the connection to {displayName}.', {
             'displayName': account.displayName,
           }),
-          style: TextStyle(color: Colors.white.withAlpha(180)),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         actions: [
           TextButton(

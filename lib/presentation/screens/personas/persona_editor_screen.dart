@@ -72,6 +72,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -162,8 +164,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 4),
           Text(
             context.tr('Deep, real problems — not surface-level symptoms'),
-            style:
-                TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
@@ -181,8 +184,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 4),
           Text(
             context.tr('Aspirations and desired outcomes'),
-            style:
-                TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
@@ -200,14 +204,15 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 4),
           Text(
             context.tr('Words and expressions this persona actually uses'),
-            style:
-                TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _vocabularyControllers,
             hintPrefix: context.tr('Word or phrase'),
-            color: const Color(0xFF0984E3),
+            color: AppTheme.editColor,
             onAdd: () => setState(
                 () => _vocabularyControllers.add(TextEditingController())),
           ),
@@ -219,14 +224,15 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 4),
           Text(
             context.tr('Common pushbacks or doubts this persona has'),
-            style:
-                TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           ..._buildListFields(
             controllers: _objectionControllers,
             hintPrefix: context.tr('Objection'),
-            color: const Color(0xFFFDAA5E),
+            color: AppTheme.warningColor,
             onAdd: () => setState(
                 () => _objectionControllers.add(TextEditingController())),
           ),
@@ -240,10 +246,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
   Widget _sectionLabel(String label) {
     return Text(
       label,
-      style: TextStyle(
-        fontSize: 13,
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
         fontWeight: FontWeight.w600,
-        color: Colors.white.withAlpha(100),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         letterSpacing: 1.2,
       ),
     );
@@ -290,7 +295,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
               if (controllers.length > 2)
                 IconButton(
                   icon: Icon(Icons.close,
-                      size: 18, color: Colors.white.withAlpha(60)),
+                      size: 18,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                   onPressed: () {
                     setState(() {
                       controllers[i].dispose();

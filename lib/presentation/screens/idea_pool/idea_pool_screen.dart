@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../data/models/idea.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
 const _statusFilters = ['all', 'raw', 'enriched', 'used', 'dismissed'];
@@ -178,6 +179,7 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final raw = ideas.where((i) => i.status == 'raw').length;
     final enriched = ideas.where((i) => i.status == 'enriched').length;
     final used = ideas.where((i) => i.status == 'used').length;
@@ -187,18 +189,28 @@ class _StatsRow extends StatelessWidget {
       child: Row(
         children: [
           _StatChip(
-              label: 'Total', value: '${ideas.length}', color: Colors.white70),
+            label: 'Total',
+            value: '${ideas.length}',
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 8),
           _StatChip(
-              label: 'Raw', value: '$raw', color: const Color(0xFFFDAA5E)),
+            label: 'Raw',
+            value: '$raw',
+            color: AppTheme.warningColor,
+          ),
           const SizedBox(width: 8),
           _StatChip(
-              label: 'Enriched',
-              value: '$enriched',
-              color: const Color(0xFF00B894)),
+            label: 'Enriched',
+            value: '$enriched',
+            color: AppTheme.approveColor,
+          ),
           const SizedBox(width: 8),
           _StatChip(
-              label: 'Used', value: '$used', color: const Color(0xFF6C5CE7)),
+            label: 'Used',
+            value: '$used',
+            color: theme.colorScheme.primary,
+          ),
         ],
       ),
     );
@@ -257,22 +269,8 @@ class _IdeaCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final dateFormat = DateFormat('MMM d, y', context.localeTag);
 
-    final statusColor = switch (idea.status) {
-      'raw' => const Color(0xFFFDAA5E),
-      'enriched' => const Color(0xFF00B894),
-      'used' => const Color(0xFF6C5CE7),
-      'dismissed' => Colors.grey,
-      _ => colorScheme.outline,
-    };
-
-    final sourceColor = switch (idea.source) {
-      'newsletter_inbox' => const Color(0xFFFDAA5E),
-      'seo_keywords' => const Color(0xFF0984E3),
-      'competitor_watch' => const Color(0xFFE17055),
-      'social_listening' => const Color(0xFFE84393),
-      'manual' => const Color(0xFF6C5CE7),
-      _ => colorScheme.outline,
-    };
+    final statusColor = _statusColor(idea.status, colorScheme);
+    final sourceColor = _sourceColor(idea.source, colorScheme);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -329,7 +327,7 @@ class _IdeaCard extends StatelessWidget {
                       'Score {score}',
                       {'score': idea.priorityScore!.toStringAsFixed(0)},
                     ),
-                    color: const Color(0xFF00B894),
+                    color: AppTheme.approveColor,
                   ),
                 if (idea.searchVolume != null)
                   _MetaChip(
@@ -338,7 +336,7 @@ class _IdeaCard extends StatelessWidget {
                       '{volume} vol',
                       {'volume': idea.searchVolume},
                     ),
-                    color: const Color(0xFF0984E3),
+                    color: AppTheme.infoColor,
                   ),
                 if (idea.keywordDifficulty != null)
                   _MetaChip(
@@ -347,12 +345,12 @@ class _IdeaCard extends StatelessWidget {
                       'KD {score}',
                       {'score': idea.keywordDifficulty!.toStringAsFixed(0)},
                     ),
-                    color: const Color(0xFFE17055),
+                    color: AppTheme.rejectColor,
                   ),
                 _MetaChip(
                   icon: Icons.calendar_today_outlined,
                   text: dateFormat.format(idea.createdAt),
-                  color: Colors.white54,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -388,7 +386,7 @@ class _IdeaCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.arrow_upward,
                       label: 'Boost',
-                      color: const Color(0xFF00B894),
+                      color: AppTheme.approveColor,
                       onTap: () => onPrioritize(
                           (idea.priorityScore ?? 50) + 10),
                     ),
@@ -397,7 +395,7 @@ class _IdeaCard extends StatelessWidget {
                     _ActionButton(
                       icon: Icons.arrow_downward,
                       label: 'Lower',
-                      color: const Color(0xFFFDAA5E),
+                      color: AppTheme.warningColor,
                       onTap: () => onPrioritize(
                           ((idea.priorityScore ?? 50) - 10).clamp(0, 100)),
                     ),
@@ -405,14 +403,14 @@ class _IdeaCard extends StatelessWidget {
                   _ActionButton(
                     icon: Icons.close,
                     label: 'Dismiss',
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                     onTap: onDismiss,
                   ),
                   const SizedBox(width: 8),
                   _ActionButton(
                     icon: Icons.delete_outline,
                     label: 'Delete',
-                    color: const Color(0xFFE17055),
+                    color: colorScheme.error,
                     onTap: onDelete,
                   ),
                 ],
@@ -422,6 +420,27 @@ class _IdeaCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _statusColor(String status, ColorScheme colorScheme) {
+    return switch (status) {
+      'raw' => AppTheme.warningColor,
+      'enriched' => AppTheme.approveColor,
+      'used' => colorScheme.primary,
+      'dismissed' => colorScheme.onSurfaceVariant,
+      _ => colorScheme.outline,
+    };
+  }
+
+  Color _sourceColor(String source, ColorScheme colorScheme) {
+    return switch (source) {
+      'newsletter_inbox' => AppTheme.warningColor,
+      'seo_keywords' => AppTheme.infoColor,
+      'competitor_watch' => AppTheme.rejectColor,
+      'social_listening' => AppTheme.editColor,
+      'manual' => colorScheme.primary,
+      _ => colorScheme.outline,
+    };
   }
 }
 

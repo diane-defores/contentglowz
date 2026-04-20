@@ -134,6 +134,8 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   }
 
   Widget _buildPersonaPicker(List<Persona> personas) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     if (personas.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16),
@@ -164,15 +166,17 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
               avatar: Text(persona.avatar ?? '👤', style: const TextStyle(fontSize: 16)),
               label: Text(persona.name),
               backgroundColor: isSelected
-                  ? const Color(0xFF6C5CE7).withAlpha(30)
-                  : const Color(0xFF1A1A2E),
+                  ? AppTheme.colorForContentType('Article').withAlpha(30)
+                  : palette.elevatedSurface,
               side: BorderSide(
                 color: isSelected
-                    ? const Color(0xFF6C5CE7)
-                    : Colors.white.withAlpha(15),
+                    ? AppTheme.colorForContentType('Article')
+                    : palette.borderSubtle,
               ),
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF6C5CE7) : Colors.white70,
+                color: isSelected
+                    ? AppTheme.colorForContentType('Article')
+                    : theme.colorScheme.onSurfaceVariant,
                 fontSize: 13,
               ),
             ),
@@ -184,6 +188,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
 
   Widget _buildNarrativeBanner() {
     final narrative = ref.watch(lastNarrativeProvider);
+    final theme = Theme.of(context);
     if (narrative == null) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -192,21 +197,32 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(5),
+              color: AppTheme.paletteOf(context).surface.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withAlpha(10)),
+              border: Border.all(color: AppTheme.paletteOf(context).borderSubtle),
             ),
             child: Row(
               children: [
-                Icon(Icons.edit_note, size: 18, color: Colors.white.withAlpha(60)),
+                Icon(
+                  Icons.edit_note,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     context.tr('Complete your weekly ritual for better angles'),
-                    style: TextStyle(color: Colors.white.withAlpha(60), fontSize: 13),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-                Icon(Icons.chevron_right, size: 18, color: Colors.white.withAlpha(40)),
+                Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ],
             ),
           ),
@@ -219,18 +235,27 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF6C5CE7).withAlpha(10),
+          color: AppTheme.colorForContentType('Article').withAlpha(10),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF6C5CE7).withAlpha(30)),
+          border: Border.all(
+            color: AppTheme.colorForContentType('Article').withAlpha(30),
+          ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.auto_stories, size: 18, color: Color(0xFF6C5CE7)),
+            Icon(
+              Icons.auto_stories,
+              size: 18,
+              color: AppTheme.colorForContentType('Article'),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 narrative.suggestedChapterTitle ?? context.tr('Narrative loaded'),
-                style: const TextStyle(color: Color(0xFF6C5CE7), fontSize: 13),
+                style: TextStyle(
+                  color: AppTheme.colorForContentType('Article'),
+                  fontSize: 13,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -242,16 +267,20 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   }
 
   Widget _buildEmpty() {
+    final theme = Theme.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.lightbulb_outline,
-              size: 64, color: Colors.white.withAlpha(40)),
+              size: 64, color: theme.colorScheme.outlineVariant),
           const SizedBox(height: 16),
           Text(
             context.tr('No angles available'),
-            style: TextStyle(fontSize: 18, color: Colors.white70),
+            style: TextStyle(
+              fontSize: 18,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -259,7 +288,10 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                 ? context.tr('Select a persona above to generate angles')
                 : context.tr('Try refreshing or complete your weekly ritual'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.white.withAlpha(100)),
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           if (_selectedPersona == null) ...[
             const SizedBox(height: 24),
@@ -275,6 +307,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   }
 
   Widget _buildAnglesList() {
+    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -282,8 +315,10 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
           padding: const EdgeInsets.only(bottom: 16, left: 4),
           child: Text(
             context.tr('Pick an angle to generate content'),
-            style:
-                TextStyle(color: Colors.white.withAlpha(120), fontSize: 14),
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 14,
+            ),
           ),
         ),
         ...List.generate(_angles!.length, (i) {
@@ -298,10 +333,12 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   Widget _buildAngleCard(AngleSuggestion angle, int index, bool isSelected) {
     final typeColor = AppTheme.colorForContentType(
         _contentTypeLabel(angle.contentType));
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     final confidenceColor = angle.confidence >= 80
         ? AppTheme.approveColor
         : angle.confidence >= 60
-            ? const Color(0xFFFDAA5E)
+            ? AppTheme.warningColor
             : AppTheme.rejectColor;
 
     return GestureDetector(
@@ -313,13 +350,13 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C5CE7).withAlpha(15)
-              : const Color(0xFF1A1A2E),
+              ? AppTheme.colorForContentType('Article').withAlpha(15)
+              : palette.elevatedSurface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF6C5CE7)
-                : Colors.white.withAlpha(15),
+                ? AppTheme.colorForContentType('Article')
+                : palette.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -362,8 +399,11 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                 ),
                 const Spacer(),
                 if (isSelected)
-                  const Icon(Icons.check_circle,
-                      color: Color(0xFF6C5CE7), size: 22),
+                  Icon(
+                    Icons.check_circle,
+                    color: AppTheme.colorForContentType('Article'),
+                    size: 22,
+                  ),
               ],
             ),
             const SizedBox(height: 14),
@@ -371,8 +411,8 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             // Title
             Text(
               angle.title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
                 height: 1.3,
@@ -384,7 +424,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(8),
+                color: palette.surface.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
                 border: Border(
                   left: BorderSide(
@@ -394,7 +434,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
               child: Text(
                 angle.hook,
                 style: TextStyle(
-                  color: Colors.white.withAlpha(200),
+                  color: theme.colorScheme.onSurface,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
                   height: 1.5,
@@ -407,7 +447,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             Text(
               angle.angle,
               style: TextStyle(
-                color: Colors.white.withAlpha(140),
+                color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 13,
                 height: 1.5,
               ),
@@ -432,22 +472,26 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   }
 
   Widget _chip(IconData icon, String label) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(8),
+        color: palette.surface.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: Colors.white.withAlpha(60)),
+          Icon(icon, size: 12, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 5),
           Flexible(
             child: Text(
               label,
-              style:
-                  TextStyle(color: Colors.white.withAlpha(80), fontSize: 11),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 11,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -457,21 +501,25 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
   }
 
   Widget _buildBottomBar() {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: EdgeInsets.fromLTRB(
           24, 12, 24, 12 + MediaQuery.of(context).padding.bottom),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A2E),
-        border: Border(top: BorderSide(color: Colors.white12)),
+      decoration: BoxDecoration(
+        color: palette.elevatedSurface,
+        border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
       ),
       child: FilledButton.icon(
         onPressed: _isGenerating ? null : _generateContent,
         icon: _isGenerating
-            ? const SizedBox(
+            ? SizedBox(
                 height: 18,
                 width: 18,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               )
             : const Icon(Icons.auto_awesome),
         label: Text(
@@ -481,7 +529,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         ),
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: const Color(0xFF6C5CE7),
+          backgroundColor: AppTheme.colorForContentType('Article'),
         ),
       ),
     );

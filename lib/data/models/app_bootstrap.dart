@@ -34,7 +34,30 @@ class AppBootstrap {
     required this.workspaceStatus,
   });
 
-  bool get shouldOnboard => !user.workspaceExists || projectsCount == 0;
+  bool get shouldOnboard {
+    final normalizedStatus = workspaceStatus.trim().toLowerCase();
+
+    if (normalizedStatus == 'ready') {
+      return false;
+    }
+
+    if (normalizedStatus == 'needs_onboarding' ||
+        normalizedStatus == 'empty' ||
+        normalizedStatus == 'missing') {
+      return true;
+    }
+
+    if (user.workspaceExists) {
+      return false;
+    }
+
+    if ((defaultProjectId?.trim().isNotEmpty ?? false) ||
+        (user.defaultProjectId?.trim().isNotEmpty ?? false)) {
+      return false;
+    }
+
+    return projectsCount == 0;
+  }
 
   factory AppBootstrap.fromJson(Map<String, dynamic> json) {
     return AppBootstrap(

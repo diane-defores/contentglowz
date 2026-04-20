@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
+import '../../theme/app_theme.dart';
 
 class UptimeScreen extends ConsumerStatefulWidget {
   const UptimeScreen({super.key});
@@ -192,7 +193,9 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                     dense: true,
                     leading: Icon(
                       ping.online ? Icons.check_circle : Icons.error,
-                      color: ping.online ? Colors.green : Colors.red,
+                      color: ping.online
+                          ? AppTheme.approveColor
+                          : AppTheme.rejectColor,
                       size: 20,
                     ),
                     title: Text(
@@ -272,10 +275,11 @@ class _StatusBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = online ? AppTheme.approveColor : AppTheme.rejectColor;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: (online ? Colors.green : Colors.red).withValues(alpha: 0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -283,7 +287,7 @@ class _StatusBanner extends StatelessWidget {
         children: [
           Icon(
             online ? Icons.cloud_done : Icons.cloud_off,
-            color: online ? Colors.green : Colors.red,
+            color: statusColor,
             size: 32,
           ),
           const SizedBox(width: 12),
@@ -292,7 +296,7 @@ class _StatusBanner extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: online ? Colors.green : Colors.red,
+              color: statusColor,
             ),
           ),
         ],

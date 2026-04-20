@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/app_config.dart';
 import '../core/app_diagnostics.dart';
 import '../core/app_language.dart';
+import '../core/app_theme_preference.dart';
 import '../core/shared_preferences_provider.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/drip_plan.dart';
@@ -26,6 +27,7 @@ import '../data/services/feedback_service.dart';
 
 const _apiBaseUrlKey = 'api_base_url';
 const _appLanguagePreferenceKey = 'app_language_preference';
+const _appThemePreferenceKey = 'app_theme_preference';
 const _demoModeKey = 'demo_mode_enabled';
 const _demoOnboardingKey = 'demo_onboarding_complete';
 
@@ -38,6 +40,11 @@ final apiBaseUrlProvider = StateNotifierProvider<ApiBaseUrlNotifier, String>((
 final appLanguagePreferenceProvider =
     StateNotifierProvider<AppLanguagePreferenceNotifier, String>((ref) {
       return AppLanguagePreferenceNotifier(ref);
+    });
+
+final appThemePreferenceProvider =
+    StateNotifierProvider<AppThemePreferenceNotifier, String>((ref) {
+      return AppThemePreferenceNotifier(ref);
     });
 
 String _normalizeApiBaseUrl(String? raw) {
@@ -98,6 +105,25 @@ class AppLanguagePreferenceNotifier extends StateNotifier<String> {
     await ref
         .read(sharedPrefsProvider)
         .setString(_appLanguagePreferenceKey, normalized);
+  }
+}
+
+class AppThemePreferenceNotifier extends StateNotifier<String> {
+  AppThemePreferenceNotifier(this.ref)
+    : super(
+        normalizeAppThemePreference(
+          ref.read(sharedPrefsProvider).getString(_appThemePreferenceKey),
+        ),
+      );
+
+  final Ref ref;
+
+  Future<void> update(String theme) async {
+    final normalized = normalizeAppThemePreference(theme);
+    state = normalized;
+    await ref
+        .read(sharedPrefsProvider)
+        .setString(_appThemePreferenceKey, normalized);
   }
 }
 
@@ -694,20 +720,154 @@ final appBootstrapProvider = Provider<AppBootstrap?>((ref) {
   return ref.watch(appAccessStateProvider).valueOrNull?.bootstrap;
 });
 
-final projectsProvider = FutureProvider<List<Project>>((ref) async {
+class ProjectsState {
+  const ProjectsState({
+    this.items = const <Project>[],
+    this.message,
+    this.isDegraded = false,
+  });
+
+  final List<Project> items;
+  final String? message;
+  final bool isDegraded;
+}
+
+final projectsStateProvider = FutureProvider<ProjectsState>((ref) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.isReady != true) {
+    return const ProjectsState();
+  }
+
   final api = ref.read(apiServiceProvider);
-  return api.fetchProjects();
+  try {
+    final projects = await api.fetchProjects();
+    return ProjectsState(items: projects);
+  } catch (error, stackTrace) {
+    if (!_isNonCriticalReadFailure(error)) {
+      rethrow;
+    }
+    _logDegradedRead(
+      ref,
+      scope: 'projects.read.degraded',
+      message:
+          'Projects fetch failed; project UI will stay available in degraded mode.',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return ProjectsState(message: error.toString(), isDegraded: true);
+  }
+});
+
+final projectsProvider = FutureProvider<List<Project>>((ref) async {
+  final state = await ref.watch(projectsStateProvider.future);
+  return state.items;
+});
+
+final availableProjectsProvider = Provider<List<Project>>((ref) {
+  final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
+  return projects
+      .where((project) => !project.isArchived && !project.isDeleted)
+      .toList();
+});
+
+final archivedProjectsProvider = Provider<List<Project>>((ref) {
+  final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
+  return projects
+      .where((project) => project.isArchived && !project.isDeleted)
+      .toList();
+});
+
+final activeProjectProvider = Provider<Project?>((ref) {
+  final availableProjects = ref.watch(availableProjectsProvider);
+  if (availableProjects.isEmpty) {
+    return null;
+  }
+
+  final userSettings = ref.watch(currentUserSettingsProvider).valueOrNull;
+  final bootstrap = ref.watch(appBootstrapProvider);
+
+  Project? byId(String? id) {
+    if (id == null || id.trim().isEmpty) {
+      return null;
+    }
+    for (final project in availableProjects) {
+      if (project.id == id) {
+        return project;
+      }
+    }
+    return null;
+  }
+
+  return byId(userSettings?.defaultProjectId) ??
+      byId(bootstrap?.defaultProjectId) ??
+      availableProjects.cast<Project?>().firstWhere(
+        (project) => project?.isDefault == true,
+        orElse: () => availableProjects.first,
+      );
+});
+
+class PublishAccountsState {
+  const PublishAccountsState({
+    this.accounts = const <PublishAccount>[],
+    this.availability = PublishAccountsAvailability.available,
+    this.message,
+  });
+
+  final List<PublishAccount> accounts;
+  final PublishAccountsAvailability availability;
+  final String? message;
+
+  bool get isAvailable => availability == PublishAccountsAvailability.available;
+  bool get isUnavailable =>
+      availability == PublishAccountsAvailability.unavailable;
+  bool get hasError => availability == PublishAccountsAvailability.error;
+}
+
+enum PublishAccountsAvailability { available, unavailable, error }
+
+final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.isReady != true) {
+    return const PublishAccountsState();
+  }
+  final api = ref.watch(apiServiceProvider);
+  try {
+    final accounts = await api.fetchPublishAccounts();
+    return PublishAccountsState(accounts: accounts);
+  } on ApiException catch (error) {
+    final message = error.message.trim();
+    final normalizedMessage = message.toLowerCase();
+    final isMissingPublishConfig =
+        error.statusCode == 503 &&
+        error.path == '/api/publish/accounts' &&
+        (normalizedMessage.contains('not configured') ||
+            normalizedMessage.contains('api key'));
+
+    if (isMissingPublishConfig) {
+      return PublishAccountsState(
+        availability: PublishAccountsAvailability.unavailable,
+        message: message.isEmpty
+            ? 'Publish account connections are unavailable because the backend publish integration is not configured.'
+            : message,
+      );
+    }
+
+    return PublishAccountsState(
+      availability: PublishAccountsAvailability.error,
+      message: message.isEmpty
+          ? 'Could not fetch connected accounts.'
+          : message,
+    );
+  }
 });
 
 final publishAccountsProvider = FutureProvider<List<PublishAccount>>((
   ref,
 ) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
-  if (accessState?.isReady != true) {
-    return const <PublishAccount>[];
-  }
-  final api = ref.watch(apiServiceProvider);
-  return api.fetchPublishAccounts();
+  final state = await ref.watch(publishAccountsStateProvider.future);
+  return state.accounts;
 });
 
 final pendingContentProvider =
@@ -719,15 +879,46 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   @override
   Future<List<ContentItem>> build() async {
     final api = ref.read(apiServiceProvider);
-    return api.fetchPendingContent();
+    try {
+      return await api.fetchPendingContent();
+    } catch (error, stackTrace) {
+      if (!_isNonCriticalReadFailure(error)) {
+        rethrow;
+      }
+      _logDegradedRead(
+        ref,
+        scope: 'content.pending.degraded',
+        message:
+            'Pending content fetch failed; showing an empty review queue until the backend recovers.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <ContentItem>[];
+    }
   }
 
   Future<void> refresh() async {
+    final previous = state.valueOrNull ?? const <ContentItem>[];
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       final api = ref.read(apiServiceProvider);
-      return api.fetchPendingContent();
-    });
+      final items = await api.fetchPendingContent();
+      state = AsyncData(items);
+    } catch (error, stackTrace) {
+      if (!_isNonCriticalReadFailure(error)) {
+        state = AsyncError(error, stackTrace);
+        return;
+      }
+      _logDegradedRead(
+        ref,
+        scope: 'content.pending.degraded',
+        message:
+            'Pending content refresh failed; keeping the current review queue.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      state = AsyncData(previous);
+    }
   }
 
   Future<ApproveResult> approve(String id) async {
@@ -779,7 +970,33 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
         );
       }
 
-      final accounts = await ref.read(publishAccountsProvider.future);
+      final publishAccountsState = await ref.read(
+        publishAccountsStateProvider.future,
+      );
+      final accounts = publishAccountsState.accounts;
+
+      if (publishAccountsState.isUnavailable) {
+        ref.invalidate(contentHistoryProvider);
+        return ApproveResult(
+          approved: true,
+          published: false,
+          message:
+              'Approved "${item.title}", but publish accounts are unavailable: ${publishAccountsState.message ?? 'backend publish integration is not configured'}.',
+          severity: ApproveSeverity.warning,
+        );
+      }
+
+      if (publishAccountsState.hasError) {
+        ref.invalidate(contentHistoryProvider);
+        return ApproveResult(
+          approved: true,
+          published: false,
+          message:
+              'Approved "${item.title}", but connected accounts could not be checked: ${publishAccountsState.message ?? 'unknown error'}.',
+          severity: ApproveSeverity.warning,
+        );
+      }
+
       final platforms = <Map<String, String>>[];
       final missingAccounts = <String>[];
 
@@ -920,9 +1137,51 @@ PublishAccount? _resolvePublishAccount(
   return null;
 }
 
+bool _isNonCriticalReadFailure(Object error) {
+  return switch (error) {
+    ApiException(type: ApiErrorType.unauthorized) => false,
+    ApiException _ => true,
+    _ => true,
+  };
+}
+
+void _logDegradedRead(
+  Ref ref, {
+  required String scope,
+  required String message,
+  required Object error,
+  StackTrace? stackTrace,
+  Map<String, Object?> context = const <String, Object?>{},
+}) {
+  ref
+      .read(appDiagnosticsProvider)
+      .warning(
+        scope: scope,
+        message: message,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+      );
+}
+
 final contentHistoryProvider = FutureProvider<List<ContentItem>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchContentHistory();
+  try {
+    return await api.fetchContentHistory();
+  } catch (error, stackTrace) {
+    if (!_isNonCriticalReadFailure(error)) {
+      rethrow;
+    }
+    _logDegradedRead(
+      ref,
+      scope: 'content.history.degraded',
+      message:
+          'Published content fetch failed; falling back to an empty history view.',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return const <ContentItem>[];
+  }
 });
 
 final pendingCountProvider = Provider<int>((ref) {
@@ -967,14 +1226,35 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     }
 
     final api = ref.read(apiServiceProvider);
-    final settings = await api.fetchSettings();
+    AppSettings settings;
+    try {
+      settings = await api.fetchSettings();
+    } catch (error, stackTrace) {
+      if (!_isNonCriticalReadFailure(error)) {
+        rethrow;
+      }
+      _logDegradedRead(
+        ref,
+        scope: 'settings.read.degraded',
+        message:
+            'Settings fetch failed; leaving settings controls in degraded mode.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
     final normalizedLanguage = normalizeAppLanguagePreference(
       settings.language,
     );
+    final normalizedTheme = normalizeAppThemePreference(settings.theme);
     await ref
         .read(appLanguagePreferenceProvider.notifier)
         .update(normalizedLanguage);
-    return settings.copyWith(language: normalizedLanguage);
+    await ref.read(appThemePreferenceProvider.notifier).update(normalizedTheme);
+    return settings.copyWith(
+      language: normalizedLanguage,
+      theme: normalizedTheme,
+    );
   }
 
   Future<void> toggleNotifications(bool enabled) async {
@@ -1039,6 +1319,187 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
       });
       return settings.copyWith(language: normalizedLanguage);
     });
+  }
+
+  Future<AppSettings?> setDefaultProjectId(String? projectId) async {
+    final current = state.valueOrNull;
+    if (current == null) {
+      return null;
+    }
+
+    if (ref.read(authSessionProvider).isDemo) {
+      final updated = current.copyWith(defaultProjectId: projectId);
+      state = AsyncData(updated);
+      return updated;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      return api.updateSettings({'defaultProjectId': projectId});
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+    return state.valueOrNull;
+  }
+
+  Future<void> updateTheme(String theme) async {
+    final normalizedTheme = normalizeAppThemePreference(theme);
+    await ref.read(appThemePreferenceProvider.notifier).update(normalizedTheme);
+
+    final current = state.valueOrNull;
+    if (current == null) {
+      return;
+    }
+
+    if (ref.read(authSessionProvider).isDemo) {
+      state = AsyncData(current.copyWith(theme: normalizedTheme));
+      return;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      final settings = await api.updateSettings({'theme': normalizedTheme});
+      return settings.copyWith(theme: normalizedTheme);
+    });
+  }
+}
+
+final activeProjectControllerProvider =
+    AsyncNotifierProvider<ActiveProjectController, void>(
+      ActiveProjectController.new,
+    );
+
+class ActiveProjectController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<void> setActiveProject(String? projectId) async {
+    final previous = ref.read(currentUserSettingsProvider).valueOrNull;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(currentUserSettingsProvider.notifier)
+          .setDefaultProjectId(projectId);
+      ref.invalidate(projectsStateProvider);
+    });
+    if (state.hasError) {
+      if (previous != null) {
+        ref.invalidate(currentUserSettingsProvider);
+      }
+      throw state.error!;
+    }
+  }
+}
+
+final projectMutationControllerProvider =
+    AsyncNotifierProvider<ProjectMutationController, void>(
+      ProjectMutationController.new,
+    );
+
+class ProjectMutationController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<void> createProject({
+    required String name,
+    String? githubUrl,
+    List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      final project = await api.createProject(
+        name: name,
+        githubUrl: githubUrl,
+        contentTypes: contentTypes,
+      );
+      ref.invalidate(projectsStateProvider);
+      await ref
+          .read(currentUserSettingsProvider.notifier)
+          .setDefaultProjectId(project.id);
+      await ref.read(appAccessStateProvider.notifier).refresh();
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> updateProject({
+    required String projectId,
+    required String name,
+    String? githubUrl,
+    List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.updateProject(
+        projectId: projectId,
+        name: name,
+        githubUrl: githubUrl,
+        contentTypes: contentTypes,
+      );
+      ref.invalidate(projectsStateProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> archiveProject(String projectId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.archiveProject(projectId);
+      ref.invalidate(projectsStateProvider);
+      final activeProject = ref.read(activeProjectProvider);
+      if (activeProject?.id == projectId) {
+        final fallback = ref
+            .read(availableProjectsProvider)
+            .where((project) => project.id != projectId)
+            .cast<Project?>()
+            .firstWhere((_) => true, orElse: () => null);
+        await ref
+            .read(currentUserSettingsProvider.notifier)
+            .setDefaultProjectId(fallback?.id);
+      }
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> unarchiveProject(String projectId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.unarchiveProject(projectId);
+      ref.invalidate(projectsStateProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> deleteProject(String projectId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.deleteProject(projectId);
+      ref.invalidate(projectsStateProvider);
+      final activeProject = ref.read(activeProjectProvider);
+      if (activeProject?.id == projectId) {
+        await ref
+            .read(currentUserSettingsProvider.notifier)
+            .setDefaultProjectId(null);
+      }
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
   }
 }
 

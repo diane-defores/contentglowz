@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
+import '../../theme/app_theme.dart';
 
 final _workDomainsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -88,10 +89,10 @@ class _DomainCard extends StatelessWidget {
     final lastRunStatus = domain['lastRunStatus'] as String?;
 
     final statusColor = switch (status) {
-      'running' => Colors.blue,
-      'error' => Colors.red,
-      'paused' => Colors.orange,
-      _ => Colors.green,
+      'running' => AppTheme.infoColor,
+      'error' => AppTheme.rejectColor,
+      'paused' => AppTheme.warningColor,
+      _ => AppTheme.approveColor,
     };
 
     final domainIcon = switch (name) {
@@ -139,9 +140,17 @@ class _DomainCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _Stat(label: context.tr('Pending'), value: '$pending', color: Colors.orange),
+                      _Stat(
+                        label: context.tr('Pending'),
+                        value: '$pending',
+                        color: AppTheme.warningColor,
+                      ),
                       const SizedBox(width: 16),
-                      _Stat(label: context.tr('Done'), value: '$completed', color: Colors.green),
+                      _Stat(
+                        label: context.tr('Done'),
+                        value: '$completed',
+                        color: AppTheme.approveColor,
+                      ),
                       if (lastRunStatus != null) ...[
                         const SizedBox(width: 16),
                         _Stat(

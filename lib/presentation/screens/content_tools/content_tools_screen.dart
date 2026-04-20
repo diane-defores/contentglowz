@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
 final _validationsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
@@ -87,7 +88,7 @@ class _ValidationsTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
+                  color: AppTheme.warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -96,7 +97,7 @@ class _ValidationsTab extends ConsumerWidget {
                   }),
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Colors.orange,
+                    color: AppTheme.warningColor,
                   ),
                 ),
               ),
@@ -242,10 +243,10 @@ class _FunnelTab extends ConsumerWidget {
         ? 'D'
         : 'F';
     final color = switch (grade) {
-      'A' => Colors.green,
-      'B+' || 'B' => Colors.blue,
-      'C' => Colors.orange,
-      _ => Colors.red,
+      'A' => AppTheme.approveColor,
+      'B+' || 'B' => AppTheme.infoColor,
+      'C' => AppTheme.warningColor,
+      _ => theme.colorScheme.error,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -334,14 +335,16 @@ class _AuditTab extends ConsumerWidget {
               _AuditStat(
                 label: 'Issues',
                 value: '${issues.length}',
-                color: issues.isEmpty ? Colors.green : Colors.orange,
+                color: issues.isEmpty
+                    ? AppTheme.approveColor
+                    : AppTheme.warningColor,
               ),
               const SizedBox(width: 8),
               _AuditStat(
                 label: 'Reviewed',
                 value:
                     '${allContent.where((item) => item.reviewActorDisplay != null).length}',
-                color: Colors.blue,
+                color: AppTheme.infoColor,
               ),
             ],
           ),
@@ -383,13 +386,13 @@ class _AuditTab extends ConsumerWidget {
 
           if (issues.isEmpty)
             Card(
-              color: Colors.green.withValues(alpha: 0.1),
+              color: AppTheme.approveColor.withValues(alpha: 0.1),
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green),
-                    SizedBox(width: 8),
+                    Icon(Icons.check_circle, color: AppTheme.approveColor),
+                    const SizedBox(width: 8),
                     Text(context.tr('All content passes basic audit checks')),
                   ],
                 ),
@@ -405,7 +408,7 @@ class _AuditTab extends ConsumerWidget {
                   dense: true,
                   leading: Icon(
                     Icons.warning_amber,
-                    color: Colors.orange,
+                    color: AppTheme.warningColor,
                     size: 20,
                   ),
                   title: Text(
@@ -418,7 +421,10 @@ class _AuditTab extends ConsumerWidget {
                   ),
                   subtitle: Text(
                     context.tr(issue.issue),
-                    style: TextStyle(fontSize: 12, color: Colors.orange),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.warningColor,
+                    ),
                   ),
                 ),
               ),

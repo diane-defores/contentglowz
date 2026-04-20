@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/app_language.dart';
 import 'core/app_diagnostics.dart';
+import 'core/app_theme_preference.dart';
 import 'core/shared_preferences_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/providers.dart';
@@ -76,11 +77,16 @@ class ContentFlowApp extends ConsumerWidget {
     final localePreference = normalizeAppLanguagePreference(
       ref.watch(appLanguagePreferenceProvider),
     );
+    final themePreference = normalizeAppThemePreference(
+      ref.watch(appThemePreferenceProvider),
+    );
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.tr('ContentFlow'),
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeModeFromPreference(themePreference),
       routerConfig: router,
       locale: appLocaleFromPreference(localePreference),
       supportedLocales: AppLocalizations.supportedLocales,

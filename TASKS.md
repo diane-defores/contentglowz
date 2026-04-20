@@ -3,11 +3,11 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 9 — Feedback Admin v1 app shipped
+**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 10 — Adaptive theme system shipped
 
 **Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
 
-**Top priority**: Déployer les endpoints FastAPI feedback sur le serveur, puis reprendre Polar billing
+**Top priority**: Déployer les endpoints FastAPI feedback sur le serveur, puis reprendre Polar billing et finir la passe i18n secondaire
 
 ---
 
@@ -175,6 +175,8 @@
 | ✅ | Landing page produit (ContentFlow_site rebrand complet) | High | Medium | ✅ done — Hero, Features, How It Works, Pricing Free/19/49, Use Cases, FAQ |
 | ✅ | Feedback Admin v1 côté Flutter — soumission texte/audio, historique local léger, accès anonyme et écran admin in-app | High | Medium | ✅ done — client FastAPI prêt, build-time allowlist + docs ajoutés |
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | High | Medium | ✅ done — AppLanguage, persistance SharedPreferences et passe UI sur settings/editor/drip/uptime/work domains/runs/research |
+| ✅ | Système de thème complet — light/dark/system persisté + réglage utilisateur + thème éditorial partagé | High | Medium | ✅ done — préférence normalisée, `ThemeMode` branché sur l'app Flutter, palette/tokens centralisés |
+| ✅ | Purger les couleurs hard-codées des écrans Flutter pour rendre le light mode réellement cohérent | High | High | ✅ done — écrans migrés vers `Theme.of(context)` / `AppTheme.paletteOf(context)` sur tout `lib/presentation/screens` |
 | 🟠 | Déployer le backend FastAPI feedback (`/api/feedback/*`), le stockage audio S3-compatible et les URLs signées de lecture admin sur le serveur | High | Medium | 🔄 in progress — contrat backend rédigé, implémentation serveur hors repo |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Débloqué maintenant que l'auth Clerk web est stable |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
@@ -195,6 +197,7 @@
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | ✅ done |
+| 🟠 | Passe i18n complémentaire sur les écrans secondaires encore partiellement en anglais | 🔄 in progress |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
@@ -223,6 +226,6 @@
 
 ---
 
-> **Priority last updated**: 2026-04-19
+> **Priority last updated**: 2026-04-20
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing et finaliser les crédits DataForSEO
+> **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing, finir la passe i18n secondaire et finaliser les crédits DataForSEO

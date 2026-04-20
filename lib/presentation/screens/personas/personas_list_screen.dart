@@ -13,6 +13,9 @@ class PersonasListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final personasAsync = ref.watch(personasProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('Personas'))),
@@ -38,11 +41,11 @@ class PersonasListScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.people_outline,
-                      size: 64, color: Colors.white.withAlpha(40)),
+                      size: 64, color: colorScheme.outlineVariant),
                   const SizedBox(height: 16),
                   Text(
                     context.tr('No personas yet'),
-                    style: TextStyle(fontSize: 18, color: Colors.white70),
+                    style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -50,8 +53,9 @@ class PersonasListScreen extends ConsumerWidget {
                       'Create a customer persona to help\nthe AI generate targeted content',
                     ),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 14, color: Colors.white.withAlpha(100)),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
@@ -72,27 +76,31 @@ class PersonasListScreen extends ConsumerWidget {
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A2E),
+                  color: palette.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withAlpha(15)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   leading: CircleAvatar(
-                    backgroundColor:
-                        const Color(0xFF6C5CE7).withAlpha(30),
+                    backgroundColor: colorScheme.primary.withValues(alpha: 0.14),
                     child: Text(
                       p.avatar ?? p.name.substring(0, 1).toUpperCase(),
-                      style: const TextStyle(fontSize: 20),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colorScheme.primary,
+                      ),
                     ),
                   ),
                   title: Text(p.name,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w600)),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      )),
                   subtitle: Text(
                     p.demographics?.role ?? context.tr('No role defined'),
-                    style: TextStyle(color: Colors.white.withAlpha(100)),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   trailing: _confidenceBadge(p.confidence),
                   onTap: () => context.push('/personas/${p.id}'),
@@ -109,7 +117,7 @@ class PersonasListScreen extends ConsumerWidget {
     final color = confidence >= 70
         ? AppTheme.approveColor
         : confidence >= 40
-            ? const Color(0xFFFDAA5E)
+            ? AppTheme.warningColor
             : AppTheme.rejectColor;
 
     return Container(

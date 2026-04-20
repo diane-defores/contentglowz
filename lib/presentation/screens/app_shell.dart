@@ -89,6 +89,11 @@ const _sections = [
   _NavSection(
     label: 'System',
     items: [
+      _NavItem(
+        icon: Icons.folder_copy_rounded,
+        label: 'Projects',
+        path: '/projects',
+      ),
       _NavItem(icon: Icons.smart_toy_rounded, label: 'Runs', path: '/runs'),
       _NavItem(
         icon: Icons.timeline_rounded,
@@ -115,26 +120,6 @@ const _sections = [
 ];
 
 final _allItems = _sections.expand((s) => s.items).toList();
-
-const _degradedSections = [
-  _NavSection(
-    label: 'System',
-    items: [
-      _NavItem(
-        icon: Icons.monitor_heart_rounded,
-        label: 'Uptime',
-        path: '/uptime',
-      ),
-      _NavItem(
-        icon: Icons.settings_rounded,
-        label: 'Settings',
-        path: '/settings',
-      ),
-    ],
-  ),
-];
-
-final _allDegradedItems = _degradedSections.expand((s) => s.items).toList();
 
 /// Breakpoint: above this width we show side rail instead of bottom nav.
 const _desktopBreakpoint = 800.0;
@@ -166,19 +151,19 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final degradedMode = appAccess?.isDegraded == true;
+    final currentRoute = GoRouterState.of(context).uri.path;
     if (!degradedMode) {
       _maybeAutoStartTour();
     }
-    final pendingCount = degradedMode ? 0 : ref.watch(pendingCountProvider);
-    final currentRoute = GoRouterState.of(context).uri.path;
-    final selectedPath = _selectedPath(
-      currentRoute,
-      degradedMode: degradedMode,
-    );
+    final shouldWatchPendingCount = !degradedMode && currentRoute == '/feed';
+    final pendingCount = shouldWatchPendingCount
+        ? ref.watch(pendingCountProvider)
+        : 0;
+    final selectedPath = _selectedPath(currentRoute);
     final colorScheme = Theme.of(context).colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= _desktopBreakpoint;
-    final sections = degradedMode ? _degradedSections : _sections;
-    final allItems = degradedMode ? _allDegradedItems : _allItems;
+    final sections = _sections;
+    final allItems = _allItems;
 
     if (isWide) {
       return Scaffold(
@@ -227,12 +212,12 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  String _selectedPath(String route, {required bool degradedMode}) {
-    final items = degradedMode ? _allDegradedItems : _allItems;
+  String _selectedPath(String route) {
+    final items = _allItems;
     for (final item in items) {
       if (route.startsWith(item.path)) return item.path;
     }
-    return degradedMode ? '/uptime' : '/feed';
+    return '/feed';
   }
 }
 
@@ -251,86 +236,187 @@ class _ShellContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!degradedMode) {
-      return child;
-    }
-
     final colorScheme = Theme.of(context).colorScheme;
-    final message = switch (appAccess?.stage) {
-      AppAccessStage.apiUnavailable => context.tr(
-        'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
-      ),
-      AppAccessStage.bootstrapFailed => context.tr(
-        'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
-      ),
-      _ => context.tr(
-        'ContentFlow is running in degraded mode while backend access is limited.',
-      ),
-    };
-
     return Column(
       children: [
-        Material(
-          color: colorScheme.errorContainer,
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: colorScheme.onErrorContainer,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      message,
-                      style: TextStyle(
-                        color: colorScheme.onErrorContainer,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: () => context.go('/uptime'),
-                    child: Text(
-                      context.tr('Open Uptime'),
-                      style: TextStyle(color: colorScheme.onErrorContainer),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: context.tr('Copy diagnostics'),
-                    onPressed: () {
-                      copyDiagnosticsToClipboard(
-                        context,
-                        ref,
-                        title: 'ContentFlow degraded mode diagnostics',
-                        scope: 'app_shell.degraded_mode',
-                        currentError: message,
-                        contextData: {
-                          'accessStage':
-                              appAccess?.diagnosticsLabel ?? 'unknown',
-                          'backendStatus':
-                              appAccess?.backendStatusLabel ?? 'unknown',
-                        },
-                        successMessage: 'Degraded mode diagnostics copied.',
-                      );
-                    },
-                    icon: Icon(
-                      Icons.copy_rounded,
+        _ProjectSwitcherBar(ref: ref),
+        if (degradedMode)
+          Material(
+            color: colorScheme.errorContainer,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
                       color: colorScheme.onErrorContainer,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        switch (appAccess?.stage) {
+                          AppAccessStage.apiUnavailable => context.tr(
+                            'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
+                          ),
+                          AppAccessStage.bootstrapFailed => context.tr(
+                            'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
+                          ),
+                          _ => context.tr(
+                            'ContentFlow is running in degraded mode while backend access is limited.',
+                          ),
+                        },
+                        style: TextStyle(
+                          color: colorScheme.onErrorContainer,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    TextButton(
+                      onPressed: () => context.go('/uptime'),
+                      child: Text(
+                        context.tr('Open Uptime'),
+                        style: TextStyle(color: colorScheme.onErrorContainer),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: context.tr('Copy diagnostics'),
+                      onPressed: () {
+                        copyDiagnosticsToClipboard(
+                          context,
+                          ref,
+                          title: 'ContentFlow degraded mode diagnostics',
+                          scope: 'app_shell.degraded_mode',
+                          currentError: appAccess?.message,
+                          contextData: {
+                            'accessStage':
+                                appAccess?.diagnosticsLabel ?? 'unknown',
+                            'backendStatus':
+                                appAccess?.backendStatusLabel ?? 'unknown',
+                          },
+                          successMessage: 'Degraded mode diagnostics copied.',
+                        );
+                      },
+                      icon: Icon(
+                        Icons.copy_rounded,
+                        color: colorScheme.onErrorContainer,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
         Expanded(child: child),
       ],
+    );
+  }
+}
+
+class _ProjectSwitcherBar extends StatelessWidget {
+  const _ProjectSwitcherBar({required this.ref});
+
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final projectsState = ref.watch(projectsStateProvider);
+    final activeProject = ref.watch(activeProjectProvider);
+    final isSwitching = ref.watch(activeProjectControllerProvider).isLoading;
+
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Icon(Icons.folder_copy_rounded, color: colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: projectsState.when(
+                  data: (state) {
+                    final availableProjects = state.items
+                        .where(
+                          (project) =>
+                              !project.isArchived && !project.isDeleted,
+                        )
+                        .toList();
+                    if (availableProjects.isEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.tr('No project selected'),
+                            style: TextStyle(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            context.tr('Create project'),
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          activeProject?.name ??
+                              context.tr('No project selected'),
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          activeProject?.url.isNotEmpty == true
+                              ? activeProject!.url
+                              : context.tr('Active project'),
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => Text(
+                    context.tr('Loading projects...'),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  ),
+                  error: (_, _) => Text(
+                    context.tr('Project management unavailable'),
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ),
+              ),
+              if (isSwitching)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                TextButton(
+                  onPressed: () => context.go('/projects'),
+                  child: Text(context.tr('Manage projects')),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -447,7 +533,7 @@ class _SideNavItem extends StatelessWidget {
         : colorScheme.onSurfaceVariant;
     final bgColor = isSelected
         ? colorScheme.primary.withValues(alpha: 0.12)
-        : Colors.transparent;
+        : colorScheme.surface.withValues(alpha: 0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
@@ -514,11 +600,11 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryItems = degradedMode
-        ? items
-        : items.where((i) => _mobileTabPaths.contains(i.path)).toList();
+    final primaryItems = items
+        .where((i) => _mobileTabPaths.contains(i.path))
+        .toList();
     final isMoreSelected = !_mobileTabPaths.contains(selectedPath);
-    final showMoreTab = !degradedMode;
+    final showMoreTab = true;
 
     return Container(
       decoration: BoxDecoration(
@@ -610,7 +696,7 @@ class _BottomNav extends StatelessWidget {
                         : colorScheme.onSurfaceVariant;
                     final bgColor = isSelected
                         ? colorScheme.primary.withValues(alpha: 0.12)
-                        : Colors.transparent;
+                        : colorScheme.surface.withValues(alpha: 0);
                     return Material(
                       color: bgColor,
                       borderRadius: BorderRadius.circular(12),

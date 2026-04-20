@@ -14,6 +14,7 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final historyAsync = ref.watch(contentHistoryProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('History'))),
@@ -37,14 +38,14 @@ class HistoryScreen extends ConsumerWidget {
                   Icon(
                     Icons.history,
                     size: 64,
-                    color: Colors.white.withAlpha(40),
+                    color: theme.colorScheme.outlineVariant,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     context.tr('No history yet'),
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.white.withAlpha(120),
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -69,17 +70,19 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
-    final statusColor = _statusColor(item.status);
+    final statusColor = _statusColor(context, item.status);
     final dateFormat = DateFormat('MMM d, HH:mm', context.localeTag);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
         children: [
@@ -101,8 +104,8 @@ class _HistoryTile extends StatelessWidget {
               children: [
                 Text(
                   item.title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -130,7 +133,7 @@ class _HistoryTile extends StatelessWidget {
                     Text(
                       dateFormat.format(item.publishedAt ?? item.createdAt),
                       style: TextStyle(
-                        color: Colors.white.withAlpha(80),
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -143,7 +146,7 @@ class _HistoryTile extends StatelessWidget {
                       Icon(
                         Icons.verified_user_outlined,
                         size: 13,
-                        color: Colors.white.withAlpha(90),
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 6),
                       Expanded(
@@ -155,7 +158,7 @@ class _HistoryTile extends StatelessWidget {
                                 : ' (${item.reviewActorType})',
                           }),
                           style: TextStyle(
-                            color: Colors.white.withAlpha(110),
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontSize: 11,
                           ),
                           maxLines: 1,
@@ -189,13 +192,13 @@ class _HistoryTile extends StatelessWidget {
     );
   }
 
-  Color _statusColor(ContentStatus status) {
+  Color _statusColor(BuildContext context, ContentStatus status) {
     return switch (status) {
       ContentStatus.published => AppTheme.approveColor,
       ContentStatus.rejected => AppTheme.rejectColor,
-      ContentStatus.approved => const Color(0xFFFDAA5E),
+      ContentStatus.approved => AppTheme.warningColor,
       ContentStatus.editing => AppTheme.editColor,
-      ContentStatus.pending => Colors.white54,
+      ContentStatus.pending => Theme.of(context).colorScheme.onSurfaceVariant,
     };
   }
 

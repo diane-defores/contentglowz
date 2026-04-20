@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import 'affiliation_form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
@@ -193,6 +194,7 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final palette = AppTheme.paletteOf(context);
     final active = affiliations.where((a) => a.status == 'active').length;
     final paused = affiliations.where((a) => a.status == 'paused').length;
     final expired = affiliations.where((a) => a.status == 'expired').length;
@@ -201,13 +203,33 @@ class _StatsRow extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Row(
         children: [
-          _StatChip(label: context.tr('Total'), value: '${affiliations.length}', color: colorScheme.primary),
+          _StatChip(
+            label: context.tr('Total'),
+            value: '${affiliations.length}',
+            color: colorScheme.primary,
+            backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+          ),
           const SizedBox(width: 8),
-          _StatChip(label: context.tr('Active'), value: '$active', color: Colors.green),
+          _StatChip(
+            label: context.tr('Active'),
+            value: '$active',
+            color: AppTheme.approveColor,
+            backgroundColor: AppTheme.approveColor.withValues(alpha: 0.12),
+          ),
           const SizedBox(width: 8),
-          _StatChip(label: context.tr('Paused'), value: '$paused', color: Colors.orange),
+          _StatChip(
+            label: context.tr('Paused'),
+            value: '$paused',
+            color: AppTheme.warningColor,
+            backgroundColor: AppTheme.warningColor.withValues(alpha: 0.12),
+          ),
           const SizedBox(width: 8),
-          _StatChip(label: context.tr('Expired'), value: '$expired', color: Colors.red),
+          _StatChip(
+            label: context.tr('Expired'),
+            value: '$expired',
+            color: AppTheme.rejectColor,
+            backgroundColor: palette.mutedSurface,
+          ),
         ],
       ),
     );
@@ -215,10 +237,16 @@ class _StatsRow extends StatelessWidget {
 }
 
 class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label, required this.value, required this.color});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.backgroundColor,
+  });
   final String label;
   final String value;
   final Color color;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +254,7 @@ class _StatChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -262,9 +290,9 @@ class _AffiliationCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final statusColor = switch (affiliation.status) {
-      'active' => Colors.green,
-      'paused' => Colors.orange,
-      'expired' => Colors.red,
+      'active' => AppTheme.approveColor,
+      'paused' => AppTheme.warningColor,
+      'expired' => AppTheme.rejectColor,
       _ => colorScheme.outline,
     };
 

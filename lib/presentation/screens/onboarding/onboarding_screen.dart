@@ -21,6 +21,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
   bool _isFinishing = false;
+  bool _didLoadProject = false;
 
   // Page 1: GitHub repo
   final _repoUrlController = TextEditingController();
@@ -29,6 +30,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Page 2: Content types
   late List<ContentTypeConfig> _contentTypes;
   late final bool _isDemoMode;
+  String get _mode =>
+      GoRouterState.of(context).uri.queryParameters['mode'] ?? 'workspace';
+  String? get _projectId =>
+      GoRouterState.of(context).uri.queryParameters['projectId'];
+  bool get _isProjectCreateMode => _mode == 'create';
+  bool get _isProjectEditMode => _mode == 'edit';
+  bool get _isWorkspaceSetupMode =>
+      !_isProjectCreateMode && !_isProjectEditMode;
 
   @override
   void initState() {
@@ -53,6 +62,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _repoUrlController.dispose();
     _projectNameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoadProject || !_isProjectEditMode || _projectId == null) {
+      return;
+    }
+
+    final projects =
+        ref.read(projectsProvider).valueOrNull ?? const <Project>[];
+    final project = projects
+        .where((candidate) => candidate.id == _projectId)
+        .cast<Project?>()
+        .firstWhere((_) => true, orElse: () => null);
+    if (project == null) {
+      return;
+    }
+    _didLoadProject = true;
+    _projectNameController.text = project.name;
+    _repoUrlController.text = project.url;
+    _contentTypes = project.settings?.contentTypes.isNotEmpty == true
+        ? project.settings!.contentTypes
+        : ContentTypeConfig.defaults();
   }
 
   void _onProjectChanged() {
@@ -80,15 +113,40 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final projectsAsync = ref.watch(projectsProvider);
+    final projectToEdit = _isProjectEditMode
+        ? projectsAsync.valueOrNull
+              ?.where((project) => project.id == _projectId)
+              .cast<Project?>()
+              .firstWhere((_) => true, orElse: () => null)
+        : null;
+    if (!_didLoadProject && projectToEdit != null) {
+      _didLoadProject = true;
+      _projectNameController.text = projectToEdit.name;
+      _repoUrlController.text = projectToEdit.url;
+      _contentTypes = projectToEdit.settings?.contentTypes.isNotEmpty == true
+          ? projectToEdit.settings!.contentTypes
+          : ContentTypeConfig.defaults();
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('Setup')),
+        title: Text(
+          context.tr(_isProjectEditMode ? 'Project settings' : 'Setup'),
+        ),
         leading: _currentPage > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _previousPage,
               )
             : null,
+        actions: [
+          IconButton(
+            tooltip: context.tr('Copy diagnostics'),
+            onPressed: _copyOnboardingDiagnostics,
+            icon: const Icon(Icons.copy_rounded),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -113,6 +171,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildProgressBar() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
@@ -125,7 +184,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               decoration: BoxDecoration(
                 color: isActive
                     ? AppTheme.approveColor
-                    : Colors.white.withAlpha(20),
+                    : colorScheme.outlineVariant.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -138,16 +197,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // ── Page 1: Project ──
 
   Widget _buildProjectPage() {
+    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         if (_isDemoMode) ...[_buildDemoBanner(), const SizedBox(height: 24)],
         Text(
-          context.tr('Connect your project'),
+          context.tr(
+            _isProjectEditMode ? 'Project settings' : 'Connect your project',
+          ),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -157,7 +219,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             height: 1.5,
           ),
         ),
@@ -199,6 +261,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildDemoBanner() {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -212,7 +275,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Text(
             context.tr('Demo workspace locked'),
             style: TextStyle(
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -223,7 +286,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               'This onboarding uses a fixed public repo and pre-generated content. Users can explore the flow, but the demo data is intentionally read-only.',
             ),
             style: TextStyle(
-              color: Colors.white.withAlpha(150),
+              color: theme.colorScheme.onSurfaceVariant,
               fontSize: 14,
               height: 1.5,
             ),
@@ -236,6 +299,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // ── Page 2: Content Types ──
 
   Widget _buildContentTypesPage() {
+    final theme = Theme.of(context);
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -244,7 +308,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -254,7 +318,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             height: 1.5,
           ),
         ),
@@ -279,14 +343,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildContentTypeCard(ContentTypeConfig ct, int index) {
     final iconData = _iconForType(ct.icon);
     final color = AppTheme.colorForContentType(ct.label.split(' ').first);
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: ct.enabled ? color.withAlpha(15) : const Color(0xFF1A1A2E),
+        color: ct.enabled ? color.withAlpha(15) : palette.elevatedSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: ct.enabled ? color.withAlpha(80) : Colors.white.withAlpha(15),
+          color: ct.enabled
+              ? color.withAlpha(80)
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.65),
         ),
       ),
       child: Column(
@@ -295,12 +363,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ListTile(
             leading: Icon(
               iconData,
-              color: ct.enabled ? color : Colors.white.withAlpha(80),
+              color: ct.enabled ? color : theme.colorScheme.onSurfaceVariant,
             ),
             title: Text(
               context.tr(ct.label),
               style: TextStyle(
-                color: ct.enabled ? Colors.white : Colors.white54,
+                color: ct.enabled
+                    ? theme.colorScheme.onSurface
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
             trailing: Switch(
@@ -363,6 +433,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       0,
       (sum, c) => sum + c.frequencyPerWeek,
     );
+    final theme = Theme.of(context);
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -372,7 +443,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -386,7 +457,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white.withAlpha(150),
+            color: theme.colorScheme.onSurfaceVariant,
             height: 1.5,
           ),
         ),
@@ -427,12 +498,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             backgroundColor: AppTheme.approveColor,
           ),
           child: _isFinishing
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 )
               : Text(context.tr(_isDemoMode ? 'Open Demo Workspace' : 'Start')),
@@ -446,12 +517,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     required String title,
     required String subtitle,
   }) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
+        color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withAlpha(15)),
+        border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,8 +537,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),
@@ -474,7 +547,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.white.withAlpha(120),
+                    color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -510,6 +583,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  void _copyOnboardingDiagnostics() {
+    final authSession = ref.read(authSessionProvider);
+    final accessState = ref.read(appAccessStateProvider).valueOrNull;
+    copyDiagnosticsToClipboard(
+      context,
+      ref,
+      title: 'ContentFlow onboarding diagnostics',
+      scope: 'onboarding.copy_diagnostics',
+      currentError: accessState?.message,
+      contextData: {
+        'sessionState': authSession.status.name,
+        'sessionEmail': authSession.email ?? 'none',
+        'isDemoMode': _isDemoMode,
+        'onboardingPage': _currentPage + 1,
+        'projectName': _projectName.isEmpty ? 'blank' : _projectName,
+        'repoUrl': _repoUrl.isEmpty ? 'blank' : _repoUrl,
+        'hasValidProjectStep': _hasValidProjectStep,
+        'accessStage': accessState?.diagnosticsLabel ?? 'loading',
+        'workspaceStatus': accessState?.bootstrap?.workspaceStatus ?? 'none',
+        'workspaceExists':
+            accessState?.bootstrap?.user.workspaceExists ?? false,
+        'projectsCount': accessState?.bootstrap?.projectsCount ?? 'none',
+        'defaultProjectId': accessState?.bootstrap?.defaultProjectId ?? 'none',
+      },
+      successMessage: 'Onboarding diagnostics copied to clipboard.',
+    );
+  }
+
   Future<void> _finish() async {
     if (_isDemoMode) {
       ref.read(authSessionProvider.notifier).markOnboardingComplete();
@@ -539,7 +640,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            context.tr('Sign in with Google before creating a workspace.'),
+            context.tr(
+              _isProjectEditMode
+                  ? 'Sign in with Google before editing a project.'
+                  : 'Sign in with Google before creating a workspace.',
+            ),
           ),
         ),
       );
@@ -549,20 +654,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     setState(() => _isFinishing = true);
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.onboardProject(_repoUrl, _projectName);
+      final mutationController = ref.read(
+        projectMutationControllerProvider.notifier,
+      );
+      if (_isProjectEditMode && _projectId != null) {
+        await mutationController.updateProject(
+          projectId: _projectId!,
+          name: _projectName,
+          githubUrl: _repoUrl,
+          contentTypes: _contentTypes,
+        );
+      } else if (_isProjectCreateMode) {
+        await mutationController.createProject(
+          name: _projectName,
+          githubUrl: _repoUrl,
+          contentTypes: _contentTypes,
+        );
+      } else {
+        final api = ref.read(apiServiceProvider);
+        await api.onboardProject(_repoUrl, _projectName);
+      }
       ref.invalidate(projectsProvider);
       ref.invalidate(appBootstrapProvider);
+      ref.invalidate(projectsStateProvider);
       await ref.read(appAccessStateProvider.notifier).refresh();
       if (!mounted) return;
-      context.go('/feed');
+      context.go(_isWorkspaceSetupMode ? '/feed' : '/projects');
     } catch (error, stackTrace) {
       if (!mounted) return;
       showDiagnosticSnackBar(
         context,
         ref,
-        message: 'Workspace creation failed: $error',
-        scope: 'onboarding.create_workspace',
+        message: _isProjectEditMode
+            ? 'Project update failed: $error'
+            : 'Workspace creation failed: $error',
+        scope: _isProjectEditMode
+            ? 'onboarding.update_project'
+            : 'onboarding.create_workspace',
         error: error,
         stackTrace: stackTrace,
         contextData: {'projectName': _projectName, 'repoUrl': _repoUrl},

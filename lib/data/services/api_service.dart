@@ -206,6 +206,81 @@ class ApiService {
     }
   }
 
+  Future<Project> createProject({
+    required String name,
+    String? githubUrl,
+    List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/projects',
+        data: _compactMap({
+          'name': name.trim(),
+          'github_url': normalizeOptionalText(githubUrl),
+          'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+        }),
+      );
+      return Project.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (mapped.statusCode == 404 || mapped.statusCode == 405) {
+        await onboardProject(githubUrl, name);
+        final projects = await fetchProjects();
+        final normalizedName = name.trim().toLowerCase();
+        return projects.firstWhere(
+          (project) => project.name.trim().toLowerCase() == normalizedName,
+          orElse: () => projects.first,
+        );
+      }
+      throw mapped;
+    }
+  }
+
+  Future<Project> updateProject({
+    required String projectId,
+    required String name,
+    String? githubUrl,
+    List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/api/projects/$projectId',
+        data: _compactMap({
+          'name': name.trim(),
+          'github_url': normalizeOptionalText(githubUrl),
+          'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+        }),
+      );
+      return Project.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> archiveProject(String projectId) async {
+    try {
+      await _dio.post('/api/projects/$projectId/archive');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> unarchiveProject(String projectId) async {
+    try {
+      await _dio.post('/api/projects/$projectId/unarchive');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> deleteProject(String projectId) async {
+    try {
+      await _dio.delete('/api/projects/$projectId');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<AppBootstrap> fetchBootstrap() async {
     try {
       final response = await _dio.get('/api/bootstrap');
@@ -220,7 +295,20 @@ class ApiService {
       final response = await _dio.get('/api/settings');
       return AppSettings.fromJson(_asMap(response.data));
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      if (allowDemoData) {
+        return const AppSettings(
+          id: 'offline-settings',
+          userId: 'offline-user',
+        );
+      }
+      final mapped = _mapDioException(error);
+      if (mapped.type == ApiErrorType.offline) {
+        return const AppSettings(
+          id: 'offline-settings',
+          userId: 'offline-user',
+        );
+      }
+      throw mapped;
     }
   }
 
@@ -737,7 +825,18 @@ class ApiService {
           )
           .toList();
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      final detail = mapped.message.toLowerCase();
+      final path = mapped.path ?? '';
+      final isOptionalServerConfigFailure =
+          path == '/api/publish/accounts' &&
+          mapped.statusCode == 503 &&
+          detail.contains('not configured');
+      if (isOptionalServerConfigFailure ||
+          mapped.type == ApiErrorType.offline) {
+        return const [];
+      }
+      throw mapped;
     }
   }
 

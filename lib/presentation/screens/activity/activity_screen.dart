@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
+import '../../theme/app_theme.dart';
 
 final _activityProvider = FutureProvider<List<Map<String, dynamic>>>((
   ref,
@@ -99,9 +100,9 @@ class _ActivityItem extends StatelessWidget {
     final createdAt = activity['createdAt'] as String? ?? '';
 
     final statusColor = switch (status) {
-      'completed' => Colors.green,
-      'running' => Colors.blue,
-      'failed' => Colors.red,
+      'completed' => AppTheme.approveColor,
+      'running' => AppTheme.infoColor,
+      'failed' => AppTheme.rejectColor,
       _ => theme.colorScheme.outline,
     };
 

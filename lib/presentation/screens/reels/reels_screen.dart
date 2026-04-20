@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/providers.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -26,6 +27,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('Reels'))),
@@ -34,7 +36,7 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
         children: [
           // Info card
           Card(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+            color: palette.mutedSurface,
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
@@ -149,6 +151,7 @@ class _ResultCard extends StatelessWidget {
     final duration = result['duration'] as num?;
     final caption = result['caption'] as String?;
     final author = result['author'] as String?;
+    final successColor = AppTheme.approveColor;
 
     return Card(
       child: Padding(
@@ -158,11 +161,11 @@ class _ResultCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 20),
+                Icon(Icons.check_circle, color: successColor, size: 20),
                 const SizedBox(width: 8),
                 Text(context.tr('Download Complete'),
                     style: theme.textTheme.titleSmall
-                        ?.copyWith(color: Colors.green)),
+                        ?.copyWith(color: successColor)),
               ],
             ),
             const SizedBox(height: 12),

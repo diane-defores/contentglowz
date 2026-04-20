@@ -151,6 +151,8 @@ class AppLocalizations {
         'Impossible de vérifier la configuration newsletter',
     'Could not fetch connected accounts':
         'Impossible de récupérer les comptes connectés',
+    'Connected accounts could not be loaded right now. Publishing stays available only for already-resolved flows.':
+        'Les comptes connectés n’ont pas pu être chargés pour le moment. La publication reste disponible uniquement pour les flux déjà résolus.',
     'Could not get connect URL for {channelName}':
         'Impossible d’obtenir l’URL de connexion pour {channelName}',
     'Could not load feedback': 'Impossible de charger les feedbacks',
@@ -301,10 +303,42 @@ class AppLocalizations {
     'Casual': 'Décontracté',
     'Inspirational': 'Inspirant',
     'Project': 'Projet',
+    'Projects': 'Projets',
+    'Project settings': 'Paramètres du projet',
+    'Project management unavailable':
+        'La gestion des projets est temporairement indisponible',
+    'Manage projects': 'Gérer les projets',
+    'Create project': 'Créer un projet',
+    'Edit project': 'Modifier le projet',
+    'Switch project': 'Changer de projet',
+    'Switch the active project or manage your workspace list':
+        'Changer le projet actif ou gérer la liste de votre workspace',
+    'Set as default': 'Définir par défaut',
+    'Archive project': 'Archiver le projet',
+    'Unarchive project': 'Désarchiver le projet',
+    'Delete project': 'Supprimer le projet',
+    'Archived projects': 'Projets archivés',
+    'Active project': 'Projet actif',
+    'Active project updated.': 'Projet actif mis à jour.',
+    'Project updated.': 'Projet mis à jour.',
+    'No project selected': 'Aucun projet sélectionné',
+    'No projects yet': 'Aucun projet pour le moment',
+    'Loading projects...': 'Chargement des projets...',
+    'Refresh': 'Rafraîchir',
+    'Default': 'Par défaut',
+    'Archive this project?': 'Archiver ce projet ?',
+    'Delete this project from the active workspace list?':
+        'Supprimer ce projet de la liste active du workspace ?',
+    'Sign in with Google before editing a project.':
+        'Connectez-vous avec Google avant de modifier un projet.',
     'Project name': 'Nom du projet',
     'Push notifications': 'Notifications push',
     'Publish': 'Publier',
+    'Publish account connections are unavailable until the backend publish integration is configured.':
+        'Les connexions de comptes de publication sont indisponibles tant que l’intégration de publication du backend n’est pas configurée.',
     'Publish Destinations': 'Destinations de publication',
+    'Publish connections unavailable':
+        'Connexions de publication indisponibles',
     'Published': 'Publié',
     'Publishing Channels': 'Canaux de publication',
     'Publishing Timeline': 'Chronologie de publication',
@@ -318,11 +352,11 @@ class AppLocalizations {
     'Record a short voice message, then send it.':
         'Enregistrez un court message vocal, puis envoyez-le.',
     'Recording in progress: {duration}': 'Enregistrement en cours : {duration}',
-    'Refresh': 'Rafraîchir',
     'Rejected': 'Rejeté',
     'Research': 'Recherche',
     'Retry': 'Réessayer',
     'Review Demo Setup': 'Relire la config démo',
+    'Unavailable': 'Indisponible',
     'Review incoming user feedback': 'Examiner les feedbacks utilisateurs',
     'Repo-aware onboarding instead of blank-prompt setup':
         'Onboarding relié au dépôt plutôt qu’une configuration vide à base de prompts',
@@ -486,8 +520,7 @@ class AppLocalizations {
         'Chemin absolu vers les fichiers Markdown',
     'Audit Trail': 'Trace d audit',
     'Audit trail copied': 'Trace d audit copiee',
-    'Audit trail unavailable: {error}':
-        'Trace d audit indisponible : {error}',
+    'Audit trail unavailable: {error}': 'Trace d audit indisponible : {error}',
     'Auto (AI detects semantic cocoons)':
         'Auto (l IA detecte les cocons semantiques)',
     'Backend status check failed': 'La verification du statut backend a echoue',
@@ -641,8 +674,7 @@ class AppLocalizations {
     'Author': 'Auteur',
     'Boost': 'Booster',
     'Caption': 'Legende',
-    'Calendar — your scheduled posts':
-        'Calendrier — vos posts planifies',
+    'Calendar — your scheduled posts': 'Calendrier — vos posts planifies',
     'Check backend health here. If the app enters degraded mode, this screen tells you why and when the service is back.':
         'Verifiez ici la sante du backend. Si l app passe en mode degrade, cet ecran vous indique pourquoi et quand le service revient.',
     'Centralize your affiliate links so the AI can insert them intelligently into relevant content. Add a link here once, and it will be suggested automatically whenever the topic fits.':
@@ -669,8 +701,7 @@ class AppLocalizations {
     'Find all published content here, with its status and target platform. This is your archive for checking what has already gone out or reusing a past idea.':
         'Retrouvez ici tous les contenus deja publies, avec leur statut et la plateforme cible. C est votre archive pour verifier ce qui est deja parti ou reutiliser une ancienne idee.',
     'Guided app tour': 'Visite guidee de l app',
-    'Guided tour · {current}/{total}':
-        'Visite guidee · {current}/{total}',
+    'Guided tour · {current}/{total}': 'Visite guidee · {current}/{total}',
     'History — everything that has been published':
         'Historique — tout ce qui a ete publie',
     'Instagram Reel URL': 'URL du reel Instagram',
@@ -686,12 +717,10 @@ class AppLocalizations {
     'No ideas yet': 'Aucune idee pour le moment',
     'No templates available': 'Aucun modele disponible',
     'Pause tour': 'Mettre en pause la visite',
-    'Performance — detailed metrics':
-        'Performance — metriques detaillees',
+    'Performance — detailed metrics': 'Performance — metriques detaillees',
     'Performance complements Analytics with metrics per content item and per channel. Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.':
         'Performance complete Analytics avec des metriques par contenu et par canal. Utilisez-le quand vous voulez comprendre pourquoi un post a marche, ou non, afin de reproduire ce qui fonctionne.',
-    'Personas — your target audiences':
-        'Personas — vos audiences cibles',
+    'Personas — your target audiences': 'Personas — vos audiences cibles',
     'Previous': 'Precedent',
     'Raw': 'Brut',
     'Reel ID': 'ID du reel',
@@ -701,13 +730,11 @@ class AppLocalizations {
     'Repository URL is required': 'L URL du depot est requise',
     'Research gathers trending topics, competitor monitoring, and audience questions. This is the screen to check before each planning ritual so you know what to cover this week.':
         'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. C est l ecran a consulter avant chaque rituel de planification pour savoir quoi traiter cette semaine.',
-    'Research — feed your strategy':
-        'Research — nourrir votre strategie',
+    'Research — feed your strategy': 'Research — nourrir votre strategie',
     'Runs — AI job history': 'Runs — historique des jobs IA',
     'SEO Mesh': 'Mesh SEO',
     'SEO — organic visibility': 'SEO — visibilite organique',
-    'Settings — personalize everything':
-        'Parametres — tout personnaliser',
+    'Settings — personalize everything': 'Parametres — tout personnaliser',
     'Skip tour': 'Passer la visite',
     'Templates — your reusable formats':
         'Templates — vos modeles reutilisables',
@@ -745,8 +772,7 @@ class AppLocalizations {
     'Your Name': 'Votre nom',
     'Your site URL': 'URL de votre site',
     'Activity — system timeline': 'Activite — timeline systeme',
-    'Affiliations — your monetized links':
-        'Affiliations — vos liens monetises',
+    'Affiliations — your monetized links': 'Affiliations — vos liens monetises',
     'All sources': 'Toutes les sources',
     'Analytics — measure impact': 'Analytics — mesurer l impact',
     'Delete idea?': 'Supprimer l idee ?',
@@ -780,10 +806,8 @@ class AppLocalizations {
         'Reconsiderez-vous quelque chose ? Un changement de strategie, un nouvel angle ?',
     'Articles published in file order.':
         'Articles publies dans l ordre des fichiers.',
-    'Aspirations and desired outcomes':
-        'Aspirations et resultats souhaites',
-    'Brief description of the program...':
-        'Breve description du programme...',
+    'Aspirations and desired outcomes': 'Aspirations et resultats souhaites',
+    'Brief description of the program...': 'Breve description du programme...',
     'Category': 'Categorie',
     'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.':
         'Clerk est connecte, mais l initialisation du workspace a echoue. ContentFlow reste en mode degrade jusqu a ce que FastAPI retourne un bootstrap exploitable.',
@@ -793,8 +817,7 @@ class AppLocalizations {
     'Complete your weekly ritual for better angles':
         'Completez votre rituel hebdomadaire pour de meilleurs angles',
     'Contact URL': 'URL de contact',
-    'Content created: "{contentType}"':
-        'Contenu cree : « {contentType} »',
+    'Content created: "{contentType}"': 'Contenu cree : « {contentType} »',
     'Content generation in progress: "{contentType}"':
         'Generation de contenu en cours : « {contentType} »',
     'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.':
@@ -827,8 +850,7 @@ class AppLocalizations {
     'Failed to create content. Check backend connection.':
         'Impossible de creer le contenu. Verifiez la connexion backend.',
     'Failed to delete: {error}': 'Suppression impossible : {error}',
-    'Failed to load affiliations':
-        'Impossible de charger les affiliations',
+    'Failed to load affiliations': 'Impossible de charger les affiliations',
     'Failed to load ideas': 'Impossible de charger les idees',
     'Failed to load personas': 'Impossible de charger les personas',
     'Failed to load templates': 'Impossible de charger les modeles',
@@ -854,8 +876,7 @@ class AppLocalizations {
     'Narrative loaded': 'Narratif charge',
     'Narrative synthesis failed: {error}':
         'La synthese narrative a echoue : {error}',
-    'Narrative validated and saved!':
-        'Narratif valide et enregistre !',
+    'Narrative validated and saved!': 'Narratif valide et enregistre !',
     'New Affiliate Link': 'Nouveau lien d affiliation',
     'New Chapter Detected': 'Nouveau chapitre detecte',
     'New Persona': 'Nouveau persona',
@@ -880,8 +901,7 @@ class AppLocalizations {
     'Pick an angle to generate content':
         'Choisissez un angle pour generer du contenu',
     'Pivot': 'Pivot',
-    'Please enter a persona name':
-        'Veuillez entrer un nom de persona',
+    'Please enter a persona name': 'Veuillez entrer un nom de persona',
     'Positioning Shift': 'Changement de positionnement',
     'Preview': 'Apercu',
     'Recommendation': 'Recommandation',
@@ -927,8 +947,7 @@ class AppLocalizations {
         'Qu est-ce qui a ete difficile ? Un blocage, un doute, une frustration ?',
     'What went well? A milestone, a positive reaction, a breakthrough?':
         'Qu est-ce qui s est bien passe ? Une etape cle, une reaction positive, une percee ?',
-    'When and how to use this link...':
-        'Quand et comment utiliser ce lien...',
+    'When and how to use this link...': 'Quand et comment utiliser ce lien...',
     'Win': 'Succes',
     'Word or phrase': 'Mot ou expression',
     'Words and expressions this persona actually uses':
@@ -936,8 +955,7 @@ class AppLocalizations {
     'e.g. GoCharbon Launch': 'ex. Lancement GoCharbon',
     'e.g. Indie developer, CTO, Content creator':
         'ex. Developpeur indie, CTO, createur de contenu',
-    'e.g. Tech-Savvy Solopreneur':
-        'ex. Solopreneur techno averti',
+    'e.g. Tech-Savvy Solopreneur': 'ex. Solopreneur techno averti',
     'e.g. src/data': 'ex. src/data',
     'hosting, wordpress, website': 'hosting, wordpress, site web',
     'https://affiliate.example.com/ref=123':
@@ -952,8 +970,7 @@ class AppLocalizations {
     '{status}: {count}': '{status} : {count}',
     '{volume} vol': '{volume} vol',
     'https://github.com/user/repo': 'https://github.com/user/repo',
-    'https://www.instagram.com/reel/...':
-        'https://www.instagram.com/reel/...',
+    'https://www.instagram.com/reel/...': 'https://www.instagram.com/reel/...',
     '{count} sections': '{count} sections',
     'active': 'actif',
     'articles': 'articles',

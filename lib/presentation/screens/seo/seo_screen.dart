@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 
 class SeoScreen extends ConsumerStatefulWidget {
   const SeoScreen({super.key});
@@ -131,18 +132,18 @@ class _MeshResults extends StatelessWidget {
             _StatCard(
                 label: context.tr('Issues'),
                 value: '$issues',
-                color: Colors.orange),
+                color: AppTheme.warningColor),
             const SizedBox(width: 8),
             _StatCard(
                 label: context.tr('Tips'),
                 value: '$recommendations',
-                color: Colors.green),
+                color: AppTheme.approveColor),
             if (score != null) ...[
               const SizedBox(width: 8),
               _StatCard(
                 label: context.tr('Score'),
                 value: '${score.toInt()}%',
-                color: Colors.blue),
+                color: AppTheme.infoColor),
             ],
           ],
         ),
@@ -156,7 +157,11 @@ class _MeshResults extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
                   dense: true,
-                  leading: Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                  leading: Icon(
+                    Icons.warning_amber,
+                    color: AppTheme.warningColor,
+                    size: 20,
+                  ),
                   title: Text(
                       (issue as Map)['description']?.toString() ??
                           context.tr('Issue'),
@@ -174,7 +179,11 @@ class _MeshResults extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
                   dense: true,
-                  leading: Icon(Icons.lightbulb_outline, color: Colors.green, size: 20),
+                  leading: Icon(
+                    Icons.lightbulb_outline,
+                    color: AppTheme.approveColor,
+                    size: 20,
+                  ),
                   title: Text(
                       (rec as Map)['description']?.toString() ??
                           context.tr('Recommendation'),

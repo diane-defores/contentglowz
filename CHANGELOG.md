@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-20]
+
+### Added
+- Added a persisted app theme preference with `light`, `dark`, and `system` modes, plus Flutter tests covering theme normalization and app-level theme restoration.
+- Added a shared editorial theme palette and semantic color tokens so surfaces, accents, and status tones can be reused consistently across the Flutter shell.
+
+### Changed
+- Switched the Flutter app shell to load both light and dark themes and resolve `ThemeMode` from user settings instead of forcing a single dark theme.
+- Added an Appearance section in Settings so users can switch theme mode manually while still supporting automatic system-follow behavior.
+- Migrated the Flutter screen layer to rely on `Theme.of(context)` and `AppTheme.paletteOf(context)` for most surfaces, borders, text, overlays, and status accents instead of local color constants.
+
+### Fixed
+- Fixed the light-theme rollout by removing the remaining hard-coded screen colors that were keeping multiple flows visually dark-only or low-contrast in light mode.
+
 ## [2026-04-19]
 
 ### Added

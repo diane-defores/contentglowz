@@ -15,6 +15,8 @@ class InAppTourOverlay extends ConsumerWidget {
 
     final step = tour.currentStep;
     final controller = ref.read(inAppTourProvider.notifier);
+    final palette = AppTheme.paletteOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -27,12 +29,12 @@ class InAppTourOverlay extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E),
+                color: palette.elevatedSurface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.approveColor.withAlpha(80)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(120),
+                    color: colorScheme.shadow.withValues(alpha: 0.22),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -44,21 +46,21 @@ class InAppTourOverlay extends ConsumerWidget {
                 children: [
                   _buildHeader(context, tour, controller),
                   const SizedBox(height: 10),
-                  _buildProgressBar(tour),
+                  _buildProgressBar(context, tour),
                   const SizedBox(height: 14),
                   Text(
-                    step.title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    context.tr(step.title),
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    step.description,
+                    context.tr(step.description),
                     style: TextStyle(
-                      color: Colors.white.withAlpha(180),
+                      color: colorScheme.onSurfaceVariant,
                       fontSize: 13.5,
                       height: 1.45,
                     ),
@@ -87,7 +89,7 @@ class InAppTourOverlay extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              step.hint!,
+                              context.tr(step.hint!),
                               style: TextStyle(
                                 color: AppTheme.approveColor,
                                 fontSize: 12.5,
@@ -116,6 +118,7 @@ class InAppTourOverlay extends ConsumerWidget {
     InAppTourState tour,
     InAppTourController controller,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Icon(Icons.tour_rounded, size: 18, color: AppTheme.approveColor),
@@ -129,7 +132,7 @@ class InAppTourOverlay extends ConsumerWidget {
             },
           ),
           style: TextStyle(
-            color: Colors.white.withAlpha(160),
+            color: colorScheme.onSurfaceVariant,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.4,
@@ -142,7 +145,7 @@ class InAppTourOverlay extends ConsumerWidget {
           icon: Icon(
             Icons.close_rounded,
             size: 18,
-            color: Colors.white.withAlpha(140),
+            color: colorScheme.onSurfaceVariant,
           ),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
@@ -151,7 +154,8 @@ class InAppTourOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressBar(InAppTourState tour) {
+  Widget _buildProgressBar(BuildContext context, InAppTourState tour) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: List.generate(tour.totalSteps, (i) {
         final isActive = i <= tour.stepIndex;
@@ -162,7 +166,7 @@ class InAppTourOverlay extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isActive
                   ? AppTheme.approveColor
-                  : Colors.white.withAlpha(20),
+                  : colorScheme.outlineVariant.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -176,6 +180,7 @@ class InAppTourOverlay extends ConsumerWidget {
     InAppTourState tour,
     InAppTourController controller,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         if (!tour.isFirst)
@@ -184,14 +189,14 @@ class InAppTourOverlay extends ConsumerWidget {
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
             label: Text(context.tr('Previous')),
             style: TextButton.styleFrom(
-              foregroundColor: Colors.white.withAlpha(200),
+              foregroundColor: colorScheme.onSurface,
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
           ),
         TextButton(
           onPressed: controller.skip,
           style: TextButton.styleFrom(
-            foregroundColor: Colors.white.withAlpha(140),
+            foregroundColor: colorScheme.onSurfaceVariant,
             padding: const EdgeInsets.symmetric(horizontal: 10),
           ),
           child: Text(context.tr('Skip tour')),

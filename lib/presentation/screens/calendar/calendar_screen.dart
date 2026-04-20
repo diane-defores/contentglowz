@@ -43,6 +43,7 @@ class _CalendarBody extends ConsumerWidget {
     final approvedItems = items
         .where((i) => i.status == ContentStatus.approved)
         .toList();
+    final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +88,7 @@ class _CalendarBody extends ConsumerWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withAlpha(100),
+              color: theme.colorScheme.onSurfaceVariant,
               letterSpacing: 1.2,
             ),
           ),
@@ -103,13 +104,13 @@ class _CalendarBody extends ConsumerWidget {
                       Icon(
                         Icons.calendar_today,
                         size: 48,
-                        color: Colors.white.withAlpha(30),
+                        color: theme.colorScheme.outlineVariant,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         context.tr('Nothing scheduled yet'),
                         style: TextStyle(
-                          color: Colors.white.withAlpha(80),
+                          color: theme.colorScheme.onSurfaceVariant,
                           fontSize: 16,
                         ),
                       ),
@@ -129,6 +130,8 @@ class _CalendarBody extends ConsumerWidget {
 
   Widget _buildWeekStrip(BuildContext context) {
     final now = DateTime.now();
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     final days = List.generate(
       7,
       (i) => DateTime(now.year, now.month, now.day + i),
@@ -156,13 +159,13 @@ class _CalendarBody extends ConsumerWidget {
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
               color: isToday
-                  ? const Color(0xFF6C5CE7).withAlpha(30)
-                  : const Color(0xFF1A1A2E),
+                  ? AppTheme.colorForContentType('Article').withAlpha(30)
+                  : palette.elevatedSurface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isToday
-                    ? const Color(0xFF6C5CE7)
-                    : Colors.white.withAlpha(15),
+                    ? AppTheme.colorForContentType('Article')
+                    : palette.borderSubtle,
               ),
             ),
             child: Column(
@@ -172,8 +175,8 @@ class _CalendarBody extends ConsumerWidget {
                   dayFormat.format(day),
                   style: TextStyle(
                     color: isToday
-                        ? const Color(0xFF6C5CE7)
-                        : Colors.white.withAlpha(100),
+                        ? AppTheme.colorForContentType('Article')
+                        : theme.colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                   ),
@@ -213,6 +216,7 @@ class _CalendarBody extends ConsumerWidget {
     ContentItem item,
   ) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
+    final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: () => _showSchedulePicker(context, ref, item),
@@ -256,8 +260,8 @@ class _CalendarBody extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               item.title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -271,7 +275,7 @@ class _CalendarBody extends ConsumerWidget {
                   'reviewer': item.reviewActorDisplay,
                 }),
                 style: TextStyle(
-                  color: Colors.white.withAlpha(115),
+                  color: theme.colorScheme.onSurfaceVariant,
                   fontSize: 10,
                 ),
                 maxLines: 1,
@@ -296,12 +300,7 @@ class _CalendarBody extends ConsumerWidget {
       firstDate: now,
       lastDate: now.add(const Duration(days: 90)),
       builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6C5CE7),
-            surface: Color(0xFF1A1A2E),
-          ),
-        ),
+        data: Theme.of(context),
         child: child!,
       ),
     );
@@ -311,12 +310,7 @@ class _CalendarBody extends ConsumerWidget {
       context: context,
       initialTime: const TimeOfDay(hour: 9, minute: 0),
       builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF6C5CE7),
-            surface: Color(0xFF1A1A2E),
-          ),
-        ),
+        data: Theme.of(context),
         child: child!,
       ),
     );
@@ -379,6 +373,7 @@ class _CalendarBody extends ConsumerWidget {
       'HH:mm',
       context.localeTag,
     ).format(item.publishedAt ?? item.createdAt);
+    final theme = Theme.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -390,7 +385,7 @@ class _CalendarBody extends ConsumerWidget {
             child: Text(
               time,
               style: TextStyle(
-                color: Colors.white.withAlpha(80),
+                color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -435,7 +430,7 @@ class _CalendarBody extends ConsumerWidget {
                       Text(
                         item.channelLabels,
                         style: TextStyle(
-                          color: Colors.white.withAlpha(60),
+                          color: theme.colorScheme.onSurfaceVariant,
                           fontSize: 11,
                         ),
                       ),
@@ -444,8 +439,8 @@ class _CalendarBody extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     item.title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),

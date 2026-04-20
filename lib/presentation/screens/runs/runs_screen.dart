@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
+import '../../theme/app_theme.dart';
 
 final _runsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -83,9 +84,9 @@ class _RunCard extends StatelessWidget {
     final duration = run['duration_seconds'] as num?;
 
     final statusColor = switch (status) {
-      'success' => Colors.green,
-      'running' => Colors.blue,
-      'error' => Colors.red,
+      'success' => AppTheme.approveColor,
+      'running' => AppTheme.infoColor,
+      'error' => AppTheme.rejectColor,
       _ => theme.colorScheme.outline,
     };
 

@@ -27,6 +27,7 @@ import 'presentation/screens/newsletter/newsletter_screen.dart';
 import 'presentation/screens/research/research_screen.dart';
 import 'presentation/screens/runs/runs_screen.dart';
 import 'presentation/screens/performance/performance_screen.dart';
+import 'presentation/screens/projects/projects_screen.dart';
 import 'presentation/screens/seo/seo_screen.dart';
 import 'presentation/screens/templates/templates_screen.dart';
 import 'presentation/screens/uptime/uptime_screen.dart';
@@ -99,13 +100,6 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isAuth || isOnboarding) {
             return '/entry';
           }
-          if (!isEntry &&
-              !isUptime &&
-              !isSettings &&
-              !isFeedback &&
-              !isFeedbackAdmin) {
-            return '/uptime';
-          }
           return null;
         case AppAccessStage.needsOnboarding:
           if (isAuth) {
@@ -114,10 +108,7 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isOnboarding && !allowOnboarding) {
             return '/entry';
           }
-          if (!isEntry &&
-              !isOnboarding &&
-              !isFeedback &&
-              !isFeedbackAdmin) {
+          if (!isEntry && !isOnboarding && !isFeedback && !isFeedbackAdmin) {
             return '/entry';
           }
           return null;
@@ -125,7 +116,7 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isAuth) {
             return '/entry';
           }
-          if (isOnboarding) {
+          if (isOnboarding && !allowOnboarding) {
             return '/entry';
           }
           if (isEntry) {
@@ -243,6 +234,11 @@ GoRouter createAppRouter(WidgetRef ref) {
             path: '/settings',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: SettingsScreen()),
+          ),
+          GoRoute(
+            path: '/projects',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ProjectsScreen()),
           ),
         ],
       ),

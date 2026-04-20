@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 
 class PlatformPreviewSheet extends StatelessWidget {
   const PlatformPreviewSheet({
@@ -131,17 +132,18 @@ class _TwitterPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final overLimit = charCount > 280;
     return _PreviewCard(
       platform: context.tr('Twitter / X'),
       icon: Icons.alternate_email,
-      color: const Color(0xFF1DA1F2),
+      color: AppTheme.infoColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 18, backgroundColor: Colors.grey[300],
+              CircleAvatar(radius: 18, backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   child: const Icon(Icons.person, size: 20)),
               const SizedBox(width: 10),
               Column(
@@ -149,7 +151,13 @@ class _TwitterPreview extends StatelessWidget {
                 children: [
                   Text(context.tr('Your Name'),
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                  Text('@yourhandle', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                  Text(
+                    '@yourhandle',
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -164,7 +172,9 @@ class _TwitterPreview extends StatelessWidget {
                 '$charCount/280',
                 style: TextStyle(
                   fontSize: 12,
-                  color: overLimit ? Colors.red : Colors.grey[500],
+                  color: overLimit
+                      ? AppTheme.rejectColor
+                      : theme.colorScheme.onSurfaceVariant,
                   fontWeight: overLimit ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
@@ -185,16 +195,17 @@ class _LinkedInPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return _PreviewCard(
       platform: context.tr('LinkedIn'),
       icon: Icons.work_outline,
-      color: const Color(0xFF0A66C2),
+      color: AppTheme.editColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(radius: 22, backgroundColor: Colors.grey[300],
+              CircleAvatar(radius: 22, backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   child: const Icon(Icons.person, size: 24)),
               const SizedBox(width: 10),
               Column(
@@ -203,7 +214,10 @@ class _LinkedInPreview extends StatelessWidget {
                   Text(context.tr('Your Name'),
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   Text(context.tr('Your Headline'),
-                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                      )),
                 ],
               ),
             ],
@@ -234,12 +248,19 @@ class _LinkedInAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: Colors.grey[600]),
+        Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
@@ -253,10 +274,11 @@ class _InstagramPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return _PreviewCard(
       platform: context.tr('Instagram'),
       icon: Icons.camera_alt_outlined,
-      color: const Color(0xFFE4405F),
+      color: AppTheme.colorForContentType('Reel'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,17 +286,27 @@ class _InstagramPreview extends StatelessWidget {
             height: 120,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(child: Icon(Icons.image, size: 40, color: Colors.grey)),
+            child: Center(
+              child: Icon(
+                Icons.image,
+                size: 40,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           const SizedBox(height: 10),
           RichText(
             maxLines: 5,
             overflow: TextOverflow.ellipsis,
             text: TextSpan(
-              style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.5),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.onSurface,
+                height: 1.5,
+              ),
               children: [
                 TextSpan(text: '${context.tr('yourhandle')} ', style: const TextStyle(fontWeight: FontWeight.w700)),
                 TextSpan(text: body),
@@ -300,13 +332,13 @@ class _BlogPreview extends StatelessWidget {
     return _PreviewCard(
       platform: platform == 'ghost' ? context.tr('Ghost') : context.tr('WordPress'),
       icon: platform == 'ghost' ? Icons.edit_note : Icons.language,
-      color: platform == 'ghost' ? const Color(0xFF15171A) : const Color(0xFF21759B),
+      color: platform == 'ghost' ? Theme.of(context).colorScheme.onSurface : AppTheme.infoColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.3)),
           const SizedBox(height: 8),
-          Text(body, style: const TextStyle(fontSize: 13, height: 1.7, color: Colors.black87),
+          Text(body, style: TextStyle(fontSize: 13, height: 1.7, color: Theme.of(context).colorScheme.onSurface),
               maxLines: 10, overflow: TextOverflow.ellipsis),
         ],
       ),
@@ -323,10 +355,11 @@ class _YouTubePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return _PreviewCard(
       platform: context.tr('YouTube'),
       icon: Icons.play_circle_outline,
-      color: const Color(0xFFFF0000),
+      color: AppTheme.rejectColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,15 +367,29 @@ class _YouTubePreview extends StatelessWidget {
             height: 100,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.black87,
+              color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(child: Icon(Icons.play_arrow, size: 40, color: Colors.white)),
+            child: Center(
+              child: Icon(
+                Icons.play_arrow,
+                size: 40,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ),
           const SizedBox(height: 10),
           Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700), maxLines: 2),
           const SizedBox(height: 4),
-          Text(description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
+          Text(
+            description,
+            style: TextStyle(
+              fontSize: 12,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -357,14 +404,15 @@ class _TikTokPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return _PreviewCard(
       platform: context.tr('TikTok'),
       icon: Icons.music_note,
-      color: const Color(0xFF010101),
+      color: theme.colorScheme.onSurface,
       child: Container(
         height: 180,
         decoration: BoxDecoration(
-          color: Colors.black87,
+          color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
         ),
         padding: const EdgeInsets.all(12),
@@ -373,9 +421,9 @@ class _TikTokPreview extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('@${context.tr('yourhandle')}',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+                style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w700, fontSize: 14)),
             const SizedBox(height: 4),
-            Text(caption, style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 3, overflow: TextOverflow.ellipsis),
+            Text(caption, style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12), maxLines: 3, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -400,6 +448,8 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       clipBehavior: Clip.antiAlias,
@@ -421,9 +471,9 @@ class _PreviewCard extends StatelessWidget {
           // Content
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            color: palette.elevatedSurface,
             child: DefaultTextStyle(
-              style: const TextStyle(color: Colors.black87),
+              style: TextStyle(color: theme.colorScheme.onSurface),
               child: child,
             ),
           ),
