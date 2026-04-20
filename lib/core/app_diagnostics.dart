@@ -167,6 +167,7 @@ class AppDiagnostics {
       'Access stage: ${accessState?.diagnosticsLabel ?? 'loading'}',
       'Backend reachable: ${accessState?.backendReachable == true ? 'yes' : 'no'}',
       'Backend status: ${accessState?.backendStatusLabel ?? 'unknown'}',
+      'Backend git_sha: ${accessState?.backendHealth?['git_sha']?.toString() ?? 'unknown'}',
       'Bootstrap status: ${accessState?.bootstrapStatusLabel ?? 'not_started'}',
       'Last API status code: ${accessState?.statusCode?.toString() ?? 'none'}',
       'Last API message: ${accessState?.message ?? 'none'}',

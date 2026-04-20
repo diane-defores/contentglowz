@@ -130,7 +130,7 @@ void main() {
   });
 
   group('Offline sync status map', () {
-    QueuedOfflineAction _queuedAction({
+    QueuedOfflineAction queuedAction({
       required String id,
       required OfflineQueueStatus status,
       String entityType = 'content',
@@ -162,13 +162,13 @@ void main() {
         overrides: <Override>[
           offlineQueueEntriesProvider.overrideWith((ref) async {
             return [
-              _queuedAction(
+              queuedAction(
                 id: 'pending',
                 status: OfflineQueueStatus.pending,
                 entityId: 'project-1',
                 createdAt: DateTime(2026, 4, 20, 12),
               ),
-              _queuedAction(
+              queuedAction(
                 id: 'blocked',
                 status: OfflineQueueStatus.blockedDependency,
                 entityId: 'project-1',
@@ -196,13 +196,13 @@ void main() {
         overrides: <Override>[
           offlineQueueEntriesProvider.overrideWith((ref) async {
             return [
-              _queuedAction(
+              queuedAction(
                 id: 'blocked',
                 status: OfflineQueueStatus.blockedDependency,
                 entityId: 'content-1',
                 createdAt: DateTime(2026, 4, 20, 12),
               ),
-              _queuedAction(
+              queuedAction(
                 id: 'failed',
                 status: OfflineQueueStatus.failed,
                 entityId: 'content-1',

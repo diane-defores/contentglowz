@@ -774,6 +774,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 'sessionEmail': authSession.email ?? 'none',
                 'accessStage': accessState?.diagnosticsLabel ?? 'loading',
                 'backendStatus': accessState?.backendStatusLabel ?? 'unknown',
+                'backendGitSha':
+                    accessState?.backendHealth?['git_sha']?.toString() ??
+                        'unknown',
                 'bootstrapStatus':
                     accessState?.bootstrapStatusLabel ?? 'not_started',
                 'workspaceStatus':
