@@ -34,6 +34,7 @@ from agents.images.schemas.image_schemas import (
     OptimizerImageSet
 )
 from agents.images.config.image_config import ImageConfig, BUNNY_CONFIG
+from status.audit import actor_from_agent
 
 logger = logging.getLogger(__name__)
 
@@ -322,6 +323,7 @@ class ImagePipeline:
                 if STATUS_AVAILABLE and status_record_id:
                     try:
                         status_svc = get_status_service()
+                        image_actor = actor_from_agent("images")
                         status_svc.update_content(
                             status_record_id,
                             metadata={
@@ -332,8 +334,8 @@ class ImagePipeline:
                                 "processing_time_ms": total_time_ms,
                             },
                         )
-                        status_svc.transition(status_record_id, "generated", "images_robot")
-                        status_svc.transition(status_record_id, "pending_review", "images_robot")
+                        status_svc.transition(status_record_id, "generated", image_actor)
+                        status_svc.transition(status_record_id, "pending_review", image_actor)
                         logger.info(f"Status tracking: marked as pending_review")
                     except Exception as se:
                         logger.warning(f"Status tracking completion failed (non-critical): {se}")
@@ -349,7 +351,12 @@ class ImagePipeline:
                 if STATUS_AVAILABLE and status_record_id:
                     try:
                         status_svc = get_status_service()
-                        status_svc.transition(status_record_id, "failed", "images_robot", reason=str(e))
+                        status_svc.transition(
+                            status_record_id,
+                            "failed",
+                            actor_from_agent("images"),
+                            reason=str(e),
+                        )
                     except Exception as se:
                         logger.warning(f"Status tracking failed transition error: {se}")
                 return self._create_error_result(

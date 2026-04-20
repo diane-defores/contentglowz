@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 
 from api.dependencies.auth import CurrentUser, require_current_user
+from api.dependencies.ownership import require_owned_project_id
 
 from api.models.drip import (
     CreateDripPlanRequest,
@@ -38,6 +39,20 @@ def _get_drip_service() -> DripService:
     return DripService(get_status_service())
 
 
+def _get_owned_plan_or_404(
+    svc: DripService,
+    plan_id: str,
+    current_user: CurrentUser,
+):
+    try:
+        plan = svc.get_plan(plan_id)
+    except DripPlanNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    if plan.get("user_id") != current_user.user_id:
+        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    return plan
+
+
 # ─── Plans CRUD ──────────────────────────────────────
 
 
@@ -52,6 +67,8 @@ async def create_plan(
     current_user: CurrentUser = Depends(require_current_user),
 ):
     """Create a new progressive content publication plan."""
+    if request.project_id is not None:
+        await require_owned_project_id(request.project_id, current_user)
     svc = _get_drip_service()
     plan = svc.create_plan(
         name=request.name,
@@ -71,13 +88,19 @@ async def create_plan(
     summary="List drip plans",
 )
 async def list_plans(
-    user_id: Optional[str] = Query(None),
     project_id: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """List all drip plans with optional filters."""
+    if project_id is not None:
+        await require_owned_project_id(project_id, current_user)
     svc = _get_drip_service()
-    plans = svc.list_plans(user_id=user_id, project_id=project_id, status=status)
+    plans = svc.list_plans(
+        user_id=current_user.user_id,
+        project_id=project_id,
+        status=status,
+    )
     return DripPlanListResponse(
         items=[DripPlanResponse(**p) for p in plans],
         total=len(plans),
@@ -89,14 +112,14 @@ async def list_plans(
     response_model=DripPlanResponse,
     summary="Get a drip plan",
 )
-async def get_plan(plan_id: str):
+async def get_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Get a drip plan by ID."""
     svc = _get_drip_service()
-    try:
-        plan = svc.get_plan(plan_id)
-        return DripPlanResponse(**plan)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    plan = _get_owned_plan_or_404(svc, plan_id, current_user)
+    return DripPlanResponse(**plan)
 
 
 @router.patch(
@@ -104,40 +127,43 @@ async def get_plan(plan_id: str):
     response_model=DripPlanResponse,
     summary="Update a drip plan",
 )
-async def update_plan(plan_id: str, request: UpdateDripPlanRequest):
+async def update_plan(
+    plan_id: str,
+    request: UpdateDripPlanRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Update a drip plan's configuration."""
     svc = _get_drip_service()
-    try:
-        updates = {}
-        if request.name is not None:
-            updates["name"] = request.name
-        if request.cadence is not None:
-            updates["cadence_config"] = request.cadence.model_dump()
-        if request.cluster_strategy is not None:
-            updates["cluster_strategy"] = request.cluster_strategy.model_dump()
-        if request.ssg_config is not None:
-            updates["ssg_config"] = request.ssg_config.model_dump()
-        if request.gsc_config is not None:
-            updates["gsc_config"] = request.gsc_config.model_dump()
+    _get_owned_plan_or_404(svc, plan_id, current_user)
+    updates = {}
+    if request.name is not None:
+        updates["name"] = request.name
+    if request.cadence is not None:
+        updates["cadence_config"] = request.cadence.model_dump()
+    if request.cluster_strategy is not None:
+        updates["cluster_strategy"] = request.cluster_strategy.model_dump()
+    if request.ssg_config is not None:
+        updates["ssg_config"] = request.ssg_config.model_dump()
+    if request.gsc_config is not None:
+        updates["gsc_config"] = request.gsc_config.model_dump()
 
-        plan = svc.update_plan(plan_id, **updates)
-        return DripPlanResponse(**plan)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    plan = svc.update_plan(plan_id, **updates)
+    return DripPlanResponse(**plan)
 
 
 @router.delete(
     "/plans/{plan_id}",
     summary="Delete a drip plan",
 )
-async def delete_plan(plan_id: str):
+async def delete_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Delete a drip plan and its associated content records."""
     svc = _get_drip_service()
-    try:
-        svc.delete_plan(plan_id)
-        return {"status": "deleted", "id": plan_id}
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
+    svc.delete_plan(plan_id)
+    return {"status": "deleted", "id": plan_id}
 
 
 # ─── Plan Items ──────────────────────────────────────
@@ -151,13 +177,11 @@ async def delete_plan(plan_id: str):
 async def list_plan_items(
     plan_id: str,
     status: Optional[str] = Query(None, description="Filter by content status"),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """List all ContentRecords belonging to a drip plan."""
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)  # Ensure plan exists
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     items = svc.get_plan_items(plan_id, status=status)
     return [
@@ -178,6 +202,10 @@ async def list_plan_items(
             target_url=item.target_url,
             reviewer_note=item.reviewer_note,
             reviewed_by=item.reviewed_by,
+            review_actor_type=item.review_actor_type,
+            review_actor_id=item.review_actor_id,
+            review_actor_label=item.review_actor_label,
+            review_actor_metadata=item.review_actor_metadata,
             created_at=item.created_at,
             updated_at=item.updated_at,
             scheduled_for=item.scheduled_for,
@@ -196,13 +224,13 @@ async def list_plan_items(
     response_model=DripStatsResponse,
     summary="Get plan statistics",
 )
-async def get_plan_stats(plan_id: str):
+async def get_plan_stats(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Get statistics for a drip plan (items by status, clusters breakdown)."""
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)  # Ensure plan exists
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     stats = svc.get_plan_stats(plan_id)
     return DripStatsResponse(**stats)
@@ -219,13 +247,11 @@ async def import_content(
     plan_id: str,
     directory: str = Query(..., description="Absolute path to content directory"),
     exclude_drafts: bool = Query(True, description="Skip files with draft: true"),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """Scan a directory for Markdown files and create ContentRecords for the plan."""
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     try:
         count = svc.import_from_directory(plan_id, directory, exclude_drafts=exclude_drafts)
@@ -244,6 +270,7 @@ async def cluster_items(
     mode: str = Query("directory", description="Clustering mode: directory, tags, or auto"),
     repo_url: Optional[str] = Query(None, description="GitHub repo URL (for auto mode)"),
     local_repo_path: Optional[str] = Query(None, description="Local repo path (for auto mode)"),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """Group imported items into clusters.
 
@@ -253,10 +280,7 @@ async def cluster_items(
     - **auto**: use Topical Mesh Architect AI to detect semantic cocoons
     """
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     if mode == "tags":
         result = svc.cluster_by_tags(plan_id)
@@ -276,13 +300,13 @@ async def cluster_items(
     "/plans/{plan_id}/schedule",
     summary="Generate publication schedule",
 )
-async def generate_schedule(plan_id: str):
+async def generate_schedule(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Assign scheduled_for dates to all items based on cadence and cluster order."""
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     schedule = svc.generate_schedule(plan_id, dry_run=False)
     return {"status": "scheduled", "total_items": len(schedule), "schedule": schedule}
@@ -292,13 +316,13 @@ async def generate_schedule(plan_id: str):
     "/plans/{plan_id}/preview",
     summary="Preview schedule (dry-run)",
 )
-async def preview_schedule(plan_id: str):
+async def preview_schedule(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Preview the publication schedule without writing to the database."""
     svc = _get_drip_service()
-    try:
-        svc.get_plan(plan_id)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    _get_owned_plan_or_404(svc, plan_id, current_user)
 
     schedule = svc.generate_schedule(plan_id, dry_run=True)
     days = len(set(e["scheduled_date"] for e in schedule))
@@ -319,9 +343,13 @@ async def preview_schedule(plan_id: str):
     response_model=DripPlanResponse,
     summary="Activate a plan",
 )
-async def activate_plan(plan_id: str):
+async def activate_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Activate a draft/paused plan — creates the cron job and starts dripping."""
     svc = _get_drip_service()
+    _get_owned_plan_or_404(svc, plan_id, current_user)
     try:
         plan = svc.activate_plan(plan_id)
         return DripPlanResponse(**plan)
@@ -336,9 +364,13 @@ async def activate_plan(plan_id: str):
     response_model=DripPlanResponse,
     summary="Pause an active plan",
 )
-async def pause_plan(plan_id: str):
+async def pause_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Pause an active plan — stops dripping but preserves schedule."""
     svc = _get_drip_service()
+    _get_owned_plan_or_404(svc, plan_id, current_user)
     try:
         plan = svc.pause_plan(plan_id)
         return DripPlanResponse(**plan)
@@ -353,9 +385,13 @@ async def pause_plan(plan_id: str):
     response_model=DripPlanResponse,
     summary="Resume a paused plan",
 )
-async def resume_plan(plan_id: str):
+async def resume_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Resume a paused plan."""
     svc = _get_drip_service()
+    _get_owned_plan_or_404(svc, plan_id, current_user)
     try:
         plan = svc.resume_plan(plan_id)
         return DripPlanResponse(**plan)
@@ -370,9 +406,13 @@ async def resume_plan(plan_id: str):
     response_model=DripPlanResponse,
     summary="Cancel a plan",
 )
-async def cancel_plan(plan_id: str):
+async def cancel_plan(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Cancel a plan — no more drips will execute."""
     svc = _get_drip_service()
+    _get_owned_plan_or_404(svc, plan_id, current_user)
     try:
         plan = svc.cancel_plan(plan_id)
         return DripPlanResponse(**plan)
@@ -389,15 +429,15 @@ async def cancel_plan(plan_id: str):
     "/plans/{plan_id}/execute-tick",
     summary="Execute drip tick (publish due items)",
 )
-async def execute_tick(plan_id: str):
+async def execute_tick(
+    plan_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Publish items that are due today, update their frontmatter, and trigger rebuild."""
     from api.services.rebuild_trigger import trigger_rebuild
 
     svc = _get_drip_service()
-    try:
-        plan = svc.get_plan(plan_id)
-    except DripPlanNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Drip plan {plan_id} not found")
+    plan = _get_owned_plan_or_404(svc, plan_id, current_user)
 
     # Execute the drip tick (update frontmatter + transition records)
     result = svc.execute_drip_tick(plan_id)

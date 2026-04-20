@@ -7,6 +7,7 @@ agent operations with polling-based status retrieval.
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from api.dependencies.auth import CurrentUser, require_current_user
+from status.audit import actor_from_agent
 from api.models.psychology import (
     NarrativeSynthesisRequest,
     NarrativeSynthesisResult,
@@ -186,6 +187,22 @@ _FORMAT_MAP = {
     "social_post": ("social_post", "social"),
 }
 
+_PIPELINE_ACTOR_MAP = {
+    "article": "article_pipeline",
+    "newsletter": "newsletter_pipeline",
+    "short": "short_pipeline",
+    "social_post": "social_post_pipeline",
+}
+
+
+def _pipeline_actor_for_format(fmt: str):
+    """Return the canonical audit actor for a supported pipeline format."""
+
+    actor_id = _PIPELINE_ACTOR_MAP.get(fmt)
+    if not actor_id:
+        raise ValueError(f"Unknown pipeline actor for format '{fmt}'")
+    return actor_from_agent(actor_id)
+
 
 def _run_pipeline_task(
     task_id: str,
@@ -263,9 +280,10 @@ def _run_pipeline_task(
             raise ValueError(f"Unknown format: {fmt}")
 
         # Save body and transition to pending_review
+        pipeline_actor = _pipeline_actor_for_format(fmt)
         if body:
-            svc.save_content_body(content_record_id, body, edited_by=f"{fmt}_pipeline")
-        svc.transition(content_record_id, "pending_review", f"{fmt}_pipeline")
+            svc.save_content_body(content_record_id, body, edited_by=pipeline_actor)
+        svc.transition(content_record_id, "pending_review", pipeline_actor)
 
         # Post-generation: mark source ideas as 'used'
         source_idea_ids = request.angle_data.get("source_idea_ids", [])
@@ -304,8 +322,12 @@ def _run_pipeline_task(
         try:
             from status import get_status_service
             svc = get_status_service()
-            svc.transition(content_record_id, "failed", f"{request.target_format}_pipeline",
-                           reason=str(e))
+            svc.transition(
+                content_record_id,
+                "failed",
+                _pipeline_actor_for_format(request.target_format),
+                reason=str(e),
+            )
         except Exception:
             pass
 

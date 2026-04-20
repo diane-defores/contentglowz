@@ -7,11 +7,19 @@ All notable changes to Content Flows are documented here.
 ### Added
 - **Direct project create endpoint** — `POST /api/projects` now creates a project record directly from a GitHub URL, which matches the Flutter workspace management flow without forcing the full onboarding wizard.
 - **Bootstrap selection tests** — added targeted coverage for `/api/bootstrap` selection rules and default-project response mapping.
+- **Status lifecycle migration** — added `api/migrations/004_status_lifecycle.sql` to bootstrap lifecycle tables (content records, changes, bodies/edits, templates, drip plans, schedule jobs) in Turso/libsql.
+- **Structured audit actors** — added `status/audit.py` to canonicalize `actor_type/id/label/metadata` across lifecycle transitions and edits.
+- **Render deployment blueprint** — added `render.yaml` with Turso-first persistence env vars for the FastAPI backend.
 
 ### Changed
 - **Current project resolution now comes from `UserSettings.defaultProjectId`** — `/api/me`, `/api/bootstrap`, and project response mapping now treat the last-opened project stored in settings as the source of truth.
 - **Project response `is_default` is derived from user settings** instead of relying on the legacy `Project.isDefault` database flag.
 - **Project update now supports repository URL edits** through `PATCH /api/projects/{id}` with `github_url`.
+- **Status storage is Turso-first** — `status/db.py` now uses the maintained `libsql` driver (via `utils/libsql_sync.py`) instead of persisting lifecycle data to a local SQLite file.
+- **Audit fields persisted for transitions/edits** — lifecycle events now record structured actor fields (type/id/label/metadata) alongside legacy `changed_by` in `status_changes` and `content_edits`.
+
+### Removed
+- **Legacy local status sync module** — removed `status/sync.py` after migrating lifecycle persistence to Turso/libsql.
 
 ## [2026-04-13]
 

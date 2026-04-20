@@ -1,7 +1,7 @@
 """
 API Cost Tracker — Persistent cost tracking for external API calls.
 
-Stores per-job cost data in SQLite alongside the status DB.
+Stores per-job cost data in Turso alongside the lifecycle tables.
 Query with get_cost_summary() to see costs by project, job type, or time range.
 
 Usage:

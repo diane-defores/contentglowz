@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 from status.db import get_connection, init_db
+from status.audit import AuditActor, actor_from_string, coerce_actor
 from status.schemas import (
     ContentLifecycleStatus,
     ContentRecord,
@@ -140,7 +141,8 @@ class StatusService:
             "title", "content_path", "content_preview", "content_hash",
             "priority", "tags", "metadata", "target_url", "project_id",
             "reviewer_note", "reviewed_by", "scheduled_for", "published_at",
-            "current_version",
+            "current_version", "review_actor_type", "review_actor_id",
+            "review_actor_label", "review_actor_metadata",
         }
         updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
         if not updates:
@@ -151,6 +153,8 @@ class StatusService:
             updates["tags"] = json.dumps(updates["tags"])
         if "metadata" in updates:
             updates["metadata"] = json.dumps(updates["metadata"])
+        if "review_actor_metadata" in updates and updates["review_actor_metadata"] is not None:
+            updates["review_actor_metadata"] = json.dumps(updates["review_actor_metadata"])
         if "scheduled_for" in updates and isinstance(updates["scheduled_for"], datetime):
             updates["scheduled_for"] = updates["scheduled_for"].isoformat()
         if "published_at" in updates and isinstance(updates["published_at"], datetime):
@@ -219,7 +223,7 @@ class StatusService:
         self,
         content_id: str,
         to_status: str,
-        changed_by: str,
+        changed_by: str | AuditActor,
         reason: Optional[str] = None,
     ) -> ContentRecord:
         """
@@ -241,6 +245,7 @@ class StatusService:
 
         now = datetime.utcnow().isoformat()
         change_id = str(uuid.uuid4())
+        actor = coerce_actor(changed_by)
 
         # Update status
         update_fields = {"status": to_status_enum.value, "updated_at": now}
@@ -259,10 +264,25 @@ class StatusService:
         # Record the change
         self._conn.execute(
             """
-            INSERT INTO status_changes (id, content_id, from_status, to_status, changed_by, reason, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO status_changes (
+                id, content_id, from_status, to_status, changed_by,
+                actor_type, actor_id, actor_label, actor_metadata, reason, timestamp
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (change_id, content_id, from_status.value, to_status_enum.value, changed_by, reason, now),
+            (
+                change_id,
+                content_id,
+                from_status.value,
+                to_status_enum.value,
+                actor.actor_id,
+                actor.actor_type,
+                actor.actor_id,
+                actor.actor_label,
+                json.dumps(actor.actor_metadata) if actor.actor_metadata is not None else None,
+                reason,
+                now,
+            ),
         )
 
         self._conn.commit()
@@ -276,15 +296,7 @@ class StatusService:
         ).fetchall()
 
         return [
-            StatusChange(
-                id=row["id"],
-                content_id=row["content_id"],
-                from_status=row["from_status"],
-                to_status=row["to_status"],
-                changed_by=row["changed_by"],
-                reason=row["reason"],
-                timestamp=datetime.fromisoformat(row["timestamp"]),
-            )
+            self._row_to_status_change(row)
             for row in rows
         ]
 
@@ -439,7 +451,7 @@ class StatusService:
         self,
         content_id: str,
         body: str,
-        edited_by: str = "user",
+        edited_by: str | AuditActor = "user",
         edit_note: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Save a new version of content body. Creates version history."""
@@ -449,6 +461,7 @@ class StatusService:
         now = datetime.utcnow().isoformat()
         body_id = str(uuid.uuid4())
         edit_id = str(uuid.uuid4())
+        actor = coerce_actor(edited_by)
 
         # Insert new body version
         self._conn.execute(
@@ -456,16 +469,31 @@ class StatusService:
             INSERT INTO content_bodies (id, content_id, body, version, edited_by, edit_note, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (body_id, content_id, body, new_version, edited_by, edit_note, now),
+            (body_id, content_id, body, new_version, actor.actor_id, edit_note, now),
         )
 
         # Insert edit audit entry
         self._conn.execute(
             """
-            INSERT INTO content_edits (id, content_id, edited_by, edit_note, previous_version, new_version, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO content_edits (
+                id, content_id, edited_by, actor_type, actor_id, actor_label,
+                actor_metadata, edit_note, previous_version, new_version, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (edit_id, content_id, edited_by, edit_note, previous_version, new_version, now),
+            (
+                edit_id,
+                content_id,
+                actor.actor_id,
+                actor.actor_type,
+                actor.actor_id,
+                actor.actor_label,
+                json.dumps(actor.actor_metadata) if actor.actor_metadata is not None else None,
+                edit_note,
+                previous_version,
+                new_version,
+                now,
+            ),
         )
 
         # Update current_version on content record
@@ -479,7 +507,11 @@ class StatusService:
             "id": body_id,
             "content_id": content_id,
             "version": new_version,
-            "edited_by": edited_by,
+            "edited_by": actor.actor_id,
+            "actor_type": actor.actor_type,
+            "actor_id": actor.actor_id,
+            "actor_label": actor.actor_label,
+            "actor_metadata": actor.actor_metadata,
             "edit_note": edit_note,
             "created_at": now,
         }
@@ -512,6 +544,10 @@ class StatusService:
             "body": row["body"],
             "version": row["version"],
             "edited_by": row["edited_by"],
+            "actor_type": actor_from_string(row["edited_by"]).actor_type,
+            "actor_id": actor_from_string(row["edited_by"]).actor_id,
+            "actor_label": actor_from_string(row["edited_by"]).actor_label,
+            "actor_metadata": actor_from_string(row["edited_by"]).actor_metadata,
             "edit_note": row["edit_note"],
             "created_at": row["created_at"],
         }
@@ -530,6 +566,10 @@ class StatusService:
                 "id": row["id"],
                 "content_id": row["content_id"],
                 "edited_by": row["edited_by"],
+                "actor_type": self._row_actor_type(row, fallback=row["edited_by"]),
+                "actor_id": self._row_actor_id(row, fallback=row["edited_by"]),
+                "actor_label": self._row_actor_label(row, fallback=row["edited_by"]),
+                "actor_metadata": self._row_actor_metadata(row, fallback=row["edited_by"]),
                 "edit_note": row["edit_note"],
                 "previous_version": row["previous_version"],
                 "new_version": row["new_version"],
@@ -710,6 +750,8 @@ class StatusService:
         except (IndexError, KeyError):
             user_id = None
 
+        review_actor = self._review_actor_from_row(row)
+
         return ContentRecord(
             id=row["id"],
             title=row["title"],
@@ -726,7 +768,11 @@ class StatusService:
             metadata=json.loads(row["metadata"]),
             target_url=row["target_url"],
             reviewer_note=row["reviewer_note"],
-            reviewed_by=row["reviewed_by"],
+            reviewed_by=review_actor.actor_id if review_actor else row["reviewed_by"],
+            review_actor_type=review_actor.actor_type if review_actor else None,
+            review_actor_id=review_actor.actor_id if review_actor else None,
+            review_actor_label=review_actor.actor_label if review_actor else None,
+            review_actor_metadata=review_actor.actor_metadata if review_actor else None,
             current_version=current_version,
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
@@ -734,6 +780,86 @@ class StatusService:
             published_at=datetime.fromisoformat(row["published_at"]) if row["published_at"] else None,
             synced_at=datetime.fromisoformat(row["synced_at"]) if row["synced_at"] else None,
         )
+
+    def _review_actor_from_row(self, row: sqlite3.Row) -> Optional[AuditActor]:
+        actor_id = self._safe_row_value(row, "review_actor_id")
+        actor_type = self._safe_row_value(row, "review_actor_type")
+        actor_label = self._safe_row_value(row, "review_actor_label")
+        actor_metadata = self._safe_row_value(row, "review_actor_metadata")
+
+        if actor_id or actor_type or actor_label or actor_metadata:
+            return AuditActor(
+                actor_type=actor_type or actor_from_string(row["reviewed_by"]).actor_type,
+                actor_id=actor_id or row["reviewed_by"],
+                actor_label=actor_label or actor_from_string(row["reviewed_by"]).actor_label,
+                actor_metadata=self._parse_json(actor_metadata),
+            )
+
+        reviewed_by = self._safe_row_value(row, "reviewed_by")
+        if reviewed_by:
+            return actor_from_string(reviewed_by)
+        return None
+
+    def _row_to_status_change(self, row: sqlite3.Row) -> StatusChange:
+        actor = self._actor_from_row(row, fallback=row["changed_by"])
+        return StatusChange(
+            id=row["id"],
+            content_id=row["content_id"],
+            from_status=row["from_status"],
+            to_status=row["to_status"],
+            changed_by=actor.actor_id,
+            actor_type=actor.actor_type,
+            actor_id=actor.actor_id,
+            actor_label=actor.actor_label,
+            actor_metadata=actor.actor_metadata,
+            reason=row["reason"],
+            timestamp=datetime.fromisoformat(row["timestamp"]),
+        )
+
+    def _actor_from_row(self, row: sqlite3.Row, fallback: Optional[str]) -> AuditActor:
+        actor_id = self._safe_row_value(row, "actor_id")
+        actor_type = self._safe_row_value(row, "actor_type")
+        actor_label = self._safe_row_value(row, "actor_label")
+        actor_metadata = self._safe_row_value(row, "actor_metadata")
+        if actor_id or actor_type or actor_label or actor_metadata:
+            return AuditActor(
+                actor_type=actor_type or actor_from_string(fallback).actor_type,
+                actor_id=actor_id or (fallback or "system"),
+                actor_label=actor_label or actor_from_string(fallback).actor_label,
+                actor_metadata=self._parse_json(actor_metadata),
+            )
+        return actor_from_string(fallback)
+
+    def _row_actor_type(self, row: sqlite3.Row, fallback: Optional[str]) -> str:
+        return self._actor_from_row(row, fallback=fallback).actor_type
+
+    def _row_actor_id(self, row: sqlite3.Row, fallback: Optional[str]) -> str:
+        return self._actor_from_row(row, fallback=fallback).actor_id
+
+    def _row_actor_label(self, row: sqlite3.Row, fallback: Optional[str]) -> str:
+        return self._actor_from_row(row, fallback=fallback).actor_label
+
+    def _row_actor_metadata(
+        self,
+        row: sqlite3.Row,
+        fallback: Optional[str],
+    ) -> Optional[Dict[str, Any]]:
+        return self._actor_from_row(row, fallback=fallback).actor_metadata
+
+    @staticmethod
+    def _parse_json(value: Optional[str]) -> Optional[Dict[str, Any]]:
+        if not value:
+            return None
+        if isinstance(value, dict):
+            return value
+        return json.loads(value)
+
+    @staticmethod
+    def _safe_row_value(row: sqlite3.Row, key: str) -> Any:
+        try:
+            return row[key]
+        except (IndexError, KeyError):
+            return None
 
 
     # ─── Idea Pool CRUD ──────────────────────────────────

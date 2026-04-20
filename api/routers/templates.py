@@ -13,9 +13,10 @@ from api.models.templates import (
     GenerateContentRequest,
     GenerateContentResponse,
 )
-from api.dependencies.auth import require_current_user
+from api.dependencies.auth import CurrentUser, require_current_user
 from api.services.job_store import job_store
 from api.services.template_defaults import get_default_templates
+from status.audit import actor_from_agent
 
 router = APIRouter(
     prefix="/api/templates",
@@ -69,6 +70,7 @@ async def generate_prompt(request: GeneratePromptRequest):
 async def generate_content(
     request: GenerateContentRequest,
     background_tasks: BackgroundTasks,
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """
     Start content generation as a background job using the hybrid pipeline.
@@ -84,7 +86,7 @@ async def generate_content(
         job_id, JOB_TYPE, status="pending", progress=0, message="Job queued",
     )
 
-    background_tasks.add_task(_run_content_generation, job_id, request)
+    background_tasks.add_task(_run_content_generation, job_id, request, current_user.user_id)
 
     return job
 
@@ -171,7 +173,11 @@ Return ONLY the prompt text, nothing else."""
     )
 
 
-async def _run_content_generation(job_id: str, request: GenerateContentRequest):
+async def _run_content_generation(
+    job_id: str,
+    request: GenerateContentRequest,
+    current_user_id: str,
+):
     """Execute the 3-pass hybrid content generation pipeline."""
     try:
         await job_store.update(job_id, status="running", progress=5, message="Preparing template...")
@@ -253,6 +259,7 @@ async def _run_content_generation(job_id: str, request: GenerateContentRequest):
                 template=template,
                 context=context,
                 project_id=request.project_id,
+                user_id=current_user_id,
             )
         except Exception as e:
             print(f"Warning: Failed to create content record: {e}")
@@ -381,8 +388,9 @@ def _create_content_record(
     template: dict,
     context: dict,
     project_id: str | None,
+    user_id: str,
 ) -> str | None:
-    """Create a ContentRecord + ContentBody in the local SQLite status DB."""
+    """Create a ContentRecord + ContentBody in Turso-backed lifecycle storage."""
     try:
         from status.service import StatusService
 
@@ -406,6 +414,7 @@ def _create_content_record(
             source_robot="manual",
             status="generated",
             project_id=project_id,
+            user_id=user_id,
             content_preview=preview[:500],
             metadata={
                 "template_name": template.get("name", ""),
@@ -416,21 +425,22 @@ def _create_content_record(
 
         # Save the full generated content as body
         body_content = json.dumps(generated, indent=2, ensure_ascii=False)
+        template_actor = actor_from_agent("template_generator")
         svc.save_content_body(
-            content_id=record["id"],
+            content_id=record.id,
             body=body_content,
-            edited_by="template-generator",
+            edited_by=template_actor,
             edit_note=f"Generated via {template.get('name', 'template')}",
         )
 
         # Transition to pending_review
         svc.transition(
-            content_id=record["id"],
+            content_id=record.id,
             to_status="pending_review",
-            changed_by="template-generator",
+            changed_by=template_actor,
         )
 
-        return record["id"]
+        return record.id
 
     except Exception as e:
         print(f"Warning: Content record creation failed: {e}")

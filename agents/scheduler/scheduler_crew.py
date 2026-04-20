@@ -23,6 +23,7 @@ from agents.scheduler.site_health_monitor import create_site_health_monitor
 from agents.scheduler.tech_stack_analyzer import create_tech_stack_analyzer
 from agents.scheduler.schemas.analysis_schemas import SchedulerReport
 from agents.shared.run_history import RunHistory
+from status.audit import actor_from_agent
 
 # Conditional status tracking (graceful degradation)
 try:
@@ -97,6 +98,7 @@ class SchedulerPipeline:
 
         workflow_id = f"publish_{int(datetime.now().timestamp())}"
         status_record_id = None
+        scheduler_actor = actor_from_agent("scheduler")
 
         try:
             with _rh.start("scheduler", "publish_content", inputs={
@@ -110,7 +112,12 @@ class SchedulerPipeline:
                         for record in approved:
                             if record.title == title or record.content_path == content_path:
                                 status_record_id = record.id
-                                status_svc.transition(status_record_id, "scheduled", "scheduler_robot", reason="Auto-scheduled for publishing")
+                                status_svc.transition(
+                                    status_record_id,
+                                    "scheduled",
+                                    scheduler_actor,
+                                    reason="Auto-scheduled for publishing",
+                                )
                                 break
                     except Exception as e:
                         print(f"⚠ Status tracking scheduling failed (non-critical): {e}")
@@ -132,7 +139,12 @@ class SchedulerPipeline:
                 if not schedule_result.get('success'):
                     if STATUS_AVAILABLE and status_record_id:
                         try:
-                            get_status_service().transition(status_record_id, "approved", "scheduler_robot", reason="Scheduling failed, reverting")
+                            get_status_service().transition(
+                                status_record_id,
+                                "approved",
+                                scheduler_actor,
+                                reason="Scheduling failed, reverting",
+                            )
                         except Exception:
                             pass
                     run.mark_failed(f"scheduling: {schedule_result.get('error')}")
@@ -146,7 +158,7 @@ class SchedulerPipeline:
                 # Status tracking: transition to publishing
                 if STATUS_AVAILABLE and status_record_id:
                     try:
-                        get_status_service().transition(status_record_id, "publishing", "scheduler_robot")
+                        get_status_service().transition(status_record_id, "publishing", scheduler_actor)
                     except Exception as e:
                         print(f"⚠ Status tracking publishing transition failed: {e}")
 
@@ -164,7 +176,12 @@ class SchedulerPipeline:
                 if not publish_result.get('success'):
                     if STATUS_AVAILABLE and status_record_id:
                         try:
-                            get_status_service().transition(status_record_id, "failed", "scheduler_robot", reason=publish_result.get('error'))
+                            get_status_service().transition(
+                                status_record_id,
+                                "failed",
+                                scheduler_actor,
+                                reason=publish_result.get('error'),
+                            )
                         except Exception:
                             pass
                     run.mark_failed(f"publishing: {publish_result.get('error')}")
@@ -180,7 +197,12 @@ class SchedulerPipeline:
                 if STATUS_AVAILABLE and status_record_id:
                     try:
                         svc = get_status_service()
-                        svc.transition(status_record_id, "published", "scheduler_robot", reason="Successfully published")
+                        svc.transition(
+                            status_record_id,
+                            "published",
+                            scheduler_actor,
+                            reason="Successfully published",
+                        )
                         if urls:
                             svc.update_content(status_record_id, target_url=urls[0])
                     except Exception as e:
@@ -198,7 +220,12 @@ class SchedulerPipeline:
         except Exception as e:
             if STATUS_AVAILABLE and status_record_id:
                 try:
-                    get_status_service().transition(status_record_id, "failed", "scheduler_robot", reason=str(e))
+                    get_status_service().transition(
+                        status_record_id,
+                        "failed",
+                        scheduler_actor,
+                        reason=str(e),
+                    )
                 except Exception:
                     pass
             return {

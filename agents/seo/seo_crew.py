@@ -27,6 +27,7 @@ from agents.seo.schemas.pipeline_outputs import (
     MarketingOutput,
     EditingOutput,
 )
+from status.audit import actor_from_agent
 
 load_dotenv()
 
@@ -277,6 +278,7 @@ class SEOContentCrew:
         if STATUS_AVAILABLE and status_record_id:
             try:
                 status_svc = get_status_service()
+                seo_actor = actor_from_agent("seo")
                 status_svc.update_content(
                     status_record_id,
                     content_preview=final_output[:500] if final_output else None,
@@ -286,8 +288,8 @@ class SEOContentCrew:
                         "stages_completed": list(results["outputs"].keys()),
                     },
                 )
-                status_svc.transition(status_record_id, "generated", "seo_robot")
-                status_svc.transition(status_record_id, "pending_review", "seo_robot")
+                status_svc.transition(status_record_id, "generated", seo_actor)
+                status_svc.transition(status_record_id, "pending_review", seo_actor)
                 results["status_record_id"] = status_record_id
                 print(f"📊 Status tracking: marked as pending_review")
             except Exception as e:

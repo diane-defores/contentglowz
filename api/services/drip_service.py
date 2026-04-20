@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from status.service import StatusService, ContentNotFoundError
+from status.audit import actor_from_agent
 from api.services.frontmatter import read_frontmatter, update_frontmatter as update_fm_file
 
 
@@ -628,7 +629,7 @@ class DripService:
                         item.id,
                         scheduled_for=scheduled_dt,
                     )
-                    self.svc.transition(item.id, "scheduled", "drip-scheduler")
+                    self.svc.transition(item.id, "scheduled", actor_from_agent("drip_scheduler"))
 
                 item_idx += 1
 
@@ -773,8 +774,9 @@ class DripService:
                     update_fm_file(abs_path, fm_updates)
 
                 # Transition: scheduled → publishing → published
-                self.svc.transition(item.id, "publishing", "drip-executor")
-                self.svc.transition(item.id, "published", "drip-executor")
+                drip_executor = actor_from_agent("drip_executor")
+                self.svc.transition(item.id, "publishing", drip_executor)
+                self.svc.transition(item.id, "published", drip_executor)
 
                 published.append({
                     "item_id": item.id,

@@ -10,7 +10,8 @@ from api.models.status import (
     ScheduleJobResponse,
     ContentResponse,
 )
-from api.dependencies.auth import require_current_user
+from api.dependencies.auth import CurrentUser, require_current_user
+from api.dependencies.ownership import require_owned_project_id
 from status.service import get_status_service, ContentNotFoundError
 
 router = APIRouter(
@@ -35,14 +36,16 @@ def _job_to_response(job: dict) -> ScheduleJobResponse:
     description="List all scheduled jobs with optional filters",
 )
 async def list_jobs(
-    user_id: Optional[str] = Query(None, description="Filter by user"),
     project_id: Optional[str] = Query(None, description="Filter by project"),
     enabled_only: bool = Query(False, description="Only enabled jobs"),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """List all scheduled jobs."""
+    if project_id is not None:
+        await require_owned_project_id(project_id, current_user)
     svc = get_status_service()
     jobs = svc.list_schedule_jobs(
-        user_id=user_id,
+        user_id=current_user.user_id,
         project_id=project_id,
         enabled_only=enabled_only,
     )
@@ -56,11 +59,18 @@ async def list_jobs(
     summary="Create schedule job",
     description="Create a new scheduled job for recurring content generation",
 )
-async def create_job(request: CreateScheduleJobRequest):
+async def create_job(
+    request: CreateScheduleJobRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Create a new schedule job."""
+    if request.project_id is not None:
+        await require_owned_project_id(request.project_id, current_user)
     svc = get_status_service()
     try:
-        job = svc.create_schedule_job(**request.model_dump())
+        payload = request.model_dump()
+        payload["user_id"] = current_user.user_id
+        job = svc.create_schedule_job(**payload)
         return _job_to_response(job)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -72,11 +82,16 @@ async def create_job(request: CreateScheduleJobRequest):
     summary="Get schedule job",
     description="Get a single schedule job by ID",
 )
-async def get_job(job_id: str):
+async def get_job(
+    job_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Get a schedule job by ID."""
     svc = get_status_service()
     try:
         job = svc.get_schedule_job(job_id)
+        if job["user_id"] != current_user.user_id:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
         return _job_to_response(job)
     except ContentNotFoundError:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
@@ -88,11 +103,20 @@ async def get_job(job_id: str):
     summary="Update schedule job",
     description="Update a schedule job (enable/disable, change schedule, etc.)",
 )
-async def update_job(job_id: str, request: UpdateScheduleJobRequest):
+async def update_job(
+    job_id: str,
+    request: UpdateScheduleJobRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Update a schedule job."""
     svc = get_status_service()
     try:
+        existing = svc.get_schedule_job(job_id)
+        if existing["user_id"] != current_user.user_id:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
         updates = request.model_dump(exclude_none=True)
+        if "project_id" in updates and updates["project_id"] is not None:
+            await require_owned_project_id(updates["project_id"], current_user)
         job = svc.update_schedule_job(job_id, **updates)
         return _job_to_response(job)
     except ContentNotFoundError:
@@ -104,10 +128,16 @@ async def update_job(job_id: str, request: UpdateScheduleJobRequest):
     summary="Delete schedule job",
     description="Delete a scheduled job permanently",
 )
-async def delete_job(job_id: str):
+async def delete_job(
+    job_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
     """Delete a schedule job."""
     svc = get_status_service()
     try:
+        existing = svc.get_schedule_job(job_id)
+        if existing["user_id"] != current_user.user_id:
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
         svc.delete_schedule_job(job_id)
         return {"status": "deleted", "id": job_id}
     except ContentNotFoundError:
@@ -126,11 +156,14 @@ async def get_calendar_events(
     start: str = Query(..., description="Start date (ISO format, e.g. 2026-01-01)"),
     end: str = Query(..., description="End date (ISO format, e.g. 2026-01-31)"),
     project_id: Optional[str] = Query(None, description="Filter by project"),
+    current_user: CurrentUser = Depends(require_current_user),
 ):
     """
     Aggregate ContentRecords and ScheduleJobs for the calendar view.
     Returns events grouped by date.
     """
+    if project_id is not None:
+        await require_owned_project_id(project_id, current_user)
     svc = get_status_service()
 
     # Get content records in range
@@ -169,7 +202,11 @@ async def get_calendar_events(
             })
 
     # Get schedule jobs for the range
-    jobs = svc.list_schedule_jobs(enabled_only=True)
+    jobs = svc.list_schedule_jobs(
+        user_id=current_user.user_id,
+        project_id=project_id,
+        enabled_only=True,
+    )
     for job in jobs:
         if job.get("next_run_at"):
             next_run = job["next_run_at"]

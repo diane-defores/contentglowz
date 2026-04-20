@@ -5,6 +5,15 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
+class ActorResponse(BaseModel):
+    """Structured audit actor returned by the API."""
+
+    actor_type: str
+    actor_id: str
+    actor_label: str
+    actor_metadata: Optional[Dict[str, Any]] = None
+
+
 class CreateContentRequest(BaseModel):
     """Request to create a new content record."""
     title: str = Field(..., description="Content title")
@@ -37,7 +46,6 @@ class UpdateContentRequest(BaseModel):
 class TransitionRequest(BaseModel):
     """Request to transition content to a new status."""
     to_status: str = Field(..., description="Target status")
-    changed_by: str = Field(..., description="Who is making the change")
     reason: Optional[str] = Field(None, description="Reason for the transition")
 
 
@@ -59,6 +67,10 @@ class ContentResponse(BaseModel):
     target_url: Optional[str]
     reviewer_note: Optional[str]
     reviewed_by: Optional[str]
+    review_actor_type: Optional[str] = None
+    review_actor_id: Optional[str] = None
+    review_actor_label: Optional[str] = None
+    review_actor_metadata: Optional[Dict[str, Any]] = None
     created_at: datetime
     updated_at: datetime
     scheduled_for: Optional[datetime]
@@ -73,6 +85,10 @@ class StatusChangeResponse(BaseModel):
     from_status: str
     to_status: str
     changed_by: str
+    actor_type: str
+    actor_id: str
+    actor_label: str
+    actor_metadata: Optional[Dict[str, Any]] = None
     reason: Optional[str]
     timestamp: datetime
 
@@ -118,7 +134,6 @@ class UpdateDomainRequest(BaseModel):
 class SaveContentBodyRequest(BaseModel):
     """Request to save/update content body."""
     body: str = Field(..., description="Full markdown content body")
-    edited_by: str = Field(default="user", description="Who made the edit")
     edit_note: Optional[str] = Field(None, description="Note about the edit")
 
 
@@ -129,6 +144,10 @@ class ContentBodyResponse(BaseModel):
     body: str
     version: int
     edited_by: Optional[str]
+    actor_type: Optional[str] = None
+    actor_id: Optional[str] = None
+    actor_label: Optional[str] = None
+    actor_metadata: Optional[Dict[str, Any]] = None
     edit_note: Optional[str]
     created_at: str
 
@@ -138,6 +157,10 @@ class ContentEditResponse(BaseModel):
     id: str
     content_id: str
     edited_by: str
+    actor_type: str
+    actor_id: str
+    actor_label: str
+    actor_metadata: Optional[Dict[str, Any]] = None
     edit_note: Optional[str]
     previous_version: int
     new_version: int
@@ -147,13 +170,11 @@ class ContentEditResponse(BaseModel):
 class RegenerateRequest(BaseModel):
     """Request to send content back for re-generation."""
     instructions: Optional[str] = Field(None, description="Instructions for the robot")
-    changed_by: str = Field(default="user", description="Who requested re-generation")
 
 
 class ScheduleContentRequest(BaseModel):
     """Request to schedule content for publishing."""
     scheduled_for: str = Field(..., description="ISO datetime for scheduled publishing")
-    changed_by: str = Field(default="user", description="Who scheduled the content")
 
 
 # ─── Schedule Jobs ────────────────────────────────────
@@ -161,7 +182,6 @@ class ScheduleContentRequest(BaseModel):
 
 class CreateScheduleJobRequest(BaseModel):
     """Request to create a new schedule job."""
-    user_id: str = Field(default="system", description="User who created the job")
     project_id: Optional[str] = Field(None, description="Associated project ID")
     job_type: str = Field(..., description="Job type: newsletter, seo, or article")
     generator_id: Optional[str] = Field(None, description="Associated generator ID")

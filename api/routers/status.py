@@ -26,6 +26,7 @@ from api.models.status import (
     ScheduleContentRequest,
 )
 from agents.seo.config.project_store import project_store
+from api.services.user_data_store import user_data_store
 from status.service import (
     get_status_service,
     InvalidTransitionError,
@@ -44,6 +45,7 @@ def _record_to_response(record) -> ContentResponse:
         source_robot=record.source_robot,
         status=record.status,
         project_id=record.project_id,
+        user_id=record.user_id,
         content_path=record.content_path,
         content_preview=record.content_preview,
         content_hash=record.content_hash,
@@ -53,6 +55,10 @@ def _record_to_response(record) -> ContentResponse:
         target_url=record.target_url,
         reviewer_note=record.reviewer_note,
         reviewed_by=record.reviewed_by,
+        review_actor_type=record.review_actor_type,
+        review_actor_id=record.review_actor_id,
+        review_actor_label=record.review_actor_label,
+        review_actor_metadata=record.review_actor_metadata,
         created_at=record.created_at,
         updated_at=record.updated_at,
         scheduled_for=record.scheduled_for,
@@ -120,6 +126,7 @@ async def create_content(
             source_robot=request.source_robot,
             status=request.status,
             project_id=request.project_id,
+            user_id=current_user.user_id,
             content_path=request.content_path,
             content_preview=request.content_preview,
             priority=request.priority,
@@ -168,8 +175,12 @@ async def update_content(
 
     try:
         updates = request.model_dump(exclude_none=True)
-        if "reviewed_by" in updates:
+        if "reviewer_note" in updates or "reviewed_by" in updates:
             updates["reviewed_by"] = current_user.user_id
+            updates["review_actor_type"] = "user"
+            updates["review_actor_id"] = current_user.user_id
+            updates["review_actor_label"] = current_user.user_id
+            updates["review_actor_metadata"] = None
         record = svc.update_content(content_id, **updates)
         return _record_to_response(record)
     except ContentNotFoundError:
@@ -231,6 +242,10 @@ async def get_content_history(
             from_status=h.from_status,
             to_status=h.to_status,
             changed_by=h.changed_by,
+            actor_type=h.actor_type,
+            actor_id=h.actor_id,
+            actor_label=h.actor_label,
+            actor_metadata=h.actor_metadata,
             reason=h.reason,
             timestamp=h.timestamp,
         )
@@ -271,21 +286,24 @@ async def get_domains(
     current_user: CurrentUser = Depends(require_current_user),
 ):
     """Get work domain records."""
-    svc = get_status_service()
     owned_project_ids = await resolve_owned_project_ids(current_user, project_id)
-    domains = svc.get_domains(project_ids=owned_project_ids)
+    domains = []
+    for owned_project_id in owned_project_ids:
+        domains.extend(
+            await user_data_store.list_work_domains(current_user.user_id, owned_project_id)
+        )
     return [
         WorkDomainResponse(
-            id=d.id,
-            project_id=d.project_id,
-            domain=d.domain,
-            status=d.status,
-            last_run_at=d.last_run_at,
-            last_run_status=d.last_run_status,
-            items_pending=d.items_pending,
-            items_completed=d.items_completed,
-            metadata=d.metadata,
-            updated_at=d.updated_at,
+            id=d["id"],
+            project_id=d["projectId"],
+            domain=d["domain"],
+            status=d["status"],
+            last_run_at=d["lastRunAt"],
+            last_run_status=d["lastRunStatus"],
+            items_pending=d["itemsPending"],
+            items_completed=d["itemsCompleted"],
+            metadata=d.get("metadata") or {},
+            updated_at=d["updatedAt"],
         )
         for d in domains
     ]
@@ -305,20 +323,40 @@ async def update_domain(
 ):
     """Update a work domain record."""
     await require_owned_project_id(project_id, current_user)
-    svc = get_status_service()
     updates = request.model_dump(exclude_none=True)
-    record = svc.upsert_domain(project_id=project_id, domain=domain, **updates)
+    existing = None
+    for candidate in await user_data_store.list_work_domains(current_user.user_id, project_id):
+        if candidate["domain"] == domain:
+            existing = candidate
+            break
+
+    payload = {
+        "projectId": project_id,
+        "domain": domain,
+        **updates,
+    }
+    if existing:
+        record = await user_data_store.update_work_domain(
+            current_user.user_id,
+            existing["id"],
+            payload,
+        )
+    else:
+        record = await user_data_store.create_work_domain(current_user.user_id, payload)
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Work domain not found")
     return WorkDomainResponse(
-        id=record.id,
-        project_id=record.project_id,
-        domain=record.domain,
-        status=record.status,
-        last_run_at=record.last_run_at,
-        last_run_status=record.last_run_status,
-        items_pending=record.items_pending,
-        items_completed=record.items_completed,
-        metadata=record.metadata,
-        updated_at=record.updated_at,
+        id=record["id"],
+        project_id=record["projectId"],
+        domain=record["domain"],
+        status=record["status"],
+        last_run_at=record["lastRunAt"],
+        last_run_status=record["lastRunStatus"],
+        items_pending=record["itemsPending"],
+        items_completed=record["itemsCompleted"],
+        metadata=record.get("metadata") or {},
+        updated_at=record["updatedAt"],
     )
 
 
@@ -462,49 +500,6 @@ async def schedule_content(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ─── Sync ──────────────────────────────────────────────
-
-
-@router.post(
-    "/sync/push",
-    summary="Trigger manual sync push",
-    description="Manually push unsynced records to Turso",
-)
-async def trigger_sync_push(
-    current_user: CurrentUser = Depends(require_current_user),
-):
-    """Manually trigger a sync push to Turso."""
-    try:
-        from status.sync import get_sync_service
-        sync_svc = get_sync_service()
-        result = await sync_svc.push()
-        return result
-    except ImportError:
-        raise HTTPException(status_code=500, detail="Sync service not available")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
-
-
-@router.post(
-    "/sync/pull",
-    summary="Trigger manual sync pull",
-    description="Manually pull review actions from Turso",
-)
-async def trigger_sync_pull(
-    current_user: CurrentUser = Depends(require_current_user),
-):
-    """Manually trigger a sync pull from Turso."""
-    try:
-        from status.sync import get_sync_service
-        sync_svc = get_sync_service()
-        result = await sync_svc.pull()
-        return result
-    except ImportError:
-        raise HTTPException(status_code=500, detail="Sync service not available")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
-
-
 # ─── Migration ─────────────────────────────────────────
 
 
@@ -541,6 +536,7 @@ async def migrate_newsletter_history(
                 source_robot="newsletter",
                 status="todo",
                 project_id=default_project_id,
+                user_id=current_user.user_id,
                 metadata={
                     "word_count": item.get("word_count", 0),
                     "preview_text": item.get("preview_text", ""),

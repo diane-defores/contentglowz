@@ -93,7 +93,7 @@ summary = get_cost_summary(
 )
 ```
 
-Data is persisted in `data/status/status.db` table `api_cost_log`, populated automatically by the scheduler after each DFS job.
+Data is persisted in the Turso-backed `api_cost_log` table, populated automatically by the scheduler after each DFS job.
 
 ## Optimizations in place
 

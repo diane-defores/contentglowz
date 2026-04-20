@@ -31,6 +31,7 @@ from agents.newsletter.config.newsletter_config import (
     EMAIL_BACKEND,
     is_imap_backend,
 )
+from status.audit import actor_from_agent
 
 # Import archiving tools if using IMAP backend
 if is_imap_backend():
@@ -262,6 +263,7 @@ class NewsletterCrew:
         )
 
         print("\n🚀 Running newsletter generation pipeline...")
+        newsletter_actor = actor_from_agent("newsletter")
         try:
             crew_output = crew.kickoff()
         except Exception as e:
@@ -269,7 +271,7 @@ class NewsletterCrew:
             if STATUS_AVAILABLE and status_record_id:
                 try:
                     status_svc = get_status_service()
-                    status_svc.transition(status_record_id, "failed", "newsletter_robot", reason=str(e))
+                    status_svc.transition(status_record_id, "failed", newsletter_actor, reason=str(e))
                     print(f"📊 Status tracking: marked as failed")
                 except Exception as se:
                     print(f"⚠ Status tracking failed transition error: {se}")
@@ -340,8 +342,8 @@ class NewsletterCrew:
                         "subject_line": draft.subject_line,
                     },
                 )
-                status_svc.transition(status_record_id, "generated", "newsletter_robot")
-                status_svc.transition(status_record_id, "pending_review", "newsletter_robot")
+                status_svc.transition(status_record_id, "generated", newsletter_actor)
+                status_svc.transition(status_record_id, "pending_review", newsletter_actor)
                 results["status_record_id"] = status_record_id
                 print(f"📊 Status tracking: marked as pending_review")
             except Exception as e:

@@ -12,6 +12,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
+from status.audit import actor_from_agent
 from status.service import get_status_service, ContentNotFoundError
 
 logger = logging.getLogger(__name__)
@@ -197,11 +198,11 @@ class SchedulerService:
                     svc.save_content_body(
                         record.id,
                         html_content,
-                        edited_by="scheduler",
+                        edited_by=actor_from_agent("scheduler"),
                         edit_note="Scheduled generation",
                     )
                 # Transition to pending_review
-                svc.transition(record.id, "pending_review", "scheduler")
+                svc.transition(record.id, "pending_review", actor_from_agent("scheduler"))
 
         except ImportError:
             print("⚠ Newsletter agent not available for scheduled generation")
@@ -407,8 +408,8 @@ class SchedulerService:
                 },
             )
             if body:
-                svc.save_content_body(record.id, body, edited_by="scheduler")
-            svc.transition(record.id, "pending_review", "scheduler")
+                svc.save_content_body(record.id, body, edited_by=actor_from_agent("scheduler"))
+            svc.transition(record.id, "pending_review", actor_from_agent("scheduler"))
 
         except ImportError:
             print("⚠ SEO crew not available for article generation")

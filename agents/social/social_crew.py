@@ -9,6 +9,7 @@ import json
 from typing import Optional
 from crewai import Agent, Task, Crew, Process
 from agents.shared.prompt_loader import load_prompt
+from status.audit import actor_from_agent
 
 # Conditional status tracking (graceful degradation)
 try:
@@ -162,8 +163,8 @@ class SocialPostCrew:
             try:
                 svc = get_status_service()
                 body = json.dumps(parsed.get("posts", []), indent=2)
-                svc.save_content_body(record_id, body, edited_by="social_crew")
-                svc.transition(record_id, "pending_review", "social_crew")
+                svc.save_content_body(record_id, body, edited_by=actor_from_agent("social_crew"))
+                svc.transition(record_id, "pending_review", actor_from_agent("social_crew"))
             except Exception as e:
                 print(f"⚠ Status update failed: {e}")
 

@@ -11,8 +11,6 @@ from datetime import datetime
 from enum import Enum
 
 from agents.scheduler.schemas.publishing_schemas import ContentType, SourceRobot
-
-
 class ContentLifecycleStatus(str, Enum):
     """
     Unified content lifecycle status.
@@ -114,6 +112,13 @@ class ContentRecord(BaseModel):
     target_url: Optional[str] = Field(None, description="Target URL after publishing")
     reviewer_note: Optional[str] = Field(None, description="Note from the reviewer")
     reviewed_by: Optional[str] = Field(None, description="Who reviewed this content")
+    review_actor_type: Optional[str] = Field(None, description="Structured reviewer actor type")
+    review_actor_id: Optional[str] = Field(None, description="Structured reviewer actor ID")
+    review_actor_label: Optional[str] = Field(None, description="Structured reviewer actor label")
+    review_actor_metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Structured reviewer actor metadata",
+    )
     current_version: int = Field(default=0, description="Current content body version")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Creation timestamp")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Last update timestamp")
@@ -138,6 +143,13 @@ class StatusChange(BaseModel):
     from_status: ContentLifecycleStatus = Field(..., description="Previous status")
     to_status: ContentLifecycleStatus = Field(..., description="New status")
     changed_by: str = Field(..., description="Who triggered the change (robot name or user)")
+    actor_type: str = Field(..., description="Structured actor type")
+    actor_id: str = Field(..., description="Structured actor ID")
+    actor_label: str = Field(..., description="Structured actor label")
+    actor_metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Structured actor metadata",
+    )
     reason: Optional[str] = Field(None, description="Reason for the transition")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="When the change occurred")
 
