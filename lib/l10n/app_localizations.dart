@@ -676,6 +676,30 @@ class AppLocalizations {
     'Publish days': 'Jours de publication',
     'Publish pillar before spokes': 'Publier le pilier avant les satellites',
     'Publish time': 'Heure de publication',
+    'Timezone': 'Fuseau horaire',
+    'e.g. Europe/Paris': 'ex: Europe/Paris',
+    'Spacing (min)': 'Espacement (min)',
+    'Intra-day spacing when >1/day': 'Espacement intra-jour si >1/jour',
+    'Index-proof (robots noindex until publish)':
+        'Index-proof (robots noindex jusqu a publication)',
+    'Prevents premature indexing if your site respects frontmatter robots':
+        'Evite l indexation prematuree si votre site respecte le frontmatter robots',
+    'Safe mode (opt-in required)': 'Mode securise (opt-in requis)',
+    'Recommended for mixed sites: only mutate frontmatter when dripManaged: true':
+        'Recommande en cas de mix: modifie le frontmatter seulement si dripManaged: true',
+    'Advanced': 'Avance',
+    'Opt-in frontmatter field': 'Champ frontmatter opt-in',
+    'Robots frontmatter field': 'Champ frontmatter robots',
+    'Google Search Console (Indexing API)': 'Google Search Console (Indexing API)',
+    'Submit URLs after each drip': 'Soumettre les URLs apres chaque drip',
+    'GSC site URL': 'URL du site GSC',
+    'Submit URLs': 'Soumettre les URLs',
+    'Max submissions/day': 'Max soumissions/jour',
+    'Run preflight': 'Lancer le preflight',
+    'Preflight issues': 'Problemes detectes (preflight)',
+    'Preflight: {severity} ({count} issues)':
+        'Preflight : {severity} ({count} problemes)',
+    'Close': 'Fermer',
     'Published {count} articles': '{count} articles publies',
     'Published {published}/{total} ({percent}%)':
         '{published}/{total} publies ({percent}%)',

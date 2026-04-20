@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../data/models/drip_plan.dart';
 import '../../../providers/providers.dart';
@@ -194,7 +195,7 @@ class _PlanCard extends ConsumerWidget {
                     const SizedBox(width: 4),
                     Text(
                       context.tr('Next drip: {date}', {
-                        'date': plan.nextDripAt!.substring(0, 10),
+                        'date': _formatIso(plan.nextDripAt!, context),
                       }),
                       style: TextStyle(fontSize: 12, color: colorScheme.primary),
                     ),
@@ -207,6 +208,12 @@ class _PlanCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _formatIso(String raw, BuildContext context) {
+  final parsed = DateTime.tryParse(raw);
+  if (parsed == null) return raw;
+  return DateFormat('MMM d, HH:mm', context.localeTag).format(parsed.toLocal());
 }
 
 class _StatusChip extends StatelessWidget {

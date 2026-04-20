@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../data/models/drip_plan.dart';
 import '../../../data/services/api_service.dart';
@@ -124,6 +125,17 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
     try {
       String message;
       switch (action) {
+        case 'preflight':
+          final result = await api.preflightDripPlan(plan.id);
+          final count = (result['issue_count'] as num?)?.toInt() ?? 0;
+          final severity = result['severity']?.toString() ?? 'info';
+          if (mounted && count > 0) {
+            await _showPreflightDialog(context, result);
+          }
+          message = l10n.tr(
+            'Preflight: {severity} ({count} issues)',
+            params: {'severity': severity, 'count': '$count'},
+          );
         case 'import':
           final dir = plan.ssgConfig['content_directory'] as String? ?? 'src/data';
           final result = await api.importDripContent(plan.id, dir);
@@ -193,6 +205,62 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  Future<void> _showPreflightDialog(
+    BuildContext context,
+    Map<String, dynamic> result,
+  ) async {
+    final issues = result['issues'];
+    final issueList = issues is List ? issues : const [];
+    if (issueList.isEmpty) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.tr('Preflight issues')),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: issueList.length,
+            separatorBuilder: (_, _) => const Divider(height: 16),
+            itemBuilder: (context, i) {
+              final raw = issueList[i];
+              final entry = raw is Map ? raw : const {};
+              final sev = entry['severity']?.toString() ?? 'info';
+              final msg = entry['message']?.toString() ?? '';
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    switch (sev) {
+                      'error' => Icons.error,
+                      'warning' => Icons.warning,
+                      _ => Icons.info,
+                    },
+                    size: 18,
+                    color: switch (sev) {
+                      'error' => Theme.of(context).colorScheme.error,
+                      'warning' => AppTheme.warningColor,
+                      _ => Theme.of(context).colorScheme.primary,
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('[$sev] $msg')),
+                ],
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.tr('Close')),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─── Sub-widgets ─────────────────────────────────────
@@ -234,14 +302,20 @@ class _StatusHeader extends StatelessWidget {
             if (plan.nextDripAt != null)
               _infoRow(
                 context.tr('Next drip'),
-                plan.nextDripAt!.substring(0, 10),
+                _formatIso(plan.nextDripAt!, context),
               ),
             if (plan.lastDripAt != null)
-              _infoRow(context.tr('Last drip'), plan.lastDripAt!.substring(0, 10)),
+              _infoRow(context.tr('Last drip'), _formatIso(plan.lastDripAt!, context)),
           ],
         ),
       ),
     );
+  }
+
+  static String _formatIso(String raw, BuildContext context) {
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    return DateFormat('MMM d, HH:mm', context.localeTag).format(parsed.toLocal());
   }
 
   Widget _infoRow(String label, String value) => Builder(
@@ -422,6 +496,12 @@ class _ConfigCard extends StatelessWidget {
             _row(context.tr('Gating'), plan.ssgConfig['gating_method'] as String? ?? '?'),
             _row(context.tr('Rebuild'), plan.rebuildMethod),
             _row(context.tr('Clustering'), context.tr(plan.clusterMode)),
+            _row(context.tr('Timezone'), plan.cadenceConfig['timezone'] as String? ?? 'UTC'),
+            _row(context.tr('Publish time'), plan.cadenceConfig['publish_time'] as String? ?? '06:00'),
+            if (plan.ssgConfig['enforce_robots_noindex_until_publish'] == true)
+              _row(context.tr('Index-proof'), context.tr('Enabled')),
+            if (plan.ssgConfig['require_opt_in'] == true)
+              _row(context.tr('Safe mode'), context.tr('Enabled')),
             if (plan.gscConfig != null && plan.gscConfig!['enabled'] == true)
               _row(context.tr('GSC'), context.tr('Enabled')),
           ],
@@ -475,6 +555,12 @@ class _ActionButtons extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (plan.isDraft) ...[
+          FilledButton.tonalIcon(
+            onPressed: () => onAction('preflight'),
+            icon: const Icon(Icons.fact_check),
+            label: Text(context.tr('Run preflight')),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () => onAction('import'),
             icon: const Icon(Icons.download),
@@ -500,6 +586,12 @@ class _ActionButtons extends StatelessWidget {
           ),
         ],
         if (plan.isActive) ...[
+          FilledButton.tonalIcon(
+            onPressed: () => onAction('preflight'),
+            icon: const Icon(Icons.fact_check),
+            label: Text(context.tr('Run preflight')),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () => onAction('execute'),
             icon: const Icon(Icons.water_drop),
@@ -513,6 +605,12 @@ class _ActionButtons extends StatelessWidget {
           ),
         ],
         if (plan.isPaused) ...[
+          FilledButton.tonalIcon(
+            onPressed: () => onAction('preflight'),
+            icon: const Icon(Icons.fact_check),
+            label: Text(context.tr('Run preflight')),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () => onAction('resume'),
             icon: const Icon(Icons.play_arrow),
@@ -540,7 +638,8 @@ class _ActionMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       onSelected: onAction,
       itemBuilder: (_) => [
-          if (plan.isDraft)
+        PopupMenuItem(value: 'preflight', child: Text(context.tr('Run preflight'))),
+        if (plan.isDraft)
           PopupMenuItem(value: 'delete', child: Text(context.tr('Delete plan'))),
         if (plan.isActive)
           PopupMenuItem(value: 'cancel', child: Text(context.tr('Cancel plan'))),

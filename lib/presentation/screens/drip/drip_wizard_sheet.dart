@@ -34,6 +34,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   final _startDateCtrl = TextEditingController();
   final List<int> _publishDays = [0, 1, 2, 3, 4]; // Mon-Fri
   final _publishTimeCtrl = TextEditingController(text: '06:00');
+  final _timezoneCtrl = TextEditingController(text: 'Europe/Paris');
+  int _spacingMinutes = 180;
+  final _spacingMinutesCtrl = TextEditingController(text: '180');
 
   // Step 3 — Clustering
   String _clusterMode = 'directory';
@@ -45,6 +48,14 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   String _rebuildMethod = 'manual';
   final _webhookUrlCtrl = TextEditingController();
   final _githubRepoCtrl = TextEditingController();
+  bool _indexProof = true;
+  bool _requireOptIn = true;
+  final _optInFieldCtrl = TextEditingController(text: 'dripManaged');
+  final _robotsFieldCtrl = TextEditingController(text: 'robots');
+  bool _gscEnabled = false;
+  bool _gscSubmitUrls = true;
+  int _gscMaxPerDay = 200;
+  final _gscSiteUrlCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -59,8 +70,13 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
     _directoryCtrl.dispose();
     _startDateCtrl.dispose();
     _publishTimeCtrl.dispose();
+    _timezoneCtrl.dispose();
+    _spacingMinutesCtrl.dispose();
     _webhookUrlCtrl.dispose();
     _githubRepoCtrl.dispose();
+    _optInFieldCtrl.dispose();
+    _robotsFieldCtrl.dispose();
+    _gscSiteUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -264,6 +280,34 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         ),
       ),
       const SizedBox(height: 16),
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _timezoneCtrl,
+              decoration: InputDecoration(
+                labelText: context.tr('Timezone'),
+                border: const OutlineInputBorder(),
+                hintText: context.tr('e.g. Europe/Paris'),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: context.tr('Spacing (min)'),
+                border: const OutlineInputBorder(),
+                helperText: context.tr('Intra-day spacing when >1/day'),
+              ),
+              keyboardType: TextInputType.number,
+              controller: _spacingMinutesCtrl,
+              onChanged: (v) => _spacingMinutes = int.tryParse(v) ?? 180,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
       Text(context.tr('Publish days'),
           style: Theme.of(context).textTheme.bodyMedium),
       const SizedBox(height: 8),
@@ -357,6 +401,19 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         )).toList(),
         onChanged: (v) => setState(() => _gatingMethod = v!),
       ),
+      const SizedBox(height: 12),
+      SwitchListTile(
+        title: Text(context.tr('Index-proof (robots noindex until publish)')),
+        subtitle: Text(context.tr('Prevents premature indexing if your site respects frontmatter robots')),
+        value: _indexProof,
+        onChanged: (v) => setState(() => _indexProof = v),
+      ),
+      SwitchListTile(
+        title: Text(context.tr('Safe mode (opt-in required)')),
+        subtitle: Text(context.tr('Recommended for mixed sites: only mutate frontmatter when dripManaged: true')),
+        value: _requireOptIn,
+        onChanged: (v) => setState(() => _requireOptIn = v),
+      ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _rebuildMethod,
@@ -396,6 +453,78 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           ),
         ),
       ],
+      const SizedBox(height: 8),
+      ExpansionTile(
+        title: Text(context.tr('Advanced')),
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _optInFieldCtrl,
+              decoration: InputDecoration(
+                labelText: context.tr('Opt-in frontmatter field'),
+                border: const OutlineInputBorder(),
+                hintText: context.tr('e.g. dripManaged'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _robotsFieldCtrl,
+              decoration: InputDecoration(
+                labelText: context.tr('Robots frontmatter field'),
+                border: const OutlineInputBorder(),
+                hintText: context.tr('e.g. robots'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SwitchListTile(
+            title: Text(context.tr('Google Search Console (Indexing API)')),
+            subtitle: Text(context.tr('Submit URLs after each drip')),
+            value: _gscEnabled,
+            onChanged: (v) => setState(() => _gscEnabled = v),
+          ),
+          if (_gscEnabled) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _gscSiteUrlCtrl,
+                decoration: InputDecoration(
+                  labelText: context.tr('GSC site URL'),
+                  border: const OutlineInputBorder(),
+                  hintText: context.tr('https://your-site.com'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(context.tr('Submit URLs')),
+                value: _gscSubmitUrls,
+                onChanged: (v) => setState(() => _gscSubmitUrls = v),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                decoration: InputDecoration(
+                  labelText: context.tr('Max submissions/day'),
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                controller: TextEditingController(text: '$_gscMaxPerDay'),
+                onChanged: (v) => _gscMaxPerDay = int.tryParse(v) ?? 200,
+              ),
+            ),
+          ],
+        ],
+      ),
     ],
   );
 
@@ -414,7 +543,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           'start_date': _startDateCtrl.text.trim(),
           'publish_days': _publishDays,
           'publish_time': _publishTimeCtrl.text.trim(),
-          'timezone': 'Europe/Paris',
+          'timezone': _timezoneCtrl.text.trim(),
+          'spacing_minutes': _spacingMinutes,
         },
         'cluster_strategy': {
           'mode': _clusterMode,
@@ -427,7 +557,18 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           if (_rebuildMethod == 'webhook') 'rebuild_webhook_url': _webhookUrlCtrl.text.trim(),
           if (_rebuildMethod == 'github_actions') 'rebuild_github_repo': _githubRepoCtrl.text.trim(),
           'content_directory': _directoryCtrl.text.trim(),
+          'require_opt_in': _requireOptIn,
+          'frontmatter_opt_in_field': _optInFieldCtrl.text.trim(),
+          'enforce_robots_noindex_until_publish': _indexProof,
+          'frontmatter_robots_field': _robotsFieldCtrl.text.trim(),
         },
+        if (_gscEnabled)
+          'gsc_config': {
+            'enabled': true,
+            'site_url': _gscSiteUrlCtrl.text.trim(),
+            'submit_urls': _gscSubmitUrls,
+            'max_submissions_per_day': _gscMaxPerDay,
+          },
       });
 
       if (mounted) {

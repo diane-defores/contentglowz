@@ -3341,6 +3341,30 @@ extension DripApi on ApiService {
     return _asMap(response.data);
   }
 
+  Future<Map<String, dynamic>> preflightDripPlan(String planId) async {
+    try {
+      final idMappings = await _loadIdMappings();
+      final resolvedPlanId = _resolveEntityId(planId, idMappings);
+      final response = await _dio.get(
+        '/api/drip/plans/$resolvedPlanId/preflight',
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'drip',
+        actionType: 'preflight',
+        label: 'Preflight drip plan',
+        method: 'GET',
+        path: '/api/drip/plans/$planId/preflight',
+        dedupeKey: 'drip:preflight:$planId',
+        blockedMessage:
+            'Preflight checks are unavailable until FastAPI is back.',
+      );
+    }
+  }
+
   Future<Map<String, dynamic>> activateDripPlan(String planId) async {
     final idMappings = await _loadIdMappings();
     final resolvedPlanId = _resolveEntityId(planId, idMappings);
