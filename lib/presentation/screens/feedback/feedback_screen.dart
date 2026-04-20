@@ -266,9 +266,11 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
   }
 
   Future<void> _startRecording() async {
+    final l10n = context.l10n;
     final hasPermission = await _recorder.hasPermission();
+    if (!mounted) return;
     if (!hasPermission) {
-      _showSnack(context.tr('Microphone access denied.'));
+      _showSnack(l10n.tr('Microphone access denied.'));
       return;
     }
 

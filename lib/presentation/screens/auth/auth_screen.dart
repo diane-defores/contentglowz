@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/app_config.dart';
-import '../../../core/app_diagnostics.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
@@ -274,81 +272,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         });
       }
     }
-  }
-
-  String _friendlyAuthError(Object error) {
-    final raw = error.toString().replaceFirst('Exception: ', '').trim();
-    final lower = raw.toLowerCase();
-
-    if (lower.contains('invalid base64') || lower.contains('base64')) {
-      return 'The Clerk token returned to the app is malformed. This usually means a frontend/backend Clerk mismatch or a corrupted local session. Clear the local session and verify that the app key and backend Clerk issuer belong to the same Clerk project.';
-    }
-
-    if (lower.contains('invalid clerk token') ||
-        lower.contains('failed to validate clerk token') ||
-        lower.contains('missing bearer token') ||
-        lower.contains('issuer')) {
-      return 'Clerk authentication reached the backend, but the backend rejected the token. Check that `CLERK_PUBLISHABLE_KEY` in the app and `CLERK_JWT_ISSUER` or `CLERK_JWKS_URL` in FastAPI point to the same Clerk project.';
-    }
-
-    if (lower.contains('oauth') && lower.contains('google')) {
-      return 'Google sign-in is handled on the dedicated ClerkJS route. Continue on the app sign-in page instead of relying on the old embedded Flutter path.';
-    }
-
-    if (lower.contains('not configured')) {
-      return 'Clerk is missing from runtime config. Rebuild the app with a valid `CLERK_PUBLISHABLE_KEY`.';
-    }
-
-    return raw;
-  }
-
-  Future<void> _submitCustomSignIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _error = 'Enter both email and password to sign in.';
-      });
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-      _error = null;
-    });
-
-    try {
-      await ref
-          .read(authSessionProvider.notifier)
-          .signInWithPassword(email: email, password: password);
-      if (!mounted) return;
-      context.go('/entry');
-    } catch (error, stackTrace) {
-      ref
-          .read(appDiagnosticsProvider)
-          .error(
-            scope: 'auth.inline_sign_in',
-            message: 'Inline sign-in failed.',
-            error: error,
-            stackTrace: stackTrace,
-            context: {'email': email},
-          );
-      if (!mounted) return;
-      setState(() {
-        _error = _friendlyAuthError(error);
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _openWebsiteSignIn() async {
-    await _openAppWebSignIn();
   }
 
   Future<void> _openAppWebSignIn() async {

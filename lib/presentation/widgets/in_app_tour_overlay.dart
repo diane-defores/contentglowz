@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/in_app_tour/in_app_tour_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class InAppTourOverlay extends ConsumerWidget {
@@ -41,7 +42,7 @@ class InAppTourOverlay extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildHeader(tour, controller),
+                  _buildHeader(context, tour, controller),
                   const SizedBox(height: 10),
                   _buildProgressBar(tour),
                   const SizedBox(height: 14),
@@ -110,13 +111,23 @@ class InAppTourOverlay extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(InAppTourState tour, InAppTourController controller) {
+  Widget _buildHeader(
+    BuildContext context,
+    InAppTourState tour,
+    InAppTourController controller,
+  ) {
     return Row(
       children: [
         Icon(Icons.tour_rounded, size: 18, color: AppTheme.approveColor),
         const SizedBox(width: 8),
         Text(
-          'Visite guidée  ·  ${tour.stepIndex + 1}/${tour.totalSteps}',
+          context.tr(
+            'Guided tour · {current}/{total}',
+            {
+              'current': tour.stepIndex + 1,
+              'total': tour.totalSteps,
+            },
+          ),
           style: TextStyle(
             color: Colors.white.withAlpha(160),
             fontSize: 12,
@@ -126,7 +137,7 @@ class InAppTourOverlay extends ConsumerWidget {
         ),
         const Spacer(),
         IconButton(
-          tooltip: 'Mettre en pause',
+          tooltip: context.tr('Pause tour'),
           onPressed: controller.pause,
           icon: Icon(
             Icons.close_rounded,
@@ -171,7 +182,7 @@ class InAppTourOverlay extends ConsumerWidget {
           TextButton.icon(
             onPressed: () => controller.previous(context),
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
-            label: const Text('Précédent'),
+            label: Text(context.tr('Previous')),
             style: TextButton.styleFrom(
               foregroundColor: Colors.white.withAlpha(200),
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -183,7 +194,7 @@ class InAppTourOverlay extends ConsumerWidget {
             foregroundColor: Colors.white.withAlpha(140),
             padding: const EdgeInsets.symmetric(horizontal: 10),
           ),
-          child: const Text('Passer le tour'),
+          child: Text(context.tr('Skip tour')),
         ),
         const Spacer(),
         FilledButton.icon(
@@ -192,7 +203,7 @@ class InAppTourOverlay extends ConsumerWidget {
             tour.isLast ? Icons.check_rounded : Icons.arrow_forward_rounded,
             size: 16,
           ),
-          label: Text(tour.isLast ? 'Terminer' : 'Suivant'),
+          label: Text(context.tr(tour.isLast ? 'Finish' : 'Next')),
           style: FilledButton.styleFrom(
             backgroundColor: AppTheme.approveColor,
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),

@@ -1,191 +1,187 @@
 import 'in_app_tour_step.dart';
 
-/// Étapes de la visite guidée in-app, en français.
-///
-/// L'ordre suit le parcours logique : créer → valider → publier → analyser →
-/// configurer. Chaque étape pointe vers l'écran qu'elle décrit pour que
-/// l'utilisateur voie en direct ce dont on parle.
 const List<InAppTourStep> kInAppTourSteps = [
   InAppTourStep(
     id: 'welcome',
-    title: 'Bienvenue dans ContentFlow',
+    title: 'Welcome to ContentFlow',
     description:
-        'On va faire un tour rapide de l\'app, écran par écran. '
-        'L\'idée : vous montrer dans quel ordre utiliser les pages, '
-        'à quoi sert chaque bouton, et comment tirer le meilleur de la plateforme. '
-        'Vous pourrez mettre en pause à tout moment et reprendre depuis les paramètres.',
+        'We will take a quick tour of the app, screen by screen. '
+        'The goal is to show you the best order to use each page, what the main controls do, '
+        'and how to get the most out of the platform. '
+        'You can pause at any time and resume later from Settings.',
   ),
   InAppTourStep(
     id: 'feed',
     routePath: '/feed',
-    title: 'Le Feed — votre file de validation',
+    title: 'Feed — your review queue',
     description:
-        'C\'est ici que vous validez chaque contenu généré par l\'IA. '
-        'Vous pouvez balayer la carte (swipe) ou utiliser les trois boutons ronds en bas : '
-        'le bouton de gauche passe le contenu (rejet), celui du milieu ouvre l\'éditeur pour modifier, '
-        'celui de droite publie/approuve. Le badge rouge sur l\'icône Feed indique combien de contenus attendent votre revue.',
-    hint: 'Repérez les 3 boutons ronds en bas — ce sont vos actions principales.',
+        'This is where you review every piece of AI-generated content. '
+        'You can swipe the card or use the three round buttons at the bottom: '
+        'the left button skips the item, the middle one opens the editor, '
+        'and the right one approves or publishes it. '
+        'The red badge on the Feed icon shows how many items are waiting for review.',
+    hint: 'Look for the 3 round buttons at the bottom — they are your main actions.',
   ),
   InAppTourStep(
     id: 'calendar',
     routePath: '/calendar',
-    title: 'Calendrier — vos posts planifiés',
+    title: 'Calendar — your scheduled posts',
     description:
-        'Le calendrier affiche tout ce qui est programmé pour publication. '
-        'Cliquez sur une semaine en haut pour filtrer la vue. '
-        'Utile pour vérifier l\'équilibre de votre planning et repérer les jours vides ou surchargés.',
+        'The calendar shows everything scheduled for publishing. '
+        'Tap a week at the top to filter the view. '
+        'It is useful for checking the balance of your schedule and spotting empty or overloaded days.',
   ),
   InAppTourStep(
     id: 'history',
     routePath: '/history',
-    title: 'Historique — tout ce qui est publié',
+    title: 'History — everything that has been published',
     description:
-        'Retrouvez ici tous les contenus déjà publiés, avec leur statut et la plateforme cible. '
-        'C\'est votre archive : si vous voulez vérifier qu\'un post est bien parti, ou réutiliser une idée passée, c\'est par ici.',
+        'Find all published content here, with its status and target platform. '
+        'This is your archive for checking what has already gone out or reusing a past idea.',
   ),
   InAppTourStep(
     id: 'drip',
     routePath: '/drip',
-    title: 'Drip — séquences automatisées',
+    title: 'Drip — automated sequences',
     description:
-        'Drip orchestre des séquences de contenu sur plusieurs jours. '
-        'Au lieu de publier un post isolé, vous lancez une série cohérente (par exemple, une mini-campagne de 5 posts sur un thème). '
-        'À utiliser pour les lancements ou les sujets qui méritent plusieurs angles.',
+        'Drip orchestrates content sequences over multiple days. '
+        'Instead of publishing one isolated post, you launch a coherent series, such as a 5-post mini campaign around one topic. '
+        'Use it for launches or for themes that deserve several angles.',
   ),
   InAppTourStep(
     id: 'content_tools',
     routePath: '/content-tools',
-    title: 'Content Tools — vérifications & audit',
+    title: 'Content Tools — checks and audits',
     description:
-        'Boîte à outils qui vérifie la qualité de vos contenus avant publication : '
-        'cohérence éditoriale, audit du funnel, validations. '
-        'Pensez à passer ici quand un contenu vous semble bizarre — l\'audit donne souvent la raison.',
+        'This toolbox checks your content quality before publishing: '
+        'editorial consistency, funnel audits, and validations. '
+        'Use it when a draft feels off — the audit often explains why.',
   ),
   InAppTourStep(
     id: 'templates',
     routePath: '/templates',
-    title: 'Templates — vos modèles réutilisables',
+    title: 'Templates — your reusable formats',
     description:
-        'Les templates sont vos formats récurrents (article long, post court, séquence). '
-        'L\'IA s\'appuie dessus pour générer des contenus cohérents avec votre style. '
-        'Plus vos templates sont précis, plus la génération colle à votre voix.',
+        'Templates are your repeatable content formats: long-form articles, short posts, or sequences. '
+        'The AI uses them to generate content that matches your style. '
+        'The more precise your templates are, the closer the output will match your voice.',
   ),
   InAppTourStep(
     id: 'newsletter',
     routePath: '/newsletter',
-    title: 'Newsletter — votre canal long format',
+    title: 'Newsletter — your long-form channel',
     description:
-        'L\'écran Newsletter regroupe la création, l\'aperçu et l\'envoi de vos newsletters. '
-        'Vous pouvez assembler plusieurs contenus du Feed dans une même édition. '
-        'Idéal pour transformer une semaine de production en un envoi unique.',
+        'The Newsletter screen groups together newsletter creation, preview, and sending. '
+        'You can combine several Feed items into one edition. '
+        'It is ideal for turning a week of production into a single send.',
   ),
   InAppTourStep(
     id: 'reels',
     routePath: '/reels',
-    title: 'Reels — formats vidéo courts',
+    title: 'Reels — short video formats',
     description:
-        'Gérez ici vos contenus vidéo courts (reels, shorts, TikTok). '
-        'L\'IA propose scripts et découpages — à vous de valider ou d\'éditer avant publication. '
-        'Le Feed central garde la priorité, Reels est l\'atelier dédié au format vertical.',
+        'Manage your short-form videos here: reels, shorts, and similar vertical formats. '
+        'The AI can suggest scripts and structure, and you decide what to edit or approve before publishing. '
+        'The main Feed still stays central, while Reels is the workshop dedicated to vertical content.',
   ),
   InAppTourStep(
     id: 'affiliations',
     routePath: '/affiliations',
-    title: 'Affiliations — vos liens monétisés',
+    title: 'Affiliations — your monetized links',
     description:
-        'Centralisez vos liens d\'affiliation pour que l\'IA les insère intelligemment dans les contenus pertinents. '
-        'Ajoutez un lien une seule fois ici, il sera proposé automatiquement quand le sujet s\'y prête.',
+        'Centralize your affiliate links so the AI can insert them intelligently into relevant content. '
+        'Add a link here once, and it will be suggested automatically whenever the topic fits.',
   ),
   InAppTourStep(
     id: 'research',
     routePath: '/research',
-    title: 'Research — nourrir votre stratégie',
+    title: 'Research — feed your strategy',
     description:
-        'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. '
-        'C\'est l\'écran à consulter avant chaque rituel de planification : il vous dit quoi traiter cette semaine.',
+        'Research gathers trending topics, competitor monitoring, and audience questions. '
+        'This is the screen to check before each planning ritual so you know what to cover this week.',
   ),
   InAppTourStep(
     id: 'seo',
     routePath: '/seo',
-    title: 'SEO — visibilité organique',
+    title: 'SEO — organic visibility',
     description:
-        'Analyse SEO de vos contenus et opportunités de mots-clés. '
-        'Avant de lancer une série Drip ou un article long, passez ici pour ajuster les angles aux requêtes qui rapportent.',
+        'Use this screen for SEO analysis and keyword opportunities. '
+        'Before launching a Drip series or a long-form article, come here to align your angles with the searches that matter.',
   ),
   InAppTourStep(
     id: 'analytics',
     routePath: '/analytics',
-    title: 'Analytics — mesurer l\'impact',
+    title: 'Analytics — measure impact',
     description:
-        'Le tableau de bord global : audience, engagement, croissance. '
-        'C\'est votre première escale hebdomadaire pour savoir ce qui marche. '
-        'Regardez les grandes tendances ici, puis descendez dans Performance pour le détail.',
+        'This is your global dashboard for audience, engagement, and growth. '
+        'It should be your first weekly stop to see what is working. '
+        'Start with the broad trends here, then go deeper in Performance.',
   ),
   InAppTourStep(
     id: 'performance',
     routePath: '/performance',
-    title: 'Performance — métriques fines',
+    title: 'Performance — detailed metrics',
     description:
-        'Performance complète Analytics avec des métriques par contenu et par canal. '
-        'À utiliser quand vous voulez comprendre pourquoi un post a marché (ou pas) et reproduire le succès.',
+        'Performance complements Analytics with metrics per content item and per channel. '
+        'Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.',
   ),
   InAppTourStep(
     id: 'runs',
     routePath: '/runs',
-    title: 'Runs — historique des jobs IA',
+    title: 'Runs — AI job history',
     description:
-        'Chaque génération IA laisse une trace ici : quel modèle, quel prompt, combien de temps. '
-        'À consulter en cas de doute sur un résultat ou pour suivre les coûts.',
+        'Every AI generation leaves a trace here: which model, which prompt, and how long it took. '
+        'Check it when a result looks suspicious or when you want to keep an eye on cost.',
   ),
   InAppTourStep(
     id: 'activity',
     routePath: '/activity',
-    title: 'Activité — timeline système',
+    title: 'Activity — system timeline',
     description:
-        'Le journal chronologique de tout ce qui se passe dans votre workspace : créations, publications, erreurs. '
-        'Utile pour le diagnostic quand quelque chose semble n\'avoir pas fonctionné.',
+        'This is the chronological log of everything happening in your workspace: creations, publications, and errors. '
+        'It is useful for diagnosis when something does not seem to have worked.',
   ),
   InAppTourStep(
     id: 'personas',
     routePath: '/personas',
-    title: 'Personas — vos audiences cibles',
+    title: 'Personas — your target audiences',
     description:
-        'Définissez les personas que l\'IA doit adresser. Chaque persona influence le ton, le vocabulaire et les angles. '
-        'Le bouton « + » en bas à droite ouvre le formulaire pour ajouter une nouvelle persona.',
-    hint: 'Le bouton + en bas à droite sert à ajouter une persona.',
+        'Define the personas the AI should address. Each persona influences tone, vocabulary, and angles. '
+        'Use the + button in the bottom-right corner to add a new persona.',
+    hint: 'Use the + button in the bottom-right corner to add a persona.',
   ),
   InAppTourStep(
     id: 'work_domains',
     routePath: '/work-domains',
-    title: 'Domaines de travail',
+    title: 'Work domains',
     description:
-        'Configurez les domaines thématiques sur lesquels l\'IA est autorisée à produire. '
-        'Cela évite les hors-sujets et concentre la production sur vos vrais terrains d\'expertise.',
+        'Configure the topic areas the AI is allowed to work on. '
+        'This prevents off-topic output and keeps production focused on your real areas of expertise.',
   ),
   InAppTourStep(
     id: 'uptime',
     routePath: '/uptime',
-    title: 'Uptime — état technique',
+    title: 'Uptime — technical status',
     description:
-        'Vérifiez ici la santé du backend. Si l\'app passe en mode dégradé, cet écran vous dit pourquoi et quand le service revient.',
+        'Check backend health here. If the app enters degraded mode, this screen tells you why and when the service is back.',
   ),
   InAppTourStep(
     id: 'settings',
     routePath: '/settings',
-    title: 'Paramètres — tout personnaliser',
+    title: 'Settings — personalize everything',
     description:
-        'Centre de contrôle : langue, fréquence de génération, canaux de publication, notifications, rituel hebdomadaire. '
-        'C\'est aussi ici que vous trouverez le bouton « Visite guidée de l\'app » pour relancer ou reprendre cette visite à tout moment.',
-    hint: 'Cherchez le tile « Visite guidée de l\'app » pour relancer la visite.',
+        'This is your control center for language, generation frequency, publishing channels, notifications, and your weekly ritual. '
+        'It is also where you will find the guided tour setting if you want to restart or resume this tour later.',
+    hint: 'Look for the "Guided app tour" tile to restart the tour.',
   ),
   InAppTourStep(
     id: 'completion',
-    title: 'Vous êtes prêt !',
+    title: 'You are ready!',
     description:
-        'Vous avez vu l\'essentiel. Quelques rappels pour bien démarrer : '
-        '1) commencez par configurer vos personas et votre rituel hebdomadaire dans les paramètres, '
-        '2) laissez l\'IA générer, puis validez dans le Feed, '
-        '3) suivez l\'impact dans Analytics. '
-        'Pour relancer cette visite, ouvrez Paramètres → Visite guidée de l\'app.',
+        'You have seen the essentials. A few reminders to get started well: '
+        '1) configure your personas and weekly ritual in Settings, '
+        '2) let the AI generate, then review items in the Feed, '
+        '3) track the impact in Analytics. '
+        'To relaunch this tour, open Settings and use the guided app tour option.',
   ),
 ];

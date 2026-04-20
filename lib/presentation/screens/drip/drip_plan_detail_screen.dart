@@ -108,6 +108,9 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
   Future<void> _handleAction(String action, DripPlan plan) async {
     setState(() => _loading = true);
     final api = ref.read(apiServiceProvider);
+    final l10n = context.l10n;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       String message;
@@ -115,61 +118,68 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         case 'import':
           final dir = plan.ssgConfig['content_directory'] as String? ?? 'src/data';
           final result = await api.importDripContent(plan.id, dir);
-          message = context.tr('Imported {count} articles', {
-            'count': '${result['items_imported']}',
-          });
+          message = l10n.tr(
+            'Imported {count} articles',
+            params: {'count': '${result['items_imported']}'},
+          );
         case 'cluster':
           final result = await api.clusterDripPlan(plan.id, mode: plan.clusterMode);
-          message = context.tr('Clustered into {count} groups', {
-            'count': '${result['total_clusters']}',
-          });
+          message = l10n.tr(
+            'Clustered into {count} groups',
+            params: {'count': '${result['total_clusters']}'},
+          );
         case 'schedule':
           final result = await api.scheduleDripPlan(plan.id);
-          message = context.tr('Scheduled {count} items', {
-            'count': '${result['total_items']}',
-          });
+          message = l10n.tr(
+            'Scheduled {count} items',
+            params: {'count': '${result['total_items']}'},
+          );
         case 'activate':
           await api.activateDripPlan(plan.id);
-          message = context.tr('Plan activated — dripping starts!');
+          message = l10n.tr('Plan activated — dripping starts!');
         case 'pause':
           await api.pauseDripPlan(plan.id);
-          message = context.tr('Plan paused');
+          message = l10n.tr('Plan paused');
         case 'resume':
           await api.resumeDripPlan(plan.id);
-          message = context.tr('Plan resumed');
+          message = l10n.tr('Plan resumed');
         case 'cancel':
           await api.cancelDripPlan(plan.id);
-          message = context.tr('Plan cancelled');
+          message = l10n.tr('Plan cancelled');
         case 'execute':
           final result = await api.executeDripTick(plan.id);
-          message = context.tr('Published {count} articles', {
-            'count': '${result['published']}',
-          });
+          message = l10n.tr(
+            'Published {count} articles',
+            params: {'count': '${result['published']}'},
+          );
         case 'delete':
           await api.deleteDripPlan(plan.id);
-          if (mounted) Navigator.pop(context);
-          message = context.tr('Plan deleted');
+          if (mounted) {
+            navigator.pop();
+          }
+          message = l10n.tr('Plan deleted');
         default:
-          message = context.tr('Unknown action');
+          message = l10n.tr('Unknown action');
       }
 
+      if (!mounted) return;
       ref.invalidate(dripPlansProvider);
       ref.invalidate(dripStatsProvider(widget.planId));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-      }
+      messenger.showSnackBar(SnackBar(content: Text(message)));
     } catch (error, stackTrace) {
-      if (mounted) {
-        showDiagnosticSnackBar(
-          context,
-          ref,
-          message: context.tr('Action failed: {error}', {'error': '$error'}),
-          scope: 'drip.plan_detail.action',
-          error: error,
-          stackTrace: stackTrace,
-          contextData: {'planId': widget.planId},
-        );
-      }
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: l10n.tr(
+          'Action failed: {error}',
+          params: {'error': '$error'},
+        ),
+        scope: 'drip.plan_detail.action',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {'planId': widget.planId},
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }

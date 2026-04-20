@@ -65,7 +65,7 @@ class _TemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = template['name'] as String? ?? 'Unnamed';
+    final name = template['name'] as String? ?? context.tr('Unnamed');
     final description = template['description'] as String? ?? '';
     final contentType = template['content_type'] as String? ?? '';
     final sections = (template['sections'] as List?)?.length ?? 0;

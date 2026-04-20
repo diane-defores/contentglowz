@@ -186,14 +186,20 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
   }
 
   Future<void> _markReviewed(String feedbackId) async {
+    final l10n = context.l10n;
     try {
       await ref.read(feedbackServiceProvider).markReviewed(feedbackId);
+      if (!mounted) return;
       ref.invalidate(feedbackAdminEntriesProvider(_query));
       ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
-      _showSnack(context.tr('Feedback marked as read.'));
+      _showSnack(l10n.tr('Feedback marked as read.'));
     } catch (error, stackTrace) {
+      if (!mounted) return;
       _showSnack(
-        context.tr('Failed to update: {error}', {'error': error}),
+        l10n.tr(
+          'Failed to update: {error}',
+          params: {'error': error},
+        ),
         error: error,
         stackTrace: stackTrace,
         scope: 'feedback_admin.mark_reviewed',

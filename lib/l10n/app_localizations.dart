@@ -222,6 +222,8 @@ class AppLocalizations {
         'Voici le workspace démo fixe qui sera servi à chaque utilisateur démo.',
     'Here\'s your content plan. You can change it anytime in Settings.':
         'Voici votre plan de contenu. Vous pouvez le modifier à tout moment dans Réglages.',
+    'Here’s your content plan. You can change it anytime in Settings.':
+        'Voici votre plan de contenu. Vous pouvez le modifier à tout moment dans Reglages.',
     'Idea Pool': 'Réservoir d’idées',
     'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.':
         'Les idées issues des newsletters, du SEO, des concurrents et de l’écoute sociale seront conservées pour votre validation avant la génération des articles.',
@@ -634,10 +636,325 @@ class AppLocalizations {
     'WordPress': 'WordPress',
     'YYYY-MM-DD': 'AAAA-MM-JJ',
     'You have unsaved edits.': 'Vous avez des modifications non enregistrees.',
+    'Analyze your site structure and topical coverage':
+        'Analysez la structure de votre site et sa couverture thématique',
+    'Author': 'Auteur',
+    'Boost': 'Booster',
+    'Caption': 'Legende',
+    'Calendar — your scheduled posts':
+        'Calendrier — vos posts planifies',
+    'Check backend health here. If the app enters degraded mode, this screen tells you why and when the service is back.':
+        'Verifiez ici la sante du backend. Si l app passe en mode degrade, cet ecran vous indique pourquoi et quand le service revient.',
+    'Centralize your affiliate links so the AI can insert them intelligently into relevant content. Add a link here once, and it will be suggested automatically whenever the topic fits.':
+        'Centralisez vos liens d affiliation pour que l IA les insere intelligemment dans les contenus pertinents. Ajoutez un lien une seule fois ici, il sera propose automatiquement quand le sujet s y prete.',
+    'Configure the topic areas the AI is allowed to work on. This prevents off-topic output and keeps production focused on your real areas of expertise.':
+        'Configurez les domaines thematiques sur lesquels l IA est autorisee a travailler. Cela evite les hors-sujets et garde la production centree sur vos vraies expertises.',
+    'Content Tools — checks and audits':
+        'Content Tools — verifications et audits',
+    'Define the personas the AI should address. Each persona influences tone, vocabulary, and angles. Use the + button in the bottom-right corner to add a new persona.':
+        'Definissez les personas que l IA doit adresser. Chaque persona influence le ton, le vocabulaire et les angles. Utilisez le bouton + en bas a droite pour ajouter une nouvelle persona.',
+    'Download & Extract': 'Telecharger et extraire',
+    'Download Complete': 'Telechargement termine',
+    'Download Instagram reels, extract audio, upload to CDN':
+        'Telechargez des reels Instagram, extrayez l audio et uploadez-le sur le CDN',
+    'Download Reel': 'Telecharger le reel',
+    'Download failed: {error}': 'Echec du telechargement : {error}',
+    'Drip — automated sequences': 'Drip — sequences automatisees',
+    'Dismiss': 'Ignorer',
+    'Every AI generation leaves a trace here: which model, which prompt, and how long it took. Check it when a result looks suspicious or when you want to keep an eye on cost.':
+        'Chaque generation IA laisse une trace ici : quel modele, quel prompt et combien de temps cela a pris. Consultez cet ecran quand un resultat semble douteux ou pour surveiller les couts.',
+    'Enriched': 'Enrichi',
+    'Enter an Instagram Reel URL': 'Entrez une URL de reel Instagram',
+    'Feed — your review queue': 'Feed — votre file de validation',
+    'Find all published content here, with its status and target platform. This is your archive for checking what has already gone out or reusing a past idea.':
+        'Retrouvez ici tous les contenus deja publies, avec leur statut et la plateforme cible. C est votre archive pour verifier ce qui est deja parti ou reutiliser une ancienne idee.',
+    'Guided app tour': 'Visite guidee de l app',
+    'Guided tour · {current}/{total}':
+        'Visite guidee · {current}/{total}',
+    'History — everything that has been published':
+        'Historique — tout ce qui a ete publie',
+    'Instagram Reel URL': 'URL du reel Instagram',
+    'Look for the "Guided app tour" tile to restart the tour.':
+        'Cherchez la tuile « Visite guidee de l app » pour relancer la visite.',
+    'Look for the 3 round buttons at the bottom — they are your main actions.':
+        'Reperez les 3 boutons ronds en bas — ce sont vos actions principales.',
+    'Manage your short-form videos here: reels, shorts, and similar vertical formats. The AI can suggest scripts and structure, and you decide what to edit or approve before publishing. The main Feed still stays central, while Reels is the workshop dedicated to vertical content.':
+        'Gerez ici vos videos courtes : reels, shorts et autres formats verticaux. L IA peut proposer des scripts et un decoupage, puis vous decidez quoi editer ou approuver avant publication. Le Feed reste central, tandis que Reels est l atelier dedie au format vertical.',
+    'Lower': 'Baisser',
+    'Newsletter — your long-form channel':
+        'Newsletter — votre canal long format',
+    'No ideas yet': 'Aucune idee pour le moment',
+    'No templates available': 'Aucun modele disponible',
+    'Pause tour': 'Mettre en pause la visite',
+    'Performance — detailed metrics':
+        'Performance — metriques detaillees',
+    'Performance complements Analytics with metrics per content item and per channel. Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.':
+        'Performance complete Analytics avec des metriques par contenu et par canal. Utilisez-le quand vous voulez comprendre pourquoi un post a marche, ou non, afin de reproduire ce qui fonctionne.',
+    'Personas — your target audiences':
+        'Personas — vos audiences cibles',
+    'Previous': 'Precedent',
+    'Raw': 'Brut',
+    'Reel ID': 'ID du reel',
+    'Reel Repurposing': 'Reutilisation de reel',
+    'Reels — short video formats': 'Reels — formats video courts',
+    'Repository URL': 'URL du depot',
+    'Repository URL is required': 'L URL du depot est requise',
+    'Research gathers trending topics, competitor monitoring, and audience questions. This is the screen to check before each planning ritual so you know what to cover this week.':
+        'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. C est l ecran a consulter avant chaque rituel de planification pour savoir quoi traiter cette semaine.',
+    'Research — feed your strategy':
+        'Research — nourrir votre strategie',
+    'Runs — AI job history': 'Runs — historique des jobs IA',
+    'SEO Mesh': 'Mesh SEO',
+    'SEO — organic visibility': 'SEO — visibilite organique',
+    'Settings — personalize everything':
+        'Parametres — tout personnaliser',
+    'Skip tour': 'Passer la visite',
+    'Templates — your reusable formats':
+        'Templates — vos modeles reutilisables',
+    'Templates are your repeatable content formats: long-form articles, short posts, or sequences. The AI uses them to generate content that matches your style. The more precise your templates are, the closer the output will match your voice.':
+        'Les templates sont vos formats recurrents : articles long format, posts courts ou sequences. L IA s en sert pour generer un contenu coherent avec votre style. Plus vos templates sont precis, plus le resultat colle a votre voix.',
+    'The Newsletter screen groups together newsletter creation, preview, and sending. You can combine several Feed items into one edition. It is ideal for turning a week of production into a single send.':
+        'L ecran Newsletter regroupe la creation, l apercu et l envoi de vos newsletters. Vous pouvez assembler plusieurs contenus du Feed dans une meme edition. C est ideal pour transformer une semaine de production en un envoi unique.',
+    'The calendar shows everything scheduled for publishing. Tap a week at the top to filter the view. It is useful for checking the balance of your schedule and spotting empty or overloaded days.':
+        'Le calendrier affiche tout ce qui est programme pour publication. Touchez une semaine en haut pour filtrer la vue. C est utile pour verifier l equilibre de votre planning et reperer les jours vides ou surcharges.',
+    'This is the chronological log of everything happening in your workspace: creations, publications, and errors. It is useful for diagnosis when something does not seem to have worked.':
+        'C est le journal chronologique de tout ce qui se passe dans votre workspace : creations, publications et erreurs. Il est utile pour diagnostiquer ce qui ne semble pas avoir fonctionne.',
+    'This is where you review every piece of AI-generated content. You can swipe the card or use the three round buttons at the bottom: the left button skips the item, the middle one opens the editor, and the right one approves or publishes it. The red badge on the Feed icon shows how many items are waiting for review.':
+        'C est ici que vous validez chaque contenu genere par l IA. Vous pouvez swiper la carte ou utiliser les trois boutons ronds en bas : celui de gauche passe le contenu, celui du milieu ouvre l editeur, et celui de droite approuve ou publie. Le badge rouge sur l icone Feed indique combien de contenus attendent votre revue.',
+    'This is your control center for language, generation frequency, publishing channels, notifications, and your weekly ritual. It is also where you will find the guided tour setting if you want to restart or resume this tour later.':
+        'C est votre centre de controle pour la langue, la frequence de generation, les canaux de publication, les notifications et votre rituel hebdomadaire. C est aussi ici que vous trouverez le reglage de visite guidee si vous voulez la relancer ou la reprendre plus tard.',
+    'This is your global dashboard for audience, engagement, and growth. It should be your first weekly stop to see what is working. Start with the broad trends here, then go deeper in Performance.':
+        'C est votre tableau de bord global pour l audience, l engagement et la croissance. Cela doit etre votre premier arret hebdomadaire pour voir ce qui fonctionne. Regardez d abord les grandes tendances ici, puis creusez dans Performance.',
+    'This toolbox checks your content quality before publishing: editorial consistency, funnel audits, and validations. Use it when a draft feels off — the audit often explains why.':
+        'Cette boite a outils verifie la qualite de vos contenus avant publication : coherence editoriale, audit du funnel et validations. Utilisez-la quand un draft semble etrange — l audit explique souvent pourquoi.',
+    'Topical Mesh Analysis': 'Analyse du mesh thematique',
+    'Use the + button in the bottom-right corner to add a persona.':
+        'Utilisez le bouton + en bas a droite pour ajouter une persona.',
+    'Use this screen for SEO analysis and keyword opportunities. Before launching a Drip series or a long-form article, come here to align your angles with the searches that matter.':
+        'Utilisez cet ecran pour l analyse SEO et les opportunites de mots-cles. Avant de lancer une serie Drip ou un article long format, passez ici pour aligner vos angles avec les recherches qui comptent.',
+    'Video': 'Video',
+    'We will take a quick tour of the app, screen by screen. The goal is to show you the best order to use each page, what the main controls do, and how to get the most out of the platform. You can pause at any time and resume later from Settings.':
+        'On va faire un tour rapide de l app, ecran par ecran. L objectif est de vous montrer dans quel ordre utiliser les pages, a quoi servent les controles principaux et comment tirer le meilleur de la plateforme. Vous pouvez mettre en pause a tout moment et reprendre plus tard depuis Reglages.',
+    'Welcome to ContentFlow': 'Bienvenue dans ContentFlow',
+    'Work domains': 'Domaines de travail',
+    'You are ready!': 'Vous etes pret !',
+    'You have seen the essentials. A few reminders to get started well: 1) configure your personas and weekly ritual in Settings, 2) let the AI generate, then review items in the Feed, 3) track the impact in Analytics. To relaunch this tour, open Settings and use the guided app tour option.':
+        'Vous avez vu l essentiel. Quelques rappels pour bien demarrer : 1) configurez vos personas et votre rituel hebdomadaire dans Reglages, 2) laissez l IA generer, puis validez les contenus dans le Feed, 3) suivez l impact dans Analytics. Pour relancer cette visite, ouvrez Reglages et utilisez l option de visite guidee.',
     'YouTube': 'YouTube',
     'Your Headline': 'Votre accroche',
     'Your Name': 'Votre nom',
     'Your site URL': 'URL de votre site',
+    'Activity — system timeline': 'Activite — timeline systeme',
+    'Affiliations — your monetized links':
+        'Affiliations — vos liens monetises',
+    'All sources': 'Toutes les sources',
+    'Analytics — measure impact': 'Analytics — mesurer l impact',
+    'Delete idea?': 'Supprimer l idee ?',
+    'Ideas from newsletters, SEO, competitors\nand social listening will appear here.':
+        'Les idees issues des newsletters, du SEO, des concurrents\net de l ecoute sociale apparaitront ici.',
+    'Remove "{title}"? This cannot be undone.':
+        'Supprimer « {title} » ? Cette action est irreversible.',
+    'Tips': 'Conseils',
+    'Unnamed': 'Sans nom',
+    'Used': 'Utilise',
+    'Uptime — technical status': 'Uptime — etat technique',
+    '1. Set up your brand voice (weekly ritual)\n2. Create a customer persona\n3. Content starts flowing!':
+        '1. Definissez votre voix de marque (rituel hebdomadaire)\n2. Creez un persona client\n3. Le contenu commence a circuler !',
+    '25-40': '25-40',
+    '3-8 years': '3-8 ans',
+    '5% or 10/sale': '5 % ou 10/vente',
+    'A browser window has opened for you to authorize {channelName}.\n\nOnce done, tap "Refresh" to see your connected account.':
+        'Une fenetre de navigateur s est ouverte pour autoriser {channelName}.\n\nUne fois termine, touchez « Rafraichir » pour voir votre compte connecte.',
+    'AI uses these to match content topics':
+        'L IA s en sert pour faire correspondre les sujets de contenu',
+    'Activate Plan': 'Activer le plan',
+    'Active': 'Actif',
+    'Add': 'Ajouter',
+    'Add first link': 'Ajouter le premier lien',
+    'Age range': 'Tranche d age',
+    'Amazon Associates': 'Amazon Associates',
+    'Analyze Mesh': 'Analyser le mesh',
+    'Any new ideas? Content topics, product features, collaborations?':
+        'De nouvelles idees ? Sujets de contenu, fonctionnalites produit, collaborations ?',
+    'Are you reconsidering something? A strategy shift, a new angle?':
+        'Reconsiderez-vous quelque chose ? Un changement de strategie, un nouvel angle ?',
+    'Articles published in file order.':
+        'Articles publies dans l ordre des fichiers.',
+    'Aspirations and desired outcomes':
+        'Aspirations et resultats souhaites',
+    'Brief description of the program...':
+        'Breve description du programme...',
+    'Category': 'Categorie',
+    'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.':
+        'Clerk est connecte, mais l initialisation du workspace a echoue. ContentFlow reste en mode degrade jusqu a ce que FastAPI retourne un bootstrap exploitable.',
+    'Commission': 'Commission',
+    'Common pushbacks or doubts this persona has':
+        'Objections ou doutes frequents de ce persona',
+    'Complete your weekly ritual for better angles':
+        'Completez votre rituel hebdomadaire pour de meilleurs angles',
+    'Contact URL': 'URL de contact',
+    'Content created: "{contentType}"':
+        'Contenu cree : « {contentType} »',
+    'Content generation in progress: "{contentType}"':
+        'Generation de contenu en cours : « {contentType} »',
+    'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.':
+        'ContentFlow analyse votre produit, genere des angles et des brouillons, puis vous permet d approuver, editer, planifier et publier depuis un seul workflow au lieu de jongler avec prompts, docs et outils sociaux.',
+    'ContentFlow is running in degraded mode while backend access is limited.':
+        'ContentFlow fonctionne en mode degrade tant que l acces au backend est limite.',
+    'ContentFlow web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.':
+        'L authentification web de ContentFlow utilise maintenant le SDK JavaScript officiel de Clerk directement sur le domaine de l app. L ancien handoff via le site et le SDK Flutter beta ne sont plus le chemin principal.',
+    'Create Persona': 'Creer un persona',
+    'Create a customer persona to help\nthe AI generate targeted content':
+        'Creez un persona client pour aider\nl IA a generer un contenu cible',
+    'Create a persona first': 'Creez d abord un persona',
+    'Creating...': 'Creation...',
+    'Deep, real problems — not surface-level symptoms':
+        'Problemes profonds et reels — pas des symptomes de surface',
+    'Delete affiliate link?': 'Supprimer le lien d affiliation ?',
+    'Deleted "{name}"': '« {name} » supprime',
+    'Demographics': 'Demographie',
+    'Deployment': 'Deploiement',
+    'Description': 'Description',
+    'Downloading...': 'Telechargement...',
+    'Duration': 'Duree',
+    'Edit Affiliate Link': 'Modifier le lien d affiliation',
+    'Edit Entries': 'Modifier les entrees',
+    'Edit Persona': 'Modifier le persona',
+    'Email: {email}': 'Email : {email}',
+    'Experience level': 'Niveau d experience',
+    'Expired': 'Expire',
+    'Expires': 'Expire le',
+    'Failed to create content. Check backend connection.':
+        'Impossible de creer le contenu. Verifiez la connexion backend.',
+    'Failed to delete: {error}': 'Suppression impossible : {error}',
+    'Failed to load affiliations':
+        'Impossible de charger les affiliations',
+    'Failed to load ideas': 'Impossible de charger les idees',
+    'Failed to load personas': 'Impossible de charger les personas',
+    'Failed to load templates': 'Impossible de charger les modeles',
+    'Failed to save persona: {error}':
+        'Impossible d enregistrer le persona : {error}',
+    'Failed to save: {error}': 'Impossible d enregistrer : {error}',
+    'Fill at least {count}': 'Remplissez au moins {count}',
+    'Generate Content': 'Generer du contenu',
+    'Goal': 'Objectif',
+    'Goals (min. 2)': 'Objectifs (min. 2)',
+    'Idea': 'Idee',
+    'Identity': 'Identite',
+    'Indie developers building SaaS products':
+        'Developpeurs indies qui construisent des produits SaaS',
+    'Industry': 'Secteur',
+    'Issue': 'Probleme',
+    'KD {score}': 'KD {score}',
+    'Keywords (comma-separated)': 'Mots-cles (separes par des virgules)',
+    'LinkedIn': 'LinkedIn',
+    'Login URL': 'URL de connexion',
+    'Name *': 'Nom *',
+    'Narrative Summary': 'Resume narratif',
+    'Narrative loaded': 'Narratif charge',
+    'Narrative synthesis failed: {error}':
+        'La synthese narrative a echoue : {error}',
+    'Narrative validated and saved!':
+        'Narratif valide et enregistre !',
+    'New Affiliate Link': 'Nouveau lien d affiliation',
+    'New Chapter Detected': 'Nouveau chapitre detecte',
+    'New Persona': 'Nouveau persona',
+    'No affiliate links match this filter':
+        'Aucun lien d affiliation ne correspond a ce filtre',
+    'No affiliate links yet': 'Aucun lien d affiliation pour le moment',
+    'No angles available': 'Aucun angle disponible',
+    'No date': 'Pas de date',
+    'No personas yet': 'Aucun persona pour le moment',
+    'No role defined': 'Aucun role defini',
+    'Notes for AI': 'Notes pour l IA',
+    'Objection': 'Objection',
+    'Objections': 'Objections',
+    'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.':
+        'Quand Clerk proposera un SDK Flutter stable, la branche beta archivee pourra etre reexaminee. D ici la, l auth de production reste sur le chemin web officiel ClerkJS.',
+    'Pages': 'Pages',
+    'Pain Points (min. 2)': 'Pain points (min. 2)',
+    'Pain point': 'Pain point',
+    'Paused': 'En pause',
+    'Persona "{name}" saved': 'Persona « {name} » enregistre',
+    'Persona name': 'Nom du persona',
+    'Pick an angle to generate content':
+        'Choisissez un angle pour generer du contenu',
+    'Pivot': 'Pivot',
+    'Please enter a persona name':
+        'Veuillez entrer un nom de persona',
+    'Positioning Shift': 'Changement de positionnement',
+    'Preview': 'Apercu',
+    'Recommendation': 'Recommandation',
+    'Recommendations': 'Recommandations',
+    'Reels': 'Reels',
+    'Reflection': 'Reflexion',
+    'Remove "{name}"? This cannot be undone.':
+        'Supprimer « {name} » ? Cette action est irreversible.',
+    'Required': 'Requis',
+    'Role': 'Role',
+    'SaaS, E-commerce...': 'SaaS, e-commerce...',
+    'Save': 'Enregistrer',
+    'Score': 'Score',
+    'Score {score}': 'Score {score}',
+    'Select a persona above to generate angles':
+        'Selectionnez un persona ci-dessus pour generer des angles',
+    'Session: {state}': 'Session : {state}',
+    'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.':
+        'Definissez `CLERK_PUBLISHABLE_KEY` avec `--dart-define` pour activer le flux de connexion ClerkJS de production sur le domaine de l app.',
+    'Stage: {stage}': 'Etape : {stage}',
+    'Status': 'Statut',
+    'Struggle': 'Difficulte',
+    'Synthesize Narrative': 'Synthese narrative',
+    'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.':
+        'Le SDK Flutter beta de Clerk a ete retire du chemin de production. Pour l instant, connectez-vous via le flux web Google dedie au lieu de l ancien flux Flutter embarque.',
+    'This will approve and publish {count} content item(s).':
+        'Cela va approuver et publier {count} contenu(s).',
+    'This will remove the connection to {displayName}.':
+        'Cela supprimera la connexion a {displayName}.',
+    'TikTok': 'TikTok',
+    'Try refreshing or complete your weekly ritual':
+        'Essayez de rafraichir ou completez votre rituel hebdomadaire',
+    'URL *': 'URL *',
+    'Untitled': 'Sans titre',
+    'Update': 'Mettre a jour',
+    'Validate & Save': 'Valider et enregistrer',
+    'Vocabulary': 'Vocabulaire',
+    'Voice Evolution': 'Evolution de la voix',
+    'Weekly Tech Digest #43': 'Digest tech hebdo #43',
+    'What have you been thinking about this week regarding your work, your audience, your direction?':
+        'A quoi avez-vous pense cette semaine concernant votre travail, votre audience, votre direction ?',
+    'What was difficult? A blocker, a doubt, a frustration?':
+        'Qu est-ce qui a ete difficile ? Un blocage, un doute, une frustration ?',
+    'What went well? A milestone, a positive reaction, a breakthrough?':
+        'Qu est-ce qui s est bien passe ? Une etape cle, une reaction positive, une percee ?',
+    'When and how to use this link...':
+        'Quand et comment utiliser ce lien...',
+    'Win': 'Succes',
+    'Word or phrase': 'Mot ou expression',
+    'Words and expressions this persona actually uses':
+        'Mots et expressions que ce persona utilise vraiment',
+    'e.g. GoCharbon Launch': 'ex. Lancement GoCharbon',
+    'e.g. Indie developer, CTO, Content creator':
+        'ex. Developpeur indie, CTO, createur de contenu',
+    'e.g. Tech-Savvy Solopreneur':
+        'ex. Solopreneur techno averti',
+    'e.g. src/data': 'ex. src/data',
+    'hosting, wordpress, website': 'hosting, wordpress, site web',
+    'https://affiliate.example.com/ref=123':
+        'https://affiliate.example.com/ref=123',
+    'https://api.vercel.com/v1/integrations/deploy/...':
+        'https://api.vercel.com/v1/integrations/deploy/...',
+    'https://competitor1.com\nhttps://competitor2.com':
+        'https://competitor1.com\nhttps://competitor2.com',
+    'https://github.com/user/site': 'https://github.com/user/site',
+    'https://yoursite.com': 'https://yoursite.com',
+    'saas, flutter, ai': 'saas, flutter, ia',
+    '{status}: {count}': '{status} : {count}',
+    '{volume} vol': '{volume} vol',
+    'https://github.com/user/repo': 'https://github.com/user/repo',
+    'https://www.instagram.com/reel/...':
+        'https://www.instagram.com/reel/...',
+    '{count} sections': '{count} sections',
     'active': 'actif',
     'articles': 'articles',
     'auto': 'auto',

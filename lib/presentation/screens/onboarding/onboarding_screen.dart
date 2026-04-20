@@ -177,7 +177,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           readOnly: _isDemoMode,
           decoration: InputDecoration(
             labelText: context.tr('GitHub URL'),
-            hintText: 'https://github.com/user/repo',
+            hintText: context.tr('https://github.com/user/repo'),
             prefixIcon: const Icon(Icons.link),
             errorText: _repoUrlErrorText,
           ),

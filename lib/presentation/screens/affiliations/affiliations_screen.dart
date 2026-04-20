@@ -22,8 +22,6 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
   @override
   Widget build(BuildContext context) {
     final affiliationsAsync = ref.watch(affiliationsProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -125,51 +123,65 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
   }
 
   Future<void> _delete(BuildContext context, AffiliateLink affiliation) async {
+    final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+    final errorColor = Theme.of(context).colorScheme.error;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(context.tr('Delete affiliate link?')),
-        content: Text(context.tr('Remove "{name}"? This cannot be undone.',
-            {'name': affiliation.name})),
+        title: Text(l10n.tr('Delete affiliate link?')),
+        content: Text(
+          l10n.tr(
+            'Remove "{name}"? This cannot be undone.',
+            params: {'name': affiliation.name},
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(context.tr('Cancel')),
+            child: Text(l10n.tr('Cancel')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: errorColor,
             ),
-            child: Text(context.tr('Delete')),
+            child: Text(l10n.tr('Delete')),
           ),
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !context.mounted) return;
 
     final api = ref.read(apiServiceProvider);
     try {
       await api.deleteAffiliation(affiliation.id!);
+      if (!context.mounted) return;
       ref.invalidate(affiliationsProvider);
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(context.tr('Deleted "{name}"', {'name': affiliation.name}))),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.tr(
+              'Deleted "{name}"',
+              params: {'name': affiliation.name},
+            ),
+          ),
+        ),
+      );
     } catch (error, stackTrace) {
-      if (mounted) {
-        showDiagnosticSnackBar(
-          context,
-          ref,
-          message: context.tr('Failed to delete: {error}', {'error': '$error'}),
-          scope: 'affiliations.delete',
-          error: error,
-          stackTrace: stackTrace,
-          contextData: {'affiliationId': affiliation.id ?? 'unknown'},
-        );
-      }
+      if (!context.mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: l10n.tr(
+          'Failed to delete: {error}',
+          params: {'error': '$error'},
+        ),
+        scope: 'affiliations.delete',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {'affiliationId': affiliation.id ?? 'unknown'},
+      );
     }
   }
 }
