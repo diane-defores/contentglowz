@@ -90,6 +90,24 @@ class Project {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'url': url,
+      'github_url': url,
+      'description': description,
+      'is_default': isDefault,
+      'is_archived': isArchived,
+      'is_deleted': isDeleted,
+      'settings': settings?.toJson(),
+      'last_analyzed_at': lastAnalyzedAt?.toIso8601String(),
+      'archived_at': archivedAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
 }
 
 class ProjectSettings {
@@ -116,6 +134,26 @@ class ProjectSettings {
         ),
         contentTypes: _parseContentTypes(json),
       );
+
+  ProjectSettings copyWith({
+    TechStackDetection? techStack,
+    OnboardingStatus? onboardingStatus,
+    List<ContentTypeConfig>? contentTypes,
+  }) {
+    return ProjectSettings(
+      techStack: techStack ?? this.techStack,
+      onboardingStatus: onboardingStatus ?? this.onboardingStatus,
+      contentTypes: contentTypes ?? this.contentTypes,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tech_stack': techStack?.toJson(),
+      'onboarding_status': onboardingStatus.name,
+      'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+    };
+  }
 }
 
 class TechStackDetection {
@@ -138,6 +176,14 @@ class TechStackDetection {
         frameworkVersion: json['framework_version'] as String?,
         confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
       );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'framework': framework.name,
+      'framework_version': frameworkVersion,
+      'confidence': confidence,
+    };
+  }
 }
 
 class ContentTypeConfig {

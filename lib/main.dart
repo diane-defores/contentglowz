@@ -9,6 +9,8 @@ import 'core/app_language.dart';
 import 'core/app_diagnostics.dart';
 import 'core/app_theme_preference.dart';
 import 'core/shared_preferences_provider.dart';
+import 'data/models/auth_session.dart';
+import 'data/models/offline_sync.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/providers.dart';
 import 'router.dart';
@@ -97,10 +99,83 @@ class ContentFlowApp extends ConsumerWidget {
         return Stack(
           children: [
             ?child,
+            const Positioned.fill(child: _OfflineSyncBridge()),
             const Positioned.fill(child: InAppTourOverlay()),
           ],
         );
       },
     );
+  }
+}
+
+class _OfflineSyncBridge extends ConsumerStatefulWidget {
+  const _OfflineSyncBridge();
+
+  @override
+  ConsumerState<_OfflineSyncBridge> createState() => _OfflineSyncBridgeState();
+}
+
+class _OfflineSyncBridgeState extends ConsumerState<_OfflineSyncBridge>
+    with WidgetsBindingObserver {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(offlineQueueControllerProvider);
+      unawaited(_triggerReplay(refreshAccess: true));
+    });
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!mounted) return;
+      unawaited(_triggerReplay(refreshAccess: false));
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_triggerReplay(refreshAccess: true));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AuthSession>(authSessionProvider, (previous, next) {
+      if ((previous?.isAuthenticated ?? false) != next.isAuthenticated &&
+          next.isAuthenticated) {
+        unawaited(_triggerReplay(refreshAccess: true));
+      }
+    });
+    ref.listen<OfflineSyncState>(offlineSyncStateProvider, (previous, next) {
+      if ((previous?.requiresReauth ?? false) && !next.requiresReauth) {
+        unawaited(_triggerReplay(refreshAccess: true));
+      }
+    });
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _triggerReplay({required bool refreshAccess}) async {
+    final scope = ref.read(offlineStorageScopeProvider);
+    final queue = await ref.read(offlineQueueStoreProvider).load(scope);
+    if (queue.isEmpty) {
+      if (refreshAccess) {
+        await ref.read(appAccessStateProvider.notifier).refresh();
+      }
+      return;
+    }
+    if (refreshAccess) {
+      await ref.read(appAccessStateProvider.notifier).refresh();
+    }
+    await ref.read(offlineQueueControllerProvider.notifier).retryAll();
   }
 }

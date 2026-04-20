@@ -17,6 +17,7 @@ import '../data/models/content_item.dart';
 import '../data/models/creator_profile.dart';
 import '../data/models/feedback_entry.dart';
 import '../data/models/idea.dart';
+import '../data/models/offline_sync.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/ritual.dart';
@@ -24,6 +25,7 @@ import '../data/services/api_service.dart';
 import '../data/services/clerk_auth_service.dart';
 import '../data/services/feedback_local_store.dart';
 import '../data/services/feedback_service.dart';
+import '../data/services/offline_storage_service.dart';
 
 const _apiBaseUrlKey = 'api_base_url';
 const _appLanguagePreferenceKey = 'app_language_preference';
@@ -127,10 +129,226 @@ class AppThemePreferenceNotifier extends StateNotifier<String> {
   }
 }
 
+String _offlineStorageScope(AuthSession session) {
+  if (session.isDemo) {
+    return 'demo';
+  }
+  if (!session.isAuthenticated) {
+    return 'signed_out';
+  }
+
+  final email = session.email?.trim().toLowerCase();
+  if (email != null && email.isNotEmpty) {
+    return 'user:$email';
+  }
+  final token = session.bearerToken;
+  if (token != null && token.isNotEmpty) {
+    return 'token:${token.hashCode}';
+  }
+  return 'authenticated';
+}
+
+final offlineStorageScopeProvider = Provider<String>((ref) {
+  final session = ref.watch(authSessionProvider);
+  return _offlineStorageScope(session);
+});
+
+class OfflineSyncStateNotifier extends StateNotifier<OfflineSyncState> {
+  OfflineSyncStateNotifier({required String scope})
+    : super(OfflineSyncState(scope: scope));
+
+  void markFresh(String cacheKey) {
+    final nextKeys = {...state.staleKeys}..remove(cacheKey);
+    state = state.copyWith(staleKeys: nextKeys);
+  }
+
+  void markStale(String cacheKey) {
+    final nextKeys = {...state.staleKeys, cacheKey};
+    state = state.copyWith(staleKeys: nextKeys);
+  }
+
+  void rewriteIds(Map<String, String> idMappings) {
+    if (idMappings.isEmpty || state.staleKeys.isEmpty) {
+      return;
+    }
+
+    state = state.copyWith(
+      staleKeys: state.staleKeys
+          .map((entry) => rewriteOfflineIdsInString(entry, idMappings))
+          .toSet(),
+    );
+  }
+
+  void replaceQueue(List<QueuedOfflineAction> queue) {
+    var pending = 0;
+    var retrying = 0;
+    var blockedDependency = 0;
+    var pausedAuth = 0;
+    var failed = 0;
+    for (final action in queue) {
+      switch (action.status) {
+        case OfflineQueueStatus.pending:
+          pending++;
+          break;
+        case OfflineQueueStatus.retrying:
+          retrying++;
+          break;
+        case OfflineQueueStatus.blockedDependency:
+          blockedDependency++;
+          break;
+        case OfflineQueueStatus.pausedAuth:
+          pausedAuth++;
+          break;
+        case OfflineQueueStatus.failed:
+          failed++;
+          break;
+        case OfflineQueueStatus.cancelled:
+          break;
+      }
+    }
+
+    state = state.copyWith(
+      pendingCount: pending,
+      retryingCount: retrying,
+      blockedDependencyCount: blockedDependency,
+      pausedAuthCount: pausedAuth,
+      failedCount: failed,
+    );
+  }
+
+  void setReplaying(bool value) {
+    state = state.copyWith(
+      isReplaying: value,
+      lastReplayAt: value ? null : DateTime.now(),
+      clearLastReplayAt: value,
+    );
+  }
+
+  void setReplayError(String? value) {
+    state = state.copyWith(
+      lastReplayError: value,
+      clearLastReplayError: value == null,
+    );
+  }
+}
+
+final offlineSyncStateProvider =
+    StateNotifierProvider<OfflineSyncStateNotifier, OfflineSyncState>((ref) {
+      final scope = ref.watch(offlineStorageScopeProvider);
+      return OfflineSyncStateNotifier(scope: scope);
+    });
+
+final offlineCacheStoreProvider = Provider<OfflineCacheStore>((ref) {
+  return OfflineCacheStore(ref.read(sharedPrefsProvider));
+});
+
+final offlineQueueStoreProvider = Provider<OfflineQueueStore>((ref) {
+  return OfflineQueueStore(ref.read(sharedPrefsProvider));
+});
+
+final offlineIdMappingStoreProvider = Provider<OfflineIdMappingStore>((ref) {
+  return OfflineIdMappingStore(ref.read(sharedPrefsProvider));
+});
+
+final offlineQueueRevisionProvider = StateProvider<int>((ref) => 0);
+
+final offlineQueueEntriesProvider = FutureProvider<List<QueuedOfflineAction>>((
+  ref,
+) async {
+  ref.watch(offlineQueueRevisionProvider);
+  final scope = ref.watch(offlineStorageScopeProvider);
+  final items = await ref.read(offlineQueueStoreProvider).load(scope);
+  ref.read(offlineSyncStateProvider.notifier).replaceQueue(items);
+  return items;
+});
+
+final offlineIdMappingsProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
+  ref.watch(offlineQueueRevisionProvider);
+  final scope = ref.watch(offlineStorageScopeProvider);
+  return ref.read(offlineIdMappingStoreProvider).load(scope);
+});
+
+String offlineEntityKey(String entityType, String entityId) {
+  return '$entityType:$entityId';
+}
+
+int _offlineEntitySyncRank(OfflineEntitySyncStatus status) {
+  return switch (status) {
+    OfflineEntitySyncStatus.failed => 5,
+    OfflineEntitySyncStatus.pausedAuth => 4,
+    OfflineEntitySyncStatus.retrying => 3,
+    OfflineEntitySyncStatus.blockedDependency => 2,
+    OfflineEntitySyncStatus.pending => 1,
+  };
+}
+
+OfflineEntitySyncStatus _offlineEntityStatusFromQueueStatus(
+  OfflineQueueStatus status,
+) {
+  return switch (status) {
+    OfflineQueueStatus.failed => OfflineEntitySyncStatus.failed,
+    OfflineQueueStatus.pausedAuth => OfflineEntitySyncStatus.pausedAuth,
+    OfflineQueueStatus.retrying => OfflineEntitySyncStatus.retrying,
+    OfflineQueueStatus.blockedDependency =>
+      OfflineEntitySyncStatus.blockedDependency,
+    _ => OfflineEntitySyncStatus.pending,
+  };
+}
+
+final offlineEntitySyncMapProvider =
+    Provider<Map<String, OfflineEntitySyncInfo>>((ref) {
+      final queue = ref.watch(offlineQueueEntriesProvider).valueOrNull ?? const [];
+      final entries = <String, OfflineEntitySyncInfo>{};
+
+      for (final action in queue) {
+        final entityType = action.entityType;
+        final entityId = action.entityId;
+        if (entityType == null ||
+            entityType.isEmpty ||
+            entityId == null ||
+            entityId.isEmpty) {
+          continue;
+        }
+
+        final key = offlineEntityKey(entityType, entityId);
+        final nextStatus = _offlineEntityStatusFromQueueStatus(action.status);
+        final previous = entries[key];
+        if (previous == null ||
+            _offlineEntitySyncRank(nextStatus) >=
+                _offlineEntitySyncRank(previous.status)) {
+          entries[key] = OfflineEntitySyncInfo(
+            entityType: entityType,
+            entityId: entityId,
+            status: nextStatus,
+            actionCount: (previous?.actionCount ?? 0) + 1,
+            lastError: action.lastError ?? previous?.lastError,
+          );
+        } else {
+          entries[key] = OfflineEntitySyncInfo(
+            entityType: previous.entityType,
+            entityId: previous.entityId,
+            status: previous.status,
+            actionCount: previous.actionCount + 1,
+            lastError: previous.lastError ?? action.lastError,
+          );
+        }
+      }
+
+      return entries;
+    });
+
+final offlineEntitySyncProvider =
+    Provider.family<OfflineEntitySyncInfo?, String>((ref, entityKey) {
+      return ref.watch(offlineEntitySyncMapProvider)[entityKey];
+    });
+
 final apiServiceProvider = Provider<ApiService>((ref) {
   final baseUrl = ref.watch(apiBaseUrlProvider);
   final authSession = ref.watch(authSessionProvider);
   final clerkAuthService = ref.watch(clerkAuthServiceProvider);
+  final syncState = ref.read(offlineSyncStateProvider.notifier);
   return ApiService(
     baseUrl: baseUrl,
     authToken: authSession.bearerToken,
@@ -141,6 +359,16 @@ final apiServiceProvider = Provider<ApiService>((ref) {
     diagnostics: ref.watch(appDiagnosticsProvider),
     onUnauthorized: () {
       ref.read(authSessionProvider.notifier).handleUnauthorized();
+    },
+    cacheStore: ref.read(offlineCacheStoreProvider),
+    queueStore: ref.read(offlineQueueStoreProvider),
+    idMappingStore: ref.read(offlineIdMappingStoreProvider),
+    offlineScope: ref.watch(offlineStorageScopeProvider),
+    onCacheKeyFresh: (cacheKey) async => syncState.markFresh(cacheKey),
+    onCacheKeyStale: (cacheKey) async => syncState.markStale(cacheKey),
+    onQueueUpdated: (queue) async {
+      syncState.replaceQueue(queue);
+      ref.read(offlineQueueRevisionProvider.notifier).state++;
     },
   );
 });
@@ -565,6 +793,9 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     ref.invalidate(isFeedbackAdminProvider);
     ref.invalidate(feedbackRecentSubmissionsProvider);
     ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
+    ref.invalidate(offlineQueueEntriesProvider);
+    ref.invalidate(offlineIdMappingsProvider);
+    ref.invalidate(offlineQueueControllerProvider);
   }
 
   void _clearLegacyAuthPrefs() {
@@ -636,15 +867,22 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
         health['status'] == 'ok' || health['status'] == 'healthy';
 
     if (!backendReachable) {
+      final cachedBootstrap = await api.loadCachedBootstrap();
       diagnostics.warning(
         scope: 'app_access.resolve',
         message: 'Backend health check reported unavailable status.',
-        context: {'backendStatus': health['status']},
+        context: {
+          'backendStatus': health['status'],
+          'cachedBootstrap': cachedBootstrap != null,
+        },
       );
       return AppAccessState(
         stage: AppAccessStage.apiUnavailable,
         backendHealth: health,
-        message: 'FastAPI health check did not return a healthy status.',
+        bootstrap: cachedBootstrap,
+        message: cachedBootstrap == null
+            ? 'FastAPI health check did not return a healthy status.'
+            : 'FastAPI is unavailable. Using the last cached workspace bootstrap.',
         checkedAt: checkedAt,
       );
     }
@@ -678,6 +916,9 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
         checkedAt: DateTime.now(),
       );
     } on ApiException catch (error) {
+      final cachedBootstrap = error.isUnauthorized
+          ? null
+          : await api.loadCachedBootstrap();
       diagnostics.warning(
         scope: 'app_access.resolve',
         message: error.isUnauthorized
@@ -695,6 +936,7 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
             ? AppAccessStage.bootstrapUnauthorized
             : AppAccessStage.bootstrapFailed,
         backendHealth: health,
+        bootstrap: cachedBootstrap,
         statusCode: error.statusCode,
         message: error.message,
         checkedAt: DateTime.now(),
@@ -720,6 +962,206 @@ final appBootstrapProvider = Provider<AppBootstrap?>((ref) {
   return ref.watch(appAccessStateProvider).valueOrNull?.bootstrap;
 });
 
+final offlineQueueControllerProvider =
+    AsyncNotifierProvider<OfflineQueueController, void>(
+      OfflineQueueController.new,
+    );
+
+class OfflineQueueController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {
+    final scope = ref.watch(offlineStorageScopeProvider);
+    final queue = await ref.read(offlineQueueStoreProvider).load(scope);
+    ref.read(offlineSyncStateProvider.notifier).replaceQueue(queue);
+  }
+
+  Future<void> refresh() async {
+    final scope = ref.read(offlineStorageScopeProvider);
+    final queue = await ref.read(offlineQueueStoreProvider).load(scope);
+    ref.read(offlineSyncStateProvider.notifier).replaceQueue(queue);
+    ref.read(offlineQueueRevisionProvider.notifier).state++;
+  }
+
+  Future<void> cancel(String id) async {
+    final scope = ref.read(offlineStorageScopeProvider);
+    final store = ref.read(offlineQueueStoreProvider);
+    final queue = await store.load(scope);
+    final next = queue.where((entry) => entry.id != id).toList();
+    await store.save(scope, next);
+    ref.read(offlineSyncStateProvider.notifier).replaceQueue(next);
+    ref.read(offlineQueueRevisionProvider.notifier).state++;
+  }
+
+  Future<void> retryOne(String id) async {
+    await _replay(onlyId: id);
+  }
+
+  Future<void> retryAll() async {
+    await _replay();
+  }
+
+  String? _extractCreatedId(Object? data) {
+    if (data is Map) {
+      final id =
+          data['id'] ??
+          data['content_record_id'] ??
+          data['plan_id'] ??
+          data['record_id'];
+      if (id != null) {
+        return id.toString();
+      }
+    }
+    return null;
+  }
+
+  List<String> _unresolvedDependencies(
+    QueuedOfflineAction action,
+    Map<String, String> idMappings,
+  ) {
+    return action.dependsOnTempIds
+        .where((tempId) => !idMappings.containsKey(tempId))
+        .toList();
+  }
+
+  Future<List<QueuedOfflineAction>> _reconcileTempId({
+    required String scope,
+    required List<QueuedOfflineAction> queue,
+    required String tempId,
+    required String realId,
+  }) async {
+    if (tempId == realId) {
+      return queue;
+    }
+
+    final idMappings = {tempId: realId};
+    await ref.read(offlineIdMappingStoreProvider).register(scope, tempId, realId);
+    await ref.read(offlineCacheStoreProvider).rewriteIds(scope, idMappings);
+    ref.read(offlineSyncStateProvider.notifier).rewriteIds(idMappings);
+    return queue.map((entry) => entry.rewriteIds(idMappings)).toList();
+  }
+
+  Future<void> _replay({String? onlyId}) async {
+    final authSession = ref.read(authSessionProvider);
+    if (authSession.isLoading) {
+      return;
+    }
+
+    final scope = ref.read(offlineStorageScopeProvider);
+    final store = ref.read(offlineQueueStoreProvider);
+    final api = ref.read(apiServiceProvider);
+    var queue = await store.load(scope);
+    var idMappings = await ref.read(offlineIdMappingStoreProvider).load(scope);
+    if (queue.isEmpty) {
+      return;
+    }
+
+    final sync = ref.read(offlineSyncStateProvider.notifier);
+    sync.setReplaying(true);
+    sync.setReplayError(null);
+    var shouldRefreshWorkspaceData = false;
+
+    try {
+      for (var index = 0; index < queue.length; index++) {
+        final action = queue[index];
+        if (onlyId != null && action.id != onlyId) {
+          continue;
+        }
+        if (action.status == OfflineQueueStatus.cancelled) {
+          continue;
+        }
+
+        final unresolvedDependencies = _unresolvedDependencies(
+          action,
+          idMappings,
+        );
+        if (unresolvedDependencies.isNotEmpty) {
+          queue[index] = action.copyWith(
+            status: OfflineQueueStatus.blockedDependency,
+            lastError: 'Waiting for queued dependency sync.',
+            updatedAt: DateTime.now(),
+          );
+          await store.save(scope, queue);
+          sync.replaceQueue(queue);
+          ref.read(offlineQueueRevisionProvider.notifier).state++;
+          continue;
+        }
+
+        final retrying = action.copyWith(
+          status: OfflineQueueStatus.retrying,
+          attemptCount: action.attemptCount + 1,
+          updatedAt: DateTime.now(),
+          clearLastError: true,
+        );
+        queue[index] = retrying;
+        await store.save(scope, queue);
+        sync.replaceQueue(queue);
+        ref.read(offlineQueueRevisionProvider.notifier).state++;
+
+        try {
+          final responseData = await api.replayQueuedAction(retrying);
+          queue.removeAt(index);
+          index--;
+          final tempId = retrying.meta['tempId']?.toString();
+          final realId = _extractCreatedId(responseData);
+          if (tempId != null &&
+              tempId.isNotEmpty &&
+              realId != null &&
+              realId.isNotEmpty &&
+              tempId != realId) {
+            idMappings = {...idMappings, tempId: realId};
+            queue = await _reconcileTempId(
+              scope: scope,
+              queue: queue,
+              tempId: tempId,
+              realId: realId,
+            );
+          }
+          await store.save(scope, queue);
+          sync.replaceQueue(queue);
+          shouldRefreshWorkspaceData = true;
+          ref.read(offlineQueueRevisionProvider.notifier).state++;
+        } on ApiException catch (error) {
+          final nextStatus = switch (error.statusCode) {
+            401 || 403 => OfflineQueueStatus.pausedAuth,
+            final code when code != null && code >= 400 && code < 500 =>
+              OfflineQueueStatus.failed,
+            _ => OfflineQueueStatus.pending,
+          };
+          queue[index] = retrying.copyWith(
+            status: nextStatus,
+            lastError: error.message,
+            updatedAt: DateTime.now(),
+          );
+          await store.save(scope, queue);
+          sync.replaceQueue(queue);
+          sync.setReplayError(error.message);
+          ref.read(offlineQueueRevisionProvider.notifier).state++;
+
+          if (nextStatus == OfflineQueueStatus.pausedAuth ||
+              nextStatus == OfflineQueueStatus.pending) {
+            break;
+          }
+        }
+      }
+    } finally {
+      sync.setReplaying(false);
+      ref.read(offlineQueueRevisionProvider.notifier).state++;
+      if (shouldRefreshWorkspaceData) {
+        ref.invalidate(appBootstrapProvider);
+        ref.invalidate(projectsProvider);
+        ref.invalidate(projectsStateProvider);
+        ref.invalidate(currentUserSettingsProvider);
+        ref.invalidate(personasProvider);
+        ref.invalidate(affiliationsProvider);
+        ref.invalidate(pendingContentProvider);
+        ref.invalidate(dripPlansProvider);
+        ref.invalidate(offlineIdMappingsProvider);
+      }
+      unawaited(ref.read(appAccessStateProvider.notifier).refresh());
+    }
+  }
+}
+
 class ProjectsState {
   const ProjectsState({
     this.items = const <Project>[],
@@ -734,7 +1176,7 @@ class ProjectsState {
 
 final projectsStateProvider = FutureProvider<ProjectsState>((ref) async {
   final accessState = ref.watch(appAccessStateProvider).valueOrNull;
-  if (accessState?.isReady != true) {
+  if (accessState?.canUseWorkspaceData != true) {
     return const ProjectsState();
   }
 
@@ -829,7 +1271,7 @@ final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   ref,
 ) async {
   final accessState = ref.watch(appAccessStateProvider).valueOrNull;
-  if (accessState?.isReady != true) {
+  if (accessState?.canUseWorkspaceData != true) {
     return const PublishAccountsState();
   }
   final api = ref.watch(apiServiceProvider);
@@ -1221,7 +1663,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
       );
     }
 
-    if (accessState?.isReady != true) {
+    if (accessState?.canUseWorkspaceData != true) {
       return null;
     }
 

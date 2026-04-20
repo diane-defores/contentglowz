@@ -19,6 +19,15 @@ class AppBootstrapUser {
       defaultProjectId: json['default_project_id'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userId,
+      'email': email,
+      'workspace_exists': workspaceExists,
+      'default_project_id': defaultProjectId,
+    };
+  }
 }
 
 class AppBootstrap {
@@ -80,5 +89,14 @@ class AppBootstrap {
       defaultProjectId: onboardingComplete ? 'demo-project' : null,
       workspaceStatus: onboardingComplete ? 'ready' : 'needs_onboarding',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user.toJson(),
+      'projects_count': projectsCount,
+      'default_project_id': defaultProjectId,
+      'workspace_status': workspaceStatus,
+    };
   }
 }

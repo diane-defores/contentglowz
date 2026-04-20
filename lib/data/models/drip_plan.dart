@@ -75,6 +75,68 @@ class DripPlan {
     );
   }
 
+  DripPlan copyWith({
+    String? id,
+    String? userId,
+    String? projectId,
+    String? name,
+    String? status,
+    Map<String, dynamic>? cadenceConfig,
+    Map<String, dynamic>? clusterStrategy,
+    Map<String, dynamic>? ssgConfig,
+    Map<String, dynamic>? gscConfig,
+    int? totalItems,
+    String? startedAt,
+    String? completedAt,
+    String? lastDripAt,
+    String? nextDripAt,
+    String? scheduleJobId,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return DripPlan(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      projectId: projectId ?? this.projectId,
+      name: name ?? this.name,
+      status: status ?? this.status,
+      cadenceConfig: cadenceConfig ?? this.cadenceConfig,
+      clusterStrategy: clusterStrategy ?? this.clusterStrategy,
+      ssgConfig: ssgConfig ?? this.ssgConfig,
+      gscConfig: gscConfig ?? this.gscConfig,
+      totalItems: totalItems ?? this.totalItems,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      lastDripAt: lastDripAt ?? this.lastDripAt,
+      nextDripAt: nextDripAt ?? this.nextDripAt,
+      scheduleJobId: scheduleJobId ?? this.scheduleJobId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'project_id': projectId,
+      'name': name,
+      'status': status,
+      'cadence_config': cadenceConfig,
+      'cluster_strategy': clusterStrategy,
+      'ssg_config': ssgConfig,
+      'gsc_config': gscConfig,
+      'total_items': totalItems,
+      'started_at': startedAt,
+      'completed_at': completedAt,
+      'last_drip_at': lastDripAt,
+      'next_drip_at': nextDripAt,
+      'schedule_job_id': scheduleJobId,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+    };
+  }
+
   static Map<String, dynamic> _asMap(dynamic v) {
     if (v is Map<String, dynamic>) return v;
     if (v is Map) return Map<String, dynamic>.from(v);

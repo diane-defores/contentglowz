@@ -41,9 +41,7 @@ class CreatorProfile {
       projectId: projectId ?? this.projectId,
       displayName: displayName ?? this.displayName,
       voice: clearVoice ? null : (voice ?? this.voice),
-      positioning: clearPositioning
-          ? null
-          : (positioning ?? this.positioning),
+      positioning: clearPositioning ? null : (positioning ?? this.positioning),
       values: values ?? this.values,
       currentChapterId: currentChapterId ?? this.currentChapterId,
       createdAt: createdAt,
@@ -64,5 +62,20 @@ class CreatorProfile {
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'projectId': projectId,
+      'displayName': displayName,
+      'voice': voice,
+      'positioning': positioning,
+      'values': values,
+      'currentChapterId': currentChapterId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
   }
 }

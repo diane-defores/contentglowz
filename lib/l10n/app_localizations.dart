@@ -87,6 +87,7 @@ class AppLocalizations {
         'Les analytics apparaîtront à mesure que le contenu avance dans le pipeline.',
     'Analyze': 'Analyser',
     'App language': 'Langue de l’application',
+    'Appearance': 'Apparence',
     'Approval Rate': 'Taux d’approbation',
     'Approve all?': 'Tout approuver ?',
     'Approve {count}': 'Approuver {count}',
@@ -116,6 +117,8 @@ class AppLocalizations {
     'Checking...': 'Vérification...',
     'Choose how ContentFlow chooses its interface language.':
         'Choisissez comment ContentFlow sélectionne la langue de son interface.',
+    'Choose whether ContentFlow stays bright, stays dark, or follows your device appearance automatically.':
+        'Choisissez si ContentFlow reste clair, reste sombre ou suit automatiquement l’apparence de votre appareil.',
     'Choose the types of content the AI should generate for you, and how often.':
         'Choisissez les types de contenu que l’IA doit générer pour vous, ainsi que leur fréquence.',
     'Clear Local Clerk Session': 'Effacer la session Clerk locale',
@@ -138,6 +141,8 @@ class AppLocalizations {
     'Content by Type': 'Contenu par type',
     'Content generation waits for your review':
         'La génération de contenu attend votre validation',
+    'Content frequency settings are temporarily unavailable':
+        'Les réglages de fréquence du contenu sont temporairement indisponibles',
     'Content is generated automatically':
         'Le contenu est généré automatiquement',
     'ContentFlow': 'ContentFlow',
@@ -161,6 +166,7 @@ class AppLocalizations {
     'Could not open browser for {channelName} authorization':
         'Impossible d’ouvrir le navigateur pour l’autorisation {channelName}',
     'Curate ideas before generation': 'Trier les idées avant génération',
+    'Dark': 'Sombre',
     'Delete': 'Supprimer',
     'Degraded mode diagnostics copied.':
         'Le diagnostic du mode dégradé a été copié.',
@@ -199,9 +205,10 @@ class AppLocalizations {
     'Feed your creator voice & narrative':
         'Alimenter votre voix de créateur et votre narration',
     'Feedback': 'Feedback',
-    'Feedback Admin': 'Admin feedback',
+    'Feedback Admin': 'Administration des feedbacks',
     'Feedback marked as read.': 'Feedback marqué comme lu.',
     'Feedback sent.': 'Feedback envoyé.',
+    'Follow system appearance': 'Suivre l’apparence du système',
     'Follow system language': 'Suivre la langue du système',
     'French': 'Français',
     'Funnel': 'Tunnel',
@@ -227,6 +234,8 @@ class AppLocalizations {
     'Here’s your content plan. You can change it anytime in Settings.':
         'Voici votre plan de contenu. Vous pouvez le modifier à tout moment dans Reglages.',
     'Idea Pool': 'Réservoir d’idées',
+    'Idea Pool settings are temporarily unavailable':
+        'Les réglages du réservoir d’idées sont temporairement indisponibles',
     'Ideas from newsletters, SEO, competitors and social listening will be held for your review before articles are generated.':
         'Les idées issues des newsletters, du SEO, des concurrents et de l’écoute sociale seront conservées pour votre validation avant la génération des articles.',
     'Issues': 'Problèmes',
@@ -234,9 +243,11 @@ class AppLocalizations {
     'Job ID: {jobId}': 'ID du job : {jobId}',
     'Job started': 'Job démarré',
     'Language': 'Langue',
+    'Light': 'Clair',
     'Link your GitHub repository so the AI can analyze your codebase and generate relevant content.':
         'Liez votre dépôt GitHub afin que l’IA puisse analyser votre codebase et générer du contenu pertinent.',
-    'Loading Idea Pool settings': 'Chargement des réglages Idea Pool',
+    'Loading Idea Pool settings':
+        'Chargement des réglages du réservoir d’idées',
     'Loading connected accounts...': 'Chargement des comptes connectés...',
     'Loading notification preferences':
         'Chargement des préférences de notification',
@@ -282,8 +293,10 @@ class AppLocalizations {
     'Nothing scheduled yet': 'Rien n’est encore planifié',
     'Notification preferences unavailable':
         'Préférences de notification indisponibles',
+    'Notification preferences are temporarily unavailable':
+        'Les préférences de notification sont temporairement indisponibles',
     'Notifications': 'Notifications',
-    'Off': 'Off',
+    'Off': 'Désactivé',
     'Offline (using mock data)': 'Hors ligne (données simulées)',
     'Onboarding': 'Onboarding',
     'Open App Entry': 'Ouvrir l’entrée de l’app',
@@ -326,6 +339,8 @@ class AppLocalizations {
     'Loading projects...': 'Chargement des projets...',
     'Refresh': 'Rafraîchir',
     'Default': 'Par défaut',
+    'Restart the guided tour from the beginning':
+        'Relancer la visite depuis le début',
     'Archive this project?': 'Archiver ce projet ?',
     'Delete this project from the active workspace list?':
         'Supprimer ce projet de la liste active du workspace ?',
@@ -358,6 +373,7 @@ class AppLocalizations {
     'Review Demo Setup': 'Relire la config démo',
     'Unavailable': 'Indisponible',
     'Review incoming user feedback': 'Examiner les feedbacks utilisateurs',
+    'Resume the guided tour': 'Reprendre la visite guidée',
     'Repo-aware onboarding instead of blank-prompt setup':
         'Onboarding relié au dépôt plutôt qu’une configuration vide à base de prompts',
     'Narrative ritual plus personas before generation':
@@ -436,7 +452,7 @@ class AppLocalizations {
     'Shorts': 'Formats courts',
     'Sign In': 'Se connecter',
     'Sign in to configure Idea Pool':
-        'Connectez-vous pour configurer Idea Pool',
+        'Connectez-vous pour configurer le réservoir d’idées',
     'Sign in to configure content frequency':
         'Connectez-vous pour configurer la fréquence de contenu',
     'Sign in to sync notification preferences':
@@ -450,6 +466,7 @@ class AppLocalizations {
     'Social posts': 'Posts réseaux sociaux',
     'Something went wrong': 'Un problème est survenu',
     'Start': 'Démarrer',
+    'Step {current}/{total} — {title}': 'Étape {current}/{total} — {title}',
     'Status: {status}': 'Statut : {status}',
     'Stop': 'Arrêter',
     'System': 'Système',
@@ -461,6 +478,7 @@ class AppLocalizations {
     'Text message': 'Message texte',
     'This onboarding uses a fixed public repo and pre-generated content. Users can explore the flow, but the demo data is intentionally read-only.':
         'Cet onboarding utilise un dépôt public fixe et un contenu pré-généré. Les utilisateurs peuvent explorer le flux, mais les données de démo sont volontairement en lecture seule.',
+    'Theme': 'Thème',
     'Timeline': 'Chronologie',
     'Tone': 'Ton',
     'Tools': 'Outils',
@@ -476,8 +494,9 @@ class AppLocalizations {
         'Retours utilisateurs reçus par le backend. Le contrôle d’accès réel reste côté serveur.',
     'Validations': 'Validations',
     'Video scripts': 'Scripts vidéo',
-    'View Idea Pool': 'Voir Idea Pool',
+    'View Idea Pool': 'Voir le réservoir d’idées',
     'Weekly Ritual': 'Rituel hebdomadaire',
+    'Discover the screens step by step': 'Découvrir les écrans pas à pas',
     'What content do you want?': 'Quel contenu voulez-vous ?',
     'What is blocking you, missing, or could be improved?':
         'Qu’est-ce qui vous bloque, manque, ou pourrait être amélioré ?',
@@ -674,107 +693,107 @@ class AppLocalizations {
     'Author': 'Auteur',
     'Boost': 'Booster',
     'Caption': 'Legende',
-    'Calendar — your scheduled posts': 'Calendrier — vos posts planifies',
+    'Calendar — your scheduled posts': 'Calendrier — vos posts planifiés',
     'Check backend health here. If the app enters degraded mode, this screen tells you why and when the service is back.':
-        'Verifiez ici la sante du backend. Si l app passe en mode degrade, cet ecran vous indique pourquoi et quand le service revient.',
+        'Vérifiez ici l’état du backend. Si l’app passe en mode dégradé, cet écran vous indique pourquoi et quand le service revient.',
     'Centralize your affiliate links so the AI can insert them intelligently into relevant content. Add a link here once, and it will be suggested automatically whenever the topic fits.':
-        'Centralisez vos liens d affiliation pour que l IA les insere intelligemment dans les contenus pertinents. Ajoutez un lien une seule fois ici, il sera propose automatiquement quand le sujet s y prete.',
+        'Centralisez vos liens d’affiliation pour que l’IA les insère intelligemment dans les contenus pertinents. Ajoutez un lien une seule fois ici, il sera proposé automatiquement quand le sujet s’y prête.',
     'Configure the topic areas the AI is allowed to work on. This prevents off-topic output and keeps production focused on your real areas of expertise.':
-        'Configurez les domaines thematiques sur lesquels l IA est autorisee a travailler. Cela evite les hors-sujets et garde la production centree sur vos vraies expertises.',
+        'Configurez les domaines thématiques sur lesquels l’IA est autorisée à travailler. Cela évite les hors-sujets et garde la production centrée sur vos vraies expertises.',
     'Content Tools — checks and audits':
-        'Content Tools — verifications et audits',
+        'Content Tools — vérifications et audits',
     'Define the personas the AI should address. Each persona influences tone, vocabulary, and angles. Use the + button in the bottom-right corner to add a new persona.':
-        'Definissez les personas que l IA doit adresser. Chaque persona influence le ton, le vocabulaire et les angles. Utilisez le bouton + en bas a droite pour ajouter une nouvelle persona.',
+        'Définissez les personas que l’IA doit adresser. Chaque persona influence le ton, le vocabulaire et les angles. Utilisez le bouton + en bas à droite pour ajouter une nouvelle persona.',
     'Download & Extract': 'Telecharger et extraire',
     'Download Complete': 'Telechargement termine',
     'Download Instagram reels, extract audio, upload to CDN':
         'Telechargez des reels Instagram, extrayez l audio et uploadez-le sur le CDN',
     'Download Reel': 'Telecharger le reel',
     'Download failed: {error}': 'Echec du telechargement : {error}',
-    'Drip — automated sequences': 'Drip — sequences automatisees',
+    'Drip — automated sequences': 'Drip — séquences automatisées',
     'Dismiss': 'Ignorer',
     'Every AI generation leaves a trace here: which model, which prompt, and how long it took. Check it when a result looks suspicious or when you want to keep an eye on cost.':
-        'Chaque generation IA laisse une trace ici : quel modele, quel prompt et combien de temps cela a pris. Consultez cet ecran quand un resultat semble douteux ou pour surveiller les couts.',
+        'Chaque génération IA laisse une trace ici : quel modèle, quel prompt et combien de temps cela a pris. Consultez cet écran quand un résultat semble douteux ou pour surveiller les coûts.',
     'Enriched': 'Enrichi',
     'Enter an Instagram Reel URL': 'Entrez une URL de reel Instagram',
     'Feed — your review queue': 'Feed — votre file de validation',
     'Find all published content here, with its status and target platform. This is your archive for checking what has already gone out or reusing a past idea.':
-        'Retrouvez ici tous les contenus deja publies, avec leur statut et la plateforme cible. C est votre archive pour verifier ce qui est deja parti ou reutiliser une ancienne idee.',
-    'Guided app tour': 'Visite guidee de l app',
-    'Guided tour · {current}/{total}': 'Visite guidee · {current}/{total}',
+        'Retrouvez ici tous les contenus déjà publiés, avec leur statut et la plateforme cible. C’est votre archive pour vérifier ce qui est déjà parti ou réutiliser une ancienne idée.',
+    'Guided app tour': 'Visite guidée de l’app',
+    'Guided tour · {current}/{total}': 'Visite guidée · {current}/{total}',
     'History — everything that has been published':
-        'Historique — tout ce qui a ete publie',
+        'Historique — tout ce qui a été publié',
     'Instagram Reel URL': 'URL du reel Instagram',
     'Look for the "Guided app tour" tile to restart the tour.':
-        'Cherchez la tuile « Visite guidee de l app » pour relancer la visite.',
+        'Cherchez la tuile « Visite guidée de l’app » pour relancer la visite.',
     'Look for the 3 round buttons at the bottom — they are your main actions.':
-        'Reperez les 3 boutons ronds en bas — ce sont vos actions principales.',
+        'Repérez les 3 boutons ronds en bas — ce sont vos actions principales.',
     'Manage your short-form videos here: reels, shorts, and similar vertical formats. The AI can suggest scripts and structure, and you decide what to edit or approve before publishing. The main Feed still stays central, while Reels is the workshop dedicated to vertical content.':
-        'Gerez ici vos videos courtes : reels, shorts et autres formats verticaux. L IA peut proposer des scripts et un decoupage, puis vous decidez quoi editer ou approuver avant publication. Le Feed reste central, tandis que Reels est l atelier dedie au format vertical.',
+        'Gérez ici vos vidéos courtes : reels, shorts et autres formats verticaux. L’IA peut proposer des scripts et un découpage, puis vous décidez quoi éditer ou approuver avant publication. Le Feed reste central, tandis que Reels est l’atelier dédié au format vertical.',
     'Lower': 'Baisser',
     'Newsletter — your long-form channel':
         'Newsletter — votre canal long format',
     'No ideas yet': 'Aucune idee pour le moment',
     'No templates available': 'Aucun modele disponible',
     'Pause tour': 'Mettre en pause la visite',
-    'Performance — detailed metrics': 'Performance — metriques detaillees',
+    'Performance — detailed metrics': 'Performance — métriques détaillées',
     'Performance complements Analytics with metrics per content item and per channel. Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.':
-        'Performance complete Analytics avec des metriques par contenu et par canal. Utilisez-le quand vous voulez comprendre pourquoi un post a marche, ou non, afin de reproduire ce qui fonctionne.',
+        'Performance complète Analytics avec des métriques par contenu et par canal. Utilisez-le quand vous voulez comprendre pourquoi un post a marché, ou non, afin de reproduire ce qui fonctionne.',
     'Personas — your target audiences': 'Personas — vos audiences cibles',
     'Previous': 'Precedent',
     'Raw': 'Brut',
     'Reel ID': 'ID du reel',
     'Reel Repurposing': 'Reutilisation de reel',
-    'Reels — short video formats': 'Reels — formats video courts',
+    'Reels — short video formats': 'Reels — formats vidéo courts',
     'Repository URL': 'URL du depot',
     'Repository URL is required': 'L URL du depot est requise',
     'Research gathers trending topics, competitor monitoring, and audience questions. This is the screen to check before each planning ritual so you know what to cover this week.':
-        'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. C est l ecran a consulter avant chaque rituel de planification pour savoir quoi traiter cette semaine.',
-    'Research — feed your strategy': 'Research — nourrir votre strategie',
+        'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. C’est l’écran à consulter avant chaque rituel de planification pour savoir quoi traiter cette semaine.',
+    'Research — feed your strategy': 'Research — nourrir votre stratégie',
     'Runs — AI job history': 'Runs — historique des jobs IA',
     'SEO Mesh': 'Mesh SEO',
-    'SEO — organic visibility': 'SEO — visibilite organique',
-    'Settings — personalize everything': 'Parametres — tout personnaliser',
+    'SEO — organic visibility': 'SEO — visibilité organique',
+    'Settings — personalize everything': 'Paramètres — tout personnaliser',
     'Skip tour': 'Passer la visite',
     'Templates — your reusable formats':
-        'Templates — vos modeles reutilisables',
+        'Templates — vos modèles réutilisables',
     'Templates are your repeatable content formats: long-form articles, short posts, or sequences. The AI uses them to generate content that matches your style. The more precise your templates are, the closer the output will match your voice.':
-        'Les templates sont vos formats recurrents : articles long format, posts courts ou sequences. L IA s en sert pour generer un contenu coherent avec votre style. Plus vos templates sont precis, plus le resultat colle a votre voix.',
+        'Les templates sont vos formats récurrents : articles long format, posts courts ou séquences. L’IA s’en sert pour générer un contenu cohérent avec votre style. Plus vos templates sont précis, plus le résultat colle à votre voix.',
     'The Newsletter screen groups together newsletter creation, preview, and sending. You can combine several Feed items into one edition. It is ideal for turning a week of production into a single send.':
-        'L ecran Newsletter regroupe la creation, l apercu et l envoi de vos newsletters. Vous pouvez assembler plusieurs contenus du Feed dans une meme edition. C est ideal pour transformer une semaine de production en un envoi unique.',
+        'L’écran Newsletter regroupe la création, l’aperçu et l’envoi de vos newsletters. Vous pouvez assembler plusieurs contenus du Feed dans une même édition. C’est idéal pour transformer une semaine de production en un envoi unique.',
     'The calendar shows everything scheduled for publishing. Tap a week at the top to filter the view. It is useful for checking the balance of your schedule and spotting empty or overloaded days.':
-        'Le calendrier affiche tout ce qui est programme pour publication. Touchez une semaine en haut pour filtrer la vue. C est utile pour verifier l equilibre de votre planning et reperer les jours vides ou surcharges.',
+        'Le calendrier affiche tout ce qui est programmé pour publication. Touchez une semaine en haut pour filtrer la vue. C’est utile pour vérifier l’équilibre de votre planning et repérer les jours vides ou surchargés.',
     'This is the chronological log of everything happening in your workspace: creations, publications, and errors. It is useful for diagnosis when something does not seem to have worked.':
-        'C est le journal chronologique de tout ce qui se passe dans votre workspace : creations, publications et erreurs. Il est utile pour diagnostiquer ce qui ne semble pas avoir fonctionne.',
+        'C’est le journal chronologique de tout ce qui se passe dans votre workspace : créations, publications et erreurs. Il est utile pour diagnostiquer ce qui ne semble pas avoir fonctionné.',
     'This is where you review every piece of AI-generated content. You can swipe the card or use the three round buttons at the bottom: the left button skips the item, the middle one opens the editor, and the right one approves or publishes it. The red badge on the Feed icon shows how many items are waiting for review.':
-        'C est ici que vous validez chaque contenu genere par l IA. Vous pouvez swiper la carte ou utiliser les trois boutons ronds en bas : celui de gauche passe le contenu, celui du milieu ouvre l editeur, et celui de droite approuve ou publie. Le badge rouge sur l icone Feed indique combien de contenus attendent votre revue.',
+        'C’est ici que vous validez chaque contenu généré par l’IA. Vous pouvez swiper la carte ou utiliser les trois boutons ronds en bas : celui de gauche passe le contenu, celui du milieu ouvre l’éditeur, et celui de droite approuve ou publie. Le badge rouge sur l’icône Feed indique combien de contenus attendent votre revue.',
     'This is your control center for language, generation frequency, publishing channels, notifications, and your weekly ritual. It is also where you will find the guided tour setting if you want to restart or resume this tour later.':
-        'C est votre centre de controle pour la langue, la frequence de generation, les canaux de publication, les notifications et votre rituel hebdomadaire. C est aussi ici que vous trouverez le reglage de visite guidee si vous voulez la relancer ou la reprendre plus tard.',
+        'C’est votre centre de contrôle pour la langue, la fréquence de génération, les canaux de publication, les notifications et votre rituel hebdomadaire. C’est aussi ici que vous trouverez le réglage de visite guidée si vous voulez la relancer ou la reprendre plus tard.',
     'This is your global dashboard for audience, engagement, and growth. It should be your first weekly stop to see what is working. Start with the broad trends here, then go deeper in Performance.':
-        'C est votre tableau de bord global pour l audience, l engagement et la croissance. Cela doit etre votre premier arret hebdomadaire pour voir ce qui fonctionne. Regardez d abord les grandes tendances ici, puis creusez dans Performance.',
+        'C’est votre tableau de bord global pour l’audience, l’engagement et la croissance. Cela doit être votre premier arrêt hebdomadaire pour voir ce qui fonctionne. Regardez d’abord les grandes tendances ici, puis creusez dans Performance.',
     'This toolbox checks your content quality before publishing: editorial consistency, funnel audits, and validations. Use it when a draft feels off — the audit often explains why.':
-        'Cette boite a outils verifie la qualite de vos contenus avant publication : coherence editoriale, audit du funnel et validations. Utilisez-la quand un draft semble etrange — l audit explique souvent pourquoi.',
+        'Cette boîte à outils vérifie la qualité de vos contenus avant publication : cohérence éditoriale, audit du funnel et validations. Utilisez-la quand un draft semble étrange — l’audit explique souvent pourquoi.',
     'Topical Mesh Analysis': 'Analyse du mesh thematique',
     'Use the + button in the bottom-right corner to add a persona.':
-        'Utilisez le bouton + en bas a droite pour ajouter une persona.',
+        'Utilisez le bouton + en bas à droite pour ajouter une persona.',
     'Use this screen for SEO analysis and keyword opportunities. Before launching a Drip series or a long-form article, come here to align your angles with the searches that matter.':
-        'Utilisez cet ecran pour l analyse SEO et les opportunites de mots-cles. Avant de lancer une serie Drip ou un article long format, passez ici pour aligner vos angles avec les recherches qui comptent.',
+        'Utilisez cet écran pour l’analyse SEO et les opportunités de mots-clés. Avant de lancer une série Drip ou un article long format, passez ici pour aligner vos angles avec les recherches qui comptent.',
     'Video': 'Video',
     'We will take a quick tour of the app, screen by screen. The goal is to show you the best order to use each page, what the main controls do, and how to get the most out of the platform. You can pause at any time and resume later from Settings.':
-        'On va faire un tour rapide de l app, ecran par ecran. L objectif est de vous montrer dans quel ordre utiliser les pages, a quoi servent les controles principaux et comment tirer le meilleur de la plateforme. Vous pouvez mettre en pause a tout moment et reprendre plus tard depuis Reglages.',
+        'On va faire un tour rapide de l’app, écran par écran. L’objectif est de vous montrer dans quel ordre utiliser les pages, à quoi servent les contrôles principaux et comment tirer le meilleur de la plateforme. Vous pouvez mettre en pause à tout moment et reprendre plus tard depuis Réglages.',
     'Welcome to ContentFlow': 'Bienvenue dans ContentFlow',
     'Work domains': 'Domaines de travail',
-    'You are ready!': 'Vous etes pret !',
+    'You are ready!': 'Vous êtes prêt !',
     'You have seen the essentials. A few reminders to get started well: 1) configure your personas and weekly ritual in Settings, 2) let the AI generate, then review items in the Feed, 3) track the impact in Analytics. To relaunch this tour, open Settings and use the guided app tour option.':
-        'Vous avez vu l essentiel. Quelques rappels pour bien demarrer : 1) configurez vos personas et votre rituel hebdomadaire dans Reglages, 2) laissez l IA generer, puis validez les contenus dans le Feed, 3) suivez l impact dans Analytics. Pour relancer cette visite, ouvrez Reglages et utilisez l option de visite guidee.',
+        'Vous avez vu l’essentiel. Quelques rappels pour bien démarrer : 1) configurez vos personas et votre rituel hebdomadaire dans Réglages, 2) laissez l’IA générer, puis validez les contenus dans le Feed, 3) suivez l’impact dans Analytics. Pour relancer cette visite, ouvrez Réglages et utilisez l’option de visite guidée.',
     'YouTube': 'YouTube',
     'Your Headline': 'Votre accroche',
     'Your Name': 'Votre nom',
     'Your site URL': 'URL de votre site',
-    'Activity — system timeline': 'Activite — timeline systeme',
-    'Affiliations — your monetized links': 'Affiliations — vos liens monetises',
+    'Activity — system timeline': 'Activité — timeline système',
+    'Affiliations — your monetized links': 'Affiliations — vos liens monétisés',
     'All sources': 'Toutes les sources',
-    'Analytics — measure impact': 'Analytics — mesurer l impact',
+    'Analytics — measure impact': 'Analytics — mesurer l’impact',
     'Delete idea?': 'Supprimer l idee ?',
     'Ideas from newsletters, SEO, competitors\nand social listening will appear here.':
         'Les idees issues des newsletters, du SEO, des concurrents\net de l ecoute sociale apparaitront ici.',
@@ -783,7 +802,7 @@ class AppLocalizations {
     'Tips': 'Conseils',
     'Unnamed': 'Sans nom',
     'Used': 'Utilise',
-    'Uptime — technical status': 'Uptime — etat technique',
+    'Uptime — technical status': 'Uptime — état technique',
     '1. Set up your brand voice (weekly ritual)\n2. Create a customer persona\n3. Content starts flowing!':
         '1. Definissez votre voix de marque (rituel hebdomadaire)\n2. Creez un persona client\n3. Le contenu commence a circuler !',
     '25-40': '25-40',

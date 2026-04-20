@@ -100,6 +100,9 @@ GoRouter createAppRouter(WidgetRef ref) {
           if (isAuth || isOnboarding) {
             return '/entry';
           }
+          if (isEntry && access.bootstrap?.shouldOnboard == false) {
+            return '/feed';
+          }
           return null;
         case AppAccessStage.needsOnboarding:
           if (isAuth) {

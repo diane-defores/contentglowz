@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/models/offline_sync.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
@@ -31,6 +32,8 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
     final authSession = ref.watch(authSessionProvider);
     final appAccess = ref.watch(appAccessStateProvider);
     final statusAsync = ref.watch(backendStatusProvider);
+    final offlineSync = ref.watch(offlineSyncStateProvider);
+    final queueAsync = ref.watch(offlineQueueEntriesProvider);
     final accessState = appAccess.valueOrNull;
 
     return Scaffold(
@@ -40,8 +43,10 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
           IconButton(
             icon: _checking
                 ? const SizedBox(
-                    height: 18, width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.refresh),
             onPressed: _checking ? null : _refreshAccessState,
           ),
@@ -56,28 +61,104 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.tr('Access State'), style: theme.textTheme.titleSmall),
+                  Text(
+                    context.tr('Access State'),
+                    style: theme.textTheme.titleSmall,
+                  ),
                   const SizedBox(height: 8),
-                  Text(context.tr('Stage: {stage}', {
-                    'stage': accessState?.diagnosticsLabel ?? context.tr('loading'),
-                  })),
+                  Text(
+                    context.tr('Stage: {stage}', {
+                      'stage':
+                          accessState?.diagnosticsLabel ??
+                          context.tr('loading'),
+                    }),
+                  ),
                   const SizedBox(height: 4),
-                  Text(context.tr('Session: {state}', {
-                    'state': authSession.status.name,
-                  })),
+                  Text(
+                    context.tr('Session: {state}', {
+                      'state': authSession.status.name,
+                    }),
+                  ),
                   if (authSession.email != null) ...[
                     const SizedBox(height: 4),
-                    Text(context.tr('Email: {email}', {
-                      'email': '${authSession.email}',
-                    })),
+                    Text(
+                      context.tr('Email: {email}', {
+                        'email': '${authSession.email}',
+                      }),
+                    ),
                   ],
                   if (accessState?.message case final message?) ...[
                     const SizedBox(height: 8),
                     Text(
-                      context.tr('Last backend message: {message}', {'message': message}),
+                      context.tr('Last backend message: {message}', {
+                        'message': message,
+                      }),
                       style: theme.textTheme.bodySmall,
                     ),
                   ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.tr('Offline Sync'),
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    context.tr('Pending: {count}', {
+                      'count': '${offlineSync.pendingCount}',
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.tr('Paused for auth: {count}', {
+                      'count': '${offlineSync.pausedAuthCount}',
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.tr('Failed: {count}', {
+                      'count': '${offlineSync.failedCount}',
+                    }),
+                  ),
+                  if (offlineSync.hasStaleData) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      context.tr('Cached data is currently being used.'),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: offlineSync.hasQueuedActions
+                            ? () => ref
+                                  .read(offlineQueueControllerProvider.notifier)
+                                  .retryAll()
+                            : null,
+                        icon: const Icon(Icons.sync_rounded),
+                        label: Text(context.tr('Retry queued actions')),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => ref
+                            .read(offlineQueueControllerProvider.notifier)
+                            .refresh(),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: Text(context.tr('Refresh queue')),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -103,7 +184,8 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
               ],
             ),
             data: (data) {
-              final online = data['status'] == 'ok' || data['status'] == 'healthy';
+              final online =
+                  data['status'] == 'ok' || data['status'] == 'healthy';
               return _StatusBanner(online: online, theme: theme);
             },
           ),
@@ -120,26 +202,78 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.tr('API Details'),
-                          style: theme.textTheme.titleSmall),
+                      Text(
+                        context.tr('API Details'),
+                        style: theme.textTheme.titleSmall,
+                      ),
                       const SizedBox(height: 8),
                       ...data.entries
                           .where((e) => e.key != 'status')
-                          .map((e) => Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Row(
-                                  children: [
-                                    Text('${e.key}: ',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: theme.colorScheme.onSurfaceVariant)),
-                                    Expanded(
-                                      child: Text('${e.value}',
-                                          style: const TextStyle(fontSize: 12)),
+                          .map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '${e.key}: ',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
-                                  ],
-                                ),
-                              )),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      '${e.value}',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          queueAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (error, stackTrace) => AppErrorView(
+              scope: 'uptime.queue',
+              title: context.tr('Queue status unavailable'),
+              error: error,
+              stackTrace: stackTrace,
+              compact: true,
+              showIcon: false,
+              onRetry: () => ref.invalidate(offlineQueueEntriesProvider),
+            ),
+            data: (items) {
+              if (items.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('Queued Actions'),
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 12),
+                      for (final action in items)
+                        _QueuedActionTile(
+                          action: action,
+                          onRetry: () => ref
+                              .read(offlineQueueControllerProvider.notifier)
+                              .retryOne(action.id),
+                          onCancel: () => ref
+                              .read(offlineQueueControllerProvider.notifier)
+                              .cancel(action.id),
+                        ),
                     ],
                   ),
                 ),
@@ -154,7 +288,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
               FilledButton.icon(
                 onPressed: _checking ? null : _refreshAccessState,
                 icon: const Icon(Icons.sync_rounded),
-                  label: Text(context.tr('Retry backend')),
+                label: Text(context.tr('Retry backend')),
               ),
               OutlinedButton.icon(
                 onPressed: () {
@@ -172,12 +306,13 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   );
                 },
                 icon: const Icon(Icons.copy_rounded),
-                  label: Text(context.tr('Copy diagnostics')),
+                label: Text(context.tr('Copy diagnostics')),
               ),
               OutlinedButton.icon(
-                onPressed: () => ref.read(authSessionProvider.notifier).signOut(),
+                onPressed: () =>
+                    ref.read(authSessionProvider.notifier).signOut(),
                 icon: const Icon(Icons.logout_rounded),
-                  label: Text(context.tr('Sign out')),
+                label: Text(context.tr('Sign out')),
               ),
             ],
           ),
@@ -185,36 +320,41 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
 
           // Ping history
           if (_history.isNotEmpty) ...[
-            Text(context.tr('Ping History'), style: theme.textTheme.titleMedium),
+            Text(
+              context.tr('Ping History'),
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
-            ..._history.reversed.map((ping) => Card(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  child: ListTile(
-                    dense: true,
-                    leading: Icon(
-                      ping.online ? Icons.check_circle : Icons.error,
-                      color: ping.online
-                          ? AppTheme.approveColor
-                          : AppTheme.rejectColor,
-                      size: 20,
-                    ),
-                    title: Text(
-                      ping.online ? context.tr('Online') : context.tr('Offline'),
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    subtitle: Text(
-                      '${ping.latencyMs}ms · ${ping.timestamp.hour}:${ping.timestamp.minute.toString().padLeft(2, '0')}:${ping.timestamp.second.toString().padLeft(2, '0')}',
-                      style: theme.textTheme.bodySmall,
-                    ),
+            ..._history.reversed.map(
+              (ping) => Card(
+                margin: const EdgeInsets.only(bottom: 6),
+                child: ListTile(
+                  dense: true,
+                  leading: Icon(
+                    ping.online ? Icons.check_circle : Icons.error,
+                    color: ping.online
+                        ? AppTheme.approveColor
+                        : AppTheme.rejectColor,
+                    size: 20,
                   ),
-                )),
+                  title: Text(
+                    ping.online ? context.tr('Online') : context.tr('Offline'),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  subtitle: Text(
+                    '${ping.latencyMs}ms · ${ping.timestamp.hour}:${ping.timestamp.minute.toString().padLeft(2, '0')}:${ping.timestamp.second.toString().padLeft(2, '0')}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              ),
+            ),
           ],
 
           const SizedBox(height: 20),
           OutlinedButton.icon(
             onPressed: _checking ? null : _refreshAccessState,
             icon: const Icon(Icons.speed),
-              label: Text(context.tr('Ping again')),
+            label: Text(context.tr('Ping again')),
           ),
         ],
       ),
@@ -230,20 +370,24 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
       sw.stop();
       final online = data['status'] == 'ok' || data['status'] == 'healthy';
       setState(() {
-        _history.add(_PingResult(
-          online: online,
-          latencyMs: sw.elapsedMilliseconds,
-          timestamp: DateTime.now(),
-        ));
+        _history.add(
+          _PingResult(
+            online: online,
+            latencyMs: sw.elapsedMilliseconds,
+            timestamp: DateTime.now(),
+          ),
+        );
       });
     } catch (_) {
       sw.stop();
       setState(() {
-        _history.add(_PingResult(
-          online: false,
-          latencyMs: sw.elapsedMilliseconds,
-          timestamp: DateTime.now(),
-        ));
+        _history.add(
+          _PingResult(
+            online: false,
+            latencyMs: sw.elapsedMilliseconds,
+            timestamp: DateTime.now(),
+          ),
+        );
       });
     }
     ref.invalidate(backendStatusProvider);
@@ -253,6 +397,77 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
   Future<void> _refreshAccessState() async {
     await _checkOnce();
     await ref.read(appAccessStateProvider.notifier).refresh();
+  }
+}
+
+class _QueuedActionTile extends StatelessWidget {
+  const _QueuedActionTile({
+    required this.action,
+    required this.onRetry,
+    required this.onCancel,
+  });
+
+  final QueuedOfflineAction action;
+  final VoidCallback onRetry;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.35,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(action.label, style: theme.textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Text(
+              '${action.method} ${action.path}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              context.tr('Status: {status}', {'status': action.status.name}),
+              style: theme.textTheme.bodySmall,
+            ),
+            if (action.lastError?.isNotEmpty == true) ...[
+              const SizedBox(height: 4),
+              Text(
+                action.lastError!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.sync_rounded),
+                  label: Text(context.tr('Retry now')),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onCancel,
+                  icon: const Icon(Icons.close_rounded),
+                  label: Text(context.tr('Cancel')),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

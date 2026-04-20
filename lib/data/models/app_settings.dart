@@ -73,6 +73,20 @@ class AppSettings {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'theme': theme,
+      'language': language,
+      'emailNotifications': emailNotifications,
+      'webhookUrl': webhookUrl,
+      'defaultProjectId': defaultProjectId,
+      'dashboardLayout': dashboardLayout,
+      'robotSettings': robotSettings,
+    };
+  }
+
   Map<String, dynamic> toUpdateJson() {
     return {
       'theme': theme,

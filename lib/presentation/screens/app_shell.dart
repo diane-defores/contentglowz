@@ -237,12 +237,54 @@ class _ShellContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final offlineSync = ref.watch(offlineSyncStateProvider);
+    final showSyncBanner =
+        degradedMode ||
+        offlineSync.hasQueuedActions ||
+        offlineSync.hasStaleData ||
+        offlineSync.failedCount > 0 ||
+        offlineSync.isReplaying;
+    final bannerColor = degradedMode
+        ? colorScheme.errorContainer
+        : colorScheme.secondaryContainer;
+    final bannerTextColor = degradedMode
+        ? colorScheme.onErrorContainer
+        : colorScheme.onSecondaryContainer;
+    final bannerParts = <String>[
+      if (degradedMode)
+        switch (appAccess?.stage) {
+          AppAccessStage.apiUnavailable => context.tr(
+            'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
+          ),
+          AppAccessStage.bootstrapFailed => context.tr(
+            'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
+          ),
+          _ => context.tr(
+            'ContentFlow is running in degraded mode while backend access is limited.',
+          ),
+        },
+      if (offlineSync.hasStaleData)
+        context.tr('Some screens are using cached data and may be stale.'),
+      if (offlineSync.isReplaying)
+        context.tr('Queued actions are replaying in the background.'),
+      if (offlineSync.pendingCount > 0)
+        context.tr('{count} actions are waiting to sync.', {
+          'count': '${offlineSync.pendingCount}',
+        }),
+      if (offlineSync.requiresReauth)
+        context.tr('Queued actions are paused until you sign in again.'),
+      if (offlineSync.failedCount > 0)
+        context.tr('{count} queued actions need manual review.', {
+          'count': '${offlineSync.failedCount}',
+        }),
+    ];
+
     return Column(
       children: [
         _ProjectSwitcherBar(ref: ref),
-        if (degradedMode)
+        if (showSyncBanner)
           Material(
-            color: colorScheme.errorContainer,
+            color: bannerColor,
             child: SafeArea(
               bottom: false,
               child: Padding(
@@ -253,25 +295,17 @@ class _ShellContent extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.warning_amber_rounded,
-                      color: colorScheme.onErrorContainer,
+                      offlineSync.isReplaying
+                          ? Icons.sync_rounded
+                          : Icons.warning_amber_rounded,
+                      color: bannerTextColor,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        switch (appAccess?.stage) {
-                          AppAccessStage.apiUnavailable => context.tr(
-                            'FastAPI is unavailable. ContentFlow is running in degraded mode until the backend responds again.',
-                          ),
-                          AppAccessStage.bootstrapFailed => context.tr(
-                            'Clerk is connected, but workspace bootstrap failed. ContentFlow stays in degraded mode until FastAPI returns a usable bootstrap.',
-                          ),
-                          _ => context.tr(
-                            'ContentFlow is running in degraded mode while backend access is limited.',
-                          ),
-                        },
+                        bannerParts.join(' '),
                         style: TextStyle(
-                          color: colorScheme.onErrorContainer,
+                          color: bannerTextColor,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -282,7 +316,7 @@ class _ShellContent extends StatelessWidget {
                       onPressed: () => context.go('/uptime'),
                       child: Text(
                         context.tr('Open Uptime'),
-                        style: TextStyle(color: colorScheme.onErrorContainer),
+                        style: TextStyle(color: bannerTextColor),
                       ),
                     ),
                     IconButton(
@@ -299,14 +333,15 @@ class _ShellContent extends StatelessWidget {
                                 appAccess?.diagnosticsLabel ?? 'unknown',
                             'backendStatus':
                                 appAccess?.backendStatusLabel ?? 'unknown',
+                            'queuedPending': offlineSync.pendingCount,
+                            'queuedPaused': offlineSync.pausedAuthCount,
+                            'queuedFailed': offlineSync.failedCount,
+                            'staleKeys': offlineSync.staleKeys.length,
                           },
                           successMessage: 'Degraded mode diagnostics copied.',
                         );
                       },
-                      icon: Icon(
-                        Icons.copy_rounded,
-                        color: colorScheme.onErrorContainer,
-                      ),
+                      icon: Icon(Icons.copy_rounded, color: bannerTextColor),
                     ),
                   ],
                 ),

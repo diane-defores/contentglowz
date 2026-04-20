@@ -35,6 +35,13 @@ class AppAccessState {
   bool get isReady => stage == AppAccessStage.ready;
   bool get needsOnboarding => stage == AppAccessStage.needsOnboarding;
   bool get requiresReauth => stage == AppAccessStage.bootstrapUnauthorized;
+  bool get hasBootstrap => bootstrap != null;
+  bool get canUseWorkspaceData =>
+      stage == AppAccessStage.ready ||
+      stage == AppAccessStage.needsOnboarding ||
+      ((stage == AppAccessStage.apiUnavailable ||
+              stage == AppAccessStage.bootstrapFailed) &&
+          bootstrap != null);
   bool get isChecking =>
       stage == AppAccessStage.restoringSession ||
       stage == AppAccessStage.checkingBackend ||
@@ -44,7 +51,8 @@ class AppAccessState {
       stage == AppAccessStage.bootstrapFailed;
   bool get backendReachable =>
       backendHealth != null &&
-      (backendHealth!['status'] == 'ok' || backendHealth!['status'] == 'healthy');
+      (backendHealth!['status'] == 'ok' ||
+          backendHealth!['status'] == 'healthy');
 
   String get backendStatusLabel {
     if (backendHealth == null) {

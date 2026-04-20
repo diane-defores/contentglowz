@@ -134,7 +134,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: 12),
                   Text(
                     context.tr(
-                      'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.',
+                      'Degraded mode is active. The app stays available, cached data may be stale, and queued actions will replay when FastAPI recovers.',
                     ),
                     style: TextStyle(
                       color: AppTheme.warningColor.withAlpha(220),
@@ -831,18 +831,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final controller = ref.read(inAppTourProvider.notifier);
 
     if (tour.completed) {
-      title = 'Visite guidée de l\'app';
-      subtitle = 'Relancer la visite depuis le début';
+      title = context.tr('Guided app tour');
+      subtitle = context.tr('Restart the guided tour from the beginning');
       onTap = () => controller.start(context);
     } else if (tour.stepIndex > 0) {
-      title = 'Reprendre la visite guidée';
-      subtitle =
-          'Étape ${tour.stepIndex + 1}/${tour.totalSteps} — '
-          '${context.tr(tour.currentStep.title)}';
+      title = context.tr('Resume the guided tour');
+      subtitle = context.tr('Step {current}/{total} — {title}', {
+        'current': '${tour.stepIndex + 1}',
+        'total': '${tour.totalSteps}',
+        'title': context.tr(tour.currentStep.title),
+      });
       onTap = () => controller.resume(context);
     } else {
-      title = 'Visite guidée de l\'app';
-      subtitle = 'Découvrir les écrans pas à pas';
+      title = context.tr('Guided app tour');
+      subtitle = context.tr('Discover the screens step by step');
       onTap = () => controller.start(context);
     }
 
@@ -868,7 +870,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             size: 22,
           ),
         ),
-        title: Text(title, style: TextStyle(color: theme.colorScheme.onSurface)),
+        title: Text(
+          title,
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
         subtitle: Text(
           subtitle,
           style: TextStyle(
@@ -992,7 +997,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: ListTile(
           leading: Icon(
             icon,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.9),
           ),
           title: Text(
             name,
@@ -1130,7 +1137,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       style: OutlinedButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.9),
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.9),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         minimumSize: const Size(0, 34),

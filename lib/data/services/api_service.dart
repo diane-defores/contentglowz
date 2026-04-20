@@ -12,11 +12,14 @@ import '../models/app_settings.dart';
 import '../models/content_audit.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
+import '../models/drip_plan.dart';
 import '../models/feedback_entry.dart';
 import '../models/idea.dart';
+import '../models/offline_sync.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
 import '../models/ritual.dart';
+import 'offline_storage_service.dart';
 
 enum ApiErrorType { unauthorized, offline, server, invalidResponse, unknown }
 
@@ -54,6 +57,13 @@ class ApiService {
     this.allowDemoData = false,
     this.diagnostics,
     this.onUnauthorized,
+    this.cacheStore,
+    this.queueStore,
+    this.idMappingStore,
+    this.offlineScope = 'signed_out',
+    this.onCacheKeyFresh,
+    this.onCacheKeyStale,
+    this.onQueueUpdated,
   }) {
     _dio = Dio(
       BaseOptions(
@@ -142,7 +152,27 @@ class ApiService {
   final bool allowDemoData;
   final AppDiagnostics? diagnostics;
   final void Function()? onUnauthorized;
+  final OfflineCacheStore? cacheStore;
+  final OfflineQueueStore? queueStore;
+  final OfflineIdMappingStore? idMappingStore;
+  final String offlineScope;
+  final Future<void> Function(String cacheKey)? onCacheKeyFresh;
+  final Future<void> Function(String cacheKey)? onCacheKeyStale;
+  final Future<void> Function(List<QueuedOfflineAction> queue)? onQueueUpdated;
   int _requestSequence = 0;
+
+  static const _bootstrapCacheKey = 'bootstrap';
+  static const _projectsCacheKey = 'projects';
+  static const _settingsCacheKey = 'settings';
+  static const _creatorProfileCacheKey = 'creator_profile';
+  static const _pendingContentCacheKey = 'content.pending_review';
+  static const _contentHistoryCacheKey = 'content.history';
+  static const _personasCacheKey = 'personas';
+  static const _publishAccountsCacheKey = 'publish.accounts';
+  static const _feedbackAdminCacheKey = 'feedback.admin';
+  static const _affiliationsCacheKey = 'affiliations';
+  static const _ideasCacheKey = 'ideas';
+  static const _dripPlansCacheKey = 'drip.plans';
 
   void updateBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
@@ -161,6 +191,519 @@ class ApiService {
     return values;
   }
 
+  String _queryFingerprint(Map<String, dynamic>? queryParameters) {
+    if (queryParameters == null || queryParameters.isEmpty) {
+      return '';
+    }
+    final entries = queryParameters.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return entries.map((entry) => '${entry.key}=${entry.value}').join('&');
+  }
+
+  String _cacheKeyFor(String base, [Map<String, dynamic>? queryParameters]) {
+    final fingerprint = _queryFingerprint(queryParameters);
+    if (fingerprint.isEmpty) {
+      return base;
+    }
+    return '$base?$fingerprint';
+  }
+
+  Future<dynamic> _getCachedData(
+    String path, {
+    String? cacheKey,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final resolvedCacheKey = cacheKey ?? _cacheKeyFor(path, queryParameters);
+
+    try {
+      final response = await _dio.get(path, queryParameters: queryParameters);
+      await cacheStore?.write(offlineScope, resolvedCacheKey, response.data);
+      await onCacheKeyFresh?.call(resolvedCacheKey);
+      return response.data;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isUnauthorized) {
+        final cached = await cacheStore?.read(offlineScope, resolvedCacheKey);
+        if (cached != null) {
+          await onCacheKeyStale?.call(resolvedCacheKey);
+          return cached.data;
+        }
+      }
+      throw mapped;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _readCachedMap(String cacheKey) async {
+    final cached = await cacheStore?.read(offlineScope, cacheKey);
+    return _asMapOrNull(cached?.data);
+  }
+
+  Future<List<dynamic>?> _readCachedList(String cacheKey) async {
+    final cached = await cacheStore?.read(offlineScope, cacheKey);
+    final data = cached?.data;
+    if (data is List) {
+      return data;
+    }
+    return null;
+  }
+
+  Future<void> _writeCachedData(String cacheKey, Object? data) async {
+    await cacheStore?.write(offlineScope, cacheKey, data);
+    await onCacheKeyFresh?.call(cacheKey);
+  }
+
+  Future<AppBootstrap?> loadCachedBootstrap() async {
+    final cached = await _readCachedMap(_bootstrapCacheKey);
+    if (cached == null || cached.isEmpty) {
+      return null;
+    }
+    return AppBootstrap.fromJson(cached);
+  }
+
+  Future<Map<String, String>> _loadIdMappings() async {
+    return await idMappingStore?.load(offlineScope) ?? const <String, String>{};
+  }
+
+  bool _isOfflineTempId(String? id) {
+    return id != null && id.startsWith('offline-');
+  }
+
+  String _resolveEntityId(String id, [Map<String, String>? idMappings]) {
+    final mappings = idMappings ?? const <String, String>{};
+    return mappings[id] ?? id;
+  }
+
+  List<String> _dependsOnTempIdsForIds(
+    Iterable<String?> ids, [
+    Map<String, String>? idMappings,
+  ]) {
+    final mappings = idMappings ?? const <String, String>{};
+    final unresolved = <String>{};
+    for (final id in ids) {
+      if (_isOfflineTempId(id) && !mappings.containsKey(id)) {
+        unresolved.add(id!);
+      }
+    }
+    return unresolved.toList()..sort();
+  }
+
+  Map<String, dynamic> _offlineActionMeta({
+    String? entityType,
+    String? entityId,
+    String? tempId,
+    List<String> dependsOnTempIds = const <String>[],
+    Map<String, dynamic> extra = const <String, dynamic>{},
+  }) {
+    return {
+      if (entityType != null && entityType.isNotEmpty) 'entityType': entityType,
+      if (entityId != null && entityId.isNotEmpty) 'entityId': entityId,
+      if (tempId != null && tempId.isNotEmpty) 'tempId': tempId,
+      if (dependsOnTempIds.isNotEmpty) 'dependsOnTempIds': dependsOnTempIds,
+      ...extra,
+    };
+  }
+
+  String _newOfflineTempId(String resourceType) {
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    return 'offline-$resourceType-$timestamp';
+  }
+
+  Future<List<Project>> _readCachedProjects() async {
+    return (await _readCachedList(_projectsCacheKey) ?? const <dynamic>[])
+        .whereType<Map>()
+        .map((entry) => Project.fromJson(Map<String, dynamic>.from(entry)))
+        .toList();
+  }
+
+  Future<void> _upsertCachedProject(Project project) async {
+    final projects = await _readCachedProjects();
+    final nextProjects = [
+      for (final entry in projects)
+        if (entry.id != project.id) entry,
+      project,
+    ];
+    await _writeCachedData(
+      _projectsCacheKey,
+      nextProjects.map((entry) => entry.toJson()).toList(),
+    );
+  }
+
+  Future<void> _syncCachedProjectDefaults(String? defaultProjectId) async {
+    final projects = await _readCachedProjects();
+    if (projects.isEmpty) {
+      return;
+    }
+
+    final nextProjects = projects
+        .map(
+          (entry) => entry.copyWith(
+            isDefault:
+                defaultProjectId != null && entry.id == defaultProjectId,
+          ),
+        )
+        .toList();
+    await _writeCachedData(
+      _projectsCacheKey,
+      nextProjects.map((entry) => entry.toJson()).toList(),
+    );
+  }
+
+  Future<void> _syncBootstrapCache({
+    String? defaultProjectId,
+    bool updateDefaultProject = false,
+    bool? workspaceExists,
+    String? workspaceStatus,
+    int? projectsCount,
+  }) async {
+    final current = await _readCachedMap(_bootstrapCacheKey);
+    final user = <String, dynamic>{
+      ...?_asMapOrNull(current?['user']),
+      'user_id': _asMapOrNull(current?['user'])?['user_id'] ?? offlineScope,
+    };
+    final cachedProjectsCount =
+        (await _readCachedList(_projectsCacheKey))?.length ?? 0;
+    final currentProjectsCount =
+        (current?['projects_count'] as num?)?.toInt() ?? cachedProjectsCount;
+    final resolvedProjectsCount =
+        projectsCount ??
+        (currentProjectsCount > cachedProjectsCount
+            ? currentProjectsCount
+            : cachedProjectsCount);
+    final resolvedWorkspaceExists =
+        workspaceExists ?? (resolvedProjectsCount > 0 || user['workspace_exists'] == true);
+
+    user['workspace_exists'] = resolvedWorkspaceExists;
+    if (updateDefaultProject) {
+      user['default_project_id'] = defaultProjectId;
+    }
+
+    final next = <String, dynamic>{
+      ...?current,
+      'user': user,
+      'projects_count': resolvedProjectsCount,
+      'workspace_status':
+          workspaceStatus ??
+          (resolvedWorkspaceExists
+              ? 'ready'
+              : (current?['workspace_status'] ?? 'missing')),
+    };
+    if (updateDefaultProject) {
+      next['default_project_id'] = defaultProjectId;
+    }
+
+    await _writeCachedData(_bootstrapCacheKey, next);
+    if (updateDefaultProject) {
+      await _syncCachedProjectDefaults(defaultProjectId);
+    }
+  }
+
+  Future<void> _upsertCachedPersona(Persona persona) async {
+    final personas =
+        (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
+            .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
+            .toList();
+    final nextPersonas = [
+      for (final entry in personas)
+        if (entry.id != persona.id) entry,
+      persona,
+    ];
+    await _writeCachedData(
+      _personasCacheKey,
+      nextPersonas.map((entry) => entry.toJson()).toList(),
+    );
+  }
+
+  Future<void> _upsertCachedAffiliation(AffiliateLink link) async {
+    final cacheKeys = <String>{_cacheKeyFor(_affiliationsCacheKey)};
+    if (link.projectId != null && link.projectId!.trim().isNotEmpty) {
+      cacheKeys.add(
+        _cacheKeyFor(_affiliationsCacheKey, {'projectId': link.projectId}),
+      );
+    }
+
+    for (final cacheKey in cacheKeys) {
+      final cached = await _readCachedList(cacheKey) ?? const <dynamic>[];
+      final cachedLinks = cached
+          .whereType<Map>()
+          .map((entry) => AffiliateLink.fromJson(Map<String, dynamic>.from(entry)))
+          .toList();
+      final next = [
+        for (final entry in cachedLinks)
+          if (entry.id != link.id) entry,
+        link,
+      ];
+      await _writeCachedData(
+        cacheKey,
+        next.map((entry) => entry.toJson()).toList(),
+      );
+    }
+  }
+
+  Future<List<ContentItem>> _readCachedPendingContentItems() async {
+    return (await _readCachedList(_pendingContentCacheKey) ?? const <dynamic>[])
+        .whereType<Map>()
+        .map((entry) => ContentItem.fromJson(Map<String, dynamic>.from(entry)))
+        .toList();
+  }
+
+  Future<void> _upsertCachedPendingContentItem(ContentItem item) async {
+    final current = await _readCachedPendingContentItems();
+    final next = [
+      for (final entry in current)
+        if (entry.id != item.id) entry,
+      item,
+    ];
+    await _writeCachedData(
+      _pendingContentCacheKey,
+      next.map((entry) => entry.toJson()).toList(),
+    );
+  }
+
+  Future<void> _removeCachedPendingContentItem(String id) async {
+    final current = await _readCachedPendingContentItems();
+    final next = current.where((entry) => entry.id != id).toList();
+    await _writeCachedData(
+      _pendingContentCacheKey,
+      next.map((entry) => entry.toJson()).toList(),
+    );
+  }
+
+  Future<List<DripPlan>> _readCachedDripPlans() async {
+    return (await _readCachedList(_dripPlansCacheKey) ?? const <dynamic>[])
+        .whereType<Map>()
+        .map((entry) => DripPlan.fromJson(Map<String, dynamic>.from(entry)))
+        .toList();
+  }
+
+  String _dripPlanCacheKey(String planId) => 'drip.plan.$planId';
+  String _dripStatsCacheKey(String planId) => 'drip.stats.$planId';
+
+  Future<void> _upsertCachedDripPlan(DripPlan plan) async {
+    final current = await _readCachedDripPlans();
+    final next = [
+      for (final entry in current)
+        if (entry.id != plan.id) entry,
+      plan,
+    ];
+    await _writeCachedData(
+      _dripPlansCacheKey,
+      next.map((entry) => entry.toJson()).toList(),
+    );
+    await _writeCachedData(_dripPlanCacheKey(plan.id), plan.toJson());
+  }
+
+  Future<DripPlan?> _readCachedDripPlan(String planId) async {
+    final cached = await _readCachedMap(_dripPlanCacheKey(planId));
+    if (cached != null && cached.isNotEmpty) {
+      return DripPlan.fromJson(cached);
+    }
+    final plans = await _readCachedDripPlans();
+    for (final plan in plans) {
+      if (plan.id == planId) {
+        return plan;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _writeCachedDripStats(
+    String planId,
+    Map<String, dynamic> stats,
+  ) async {
+    await _writeCachedData(_dripStatsCacheKey(planId), stats);
+  }
+
+  Future<List<QueuedOfflineAction>> _enqueueOfflineAction({
+    required String resourceType,
+    required String actionType,
+    required String label,
+    required String method,
+    required String path,
+    required String dedupeKey,
+    Map<String, dynamic>? payload,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic> meta = const <String, dynamic>{},
+    bool mergePayload = true,
+  }) async {
+    final store = queueStore;
+    if (store == null) {
+      return const <QueuedOfflineAction>[];
+    }
+
+    final idMappings = await _loadIdMappings();
+    final rewrittenPath = rewriteOfflineIdsInString(path, idMappings);
+    final rewrittenDedupeKey = rewriteOfflineIdsInString(dedupeKey, idMappings);
+    final rewrittenPayload =
+        _asMapOrNull(rewriteOfflineIdsInValue(payload, idMappings));
+    final rewrittenQueryParameters = _asMapOrNull(
+      rewriteOfflineIdsInValue(queryParameters, idMappings),
+    );
+    final rewrittenMeta =
+        _asMapOrNull(rewriteOfflineIdsInValue(meta, idMappings)) ??
+        const <String, dynamic>{};
+
+    final now = DateTime.now();
+    final nextAction = QueuedOfflineAction(
+      id: '${now.microsecondsSinceEpoch}-${_requestSequence + 1}',
+      userScope: offlineScope,
+      resourceType: resourceType,
+      actionType: actionType,
+      label: label,
+      method: method.toUpperCase(),
+      path: rewrittenPath,
+      dedupeKey: rewrittenDedupeKey,
+      payload: rewrittenPayload,
+      queryParameters: rewrittenQueryParameters,
+      meta: rewrittenMeta,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final current = await store.load(offlineScope);
+    final index = current.indexWhere(
+      (entry) =>
+          entry.dedupeKey == rewrittenDedupeKey &&
+          entry.status != OfflineQueueStatus.cancelled,
+    );
+
+    final next = [...current];
+    if (index >= 0) {
+      final previous = next[index];
+      next[index] = previous.copyWith(
+        resourceType: resourceType,
+        actionType: actionType,
+        label: label,
+        method: method.toUpperCase(),
+        path: rewrittenPath,
+        dedupeKey: rewrittenDedupeKey,
+        payload: mergePayload
+            ? _mergeMaps(previous.payload, rewrittenPayload)
+            : rewrittenPayload,
+        queryParameters: rewrittenQueryParameters ?? previous.queryParameters,
+        meta: {...previous.meta, ...rewrittenMeta},
+        status: OfflineQueueStatus.pending,
+        updatedAt: now,
+        attemptCount: 0,
+        clearLastError: true,
+      );
+    } else {
+      next.add(nextAction);
+    }
+
+    await store.save(offlineScope, next);
+    await onQueueUpdated?.call(next);
+    return next;
+  }
+
+  Future<dynamic> replayQueuedAction(QueuedOfflineAction action) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedAction = action.rewriteIds(idMappings);
+    try {
+      final response = await _dio.request<dynamic>(
+        resolvedAction.path,
+        data: resolvedAction.payload,
+        queryParameters: resolvedAction.queryParameters,
+        options: Options(method: resolvedAction.method),
+      );
+      return response.data;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (resolvedAction.resourceType == 'projects' &&
+          resolvedAction.actionType == 'create' &&
+          (mapped.statusCode == 404 || mapped.statusCode == 405)) {
+        final name = resolvedAction.payload?['name']?.toString() ?? '';
+        final githubUrl = normalizeOptionalText(
+          resolvedAction.payload?['github_url']?.toString(),
+        );
+        await onboardProject(githubUrl, name);
+        final projects = await fetchProjects();
+        final normalizedName = name.trim().toLowerCase();
+        final project = projects.firstWhere(
+          (entry) => entry.name.trim().toLowerCase() == normalizedName,
+          orElse: () => projects.first,
+        );
+        return project.toJson();
+      }
+      throw mapped;
+    }
+  }
+
+  Future<ApiException> _queueOrThrow({
+    required ApiException error,
+    required String resourceType,
+    required String actionType,
+    required String label,
+    required String method,
+    required String path,
+    required String dedupeKey,
+    Map<String, dynamic>? payload,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic> meta = const <String, dynamic>{},
+    bool mergePayload = true,
+    String? blockedMessage,
+  }) async {
+    if (!error.isOffline) {
+      return error;
+    }
+
+    if (blockedMessage != null) {
+      return ApiException(
+        ApiErrorType.offline,
+        blockedMessage,
+        statusCode: error.statusCode,
+        responseBody: error.responseBody,
+        responseHeaders: error.responseHeaders,
+        method: error.method,
+        path: error.path,
+      );
+    }
+
+    await _enqueueOfflineAction(
+      resourceType: resourceType,
+      actionType: actionType,
+      label: label,
+      method: method,
+      path: path,
+      dedupeKey: dedupeKey,
+      payload: payload,
+      queryParameters: queryParameters,
+      meta: meta,
+      mergePayload: mergePayload,
+    );
+    return ApiException(
+      ApiErrorType.offline,
+      '$label queued until FastAPI is available again.',
+      statusCode: error.statusCode,
+      responseBody: error.responseBody,
+      responseHeaders: error.responseHeaders,
+      method: method,
+      path: path,
+    );
+  }
+
+  Map<String, dynamic>? _asMapOrNull(Object? data) {
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return data.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _mergeMaps(
+    Map<String, dynamic>? current,
+    Map<String, dynamic>? next,
+  ) {
+    if (current == null) {
+      return next;
+    }
+    if (next == null) {
+      return current;
+    }
+    return {...current, ...next};
+  }
+
   Future<Map<String, dynamic>> healthCheck() async {
     try {
       final response = await _dio.get('/health');
@@ -171,25 +714,24 @@ class ApiService {
   }
 
   Future<List<Project>> fetchProjects() async {
-    try {
-      final response = await _dio.get('/api/projects');
-      final data = response.data;
-      final items = data is List ? data : (_asMap(data)['projects'] ?? []);
-      if (items is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid projects response from FastAPI.',
-        );
-      }
-      return items
-          .map((json) => Project.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (error) {
-      if (allowDemoData) {
-        return _mockProjects();
-      }
-      throw _mapDioException(error);
+    if (allowDemoData) {
+      return _mockProjects();
     }
+
+    final data = await _getCachedData(
+      '/api/projects',
+      cacheKey: _projectsCacheKey,
+    );
+    final items = data is List ? data : (_asMap(data)['projects'] ?? []);
+    if (items is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid projects response from FastAPI.',
+      );
+    }
+    return items
+        .map((json) => Project.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> onboardProject(String? githubUrl, String name) async {
@@ -211,28 +753,67 @@ class ApiService {
     String? githubUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
+    final normalizedName = name.trim();
+    final payload = _compactMap({
+      'name': normalizedName,
+      'github_url': normalizeOptionalText(githubUrl),
+      'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+    });
     try {
       final response = await _dio.post(
         '/api/projects',
-        data: _compactMap({
-          'name': name.trim(),
-          'github_url': normalizeOptionalText(githubUrl),
-          'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
-        }),
+        data: payload,
       );
-      return Project.fromJson(_asMap(response.data));
+      final project = Project.fromJson(_asMap(response.data));
+      await _upsertCachedProject(project);
+      await _syncBootstrapCache(
+        workspaceExists: true,
+        workspaceStatus: 'ready',
+      );
+      return project;
     } on DioException catch (error) {
       final mapped = _mapDioException(error);
       if (mapped.statusCode == 404 || mapped.statusCode == 405) {
-        await onboardProject(githubUrl, name);
+        await onboardProject(githubUrl, normalizedName);
         final projects = await fetchProjects();
-        final normalizedName = name.trim().toLowerCase();
+        final loweredName = normalizedName.toLowerCase();
         return projects.firstWhere(
-          (project) => project.name.trim().toLowerCase() == normalizedName,
+          (project) => project.name.trim().toLowerCase() == loweredName,
           orElse: () => projects.first,
         );
       }
-      throw mapped;
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      final tempId = _newOfflineTempId('project');
+      final optimistic = Project(
+        id: tempId,
+        name: normalizedName,
+        url: normalizeOptionalText(githubUrl) ?? '',
+        settings: ProjectSettings(contentTypes: contentTypes),
+        createdAt: DateTime.now(),
+      );
+      await _upsertCachedProject(optimistic);
+      await _syncBootstrapCache(
+        workspaceExists: true,
+        workspaceStatus: 'ready',
+      );
+      await _enqueueOfflineAction(
+        resourceType: 'projects',
+        actionType: 'create',
+        label: 'Create project',
+        method: 'POST',
+        path: '/api/projects',
+        dedupeKey: 'projects:create:${normalizedName.toLowerCase()}',
+        payload: payload,
+        meta: _offlineActionMeta(
+          entityType: 'project',
+          entityId: tempId,
+          tempId: tempId,
+        ),
+      );
+      return optimistic;
     }
   }
 
@@ -242,18 +823,92 @@ class ApiService {
     String? githubUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([projectId], idMappings);
+    final payload = _compactMap({
+      'name': name.trim(),
+      'github_url': normalizeOptionalText(githubUrl),
+      'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
+    });
     try {
       final response = await _dio.patch(
-        '/api/projects/$projectId',
-        data: _compactMap({
-          'name': name.trim(),
-          'github_url': normalizeOptionalText(githubUrl),
-          'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
-        }),
+        '/api/projects/$resolvedProjectId',
+        data: payload,
       );
-      return Project.fromJson(_asMap(response.data));
+      final project = Project.fromJson(_asMap(response.data));
+      final cached =
+          (await _readCachedList(_projectsCacheKey) ?? const <dynamic>[])
+              .map((entry) => Project.fromJson(entry as Map<String, dynamic>))
+              .toList();
+      final nextProjects =
+          cached.any(
+            (entry) => entry.id == projectId || entry.id == resolvedProjectId,
+          )
+          ? cached
+                .map(
+                  (entry) =>
+                      entry.id == projectId || entry.id == resolvedProjectId
+                      ? project
+                      : entry,
+                )
+                .toList()
+          : [...cached, project];
+      await _writeCachedData(
+        _projectsCacheKey,
+        nextProjects.map((entry) => entry.toJson()).toList(),
+      );
+      return project;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      final cachedProjects =
+          (await _readCachedList(_projectsCacheKey) ?? const <dynamic>[])
+              .map((entry) => Project.fromJson(entry as Map<String, dynamic>))
+              .toList();
+      final nextProjects = cachedProjects
+          .map(
+            (entry) => entry.id == projectId || entry.id == resolvedProjectId
+                ? entry.copyWith(
+                    name: name.trim(),
+                    url: normalizeOptionalText(githubUrl) ?? entry.url,
+                    settings: entry.settings?.copyWith(
+                      contentTypes: contentTypes,
+                    ),
+                  )
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _projectsCacheKey,
+        nextProjects.map((entry) => entry.toJson()).toList(),
+      );
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'projects',
+          actionType: 'update',
+          label: 'Update project',
+          method: 'PATCH',
+          path: '/api/projects/$resolvedProjectId',
+          dedupeKey: 'projects:update:$resolvedProjectId',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'project',
+            entityId: resolvedProjectId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return nextProjects.firstWhere(
+          (entry) => entry.id == projectId || entry.id == resolvedProjectId,
+          orElse: () => Project(
+            id: projectId,
+            name: name.trim(),
+            url: normalizeOptionalText(githubUrl) ?? '',
+            settings: ProjectSettings(contentTypes: contentTypes),
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
+      throw mapped;
     }
   }
 
@@ -282,56 +937,94 @@ class ApiService {
   }
 
   Future<AppBootstrap> fetchBootstrap() async {
-    try {
-      final response = await _dio.get('/api/bootstrap');
-      return AppBootstrap.fromJson(_asMap(response.data));
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
+    final data = await _getCachedData(
+      '/api/bootstrap',
+      cacheKey: _bootstrapCacheKey,
+    );
+    return AppBootstrap.fromJson(_asMap(data));
   }
 
   Future<AppSettings> fetchSettings() async {
+    if (allowDemoData) {
+      return const AppSettings(id: 'offline-settings', userId: 'offline-user');
+    }
+
     try {
-      final response = await _dio.get('/api/settings');
-      return AppSettings.fromJson(_asMap(response.data));
-    } on DioException catch (error) {
-      if (allowDemoData) {
+      final data = await _getCachedData(
+        '/api/settings',
+        cacheKey: _settingsCacheKey,
+      );
+      return AppSettings.fromJson(_asMap(data));
+    } on ApiException catch (error) {
+      if (error.isOffline) {
         return const AppSettings(
           id: 'offline-settings',
           userId: 'offline-user',
         );
       }
-      final mapped = _mapDioException(error);
-      if (mapped.type == ApiErrorType.offline) {
-        return const AppSettings(
-          id: 'offline-settings',
-          userId: 'offline-user',
+      rethrow;
+    }
+  }
+
+  Future<AppSettings> updateSettings(Map<String, dynamic> updates) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedUpdates =
+        _asMapOrNull(rewriteOfflineIdsInValue(updates, idMappings)) ?? updates;
+    final dependsOnTempIds = _dependsOnTempIdsForIds(
+      [updates['defaultProjectId']?.toString()],
+      idMappings,
+    );
+    try {
+      final response = await _dio.patch('/api/settings', data: resolvedUpdates);
+      final settings = AppSettings.fromJson(_asMap(response.data));
+      await _writeCachedData(_settingsCacheKey, settings.toJson());
+      if (resolvedUpdates.containsKey('defaultProjectId')) {
+        await _syncBootstrapCache(
+          updateDefaultProject: true,
+          defaultProjectId: settings.defaultProjectId,
         );
+      }
+      return settings;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      final current = await _readCachedMap(_settingsCacheKey);
+      final merged = {...?current, ...resolvedUpdates};
+      merged.putIfAbsent('id', () => 'offline-settings');
+      merged.putIfAbsent('userId', () => offlineScope);
+      await _writeCachedData(_settingsCacheKey, merged);
+      if (resolvedUpdates.containsKey('defaultProjectId')) {
+        await _syncBootstrapCache(
+          updateDefaultProject: true,
+          defaultProjectId: resolvedUpdates['defaultProjectId']?.toString(),
+        );
+      }
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'settings',
+          actionType: 'update',
+          label: 'Update settings',
+          method: 'PATCH',
+          path: '/api/settings',
+          dedupeKey: 'settings:update',
+          payload: resolvedUpdates,
+          meta: _offlineActionMeta(dependsOnTempIds: dependsOnTempIds),
+        );
+        return AppSettings.fromJson(merged);
       }
       throw mapped;
     }
   }
 
-  Future<AppSettings> updateSettings(Map<String, dynamic> updates) async {
-    try {
-      final response = await _dio.patch('/api/settings', data: updates);
-      return AppSettings.fromJson(_asMap(response.data));
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
-  }
-
   Future<CreatorProfile?> fetchCreatorProfile() async {
-    try {
-      final response = await _dio.get('/api/creator-profile');
-      if (response.data == null) {
-        return null;
-      }
-      final data = _asMap(response.data, fallback: const {});
-      return data.isEmpty ? null : CreatorProfile.fromJson(data);
-    } on DioException catch (error) {
-      throw _mapDioException(error);
+    final data = await _getCachedData(
+      '/api/creator-profile',
+      cacheKey: _creatorProfileCacheKey,
+    );
+    if (data == null) {
+      return null;
     }
+    final map = _asMap(data, fallback: const {});
+    return map.isEmpty ? null : CreatorProfile.fromJson(map);
   }
 
   Future<CreatorProfile> saveCreatorProfile({
@@ -342,52 +1035,76 @@ class ApiService {
     List<String>? values,
     String? currentChapterId,
   }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({
+      'projectId': resolvedProjectId,
+      'displayName': displayName,
+      'voice': voice,
+      'positioning': positioning,
+      'values': values,
+      'currentChapterId': currentChapterId,
+    });
     try {
-      final response = await _dio.put(
-        '/api/creator-profile',
-        data: _compactMap({
-          'projectId': projectId,
-          'displayName': displayName,
-          'voice': voice,
-          'positioning': positioning,
-          'values': values,
-          'currentChapterId': currentChapterId,
-        }),
-      );
-      return CreatorProfile.fromJson(_asMap(response.data));
+      final response = await _dio.put('/api/creator-profile', data: payload);
+      final profile = CreatorProfile.fromJson(_asMap(response.data));
+      await _writeCachedData(_creatorProfileCacheKey, profile.toJson());
+      return profile;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      final current = await _readCachedMap(_creatorProfileCacheKey);
+      final merged = {...?current, ...payload};
+      final now = DateTime.now().toIso8601String();
+      merged.putIfAbsent('id', () => 'offline-creator-profile');
+      merged.putIfAbsent('userId', () => offlineScope);
+      merged.putIfAbsent('createdAt', () => now);
+      merged['updatedAt'] = now;
+      await _writeCachedData(_creatorProfileCacheKey, merged);
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'creator_profile',
+          actionType: 'save',
+          label: 'Save creator profile',
+          method: 'PUT',
+          path: '/api/creator-profile',
+          dedupeKey: 'creator_profile:save',
+          payload: payload,
+          meta: _offlineActionMeta(
+            dependsOnTempIds: _dependsOnTempIdsForIds([projectId], idMappings),
+          ),
+        );
+        return CreatorProfile.fromJson(merged);
+      }
+      throw mapped;
     }
   }
 
   Future<List<ContentItem>> fetchPendingContent() async {
-    try {
-      final response = await _dio.get(
-        '/api/status/content',
-        queryParameters: {'status': 'pending_review'},
-      );
-      return _parseContentList(response.data);
-    } on DioException catch (error) {
-      if (allowDemoData) {
-        return _mockContent();
-      }
-      throw _mapDioException(error);
+    if (allowDemoData) {
+      return _mockContent();
     }
+
+    final data = await _getCachedData(
+      '/api/status/content',
+      cacheKey: _pendingContentCacheKey,
+      queryParameters: {'status': 'pending_review'},
+    );
+    return _parseContentList(data);
   }
 
   Future<List<ContentItem>> fetchContentHistory() async {
-    try {
-      final response = await _dio.get(
-        '/api/status/content',
-        queryParameters: {'status': 'published,rejected,approved'},
-      );
-      return _parseContentList(response.data);
-    } on DioException catch (error) {
-      if (allowDemoData) {
-        return _mockHistory();
-      }
-      throw _mapDioException(error);
+    if (allowDemoData) {
+      return _mockHistory();
     }
+
+    final data = await _getCachedData(
+      '/api/status/content',
+      cacheKey: _contentHistoryCacheKey,
+      queryParameters: {'status': 'published,rejected,approved'},
+    );
+    return _parseContentList(data);
   }
 
   Future<String?> fetchContentBody(String id) async {
@@ -395,13 +1112,16 @@ class ApiService {
       return _demoContentById(id)?.body;
     }
 
-    try {
-      final response = await _dio.get('/api/status/content/$id/body');
-      final data = _asMap(response.data);
-      return data['body'] as String? ?? data['content'] as String?;
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+
+    final data = _asMap(
+      await _getCachedData(
+        '/api/status/content/$resolvedId/body',
+        cacheKey: 'content.body.$resolvedId',
+      ),
+    );
+    return data['body'] as String? ?? data['content'] as String?;
   }
 
   Future<List<ContentStatusChange>> fetchContentStatusHistory(String id) async {
@@ -409,24 +1129,24 @@ class ApiService {
       return const [];
     }
 
-    try {
-      final response = await _dio.get('/api/status/content/$id/history');
-      final data = response.data;
-      if (data is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid content history response from FastAPI.',
-        );
-      }
-      return data
-          .map(
-            (json) =>
-                ContentStatusChange.fromJson(json as Map<String, dynamic>),
-          )
-          .toList();
-    } on DioException catch (error) {
-      throw _mapDioException(error);
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+
+    final data = await _getCachedData(
+      '/api/status/content/$resolvedId/history',
+      cacheKey: 'content.transition_history.$resolvedId',
+    );
+    if (data is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid content history response from FastAPI.',
+      );
     }
+    return data
+        .map(
+          (json) => ContentStatusChange.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
   }
 
   Future<List<ContentEditEvent>> fetchContentEditHistory(String id) async {
@@ -434,23 +1154,22 @@ class ApiService {
       return const [];
     }
 
-    try {
-      final response = await _dio.get('/api/status/content/$id/body/history');
-      final data = response.data;
-      if (data is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid content edit history response from FastAPI.',
-        );
-      }
-      return data
-          .map(
-            (json) => ContentEditEvent.fromJson(json as Map<String, dynamic>),
-          )
-          .toList();
-    } on DioException catch (error) {
-      throw _mapDioException(error);
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+
+    final data = await _getCachedData(
+      '/api/status/content/$resolvedId/body/history',
+      cacheKey: 'content.body_history.$resolvedId',
+    );
+    if (data is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid content edit history response from FastAPI.',
+      );
     }
+    return data
+        .map((json) => ContentEditEvent.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   Future<ContentAuditTrail> fetchContentAuditTrail(String id) async {
@@ -473,14 +1192,63 @@ class ApiService {
       return true;
     }
 
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([id], idMappings);
+    final payload = _compactMap({'body': body, 'edit_note': editNote});
+
     try {
       await _dio.put(
-        '/api/status/content/$id/body',
-        data: _compactMap({'body': body, 'edit_note': editNote}),
+        '/api/status/content/$resolvedId/body',
+        data: payload,
+      );
+      await _writeCachedData('content.body.$resolvedId', payload);
+      final current = await _readCachedPendingContentItems();
+      final next = current
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId
+                ? entry.copyWith(body: body)
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _pendingContentCacheKey,
+        next.map((entry) => entry.toJson()).toList(),
       );
       return true;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      await _writeCachedData('content.body.$resolvedId', payload);
+      final current = await _readCachedPendingContentItems();
+      final next = current
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId
+                ? entry.copyWith(body: body)
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _pendingContentCacheKey,
+        next.map((entry) => entry.toJson()).toList(),
+      );
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'content',
+          actionType: 'save_body',
+          label: 'Save content body',
+          method: 'PUT',
+          path: '/api/status/content/$resolvedId/body',
+          dedupeKey: 'content:body:$resolvedId',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'content',
+            entityId: resolvedId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return true;
+      }
+      throw mapped;
     }
   }
 
@@ -493,13 +1261,48 @@ class ApiService {
       return;
     }
 
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([id], idMappings);
+    final payload = _compactMap({'to_status': toStatus, 'reason': reason});
+
     try {
       await _dio.post(
-        '/api/status/content/$id/transition',
-        data: _compactMap({'to_status': toStatus, 'reason': reason}),
+        '/api/status/content/$resolvedId/transition',
+        data: payload,
       );
+      if (toStatus != 'pending' && toStatus != 'pending_review') {
+        await _removeCachedPendingContentItem(id);
+        if (resolvedId != id) {
+          await _removeCachedPendingContentItem(resolvedId);
+        }
+      }
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        if (toStatus != 'pending' && toStatus != 'pending_review') {
+          await _removeCachedPendingContentItem(id);
+          if (resolvedId != id) {
+            await _removeCachedPendingContentItem(resolvedId);
+          }
+        }
+        await _enqueueOfflineAction(
+          resourceType: 'content',
+          actionType: 'transition',
+          label: 'Update content status',
+          method: 'POST',
+          path: '/api/status/content/$resolvedId/transition',
+          dedupeKey: 'content:transition:$resolvedId',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'content',
+            entityId: resolvedId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return;
+      }
+      throw mapped;
     }
   }
 
@@ -512,14 +1315,66 @@ class ApiService {
       return true;
     }
 
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([id], idMappings);
+    final data = <String, dynamic>{};
+    if (title != null) data['title'] = title;
+    if (body != null) data['body'] = body;
+
     try {
-      final data = <String, dynamic>{};
-      if (title != null) data['title'] = title;
-      if (body != null) data['body'] = body;
-      await _dio.patch('/api/status/content/$id', data: data);
+      await _dio.patch('/api/status/content/$resolvedId', data: data);
+      final pending = await _readCachedPendingContentItems();
+      final nextPending = pending
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId
+                ? entry.copyWith(
+                    title: title ?? entry.title,
+                    body: body ?? entry.body,
+                  )
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _pendingContentCacheKey,
+        nextPending.map((entry) => entry.toJson()).toList(),
+      );
       return true;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      final pending = await _readCachedPendingContentItems();
+      final nextPending = pending
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId
+                ? entry.copyWith(
+                    title: title ?? entry.title,
+                    body: body ?? entry.body,
+                  )
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _pendingContentCacheKey,
+        nextPending.map((entry) => entry.toJson()).toList(),
+      );
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'content',
+          actionType: 'update',
+          label: 'Update content metadata',
+          method: 'PATCH',
+          path: '/api/status/content/$resolvedId',
+          dedupeKey: 'content:update:$resolvedId',
+          payload: data,
+          meta: _offlineActionMeta(
+            entityType: 'content',
+            entityId: resolvedId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return true;
+      }
+      throw mapped;
     }
   }
 
@@ -554,24 +1409,23 @@ class ApiService {
   }
 
   Future<List<Persona>> fetchPersonas() async {
-    try {
-      final response = await _dio.get('/api/personas');
-      final data = response.data;
-      if (data is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid personas response from FastAPI.',
-        );
-      }
-      return data
-          .map((json) => Persona.fromJson(_normalizePersonaJson(json)))
-          .toList();
-    } on DioException catch (error) {
-      if (allowDemoData) {
-        return _mockPersonas();
-      }
-      throw _mapDioException(error);
+    if (allowDemoData) {
+      return _mockPersonas();
     }
+
+    final data = await _getCachedData(
+      '/api/personas',
+      cacheKey: _personasCacheKey,
+    );
+    if (data is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid personas response from FastAPI.',
+      );
+    }
+    return data
+        .map((json) => Persona.fromJson(_normalizePersonaJson(json)))
+        .toList();
   }
 
   Future<Persona> savePersona(Persona persona) async {
@@ -581,20 +1435,88 @@ class ApiService {
       );
     }
 
-    try {
-      final payload = persona.toJson()
-        ..remove('id')
-        ..removeWhere((key, value) => value == null);
+    final idMappings = await _loadIdMappings();
+    final payload = persona.toJson()
+      ..remove('id')
+      ..removeWhere((key, value) => value == null);
+    final resolvedPersonaId = persona.id == null
+        ? null
+        : _resolveEntityId(persona.id!, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([persona.id], idMappings);
 
+    try {
       final Response<dynamic> response;
-      if (persona.id case final id?) {
+      if (resolvedPersonaId case final id?) {
         response = await _dio.put('/api/personas/$id', data: payload);
       } else {
         response = await _dio.post('/api/personas', data: payload);
       }
-      return Persona.fromJson(_normalizePersonaJson(_asMap(response.data)));
+      final saved = Persona.fromJson(
+        _normalizePersonaJson(_asMap(response.data)),
+      );
+      await _upsertCachedPersona(saved);
+      return saved;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (persona.id == null) {
+        if (!mapped.isOffline) {
+          throw mapped;
+        }
+
+        final tempId = _newOfflineTempId('persona');
+        final optimistic = persona.copyWith(id: tempId);
+        await _upsertCachedPersona(optimistic);
+        await _enqueueOfflineAction(
+          resourceType: 'personas',
+          actionType: 'create',
+          label: 'Create persona',
+          method: 'POST',
+          path: '/api/personas',
+          dedupeKey: 'personas:create:${persona.name.trim().toLowerCase()}',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'persona',
+            entityId: tempId,
+            tempId: tempId,
+          ),
+        );
+        return optimistic;
+      }
+
+      final personas =
+          (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
+              .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
+              .toList();
+      final nextPersonas = personas
+          .map(
+            (entry) =>
+                entry.id == persona.id || entry.id == resolvedPersonaId
+                ? persona
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _personasCacheKey,
+        nextPersonas.map((entry) => entry.toJson()).toList(),
+      );
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'personas',
+          actionType: 'update',
+          label: 'Update persona',
+          method: 'PUT',
+          path: '/api/personas/$resolvedPersonaId',
+          dedupeKey: 'personas:update:$resolvedPersonaId',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'persona',
+            entityId: resolvedPersonaId ?? persona.id,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return persona;
+      }
+      throw mapped;
     }
   }
 
@@ -663,46 +1585,105 @@ class ApiService {
       return {'success': true, 'id': 'demo-angle-content'};
     }
 
-    try {
-      final contentType = switch (angle.contentType) {
-        'blog_post' => 'article',
-        'social_post' => 'article',
-        'video_script' => 'video_script',
-        'reel' => 'video_script',
-        _ => angle.contentType,
-      };
-      final sourceRobot = switch (angle.contentType) {
-        'newsletter' => 'newsletter',
-        _ => 'manual',
-      };
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final contentType = switch (angle.contentType) {
+      'blog_post' => 'article',
+      'social_post' => 'article',
+      'video_script' => 'video_script',
+      'reel' => 'video_script',
+      _ => angle.contentType,
+    };
+    final sourceRobot = switch (angle.contentType) {
+      'newsletter' => 'newsletter',
+      _ => 'manual',
+    };
+    final payload = _compactMap({
+      'title': angle.title,
+      'content_type': contentType,
+      'source_robot': sourceRobot,
+      'status': 'todo',
+      'project_id': resolvedProjectId,
+      'content_preview': angle.hook,
+      'priority': angle.confidence >= 80 ? 4 : 3,
+      'tags': [
+        angle.contentType,
+        if (angle.narrativeThread.isNotEmpty) angle.narrativeThread,
+      ],
+      'metadata': {
+        'angle': angle.angle,
+        'hook': angle.hook,
+        'narrative_thread': angle.narrativeThread,
+        'pain_point_addressed': angle.painPointAddressed,
+        'confidence': angle.confidence,
+        'generated_from': 'angles_screen',
+      },
+    });
+    final dependsOnTempIds = _dependsOnTempIdsForIds([projectId], idMappings);
 
+    try {
       final response = await _dio.post(
         '/api/status/content',
-        data: _compactMap({
-          'title': angle.title,
-          'content_type': contentType,
-          'source_robot': sourceRobot,
-          'status': 'todo',
-          'project_id': projectId,
-          'content_preview': angle.hook,
-          'priority': angle.confidence >= 80 ? 4 : 3,
-          'tags': [
-            angle.contentType,
-            if (angle.narrativeThread.isNotEmpty) angle.narrativeThread,
-          ],
-          'metadata': {
-            'angle': angle.angle,
-            'hook': angle.hook,
-            'narrative_thread': angle.narrativeThread,
-            'pain_point_addressed': angle.painPointAddressed,
-            'confidence': angle.confidence,
-            'generated_from': 'angles_screen',
-          },
-        }),
+        data: payload,
       );
-      return _asMap(response.data);
+      final data = _asMap(response.data);
+      if (data['id'] != null) {
+        final created = ContentItem.fromJson({
+          ...payload,
+          ...data,
+          'id': data['id'],
+          'body': data['body'] ?? angle.hook,
+          'content_preview': data['content_preview'] ?? angle.hook,
+          'status': data['status'] ?? 'pending_review',
+        });
+        await _upsertCachedPendingContentItem(created);
+      }
+      return data;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      final tempId = _newOfflineTempId('content');
+      final optimistic = ContentItem.fromJson({
+        'id': tempId,
+        'title': angle.title,
+        'body': angle.hook,
+        'content_preview': angle.hook,
+        'content_type': contentType,
+        'status': 'pending_review',
+        'project_id': resolvedProjectId,
+        'priority': angle.confidence >= 80 ? 4 : 3,
+        'tags': [
+          angle.contentType,
+          if (angle.narrativeThread.isNotEmpty) angle.narrativeThread,
+        ],
+        'source_robot': sourceRobot,
+        'metadata': payload['metadata'],
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      await _upsertCachedPendingContentItem(optimistic);
+      await _writeCachedData('content.body.$tempId', {'body': angle.hook});
+      await _enqueueOfflineAction(
+        resourceType: 'content',
+        actionType: 'create',
+        label: 'Create content from angle',
+        method: 'POST',
+        path: '/api/status/content',
+        dedupeKey: 'content:create:$tempId',
+        payload: payload,
+        meta: _offlineActionMeta(
+          entityType: 'content',
+          entityId: tempId,
+          tempId: tempId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+        mergePayload: false,
+      );
+      return optimistic.toJson();
     }
   }
 
@@ -773,20 +1754,18 @@ class ApiService {
       return const [];
     }
 
-    try {
-      final response = await _dio.get('/api/scheduler/jobs');
-      final data = response.data;
-      final jobs = data is List ? data : (_asMap(data)['jobs'] ?? []);
-      if (jobs is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid schedule jobs response from FastAPI.',
-        );
-      }
-      return jobs.cast<Map<String, dynamic>>();
-    } on DioException catch (error) {
-      throw _mapDioException(error);
+    final data = await _getCachedData(
+      '/api/scheduler/jobs',
+      cacheKey: 'scheduler.jobs',
+    );
+    final jobs = data is List ? data : (_asMap(data)['jobs'] ?? []);
+    if (jobs is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid schedule jobs response from FastAPI.',
+      );
     }
+    return jobs.cast<Map<String, dynamic>>();
   }
 
   Future<void> scheduleContent(String contentId, DateTime scheduledFor) async {
@@ -794,13 +1773,69 @@ class ApiService {
       return;
     }
 
+    final idMappings = await _loadIdMappings();
+    final resolvedContentId = _resolveEntityId(contentId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([contentId], idMappings);
+    final payload = {'scheduled_for': scheduledFor.toIso8601String()};
     try {
       await _dio.patch(
-        '/api/status/content/$contentId/schedule',
-        data: {'scheduled_for': scheduledFor.toIso8601String()},
+        '/api/status/content/$resolvedContentId/schedule',
+        data: payload,
+      );
+      final current = await _readCachedPendingContentItems();
+      final next = current
+          .map(
+            (entry) => entry.id == contentId || entry.id == resolvedContentId
+                ? entry.copyWith(
+                    metadata: {
+                      ...?entry.metadata,
+                      'scheduled_for': scheduledFor.toIso8601String(),
+                    },
+                  )
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        _pendingContentCacheKey,
+        next.map((entry) => entry.toJson()).toList(),
       );
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        final current = await _readCachedPendingContentItems();
+        final next = current
+            .map(
+              (entry) => entry.id == contentId || entry.id == resolvedContentId
+                  ? entry.copyWith(
+                      metadata: {
+                        ...?entry.metadata,
+                        'scheduled_for': scheduledFor.toIso8601String(),
+                      },
+                    )
+                  : entry,
+            )
+            .toList();
+        await _writeCachedData(
+          _pendingContentCacheKey,
+          next.map((entry) => entry.toJson()).toList(),
+        );
+        await _enqueueOfflineAction(
+          resourceType: 'content',
+          actionType: 'schedule',
+          label: 'Schedule content',
+          method: 'PATCH',
+          path: '/api/status/content/$resolvedContentId/schedule',
+          dedupeKey: 'content:schedule:$resolvedContentId',
+          payload: payload,
+          meta: _offlineActionMeta(
+            entityType: 'content',
+            entityId: resolvedContentId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return;
+      }
+      throw mapped;
     }
   }
 
@@ -810,8 +1845,11 @@ class ApiService {
     }
 
     try {
-      final response = await _dio.get('/api/publish/accounts');
-      final accounts = _asMap(response.data)['accounts'] ?? [];
+      final data = await _getCachedData(
+        '/api/publish/accounts',
+        cacheKey: _publishAccountsCacheKey,
+      );
+      final accounts = _asMap(data)['accounts'] ?? [];
       if (accounts is! List) {
         throw const ApiException(
           ApiErrorType.invalidResponse,
@@ -824,8 +1862,7 @@ class ApiService {
             (account) => account.id.isNotEmpty && account.platform.isNotEmpty,
           )
           .toList();
-    } on DioException catch (error) {
-      final mapped = _mapDioException(error);
+    } on ApiException catch (mapped) {
       final detail = mapped.message.toLowerCase();
       final path = mapped.path ?? '';
       final isOptionalServerConfigFailure =
@@ -836,7 +1873,7 @@ class ApiService {
           mapped.type == ApiErrorType.offline) {
         return const [];
       }
-      throw mapped;
+      rethrow;
     }
   }
 
@@ -881,22 +1918,33 @@ class ApiService {
       };
     }
 
+    final payload = _compactMap({
+      'content': content,
+      'platforms': platforms,
+      'title': title,
+      'media_urls': mediaUrls.isEmpty ? null : mediaUrls,
+      'tags': tags.isEmpty ? null : tags,
+      'content_record_id': contentRecordId,
+      'publish_now': publishNow,
+    });
     try {
-      final response = await _dio.post(
-        '/api/publish',
-        data: _compactMap({
-          'content': content,
-          'platforms': platforms,
-          'title': title,
-          'media_urls': mediaUrls.isEmpty ? null : mediaUrls,
-          'tags': tags.isEmpty ? null : tags,
-          'content_record_id': contentRecordId,
-          'publish_now': publishNow,
-        }),
-      );
+      final response = await _dio.post('/api/publish', data: payload);
       return _asMap(response.data);
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'publish',
+        actionType: 'publish',
+        label: 'Publish content',
+        method: 'POST',
+        path: '/api/publish',
+        dedupeKey:
+            'publish:${contentRecordId ?? title ?? content.hashCode}:${platforms.map((entry) => entry['platform']).join(',')}',
+        payload: payload,
+        blockedMessage:
+            'Publishing is unavailable until FastAPI and publish integrations are back.',
+      );
     }
   }
 
@@ -908,19 +1956,39 @@ class ApiService {
     required String locale,
     String? userEmail,
   }) async {
+    final payload = _compactMap({
+      'message': message,
+      'platform': platform,
+      'locale': locale,
+      'userEmail': userEmail,
+    });
     try {
-      final response = await _dio.post(
-        '/api/feedback/text',
-        data: _compactMap({
-          'message': message,
-          'platform': platform,
-          'locale': locale,
-          'userEmail': userEmail,
-        }),
-      );
+      final response = await _dio.post('/api/feedback/text', data: payload);
       return FeedbackEntry.fromJson(_asMap(response.data));
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'feedback',
+        actionType: 'create_text',
+        label: 'Submit text feedback',
+        method: 'POST',
+        path: '/api/feedback/text',
+        dedupeKey: 'feedback:text:${message.trim().hashCode}',
+        payload: payload,
+      );
+      return FeedbackEntry(
+        id: 'queued-feedback-${DateTime.now().millisecondsSinceEpoch}',
+        type: FeedbackEntryType.text,
+        message: message,
+        platform: platform,
+        locale: locale,
+        userEmail: userEmail,
+        createdAt: DateTime.now(),
+        status: FeedbackEntryStatus.newEntry,
+      );
     }
   }
 
@@ -971,20 +2039,29 @@ class ApiService {
     required String locale,
     String? userEmail,
   }) async {
+    final payload = _compactMap({
+      'audioStorageId': storageId,
+      'durationMs': durationMs,
+      'platform': platform,
+      'locale': locale,
+      'userEmail': userEmail,
+    });
     try {
-      final response = await _dio.post(
-        '/api/feedback/audio',
-        data: _compactMap({
-          'audioStorageId': storageId,
-          'durationMs': durationMs,
-          'platform': platform,
-          'locale': locale,
-          'userEmail': userEmail,
-        }),
-      );
+      final response = await _dio.post('/api/feedback/audio', data: payload);
       return FeedbackEntry.fromJson(_asMap(response.data));
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'feedback',
+        actionType: 'create_audio',
+        label: 'Submit audio feedback',
+        method: 'POST',
+        path: '/api/feedback/audio',
+        dedupeKey: 'feedback:audio:$storageId',
+        payload: payload,
+        blockedMessage: 'Audio uploads are unavailable until FastAPI is back.',
+      );
     }
   }
 
@@ -992,35 +2069,45 @@ class ApiService {
     String? status,
     String? type,
   }) async {
-    try {
-      final response = await _dio.get(
-        '/api/feedback/admin',
-        queryParameters: _compactMap({'status': status, 'type': type}),
+    final query = _compactMap({'status': status, 'type': type});
+    final data = await _getCachedData(
+      '/api/feedback/admin',
+      cacheKey: _cacheKeyFor(_feedbackAdminCacheKey, query),
+      queryParameters: query,
+    );
+    final items = data is List
+        ? data
+        : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
+    if (items is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid admin feedback response from FastAPI.',
       );
-      final data = response.data;
-      final items = data is List
-          ? data
-          : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
-      if (items is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid admin feedback response from FastAPI.',
-        );
-      }
-      return items
-          .map((json) => FeedbackEntry.fromJson(json as Map<String, dynamic>))
-          .toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    } on DioException catch (error) {
-      throw _mapDioException(error);
     }
+    return items
+        .map((json) => FeedbackEntry.fromJson(json as Map<String, dynamic>))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   Future<void> markFeedbackReviewed(String feedbackId) async {
     try {
       await _dio.post('/api/feedback/admin/$feedbackId/review');
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'feedback',
+          actionType: 'mark_reviewed',
+          label: 'Mark feedback reviewed',
+          method: 'POST',
+          path: '/api/feedback/admin/$feedbackId/review',
+          dedupeKey: 'feedback:review:$feedbackId',
+          payload: const <String, dynamic>{},
+        );
+        return;
+      }
+      throw mapped;
     }
   }
 
@@ -1050,14 +2137,15 @@ class ApiService {
 
   Future<Map<String, dynamic>> getReelsCookieStatus(String userId) async {
     try {
-      final response = await _dio.get(
+      final data = await _getCachedData(
         '/api/reels/cookies/status',
+        cacheKey: 'reels.cookies.$userId',
         queryParameters: {'user_id': userId},
       );
-      return _asMap(response.data);
-    } on DioException catch (error) {
+      return _asMap(data);
+    } on ApiException {
       if (allowDemoData) return {'has_cookies': false};
-      throw _mapDioException(error);
+      rethrow;
     }
   }
 
@@ -1067,18 +2155,15 @@ class ApiService {
     String? projectId,
     int daysAhead = 7,
   }) async {
-    try {
-      final params = <String, dynamic>{'days_ahead': daysAhead};
-      if (projectId != null) params['project_id'] = projectId;
-      final response = await _dio.get(
-        '/api/content/pending-validations',
-        queryParameters: params,
-      );
-      return _asMap(response.data);
-    } on DioException catch (error) {
-      if (allowDemoData) return {'total': 0, 'articles': []};
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return {'total': 0, 'articles': []};
+    final params = <String, dynamic>{'days_ahead': daysAhead};
+    if (projectId != null) params['project_id'] = projectId;
+    final data = await _getCachedData(
+      '/api/content/pending-validations',
+      cacheKey: _cacheKeyFor('content.pending_validations', params),
+      queryParameters: params,
+    );
+    return _asMap(data);
   }
 
   // ─── Work Domains ─────────────────────────────────────────
@@ -1086,20 +2171,16 @@ class ApiService {
   Future<List<Map<String, dynamic>>> fetchWorkDomains({
     String? projectId,
   }) async {
-    try {
-      final params = <String, dynamic>{};
-      if (projectId != null) params['projectId'] = projectId;
-      final response = await _dio.get(
-        '/api/work-domains',
-        queryParameters: params,
-      );
-      final data = response.data;
-      if (data is List) return data.cast<Map<String, dynamic>>();
-      return [];
-    } on DioException catch (error) {
-      if (allowDemoData) return const [];
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return const [];
+    final params = <String, dynamic>{};
+    if (projectId != null) params['projectId'] = projectId;
+    final data = await _getCachedData(
+      '/api/work-domains',
+      cacheKey: _cacheKeyFor('work_domains', params),
+      queryParameters: params,
+    );
+    if (data is List) return data.cast<Map<String, dynamic>>();
+    return [];
   }
 
   // ─── Activity ─────────────────────────────────────────────
@@ -1108,17 +2189,16 @@ class ApiService {
     String? projectId,
     int limit = 50,
   }) async {
-    try {
-      final params = <String, dynamic>{'limit': limit};
-      if (projectId != null) params['projectId'] = projectId;
-      final response = await _dio.get('/api/activity', queryParameters: params);
-      final data = response.data;
-      if (data is List) return data.cast<Map<String, dynamic>>();
-      return [];
-    } on DioException catch (error) {
-      if (allowDemoData) return const [];
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return const [];
+    final params = <String, dynamic>{'limit': limit};
+    if (projectId != null) params['projectId'] = projectId;
+    final data = await _getCachedData(
+      '/api/activity',
+      cacheKey: _cacheKeyFor('activity', params),
+      queryParameters: params,
+    );
+    if (data is List) return data.cast<Map<String, dynamic>>();
+    return [];
   }
 
   // ─── Runs ─────────────────────────────────────────────────
@@ -1128,47 +2208,41 @@ class ApiService {
     String? status,
     int limit = 20,
   }) async {
-    try {
-      final params = <String, dynamic>{'limit': limit};
-      if (robotName != null) params['robot_name'] = robotName;
-      if (status != null) params['status'] = status;
-      final response = await _dio.get('/runs', queryParameters: params);
-      final data = response.data;
-      if (data is List) return data.cast<Map<String, dynamic>>();
-      return (_asMap(data)['runs'] as List?)?.cast<Map<String, dynamic>>() ??
-          [];
-    } on DioException catch (error) {
-      if (allowDemoData) return const [];
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return const [];
+    final params = <String, dynamic>{'limit': limit};
+    if (robotName != null) params['robot_name'] = robotName;
+    if (status != null) params['status'] = status;
+    final data = await _getCachedData(
+      '/runs',
+      cacheKey: _cacheKeyFor('runs', params),
+      queryParameters: params,
+    );
+    if (data is List) return data.cast<Map<String, dynamic>>();
+    return (_asMap(data)['runs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
   }
 
   // ─── Templates ────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> fetchDefaultTemplates() async {
-    try {
-      final response = await _dio.get('/api/templates/defaults');
-      final data = response.data;
-      if (data is List) return data.cast<Map<String, dynamic>>();
-      return (_asMap(data)['templates'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
-          [];
-    } on DioException catch (error) {
-      if (allowDemoData) return const [];
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return const [];
+    final data = await _getCachedData(
+      '/api/templates/defaults',
+      cacheKey: 'templates.defaults',
+    );
+    if (data is List) return data.cast<Map<String, dynamic>>();
+    return (_asMap(data)['templates'] as List?)?.cast<Map<String, dynamic>>() ??
+        [];
   }
 
   // ─── Newsletter ───────────────────────────────────────────
 
   Future<Map<String, dynamic>> checkNewsletterConfig() async {
-    try {
-      final response = await _dio.get('/api/newsletter/config/check');
-      return _asMap(response.data);
-    } on DioException catch (error) {
-      if (allowDemoData) return {'configured': false};
-      throw _mapDioException(error);
-    }
+    if (allowDemoData) return {'configured': false};
+    final data = await _getCachedData(
+      '/api/newsletter/config/check',
+      cacheKey: 'newsletter.config',
+    );
+    return _asMap(data);
   }
 
   Future<Map<String, dynamic>> generateNewsletter({
@@ -1243,35 +2317,88 @@ class ApiService {
   // ─── Affiliations ──────────────────────────────────────────
 
   Future<List<AffiliateLink>> fetchAffiliations({String? projectId}) async {
-    try {
-      final queryParams = <String, dynamic>{};
-      if (projectId != null) queryParams['projectId'] = projectId;
-      final response = await _dio.get(
-        '/api/affiliations',
-        queryParameters: queryParams,
-      );
-      final data = response.data;
-      if (data is! List) {
-        throw const ApiException(
-          ApiErrorType.invalidResponse,
-          'Invalid affiliations response from FastAPI.',
-        );
-      }
-      return data
-          .map((json) => AffiliateLink.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (error) {
-      if (allowDemoData) return const [];
-      throw _mapDioException(error);
+    if (allowDemoData) return const [];
+    final idMappings = await _loadIdMappings();
+    final queryParams = <String, dynamic>{};
+    if (projectId != null) {
+      queryParams['projectId'] = _resolveEntityId(projectId, idMappings);
     }
+    final data = await _getCachedData(
+      '/api/affiliations',
+      cacheKey: _cacheKeyFor(_affiliationsCacheKey, queryParams),
+      queryParameters: queryParams,
+    );
+    if (data is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid affiliations response from FastAPI.',
+      );
+    }
+    return data
+        .map((json) => AffiliateLink.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   Future<AffiliateLink> createAffiliation(Map<String, dynamic> data) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedData =
+        _asMapOrNull(rewriteOfflineIdsInValue(data, idMappings)) ?? data;
+    final dependsOnTempIds = _dependsOnTempIdsForIds(
+      [data['projectId']?.toString()],
+      idMappings,
+    );
     try {
-      final response = await _dio.post('/api/affiliations', data: data);
-      return AffiliateLink.fromJson(_asMap(response.data));
+      final response = await _dio.post('/api/affiliations', data: resolvedData);
+      final affiliation = AffiliateLink.fromJson(_asMap(response.data));
+      await _upsertCachedAffiliation(affiliation);
+      return affiliation;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      final tempId = _newOfflineTempId('affiliation');
+      final optimistic = AffiliateLink(
+        id: tempId,
+        projectId: resolvedData['projectId']?.toString(),
+        name: resolvedData['name']?.toString() ?? '',
+        url: resolvedData['url']?.toString() ?? '',
+        description: resolvedData['description']?.toString(),
+        contactUrl: resolvedData['contactUrl']?.toString(),
+        loginUrl: resolvedData['loginUrl']?.toString(),
+        category: resolvedData['category']?.toString(),
+        commission: resolvedData['commission']?.toString(),
+        keywords: (resolvedData['keywords'] as List?)
+                ?.map((entry) => entry.toString())
+                .toList() ??
+            const <String>[],
+        status: resolvedData['status']?.toString() ?? 'active',
+        notes: resolvedData['notes']?.toString(),
+        expiresAt: resolvedData['expiresAt'] == null
+            ? null
+            : DateTime.tryParse(resolvedData['expiresAt'].toString()),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _upsertCachedAffiliation(optimistic);
+      await _enqueueOfflineAction(
+        resourceType: 'affiliations',
+        actionType: 'create',
+        label: 'Create affiliation',
+        method: 'POST',
+        path: '/api/affiliations',
+        dedupeKey:
+            'affiliations:create:${(resolvedData['name'] ?? '').toString().trim().toLowerCase()}',
+        payload: resolvedData,
+        meta: _offlineActionMeta(
+          entityType: 'affiliation',
+          entityId: tempId,
+          tempId: tempId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return optimistic;
     }
   }
 
@@ -1279,11 +2406,87 @@ class ApiService {
     String id,
     Map<String, dynamic> data,
   ) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    final resolvedData =
+        _asMapOrNull(rewriteOfflineIdsInValue(data, idMappings)) ?? data;
+    final dependsOnTempIds = _dependsOnTempIdsForIds(
+      [id, data['projectId']?.toString()],
+      idMappings,
+    );
     try {
-      final response = await _dio.put('/api/affiliations/$id', data: data);
-      return AffiliateLink.fromJson(_asMap(response.data));
+      final response = await _dio.put(
+        '/api/affiliations/$resolvedId',
+        data: resolvedData,
+      );
+      final saved = AffiliateLink.fromJson(_asMap(response.data));
+      final queryKey = _cacheKeyFor(_affiliationsCacheKey);
+      final cached = await _readCachedList(queryKey) ?? const <dynamic>[];
+      final next = cached
+          .map((entry) => AffiliateLink.fromJson(entry as Map<String, dynamic>))
+          .map((entry) => entry.id == id || entry.id == resolvedId ? saved : entry)
+          .toList();
+      await _writeCachedData(
+        queryKey,
+        next.map((entry) => entry.toJson()).toList(),
+      );
+      return saved;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      final queryKey = _cacheKeyFor(_affiliationsCacheKey);
+      final cached = await _readCachedList(queryKey) ?? const <dynamic>[];
+      final next = cached
+          .map((entry) => AffiliateLink.fromJson(entry as Map<String, dynamic>))
+          .map(
+            (entry) => entry.id == id || entry.id == resolvedId
+                ? entry.copyWith(
+                    name: resolvedData['name']?.toString(),
+                    url: resolvedData['url']?.toString(),
+                    projectId: resolvedData['projectId']?.toString(),
+                    description: resolvedData['description']?.toString(),
+                    contactUrl: resolvedData['contactUrl']?.toString(),
+                    loginUrl: resolvedData['loginUrl']?.toString(),
+                    category: resolvedData['category']?.toString(),
+                    commission: resolvedData['commission']?.toString(),
+                    keywords: (resolvedData['keywords'] as List?)?.cast<String>(),
+                    status: resolvedData['status']?.toString(),
+                    notes: resolvedData['notes']?.toString(),
+                    expiresAt: resolvedData['expiresAt'] == null
+                        ? null
+                        : DateTime.tryParse(resolvedData['expiresAt'].toString()),
+                  )
+                : entry,
+          )
+          .toList();
+      await _writeCachedData(
+        queryKey,
+        next.map((entry) => entry.toJson()).toList(),
+      );
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'affiliations',
+          actionType: 'update',
+          label: 'Update affiliation',
+          method: 'PUT',
+          path: '/api/affiliations/$resolvedId',
+          dedupeKey: 'affiliations:update:$resolvedId',
+          payload: resolvedData,
+          meta: _offlineActionMeta(
+            entityType: 'affiliation',
+            entityId: resolvedId,
+            dependsOnTempIds: dependsOnTempIds,
+          ),
+        );
+        return next.firstWhere(
+          (entry) => entry.id == id || entry.id == resolvedId,
+          orElse: () => AffiliateLink(
+            id: id,
+            name: resolvedData['name']?.toString() ?? '',
+            url: resolvedData['url']?.toString() ?? '',
+          ),
+        );
+      }
+      throw mapped;
     }
   }
 
@@ -1292,7 +2495,18 @@ class ApiService {
       await _dio.delete('/api/affiliations/$id');
       return true;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'affiliations',
+        actionType: 'delete',
+        label: 'Delete affiliation',
+        method: 'DELETE',
+        path: '/api/affiliations/$id',
+        dedupeKey: 'affiliations:delete:$id',
+        blockedMessage:
+            'Deleting an affiliation is unavailable until FastAPI is back.',
+      );
     }
   }
 
@@ -1305,37 +2519,92 @@ class ApiService {
     int limit = 50,
     int offset = 0,
   }) async {
-    try {
-      final qp = <String, dynamic>{'limit': limit, 'offset': offset};
-      if (status != null) qp['status'] = status;
-      if (source != null) qp['source'] = source;
-      if (minScore != null) qp['min_score'] = minScore;
-      final response = await _dio.get('/api/ideas', queryParameters: qp);
-      final data = _asMap(response.data);
-      final items = data['items'] as List? ?? [];
-      return items
-          .map((e) => Idea.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
+    final qp = <String, dynamic>{'limit': limit, 'offset': offset};
+    if (status != null) qp['status'] = status;
+    if (source != null) qp['source'] = source;
+    if (minScore != null) qp['min_score'] = minScore;
+    final data = _asMap(
+      await _getCachedData(
+        '/api/ideas',
+        cacheKey: _cacheKeyFor(_ideasCacheKey, qp),
+        queryParameters: qp,
+      ),
+    );
+    final items = data['items'] as List? ?? [];
+    return items.map((e) => Idea.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<Map<String, dynamic>> fetchIdeaPoolReadiness() async {
-    try {
-      final response = await _dio.get('/api/ideas/readiness');
-      return _asMap(response.data);
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
+    return _asMap(
+      await _getCachedData('/api/ideas/readiness', cacheKey: 'ideas.readiness'),
+    );
   }
 
   Future<Idea> updateIdea(String id, Map<String, dynamic> updates) async {
     try {
       final response = await _dio.patch('/api/ideas/$id', data: updates);
-      return Idea.fromJson(_asMap(response.data));
+      final saved = Idea.fromJson(_asMap(response.data));
+      final defaultKey = _cacheKeyFor(_ideasCacheKey);
+      final cached = await _readCachedMap(defaultKey);
+      final items = (cached?['items'] as List? ?? const <dynamic>[])
+          .map((entry) => Idea.fromJson(entry as Map<String, dynamic>))
+          .toList();
+      final next = items
+          .map((entry) => entry.id == id ? saved : entry)
+          .toList();
+      await _writeCachedData(defaultKey, {
+        'items': next.map((entry) => entry.toJson()).toList(),
+      });
+      return saved;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        await _enqueueOfflineAction(
+          resourceType: 'ideas',
+          actionType: 'update',
+          label: 'Update idea',
+          method: 'PATCH',
+          path: '/api/ideas/$id',
+          dedupeKey: 'ideas:update:$id',
+          payload: updates,
+        );
+        final defaultKey = _cacheKeyFor(_ideasCacheKey);
+        final cachedMap = await _readCachedMap(defaultKey);
+        final items = (cachedMap?['items'] as List? ?? const <dynamic>[])
+            .map((entry) => Idea.fromJson(entry as Map<String, dynamic>))
+            .toList();
+        final updated = items.firstWhere(
+          (entry) => entry.id == id,
+          orElse: () => Idea(
+            id: id,
+            source: 'manual',
+            title: '',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+        final next = items
+            .map(
+              (entry) => entry.id == id
+                  ? updated.copyWith(
+                      priorityScore: (updates['priority_score'] as num?)
+                          ?.toDouble(),
+                      status: updates['status']?.toString() ?? entry.status,
+                      updatedAt: DateTime.now(),
+                    )
+                  : entry,
+            )
+            .toList();
+        await _writeCachedData(defaultKey, {
+          'items': next.map((entry) => entry.toJson()).toList(),
+        });
+        return updated.copyWith(
+          priorityScore: (updates['priority_score'] as num?)?.toDouble(),
+          status: updates['status']?.toString(),
+          updatedAt: DateTime.now(),
+        );
+      }
+      throw mapped;
     }
   }
 
@@ -1344,7 +2613,18 @@ class ApiService {
       await _dio.delete('/api/ideas/$id');
       return true;
     } on DioException catch (error) {
-      throw _mapDioException(error);
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'ideas',
+        actionType: 'delete',
+        label: 'Delete idea',
+        method: 'DELETE',
+        path: '/api/ideas/$id',
+        dedupeKey: 'ideas:delete:$id',
+        blockedMessage:
+            'Deleting an idea is unavailable until FastAPI is back.',
+      );
     }
   }
 
