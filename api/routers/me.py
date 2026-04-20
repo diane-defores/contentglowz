@@ -15,8 +15,15 @@ async def get_me(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> MeResponse:
     """Return the current authenticated user and basic workspace presence."""
-    projects = await project_store.get_by_user(current_user.user_id)
-    settings = await user_data_store.get_user_settings(current_user.user_id)
+    try:
+        projects = await project_store.get_by_user(current_user.user_id)
+    except Exception:
+        projects = []
+
+    try:
+        settings = await user_data_store.get_user_settings(current_user.user_id)
+    except Exception:
+        settings = {}
     configured_default = settings.get("defaultProjectId")
     default_project_id = configured_default if any(
         project.id == configured_default for project in projects
@@ -39,8 +46,15 @@ async def get_bootstrap(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> BootstrapResponse:
     """Return the minimum authenticated bootstrap state needed by Flutter."""
-    projects = await project_store.get_by_user(current_user.user_id)
-    settings = await user_data_store.get_user_settings(current_user.user_id)
+    try:
+        projects = await project_store.get_by_user(current_user.user_id)
+    except Exception:
+        projects = []
+
+    try:
+        settings = await user_data_store.get_user_settings(current_user.user_id)
+    except Exception:
+        settings = {}
     configured_default = settings.get("defaultProjectId")
     default_project_id = configured_default if any(
         project.id == configured_default for project in projects
