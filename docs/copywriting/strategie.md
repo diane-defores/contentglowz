@@ -16,6 +16,7 @@
 | Pricing psychology | D | Pas d'ancrage, pas de framing valeur, pas de toggle annuel, boutons morts |
 | Trust signals | D | Zéro preuve sociale. Pas de témoignage, pas de logo, pas de chiffre d'usage |
 | Content-market fit | C | 42 articles TOFU de qualité, mais déconnectés du funnel de conversion |
+| Fiabilité perçue | B | Le principe de fonctionnement en mode dégradé est introduit, à décliner sur les pages de conversion |
 
 ## Recommandations prioritisées
 
@@ -29,6 +30,7 @@
 | 🟠 | Framer pricing en valeur ("freelance = 500€, ContentFlow = 19€") | Pricing.astro | Moyen-Fort |
 | 🟠 | Éliminer jargon technique (CrewAI, DataForSEO, OAuth, topical mesh) | Features, Robots, Pricing | Moyen |
 | 🟠 | Ajouter CTA post-FAQ (moment de conviction max) | Nouveau composant | Moyen |
+| 🟠 | Intégrer la promesse de continuité offline + queue dans les pages de conversion clés | Hero, FAQ, Features, ClosingCta, plateforme | Moyen |
 | 🟡 | Section transformation Before/After visuelle | Nouveau composant | Moyen |
 | 🟡 | CTA léger pour indécis (newsletter, free resource) | Hero ou Footer | Faible-Moyen |
 | 🟡 | Remplacer liens sociaux morts (#) par vrais profils ou supprimer | Footer.astro | Faible |

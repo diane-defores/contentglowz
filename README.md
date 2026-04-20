@@ -36,6 +36,18 @@ Key routes:
 - `/sign-up`
 - `/launch`
 
+## Degraded Mode and Queue
+
+The site documents and points users to app behavior when the backend is unavailable:
+
+- the app remains accessible after authentication,
+- read paths can continue with cached data,
+- supported actions are queued locally,
+- queued actions are replayed automatically when the backend returns.
+
+This ensures users can continue their workflow during short backend outages while
+keeping actions durable and recoverable.
+
 ## 📂 Project Structure
 
 ```

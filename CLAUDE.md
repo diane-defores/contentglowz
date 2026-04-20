@@ -19,6 +19,7 @@ npm run preview    # Preview production build
 - **Content**: Markdown collections (blog, tutorials, SEO strategy, AI agents docs, startup journey)
 - **Components**: Astro components (Hero, Features, Pricing, FAQ, Navbar, Footer, Testimonials, Robots)
 - **Layouts**: Layout.astro, BlogPost.astro
+- **Resilience messaging**: several landing and product pages now include explicit degraded-mode messaging for backend outages (cached reads + local queue + automatic replay).
 
 ## File Structure
 
@@ -41,3 +42,8 @@ src/
 
 - **contentflow_app** — Flutter application (Web, iOS, Android)
 - **contentflow_lab** — FastAPI backend + AI agents (Python)
+
+## Content Positioning Notes
+
+- Keep language aligned with product behavior: if a feature depends on backend availability, call out degraded-mode behavior.
+- When adding content or pages describing capabilities, include the recovery message for offline support to avoid false expectations.

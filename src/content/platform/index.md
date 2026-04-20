@@ -16,6 +16,11 @@ Welcome to the ContentFlow platform. This documentation will help you connect yo
 
 ## 🚀 Quick Start
 
+### ⚡ Resilience
+
+ContentFlow is usable during short backend disruptions. If API connectivity is interrupted, the app continues to show available cached data and stores supported edits in a local queue.
+When the API recovers, queued actions are replayed automatically.
+
 ### 1. Connect Your Website (5 minutes)
 
 Link your GitHub repository to start analyzing your content:

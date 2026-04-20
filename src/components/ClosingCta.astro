@@ -10,6 +10,9 @@ import { appSignInUrl } from '../config/site';
       <a href={appSignInUrl} class="btn-primary">Start Free</a>
       <a href="/blog" class="btn-secondary">Read the Blog</a>
     </div>
+    <p class="closing-note">
+      Built for real-world conditions: offline fallback, local queue sync, and automatic retry after outages.
+    </p>
   </div>
 </section>
 
@@ -42,6 +45,14 @@ import { appSignInUrl } from '../config/site';
     display: flex;
     gap: 1rem;
     justify-content: center;
+  }
+
+  .closing-note {
+    margin-top: 1rem;
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    max-width: 640px;
+    margin-inline: auto;
   }
 
   @media (max-width: 768px) {

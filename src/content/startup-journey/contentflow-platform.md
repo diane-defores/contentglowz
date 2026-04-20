@@ -77,6 +77,10 @@ What makes ContentFlow unique is how deeply you can customize it. Unlike black-b
 
 Building ContentFlow as a solo developer meant being strategic about where to invest my time. I leveraged OpenCode for rapid prototyping, GitHub Copilot for coding assistance, and CrewAI for the multi-agent framework.
 
+## Reliability-First Operations
+
+Beyond AI quality, the stack was built to stay usable during short backend disruptions. The app is designed to enter a degraded mode when the API is unavailable: users can still access cached workspace views, and supported actions are queued locally until the backend is reachable again. This keeps the operating rhythm stable and reduces recovery overhead after outages.
+
 The secret was letting AI handle the repetitive tasks while I focused on architecture and user experience. This approach allowed me to build a system that rivals agency-level tools, but remains flexible and accessible.
 
 Each AI robot went through hundreds of iterations to tune its performance, with specialized prompting techniques that ensure consistent output across the entire pipeline.

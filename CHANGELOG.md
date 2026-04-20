@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-04-20
+
+### Added
+- Resilience messaging on key marketing surfaces: Hero, How It Works, Features, and FAQ now mention offline degraded-mode behavior and local action queue synchronization.
+
+### Changed
+- Updated `README.md` to document backend outage resilience behavior for the marketing funnel.
+
 ## 2026-04-13
 
 ### Added

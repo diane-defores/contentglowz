@@ -264,6 +264,9 @@ The Scheduler Robot integrates with your existing workflow. Connect your GitHub 
 **Q: How does optimal publish time work?**
 A: The Calendar Manager analyzes your historical publishing data—engagement patterns, traffic timing, content type performance—and recommends times specific to your audience and content.
 
+**Q: Can the pipeline handle brief backend outages?**
+A: Yes. The product experience enters a degraded mode for some client flows, keeps cached reads visible where possible, and queues supported edits/actions so they sync automatically once the backend is healthy again.
+
 **Q: Does it work with my existing deployment setup?**
 A: Yes. The Publishing Agent works with Git-based deployments, which covers most modern static site generators and frameworks. Your existing workflow continues; the robot just triggers it automatically.
 
