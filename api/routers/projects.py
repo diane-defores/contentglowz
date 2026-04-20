@@ -311,6 +311,25 @@ async def update_project(
     return project_to_response(project, default_project_id=default_project_id)
 
 
+@router.put(
+    "/{project_id}",
+    response_model=ProjectResponse,
+    summary="Update project (legacy)",
+    description="Legacy alias for PATCH /{project_id}."
+)
+async def update_project_legacy(
+    project_id: str,
+    request: UpdateProjectRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+) -> Any:
+    """Keep backward compatibility with clients still using PUT for updates."""
+    return await update_project(
+        project_id=project_id,
+        request=request,
+        current_user=current_user,
+    )
+
+
 @router.delete(
     "/{project_id}",
     summary="Delete project",

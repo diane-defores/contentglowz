@@ -207,6 +207,10 @@ class UpdateProjectRequest(BaseModel):
         default=None,
         description="Updated GitHub repository URL"
     )
+    url: Optional[HttpUrl] = Field(
+        default=None,
+        description="Compatibility alias for github_url"
+    )
     description: Optional[str] = Field(default=None, description="New description")
     content_directories: Optional[List[ContentDirectoryConfig]] = Field(
         default=None,
@@ -220,6 +224,17 @@ class UpdateProjectRequest(BaseModel):
         default=None,
         description="Enable or disable cookie-free analytics for this project"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_legacy_url_alias(cls, data: dict) -> dict:
+        """Backwards compatibility: accept legacy `url` payload from older clients."""
+        if isinstance(data, dict) and data.get("github_url") is None:
+            legacy_url = data.get("url")
+            if legacy_url is not None:
+                data = dict(data)
+                data["github_url"] = legacy_url
+        return data
 
 
 # ─────────────────────────────────────────────────
