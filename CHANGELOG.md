@@ -18,6 +18,9 @@ All notable changes to Content Flows are documented here.
 - **Status storage is Turso-first** — `status/db.py` now uses the maintained `libsql` driver (via `utils/libsql_sync.py`) instead of persisting lifecycle data to a local SQLite file.
 - **Audit fields persisted for transitions/edits** — lifecycle events now record structured actor fields (type/id/label/metadata) alongside legacy `changed_by` in `status_changes` and `content_edits`.
 
+### Fixed
+- **Onboarding loop after adding first project** — `POST /api/projects` now marks the project onboarding status as `completed` and sets `defaultProjectId` when missing, so `/api/bootstrap` no longer reports an empty workspace on next launch.
+
 ### Removed
 - **Legacy local status sync module** — removed `status/sync.py` after migrating lifecycle persistence to Turso/libsql.
 

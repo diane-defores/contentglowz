@@ -125,7 +125,22 @@ async def create_project(
         url=str(request.github_url),
         description=request.description,
     )
+
+    # Direct-create is an explicit user action in the app onboarding flow.
+    # Mark onboarding as complete immediately so clients don't treat the project
+    # as an unfinished wizard step on next launch.
+    project = await project_store.update_onboarding_status(
+        project.id,
+        OnboardingStatus.COMPLETED,
+    ) or project
+
     default_project_id = await get_user_default_project_id(current_user.user_id)
+    if not default_project_id:
+        await user_data_store.update_user_settings(
+            current_user.user_id,
+            {"defaultProjectId": project.id},
+        )
+        default_project_id = project.id
     return project_to_response(project, default_project_id=default_project_id)
 
 
