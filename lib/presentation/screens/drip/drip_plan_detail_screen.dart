@@ -21,13 +21,21 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final idMappings =
+        ref.watch(offlineIdMappingsProvider).valueOrNull ??
+        const <String, String>{};
+    final resolvedPlanId = idMappings[widget.planId] ?? widget.planId;
     final plansAsync = ref.watch(dripPlansProvider);
-    final statsAsync = ref.watch(dripStatsProvider(widget.planId));
+    final statsAsync = ref.watch(dripStatsProvider(resolvedPlanId));
 
-    final plan = plansAsync.whenData((plans) => plans.firstWhere(
-      (p) => p.id == widget.planId,
-      orElse: () => throw Exception('Plan not found'),
-    ));
+    final plan = plansAsync.whenData((plans) {
+      for (final entry in plans) {
+        if (entry.id == widget.planId || entry.id == resolvedPlanId) {
+          return entry;
+        }
+      }
+      throw Exception('Plan not found');
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -54,14 +62,14 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
             stackTrace: stackTrace,
             onRetry: () {
               ref.invalidate(dripPlansProvider);
-              ref.invalidate(dripStatsProvider(widget.planId));
+              ref.invalidate(dripStatsProvider(resolvedPlanId));
             },
           ),
         ),
         data: (p) => RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(dripPlansProvider);
-            ref.invalidate(dripStatsProvider(widget.planId));
+            ref.invalidate(dripStatsProvider(resolvedPlanId));
           },
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -165,7 +173,7 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
 
       if (!mounted) return;
       ref.invalidate(dripPlansProvider);
-      ref.invalidate(dripStatsProvider(widget.planId));
+      ref.invalidate(dripStatsProvider(plan.id));
       messenger.showSnackBar(SnackBar(content: Text(message)));
     } catch (error, stackTrace) {
       if (!mounted) return;

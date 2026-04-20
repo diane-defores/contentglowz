@@ -3,7 +3,7 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 10 — Adaptive theme system shipped
+**Stack**: Flutter 3.41, Riverpod, GoRouter, Dio, flutter_card_swiper, Google Fonts | **Phase**: Phase 11 — Offline sync V2 shipped
 
 **Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
 
@@ -183,6 +183,22 @@
 | 🟡 | DataForSEO — credentials OK dans Doppler, ajouter credits au compte DFS | High | Low | Auth OK (20000), mais 402 Payment Required — ajouter credits sur dataforseo.com/billing |
 | 🟠 | Exposer l'audit structuré des actions (`actor_type/id/label`) dans l'UI debug/admin | High | Medium | Le backend persiste déjà transitions, edits et reviews avec acteurs structurés |
 
+## Phase 11 — Offline Sync V2 (2026-04-20) ✅
+
+> Garder l'app authentifiée utilisable quand FastAPI tombe, avec cache persistant, queue de replay locale, temp IDs réconciliés et surfaces UI explicites pour l'état de sync.
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Accès complet au shell authentifié en mode dégradé, sans renvoi forcé vers l'entrée | ✅ done |
+| ✅ | Cache persistant des lectures principales + état `stale` exposé dans le shell/Uptime | ✅ done |
+| ✅ | Queue persistée des mutations backend sûres avec retry automatique | ✅ done |
+| ✅ | Réconciliation `tempId -> realId` pour projets, personas et affiliations | ✅ done |
+| ✅ | Extension V2 aux créations offline depuis Angles et aux plans Drip | ✅ done |
+| ✅ | Blocage explicite des opérations non sûres offline (uploads, deletes, publish, jobs serveur-first) | ✅ done |
+| ✅ | Gestion des dépendances de queue via état `blockedDependency` | ✅ done |
+| ✅ | Badges `Pending sync` / `Sync failed` sur les listes principales supportées | ✅ done |
+| ✅ | Docs mises à jour (`README`, `CHANGELOG`, `TASKS`, `SPEC-offline-sync-v2`) | ✅ done |
+
 ### 🟡 P2 — Polish & Engagement
 
 | Pri | Task | Status |
@@ -217,7 +233,7 @@
 |-----|------|--------|
 | 🟢 | Gmail OAuth integration | 💤 deferred (complex OAuth flow) |
 | 🟢 | iOS support | 💤 deferred |
-| 🟢 | Mode offline (cache local + sync) | 💤 deferred |
+| 🟡 | Offline V3 — uploads, suppressions et flux backend-first complexes avec stratégie de réconciliation explicite | 📋 todo |
 | 🟢 | Image generation (Robolly) | 💤 deferred |
 | 🟢 | Video script → teleprompter mode | 💤 deferred |
 | 🟢 | A/B testing de hooks/titles | 💤 deferred |

@@ -790,6 +790,7 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
     ref.invalidate(pendingContentProvider);
     ref.invalidate(contentHistoryProvider);
     ref.invalidate(personasProvider);
+    ref.invalidate(dripPlansProvider);
     ref.invalidate(isFeedbackAdminProvider);
     ref.invalidate(feedbackRecentSubmissionsProvider);
     ref.invalidate(feedbackAdminEntriesProvider(const FeedbackAdminQuery()));
@@ -1587,6 +1588,13 @@ bool _isNonCriticalReadFailure(Object error) {
   };
 }
 
+bool _isDripReadFailureThatCanFallback(Object error) {
+  return switch (error) {
+    ApiException(type: ApiErrorType.offline) => true,
+    _ => false,
+  };
+}
+
 void _logDegradedRead(
   Ref ref, {
   required String scope,
@@ -2024,8 +2032,22 @@ class IdeasNotifier extends AsyncNotifier<List<Idea>> {
 
 final dripPlansProvider = FutureProvider<List<DripPlan>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  final raw = await api.fetchDripPlans();
-  return raw.map((j) => DripPlan.fromJson(j)).toList();
+  try {
+    final raw = await api.fetchDripPlans();
+    return raw.map((j) => DripPlan.fromJson(j)).toList();
+  } catch (error, stackTrace) {
+    if (!_isDripReadFailureThatCanFallback(error)) {
+      rethrow;
+    }
+    _logDegradedRead(
+      ref,
+      scope: 'drip.plans.degraded',
+      message: 'Drip plans fetch failed; keeping the offline drip list available.',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return const <DripPlan>[];
+  }
 });
 
 final dripStatsProvider = FutureProvider.family<DripStats, String>((
@@ -2033,6 +2055,22 @@ final dripStatsProvider = FutureProvider.family<DripStats, String>((
   planId,
 ) async {
   final api = ref.read(apiServiceProvider);
-  final raw = await api.getDripStats(planId);
-  return DripStats.fromJson(raw);
+  try {
+    final raw = await api.getDripStats(planId);
+    return DripStats.fromJson(raw);
+  } catch (error, stackTrace) {
+    if (!_isDripReadFailureThatCanFallback(error)) {
+      rethrow;
+    }
+    _logDegradedRead(
+      ref,
+      scope: 'drip.stats.degraded',
+      message:
+          'Drip stats fetch failed; showing the plan without live progression details.',
+      error: error,
+      stackTrace: stackTrace,
+      context: {'planId': planId},
+    );
+    return const DripStats();
+  }
 });

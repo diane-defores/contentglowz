@@ -507,6 +507,9 @@ class AppLocalizations {
     'editing': 'édition',
     'failed': 'échec',
     'pending': 'en attente',
+    'retrying': 'nouvelle tentative',
+    'paused_auth': 'auth requise',
+    'waiting_dependency': 'dépendance en attente',
     'published': 'publié',
     'rejected': 'rejeté',
     'running': 'en cours',
@@ -535,6 +538,22 @@ class AppLocalizations {
     'API Offline': 'API hors ligne',
     'Articles': 'Articles',
     'Articles/day': 'Articles/jour',
+    'Content queued: "{contentType}"':
+        'Contenu mis en file : "{contentType}"',
+    'Drip plan queued. It will sync when FastAPI is back.':
+        'Le plan drip a ete mis en file. Il sera synchronise quand FastAPI reviendra.',
+    'Pending sync': 'Sync en attente',
+    'Sync failed': 'Echec de sync',
+    'Retrying sync': 'Nouvelle tentative de sync',
+    'Sync paused': 'Sync en pause',
+    'Waiting for dependency': 'En attente d\'une dépendance',
+    'Pending: {count}': 'En attente : {count}',
+    'Paused for auth: {count}': 'En pause pour auth : {count}',
+    'Failed: {count}': 'En echec : {count}',
+    'Waiting for dependencies: {count}':
+        'En attente de dependances : {count}',
+    '{count} queued actions are waiting for dependency sync.':
+        '{count} actions en file attendent la synchronisation d une dependance.',
     'Absolute path to the Markdown files':
         'Chemin absolu vers les fichiers Markdown',
     'Audit Trail': 'Trace d audit',

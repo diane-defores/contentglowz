@@ -271,6 +271,10 @@ class _ShellContent extends StatelessWidget {
         context.tr('{count} actions are waiting to sync.', {
           'count': '${offlineSync.pendingCount}',
         }),
+      if (offlineSync.blockedDependencyCount > 0)
+        context.tr('{count} queued actions are waiting for dependency sync.', {
+          'count': '${offlineSync.blockedDependencyCount}',
+        }),
       if (offlineSync.requiresReauth)
         context.tr('Queued actions are paused until you sign in again.'),
       if (offlineSync.failedCount > 0)
@@ -334,6 +338,8 @@ class _ShellContent extends StatelessWidget {
                             'backendStatus':
                                 appAccess?.backendStatusLabel ?? 'unknown',
                             'queuedPending': offlineSync.pendingCount,
+                            'queuedBlocked':
+                                offlineSync.blockedDependencyCount,
                             'queuedPaused': offlineSync.pausedAuthCount,
                             'queuedFailed': offlineSync.failedCount,
                             'staleKeys': offlineSync.staleKeys.length,

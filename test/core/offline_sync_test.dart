@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:contentflow_app/data/models/app_access_state.dart';
 import 'package:contentflow_app/data/models/app_bootstrap.dart';
 import 'package:contentflow_app/data/models/offline_sync.dart';
 import 'package:contentflow_app/data/services/offline_storage_service.dart';
+import 'package:contentflow_app/providers/providers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -123,6 +125,100 @@ void main() {
       expect(
         (loaded!.data as Map<String, dynamic>)['defaultProjectId'],
         'project-123',
+      );
+    });
+  });
+
+  group('Offline sync status map', () {
+    QueuedOfflineAction _queuedAction({
+      required String id,
+      required OfflineQueueStatus status,
+      String entityType = 'content',
+      String entityId = 'entity-1',
+      DateTime? createdAt,
+    }) {
+      return QueuedOfflineAction(
+        id: id,
+        userScope: 'user:test@example.com',
+        resourceType: 'content',
+        actionType: 'update',
+        label: 'Status mapping test',
+        method: 'PATCH',
+        path: '/api/content/$entityId',
+        dedupeKey: 'content:update:$entityId',
+        meta: {
+          'entityType': entityType,
+          'entityId': entityId,
+          'tempId': entityId,
+        },
+        createdAt: createdAt ?? DateTime(2026, 4, 20, 12),
+        updatedAt: createdAt ?? DateTime(2026, 4, 20, 12),
+        status: status,
+      );
+    }
+
+    test('maps entity sync to the highest-severity status per entity', () async {
+      final container = ProviderContainer(
+        overrides: <Override>[
+          offlineQueueEntriesProvider.overrideWith((ref) async {
+            return [
+              _queuedAction(
+                id: 'pending',
+                status: OfflineQueueStatus.pending,
+                entityId: 'project-1',
+                createdAt: DateTime(2026, 4, 20, 12),
+              ),
+              _queuedAction(
+                id: 'blocked',
+                status: OfflineQueueStatus.blockedDependency,
+                entityId: 'project-1',
+                createdAt: DateTime(2026, 4, 20, 12, 1),
+              ),
+            ];
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final entries = await container.read(offlineQueueEntriesProvider.future);
+      expect(entries, hasLength(2));
+
+      final syncMap = container.read(offlineEntitySyncMapProvider);
+      expect(
+        syncMap[offlineEntityKey('content', 'project-1')]?.status,
+        OfflineEntitySyncStatus.blockedDependency,
+      );
+      expect(syncMap[offlineEntityKey('content', 'project-1')]?.actionCount, 2);
+    });
+
+    test('maps failed action as highest priority for entity status', () async {
+      final container = ProviderContainer(
+        overrides: <Override>[
+          offlineQueueEntriesProvider.overrideWith((ref) async {
+            return [
+              _queuedAction(
+                id: 'blocked',
+                status: OfflineQueueStatus.blockedDependency,
+                entityId: 'content-1',
+                createdAt: DateTime(2026, 4, 20, 12),
+              ),
+              _queuedAction(
+                id: 'failed',
+                status: OfflineQueueStatus.failed,
+                entityId: 'content-1',
+                createdAt: DateTime(2026, 4, 20, 12, 1),
+              ),
+            ];
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(offlineQueueEntriesProvider.future);
+      final syncMap = container.read(offlineEntitySyncMapProvider);
+      expect(
+        syncMap[offlineEntityKey('content', 'content-1')]?.status,
+        OfflineEntitySyncStatus.failed,
       );
     });
   });

@@ -6,6 +6,7 @@ import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/offline_sync_status_chip.dart';
 import 'drip_plan_detail_screen.dart';
 import 'drip_wizard_sheet.dart';
 
@@ -123,6 +124,9 @@ class _PlanCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final statsAsync = ref.watch(dripStatsProvider(plan.id));
+    final syncInfo = ref.watch(
+      offlineEntitySyncProvider(offlineEntityKey('drip_plan', plan.id)),
+    );
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -139,6 +143,10 @@ class _PlanCard extends ConsumerWidget {
                   Expanded(
                     child: Text(plan.name, style: Theme.of(context).textTheme.titleMedium),
                   ),
+                  if (syncInfo != null) ...[
+                    OfflineSyncStatusChip(info: syncInfo, compact: true),
+                    const SizedBox(width: 8),
+                  ],
                   _StatusChip(status: plan.status),
                 ],
               ),

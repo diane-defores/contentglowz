@@ -5,6 +5,7 @@ import '../../../data/models/affiliate_link.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/offline_sync_status_chip.dart';
 import 'affiliation_form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -273,7 +274,7 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-class _AffiliationCard extends StatelessWidget {
+class _AffiliationCard extends ConsumerWidget {
   const _AffiliationCard({
     required this.affiliation,
     required this.onTap,
@@ -285,9 +286,16 @@ class _AffiliationCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final syncInfo = affiliation.id == null
+        ? null
+        : ref.watch(
+            offlineEntitySyncProvider(
+              offlineEntityKey('affiliation', affiliation.id!),
+            ),
+          );
 
     final statusColor = switch (affiliation.status) {
       'active' => AppTheme.approveColor,
@@ -319,6 +327,10 @@ class _AffiliationCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (syncInfo != null) ...[
+                    OfflineSyncStatusChip(info: syncInfo, compact: true),
+                    const SizedBox(width: 8),
+                  ],
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

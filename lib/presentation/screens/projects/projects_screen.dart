@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/offline_sync_status_chip.dart';
 
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
@@ -177,6 +178,9 @@ class _ProjectCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mutationState = ref.watch(projectMutationControllerProvider);
+    final syncInfo = ref.watch(
+      offlineEntitySyncProvider(offlineEntityKey('project', project.id)),
+    );
     final isBusy = mutationState.isLoading;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -204,6 +208,10 @@ class _ProjectCard extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (syncInfo != null) ...[
+                OfflineSyncStatusChip(info: syncInfo, compact: true),
+                const SizedBox(width: 8),
+              ],
               if (isActive)
                 Chip(label: Text(context.tr('Active project')))
               else if (project.isDefault)

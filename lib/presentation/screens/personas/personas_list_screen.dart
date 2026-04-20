@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/offline_sync_status_chip.dart';
 
 class PersonasListScreen extends ConsumerWidget {
   const PersonasListScreen({super.key});
@@ -73,6 +74,9 @@ class PersonasListScreen extends ConsumerWidget {
             itemCount: personas.length,
             itemBuilder: (context, index) {
               final p = personas[index];
+              final syncInfo = ref.watch(
+                offlineEntitySyncProvider(offlineEntityKey('persona', p.id ?? '')),
+              );
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
@@ -102,7 +106,17 @@ class PersonasListScreen extends ConsumerWidget {
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  trailing: _confidenceBadge(p.confidence),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _confidenceBadge(p.confidence),
+                      if (syncInfo != null) ...[
+                        const SizedBox(height: 6),
+                        OfflineSyncStatusChip(info: syncInfo, compact: true),
+                      ],
+                    ],
+                  ),
                   onTap: () => context.push('/personas/${p.id}'),
                 ),
               );

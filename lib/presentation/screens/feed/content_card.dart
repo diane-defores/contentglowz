@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/content_item.dart';
+import '../../../data/models/offline_sync.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/offline_sync_status_chip.dart';
 
-class ContentCard extends StatelessWidget {
+class ContentCard extends ConsumerWidget {
   final ContentItem item;
   final VoidCallback? onTap;
 
   const ContentCard({super.key, required this.item, this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
     final palette = AppTheme.paletteOf(context);
+    final syncInfo = ref.watch(
+      offlineEntitySyncProvider(offlineEntityKey('content', item.id)),
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -35,7 +42,7 @@ class ContentCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with type badge and project
-            _buildHeader(context, typeColor),
+            _buildHeader(context, typeColor, syncInfo),
             // Format-specific metadata chips
             if (_hasFormatMeta()) _buildFormatMeta(typeColor),
             // Image if present
@@ -50,7 +57,11 @@ class ContentCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Color typeColor) {
+  Widget _buildHeader(
+    BuildContext context,
+    Color typeColor,
+    OfflineEntitySyncInfo? syncInfo,
+  ) {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -79,6 +90,10 @@ class ContentCard extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          if (syncInfo != null) ...[
+            OfflineSyncStatusChip(info: syncInfo, compact: true),
+            const SizedBox(width: 8),
+          ],
           if (item.projectName != null)
             Text(
               item.projectName!,

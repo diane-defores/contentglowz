@@ -1683,7 +1683,7 @@ class ApiService {
         ),
         mergePayload: false,
       );
-      return optimistic.toJson();
+      return {...optimistic.toJson(), 'queued': true};
     }
   }
 
@@ -2985,40 +2985,256 @@ class ApiService {
 // ─── Content Drip API ─────────────────────────────────
 
 extension DripApi on ApiService {
+  DripPlan _dripPlanFromBody(
+    Map<String, dynamic> body, {
+    required String id,
+    String? status,
+  }) {
+    final now = DateTime.now().toIso8601String();
+    return DripPlan(
+      id: id,
+      userId: offlineScope,
+      projectId: body['project_id']?.toString() ?? body['projectId']?.toString(),
+      name: body['name']?.toString() ?? 'Untitled drip plan',
+      status: status ?? body['status']?.toString() ?? 'draft',
+      cadenceConfig: _asMap(body['cadence_config'] ?? body['cadence']),
+      clusterStrategy: _asMap(body['cluster_strategy']),
+      ssgConfig: _asMap(body['ssg_config']),
+      gscConfig: body['gsc_config'] == null ? null : _asMap(body['gsc_config']),
+      totalItems: (body['total_items'] as num?)?.toInt() ?? 0,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  DripPlan _mergeDripPlanResponse(
+    Map<String, dynamic> response, {
+    DripPlan? current,
+    Map<String, dynamic>? requestBody,
+    String? fallbackId,
+  }) {
+    final seeded = <String, dynamic>{
+      ...?current?.toJson(),
+      if (requestBody != null)
+        ..._dripPlanFromBody(
+          requestBody,
+          id: fallbackId ?? current?.id ?? '',
+          status: current?.status,
+        ).toJson(),
+      ...response,
+    };
+    return DripPlan.fromJson(seeded);
+  }
+
+  DripPlan _applyDripPlanBody(
+    DripPlan current,
+    Map<String, dynamic> body, {
+    String? status,
+    String? startedAt,
+    String? completedAt,
+    String? lastDripAt,
+    String? nextDripAt,
+    String? scheduleJobId,
+  }) {
+    return current.copyWith(
+      projectId:
+          body['project_id']?.toString() ??
+          body['projectId']?.toString() ??
+          current.projectId,
+      name: body['name']?.toString() ?? current.name,
+      status: status ?? current.status,
+      cadenceConfig:
+          body.containsKey('cadence') || body.containsKey('cadence_config')
+          ? _asMap(body['cadence_config'] ?? body['cadence'])
+          : current.cadenceConfig,
+      clusterStrategy: body.containsKey('cluster_strategy')
+          ? _asMap(body['cluster_strategy'])
+          : current.clusterStrategy,
+      ssgConfig: body.containsKey('ssg_config')
+          ? _asMap(body['ssg_config'])
+          : current.ssgConfig,
+      gscConfig: body.containsKey('gsc_config')
+          ? (body['gsc_config'] == null ? null : _asMap(body['gsc_config']))
+          : current.gscConfig,
+      totalItems: (body['total_items'] as num?)?.toInt() ?? current.totalItems,
+      startedAt: startedAt ?? current.startedAt,
+      completedAt: completedAt ?? current.completedAt,
+      lastDripAt: lastDripAt ?? current.lastDripAt,
+      nextDripAt: nextDripAt ?? current.nextDripAt,
+      scheduleJobId: scheduleJobId ?? current.scheduleJobId,
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+  }
+
   Future<List<Map<String, dynamic>>> fetchDripPlans() async {
-    final response = await _dio.get('/api/drip/plans');
-    final data = response.data;
-    if (data is Map && data['items'] is List) {
-      return List<Map<String, dynamic>>.from(data['items']);
+    final data = await _getCachedData(
+      '/api/drip/plans',
+      cacheKey: ApiService._dripPlansCacheKey,
+    );
+    final items = data is Map ? data['items'] : data;
+    if (items is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid drip plans response from FastAPI.',
+      );
     }
-    return [];
+    final normalized = items
+        .whereType<Map>()
+        .map((entry) => Map<String, dynamic>.from(entry))
+        .toList();
+    for (final item in normalized) {
+      final planId = item['id']?.toString();
+      if (planId != null && planId.isNotEmpty) {
+        await _writeCachedData(_dripPlanCacheKey(planId), item);
+      }
+    }
+    return normalized;
   }
 
   Future<Map<String, dynamic>> createDripPlan(Map<String, dynamic> body) async {
-    final response = await _dio.post('/api/drip/plans', data: body);
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedBody =
+        _asMapOrNull(rewriteOfflineIdsInValue(body, idMappings)) ?? body;
+    final dependsOnTempIds = _dependsOnTempIdsForIds(
+      [body['project_id']?.toString(), body['projectId']?.toString()],
+      idMappings,
+    );
+    try {
+      final response = await _dio.post('/api/drip/plans', data: resolvedBody);
+      final raw = _asMap(response.data);
+      final plan = _mergeDripPlanResponse(raw, requestBody: resolvedBody);
+      await _upsertCachedDripPlan(plan);
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      final tempId = _newOfflineTempId('drip-plan');
+      final optimistic = _dripPlanFromBody(resolvedBody, id: tempId);
+      await _upsertCachedDripPlan(optimistic);
+      await _writeCachedDripStats(tempId, const {});
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'create',
+        label: 'Create drip plan',
+        method: 'POST',
+        path: '/api/drip/plans',
+        dedupeKey: 'drip:create:$tempId',
+        payload: resolvedBody,
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: tempId,
+          tempId: tempId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+        mergePayload: false,
+      );
+      return {...optimistic.toJson(), 'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> getDripPlan(String planId) async {
-    final response = await _dio.get('/api/drip/plans/$planId');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final data = await _getCachedData(
+      '/api/drip/plans/$resolvedPlanId',
+      cacheKey: _dripPlanCacheKey(resolvedPlanId),
+    );
+    return _asMap(data);
   }
 
   Future<Map<String, dynamic>> updateDripPlan(
     String planId,
     Map<String, dynamic> body,
   ) async {
-    final response = await _dio.patch('/api/drip/plans/$planId', data: body);
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final resolvedBody =
+        _asMapOrNull(rewriteOfflineIdsInValue(body, idMappings)) ?? body;
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.patch(
+        '/api/drip/plans/$resolvedPlanId',
+        data: resolvedBody,
+      );
+      final raw = _asMap(response.data);
+      final plan = _mergeDripPlanResponse(
+        raw,
+        current: current,
+        requestBody: resolvedBody,
+        fallbackId: resolvedPlanId,
+      );
+      await _upsertCachedDripPlan(plan);
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      final optimistic = current == null
+          ? _dripPlanFromBody(resolvedBody, id: planId)
+          : _applyDripPlanBody(current, resolvedBody);
+      await _upsertCachedDripPlan(optimistic);
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'update',
+        label: 'Update drip plan',
+        method: 'PATCH',
+        path: '/api/drip/plans/$resolvedPlanId',
+        dedupeKey: 'drip:update:$resolvedPlanId',
+        payload: resolvedBody,
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return optimistic.toJson();
+    }
   }
 
   Future<void> deleteDripPlan(String planId) async {
-    await _dio.delete('/api/drip/plans/$planId');
+    try {
+      final idMappings = await _loadIdMappings();
+      final resolvedPlanId = _resolveEntityId(planId, idMappings);
+      await _dio.delete('/api/drip/plans/$resolvedPlanId');
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'drip',
+        actionType: 'delete',
+        label: 'Delete drip plan',
+        method: 'DELETE',
+        path: '/api/drip/plans/$planId',
+        dedupeKey: 'drip:delete:$planId',
+        blockedMessage:
+            'Deleting a drip plan is unavailable until FastAPI is back.',
+      );
+    }
   }
 
   Future<Map<String, dynamic>> getDripStats(String planId) async {
-    final response = await _dio.get('/api/drip/plans/$planId/stats');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    try {
+      final data = await _getCachedData(
+        '/api/drip/plans/$resolvedPlanId/stats',
+        cacheKey: _dripStatsCacheKey(resolvedPlanId),
+      );
+      return _asMap(data);
+    } on ApiException catch (error) {
+      if (error.isOffline) {
+        return const {};
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> importDripContent(
@@ -3026,59 +3242,328 @@ extension DripApi on ApiService {
     String directory, {
     bool excludeDrafts = true,
   }) async {
-    final response = await _dio.post(
-      '/api/drip/plans/$planId/import',
-      queryParameters: {
-        'directory': directory,
-        'exclude_drafts': excludeDrafts,
-      },
-    );
-    return _asMap(response.data);
+    try {
+      final idMappings = await _loadIdMappings();
+      final resolvedPlanId = _resolveEntityId(planId, idMappings);
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/import',
+        queryParameters: {
+          'directory': directory,
+          'exclude_drafts': excludeDrafts,
+        },
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'drip',
+        actionType: 'import',
+        label: 'Import drip content',
+        method: 'POST',
+        path: '/api/drip/plans/$planId/import',
+        dedupeKey: 'drip:import:$planId',
+        blockedMessage:
+            'Importing drip content is unavailable until FastAPI is back.',
+      );
+    }
   }
 
   Future<Map<String, dynamic>> clusterDripPlan(
     String planId, {
     String mode = 'directory',
   }) async {
-    final response = await _dio.post(
-      '/api/drip/plans/$planId/cluster',
-      queryParameters: {'mode': mode},
-    );
-    return _asMap(response.data);
+    try {
+      final idMappings = await _loadIdMappings();
+      final resolvedPlanId = _resolveEntityId(planId, idMappings);
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/cluster',
+        queryParameters: {'mode': mode},
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'drip',
+        actionType: 'cluster',
+        label: 'Cluster drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$planId/cluster',
+        dedupeKey: 'drip:cluster:$planId',
+        blockedMessage:
+            'Clustering drip content is unavailable until FastAPI is back.',
+      );
+    }
   }
 
   Future<Map<String, dynamic>> scheduleDripPlan(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/schedule');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/schedule');
+      final raw = _asMap(response.data);
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(
+            current,
+            const {},
+            scheduleJobId:
+                raw['schedule_job_id']?.toString() ?? current.scheduleJobId,
+          ),
+        );
+      }
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(
+            current,
+            const {},
+            scheduleJobId: current.scheduleJobId ?? 'offline-scheduled',
+          ),
+        );
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'schedule',
+        label: 'Schedule drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$resolvedPlanId/schedule',
+        dedupeKey: 'drip:schedule:$resolvedPlanId',
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return {'total_items': current?.totalItems ?? 0, 'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> previewDripSchedule(String planId) async {
-    final response = await _dio.get('/api/drip/plans/$planId/preview');
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final response = await _dio.get('/api/drip/plans/$resolvedPlanId/preview');
     return _asMap(response.data);
   }
 
   Future<Map<String, dynamic>> activateDripPlan(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/activate');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/activate');
+      final raw = _asMap(response.data);
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _mergeDripPlanResponse(raw, current: current),
+        );
+      }
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(
+            current,
+            const {},
+            status: 'active',
+            startedAt: current.startedAt ?? DateTime.now().toIso8601String(),
+          ),
+        );
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'activate',
+        label: 'Activate drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$resolvedPlanId/activate',
+        dedupeKey: 'drip:activate:$resolvedPlanId',
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return {'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> pauseDripPlan(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/pause');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/pause');
+      final raw = _asMap(response.data);
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _mergeDripPlanResponse(raw, current: current),
+        );
+      }
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(current, const {}, status: 'paused'),
+        );
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'pause',
+        label: 'Pause drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$resolvedPlanId/pause',
+        dedupeKey: 'drip:pause:$resolvedPlanId',
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return {'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> resumeDripPlan(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/resume');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/resume');
+      final raw = _asMap(response.data);
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _mergeDripPlanResponse(raw, current: current),
+        );
+      }
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(current, const {}, status: 'active'),
+        );
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'resume',
+        label: 'Resume drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$resolvedPlanId/resume',
+        dedupeKey: 'drip:resume:$resolvedPlanId',
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return {'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> cancelDripPlan(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/cancel');
-    return _asMap(response.data);
+    final idMappings = await _loadIdMappings();
+    final resolvedPlanId = _resolveEntityId(planId, idMappings);
+    final dependsOnTempIds = _dependsOnTempIdsForIds([planId], idMappings);
+    final current =
+        await _readCachedDripPlan(planId) ??
+        await _readCachedDripPlan(resolvedPlanId);
+    try {
+      final response = await _dio.post('/api/drip/plans/$resolvedPlanId/cancel');
+      final raw = _asMap(response.data);
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _mergeDripPlanResponse(raw, current: current),
+        );
+      }
+      return raw;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (!mapped.isOffline) {
+        throw mapped;
+      }
+
+      if (current != null) {
+        await _upsertCachedDripPlan(
+          _applyDripPlanBody(
+            current,
+            const {},
+            status: 'cancelled',
+            completedAt: DateTime.now().toIso8601String(),
+          ),
+        );
+      }
+      await _enqueueOfflineAction(
+        resourceType: 'drip',
+        actionType: 'cancel',
+        label: 'Cancel drip plan',
+        method: 'POST',
+        path: '/api/drip/plans/$resolvedPlanId/cancel',
+        dedupeKey: 'drip:cancel:$resolvedPlanId',
+        meta: _offlineActionMeta(
+          entityType: 'drip_plan',
+          entityId: resolvedPlanId,
+          dependsOnTempIds: dependsOnTempIds,
+        ),
+      );
+      return {'queued': true};
+    }
   }
 
   Future<Map<String, dynamic>> executeDripTick(String planId) async {
-    final response = await _dio.post('/api/drip/plans/$planId/execute-tick');
-    return _asMap(response.data);
+    try {
+      final idMappings = await _loadIdMappings();
+      final resolvedPlanId = _resolveEntityId(planId, idMappings);
+      final response = await _dio.post(
+        '/api/drip/plans/$resolvedPlanId/execute-tick',
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      throw await _queueOrThrow(
+        error: mapped,
+        resourceType: 'drip',
+        actionType: 'execute_tick',
+        label: 'Execute drip tick',
+        method: 'POST',
+        path: '/api/drip/plans/$planId/execute-tick',
+        dedupeKey: 'drip:execute_tick:$planId',
+        blockedMessage:
+            'Executing a drip tick is unavailable until FastAPI is back.',
+      );
+    }
   }
 }

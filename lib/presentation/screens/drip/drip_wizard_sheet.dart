@@ -406,7 +406,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
     final api = ref.read(apiServiceProvider);
 
     try {
-      await api.createDripPlan({
+      final result = await api.createDripPlan({
         'name': _nameCtrl.text.trim(),
         'cadence': {
           'mode': _cadenceMode,
@@ -435,8 +435,15 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.tr('Drip plan created! Import content to get started.')),
+            content: Text(
+              result['queued'] == true
+                  ? context.tr(
+                      'Drip plan queued. It will sync when FastAPI is back.',
+                    )
+                  : context.tr(
+                      'Drip plan created! Import content to get started.',
+                    ),
+            ),
           ),
         );
       }

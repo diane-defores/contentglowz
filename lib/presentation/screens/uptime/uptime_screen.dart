@@ -119,6 +119,12 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
+                    context.tr('Waiting for dependencies: {count}', {
+                      'count': '${offlineSync.blockedDependencyCount}',
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
                     context.tr('Paused for auth: {count}', {
                       'count': '${offlineSync.pausedAuthCount}',
                     }),
@@ -414,6 +420,14 @@ class _QueuedActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final statusLabel = switch (action.status) {
+      OfflineQueueStatus.pending => context.tr('pending'),
+      OfflineQueueStatus.retrying => context.tr('retrying'),
+      OfflineQueueStatus.blockedDependency => context.tr('waiting_dependency'),
+      OfflineQueueStatus.pausedAuth => context.tr('paused_auth'),
+      OfflineQueueStatus.failed => context.tr('failed'),
+      OfflineQueueStatus.cancelled => context.tr('cancelled'),
+    };
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -435,7 +449,7 @@ class _QueuedActionTile extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              context.tr('Status: {status}', {'status': action.status.name}),
+              context.tr('Status: {status}', {'status': statusLabel}),
               style: theme.textTheme.bodySmall,
             ),
             if (action.lastError?.isNotEmpty == true) ...[

@@ -582,11 +582,17 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       if (!mounted) return;
       if (fallback != null) {
         ref.read(pendingContentProvider.notifier).refresh();
+        final queued = fallback['queued'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.tr('Content created: "{contentType}"',
-                  {'contentType': _contentTypeLabel(angle.contentType)}),
+              queued
+                  ? context.tr('Content queued: "{contentType}"', {
+                      'contentType': _contentTypeLabel(angle.contentType),
+                    })
+                  : context.tr('Content created: "{contentType}"', {
+                      'contentType': _contentTypeLabel(angle.contentType),
+                    }),
             ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
