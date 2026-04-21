@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
@@ -29,17 +29,24 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final githubStatus = ref.watch(githubIntegrationStatusProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('SEO Mesh'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(context.tr('Topical Mesh Analysis'), style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Topical Mesh Analysis'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 4),
-          Text(context.tr('Analyze your site structure and topical coverage'),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          Text(
+            context.tr('Analyze your site structure and topical coverage'),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 16),
 
           TextField(
@@ -47,6 +54,11 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             decoration: InputDecoration(
               labelText: context.tr('Repository URL'),
               hintText: context.tr('https://github.com/user/site'),
+              helperText: githubStatus?.connected == true
+                  ? null
+                  : context.tr(
+                      'Connectez votre compte GitHub pour sélectionner un dépôt.',
+                    ),
               suffixIcon: IconButton(
                 icon: _isRepoPickerLoading
                     ? const SizedBox(
@@ -56,23 +68,39 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
                       )
                     : const Icon(Icons.travel_explore_rounded),
                 tooltip: context.tr('Choose from connected GitHub repos'),
-                onPressed: _isRepoPickerLoading ? null : _openGithubRepoPicker,
+                onPressed: _isRepoPickerLoading
+                    ? null
+                    : githubStatus?.connected == true
+                    ? _openGithubRepoPicker
+                    : _connectGithubFromSeo,
               ),
             ),
             keyboardType: TextInputType.url,
           ),
+          if (githubStatus?.connected != true) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.link),
+              label: Text(context.tr('Connecter GitHub')),
+              onPressed: _connectGithubFromSeo,
+            ),
+          ],
           const SizedBox(height: 20),
 
           FilledButton.icon(
             onPressed: _analyzing ? null : _analyze,
             icon: _analyzing
                 ? const SizedBox(
-                    height: 18, width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.hub),
-            label: Text(_analyzing
-                ? context.tr('Analyzing...')
-                : context.tr('Analyze Mesh')),
+            label: Text(
+              _analyzing
+                  ? context.tr('Analyzing...')
+                  : context.tr('Analyze Mesh'),
+            ),
           ),
 
           if (_result != null) ...[
@@ -122,19 +150,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
     final api = ref.read(apiServiceProvider);
     final githubStatus = ref.read(githubIntegrationStatusProvider).valueOrNull;
     if (githubStatus?.connected != true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr(
-              'Connect your GitHub account in Settings before selecting from the picker.',
-            ),
-          ),
-          action: SnackBarAction(
-            label: context.tr('Open Settings'),
-            onPressed: () => context.push('/settings'),
-          ),
-        ),
-      );
+      await _connectGithubFromSeo();
       return;
     }
 
@@ -192,7 +208,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.tr('Cancel')),
+                child: Text(context.tr('Annuler')),
               ),
             ],
           );
@@ -205,12 +221,79 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
 
       final htmlUrl = selected['html_url']?.toString() ?? '';
       final fullName = selected['full_name']?.toString() ?? '';
-      final next = (htmlUrl.isNotEmpty) ? htmlUrl : 'https://github.com/$fullName';
+      final next = (htmlUrl.isNotEmpty)
+          ? htmlUrl
+          : 'https://github.com/$fullName';
       if (next.isNotEmpty) {
         setState(() => _repoUrlCtrl.text = next);
       }
     } finally {
       if (mounted) setState(() => _isRepoPickerLoading = false);
+    }
+  }
+
+  Future<void> _connectGithubFromSeo() async {
+    final api = ref.read(apiServiceProvider);
+    final connectUrl = await api.getGithubConnectUrl();
+
+    if (connectUrl == null || connectUrl.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
+            ),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.8),
+        ),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(connectUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(context.tr('Connexion GitHub')),
+          content: Text(
+            context.tr(
+              'Une fenêtre navigateur s’est ouverte pour autoriser ContentFlow.'
+              ' Revenez ici puis appuyez sur Actualiser pour mettre à jour l’état.',
+            ),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(context.tr('Fermer')),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.invalidate(githubIntegrationStatusProvider);
+              },
+              child: Text(context.tr('Actualiser')),
+            ),
+          ],
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
+            ),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.8),
+        ),
+      );
     }
   }
 }
@@ -234,71 +317,90 @@ class _MeshResults extends StatelessWidget {
         Row(
           children: [
             _StatCard(
-                label: context.tr('Pages'),
-                value: '$pages',
-                color: theme.colorScheme.primary),
+              label: context.tr('Pages'),
+              value: '$pages',
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(width: 8),
             _StatCard(
-                label: context.tr('Issues'),
-                value: '$issues',
-                color: AppTheme.warningColor),
+              label: context.tr('Issues'),
+              value: '$issues',
+              color: AppTheme.warningColor,
+            ),
             const SizedBox(width: 8),
             _StatCard(
-                label: context.tr('Tips'),
-                value: '$recommendations',
-                color: AppTheme.approveColor),
+              label: context.tr('Tips'),
+              value: '$recommendations',
+              color: AppTheme.approveColor,
+            ),
             if (score != null) ...[
               const SizedBox(width: 8),
               _StatCard(
                 label: context.tr('Score'),
                 value: '${score.toInt()}%',
-                color: AppTheme.infoColor),
+                color: AppTheme.infoColor,
+              ),
             ],
           ],
         ),
 
         // Issues
-        if (result['issues'] case final List issueList when issueList.isNotEmpty) ...[
+        if (result['issues'] case final List issueList
+            when issueList.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(context.tr('Issues'), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
-          ...issueList.take(10).map((issue) => Card(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: ListTile(
-                  dense: true,
-                  leading: Icon(
-                    Icons.warning_amber,
-                    color: AppTheme.warningColor,
-                    size: 20,
-                  ),
-                  title: Text(
+          ...issueList
+              .take(10)
+              .map(
+                (issue) => Card(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.warning_amber,
+                      color: AppTheme.warningColor,
+                      size: 20,
+                    ),
+                    title: Text(
                       (issue as Map)['description']?.toString() ??
                           context.tr('Issue'),
-                      style: const TextStyle(fontSize: 13)),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
                 ),
-              )),
+              ),
         ],
 
         // Recommendations
-        if (result['recommendations'] case final List recs when recs.isNotEmpty) ...[
+        if (result['recommendations'] case final List recs
+            when recs.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Text(context.tr('Recommendations'), style: theme.textTheme.titleSmall),
+          Text(
+            context.tr('Recommendations'),
+            style: theme.textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
-          ...recs.take(10).map((rec) => Card(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: ListTile(
-                  dense: true,
-                  leading: Icon(
-                    Icons.lightbulb_outline,
-                    color: AppTheme.approveColor,
-                    size: 20,
-                  ),
-                  title: Text(
+          ...recs
+              .take(10)
+              .map(
+                (rec) => Card(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.lightbulb_outline,
+                      color: AppTheme.approveColor,
+                      size: 20,
+                    ),
+                    title: Text(
                       (rec as Map)['description']?.toString() ??
                           context.tr('Recommendation'),
-                      style: const TextStyle(fontSize: 13)),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
                 ),
-              )),
+              ),
         ],
       ],
     );
@@ -306,7 +408,11 @@ class _MeshResults extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.color});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
   final String label;
   final String value;
   final Color color;
@@ -322,7 +428,14 @@ class _StatCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 2),
             Text(label, style: TextStyle(fontSize: 11, color: color)),
           ],

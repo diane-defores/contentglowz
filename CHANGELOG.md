@@ -11,6 +11,10 @@ The format is based on Keep a Changelog.
 - Added a repository/project source selector for Drip wizard steps so users can pick content folders and sources directly from their connected project instead of typing paths.
 - Added detailed contextual explanations in Drip onboarding steps for clustering strategy and publication/rebuild controls to support advanced users before plan execution.
 - Added new random publication window fields (`publish_time_start`, `publish_time_end`) to Drip plans to support randomized scheduling within a selected daytime range.
+- Added explicit GitHub connection actions in onboarding, drip and SEO screens to launch OAuth, open browser authentication, and return with refreshed connection status.
+
+### Fixed
+- Fixed the in-app tour overlay layout/positioning compile regression by passing an `Offset` where required in widget offset calculations.
 
 ## [2026-04-20]
 

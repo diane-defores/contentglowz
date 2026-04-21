@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
@@ -64,7 +65,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   void initState() {
     super.initState();
     final now = DateTime.now().add(const Duration(days: 1));
-    _startDateCtrl.text = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    _startDateCtrl.text =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -102,7 +104,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    context.tr('New Drip Plan — Step {step}/4', {'step': _step + 1}),
+                    context.tr('New Drip Plan — Step {step}/4', {
+                      'step': _step + 1,
+                    }),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -118,16 +122,21 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              children: List.generate(4, (i) => Expanded(
-                child: Container(
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    color: i <= _step ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+              children: List.generate(
+                4,
+                (i) => Expanded(
+                  child: Container(
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      color: i <= _step
+                          ? colorScheme.primary
+                          : colorScheme.surfaceContainerHighest,
+                    ),
                   ),
                 ),
-              )),
+              ),
             ),
           ),
 
@@ -159,14 +168,20 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                 const Spacer(),
                 if (_step < 3)
                   FilledButton(
-                    onPressed: _canAdvance ? () => setState(() => _step++) : null,
+                    onPressed: _canAdvance
+                        ? () => setState(() => _step++)
+                        : null,
                     child: Text(context.tr('Next')),
                   ),
                 if (_step == 3)
                   FilledButton(
                     onPressed: _submitting ? null : _submit,
                     child: _submitting
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : Text(context.tr('Create Plan')),
                   ),
               ],
@@ -179,9 +194,13 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
 
   bool get _canAdvance => switch (_step) {
     0 => _nameCtrl.text.trim().isNotEmpty,
-    1 => _startDateCtrl.text.isNotEmpty &&
-        _publishDays.isNotEmpty &&
-        _isTimeRangeValid(_publishTimeStartCtrl.text.trim(), _publishTimeEndCtrl.text.trim()),
+    1 =>
+      _startDateCtrl.text.isNotEmpty &&
+          _publishDays.isNotEmpty &&
+          _isTimeRangeValid(
+            _publishTimeStartCtrl.text.trim(),
+            _publishTimeEndCtrl.text.trim(),
+          ),
     2 => true,
     _ => true,
   };
@@ -216,22 +235,24 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   }
 
   String _localizedWeekDay(int index) => switch (index) {
-        0 => context.tr('Mon'),
-        1 => context.tr('Tue'),
-        2 => context.tr('Wed'),
-        3 => context.tr('Thu'),
-        4 => context.tr('Fri'),
-        5 => context.tr('Sat'),
-        _ => context.tr('Sun'),
-      };
+    0 => context.tr('Mon'),
+    1 => context.tr('Tue'),
+    2 => context.tr('Wed'),
+    3 => context.tr('Thu'),
+    4 => context.tr('Fri'),
+    5 => context.tr('Sat'),
+    _ => context.tr('Sun'),
+  };
 
   // ─── Step 1: Basics ──────────────────────────────
 
   Widget _buildStep1() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Name & Source'),
-          style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        context.tr('Name & Source'),
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 16),
       TextField(
         controller: _nameCtrl,
@@ -250,7 +271,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         decoration: InputDecoration(
           labelText: context.tr('Content directory'),
           hintText: context.tr('e.g. src/data'),
-          helperText: context.tr('Parcourir l\'arborescence du dépôt pour choisir un dossier'),
+          helperText: context.tr(
+            'Parcourir l\'arborescence du dépôt pour choisir un dossier',
+          ),
           suffixIcon: IconButton(
             icon: const Icon(Icons.folder_open),
             tooltip: context.tr('Parcourir les dossiers'),
@@ -305,8 +328,11 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                             path: browsePath.isEmpty ? null : browsePath,
                           ),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
                         if (snapshot.hasError) {
                           return Center(
@@ -326,7 +352,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                         if (entries.isEmpty) {
                           return Center(
                             child: Text(
-                              context.tr('Aucun dossier détecté à cet emplacement'),
+                              context.tr(
+                                'Aucun dossier détecté à cet emplacement',
+                              ),
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           );
@@ -339,7 +367,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                             if (parentPath != null)
                               ListTile(
                                 leading: const Icon(Icons.arrow_upward),
-                                title: Text(context.tr('Remonter d\'un niveau')),
+                                title: Text(
+                                  context.tr('Remonter d\'un niveau'),
+                                ),
                                 onTap: () {
                                   setState(() {
                                     browsePath = parentPath;
@@ -348,37 +378,35 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                               )
                             else
                               const SizedBox.shrink(),
-                            ...entries.map(
-                              (entry) {
-                                final name = entry['name']?.toString() ?? '';
-                                final path = entry['path']?.toString() ?? name;
-                                final hasMarkdown =
-                                    entry['has_markdown_files'] == true;
+                            ...entries.map((entry) {
+                              final name = entry['name']?.toString() ?? '';
+                              final path = entry['path']?.toString() ?? name;
+                              final hasMarkdown =
+                                  entry['has_markdown_files'] == true;
 
-                                return ListTile(
-                                  leading: const Icon(Icons.folder),
-                                  title: Text(name),
-                                  subtitle: Text(
-                                    hasMarkdown
-                                        ? context.tr(
-                                            'Contient des fichiers markdown',
-                                          )
-                                        : context.tr(
-                                            'Aucun fichier markdown trouvé',
-                                          ),
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                  selected:
-                                      normalizePath(path) ==
-                                      normalizePath(browsePath),
-                                  onTap: () {
-                                    setState(() {
-                                      browsePath = normalizePath(path);
-                                    });
-                                  },
-                                );
-                              },
-                            ),
+                              return ListTile(
+                                leading: const Icon(Icons.folder),
+                                title: Text(name),
+                                subtitle: Text(
+                                  hasMarkdown
+                                      ? context.tr(
+                                          'Contient des fichiers markdown',
+                                        )
+                                      : context.tr(
+                                          'Aucun fichier markdown trouvé',
+                                        ),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                selected:
+                                    normalizePath(path) ==
+                                    normalizePath(browsePath),
+                                onTap: () {
+                                  setState(() {
+                                    browsePath = normalizePath(path);
+                                  });
+                                },
+                              );
+                            }),
                           ],
                         );
                       },
@@ -390,7 +418,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.tr('Cancel')),
+                child: Text(context.tr('Annuler')),
               ),
               FilledButton(
                 onPressed: browsePath.isEmpty
@@ -411,7 +439,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
 
   Widget _buildDirectoryPresets() {
     final activeProject = ref.watch(activeProjectProvider);
-    final presetPaths = activeProject?.settings?.contentDirectories
+    final presetPaths =
+        activeProject?.settings?.contentDirectories
             .map((entry) => entry.path.trim())
             .where((path) => path.isNotEmpty)
             .toSet()
@@ -451,15 +480,13 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                   label: Text(path),
                   onPressed: () => setState(() => _directoryCtrl.text = path),
                   labelStyle: TextStyle(
-                    color:
-                        _directoryCtrl.text.trim() == path
-                            ? Theme.of(context).colorScheme.onSecondaryContainer
-                            : Theme.of(context).colorScheme.onSurface,
+                    color: _directoryCtrl.text.trim() == path
+                        ? Theme.of(context).colorScheme.onSecondaryContainer
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
-                  backgroundColor:
-                      _directoryCtrl.text.trim() == path
-                          ? Theme.of(context).colorScheme.secondaryContainer
-                          : Theme.of(context).colorScheme.surfaceContainer,
+                  backgroundColor: _directoryCtrl.text.trim() == path
+                      ? Theme.of(context).colorScheme.secondaryContainer
+                      : Theme.of(context).colorScheme.surfaceContainer,
                 ),
               )
               .toList(),
@@ -473,7 +500,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep2() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Cadence'), style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        context.tr('Cadence'),
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 16),
       SegmentedButton<String>(
         segments: _cadenceModes
@@ -481,9 +511,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               (m) => ButtonSegment(
                 value: m,
                 label: Text(
-                  m == 'ramp_up'
-                      ? context.tr('Ramp up')
-                      : context.tr('Fixed'),
+                  m == 'ramp_up' ? context.tr('Ramp up') : context.tr('Fixed'),
                 ),
               ),
             )
@@ -522,7 +550,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       Text(context.tr('Random publish time')),
       const SizedBox(height: 8),
       Text(
-        context.tr('Choose a daily time window. Publishing will be random inside this window.'),
+        context.tr(
+          'Choose a daily time window. Publishing will be random inside this window.',
+        ),
         style: Theme.of(context).textTheme.bodySmall,
       ),
       const SizedBox(height: 12),
@@ -580,25 +610,30 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         ],
       ),
       const SizedBox(height: 16),
-      Text(context.tr('Publish days'),
-          style: Theme.of(context).textTheme.bodyMedium),
+      Text(
+        context.tr('Publish days'),
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
       const SizedBox(height: 8),
       Wrap(
         spacing: 8,
-        children: List.generate(7, (i) => FilterChip(
-          label: Text(_localizedWeekDay(i)),
-          selected: _publishDays.contains(i),
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _publishDays.add(i);
-              } else {
-                _publishDays.remove(i);
-              }
-              _publishDays.sort();
-            });
-          },
-        )),
+        children: List.generate(
+          7,
+          (i) => FilterChip(
+            label: Text(_localizedWeekDay(i)),
+            selected: _publishDays.contains(i),
+            onSelected: (selected) {
+              setState(() {
+                if (selected) {
+                  _publishDays.add(i);
+                } else {
+                  _publishDays.remove(i);
+                }
+                _publishDays.sort();
+              });
+            },
+          ),
+        ),
       ),
     ],
   );
@@ -608,8 +643,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep3() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Stratégie de clustering'),
-          style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        context.tr('Stratégie de clustering'),
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 8),
       Text(
         context.tr(
@@ -625,39 +662,45 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         style: Theme.of(context).textTheme.bodySmall,
       ),
       const SizedBox(height: 16),
-      ...(_clusterModes.map((m) => ListTile(
-        leading: Icon(
-          _clusterMode == m ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-          color: _clusterMode == m ? Theme.of(context).colorScheme.primary : null,
+      ...(_clusterModes.map(
+        (m) => ListTile(
+          leading: Icon(
+            _clusterMode == m
+                ? Icons.radio_button_checked
+                : Icons.radio_button_unchecked,
+            color: _clusterMode == m
+                ? Theme.of(context).colorScheme.primary
+                : null,
+          ),
+          title: Text(switch (m) {
+            'directory' => context.tr('Par structure de dossier'),
+            'tags' => context.tr('Par tag de front matter'),
+            'auto' => context.tr('Auto (détection sémantique des cocons)'),
+            'none' => context.tr('Sans clustering (ordre alphabétique)'),
+            _ => m,
+          }),
+          subtitle: Text(switch (m) {
+            'directory' => context.tr(
+              'Le clustering par dossier exploite la structure du dépôt (`/blog`, `/blog/seo`, `/newsletter`).'
+              ' Cette méthode est robuste si votre arborescence reflète déjà la hiérarchie éditoriale.',
+            ),
+            'tags' => context.tr(
+              'Le clustering par tags lit les métadonnées `front matter` et regroupe les contenus qui partagent des sujets similaires.'
+              ' C’est la méthode adaptée si votre taxonomie est bien tenue et cohérente entre articles.',
+            ),
+            'auto' => context.tr(
+              'Le mode Auto reconstruit les cocons automatiquement à partir des similarités sémantiques du corpus.'
+              ' Il identifie les relations logiques entre contenus même si vos tags ou dossiers sont imparfaits.',
+            ),
+            'none' => context.tr(
+              'Le mode “Sans clustering” ne force aucun regroupement éditorial.'
+              ' La publication suit uniquement la cadence/régularité définies, sans ordre thématique supplémentaire.',
+            ),
+            _ => '',
+          }, style: const TextStyle(fontSize: 12)),
+          onTap: () => setState(() => _clusterMode = m),
         ),
-        title: Text(switch (m) {
-          'directory' => context.tr('Par structure de dossier'),
-          'tags' => context.tr('Par tag de front matter'),
-          'auto' => context.tr('Auto (détection sémantique des cocons)'),
-          'none' => context.tr('Sans clustering (ordre alphabétique)'),
-          _ => m,
-        }),
-        subtitle: Text(switch (m) {
-          'directory' => context.tr(
-            'Le clustering par dossier exploite la structure du dépôt (`/blog`, `/blog/seo`, `/newsletter`).'
-            ' Cette méthode est robuste si votre arborescence reflète déjà la hiérarchie éditoriale.',
-          ),
-          'tags' => context.tr(
-            'Le clustering par tags lit les métadonnées `front matter` et regroupe les contenus qui partagent des sujets similaires.'
-            ' C’est la méthode adaptée si votre taxonomie est bien tenue et cohérente entre articles.',
-          ),
-          'auto' => context.tr(
-            'Le mode Auto reconstruit les cocons automatiquement à partir des similarités sémantiques du corpus.'
-            ' Il identifie les relations logiques entre contenus même si vos tags ou dossiers sont imparfaits.',
-          ),
-          'none' => context.tr(
-            'Le mode “Sans clustering” ne force aucun regroupement éditorial.'
-            ' La publication suit uniquement la cadence/régularité définies, sans ordre thématique supplémentaire.',
-          ),
-          _ => '',
-        }, style: const TextStyle(fontSize: 12)),
-        onTap: () => setState(() => _clusterMode = m),
-      ))),
+      )),
       const SizedBox(height: 8),
       SwitchListTile(
         title: Text(context.tr('Publier le pilier avant les satellites')),
@@ -680,61 +723,80 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep4() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Déploiement'), style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        context.tr('Déploiement'),
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _framework,
         decoration: InputDecoration(
-            labelText: context.tr('Framework SSG'),
-            border: const OutlineInputBorder()),
-        items: _frameworks.map((f) => DropdownMenuItem(value: f, child: Text(f[0].toUpperCase() + f.substring(1)))).toList(),
+          labelText: context.tr('Framework SSG'),
+          border: const OutlineInputBorder(),
+        ),
+        items: _frameworks
+            .map(
+              (f) => DropdownMenuItem(
+                value: f,
+                child: Text(f[0].toUpperCase() + f.substring(1)),
+              ),
+            )
+            .toList(),
         onChanged: (v) => setState(() => _framework = v!),
       ),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _gatingMethod,
         decoration: InputDecoration(
-            labelText: context.tr('Méthode de contrôle'),
-            border: const OutlineInputBorder()),
-        items: _gatingMethods.map((g) => DropdownMenuItem(
-          value: g,
-          child: Text(switch (g) {
-            'future_date' => context.tr('Date de publication future (recommandé)'),
-            'draft_flag' => context.tr('Drapeau draft'),
-            'both' => context.tr('Les deux'),
-            _ => g,
-          }),
-        )).toList(),
+          labelText: context.tr('Méthode de contrôle'),
+          border: const OutlineInputBorder(),
+        ),
+        items: _gatingMethods
+            .map(
+              (g) => DropdownMenuItem(
+                value: g,
+                child: Text(switch (g) {
+                  'future_date' => context.tr(
+                    'Date de publication future (recommandé)',
+                  ),
+                  'draft_flag' => context.tr('Drapeau draft'),
+                  'both' => context.tr('Les deux'),
+                  _ => g,
+                }),
+              ),
+            )
+            .toList(),
         onChanged: (v) => setState(() => _gatingMethod = v!),
       ),
       const SizedBox(height: 8),
       Padding(
         padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
-        child: Text(
-          switch (_gatingMethod) {
-            'future_date' => context.tr(
-              'Méthode de contrôle par date : le front matter reçoit une date de publication future.'
-              ' Tant que cette date n’est pas atteinte, le moteur SSG considère la page comme planifiée.'
-              ' Ce mode dépend directement du support de la planification par votre générateur de site.',
-            ),
-            'draft_flag' => context.tr(
-              'Méthode de contrôle par flag : le front matter est écrit avec `draft: true` (ou équivalent) avant publication.'
-              ' Au moment de la sortie prévue, le flag est retiré pour rendre l’article visible.'
-              ' Utile quand votre pipeline sait déjà gérer le brouillon de manière explicite.',
-            ),
-            'both' => context.tr(
-              'Méthode combinée : Drip applique à la fois la date future et `draft: true`, puis lève les deux en même temps.'
-              ' Plus strict, ce mode réduit les risques de publication prématurée.'
-              ' À privilégier si votre pipeline est strict sur les deux mécanismes.',
-            ),
-            _ => '',
-          },
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        child: Text(switch (_gatingMethod) {
+          'future_date' => context.tr(
+            'Méthode de contrôle par date : le front matter reçoit une date de publication future.'
+            ' Tant que cette date n’est pas atteinte, le moteur SSG considère la page comme planifiée.'
+            ' Ce mode dépend directement du support de la planification par votre générateur de site.',
+          ),
+          'draft_flag' => context.tr(
+            'Méthode de contrôle par flag : le front matter est écrit avec `draft: true` (ou équivalent) avant publication.'
+            ' Au moment de la sortie prévue, le flag est retiré pour rendre l’article visible.'
+            ' Utile quand votre pipeline sait déjà gérer le brouillon de manière explicite.',
+          ),
+          'both' => context.tr(
+            'Méthode combinée : Drip applique à la fois la date future et `draft: true`, puis lève les deux en même temps.'
+            ' Plus strict, ce mode réduit les risques de publication prématurée.'
+            ' À privilégier si votre pipeline est strict sur les deux mécanismes.',
+          ),
+          _ => '',
+        }, style: Theme.of(context).textTheme.bodySmall),
       ),
       const SizedBox(height: 12),
       SwitchListTile(
-        title: Text(context.tr('Protection indexation précoce (noindex jusqu’à publication)')),
+        title: Text(
+          context.tr(
+            'Protection indexation précoce (noindex jusqu’à publication)',
+          ),
+        ),
         subtitle: Text(
           context.tr(
             'Met automatiquement un marqueur noindex dans le front matter tant que le contenu n’est pas publié. Ce mode limite fortement l’indexation prématurée, mais n’est pas une garantie absolue : c’est efficace si votre stack (build, CDN, headers, robots/meta) applique bien ce signal au crawl.',
@@ -759,41 +821,43 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       DropdownButtonFormField<String>(
         initialValue: _rebuildMethod,
         decoration: InputDecoration(
-            labelText: context.tr('Méthode de rebuild'),
-            border: const OutlineInputBorder()),
-        items: _rebuildMethods.map((r) => DropdownMenuItem(
-          value: r,
-          child: Text(switch (r) {
-            'webhook' => context.tr('Webhook (Vercel/Netlify)'),
-            'github_actions' => context.tr('GitHub Actions'),
-            'manual' => context.tr('Manuel'),
-            _ => r,
-          }),
-        )).toList(),
+          labelText: context.tr('Méthode de rebuild'),
+          border: const OutlineInputBorder(),
+        ),
+        items: _rebuildMethods
+            .map(
+              (r) => DropdownMenuItem(
+                value: r,
+                child: Text(switch (r) {
+                  'webhook' => context.tr('Webhook (Vercel/Netlify)'),
+                  'github_actions' => context.tr('GitHub Actions'),
+                  'manual' => context.tr('Manuel'),
+                  _ => r,
+                }),
+              ),
+            )
+            .toList(),
         onChanged: (v) => setState(() => _rebuildMethod = v!),
       ),
       const SizedBox(height: 8),
       Padding(
         padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
-        child: Text(
-          switch (_rebuildMethod) {
-            'webhook' => context.tr(
-              'Le webhook notifie votre pipeline CI/CD à chaque exécution Drip.'
-              ' Il déclenche un rebuild automatique pour propager les changements de front matter.'
-              ' Idéal pour une publication continue et sans intervention manuelle.',
-            ),
-            'github_actions' => context.tr(
-              'GitHub Actions lance un workflow `daily-drip.yml` via `workflow_dispatch` (branche main par défaut). Requiert `GITHUB_TOKEN` côté backend/API pour l’authentification.',
-            ),
-            'manual' => context.tr(
-              'Mode manuel = aucun déclenchement automatique.'
-              ' Le plan applique les modifications en front matter, puis vous lancez le rebuild selon votre process.'
-              ' Cette option convient quand vous centralisez la publication dans une étape personnalisée.',
-            ),
-            _ => '',
-          },
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        child: Text(switch (_rebuildMethod) {
+          'webhook' => context.tr(
+            'Le webhook notifie votre pipeline CI/CD à chaque exécution Drip.'
+            ' Il déclenche un rebuild automatique pour propager les changements de front matter.'
+            ' Idéal pour une publication continue et sans intervention manuelle.',
+          ),
+          'github_actions' => context.tr(
+            'GitHub Actions lance un workflow `daily-drip.yml` via `workflow_dispatch` (branche main par défaut). Requiert `GITHUB_TOKEN` côté backend/API pour l’authentification.',
+          ),
+          'manual' => context.tr(
+            'Mode manuel = aucun déclenchement automatique.'
+            ' Le plan applique les modifications en front matter, puis vous lancez le rebuild selon votre process.'
+            ' Cette option convient quand vous centralisez la publication dans une étape personnalisée.',
+          ),
+          _ => '',
+        }, style: Theme.of(context).textTheme.bodySmall),
       ),
       if (_rebuildMethod == 'webhook') ...[
         const SizedBox(height: 16),
@@ -802,12 +866,30 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           decoration: InputDecoration(
             labelText: context.tr('URL du webhook'),
             border: const OutlineInputBorder(),
-            hintText: context.tr('https://api.vercel.com/v1/integrations/deploy/...'),
+            hintText: context.tr(
+              'https://api.vercel.com/v1/integrations/deploy/...',
+            ),
           ),
         ),
       ],
       if (_rebuildMethod == 'github_actions') ...[
         const SizedBox(height: 16),
+        if (ref.watch(githubIntegrationStatusProvider).valueOrNull?.connected !=
+            true) ...[
+          Text(
+            context.tr(
+              'Connectez votre compte GitHub pour sélectionner un dépôt public ou privé.',
+            ),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.link),
+            onPressed: () => _connectGithubFromDrip(),
+            label: Text(context.tr('Connecter GitHub')),
+          ),
+          const SizedBox(height: 12),
+        ],
         TextField(
           controller: _githubRepoCtrl,
           decoration: InputDecoration(
@@ -823,12 +905,29 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                   : const Icon(Icons.travel_explore),
               onPressed: _isGithubRepoPickerLoading
                   ? null
-                  : _openGithubRepoPickerForDrip,
+                  : ref
+                            .watch(githubIntegrationStatusProvider)
+                            .valueOrNull
+                            ?.connected ==
+                        true
+                  ? _openGithubRepoPickerForDrip
+                  : _connectGithubFromDrip,
             ),
             border: const OutlineInputBorder(),
             hintText: context.tr('owner/repo'),
           ),
         ),
+        if (ref.watch(githubIntegrationStatusProvider).valueOrNull?.connected !=
+            true)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              context.tr(
+                'Une connexion GitHub est requise pour charger la liste des dépôts.',
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
       ],
       const SizedBox(height: 8),
       ExpansionTile(
@@ -876,7 +975,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
             value: _gscEnabled,
             onChanged: (v) => setState(() => _gscEnabled = v),
           ),
-      if (_gscEnabled) ...[
+          if (_gscEnabled) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
@@ -953,8 +1052,10 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           'framework': _framework,
           'gating_method': _gatingMethod,
           'rebuild_method': _rebuildMethod,
-          if (_rebuildMethod == 'webhook') 'rebuild_webhook_url': _webhookUrlCtrl.text.trim(),
-          if (_rebuildMethod == 'github_actions') 'rebuild_github_repo': _githubRepoCtrl.text.trim(),
+          if (_rebuildMethod == 'webhook')
+            'rebuild_webhook_url': _webhookUrlCtrl.text.trim(),
+          if (_rebuildMethod == 'github_actions')
+            'rebuild_github_repo': _githubRepoCtrl.text.trim(),
           'content_directory': _directoryCtrl.text.trim(),
           'require_opt_in': _requireOptIn,
           'frontmatter_opt_in_field': _optInFieldCtrl.text.trim(),
@@ -1004,6 +1105,12 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   }
 
   Future<void> _openGithubRepoPickerForDrip() async {
+    final githubStatus = ref.read(githubIntegrationStatusProvider).valueOrNull;
+    if (githubStatus?.connected != true) {
+      await _connectGithubFromDrip();
+      return;
+    }
+
     final api = ref.read(apiServiceProvider);
     setState(() => _isGithubRepoPickerLoading = true);
 
@@ -1050,12 +1157,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        onTap: () => Navigator.pop(
-                          context,
-                          {
-                            'full_name': repo['full_name']?.toString() ?? '',
-                          },
-                        ),
+                        onTap: () => Navigator.pop(context, {
+                          'full_name': repo['full_name']?.toString() ?? '',
+                        }),
                       ),
                     )
                     .toList(),
@@ -1078,6 +1182,71 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       }
     } finally {
       if (mounted) setState(() => _isGithubRepoPickerLoading = false);
+    }
+  }
+
+  Future<void> _connectGithubFromDrip() async {
+    final api = ref.read(apiServiceProvider);
+    final connectUrl = await api.getGithubConnectUrl();
+
+    if (connectUrl == null || connectUrl.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
+            ),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.8),
+        ),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(connectUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(context.tr('Connexion GitHub')),
+          content: Text(
+            context.tr(
+              'Une fenêtre navigateur s’est ouverte pour autoriser ContentFlow.'
+              ' Revenez ici puis appuyez sur Actualiser pour mettre à jour l’état.',
+            ),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(context.tr('Fermer')),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.invalidate(githubIntegrationStatusProvider);
+              },
+              child: Text(context.tr('Actualiser')),
+            ),
+          ],
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
+            ),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.8),
+        ),
+      );
     }
   }
 }

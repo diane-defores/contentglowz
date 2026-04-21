@@ -17,7 +17,11 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
   Offset _position = Offset.zero;
   bool _positioned = false;
 
-  void _initializePosition(BuildContext context, Size screenSize, Offset cardSize) {
+  void _initializePosition(
+    BuildContext context,
+    Size screenSize,
+    Offset cardSize,
+  ) {
     if (_positioned && _position != Offset.zero) return;
     final constrainedWidth = (screenSize.width - 24).clamp(0.0, 420.0);
     final estimatedCardWidth = constrainedWidth.isFinite ? constrainedWidth : 420.0;
@@ -136,7 +140,7 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
       ),
     );
 
-    _initializePosition(context, media, const Size(420, 250));
+    _initializePosition(context, media, const Offset(420, 250));
 
     return LayoutBuilder(
       builder: (context, constraints) {

@@ -229,6 +229,7 @@
 | 🟠 | Étape 6 — Flutter UI : écran liste plans + wizard création + dashboard progression + actions lifecycle | ✅ done |
 | ✅ | Publier les plans Drip avec heure aléatoire dans une plage horaire (plage début/fin par plan) | ✅ done |
 | ✅ | Clarifier l’étape 3 du wizard Drip (clustering + stratégie “pillars first”) | ✅ done |
+| ✅ | Clarifier l’étape 4 du wizard Drip (méthode de contrôle, heure de publication, draft flag, mode sécurisé GSC, rebuild manuel/automatique et détail “publication à plage aléatoire”) | ✅ done |
 | ✅ | Ajouter un sélecteur de dossier source Drip depuis le projet actif (réutilisation `content_directories`) pour éviter la saisie manuelle | ✅ done |
 | 🟡 | Étape 7 — Passe i18n complémentaire sur les écrans secondaires et harmonisation des clés de traduction | 📋 todo |
 

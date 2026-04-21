@@ -255,14 +255,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.travel_explore_rounded),
-                    onPressed: (githubStatus?.connected == true && !_isRepoPickerLoading)
+                    onPressed:
+                        (githubStatus?.connected == true &&
+                            !_isRepoPickerLoading)
                         ? () => _openGithubRepoPicker()
-                        : () => _connectGithubPrompt(),
+                        : () => _connectGithubFromOnboarding(),
                   ),
             errorText: _repoUrlErrorText,
           ),
           keyboardType: TextInputType.url,
         ),
+        if (githubStatus?.connected != true && !_isDemoMode) ...[
+          const SizedBox(height: 10),
+          Text(
+            context.tr(
+              'Connectez votre compte GitHub pour sélectionner un dépôt.',
+            ),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.link),
+            onPressed: _connectGithubFromOnboarding,
+            label: Text(context.tr('Connecter GitHub')),
+          ),
+        ],
         const SizedBox(height: 32),
         FilledButton(
           onPressed: _hasValidProjectStep ? _nextPage : null,
@@ -278,20 +295,70 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Future<void> _connectGithubPrompt() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.tr(
-            'Connect your GitHub account in Settings before selecting from the picker.',
+  Future<void> _connectGithubFromOnboarding() async {
+    if (_isDemoMode) return;
+    final api = ref.read(apiServiceProvider);
+    final connectUrl = await api.getGithubConnectUrl();
+
+    if (connectUrl == null || connectUrl.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
+            ),
           ),
+          backgroundColor: Colors.red.withOpacity(0.8),
         ),
-        action: SnackBarAction(
-          label: context.tr('Open Settings'),
-          onPressed: () => context.push('/settings'),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(connectUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(context.tr('Connexion GitHub')),
+          content: Text(
+            context.tr(
+              'Une fenêtre navigateur s’est ouverte pour autoriser ContentFlow.'
+              ' Revenez ici puis appuyez sur Actualiser pour mettre à jour l’état.',
+            ),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(context.tr('Fermer')),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.invalidate(githubIntegrationStatusProvider);
+              },
+              child: Text(context.tr('Actualiser')),
+            ),
+          ],
         ),
-      ),
-    );
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
+            ),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.8),
+        ),
+      );
+    }
   }
 
   Future<void> _openGithubRepoPicker() async {
