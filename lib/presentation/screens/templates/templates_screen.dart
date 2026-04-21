@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _templatesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -19,7 +20,10 @@ class TemplatesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('Templates'))),
+      appBar: AppBar(
+        title: Text(context.tr('Templates')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: templatesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(

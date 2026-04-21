@@ -6,10 +6,15 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _validationsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchPendingValidations(daysAhead: 14);
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchPendingValidations(
+    daysAhead: 14,
+    projectId: activeProjectId,
+  );
 });
 
 class ContentToolsScreen extends ConsumerWidget {
@@ -21,7 +26,7 @@ class ContentToolsScreen extends ConsumerWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(context.tr('Content Tools')),
+        title: Text(context.tr('Content Tools')),
           bottom: TabBar(
             isScrollable: true,
             tabs: [
@@ -30,6 +35,7 @@ class ContentToolsScreen extends ConsumerWidget {
               Tab(text: context.tr('Audit')),
             ],
           ),
+          actions: const [ProjectPickerAction()],
         ),
         body: TabBarView(
           children: [_ValidationsTab(), _FunnelTab(), _AuditTab()],

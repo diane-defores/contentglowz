@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_picker_action.dart';
 import '../../widgets/skeleton_loader.dart';
 import 'content_card.dart';
 
@@ -62,6 +63,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 foregroundColor: AppTheme.approveColor,
               ),
             ),
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () =>

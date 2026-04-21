@@ -285,7 +285,6 @@ class _ShellContent extends StatelessWidget {
 
     return Column(
       children: [
-        _ProjectSwitcherBar(ref: ref),
         if (showSyncBanner)
           Material(
             color: bannerColor,
@@ -356,108 +355,6 @@ class _ShellContent extends StatelessWidget {
           ),
         Expanded(child: child),
       ],
-    );
-  }
-}
-
-class _ProjectSwitcherBar extends StatelessWidget {
-  const _ProjectSwitcherBar({required this.ref});
-
-  final WidgetRef ref;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final projectsState = ref.watch(projectsStateProvider);
-    final activeProject = ref.watch(activeProjectProvider);
-    final isSwitching = ref.watch(activeProjectControllerProvider).isLoading;
-
-    return Material(
-      color: colorScheme.surfaceContainerLow,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            children: [
-              Icon(Icons.folder_copy_rounded, color: colorScheme.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: projectsState.when(
-                  data: (state) {
-                    final availableProjects = state.items
-                        .where(
-                          (project) =>
-                              !project.isArchived && !project.isDeleted,
-                        )
-                        .toList();
-                    if (availableProjects.isEmpty) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            context.tr('No project selected'),
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            context.tr('Create project'),
-                            style: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          activeProject?.name ??
-                              context.tr('No project selected'),
-                          style: TextStyle(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          activeProject?.url.isNotEmpty == true
-                              ? activeProject!.url
-                              : context.tr('Active project'),
-                          style: TextStyle(color: colorScheme.onSurfaceVariant),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    );
-                  },
-                  loading: () => Text(
-                    context.tr('Loading projects...'),
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
-                  ),
-                  error: (_, _) => Text(
-                    context.tr('Project management unavailable'),
-                    style: TextStyle(color: colorScheme.error),
-                  ),
-                ),
-              ),
-              if (isSwitching)
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else
-                TextButton(
-                  onPressed: () => context.go('/projects'),
-                  child: Text(context.tr('Manage projects')),
-                ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

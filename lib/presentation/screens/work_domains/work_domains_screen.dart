@@ -5,10 +5,12 @@ import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _workDomainsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchWorkDomains();
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchWorkDomains(projectId: activeProjectId);
 });
 
 class WorkDomainsScreen extends ConsumerWidget {
@@ -23,6 +25,7 @@ class WorkDomainsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Work Domains')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_workDomainsProvider),

@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_picker_action.dart';
 
 const _statusFilters = ['all', 'raw', 'enriched', 'used', 'dismissed'];
 const _sourceFilters = [
@@ -30,6 +31,7 @@ class IdeaPoolScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Idea Pool')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(ideasProvider),

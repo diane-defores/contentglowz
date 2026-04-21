@@ -5,12 +5,17 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _activityProvider = FutureProvider<List<Map<String, dynamic>>>((
   ref,
 ) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchActivity(limit: 50);
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchActivity(
+    limit: 50,
+    projectId: activeProjectId,
+  );
 });
 
 class ActivityScreen extends ConsumerWidget {
@@ -25,6 +30,7 @@ class ActivityScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Activity')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_activityProvider),

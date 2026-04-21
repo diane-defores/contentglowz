@@ -5,6 +5,7 @@ import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _runsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -23,6 +24,7 @@ class RunsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Robot Runs')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_runsProvider),

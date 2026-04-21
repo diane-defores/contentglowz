@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import '../../widgets/offline_sync_status_chip.dart';
+import '../../widgets/project_picker_action.dart';
 import 'drip_plan_detail_screen.dart';
 import 'drip_wizard_sheet.dart';
 
@@ -22,6 +23,7 @@ class DripScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Content Drip')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _openWizard(context, ref),

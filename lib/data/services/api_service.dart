@@ -398,10 +398,9 @@ class ApiService {
   }
 
   Future<void> _upsertCachedPersona(Persona persona) async {
-    final personas =
-        (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
-            .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
-            .toList();
+    final personas = (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
+        .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
+        .toList();
     final nextPersonas = [
       for (final entry in personas)
         if (entry.id != persona.id) entry,
@@ -1016,10 +1015,18 @@ class ApiService {
     }
   }
 
-  Future<CreatorProfile?> fetchCreatorProfile() async {
+  Future<CreatorProfile?> fetchCreatorProfile({String? projectId}) async {
+    final params = <String, dynamic>{};
+    if (projectId != null && projectId.trim().isNotEmpty) {
+      params['projectId'] = projectId;
+    }
+    final cacheKey = params.isEmpty
+        ? _creatorProfileCacheKey
+        : _cacheKeyFor(_creatorProfileCacheKey, params);
     final data = await _getCachedData(
       '/api/creator-profile',
-      cacheKey: _creatorProfileCacheKey,
+      cacheKey: cacheKey,
+      queryParameters: params,
     );
     if (data == null) {
       return null;
@@ -1051,18 +1058,31 @@ class ApiService {
     try {
       final response = await _dio.put('/api/creator-profile', data: payload);
       final profile = CreatorProfile.fromJson(_asMap(response.data));
-      await _writeCachedData(_creatorProfileCacheKey, profile.toJson());
+      final cacheKey = _cacheKeyFor(
+        _creatorProfileCacheKey,
+        resolvedProjectId == null ? null : {'projectId': resolvedProjectId},
+      );
+      await _writeCachedData(cacheKey, profile.toJson());
       return profile;
     } on DioException catch (error) {
       final mapped = _mapDioException(error);
-      final current = await _readCachedMap(_creatorProfileCacheKey);
+      final current = await _readCachedMap(
+        _cacheKeyFor(
+          _creatorProfileCacheKey,
+          resolvedProjectId == null ? null : {'projectId': resolvedProjectId},
+        ),
+      );
       final merged = {...?current, ...payload};
       final now = DateTime.now().toIso8601String();
       merged.putIfAbsent('id', () => 'offline-creator-profile');
       merged.putIfAbsent('userId', () => offlineScope);
       merged.putIfAbsent('createdAt', () => now);
       merged['updatedAt'] = now;
-      await _writeCachedData(_creatorProfileCacheKey, merged);
+      final cacheKey = _cacheKeyFor(
+        _creatorProfileCacheKey,
+        resolvedProjectId == null ? null : {'projectId': resolvedProjectId},
+      );
+      await _writeCachedData(cacheKey, merged);
       if (mapped.isOffline) {
         await _enqueueOfflineAction(
           resourceType: 'creator_profile',
@@ -1082,28 +1102,50 @@ class ApiService {
     }
   }
 
-  Future<List<ContentItem>> fetchPendingContent() async {
+  Future<List<ContentItem>> fetchPendingContent({String? projectId}) async {
     if (allowDemoData) {
       return _mockContent();
     }
 
-    final data = await _getCachedData(
-      '/api/status/content',
-      cacheKey: _pendingContentCacheKey,
-      queryParameters: {'status': 'pending_review'},
-    );
-    return _parseContentList(data);
-  }
-
-  Future<List<ContentItem>> fetchContentHistory() async {
-    if (allowDemoData) {
-      return _mockHistory();
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final queryParameters = <String, dynamic>{
+      'status': 'pending_review',
+    };
+    if (resolvedProjectId != null) {
+      queryParameters['project_id'] = resolvedProjectId;
     }
 
     final data = await _getCachedData(
       '/api/status/content',
-      cacheKey: _contentHistoryCacheKey,
-      queryParameters: {'status': 'published,rejected,approved'},
+      cacheKey: _cacheKeyFor(_pendingContentCacheKey, queryParameters),
+      queryParameters: queryParameters,
+    );
+    return _parseContentList(data);
+  }
+
+  Future<List<ContentItem>> fetchContentHistory({String? projectId}) async {
+    if (allowDemoData) {
+      return _mockHistory();
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final queryParameters = <String, dynamic>{
+      'status': 'published,rejected,approved',
+    };
+    if (resolvedProjectId != null) {
+      queryParameters['project_id'] = resolvedProjectId;
+    }
+
+    final data = await _getCachedData(
+      '/api/status/content',
+      cacheKey: _cacheKeyFor(_contentHistoryCacheKey, queryParameters),
+      queryParameters: queryParameters,
     );
     return _parseContentList(data);
   }
@@ -1406,14 +1448,24 @@ class ApiService {
     }
   }
 
-  Future<List<Persona>> fetchPersonas() async {
+  Future<List<Persona>> fetchPersonas({String? projectId}) async {
     if (allowDemoData) {
       return _mockPersonas();
     }
 
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final queryParameters = <String, dynamic>{};
+    if (resolvedProjectId != null) {
+      queryParameters['projectId'] = resolvedProjectId;
+    }
+
     final data = await _getCachedData(
       '/api/personas',
-      cacheKey: _personasCacheKey,
+      cacheKey: _cacheKeyFor(_personasCacheKey, queryParameters),
+      queryParameters: queryParameters,
     );
     if (data is! List) {
       throw const ApiException(
@@ -2618,11 +2670,17 @@ class ApiService {
     double? minScore,
     int limit = 50,
     int offset = 0,
+    String? projectId,
   }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
     final qp = <String, dynamic>{'limit': limit, 'offset': offset};
     if (status != null) qp['status'] = status;
     if (source != null) qp['source'] = source;
     if (minScore != null) qp['min_score'] = minScore;
+    if (resolvedProjectId != null) qp['project_id'] = resolvedProjectId;
     final data = _asMap(
       await _getCachedData(
         '/api/ideas',

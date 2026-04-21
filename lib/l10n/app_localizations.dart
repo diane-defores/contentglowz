@@ -296,7 +296,7 @@ class AppLocalizations {
     'Notification preferences are temporarily unavailable':
         'Les préférences de notification sont temporairement indisponibles',
     'Notifications': 'Notifications',
-    'Off': 'Désactivé',
+    'Off': 'off',
     'Offline (using mock data)': 'Hors ligne (données simulées)',
     'Onboarding': 'Onboarding',
     'Open App Entry': 'Ouvrir l’entrée de l’app',

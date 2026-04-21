@@ -8,6 +8,7 @@ import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/app_error_view.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 class UptimeScreen extends ConsumerStatefulWidget {
   const UptimeScreen({super.key});
@@ -40,6 +41,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
       appBar: AppBar(
         title: Text(context.tr('Uptime')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: _checking
                 ? const SizedBox(

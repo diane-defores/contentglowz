@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_picker_action.dart';
 
 class ResearchScreen extends ConsumerStatefulWidget {
   const ResearchScreen({super.key});
@@ -32,7 +33,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('Research'))),
+      appBar: AppBar(
+        title: Text(context.tr('Research')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

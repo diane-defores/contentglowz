@@ -6,6 +6,7 @@ import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 import '../../widgets/app_error_view.dart';
 
 class HistoryScreen extends ConsumerWidget {
@@ -17,7 +18,10 @@ class HistoryScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('History'))),
+      appBar: AppBar(
+        title: Text(context.tr('History')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: historyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(

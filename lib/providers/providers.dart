@@ -1243,6 +1243,10 @@ final activeProjectProvider = Provider<Project?>((ref) {
       );
 });
 
+final activeProjectIdProvider = Provider<String?>((ref) {
+  return ref.watch(activeProjectProvider.select((project) => project?.id));
+});
+
 class PublishAccountsState {
   const PublishAccountsState({
     this.accounts = const <PublishAccount>[],
@@ -1355,8 +1359,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   @override
   Future<List<ContentItem>> build() async {
     final api = ref.read(apiServiceProvider);
+    final activeProjectId = ref.watch(activeProjectIdProvider);
     try {
-      return await api.fetchPendingContent();
+      return await api.fetchPendingContent(projectId: activeProjectId);
     } catch (error, stackTrace) {
       if (!_isNonCriticalReadFailure(error)) {
         rethrow;
@@ -1376,9 +1381,10 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   Future<void> refresh() async {
     final previous = state.valueOrNull ?? const <ContentItem>[];
     state = const AsyncLoading();
+    final activeProjectId = ref.watch(activeProjectIdProvider);
     try {
       final api = ref.read(apiServiceProvider);
-      final items = await api.fetchPendingContent();
+      final items = await api.fetchPendingContent(projectId: activeProjectId);
       state = AsyncData(items);
     } catch (error, stackTrace) {
       if (!_isNonCriticalReadFailure(error)) {
@@ -1649,8 +1655,9 @@ void _logDegradedRead(
 
 final contentHistoryProvider = FutureProvider<List<ContentItem>>((ref) async {
   final api = ref.read(apiServiceProvider);
+  final activeProjectId = ref.watch(activeProjectIdProvider);
   try {
-    return await api.fetchContentHistory();
+    return await api.fetchContentHistory(projectId: activeProjectId);
   } catch (error, stackTrace) {
     if (!_isNonCriticalReadFailure(error)) {
       rethrow;
@@ -1778,6 +1785,40 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     });
   }
 
+  Future<void> updateContentFrequency({
+    required String key,
+    required int value,
+  }) async {
+    final current = state.valueOrNull;
+    if (current == null) {
+      return;
+    }
+
+    final currentRobotSettings = Map<String, dynamic>.from(
+      current.robotSettings ?? <String, dynamic>{},
+    );
+    final currentFrequency = currentRobotSettings['contentFrequency'];
+    final nextFrequency = currentFrequency is Map
+        ? Map<String, dynamic>.from(currentFrequency)
+        : <String, dynamic>{};
+    nextFrequency[key] = value;
+    final nextRobotSettings = <String, dynamic>{
+      ...currentRobotSettings,
+      'contentFrequency': nextFrequency,
+    };
+
+    if (ref.read(authSessionProvider).isDemo) {
+      state = AsyncData(current.copyWith(robotSettings: nextRobotSettings));
+      return;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      return api.updateSettings({'robotSettings': nextRobotSettings});
+    });
+  }
+
   Future<void> updateLanguage(String language) async {
     final normalizedLanguage = normalizeAppLanguagePreference(language);
     await ref
@@ -1867,6 +1908,13 @@ class ActiveProjectController extends AsyncNotifier<void> {
           .read(currentUserSettingsProvider.notifier)
           .setDefaultProjectId(projectId);
       ref.invalidate(projectsStateProvider);
+      ref.invalidate(projectsProvider);
+      ref.invalidate(pendingContentProvider);
+      ref.invalidate(contentHistoryProvider);
+      ref.invalidate(creatorProfileProvider);
+      ref.invalidate(personasProvider);
+      ref.invalidate(affiliationsProvider);
+      ref.invalidate(ideasProvider);
     });
     if (state.hasError) {
       if (previous != null) {
@@ -1958,17 +2006,20 @@ final creatorProfileProvider = FutureProvider<CreatorProfile?>((ref) async {
   }
 
   final api = ref.read(apiServiceProvider);
-  return api.fetchCreatorProfile();
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchCreatorProfile(projectId: activeProjectId);
 });
 
 final personasProvider = FutureProvider<List<Persona>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchPersonas();
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchPersonas(projectId: activeProjectId);
 });
 
 final affiliationsProvider = FutureProvider<List<AffiliateLink>>((ref) async {
   final api = ref.read(apiServiceProvider);
-  return api.fetchAffiliations();
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  return api.fetchAffiliations(projectId: activeProjectId);
 });
 
 final lastNarrativeProvider = StateProvider<NarrativeSynthesisResult?>(
@@ -1991,9 +2042,11 @@ class IdeasNotifier extends AsyncNotifier<List<Idea>> {
   @override
   Future<List<Idea>> build() async {
     final api = ref.read(apiServiceProvider);
+    final activeProjectId = ref.watch(activeProjectIdProvider);
     return api.fetchIdeas(
       status: _statusFilter == 'all' ? null : _statusFilter,
       source: _sourceFilter == 'all' ? null : _sourceFilter,
+      projectId: activeProjectId,
     );
   }
 

@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_picker_action.dart';
 
 final _configProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiServiceProvider);
@@ -41,7 +42,10 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
     final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('Newsletter'))),
+      appBar: AppBar(
+        title: Text(context.tr('Newsletter')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

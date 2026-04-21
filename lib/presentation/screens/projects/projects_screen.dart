@@ -8,6 +8,7 @@ import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import '../../widgets/offline_sync_status_chip.dart';
+import '../../widgets/project_picker_action.dart';
 
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
@@ -21,6 +22,7 @@ class ProjectsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Projects')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             tooltip: context.tr('Refresh'),
             onPressed: () => ref.invalidate(projectsStateProvider),

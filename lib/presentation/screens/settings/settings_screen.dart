@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,6 +12,7 @@ import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -54,7 +56,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('Settings'))),
+      appBar: AppBar(
+        title: Text(context.tr('Settings')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -64,54 +69,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildCard(
             child: Column(
               children: [
-                // Status indicator
-                Row(
-                  children: [
-                    backendStatus.when(
-                      data: (data) {
-                        final isOnline =
-                            data['status'] == 'ok' ||
-                            data['status'] == 'healthy';
-                        return Row(
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isOnline
-                                    ? AppTheme.approveColor
-                                    : AppTheme.rejectColor,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              isOnline
-                                  ? context.tr('Connected')
-                                  : context.tr('Offline (using mock data)'),
-                              style: TextStyle(
-                                color: isOnline
-                                    ? AppTheme.approveColor
-                                    : AppTheme.rejectColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                      loading: () => Row(
-                        children: [
-                          SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                backendStatus.when(
+                  data: (data) {
+                    final isOnline =
+                        data['status'] == 'ok' ||
+                        data['status'] == 'healthy';
+                    return Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isOnline
+                                ? AppTheme.approveColor
+                                : AppTheme.rejectColor,
                           ),
-                          SizedBox(width: 8),
-                          Text(context.tr('Checking...')),
-                        ],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isOnline
+                              ? context.tr('Connected')
+                              : context.tr('Offline (using mock data)'),
+                          style: TextStyle(
+                            color: isOnline
+                                ? AppTheme.approveColor
+                                : AppTheme.rejectColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => Row(
+                    children: [
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                      error: (_, _) => Row(
+                      SizedBox(width: 8),
+                      Text(context.tr('Checking...')),
+                    ],
+                  ),
+                  error: (error, _) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
                           Container(
                             width: 10,
@@ -128,8 +133,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      _buildErrorDiagnosticRow(
+                        details:
+                            'Backend error: ${(error?.toString() ?? context.tr('No details')).trim()}',
+                        linkUrl: '${ref.read(apiBaseUrlProvider)}/health',
+                        linkLabel: context.tr('Open {screen}', {
+                          'screen': 'Health',
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
                 if (appAccess?.isDegraded == true) ...[
                   const SizedBox(height: 12),
@@ -426,7 +439,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             height: 1.4,
           ),
         ),
-        error: (_, _) => Column(
+        error: (error, _) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -435,6 +448,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: theme.colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
+            ),
+            const SizedBox(height: 8),
+            _buildErrorDiagnosticRow(
+              details: 'GitHub error: ${(error?.toString() ?? context.tr('No details')).trim()}',
+              linkUrl:
+                  '${ref.read(apiBaseUrlProvider)}/api/integrations/github/status',
+              linkLabel: context.tr('Open GitHub status endpoint'),
             ),
             const SizedBox(height: 8),
             FilledButton(
@@ -751,7 +771,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 unit: '/month',
                 max: 30,
                 color: AppTheme.colorForContentType('Article'),
-                onChanged: (v) => _updateFrequency('blog_posts_per_month', v),
+                onChanged: settings == null
+                    ? null
+                    : (v) => _updateFrequency('blog_posts_per_month', v),
               ),
               const SizedBox(height: 12),
               _frequencyRow(
@@ -761,7 +783,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 unit: '/week',
                 max: 7,
                 color: AppTheme.warningColor,
-                onChanged: (v) => _updateFrequency('newsletters_per_week', v),
+                onChanged: settings == null
+                    ? null
+                    : (v) => _updateFrequency('newsletters_per_week', v),
               ),
               const SizedBox(height: 12),
               _frequencyRow(
@@ -771,7 +795,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 unit: '/day',
                 max: 10,
                 color: AppTheme.colorForContentType('Short'),
-                onChanged: (v) => _updateFrequency('shorts_per_day', v),
+                onChanged: settings == null
+                    ? null
+                    : (v) => _updateFrequency('shorts_per_day', v),
               ),
               const SizedBox(height: 12),
               _frequencyRow(
@@ -781,7 +807,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 unit: '/day',
                 max: 10,
                 color: AppTheme.editColor,
-                onChanged: (v) => _updateFrequency('social_posts_per_day', v),
+                onChanged: settings == null
+                    ? null
+                    : (v) => _updateFrequency('social_posts_per_day', v),
               ),
             ],
           );
@@ -807,7 +835,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required String unit,
     required int max,
     required Color color,
-    required ValueChanged<int> onChanged,
+    required ValueChanged<int>? onChanged,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -826,7 +854,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             min: 0,
             max: max.toDouble(),
             divisions: max,
-            onChanged: (v) => onChanged(v.round()),
+            onChanged: onChanged == null ? null : (v) => onChanged(v.round()),
           ),
         );
         final valueText = Text(
@@ -886,17 +914,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _updateFrequency(String key, int value) async {
-    try {
-      final api = ref.read(apiServiceProvider);
-      await api.updateSettings({
-        'robotSettings': {
-          'contentFrequency': {key: value},
-        },
-      });
-      ref.invalidate(currentUserSettingsProvider);
-    } catch (_) {
-      // Silently fail — settings might not be persisted if not authenticated
-    }
+    await ref
+        .read(currentUserSettingsProvider.notifier)
+        .updateContentFrequency(key: key, value: value);
   }
 
   Widget _buildCard({required Widget child}) {
@@ -1233,6 +1253,94 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         minimumSize: const Size(0, 34),
       ),
       child: Text(context.tr('Connect'), style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+  Widget _buildErrorDiagnosticRow({
+    required String details,
+    required String linkUrl,
+    required String linkLabel,
+  }) {
+    final theme = Theme.of(context);
+    final clippedDetails = details.trim();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          clippedDetails,
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 12,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            TextButton.icon(
+              onPressed: () => _openUrl(linkUrl),
+              icon: const Icon(Icons.open_in_new, size: 18),
+              label: Text(linkLabel),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.infoColor,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => _copyErrorText(clippedDetails),
+              icon: const Icon(Icons.content_copy, size: 18),
+              label: const Text('Copier'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.colorScheme.onSurfaceVariant,
+                side: BorderSide(color: theme.colorScheme.outlineVariant),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openUrl(String url) async {
+    if (!mounted) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('Cannot open URL: invalid format.')),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+        ),
+      );
+      return;
+    }
+
+    final canOpen = await canLaunchUrl(uri);
+    if (!canOpen) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('Could not open link in browser.')),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+        ),
+      );
+      return;
+    }
+
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _copyErrorText(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.tr('Error copied to clipboard.')),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
     );
   }
 

@@ -6,6 +6,7 @@ import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 class SeoScreen extends ConsumerStatefulWidget {
   const SeoScreen({super.key});
@@ -32,7 +33,10 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
     final githubStatus = ref.watch(githubIntegrationStatusProvider).valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('SEO Mesh'))),
+      appBar: AppBar(
+        title: Text(context.tr('SEO Mesh')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

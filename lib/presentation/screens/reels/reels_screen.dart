@@ -5,6 +5,7 @@ import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/project_picker_action.dart';
 
 class ReelsScreen extends ConsumerStatefulWidget {
   const ReelsScreen({super.key});
@@ -30,7 +31,10 @@ class _ReelsScreenState extends ConsumerState<ReelsScreen> {
     final palette = AppTheme.paletteOf(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.tr('Reels'))),
+      appBar: AppBar(
+        title: Text(context.tr('Reels')),
+        actions: const [ProjectPickerAction()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

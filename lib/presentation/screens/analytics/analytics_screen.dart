@@ -5,6 +5,7 @@ import '../../../data/models/content_item.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/project_picker_action.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -24,6 +25,7 @@ class AnalyticsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.tr('Analytics')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {

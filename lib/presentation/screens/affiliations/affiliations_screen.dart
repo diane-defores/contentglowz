@@ -6,6 +6,7 @@ import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 import '../../widgets/offline_sync_status_chip.dart';
+import '../../widgets/project_picker_action.dart';
 import 'affiliation_form_sheet.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -29,6 +30,7 @@ class _AffiliationsScreenState extends ConsumerState<AffiliationsScreen> {
       appBar: AppBar(
         title: Text(context.tr('Affiliations')),
         actions: [
+          const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _openForm(context),
