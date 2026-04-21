@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../l10n/app_localizations.dart';
@@ -21,9 +22,11 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
     final constrainedWidth = (screenSize.width - 24).clamp(0.0, 420.0);
     final estimatedCardWidth = constrainedWidth.isFinite ? constrainedWidth : 420.0;
     final estimatedCardHeight = 220.0;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    const bottomBarClearance = 100.0;
     _position = Offset(
       (screenSize.width - estimatedCardWidth) / 2,
-      screenSize.height - estimatedCardHeight - 16,
+      screenSize.height - estimatedCardHeight - safeBottom - bottomBarClearance,
     );
     _position = Offset(
       _position.dx.clamp(12, (screenSize.width - 12).clamp(12, double.infinity)),
@@ -289,6 +292,9 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
     InAppTourController controller,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
+    final currentRoute = GoRouterState.of(context).uri.path;
+    final route = tour.currentStep.routePath;
+    final hasNavigationShortcut = route != null && route != currentRoute;
     return Row(
       children: [
         if (!tour.isFirst)
@@ -309,6 +315,22 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
           ),
           child: Text(context.tr('Skip tour')),
         ),
+        if (hasNavigationShortcut) ...[
+          const SizedBox(width: 6),
+          TextButton(
+            onPressed: () => context.go(route),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.approveColor,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+            child: Text(
+              context.tr(
+                'Open {screen}',
+                {'screen': context.tr(tour.currentStep.title)},
+              ),
+            ),
+          ),
+        ],
         const Spacer(),
         FilledButton.icon(
           onPressed: () => controller.next(context),

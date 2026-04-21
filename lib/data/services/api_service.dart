@@ -920,6 +920,24 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> fetchProjectContentTree({
+    required String projectId,
+    String? path,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final queryParameters = _compactMap({'path': path?.trim().isEmpty == true ? null : path?.trim()});
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/content-tree',
+        queryParameters: queryParameters,
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<AppBootstrap> fetchBootstrap() async {
     final data = await _getCachedData(
       '/api/bootstrap',
@@ -1850,6 +1868,107 @@ class ApiService {
         return const [];
       }
       rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchGithubIntegrationStatus() async {
+    if (allowDemoData) {
+      return const {'connected': false};
+    }
+
+    try {
+      return _asMap((await _dio.get('/api/integrations/github/status')).data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<String?> getGithubConnectUrl() async {
+    if (allowDemoData) return null;
+
+    try {
+      final response = await _dio.get('/api/integrations/github/connect');
+      final data = _asMap(response.data);
+      return data['connect_url']?.toString();
+    } on DioException {
+      return null;
+    }
+  }
+
+  Future<bool> disconnectGithubIntegration() async {
+    if (allowDemoData) return false;
+
+    try {
+      await _dio.delete('/api/integrations/github/disconnect');
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchGithubRepos({
+    String? query,
+    int perPage = 100,
+    int page = 1,
+  }) async {
+    if (allowDemoData) {
+      return const [];
+    }
+
+    try {
+      final response = await _dio.get(
+        '/api/integrations/github/repos',
+        queryParameters: _compactMap({
+          'query': query?.trim().isEmpty == true ? null : query?.trim(),
+          'per_page': perPage,
+          'page': page,
+        }),
+      );
+      final data = _asMap(response.data);
+      final repos = data['repos'];
+      if (repos is List) {
+        return repos
+            .whereType<Map>()
+            .map((entry) => Map<String, dynamic>.from(entry))
+            .toList();
+      }
+      if (repos is List<Map<String, dynamic>>) {
+        return repos;
+      }
+      return const [];
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        return const [];
+      }
+      throw mapped;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchGithubRepoTree({
+    required String owner,
+    required String repo,
+    String path = '',
+  }) async {
+    if (allowDemoData) {
+      return const {};
+    }
+
+    try {
+      return _asMap(
+        (
+          await _dio.get(
+            '/api/integrations/github/repo-tree',
+            queryParameters: _compactMap({
+              'owner': owner.trim(),
+              'repo': repo.trim(),
+              'path': path.trim().isEmpty ? null : path.trim(),
+            }),
+          )
+        ).data,
+      );
+    } on DioException catch (error) {
+      throw _mapDioException(error);
     }
   }
 

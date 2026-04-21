@@ -190,6 +190,7 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | ✅ | Accès complet au shell authentifié en mode dégradé, sans renvoi forcé vers l'entrée | ✅ done |
+| ✅ | Stabiliser la navigation au retour d’onglet : rester sur la route courante pendant la revalidation en arrière-plan | ✅ done |
 | ✅ | Cache persistant des lectures principales + état `stale` exposé dans le shell/Uptime | ✅ done |
 | ✅ | Queue persistée des mutations backend sûres avec retry automatique | ✅ done |
 | ✅ | Réconciliation `tempId -> realId` pour projets, personas et affiliations | ✅ done |
@@ -213,6 +214,7 @@
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | ✅ done |
+| 🟠 | Ajouter une visite guidée simplifiée (4 cartes max) pour mode “publier vite” : parcours orienté résultats, choix rapide au premier lancement | 📋 todo |
 | 🟠 | Passe i18n complémentaire sur les écrans secondaires encore partiellement en anglais | 🔄 in progress |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
@@ -225,6 +227,9 @@
 | ✅ | Étape 4 — Clustering avancé : cluster_by_tags + cluster_auto via Topical Mesh Architect (fallback gracieux si crewai absent) | ✅ done |
 | ✅ | Étape 5 — GSC : GSCClient (Indexing API submit + URL Inspection API check), endpoints /gsc/submit-urls et /gsc/indexation-status, auto-submit dans execute-tick | ✅ done |
 | 🟠 | Étape 6 — Flutter UI : écran liste plans + wizard création + dashboard progression + actions lifecycle | ✅ done |
+| ✅ | Publier les plans Drip avec heure aléatoire dans une plage horaire (plage début/fin par plan) | ✅ done |
+| ✅ | Clarifier l’étape 3 du wizard Drip (clustering + stratégie “pillars first”) | ✅ done |
+| ✅ | Ajouter un sélecteur de dossier source Drip depuis le projet actif (réutilisation `content_directories`) pour éviter la saisie manuelle | ✅ done |
 | 🟡 | Étape 7 — Passe i18n complémentaire sur les écrans secondaires et harmonisation des clés de traduction | 📋 todo |
 
 ### 🟢 P3 — Backlog

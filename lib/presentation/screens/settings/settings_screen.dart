@@ -40,6 +40,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
+    final githubIntegration = ref.watch(githubIntegrationStatusProvider);
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
     final languagePreference = ref.watch(appLanguagePreferenceProvider);
@@ -167,6 +168,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
+
+          const SizedBox(height: 28),
+
+          // GitHub integration
+          _sectionHeader('GitHub integration'),
+          const SizedBox(height: 12),
+          _buildGithubIntegrationCard(githubIntegration),
 
           const SizedBox(height: 28),
 
@@ -358,6 +366,86 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         fontWeight: FontWeight.w600,
         color: colorScheme.onSurfaceVariant,
         letterSpacing: 1.2,
+      ),
+    );
+  }
+
+  Widget _buildGithubIntegrationCard(AsyncValue<GithubIntegrationState> state) {
+    final theme = Theme.of(context);
+
+    return _buildCard(
+      child: state.when(
+        data: (value) {
+          final statusText = value.connected
+              ? context.tr('GitHub is connected ({username})', {
+                  'username': value.username ?? context.tr('unknown'),
+                })
+              : context.tr('GitHub is not connected.');
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                statusText,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+              if (value.scope != null && value.scope!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  context.tr('Granted scopes: {scope}', {'scope': value.scope!}),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              value.connected
+                  ? OutlinedButton.icon(
+                      icon: const Icon(Icons.link_off, size: 18),
+                      label: Text(context.tr('Disconnect GitHub')),
+                      onPressed: _disconnectGithub,
+                    )
+                  : FilledButton(
+                      onPressed: _connectGithub,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppTheme.approveColor,
+                      ),
+                      child: Text(context.tr('Connect GitHub')),
+                    ),
+            ],
+          );
+        },
+        loading: () => Text(
+          context.tr('Checking GitHub integration...'),
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            height: 1.4,
+          ),
+        ),
+        error: (_, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.tr('Unable to load GitHub integration state.'),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: _connectGithub,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.approveColor,
+              ),
+              child: Text(context.tr('Try reconnecting')),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1146,6 +1234,132 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       child: Text(context.tr('Connect'), style: const TextStyle(fontSize: 12)),
     );
+  }
+
+  Future<void> _connectGithub() async {
+    final api = ref.read(apiServiceProvider);
+    final connectUrl = await api.getGithubConnectUrl();
+
+    if (connectUrl == null || connectUrl.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'GitHub OAuth is unavailable. Check backend configuration.',
+            ),
+          ),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final uri = Uri.parse(connectUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(context.tr('GitHub connection')),
+          content: Text(
+            context.tr(
+              'A browser opened for authorization. Once you finish, return here and tap Refresh.',
+            ),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(context.tr('Close')),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.invalidate(githubIntegrationStatusProvider);
+              },
+              child: Text(context.tr('Refresh')),
+            ),
+          ],
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Could not open browser for GitHub authorization'),
+          ),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _disconnectGithub() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('Disconnect GitHub?')),
+        content: Text(
+          context.tr(
+            'This removes your GitHub connection and hides private repository data from the picker.',
+          ),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.rejectColor,
+            ),
+            child: Text(context.tr('Disconnect')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    final api = ref.read(apiServiceProvider);
+    final success = await api.disconnectGithubIntegration();
+    if (!mounted) return;
+
+    if (success) {
+      ref.invalidate(githubIntegrationStatusProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('GitHub disconnected.'))),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('Failed to disconnect GitHub.')),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _connectChannel(String channelName, String? platform) async {

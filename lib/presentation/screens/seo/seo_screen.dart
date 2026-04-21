@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
@@ -17,6 +18,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
   final _repoUrlCtrl = TextEditingController();
   bool _analyzing = false;
   Map<String, dynamic>? _result;
+  bool _isRepoPickerLoading = false;
 
   @override
   void dispose() {
@@ -45,6 +47,17 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             decoration: InputDecoration(
               labelText: context.tr('Repository URL'),
               hintText: context.tr('https://github.com/user/site'),
+              suffixIcon: IconButton(
+                icon: _isRepoPickerLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.travel_explore_rounded),
+                tooltip: context.tr('Choose from connected GitHub repos'),
+                onPressed: _isRepoPickerLoading ? null : _openGithubRepoPicker,
+              ),
             ),
             keyboardType: TextInputType.url,
           ),
@@ -102,6 +115,102 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
       }
     } finally {
       if (mounted) setState(() => _analyzing = false);
+    }
+  }
+
+  Future<void> _openGithubRepoPicker() async {
+    final api = ref.read(apiServiceProvider);
+    final githubStatus = ref.read(githubIntegrationStatusProvider).valueOrNull;
+    if (githubStatus?.connected != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Connect your GitHub account in Settings before selecting from the picker.',
+            ),
+          ),
+          action: SnackBarAction(
+            label: context.tr('Open Settings'),
+            onPressed: () => context.push('/settings'),
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isRepoPickerLoading = true);
+    try {
+      final repos = await api.fetchGithubRepos();
+      if (!mounted) {
+        return;
+      }
+
+      final selected = await showDialog<Map<String, dynamic>?>(
+        context: context,
+        builder: (context) {
+          final sorted = [...repos]
+            ..sort((a, b) {
+              final updatedA = a['updated_at']?.toString() ?? '';
+              final updatedB = b['updated_at']?.toString() ?? '';
+              return updatedB.compareTo(updatedA);
+            });
+
+          return AlertDialog(
+            title: Text(context.tr('Choisissez un dépôt GitHub')),
+            content: SizedBox(
+              width: 520,
+              height: 420,
+              child: sorted.isEmpty
+                  ? Center(
+                      child: Text(
+                        context.tr('Aucun dépôt trouvé pour ce compte.'),
+                      ),
+                    )
+                  : ListView(
+                      children: sorted.map((repo) {
+                        final fullName = repo['full_name']?.toString() ?? '';
+                        final description =
+                            repo['description']?.toString() ?? '';
+                        return ListTile(
+                          leading: const Icon(Icons.folder_copy_rounded),
+                          title: Text(fullName),
+                          subtitle: Text(
+                            description.isEmpty
+                                ? context.tr('Aucune description')
+                                : description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => Navigator.pop(context, {
+                            'html_url': repo['html_url'],
+                            'full_name': fullName,
+                          }),
+                        );
+                      }).toList(),
+                    ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.tr('Cancel')),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (selected == null || !mounted) {
+        return;
+      }
+
+      final htmlUrl = selected['html_url']?.toString() ?? '';
+      final fullName = selected['full_name']?.toString() ?? '';
+      final next = (htmlUrl.isNotEmpty) ? htmlUrl : 'https://github.com/$fullName';
+      if (next.isNotEmpty) {
+        setState(() => _repoUrlCtrl.text = next);
+      }
+    } finally {
+      if (mounted) setState(() => _isRepoPickerLoading = false);
     }
   }
 }

@@ -23,6 +23,7 @@ class DripWizardSheet extends ConsumerStatefulWidget {
 class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   int _step = 0;
   bool _submitting = false;
+  bool _didSeedDirectoryFromProject = false;
 
   // Step 1 — Basics
   final _nameCtrl = TextEditingController();
@@ -33,7 +34,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   int _itemsPerDay = 3;
   final _startDateCtrl = TextEditingController();
   final List<int> _publishDays = [0, 1, 2, 3, 4]; // Mon-Fri
-  final _publishTimeCtrl = TextEditingController(text: '06:00');
+  final _publishTimeStartCtrl = TextEditingController(text: '06:00');
+  final _publishTimeEndCtrl = TextEditingController(text: '18:00');
   final _timezoneCtrl = TextEditingController(text: 'Europe/Paris');
   int _spacingMinutes = 180;
   final _spacingMinutesCtrl = TextEditingController(text: '180');
@@ -56,6 +58,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   bool _gscSubmitUrls = true;
   int _gscMaxPerDay = 200;
   final _gscSiteUrlCtrl = TextEditingController();
+  bool _isGithubRepoPickerLoading = false;
 
   @override
   void initState() {
@@ -69,7 +72,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
     _nameCtrl.dispose();
     _directoryCtrl.dispose();
     _startDateCtrl.dispose();
-    _publishTimeCtrl.dispose();
+    _publishTimeStartCtrl.dispose();
+    _publishTimeEndCtrl.dispose();
     _timezoneCtrl.dispose();
     _spacingMinutesCtrl.dispose();
     _webhookUrlCtrl.dispose();
@@ -175,10 +179,41 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
 
   bool get _canAdvance => switch (_step) {
     0 => _nameCtrl.text.trim().isNotEmpty,
-    1 => _startDateCtrl.text.isNotEmpty && _publishDays.isNotEmpty,
+    1 => _startDateCtrl.text.isNotEmpty &&
+        _publishDays.isNotEmpty &&
+        _isTimeRangeValid(_publishTimeStartCtrl.text.trim(), _publishTimeEndCtrl.text.trim()),
     2 => true,
     _ => true,
   };
+
+  bool _isTimeRangeValid(String start, String end) {
+    final startParts = start.split(':');
+    final endParts = end.split(':');
+    if (startParts.length != 2 || endParts.length != 2) {
+      return false;
+    }
+    final startHour = int.tryParse(startParts[0]);
+    final startMinute = int.tryParse(startParts[1]);
+    final endHour = int.tryParse(endParts[0]);
+    final endMinute = int.tryParse(endParts[1]);
+    if (startHour == null ||
+        startMinute == null ||
+        endHour == null ||
+        endMinute == null ||
+        startHour < 0 ||
+        startHour > 23 ||
+        endHour < 0 ||
+        endHour > 23 ||
+        startMinute < 0 ||
+        startMinute > 59 ||
+        endMinute < 0 ||
+        endMinute > 59) {
+      return false;
+    }
+    final startMinutes = startHour * 60 + startMinute;
+    final endMinutes = endHour * 60 + endMinute;
+    return startMinutes < endMinutes;
+  }
 
   String _localizedWeekDay(int index) => switch (index) {
         0 => context.tr('Mon'),
@@ -208,17 +243,230 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         onChanged: (_) => setState(() {}),
       ),
       const SizedBox(height: 16),
+      _buildDirectoryPresets(),
+      const SizedBox(height: 12),
       TextField(
         controller: _directoryCtrl,
         decoration: InputDecoration(
           labelText: context.tr('Content directory'),
           hintText: context.tr('e.g. src/data'),
+          helperText: context.tr('Parcourir l\'arborescence du dépôt pour choisir un dossier'),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.folder_open),
+            tooltip: context.tr('Parcourir les dossiers'),
+            onPressed: ref.read(activeProjectProvider) == null
+                ? null
+                : () => _openDirectoryBrowser(context),
+          ),
           border: const OutlineInputBorder(),
-          helperText: context.tr('Absolute path to the Markdown files'),
         ),
       ),
     ],
   );
+
+  Future<void> _openDirectoryBrowser(BuildContext context) async {
+    final activeProject = ref.read(activeProjectProvider);
+    if (activeProject == null) {
+      return;
+    }
+
+    final initialPath = _directoryCtrl.text.trim();
+    final selectedPath = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        String browsePath = initialPath;
+        String normalizePath(String path) {
+          return path
+              .replaceAll('\\', '/')
+              .replaceAll(RegExp(r'^/+'), '')
+              .replaceAll(RegExp(r'/+$'), '');
+        }
+
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.tr('Choisir le dossier de contenu')),
+            content: SizedBox(
+              width: 420,
+              height: 420,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${context.tr('Chemin sélectionné')}: ${browsePath.isEmpty ? '/' : browsePath}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: FutureBuilder<Map<String, dynamic>>(
+                      future: ref
+                          .read(apiServiceProvider)
+                          .fetchProjectContentTree(
+                            projectId: activeProject.id,
+                            path: browsePath.isEmpty ? null : browsePath,
+                          ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text(
+                              '${context.tr('Unable to load content tree')}: ${snapshot.error}',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          );
+                        }
+                        final data = snapshot.data ?? const {};
+                        final entries =
+                            (data['directories'] as List?)
+                                ?.whereType<Map<String, dynamic>>()
+                                .toList() ??
+                            const [];
+
+                        if (entries.isEmpty) {
+                          return Center(
+                            child: Text(
+                              context.tr('Aucun dossier détecté à cet emplacement'),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          );
+                        }
+
+                        final parentPath = data['parent_path']?.toString();
+
+                        return ListView(
+                          children: [
+                            if (parentPath != null)
+                              ListTile(
+                                leading: const Icon(Icons.arrow_upward),
+                                title: Text(context.tr('Remonter d\'un niveau')),
+                                onTap: () {
+                                  setState(() {
+                                    browsePath = parentPath;
+                                  });
+                                },
+                              )
+                            else
+                              const SizedBox.shrink(),
+                            ...entries.map(
+                              (entry) {
+                                final name = entry['name']?.toString() ?? '';
+                                final path = entry['path']?.toString() ?? name;
+                                final hasMarkdown =
+                                    entry['has_markdown_files'] == true;
+
+                                return ListTile(
+                                  leading: const Icon(Icons.folder),
+                                  title: Text(name),
+                                  subtitle: Text(
+                                    hasMarkdown
+                                        ? context.tr(
+                                            'Contient des fichiers markdown',
+                                          )
+                                        : context.tr(
+                                            'Aucun fichier markdown trouvé',
+                                          ),
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  selected:
+                                      normalizePath(path) ==
+                                      normalizePath(browsePath),
+                                  onTap: () {
+                                    setState(() {
+                                      browsePath = normalizePath(path);
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.tr('Cancel')),
+              ),
+              FilledButton(
+                onPressed: browsePath.isEmpty
+                    ? null
+                    : () => Navigator.pop(context, normalizePath(browsePath)),
+                child: Text(context.tr('Choisir ce dossier')),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selectedPath != null) {
+      setState(() => _directoryCtrl.text = selectedPath);
+    }
+  }
+
+  Widget _buildDirectoryPresets() {
+    final activeProject = ref.watch(activeProjectProvider);
+    final presetPaths = activeProject?.settings?.contentDirectories
+            .map((entry) => entry.path.trim())
+            .where((path) => path.isNotEmpty)
+            .toSet()
+            .toList() ??
+        const <String>[];
+
+    if (presetPaths.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (!_didSeedDirectoryFromProject && _directoryCtrl.text.trim().isEmpty) {
+      _didSeedDirectoryFromProject = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _directoryCtrl.text = presetPaths.first;
+        });
+      });
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('Suggestions depuis le projet actif'),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: presetPaths
+              .map(
+                (path) => ActionChip(
+                  label: Text(path),
+                  onPressed: () => setState(() => _directoryCtrl.text = path),
+                  labelStyle: TextStyle(
+                    color:
+                        _directoryCtrl.text.trim() == path
+                            ? Theme.of(context).colorScheme.onSecondaryContainer
+                            : Theme.of(context).colorScheme.onSurface,
+                  ),
+                  backgroundColor:
+                      _directoryCtrl.text.trim() == path
+                          ? Theme.of(context).colorScheme.secondaryContainer
+                          : Theme.of(context).colorScheme.surfaceContainer,
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
 
   // ─── Step 2: Cadence ─────────────────────────────
 
@@ -271,13 +519,37 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         ],
       ),
       const SizedBox(height: 16),
-      TextField(
-        controller: _publishTimeCtrl,
-        decoration: InputDecoration(
-          labelText: context.tr('Publish time'),
-          border: const OutlineInputBorder(),
-          hintText: context.tr('HH:MM'),
-        ),
+      Text(context.tr('Random publish time')),
+      const SizedBox(height: 8),
+      Text(
+        context.tr('Choose a daily time window. Publishing will be random inside this window.'),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _publishTimeStartCtrl,
+              decoration: InputDecoration(
+                labelText: context.tr('From (HH:MM)'),
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _publishTimeEndCtrl,
+              decoration: InputDecoration(
+                labelText: context.tr('To (HH:MM)'),
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+        ],
       ),
       const SizedBox(height: 16),
       Row(
@@ -336,8 +608,22 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep3() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Clustering Strategy'),
+      Text(context.tr('Stratégie de clustering'),
           style: Theme.of(context).textTheme.titleSmall),
+      const SizedBox(height: 8),
+      Text(
+        context.tr(
+          'Le clustering est la logique de groupement thématique qui décide de l’ordre d’apparition des articles.',
+        ),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      const SizedBox(height: 12),
+      Text(
+        context.tr(
+          'Objectif éditorial : publier les contenus dans une séquence qui fait sens (des concepts larges vers les déclinaisons), pour réduire la dispersion et faciliter la lecture continue.',
+        ),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       const SizedBox(height: 16),
       ...(_clusterModes.map((m) => ListTile(
         leading: Icon(
@@ -345,24 +631,44 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           color: _clusterMode == m ? Theme.of(context).colorScheme.primary : null,
         ),
         title: Text(switch (m) {
-          'directory' => context.tr('By directory structure'),
-          'tags' => context.tr('By frontmatter tags'),
-          'auto' => context.tr('Auto (AI detects semantic cocoons)'),
-          'none' => context.tr('No clustering (alphabetical)'),
+          'directory' => context.tr('Par structure de dossier'),
+          'tags' => context.tr('Par tag de front matter'),
+          'auto' => context.tr('Auto (détection sémantique des cocons)'),
+          'none' => context.tr('Sans clustering (ordre alphabétique)'),
           _ => m,
         }),
         subtitle: Text(switch (m) {
-          'directory' => context.tr('Each folder becomes a cluster. index.md = pillar.'),
-          'tags' => context.tr('First tag = cluster. Most tags = pillar.'),
-          'auto' => context.tr('Topical Mesh Architect detects pillars & spokes.'),
-          'none' => context.tr('Articles published in file order.'),
+          'directory' => context.tr(
+            'Le clustering par dossier exploite la structure du dépôt (`/blog`, `/blog/seo`, `/newsletter`).'
+            ' Cette méthode est robuste si votre arborescence reflète déjà la hiérarchie éditoriale.',
+          ),
+          'tags' => context.tr(
+            'Le clustering par tags lit les métadonnées `front matter` et regroupe les contenus qui partagent des sujets similaires.'
+            ' C’est la méthode adaptée si votre taxonomie est bien tenue et cohérente entre articles.',
+          ),
+          'auto' => context.tr(
+            'Le mode Auto reconstruit les cocons automatiquement à partir des similarités sémantiques du corpus.'
+            ' Il identifie les relations logiques entre contenus même si vos tags ou dossiers sont imparfaits.',
+          ),
+          'none' => context.tr(
+            'Le mode “Sans clustering” ne force aucun regroupement éditorial.'
+            ' La publication suit uniquement la cadence/régularité définies, sans ordre thématique supplémentaire.',
+          ),
           _ => '',
         }, style: const TextStyle(fontSize: 12)),
         onTap: () => setState(() => _clusterMode = m),
       ))),
       const SizedBox(height: 8),
       SwitchListTile(
-        title: Text(context.tr('Publish pillar before spokes')),
+        title: Text(context.tr('Publier le pilier avant les satellites')),
+        subtitle: Text(
+          context.tr(
+            'Le “pilier” est l’article central d’un thème ; les “satellites” sont les contenus qui l’approfondissent.'
+            ' Quand cette option est activée, l’ordre devient : “pilier puis satellites”.'
+            ' Cela améliore la cohérence éditoriale quand un sujet est construit progressivement.',
+          ),
+          style: const TextStyle(fontSize: 12),
+        ),
         value: _pillarFirst,
         onChanged: (v) => setState(() => _pillarFirst = v),
       ),
@@ -374,12 +680,12 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   Widget _buildStep4() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(context.tr('Deployment'), style: Theme.of(context).textTheme.titleSmall),
+      Text(context.tr('Déploiement'), style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 16),
       DropdownButtonFormField<String>(
         initialValue: _framework,
         decoration: InputDecoration(
-            labelText: context.tr('SSG Framework'),
+            labelText: context.tr('Framework SSG'),
             border: const OutlineInputBorder()),
         items: _frameworks.map((f) => DropdownMenuItem(value: f, child: Text(f[0].toUpperCase() + f.substring(1)))).toList(),
         onChanged: (v) => setState(() => _framework = v!),
@@ -388,29 +694,64 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       DropdownButtonFormField<String>(
         initialValue: _gatingMethod,
         decoration: InputDecoration(
-            labelText: context.tr('Gating method'),
+            labelText: context.tr('Méthode de contrôle'),
             border: const OutlineInputBorder()),
         items: _gatingMethods.map((g) => DropdownMenuItem(
           value: g,
           child: Text(switch (g) {
-            'future_date' => context.tr('Future pubDate (recommended)'),
-            'draft_flag' => context.tr('Draft flag'),
-            'both' => context.tr('Both'),
+            'future_date' => context.tr('Date de publication future (recommandé)'),
+            'draft_flag' => context.tr('Drapeau draft'),
+            'both' => context.tr('Les deux'),
             _ => g,
           }),
         )).toList(),
         onChanged: (v) => setState(() => _gatingMethod = v!),
       ),
+      const SizedBox(height: 8),
+      Padding(
+        padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+        child: Text(
+          switch (_gatingMethod) {
+            'future_date' => context.tr(
+              'Méthode de contrôle par date : le front matter reçoit une date de publication future.'
+              ' Tant que cette date n’est pas atteinte, le moteur SSG considère la page comme planifiée.'
+              ' Ce mode dépend directement du support de la planification par votre générateur de site.',
+            ),
+            'draft_flag' => context.tr(
+              'Méthode de contrôle par flag : le front matter est écrit avec `draft: true` (ou équivalent) avant publication.'
+              ' Au moment de la sortie prévue, le flag est retiré pour rendre l’article visible.'
+              ' Utile quand votre pipeline sait déjà gérer le brouillon de manière explicite.',
+            ),
+            'both' => context.tr(
+              'Méthode combinée : Drip applique à la fois la date future et `draft: true`, puis lève les deux en même temps.'
+              ' Plus strict, ce mode réduit les risques de publication prématurée.'
+              ' À privilégier si votre pipeline est strict sur les deux mécanismes.',
+            ),
+            _ => '',
+          },
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ),
       const SizedBox(height: 12),
       SwitchListTile(
-        title: Text(context.tr('Index-proof (robots noindex until publish)')),
-        subtitle: Text(context.tr('Prevents premature indexing if your site respects frontmatter robots')),
+        title: Text(context.tr('Protection indexation précoce (noindex jusqu’à publication)')),
+        subtitle: Text(
+          context.tr(
+            'Met automatiquement un marqueur noindex dans le front matter tant que le contenu n’est pas publié. Ce mode limite fortement l’indexation prématurée, mais n’est pas une garantie absolue : c’est efficace si votre stack (build, CDN, headers, robots/meta) applique bien ce signal au crawl.',
+          ),
+          style: const TextStyle(fontSize: 12),
+        ),
         value: _indexProof,
         onChanged: (v) => setState(() => _indexProof = v),
       ),
       SwitchListTile(
-        title: Text(context.tr('Safe mode (opt-in required)')),
-        subtitle: Text(context.tr('Recommended for mixed sites: only mutate frontmatter when dripManaged: true')),
+        title: Text(context.tr('Mode sécurisé (opt-in requis)')),
+        subtitle: Text(
+          context.tr(
+            'Recommandé si votre repository mélange du contenu Drip et du contenu éditorial indépendant. Quand ce mode est actif, on ne modifie le front matter que pour les fichiers qui portent explicitement le champ d’opt-in (ex: dripManaged: true), évitant de toucher aux pages non Drip.',
+          ),
+          style: const TextStyle(fontSize: 12),
+        ),
         value: _requireOptIn,
         onChanged: (v) => setState(() => _requireOptIn = v),
       ),
@@ -418,25 +759,48 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       DropdownButtonFormField<String>(
         initialValue: _rebuildMethod,
         decoration: InputDecoration(
-            labelText: context.tr('Rebuild method'),
+            labelText: context.tr('Méthode de rebuild'),
             border: const OutlineInputBorder()),
         items: _rebuildMethods.map((r) => DropdownMenuItem(
           value: r,
           child: Text(switch (r) {
             'webhook' => context.tr('Webhook (Vercel/Netlify)'),
             'github_actions' => context.tr('GitHub Actions'),
-            'manual' => context.tr('Manual'),
+            'manual' => context.tr('Manuel'),
             _ => r,
           }),
         )).toList(),
         onChanged: (v) => setState(() => _rebuildMethod = v!),
+      ),
+      const SizedBox(height: 8),
+      Padding(
+        padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+        child: Text(
+          switch (_rebuildMethod) {
+            'webhook' => context.tr(
+              'Le webhook notifie votre pipeline CI/CD à chaque exécution Drip.'
+              ' Il déclenche un rebuild automatique pour propager les changements de front matter.'
+              ' Idéal pour une publication continue et sans intervention manuelle.',
+            ),
+            'github_actions' => context.tr(
+              'GitHub Actions lance un workflow `daily-drip.yml` via `workflow_dispatch` (branche main par défaut). Requiert `GITHUB_TOKEN` côté backend/API pour l’authentification.',
+            ),
+            'manual' => context.tr(
+              'Mode manuel = aucun déclenchement automatique.'
+              ' Le plan applique les modifications en front matter, puis vous lancez le rebuild selon votre process.'
+              ' Cette option convient quand vous centralisez la publication dans une étape personnalisée.',
+            ),
+            _ => '',
+          },
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
       ),
       if (_rebuildMethod == 'webhook') ...[
         const SizedBox(height: 16),
         TextField(
           controller: _webhookUrlCtrl,
           decoration: InputDecoration(
-            labelText: context.tr('Webhook URL'),
+            labelText: context.tr('URL du webhook'),
             border: const OutlineInputBorder(),
             hintText: context.tr('https://api.vercel.com/v1/integrations/deploy/...'),
           ),
@@ -447,7 +811,20 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         TextField(
           controller: _githubRepoCtrl,
           decoration: InputDecoration(
-            labelText: context.tr('GitHub repo'),
+            labelText: context.tr('Référentiel GitHub'),
+            suffixIcon: IconButton(
+              tooltip: context.tr('Choisir un dépôt GitHub'),
+              icon: _isGithubRepoPickerLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.travel_explore),
+              onPressed: _isGithubRepoPickerLoading
+                  ? null
+                  : _openGithubRepoPickerForDrip,
+            ),
             border: const OutlineInputBorder(),
             hintText: context.tr('owner/repo'),
           ),
@@ -455,7 +832,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       ],
       const SizedBox(height: 8),
       ExpansionTile(
-        title: Text(context.tr('Advanced')),
+        title: Text(context.tr('Options avancées')),
         childrenPadding: const EdgeInsets.only(bottom: 8),
         children: [
           Padding(
@@ -466,6 +843,9 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                 labelText: context.tr('Opt-in frontmatter field'),
                 border: const OutlineInputBorder(),
                 hintText: context.tr('e.g. dripManaged'),
+                helperText: context.tr(
+                  'Champ lu quand le mode sécurisé est actif. Seuls les fichiers qui possèdent ce champ peuvent être modifiés par le drip.',
+                ),
               ),
             ),
           ),
@@ -478,23 +858,31 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                 labelText: context.tr('Robots frontmatter field'),
                 border: const OutlineInputBorder(),
                 hintText: context.tr('e.g. robots'),
+                helperText: context.tr(
+                  'Champ front matter utilisé pour appliquer/retirer le noindex tant que le contenu n’est pas réellement publié.',
+                ),
               ),
             ),
           ),
           const SizedBox(height: 12),
           SwitchListTile(
             title: Text(context.tr('Google Search Console (Indexing API)')),
-            subtitle: Text(context.tr('Submit URLs after each drip')),
+            subtitle: Text(
+              context.tr(
+                'Après chaque exécution du drip, Drip peut notifier Google (Indexing API) pour accélérer la découverte des pages déjà publiées. C’est une notification de "mise à jour", pas une garantie d’indexation instantanée.',
+              ),
+              style: const TextStyle(fontSize: 12),
+            ),
             value: _gscEnabled,
             onChanged: (v) => setState(() => _gscEnabled = v),
           ),
-          if (_gscEnabled) ...[
+      if (_gscEnabled) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 controller: _gscSiteUrlCtrl,
                 decoration: InputDecoration(
-                  labelText: context.tr('GSC site URL'),
+                  labelText: context.tr('URL de la propriété GSC'),
                   border: const OutlineInputBorder(),
                   hintText: context.tr('https://your-site.com'),
                 ),
@@ -505,7 +893,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(context.tr('Submit URLs')),
+                title: Text(context.tr('Soumettre les URL')),
                 value: _gscSubmitUrls,
                 onChanged: (v) => setState(() => _gscSubmitUrls = v),
               ),
@@ -514,12 +902,22 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 decoration: InputDecoration(
-                  labelText: context.tr('Max submissions/day'),
+                  labelText: context.tr('Soumissions max / jour'),
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
                 controller: TextEditingController(text: '$_gscMaxPerDay'),
                 onChanged: (v) => _gscMaxPerDay = int.tryParse(v) ?? 200,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                context.tr(
+                  'La logique backend soumet les URL via l’API d’indexation Google et vérifie ensuite l’état en mode inspection si disponible. La limite par défaut est de 200 URLs/jour, cohérente avec le comportement courant de l’API, et dépend du quota réel de votre projet Google.',
+                ),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
           ],
@@ -542,7 +940,8 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
           'items_per_day': _itemsPerDay,
           'start_date': _startDateCtrl.text.trim(),
           'publish_days': _publishDays,
-          'publish_time': _publishTimeCtrl.text.trim(),
+          'publish_time_start': _publishTimeStartCtrl.text.trim(),
+          'publish_time_end': _publishTimeEndCtrl.text.trim(),
           'timezone': _timezoneCtrl.text.trim(),
           'spacing_minutes': _spacingMinutes,
         },
@@ -601,6 +1000,84 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  Future<void> _openGithubRepoPickerForDrip() async {
+    final api = ref.read(apiServiceProvider);
+    setState(() => _isGithubRepoPickerLoading = true);
+
+    try {
+      final repos = await api.fetchGithubRepos();
+      if (!mounted) {
+        return;
+      }
+      if (repos.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('No repository found for this account.')),
+          ),
+        );
+        return;
+      }
+
+      final selected = await showDialog<Map<String, dynamic>?>(
+        context: context,
+        builder: (context) {
+          final sorted = [...repos]
+            ..sort((a, b) {
+              final updatedA = a['updated_at']?.toString() ?? '';
+              final updatedB = b['updated_at']?.toString() ?? '';
+              return updatedB.compareTo(updatedA);
+            });
+
+          return AlertDialog(
+            title: Text(context.tr('Choose GitHub repository')),
+            content: SizedBox(
+              width: 540,
+              height: 420,
+              child: ListView(
+                children: sorted
+                    .whereType<Map<String, dynamic>>()
+                    .map(
+                      (repo) => ListTile(
+                        leading: const Icon(Icons.folder_copy_rounded),
+                        title: Text(repo['full_name']?.toString() ?? ''),
+                        subtitle: Text(
+                          (repo['description']?.toString() ?? '').isEmpty
+                              ? context.tr('No description')
+                              : repo['description'].toString(),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => Navigator.pop(
+                          context,
+                          {
+                            'full_name': repo['full_name']?.toString() ?? '',
+                          },
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.tr('Cancel')),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (selected == null || !mounted) return;
+      final selectedRepo = selected['full_name']?.toString() ?? '';
+      if (selectedRepo.isNotEmpty) {
+        setState(() => _githubRepoCtrl.text = selectedRepo);
+      }
+    } finally {
+      if (mounted) setState(() => _isGithubRepoPickerLoading = false);
     }
   }
 }

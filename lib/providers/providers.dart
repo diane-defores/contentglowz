@@ -1262,6 +1262,45 @@ class PublishAccountsState {
 
 enum PublishAccountsAvailability { available, unavailable, error }
 
+class GithubIntegrationState {
+  const GithubIntegrationState({
+    this.connected = false,
+    this.username,
+    this.scope,
+    this.message,
+  });
+
+  final bool connected;
+  final String? username;
+  final String? scope;
+  final String? message;
+}
+
+final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.canUseWorkspaceData != true) {
+    return const GithubIntegrationState();
+  }
+
+  try {
+    final status = await ref.watch(apiServiceProvider).fetchGithubIntegrationStatus();
+    return GithubIntegrationState(
+      connected: status['connected'] as bool? ?? false,
+      username: status['github_username']?.toString(),
+      scope: (status['scope'] is List)
+          ? (status['scope'] as List).join(', ')
+          : status['scope']?.toString(),
+      message: status['message']?.toString(),
+    );
+  } on ApiException catch (error) {
+    return GithubIntegrationState(
+      message: error.message.trim(),
+    );
+  }
+});
+
 final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   ref,
 ) async {

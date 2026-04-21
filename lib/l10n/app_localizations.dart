@@ -745,6 +745,8 @@ class AppLocalizations {
         'Configurez les domaines thématiques sur lesquels l’IA est autorisée à travailler. Cela évite les hors-sujets et garde la production centrée sur vos vraies expertises.',
     'Content Tools — checks and audits':
         'Content Tools — vérifications et audits',
+    'Drip orchestrates content sequences over multiple days. Instead of publishing one isolated post, you launch a coherent series, such as a 5-post mini campaign around one topic. Use it for launches or for themes that deserve several angles.':
+        'Drip orchestre des séquences de contenu sur plusieurs jours. Au lieu de publier un post isolé, vous lancez une série cohérente, comme une mini-campagne de 5 posts autour d’un même sujet. Utilisez-la pour les lancements ou les thèmes qui méritent plusieurs angles.',
     'Define the personas the AI should address. Each persona influences tone, vocabulary, and angles. Use the + button in the bottom-right corner to add a new persona.':
         'Définissez les personas que l’IA doit adresser. Chaque persona influence le ton, le vocabulaire et les angles. Utilisez le bouton + en bas à droite pour ajouter une nouvelle persona.',
     'Download & Extract': 'Telecharger et extraire',
@@ -778,6 +780,7 @@ class AppLocalizations {
         'Newsletter — votre canal long format',
     'No ideas yet': 'Aucune idee pour le moment',
     'No templates available': 'Aucun modele disponible',
+    'Open {screen}': 'Ouvrir {screen}',
     'Pause tour': 'Mettre en pause la visite',
     'Performance — detailed metrics': 'Performance — métriques détaillées',
     'Performance complements Analytics with metrics per content item and per channel. Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.':
@@ -1052,6 +1055,17 @@ class AppLocalizations {
     'success': 'succes',
     'tags': 'tags',
     'transitions': 'transitions',
+    'Parcourir l\'arborescence du dépôt pour choisir un dossier':
+        'Parcourir l\'arborescence du dépôt pour choisir un dossier',
+    'Parcourir les dossiers': 'Parcourir les dossiers',
+    'Chemin sélectionné': 'Chemin sélectionné',
+    'Choisir le dossier de contenu': 'Choisir le dossier de contenu',
+    'Choisir ce dossier': 'Choisir ce dossier',
+    'Remonter d\'un niveau': 'Remonter d\'un niveau',
+    'Unable to load content tree': 'Impossible de charger l’arborescence du dépôt',
+    'Aucun dossier détecté à cet emplacement': 'Aucun dossier détecté à cet emplacement',
+    'Aucun fichier markdown trouvé': 'Aucun fichier markdown trouvé',
+    'Contient des fichiers markdown': 'Contient des fichiers markdown',
     'webhook': 'webhook',
     'yourhandle': 'votrecompte',
   };

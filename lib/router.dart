@@ -49,6 +49,16 @@ GoRouter createAppRouter(WidgetRef ref) {
       final isOnboarding = location == '/onboarding';
       final isUptime = location == '/uptime';
       final isSettings = location == '/settings';
+      final isEditor = location == '/editor' ||
+          location.startsWith('/editor/');
+      final isInAppRoute = !isEntry &&
+          !isAuth &&
+          !isFeedback &&
+          !isFeedbackAdmin &&
+          !isUptime &&
+          !isSettings &&
+          !isEditor &&
+          location != '/';
       final onboardingIntent = state.uri.queryParameters['intent'];
       final onboardingMode = state.uri.queryParameters['mode'];
       final allowOnboarding =
@@ -69,6 +79,9 @@ GoRouter createAppRouter(WidgetRef ref) {
         case AppAccessStage.restoringSession:
         case AppAccessStage.checkingBackend:
         case AppAccessStage.checkingWorkspace:
+          if (isInAppRoute) {
+            return null;
+          }
           if (!isEntry &&
               !isUptime &&
               !isSettings &&
