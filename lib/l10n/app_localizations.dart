@@ -115,6 +115,8 @@ class AppLocalizations {
     'Channel Distribution': 'Répartition par canal',
     'Check for new content': 'Vérifier le nouveau contenu',
     'Checking...': 'Vérification...',
+    'Check your project, content types, and generation frequency before the first run.':
+        'Vérifiez votre projet, les types de contenu et la fréquence de génération avant le premier lancement.',
     'Choose how ContentFlow chooses its interface language.':
         'Choisissez comment ContentFlow sélectionne la langue de son interface.',
     'Choose whether ContentFlow stays bright, stays dark, or follows your device appearance automatically.':
@@ -149,6 +151,8 @@ class AppLocalizations {
     'Continue': 'Continuer',
     'Continue with Google': 'Continuer avec Google',
     'Create': 'Créer',
+    'Create content': 'Créer du contenu',
+    'Create your first content': 'Créer votre premier contenu',
     'Copy diagnostics': 'Copier le diagnostic',
     'Copy error': 'Copier l’erreur',
     'Copy this error': 'Copier cette erreur',
@@ -690,7 +694,8 @@ class AppLocalizations {
     'Advanced': 'Avance',
     'Opt-in frontmatter field': 'Champ frontmatter opt-in',
     'Robots frontmatter field': 'Champ frontmatter robots',
-    'Google Search Console (Indexing API)': 'Google Search Console (Indexing API)',
+    'Google Search Console (Indexing API)':
+        'Google Search Console (Indexing API)',
     'Submit URLs after each drip': 'Soumettre les URLs apres chaque drip',
     'GSC site URL': 'URL du site GSC',
     'Submit URLs': 'Soumettre les URLs',
@@ -779,8 +784,24 @@ class AppLocalizations {
     'Newsletter — your long-form channel':
         'Newsletter — votre canal long format',
     'No ideas yet': 'Aucune idee pour le moment',
+    'No local actions are waiting to sync.':
+        'Aucune action locale n’attend de synchronisation.',
+    'Next best actions': 'Prochaines meilleures actions',
+    'No draft is currently waiting in the review queue. Set your creation rules, generate a first draft, or prepare the upcoming queue.':
+        'Aucun brouillon n’attend actuellement dans la file de revue. Définissez vos règles de création, générez un premier brouillon ou préparez la file des prochains contenus.',
     'No templates available': 'Aucun modele disponible',
+    'No upcoming content is scheduled yet.':
+        'Aucun contenu à venir n’est encore planifié.',
+    'Nothing is waiting for approval yet.':
+        'Rien n’attend encore votre validation.',
+    'Nothing to review yet': 'Rien à valider pour le moment',
     'Open {screen}': 'Ouvrir {screen}',
+    'Open drip queue': 'Ouvrir la file drip',
+    'Open setup': 'Ouvrir la configuration',
+    'Open templates': 'Ouvrir les templates',
+    'Open the drip queue to schedule the next content items that should arrive.':
+        'Ouvrez la file drip pour planifier les prochains contenus qui doivent arriver.',
+    'Pending review': 'En attente de validation',
     'Pause tour': 'Mettre en pause la visite',
     'Performance — detailed metrics': 'Performance — métriques détaillées',
     'Performance complements Analytics with metrics per content item and per channel. Use it when you want to understand why a post worked, or why it did not, and repeat what succeeds.':
@@ -796,15 +817,22 @@ class AppLocalizations {
     'Research gathers trending topics, competitor monitoring, and audience questions. This is the screen to check before each planning ritual so you know what to cover this week.':
         'Research collecte les sujets tendance, la veille concurrentielle et les questions de votre audience. C’est l’écran à consulter avant chaque rituel de planification pour savoir quoi traiter cette semaine.',
     'Research — feed your strategy': 'Research — nourrir votre stratégie',
+    'Review creation settings': 'Vérifier les réglages de création',
+    'Review the structures available for articles, newsletters, videos, and shorts.':
+        'Consultez les structures disponibles pour les articles, newsletters, vidéos et formats courts.',
     'Runs — AI job history': 'Runs — historique des jobs IA',
     'SEO Mesh': 'Mesh SEO',
     'SEO — organic visibility': 'SEO — visibilité organique',
     'Settings — personalize everything': 'Paramètres — tout personnaliser',
     'Skip tour': 'Passer la visite',
+    'Some local actions are waiting for sync.':
+        'Certaines actions locales attendent une synchronisation.',
     'Templates — your reusable formats':
         'Templates — vos modèles réutilisables',
     'Templates are your repeatable content formats: long-form articles, short posts, or sequences. The AI uses them to generate content that matches your style. The more precise your templates are, the closer the output will match your voice.':
         'Les templates sont vos formats récurrents : articles long format, posts courts ou séquences. L’IA s’en sert pour générer un contenu cohérent avec votre style. Plus vos templates sont précis, plus le résultat colle à votre voix.',
+    'The drip queue is where your future content schedule will live.':
+        'La file drip accueillera votre planning de contenus à venir.',
     'The Newsletter screen groups together newsletter creation, preview, and sending. You can combine several Feed items into one edition. It is ideal for turning a week of production into a single send.':
         'L’écran Newsletter regroupe la création, l’aperçu et l’envoi de vos newsletters. Vous pouvez assembler plusieurs contenus du Feed dans une même édition. C’est idéal pour transformer une semaine de production en un envoi unique.',
     'The calendar shows everything scheduled for publishing. Tap a week at the top to filter the view. It is useful for checking the balance of your schedule and spotting empty or overloaded days.':
@@ -820,6 +848,7 @@ class AppLocalizations {
     'This toolbox checks your content quality before publishing: editorial consistency, funnel audits, and validations. Use it when a draft feels off — the audit often explains why.':
         'Cette boîte à outils vérifie la qualité de vos contenus avant publication : cohérence éditoriale, audit du funnel et validations. Utilisez-la quand un draft semble étrange — l’audit explique souvent pourquoi.',
     'Topical Mesh Analysis': 'Analyse du mesh thematique',
+    'Upcoming content queue': 'File des prochains contenus',
     'Use the + button in the bottom-right corner to add a persona.':
         'Utilisez le bouton + en bas à droite pour ajouter une persona.',
     'Use this screen for SEO analysis and keyword opportunities. Before launching a Drip series or a long-form article, come here to align your angles with the searches that matter.':
@@ -829,7 +858,22 @@ class AppLocalizations {
         'On va faire un tour rapide de l’app, écran par écran. L’objectif est de vous montrer dans quel ordre utiliser les pages, à quoi servent les contrôles principaux et comment tirer le meilleur de la plateforme. Vous pouvez mettre en pause à tout moment et reprendre plus tard depuis Réglages.',
     'Welcome to ContentFlow': 'Bienvenue dans ContentFlow',
     'Work domains': 'Domaines de travail',
+    'Workspace status': 'État du workspace',
+    'Published content': 'Contenu publié',
+    'Queued actions': 'Actions en file',
+    'Drip plans': 'Plans drip',
+    '{count} plan(s)': '{count} plan(s)',
+    'Your content machine is ready to be configured.':
+        'Votre machine de contenu est prête à être configurée.',
+    'Your future content queue is ready to inspect.':
+        'Votre file de contenus à venir est prête à être consultée.',
+    'Your published history will appear here after the first release.':
+        'Votre historique publié apparaîtra ici après la première mise en ligne.',
+    'Generate angles and turn one of them into a draft ready for review.':
+        'Générez des angles puis transformez-en un en brouillon prêt à être validé.',
     'You are ready!': 'Vous êtes prêt !',
+    'You already have published content in history.':
+        'Vous avez déjà du contenu publié dans l’historique.',
     'You have seen the essentials. A few reminders to get started well: 1) configure your personas and weekly ritual in Settings, 2) let the AI generate, then review items in the Feed, 3) track the impact in Analytics. To relaunch this tour, open Settings and use the guided app tour option.':
         'Vous avez vu l’essentiel. Quelques rappels pour bien démarrer : 1) configurez vos personas et votre rituel hebdomadaire dans Réglages, 2) laissez l’IA générer, puis validez les contenus dans le Feed, 3) suivez l’impact dans Analytics. Pour relancer cette visite, ouvrez Réglages et utilisez l’option de visite guidée.',
     'YouTube': 'YouTube',
@@ -1062,8 +1106,10 @@ class AppLocalizations {
     'Choisir le dossier de contenu': 'Choisir le dossier de contenu',
     'Choisir ce dossier': 'Choisir ce dossier',
     'Remonter d\'un niveau': 'Remonter d\'un niveau',
-    'Unable to load content tree': 'Impossible de charger l’arborescence du dépôt',
-    'Aucun dossier détecté à cet emplacement': 'Aucun dossier détecté à cet emplacement',
+    'Unable to load content tree':
+        'Impossible de charger l’arborescence du dépôt',
+    'Aucun dossier détecté à cet emplacement':
+        'Aucun dossier détecté à cet emplacement',
     'Aucun fichier markdown trouvé': 'Aucun fichier markdown trouvé',
     'Contient des fichiers markdown': 'Contient des fichiers markdown',
     'webhook': 'webhook',

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/models/content_item.dart';
+import '../../../data/models/offline_sync.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -93,43 +94,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   }
 
   Widget _buildEmptyState() {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 72,
-            color: AppTheme.approveColor,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            context.tr('All caught up!'),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.tr('No content waiting for review'),
-            style: TextStyle(
-              fontSize: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 32),
-          FilledButton.icon(
-            onPressed: () =>
-                ref.read(pendingContentProvider.notifier).refresh(),
-            icon: const Icon(Icons.refresh),
-            label: Text(context.tr('Check for new content')),
-          ),
-        ],
-      ),
-    );
+    return const _FeedEmptyDashboard();
   }
 
   Widget _buildSwiper(List<ContentItem> items) {
@@ -183,7 +148,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       'approve' => ('PUBLISH', AppTheme.approveColor, Icons.check_circle),
       'reject' => ('SKIP', AppTheme.rejectColor, Icons.cancel),
       'edit' => ('EDIT', AppTheme.editColor, Icons.edit),
-      _ => ('', Theme.of(context).colorScheme.surface.withValues(alpha: 0), Icons.circle),
+      _ => (
+        '',
+        Theme.of(context).colorScheme.surface.withValues(alpha: 0),
+        Icons.circle,
+      ),
     };
 
     return Positioned.fill(
@@ -417,4 +386,408 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         ApproveSeverity.warning => AppTheme.warningColor,
         ApproveSeverity.error => AppTheme.rejectColor,
       };
+}
+
+class _FeedEmptyDashboard extends ConsumerWidget {
+  const _FeedEmptyDashboard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dripPlansAsync = ref.watch(dripPlansProvider);
+    final queueAsync = ref.watch(offlineQueueEntriesProvider);
+    final historyAsync = ref.watch(contentHistoryProvider);
+
+    final dripCount = dripPlansAsync.valueOrNull?.length ?? 0;
+    final queuedActions = _countPendingQueueActions(queueAsync.valueOrNull);
+    final publishedCount = historyAsync.valueOrNull?.length ?? 0;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(pendingContentProvider.notifier).refresh();
+        ref.invalidate(dripPlansProvider);
+        ref.invalidate(offlineQueueEntriesProvider);
+        ref.invalidate(contentHistoryProvider);
+      },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+        children: [
+          _HeroCard(
+            onPrimaryTap: () => context.push('/onboarding?intent=entry'),
+            onSecondaryTap: () => context.push('/angles'),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            context.tr('Next best actions'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _ActionCard(
+                icon: Icons.tune_rounded,
+                color: AppTheme.approveColor,
+                title: context.tr('Review creation settings'),
+                subtitle: context.tr(
+                  'Check your project, content types, and generation frequency before the first run.',
+                ),
+                ctaLabel: context.tr('Open setup'),
+                onTap: () => context.push('/onboarding?intent=entry'),
+              ),
+              _ActionCard(
+                icon: Icons.auto_awesome_rounded,
+                color: AppTheme.warningColor,
+                title: context.tr('Create your first content'),
+                subtitle: context.tr(
+                  'Generate angles and turn one of them into a draft ready for review.',
+                ),
+                ctaLabel: context.tr('Create content'),
+                onTap: () => context.push('/angles'),
+              ),
+              _ActionCard(
+                icon: Icons.description_outlined,
+                color: AppTheme.infoColor,
+                title: context.tr('Templates'),
+                subtitle: context.tr(
+                  'Review the structures available for articles, newsletters, videos, and shorts.',
+                ),
+                ctaLabel: context.tr('Open templates'),
+                onTap: () => context.push('/templates'),
+              ),
+              _ActionCard(
+                icon: Icons.water_drop_outlined,
+                color: colorScheme.primary,
+                title: context.tr('Upcoming content queue'),
+                subtitle: context.tr(
+                  'Open the drip queue to schedule the next content items that should arrive.',
+                ),
+                ctaLabel: context.tr('Open drip queue'),
+                onTap: () => context.push('/drip'),
+                trailing: _InlineCountBadge(
+                  label: context.tr('{count} plan(s)', {'count': dripCount}),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Text(
+            context.tr('Workspace status'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _StatusCard(
+                label: context.tr('Pending review'),
+                value: '0',
+                icon: Icons.dynamic_feed_rounded,
+                color: AppTheme.approveColor,
+                helper: context.tr('Nothing is waiting for approval yet.'),
+              ),
+              _StatusCard(
+                label: context.tr('Drip plans'),
+                value: '$dripCount',
+                icon: Icons.water_drop_rounded,
+                color: colorScheme.primary,
+                helper: dripCount == 0
+                    ? context.tr('No upcoming content is scheduled yet.')
+                    : context.tr(
+                        'Your future content queue is ready to inspect.',
+                      ),
+              ),
+              _StatusCard(
+                label: context.tr('Queued actions'),
+                value: '$queuedActions',
+                icon: Icons.sync_rounded,
+                color: AppTheme.warningColor,
+                helper: queuedActions == 0
+                    ? context.tr('No local actions are waiting to sync.')
+                    : context.tr('Some local actions are waiting for sync.'),
+              ),
+              _StatusCard(
+                label: context.tr('Published content'),
+                value: '$publishedCount',
+                icon: Icons.history_rounded,
+                color: AppTheme.infoColor,
+                helper: publishedCount == 0
+                    ? context.tr(
+                        'Your published history will appear here after the first release.',
+                      )
+                    : context.tr(
+                        'You already have published content in history.',
+                      ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _countPendingQueueActions(List<QueuedOfflineAction>? entries) {
+    if (entries == null) {
+      return 0;
+    }
+    return entries.where((entry) => !entry.isTerminal).length;
+  }
+}
+
+class _HeroCard extends StatelessWidget {
+  const _HeroCard({required this.onPrimaryTap, required this.onSecondaryTap});
+
+  final VoidCallback onPrimaryTap;
+  final VoidCallback onSecondaryTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primaryContainer,
+            colorScheme.surfaceContainerHighest,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  size: 18,
+                  color: AppTheme.approveColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  context.tr('Nothing to review yet'),
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            context.tr('Your content machine is ready to be configured.'),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            context.tr(
+              'No draft is currently waiting in the review queue. Set your creation rules, generate a first draft, or prepare the upcoming queue.',
+            ),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.5),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              FilledButton.icon(
+                onPressed: onPrimaryTap,
+                icon: const Icon(Icons.tune_rounded),
+                label: Text(context.tr('Review creation settings')),
+              ),
+              OutlinedButton.icon(
+                onPressed: onSecondaryTap,
+                icon: const Icon(Icons.auto_awesome_rounded),
+                label: Text(context.tr('Create content')),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.ctaLabel,
+    required this.onTap,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final String ctaLabel;
+  final VoidCallback onTap;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 260, maxWidth: 360),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(icon, color: color),
+                    ),
+                    const Spacer(),
+                    if (trailing != null) trailing!,
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  ctaLabel,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.helper,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final String helper;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 180, maxWidth: 220),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              helper,
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineCountBadge extends StatelessWidget {
+  const _InlineCountBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
 }
