@@ -8,6 +8,7 @@ to the existing StatusService.
 import hashlib
 import json
 import uuid
+import random
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -607,6 +608,8 @@ class DripService:
         items_per_day = cadence.get("items_per_day", 3)
         ramp_schedule = cadence.get("ramp_schedule")
         publish_time = cadence.get("publish_time", "06:00")
+        publish_time_start = cadence.get("publish_time_start") or publish_time
+        publish_time_end = cadence.get("publish_time_end") or publish_time
         timezone = cadence.get("timezone", "Europe/Paris")
         spacing_minutes = int(cadence.get("spacing_minutes", 180) or 0)
         cluster_gap_days = int(cluster.get("cluster_gap_days", 0) or 0)
@@ -622,6 +625,22 @@ class DripService:
             publish_hour, publish_minute = (int(x) for x in str(publish_time).split(":"))
         except Exception:
             publish_hour, publish_minute = 6, 0
+
+        try:
+            publish_range_start_hour, publish_range_start_minute = (
+                int(x) for x in str(publish_time_start).split(":")
+            )
+            publish_range_end_hour, publish_range_end_minute = (
+                int(x) for x in str(publish_time_end).split(":")
+            )
+        except Exception:
+            publish_range_start_hour, publish_range_start_minute = publish_hour, publish_minute
+            publish_range_end_hour, publish_range_end_minute = publish_hour, publish_minute
+
+        publish_range_start = max(0, publish_range_start_hour * 60 + publish_range_start_minute)
+        publish_range_end = max(0, publish_range_end_hour * 60 + publish_range_end_minute)
+        if publish_range_start > publish_range_end:
+            publish_range_start, publish_range_end = publish_range_end, publish_range_start
 
         try:
             tz = ZoneInfo(str(timezone))
@@ -682,15 +701,29 @@ class DripService:
 
                 if not dry_run:
                     # scheduled_for is persisted in UTC (naive ISO string), but computed from local time.
-                    local_dt = datetime(
-                        current_date.year,
-                        current_date.month,
-                        current_date.day,
-                        publish_hour,
-                        publish_minute,
-                        0,
-                        tzinfo=tz,
-                    )
+                    if publish_range_start != publish_range_end:
+                        random_minute = random.randint(publish_range_start, publish_range_end)
+                        range_hour = random_minute // 60
+                        range_minute = random_minute % 60
+                        local_dt = datetime(
+                            current_date.year,
+                            current_date.month,
+                            current_date.day,
+                            range_hour,
+                            range_minute,
+                            0,
+                            tzinfo=tz,
+                        )
+                    else:
+                        local_dt = datetime(
+                            current_date.year,
+                            current_date.month,
+                            current_date.day,
+                            publish_hour,
+                            publish_minute,
+                            0,
+                            tzinfo=tz,
+                        )
                     if spacing_minutes > 0 and slot_index > 0:
                         local_dt = local_dt + timedelta(minutes=spacing_minutes * slot_index)
                     scheduled_dt = local_dt.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
@@ -750,7 +783,10 @@ class DripService:
             job_type="drip",
             configuration={"drip_plan_id": plan_id},
             schedule="hourly",
-            schedule_time=plan["cadence_config"].get("publish_time", "06:00"),
+            schedule_time=(
+                plan["cadence_config"].get("publish_time_start")
+                or plan["cadence_config"].get("publish_time", "06:00")
+            ),
             timezone=plan["cadence_config"].get("timezone", "Europe/Paris"),
             enabled=True,
             next_run_at=plan.get("next_drip_at") or datetime.utcnow().isoformat(),

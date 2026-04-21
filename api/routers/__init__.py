@@ -22,6 +22,7 @@ from .preview import router as preview_router
 from .analytics import analytics_public_router, analytics_router
 from .auth_web import router as auth_web_router, webhook_router as webhook_router
 from .feedback import router as feedback_router
+from .integrations import router as integrations_router
 
 __all__ = [
     "mesh_router",
@@ -48,4 +49,5 @@ __all__ = [
     "auth_web_router",
     "webhook_router",
     "feedback_router",
+    "integrations_router",
 ]

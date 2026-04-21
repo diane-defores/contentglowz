@@ -689,7 +689,8 @@ class GitHubRepoAnalyzer:
     def analyze_for_onboarding(
         self,
         repo_url: str,
-        force_reclone: bool = False
+        force_reclone: bool = False,
+        github_token: str | None = None,
     ) -> Dict[str, Any]:
         """
         Comprehensive analysis for project onboarding.
@@ -713,7 +714,11 @@ class GitHubRepoAnalyzer:
         print(f"Repository: {repo_url}")
 
         # Clone or update repository
-        repo_path = self.clone_or_update_repo(repo_url, force_update=force_reclone)
+        repo_path = self.clone_or_update_repo(
+            repo_url,
+            github_token=github_token,
+            force_update=force_reclone,
+        )
 
         # Detect framework
         framework, confidence = self.detect_framework(repo_path)

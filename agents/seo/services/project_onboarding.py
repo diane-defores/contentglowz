@@ -108,7 +108,8 @@ class ProjectOnboardingService:
     async def analyze_project(
         self,
         project_id: str,
-        force_reclone: bool = False
+        force_reclone: bool = False,
+        github_token: str | None = None
     ) -> ProjectDetectionResult:
         """
         Analyze a project repository.
@@ -134,10 +135,11 @@ class ProjectOnboardingService:
         )
 
         try:
-            # Run the analyzer
+        # Run the analyzer
             analysis = self.analyzer.analyze_for_onboarding(
                 repo_url=project.url,
-                force_reclone=force_reclone
+                force_reclone=force_reclone,
+                github_token=github_token,
             )
 
             # Extract results
@@ -233,7 +235,8 @@ class ProjectOnboardingService:
 
     async def refresh_analysis(
         self,
-        project_id: str
+        project_id: str,
+        github_token: str | None = None
     ) -> ProjectDetectionResult:
         """
         Re-analyze an existing project.
@@ -255,7 +258,11 @@ class ProjectOnboardingService:
         existing_overrides = existing_settings.config_overrides if existing_settings else None
 
         # Re-analyze (force reclone to get latest)
-        result = await self.analyze_project(project_id, force_reclone=True)
+        result = await self.analyze_project(
+            project_id,
+            force_reclone=True,
+            github_token=github_token,
+        )
 
         # Restore overrides if they existed
         if existing_overrides:

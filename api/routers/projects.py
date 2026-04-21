@@ -3,7 +3,8 @@
 Handles project onboarding workflow and CRUD operations.
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
+from pathlib import Path
 from typing import Any, List, Optional
 
 from api.models.project import (
@@ -12,6 +13,9 @@ from api.models.project import (
     AnalyzeProjectRequest,
     ProjectDetectionResult,
     ConfirmProjectRequest,
+    ProjectContentTreeDirectory,
+    ProjectContentTreeFile,
+    ProjectContentTreeResponse,
     UpdateProjectRequest,
     ProjectResponse,
     ProjectListResponse,
@@ -31,6 +35,39 @@ router = APIRouter(
     tags=["Projects"],
     responses={404: {"description": "Project not found"}},
 )
+
+
+def _build_project_tree_root(project_path: str) -> Path:
+    repo_root = Path(project_path).expanduser().resolve()
+    if not repo_root.exists() or not repo_root.is_dir():
+        raise HTTPException(status_code=404, detail="Local repo path does not exist.")
+    return repo_root
+
+
+def _project_tree_safe_path(repo_root: Path, requested: str) -> Path:
+    normalized_path = requested.strip().lstrip("/")
+    if ".." in normalized_path.split("/"):
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    candidate = repo_root / normalized_path if normalized_path else repo_root
+    try:
+        resolved_candidate = candidate.resolve()
+    except OSError:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    if resolved_candidate != repo_root and repo_root not in resolved_candidate.parents:
+        raise HTTPException(status_code=400, detail="Path escapes repository root")
+
+    if not resolved_candidate.exists() or not resolved_candidate.is_dir():
+        raise HTTPException(status_code=400, detail="Invalid content directory")
+    return resolved_candidate
+
+
+def _normalize_parent_path(repo_root: Path, target: Path) -> Optional[str]:
+    if target == repo_root:
+        return None
+    parent = target.parent.relative_to(repo_root)
+    return parent.as_posix() if str(parent) else ""
 
 
 def project_to_response(project: Project, *, default_project_id: str | None = None) -> ProjectResponse:
@@ -67,6 +104,82 @@ async def require_owned_project(
     if project.user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Forbidden")
     return project
+
+
+@router.get(
+    "/{project_id}/content-tree",
+    response_model=ProjectContentTreeResponse,
+    summary="Browse project content tree",
+    description="""
+    Browse folders from the cloned project to help source selection.
+
+    Query param:
+    - path: relative path from repository root (default = root)
+    """
+)
+async def project_content_tree(
+    project_id: str,
+    path: str = Query("", description="Relative repository path to browse"),
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ProjectContentTreeResponse:
+    """Return directories and markdown files from a project working tree."""
+    project = await require_owned_project(project_id, current_user)
+    project_path = project.settings.local_repo_path if project.settings else None
+    if not project_path:
+        raise HTTPException(
+            status_code=404,
+            detail="Repo local path not available. Analyze the project first.",
+        )
+
+    repo_root = _build_project_tree_root(project_path)
+    target = _project_tree_safe_path(repo_root, path)
+
+    ignore = {
+        ".git",
+        ".next",
+        "node_modules",
+        "dist",
+        "build",
+        ".turbo",
+        ".cache",
+        "coverage",
+        "tmp",
+    }
+
+    directories: list[ProjectContentTreeDirectory] = []
+    files: list[ProjectContentTreeFile] = []
+
+    for entry in sorted(target.iterdir(), key=lambda item: item.name.lower()):
+        if entry.name in ignore or entry.name.startswith("."):
+            continue
+        rel = entry.relative_to(repo_root).as_posix()
+        if entry.is_dir():
+            has_markdown = any(
+                child.is_file() and child.suffix.lower() in {".md", ".mdx"}
+                for child in entry.rglob("*")
+            )
+            directories.append(
+                ProjectContentTreeDirectory(
+                    name=entry.name,
+                    path=rel,
+                    has_markdown_files=has_markdown,
+                )
+            )
+        elif entry.is_file() and entry.suffix.lower() in {".md", ".mdx"}:
+            files.append(
+                ProjectContentTreeFile(
+                    name=entry.name,
+                    path=rel,
+                )
+            )
+
+    return ProjectContentTreeResponse(
+        project_id=project_id,
+        current_path="" if target == repo_root else target.relative_to(repo_root).as_posix(),
+        parent_path=_normalize_parent_path(repo_root, target),
+        directories=directories,
+        files=files,
+    )
 
 
 # ─────────────────────────────────────────────────
@@ -173,10 +286,15 @@ async def analyze_project(
 ) -> ProjectDetectionResult:
     """Analyze project repository and detect settings."""
     await require_owned_project(project_id, current_user)
+
+    integration = await user_data_store.get_github_integration(current_user.user_id)
+    github_token = integration.get("token") if integration else None
+
     try:
         return await project_onboarding_service.analyze_project(
             project_id=project_id,
-            force_reclone=request.force_reclone
+            force_reclone=request.force_reclone,
+            github_token=github_token,
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -391,8 +509,13 @@ async def refresh_project(
 ) -> ProjectDetectionResult:
     """Re-analyze project repository."""
     await require_owned_project(project_id, current_user)
+    integration = await user_data_store.get_github_integration(current_user.user_id)
+    github_token = integration.get("token") if integration else None
     try:
-        return await project_onboarding_service.refresh_analysis(project_id)
+        return await project_onboarding_service.refresh_analysis(
+            project_id=project_id,
+            github_token=github_token,
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:

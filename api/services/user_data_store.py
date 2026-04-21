@@ -196,6 +196,172 @@ class UserDataStore:
             """
         )
 
+    async def ensure_github_integration_table(self) -> None:
+        """Create table for encrypted GitHub token storage (idempotent)."""
+        self._ensure_connected()
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS UserGithubIntegration (
+                userId TEXT PRIMARY KEY NOT NULL,
+                token TEXT NOT NULL,
+                githubUserId TEXT,
+                githubUsername TEXT,
+                scopes TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL
+            )
+            """
+        )
+
+    async def ensure_github_oauth_state_table(self) -> None:
+        """Create table for temporary OAuth callback states (idempotent)."""
+        self._ensure_connected()
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS GithubOAuthState (
+                state TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                expiresAt INTEGER NOT NULL,
+                used INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
+
+    def _github_integration_from_row(self, row: tuple[Any, ...]) -> dict[str, Any] | None:
+        if not row:
+            return None
+        return {
+            "userId": row[0],
+            "token": row[1],
+            "githubUserId": row[2],
+            "githubUsername": row[3],
+            "scopes": _json_load(row[4], None),
+            "createdAt": _ts(row[5]),
+            "updatedAt": _ts(row[6]),
+        }
+
+    def _github_state_from_row(self, row: tuple[Any, ...]) -> tuple[str, int] | None:
+        if not row:
+            return None
+        return row[0], int(row[1])
+
+    async def get_github_integration(self, user_id: str) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT userId, token, githubUserId, githubUsername, scopes, createdAt, updatedAt
+            FROM UserGithubIntegration
+            WHERE userId = ?
+            LIMIT 1
+            """,
+            [user_id],
+        )
+        if not rs.rows:
+            return None
+        return self._github_integration_from_row(rs.rows[0])
+
+    async def upsert_github_integration(
+        self,
+        user_id: str,
+        *,
+        token: str,
+        github_user_id: str | None = None,
+        github_username: str | None = None,
+        scopes: list[str] | None = None,
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+
+        if await self.get_github_integration(user_id):
+            await self.db_client.execute(
+                """
+                UPDATE UserGithubIntegration
+                SET token = ?, githubUserId = ?, githubUsername = ?, scopes = ?, updatedAt = ?
+                WHERE userId = ?
+                """,
+                [
+                    token,
+                    github_user_id,
+                    github_username,
+                    _json_dump(scopes),
+                    now,
+                    user_id,
+                ],
+            )
+        else:
+            await self.db_client.execute(
+                """
+                INSERT INTO UserGithubIntegration (
+                    userId, token, githubUserId, githubUsername, scopes, createdAt, updatedAt
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    user_id,
+                    token,
+                    github_user_id,
+                    github_username,
+                    _json_dump(scopes),
+                    now,
+                    now,
+                ],
+            )
+
+        integration = await self.get_github_integration(user_id)
+        if integration is None:
+            raise RuntimeError("Failed to persist GitHub integration.")
+        return integration
+
+    async def delete_github_integration(self, user_id: str) -> None:
+        self._ensure_connected()
+        await self.db_client.execute(
+            "DELETE FROM UserGithubIntegration WHERE userId = ?",
+            [user_id],
+        )
+
+    async def create_github_oauth_state(self, user_id: str, ttl_seconds: int = 600) -> str:
+        self._ensure_connected()
+        import secrets
+
+        state = secrets.token_urlsafe(32)
+        now = int(datetime.now().timestamp())
+        await self.db_client.execute(
+            """
+            INSERT INTO GithubOAuthState (state, userId, createdAt, expiresAt, used)
+            VALUES (?, ?, ?, ?, 0)
+            """,
+            [state, user_id, now, now + ttl_seconds],
+        )
+        return state
+
+    async def consume_github_oauth_state(self, state: str) -> str | None:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        rs = await self.db_client.execute(
+            """
+            SELECT userId, used
+            FROM GithubOAuthState
+            WHERE state = ? AND expiresAt >= ?
+            LIMIT 1
+            """,
+            [state, now],
+        )
+
+        user = self._github_state_from_row(rs.rows[0]) if rs.rows else None
+        if not user:
+            return None
+
+        user_id, used = user
+        if used:
+            return None
+
+        await self.db_client.execute(
+            "UPDATE GithubOAuthState SET used = 1 WHERE state = ?",
+            [state],
+        )
+
+        return user_id
+
     async def get_creator_profile(self, user_id: str, project_id: str | None = None) -> dict[str, Any] | None:
         self._ensure_connected()
         query = """

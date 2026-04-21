@@ -22,6 +22,7 @@
 | Website auth handoff endpoints (`/api/auth/web/handoff`, `/api/auth/web/exchange`) + signed Clerk webhook receiver | Done |
 | Project selection contract aligned on `UserSettings.defaultProjectId` for `/api/me`, `/api/bootstrap`, and project responses | Done |
 | `POST /api/projects` + `PATCH /api/projects/{id}` (`github_url`) aligned with Flutter multi-project management | Done |
+| Add GitHub integration endpoints for project discovery and repository folder browsing to support pickers in onboarding and Drip source selection | Done |
 
 ## In Progress
 

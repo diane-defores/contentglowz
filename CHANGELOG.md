@@ -2,6 +2,13 @@
 
 All notable changes to Content Flows are documented here.
 
+## [2026-04-21]
+
+### Added
+- Added GitHub integration endpoints for project and source discovery: listing accessible repositories and browsing repository folder trees so the frontend can build non-typed pickers.
+- Added repository metadata storage (`git_remote_url`) and project onboarding/patch support so selected repositories are persisted and surfaced during Flutter project screens.
+- Added repository folder utilities on content projects to expose `content_directories` and selected source paths for Drip/source setup workflows.
+
 ## [2026-04-20]
 
 ### Added
@@ -10,6 +17,7 @@ All notable changes to Content Flows are documented here.
 - **Status lifecycle migration** — added `api/migrations/004_status_lifecycle.sql` to bootstrap lifecycle tables (content records, changes, bodies/edits, templates, drip plans, schedule jobs) in Turso/libsql.
 - **Structured audit actors** — added `status/audit.py` to canonicalize `actor_type/id/label/metadata` across lifecycle transitions and edits.
 - **Render deployment blueprint** — added `render.yaml` with Turso-first persistence env vars for the FastAPI backend.
+- **Drip scheduling windows** — added optional cadence fields `publish_time_start` and `publish_time_end` to support random publication slots within a daily range.
 
 ### Changed
 - **Current project resolution now comes from `UserSettings.defaultProjectId`** — `/api/me`, `/api/bootstrap`, and project response mapping now treat the last-opened project stored in settings as the source of truth.
@@ -17,6 +25,7 @@ All notable changes to Content Flows are documented here.
 - **Project update now supports repository URL edits** through `PATCH /api/projects/{id}` with `github_url`.
 - **Status storage is Turso-first** — `status/db.py` now uses the maintained `libsql` driver (via `utils/libsql_sync.py`) instead of persisting lifecycle data to a local SQLite file.
 - **Audit fields persisted for transitions/edits** — lifecycle events now record structured actor fields (type/id/label/metadata) alongside legacy `changed_by` in `status_changes` and `content_edits`.
+- **Drip schedule calculation now assigns a random minute within each plan’s configured time window**, while keeping legacy `publish_time` as a fallback for backward compatibility.
 
 ### Fixed
 - **Onboarding loop after adding first project** — `POST /api/projects` now marks the project onboarding status as `completed` and sets `defaultProjectId` when missing, so `/api/bootstrap` no longer reports an empty workspace on next launch.

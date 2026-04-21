@@ -289,3 +289,45 @@ class ProjectListResponse(BaseModel):
     projects: list[ProjectResponse]
     total: int
     default_project_id: Optional[str] = None
+
+
+# ─────────────────────────────────────────────────
+# Content Tree Models
+# ─────────────────────────────────────────────────
+
+
+class ProjectContentTreeDirectory(BaseModel):
+    """Represents a directory entry in the project content tree."""
+
+    name: str = Field(..., description="Directory name")
+    path: str = Field(..., description="Path relative to repository root")
+    has_markdown_files: bool = Field(
+        default=False,
+        description="Whether the directory subtree contains markdown content files",
+    )
+
+
+class ProjectContentTreeFile(BaseModel):
+    """Represents a markdown file entry in the project content tree."""
+
+    name: str = Field(..., description="File name")
+    path: str = Field(..., description="Path relative to repository root")
+
+
+class ProjectContentTreeResponse(BaseModel):
+    """Content tree payload for directory browsing."""
+
+    project_id: str = Field(..., description="Project ID")
+    current_path: str = Field(..., description="Current directory path")
+    parent_path: Optional[str] = Field(
+        default=None,
+        description="Parent directory path, null when at root",
+    )
+    directories: List[ProjectContentTreeDirectory] = Field(
+        default_factory=list,
+        description="Child directories",
+    )
+    files: List[ProjectContentTreeFile] = Field(
+        default_factory=list,
+        description="Markdown files in current directory",
+    )

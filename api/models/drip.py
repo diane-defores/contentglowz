@@ -72,6 +72,8 @@ class CadenceConfig(BaseModel):
     ramp_schedule: Optional[List[RampStep]] = None
     publish_days: List[int] = Field(default=[0, 1, 2, 3, 4], description="0=Mon, 6=Sun")
     publish_time: str = Field(default="06:00", description="Local publish time HH:MM")
+    publish_time_start: Optional[str] = Field(default="06:00", description="Start of daily publish window HH:MM")
+    publish_time_end: Optional[str] = Field(default="18:00", description="End of daily publish window HH:MM")
     timezone: str = Field(default="Europe/Paris")
     spacing_minutes: int = Field(
         default=180,
