@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
 import '../../../l10n/app_localizations.dart';
@@ -238,7 +239,28 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
 
   Future<void> _connectGithubFromSeo() async {
     final api = ref.read(apiServiceProvider);
-    final connectUrl = await api.getGithubConnectUrl();
+    String? connectUrl;
+    try {
+      connectUrl = await api.getGithubConnectUrl();
+    } on ApiException catch (error, stackTrace) {
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'L’authentification GitHub est indisponible : {error}',
+          {'error': error.message},
+        ),
+        scope: 'seo.github.connect',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {
+          'path': error.path,
+          'statusCode': error.statusCode,
+        },
+      );
+      return;
+    }
 
     if (connectUrl == null || connectUrl.isEmpty) {
       if (!mounted) return;

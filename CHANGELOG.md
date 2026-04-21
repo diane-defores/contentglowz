@@ -12,9 +12,15 @@ The format is based on Keep a Changelog.
 - Added detailed contextual explanations in Drip onboarding steps for clustering strategy and publication/rebuild controls to support advanced users before plan execution.
 - Added new random publication window fields (`publish_time_start`, `publish_time_end`) to Drip plans to support randomized scheduling within a selected daytime range.
 - Added explicit GitHub connection actions in onboarding, drip and SEO screens to launch OAuth, open browser authentication, and return with refreshed connection status.
+- Added a dedicated connection card in Settings that surfaces the current signed-in email, auth state, and a direct sign-out action.
+- Added a dedicated Ritual shortcut in the shared Create navigation so the mobile More sheet exposes the ritual entry point directly.
 
 ### Fixed
 - Fixed the in-app tour overlay layout/positioning compile regression by passing an `Offset` where required in widget offset calculations.
+- Fixed GitHub OAuth error handling so backend configuration/auth failures are surfaced with copyable diagnostics instead of a silent unavailable state.
+- Fixed session revalidation/routing so authenticated users stay on their current screen during background auth and bootstrap checks instead of bouncing through `/entry`.
+- Fixed the empty Feed dashboard on mobile so action cards and status cards use the full width without right-side dead space or 320px overflow.
+- Fixed the ritual naming in navigation and screen titles so the French UI now consistently shows `Rituel`.
 
 ## [2026-04-20]
 

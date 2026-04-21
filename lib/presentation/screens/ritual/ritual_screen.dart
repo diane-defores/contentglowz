@@ -45,7 +45,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('Weekly Ritual')),
+        title: Text(context.tr('Ritual')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -72,13 +72,17 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
               Text(
                 '${context.tr('Progress')}: $filledCount/${_entries.length}',
                 style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
               const Spacer(),
               Text(
                 context.tr('Fill at least {count}', {'count': '2'}),
                 style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -88,14 +92,17 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: _entries.length,
-            itemBuilder: (context, index) =>
-                _buildEntryCard(_entries[index]),
+            itemBuilder: (context, index) => _buildEntryCard(_entries[index]),
           ),
         ),
         // Submit
         Container(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, 12 + MediaQuery.of(context).padding.bottom),
+            24,
+            12,
+            24,
+            12 + MediaQuery.of(context).padding.bottom,
+          ),
           decoration: BoxDecoration(
             color: palette.elevatedSurface,
             border: Border(
@@ -103,8 +110,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
             ),
           ),
           child: FilledButton(
-            onPressed:
-                filledCount >= 2 && !_isSubmitting ? _submit : null,
+            onPressed: filledCount >= 2 && !_isSubmitting ? _submit : null,
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: AppTheme.colorForContentType('Article'),
@@ -171,7 +177,10 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
               maxLines: 3,
               minLines: 2,
               style: TextStyle(
-                  color: theme.colorScheme.onSurface, fontSize: 14, height: 1.6),
+                color: theme.colorScheme.onSurface,
+                fontSize: 14,
+                height: 1.6,
+              ),
               decoration: InputDecoration(
                 hintText: _localizedHint(entry.type),
                 hintStyle: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -227,7 +236,9 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                       Text(
                         context.tr('New Chapter Detected'),
                         style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant, fontSize: 12),
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -249,10 +260,11 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
         Text(
           context.tr('Narrative Summary'),
           style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
-              letterSpacing: 1),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurfaceVariant,
+            letterSpacing: 1,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
@@ -277,14 +289,18 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           Text(
             context.tr('Voice Evolution'),
             style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurfaceVariant,
-                letterSpacing: 1),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
+              letterSpacing: 1,
+            ),
           ),
           const SizedBox(height: 12),
-          _buildDeltaCard(result.voiceDelta, Icons.record_voice_over,
-              AppTheme.approveColor),
+          _buildDeltaCard(
+            result.voiceDelta,
+            Icons.record_voice_over,
+            AppTheme.approveColor,
+          ),
         ],
 
         // Positioning changes
@@ -293,14 +309,18 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
           Text(
             context.tr('Positioning Shift'),
             style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurfaceVariant,
-                letterSpacing: 1),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurfaceVariant,
+              letterSpacing: 1,
+            ),
           ),
           const SizedBox(height: 12),
-          _buildDeltaCard(result.positioningDelta, Icons.my_location,
-              AppTheme.editColor),
+          _buildDeltaCard(
+            result.positioningDelta,
+            Icons.my_location,
+            AppTheme.editColor,
+          ),
         ],
 
         const SizedBox(height: 32),
@@ -337,7 +357,10 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
   }
 
   Widget _buildDeltaCard(
-      Map<String, dynamic> delta, IconData icon, Color color) {
+    Map<String, dynamic> delta,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -348,7 +371,9 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: delta.entries.map((e) {
-          final value = e.value is List ? (e.value as List).join(', ') : '${e.value}';
+          final value = e.value is List
+              ? (e.value as List).join(', ')
+              : '${e.value}';
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
@@ -358,19 +383,23 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                        text: '${_formatKey(e.key)}: ',
-                        style: TextStyle(
-                            color: color, fontWeight: FontWeight.w600),
-                      ),
-                      TextSpan(
-                        text: value,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${_formatKey(e.key)}: ',
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ]),
+                        TextSpan(
+                          text: value,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -381,38 +410,43 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
     );
   }
 
-  String _formatKey(String key) =>
-      key.replaceAll('_', ' ').replaceFirstMapped(
-          RegExp(r'^[a-z]'), (m) => m.group(0)!.toUpperCase());
+  String _formatKey(String key) => key
+      .replaceAll('_', ' ')
+      .replaceFirstMapped(RegExp(r'^[a-z]'), (m) => m.group(0)!.toUpperCase());
 
   String _localizedLabel(EntryType type) => switch (type) {
-        EntryType.reflection => context.tr('Reflection'),
-        EntryType.win => context.tr('Win'),
-        EntryType.struggle => context.tr('Struggle'),
-        EntryType.idea => context.tr('Idea'),
-        EntryType.pivot => context.tr('Pivot'),
-      };
+    EntryType.reflection => context.tr('Reflection'),
+    EntryType.win => context.tr('Win'),
+    EntryType.struggle => context.tr('Struggle'),
+    EntryType.idea => context.tr('Idea'),
+    EntryType.pivot => context.tr('Pivot'),
+  };
 
   String _localizedHint(EntryType type) => switch (type) {
-        EntryType.reflection => context.tr(
-            'What have you been thinking about this week regarding your work, your audience, your direction?'),
-        EntryType.win => context.tr(
-            'What went well? A milestone, a positive reaction, a breakthrough?'),
-        EntryType.struggle => context.tr(
-            'What was difficult? A blocker, a doubt, a frustration?'),
-        EntryType.idea => context.tr(
-            'Any new ideas? Content topics, product features, collaborations?'),
-        EntryType.pivot => context.tr(
-            'Are you reconsidering something? A strategy shift, a new angle?'),
-      };
+    EntryType.reflection => context.tr(
+      'What have you been thinking about this week regarding your work, your audience, your direction?',
+    ),
+    EntryType.win => context.tr(
+      'What went well? A milestone, a positive reaction, a breakthrough?',
+    ),
+    EntryType.struggle => context.tr(
+      'What was difficult? A blocker, a doubt, a frustration?',
+    ),
+    EntryType.idea => context.tr(
+      'Any new ideas? Content topics, product features, collaborations?',
+    ),
+    EntryType.pivot => context.tr(
+      'Are you reconsidering something? A strategy shift, a new angle?',
+    ),
+  };
 
   Color _colorForType(EntryType type) => switch (type) {
-        EntryType.reflection => AppTheme.colorForContentType('Article'),
-        EntryType.win => AppTheme.approveColor,
-        EntryType.struggle => AppTheme.rejectColor,
-        EntryType.idea => AppTheme.warningColor,
-        EntryType.pivot => AppTheme.editColor,
-      };
+    EntryType.reflection => AppTheme.colorForContentType('Article'),
+    EntryType.win => AppTheme.approveColor,
+    EntryType.struggle => AppTheme.rejectColor,
+    EntryType.idea => AppTheme.warningColor,
+    EntryType.pivot => AppTheme.editColor,
+  };
 
   Future<void> _submit() async {
     setState(() => _isSubmitting = true);
@@ -458,12 +492,14 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
     final result = _result;
     if (result != null && !ref.read(authSessionProvider).isDemo) {
       unawaited(
-        ref.read(apiServiceProvider).saveCreatorProfile(
-          voice: result.voiceDelta.isEmpty ? null : result.voiceDelta,
-          positioning: result.positioningDelta.isEmpty
-              ? null
-              : result.positioningDelta,
-        ),
+        ref
+            .read(apiServiceProvider)
+            .saveCreatorProfile(
+              voice: result.voiceDelta.isEmpty ? null : result.voiceDelta,
+              positioning: result.positioningDelta.isEmpty
+                  ? null
+                  : result.positioningDelta,
+            ),
       );
       ref.invalidate(creatorProfileProvider);
     }

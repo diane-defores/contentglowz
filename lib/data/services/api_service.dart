@@ -1942,8 +1942,8 @@ class ApiService {
       final response = await _dio.get('/api/integrations/github/connect');
       final data = _asMap(response.data);
       return data['connect_url']?.toString();
-    } on DioException {
-      return null;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
     }
   }
 

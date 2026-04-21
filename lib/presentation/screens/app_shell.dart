@@ -44,6 +44,11 @@ const _sections = [
     label: 'Create',
     items: [
       _NavItem(
+        icon: Icons.auto_stories_rounded,
+        label: 'Ritual',
+        path: '/ritual',
+      ),
+      _NavItem(
         icon: Icons.description_rounded,
         label: 'Templates',
         path: '/templates',
@@ -337,8 +342,7 @@ class _ShellContent extends StatelessWidget {
                             'backendStatus':
                                 appAccess?.backendStatusLabel ?? 'unknown',
                             'queuedPending': offlineSync.pendingCount,
-                            'queuedBlocked':
-                                offlineSync.blockedDependencyCount,
+                            'queuedBlocked': offlineSync.blockedDependencyCount,
                             'queuedPaused': offlineSync.pausedAuthCount,
                             'queuedFailed': offlineSync.failedCount,
                             'staleKeys': offlineSync.staleKeys.length,

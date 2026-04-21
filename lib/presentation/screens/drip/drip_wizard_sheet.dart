@@ -1187,7 +1187,28 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
 
   Future<void> _connectGithubFromDrip() async {
     final api = ref.read(apiServiceProvider);
-    final connectUrl = await api.getGithubConnectUrl();
+    String? connectUrl;
+    try {
+      connectUrl = await api.getGithubConnectUrl();
+    } on ApiException catch (error, stackTrace) {
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'L’authentification GitHub est indisponible : {error}',
+          {'error': error.message},
+        ),
+        scope: 'drip.github.connect',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {
+          'path': error.path,
+          'statusCode': error.statusCode,
+        },
+      );
+      return;
+    }
 
     if (connectUrl == null || connectUrl.isEmpty) {
       if (!mounted) return;

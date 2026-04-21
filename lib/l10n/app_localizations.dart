@@ -820,6 +820,7 @@ class AppLocalizations {
     'Review creation settings': 'Vérifier les réglages de création',
     'Review the structures available for articles, newsletters, videos, and shorts.':
         'Consultez les structures disponibles pour les articles, newsletters, vidéos et formats courts.',
+    'Ritual': 'Rituel',
     'Runs — AI job history': 'Runs — historique des jobs IA',
     'SEO Mesh': 'Mesh SEO',
     'SEO — organic visibility': 'SEO — visibilité organique',

@@ -72,6 +72,27 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets('empty feed remains usable on a narrow mobile viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 720);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await _pumpFeedScreen(
+      tester,
+      items: const [],
+      dripPlans: [_dripPlan('plan-1')],
+    );
+
+    expect(find.text('Review creation settings'), findsOneWidget);
+    expect(find.text('Create content'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpFeedScreen(

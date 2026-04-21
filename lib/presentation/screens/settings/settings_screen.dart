@@ -8,10 +8,13 @@ import '../../../core/app_language.dart';
 import '../../../core/app_theme_preference.dart';
 import '../../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../../data/models/app_settings.dart';
+import '../../../data/models/auth_session.dart';
 import '../../../data/models/content_item.dart';
+import '../../../data/services/api_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_error_view.dart';
 import '../../widgets/project_picker_action.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -63,6 +66,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _sectionHeader('Connection'),
+          const SizedBox(height: 12),
+          _buildConnectionCard(authSession),
+
+          const SizedBox(height: 28),
+
           // Backend connection
           _sectionHeader('Backend Connection'),
           const SizedBox(height: 12),
@@ -72,8 +81,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 backendStatus.when(
                   data: (data) {
                     final isOnline =
-                        data['status'] == 'ok' ||
-                        data['status'] == 'healthy';
+                        data['status'] == 'ok' || data['status'] == 'healthy';
                     return Row(
                       children: [
                         Container(
@@ -134,8 +142,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ],
                       ),
                       _buildErrorDiagnosticRow(
-                        details:
-                            'Backend error: ${(error?.toString() ?? context.tr('No details')).trim()}',
+                        details: 'Backend error: ${(error.toString()).trim()}',
                         linkUrl: '${ref.read(apiBaseUrlProvider)}/health',
                         linkLabel: context.tr('Open {screen}', {
                           'screen': 'Health',
@@ -208,7 +215,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 12),
           _buildActionTile(
             icon: Icons.auto_stories,
-            title: 'Weekly Ritual',
+            title: 'Ritual',
             subtitle: 'Feed your creator voice & narrative',
             color: AppTheme.colorForContentType('Article'),
             onTap: () => context.push('/ritual'),
@@ -370,6 +377,125 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildConnectionCard(AuthSession authSession) {
+    final theme = Theme.of(context);
+    final session = authSession;
+    final isSignedIn = session.isAuthenticated;
+    final isDemo = session.isDemo;
+    final email = session.email?.trim();
+    final statusLabel = isSignedIn
+        ? context.tr('Connected')
+        : isDemo
+        ? context.tr('Demo mode')
+        : context.tr('Signed out');
+    final statusColor = isSignedIn
+        ? AppTheme.approveColor
+        : isDemo
+        ? AppTheme.warningColor
+        : theme.colorScheme.onSurfaceVariant;
+    final subtitle = isSignedIn
+        ? ((email?.isNotEmpty ?? false)
+              ? context.tr('Connected as {email}', {'email': email!})
+              : context.tr('Connected with an active Clerk session'))
+        : isDemo
+        ? context.tr('You are using the demo workspace without a real account.')
+        : context.tr(
+            'Sign in to sync projects, GitHub connections, and settings.',
+          );
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: statusColor,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                statusLabel,
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          if (isSignedIn && (email?.isNotEmpty ?? false)) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.approveColor.withAlpha(12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.approveColor.withAlpha(40)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.email_outlined,
+                    size: 18,
+                    color: AppTheme.approveColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      email!,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              if (!isSignedIn && !isDemo)
+                FilledButton.icon(
+                  onPressed: () => context.push('/auth'),
+                  icon: const Icon(Icons.login_rounded, size: 18),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.approveColor,
+                  ),
+                  label: Text(context.tr('Sign in')),
+                ),
+              if (isSignedIn || isDemo)
+                OutlinedButton.icon(
+                  onPressed: () =>
+                      ref.read(authSessionProvider.notifier).signOut(),
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: Text(context.tr('Sign out')),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _sectionHeader(String title) {
     final colorScheme = Theme.of(context).colorScheme;
     return Text(
@@ -408,7 +534,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (value.scope != null && value.scope!.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Text(
-                  context.tr('Granted scopes: {scope}', {'scope': value.scope!}),
+                  context.tr('Granted scopes: {scope}', {
+                    'scope': value.scope!,
+                  }),
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 12,
@@ -451,7 +579,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             _buildErrorDiagnosticRow(
-              details: 'GitHub error: ${(error?.toString() ?? context.tr('No details')).trim()}',
+              details: 'GitHub error: ${(error.toString()).trim()}',
               linkUrl:
                   '${ref.read(apiBaseUrlProvider)}/api/integrations/github/status',
               linkLabel: context.tr('Open GitHub status endpoint'),
@@ -1285,7 +1413,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               label: Text(linkLabel),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.infoColor,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
             OutlinedButton.icon(
@@ -1318,6 +1449,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final canOpen = await canLaunchUrl(uri);
     if (!canOpen) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.tr('Could not open link in browser.')),
@@ -1337,16 +1469,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       SnackBar(
         content: Text(context.tr('Error copied to clipboard.')),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
   Future<void> _connectGithub() async {
     final api = ref.read(apiServiceProvider);
-    final connectUrl = await api.getGithubConnectUrl();
+    String? connectUrl;
+    try {
+      connectUrl = await api.getGithubConnectUrl();
+    } on ApiException catch (error, stackTrace) {
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('GitHub OAuth is unavailable: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.github.connect',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {'path': error.path, 'statusCode': error.statusCode},
+      );
+      return;
+    }
 
     if (connectUrl == null || connectUrl.isEmpty) {
       if (!mounted) return;

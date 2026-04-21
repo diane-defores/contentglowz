@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/project_onboarding_validation.dart';
 import '../../../data/demo/demo_seed.dart';
 import '../../../data/models/project.dart';
+import '../../../data/services/api_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -298,7 +299,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _connectGithubFromOnboarding() async {
     if (_isDemoMode) return;
     final api = ref.read(apiServiceProvider);
-    final connectUrl = await api.getGithubConnectUrl();
+    String? connectUrl;
+    try {
+      connectUrl = await api.getGithubConnectUrl();
+    } on ApiException catch (error, stackTrace) {
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'L’authentification GitHub est indisponible : {error}',
+          {'error': error.message},
+        ),
+        scope: 'onboarding.github.connect',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {
+          'path': error.path,
+          'statusCode': error.statusCode,
+        },
+      );
+      return;
+    }
 
     if (connectUrl == null || connectUrl.isEmpty) {
       if (!mounted) return;

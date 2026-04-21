@@ -42,6 +42,7 @@ GoRouter createAppRouter(WidgetRef ref) {
     initialLocation: '/entry',
     redirect: (context, state) {
       final location = state.uri.path;
+      final isRoot = location == '/';
       final isEntry = location == '/entry';
       final isAuth = location == '/auth';
       final isFeedback = location == '/feedback';
@@ -69,24 +70,17 @@ GoRouter createAppRouter(WidgetRef ref) {
       final access = appAccessAsync.valueOrNull;
 
       if (appAccessAsync.isLoading || access == null) {
-        if (isEntry || isAuth || isFeedback || isFeedbackAdmin) {
-          return null;
+        if (isRoot) {
+          return '/entry';
         }
-        return '/entry';
+        return null;
       }
 
       switch (access.stage) {
         case AppAccessStage.restoringSession:
         case AppAccessStage.checkingBackend:
         case AppAccessStage.checkingWorkspace:
-          if (isInAppRoute) {
-            return null;
-          }
-          if (!isEntry &&
-              !isUptime &&
-              !isSettings &&
-              !isFeedback &&
-              !isFeedbackAdmin) {
+          if (isRoot) {
             return '/entry';
           }
           return null;

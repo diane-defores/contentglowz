@@ -70,6 +70,7 @@
 | ✅ | Bloquer la création workspace/onboarding tant qu'aucune session Clerk authentifiée n'est présente | ✅ done |
 | ✅ | Introduire un `AppAccessState` central pour séparer session Clerk, health FastAPI et bootstrap workspace | ✅ done |
 | ✅ | Ajouter un mode dégradé avec shell limité, diagnostics enrichis et warning global quand FastAPI tombe | ✅ done |
+| ✅ | Afficher clairement l'état de session dans Settings (email connecté + bouton logout) pour éviter l'ambiguïté sur l'auth active | ✅ done |
 
 ---
 
@@ -214,8 +215,18 @@
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | ✅ done |
+| ✅ | Ajouter un accès direct au rituel dans le menu mobile "More" pour augmenter la fréquence de remplissage | ✅ done |
 | 🟠 | Ajouter une visite guidée simplifiée (4 cartes max) pour mode “publier vite” : parcours orienté résultats, choix rapide au premier lancement | 📋 todo |
+| 🟠 | Ajouter une vraie section compte dans Settings (lien gestion Clerk / mot de passe / providers connectés) au lieu d'un simple état de session | 📋 todo |
 | 🟠 | Passe i18n complémentaire sur les écrans secondaires encore partiellement en anglais | 🔄 in progress |
+
+### Audit: Design (2026-04-21 — Feed mobile page — Overall: C→B)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Remplacer les cartes vides du feed par une composition responsive mobile-first (CTA empilés, cartes pleine largeur, stats sans débordement) | ✅ done |
+| 🟠 | Valider sur vrai appareil le header mobile du feed avec `ProjectPickerAction` lorsque le nom du projet est très long et qu’un bulk action est présent | 📋 todo |
+| 🟡 | Revoir plus tard la version mobile du feed “avec cartes à swiper” pour confirmer que la zone d’actions basse ne gêne pas les petits écrans 320–360px | 📋 todo |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
