@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -1568,6 +1569,107 @@ class ApiService {
         return persona;
       }
       throw mapped;
+    }
+  }
+
+  Future<Map<String, dynamic>> generatePersonaDraftFromProject({
+    required String projectId,
+    required String repoUrl,
+  }) async {
+    if (allowDemoData) {
+      return {
+        'name': 'Pragmatic Buyer Persona',
+        'avatar': '🧭',
+        'demographics': {'role': 'Founder', 'industry': 'Digital business'},
+        'pain_points': ['Inconsistent growth'],
+        'goals': ['Generate steady pipeline'],
+        'language': {
+          'vocabulary': ['clarity', 'traction'],
+          'objections': ['Not enough time'],
+        },
+        'confidence': 55,
+      };
+    }
+
+    final response = await _createPersonaDraftJob(
+      projectId: projectId,
+      repoSource: 'project_repo',
+      repoUrl: repoUrl,
+      mode: 'suggest_from_repo',
+    );
+    final jobId = (response['job_id'] ?? '').toString();
+    if (jobId.isEmpty) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Persona draft job did not return a job ID.',
+      );
+    }
+
+    const maxAttempts = 45;
+    for (var i = 0; i < maxAttempts; i++) {
+      await Future.delayed(const Duration(seconds: 1));
+      final job = await _fetchPersonaDraftJob(jobId);
+      final status = (job['status'] ?? '').toString().toLowerCase();
+
+      if (status == 'completed') {
+        final result = _asMapOrNull(job['result']);
+        final draft = _asMapOrNull(result?['persona_draft']);
+        if (draft == null || draft.isEmpty) {
+          throw const ApiException(
+            ApiErrorType.invalidResponse,
+            'Persona draft completed without usable draft data.',
+          );
+        }
+        return draft;
+      }
+
+      if (status == 'failed') {
+        final errorMessage = (job['error'] ?? 'Persona draft job failed.')
+            .toString()
+            .trim();
+        throw ApiException(
+          ApiErrorType.server,
+          errorMessage.isEmpty ? 'Persona draft job failed.' : errorMessage,
+        );
+      }
+    }
+
+    throw const ApiException(
+      ApiErrorType.server,
+      'Persona draft generation timed out. Please retry.',
+    );
+  }
+
+  Future<Map<String, dynamic>> _createPersonaDraftJob({
+    required String projectId,
+    required String repoSource,
+    required String mode,
+    String? repoUrl,
+    String? manualUrl,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/personas/draft',
+        data: _compactMap({
+          'project_id': projectId,
+          'repo_source': repoSource,
+          'repo_url': repoUrl,
+          'manual_url': manualUrl,
+          'mode': mode,
+        }),
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchPersonaDraftJob(String jobId) async {
+    try {
+      final response = await _dio.get('/api/personas/draft-jobs/$jobId');
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
     }
   }
 

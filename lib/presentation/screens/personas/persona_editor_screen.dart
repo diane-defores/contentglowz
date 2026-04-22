@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/models/persona.dart';
+import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -28,6 +29,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
   final List<TextEditingController> _vocabularyControllers = [];
   final List<TextEditingController> _objectionControllers = [];
   bool _isSaving = false;
+  bool _isAutofilling = false;
 
   @override
   void initState() {
@@ -38,14 +40,19 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
     _ageRangeController = TextEditingController();
     _experienceController = TextEditingController();
     // Start with 2 empty pain points and goals
-    _painPointControllers
-        .addAll([TextEditingController(), TextEditingController()]);
-    _goalControllers
-        .addAll([TextEditingController(), TextEditingController()]);
-    _vocabularyControllers
-        .addAll([TextEditingController(), TextEditingController()]);
-    _objectionControllers
-        .addAll([TextEditingController(), TextEditingController()]);
+    _painPointControllers.addAll([
+      TextEditingController(),
+      TextEditingController(),
+    ]);
+    _goalControllers.addAll([TextEditingController(), TextEditingController()]);
+    _vocabularyControllers.addAll([
+      TextEditingController(),
+      TextEditingController(),
+    ]);
+    _objectionControllers.addAll([
+      TextEditingController(),
+      TextEditingController(),
+    ]);
   }
 
   @override
@@ -77,14 +84,26 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            widget.personaId != null
-                ? context.tr('Edit Persona')
-                : context.tr('New Persona')),
+          widget.personaId != null
+              ? context.tr('Edit Persona')
+              : context.tr('New Persona'),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         actions: [
+          IconButton(
+            tooltip: context.tr('Prefill with AI'),
+            onPressed: (_isSaving || _isAutofilling) ? null : _prefillWithAi,
+            icon: _isAutofilling
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_awesome_rounded),
+          ),
           TextButton(
             onPressed: _isSaving ? null : _save,
             child: _isSaving
@@ -119,9 +138,11 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _roleController,
-              decoration: InputDecoration(
-                labelText: context.tr('Role'),
-                hintText: context.tr('e.g. Indie developer, CTO, Content creator'),
+            decoration: InputDecoration(
+              labelText: context.tr('Role'),
+              hintText: context.tr(
+                'e.g. Indie developer, CTO, Content creator',
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -174,7 +195,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
             hintPrefix: context.tr('Pain point'),
             color: AppTheme.rejectColor,
             onAdd: () => setState(
-                () => _painPointControllers.add(TextEditingController())),
+              () => _painPointControllers.add(TextEditingController()),
+            ),
           ),
 
           const SizedBox(height: 28),
@@ -193,8 +215,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
             controllers: _goalControllers,
             hintPrefix: context.tr('Goal'),
             color: AppTheme.approveColor,
-            onAdd: () => setState(
-                () => _goalControllers.add(TextEditingController())),
+            onAdd: () =>
+                setState(() => _goalControllers.add(TextEditingController())),
           ),
 
           const SizedBox(height: 28),
@@ -214,7 +236,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
             hintPrefix: context.tr('Word or phrase'),
             color: AppTheme.editColor,
             onAdd: () => setState(
-                () => _vocabularyControllers.add(TextEditingController())),
+              () => _vocabularyControllers.add(TextEditingController()),
+            ),
           ),
 
           const SizedBox(height: 28),
@@ -234,7 +257,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
             hintPrefix: context.tr('Objection'),
             color: AppTheme.warningColor,
             onAdd: () => setState(
-                () => _objectionControllers.add(TextEditingController())),
+              () => _objectionControllers.add(TextEditingController()),
+            ),
           ),
 
           const SizedBox(height: 40),
@@ -277,9 +301,10 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
                   child: Text(
                     '${i + 1}',
                     style: TextStyle(
-                        color: color,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -287,16 +312,16 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
               Expanded(
                 child: TextField(
                   controller: controllers[i],
-                  decoration: InputDecoration(
-                    hintText: '$hintPrefix ${i + 1}',
-                  ),
+                  decoration: InputDecoration(hintText: '$hintPrefix ${i + 1}'),
                 ),
               ),
               if (controllers.length > 2)
                 IconButton(
-                  icon: Icon(Icons.close,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  icon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   onPressed: () {
                     setState(() {
                       controllers[i].dispose();
@@ -353,10 +378,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
           .where((s) => s.isNotEmpty)
           .toList(),
       language: (vocabulary.isNotEmpty || objections.isNotEmpty)
-          ? PersonaLanguage(
-              vocabulary: vocabulary,
-              objections: objections,
-            )
+          ? PersonaLanguage(vocabulary: vocabulary, objections: objections)
           : null,
     );
 
@@ -369,12 +391,14 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(context.tr('Persona "{name}" saved', {'name': persona.name})),
+            content: Text(
+              context.tr('Persona "{name}" saved', {'name': persona.name}),
+            ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         context.pop();
@@ -384,7 +408,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Failed to save persona: {error}', {'error': '$error'}),
+          message: context.tr('Failed to save persona: {error}', {
+            'error': '$error',
+          }),
           scope: 'persona.save',
           error: error,
           stackTrace: stackTrace,
@@ -399,6 +425,156 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  Future<void> _prefillWithAi() async {
+    final activeProject = ref.read(activeProjectProvider);
+    final projectId = activeProject?.id;
+    final projectRepoUrl = activeProject?.url.trim();
+
+    if (projectId == null || projectId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('No active project selected.'))),
+      );
+      return;
+    }
+
+    if (projectRepoUrl == null || projectRepoUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Current project has no repository URL. Set it first in project settings.',
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isAutofilling = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      final draft = await api.generatePersonaDraftFromProject(
+        projectId: projectId,
+        repoUrl: projectRepoUrl,
+      );
+      _applyPersonaDraft(draft);
+
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('Persona draft generated and pre-filled.')),
+          backgroundColor: AppTheme.approveColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (error, stackTrace) {
+      if (!mounted) {
+        return;
+      }
+      final requiresOpenRouterKey =
+          error is ApiException && error.statusCode == 409;
+
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: requiresOpenRouterKey
+            ? context.tr(
+                'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+              )
+            : context.tr('Failed to prefill persona with AI: {error}', {
+                'error': '$error',
+              }),
+        scope: 'persona.prefill',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {'projectId': projectId, 'projectRepoUrl': projectRepoUrl},
+      );
+      if (requiresOpenRouterKey) {
+        context.push('/settings');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isAutofilling = false);
+      }
+    }
+  }
+
+  void _applyPersonaDraft(Map<String, dynamic> draft) {
+    final demographics = _asMap(draft['demographics']);
+    final language = _asMap(draft['language']);
+
+    final painPoints = _toStringList(
+      draft['pain_points'] ?? draft['painPoints'],
+    );
+    final goals = _toStringList(draft['goals']);
+    final vocabulary = _toStringList(language['vocabulary']);
+    final objections = _toStringList(language['objections']);
+
+    setState(() {
+      _nameController.text = _asString(draft['name']) ?? _nameController.text;
+      _roleController.text = _asString(demographics['role']) ?? '';
+      _industryController.text = _asString(demographics['industry']) ?? '';
+      _ageRangeController.text = _asString(demographics['age_range']) ?? '';
+      _experienceController.text =
+          _asString(demographics['experience_level']) ?? '';
+
+      _replaceControllers(_painPointControllers, painPoints);
+      _replaceControllers(_goalControllers, goals);
+      _replaceControllers(_vocabularyControllers, vocabulary);
+      _replaceControllers(_objectionControllers, objections);
+    });
+  }
+
+  void _replaceControllers(
+    List<TextEditingController> target,
+    List<String> values,
+  ) {
+    for (final controller in target) {
+      controller.dispose();
+    }
+    target
+      ..clear()
+      ..addAll(
+        values
+            .where((entry) => entry.trim().isNotEmpty)
+            .map((entry) => TextEditingController(text: entry.trim())),
+      );
+
+    while (target.length < 2) {
+      target.add(TextEditingController());
+    }
+  }
+
+  Map<String, dynamic> _asMap(Object? value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return value.map((key, val) => MapEntry(key.toString(), val));
+    }
+    return const <String, dynamic>{};
+  }
+
+  List<String> _toStringList(Object? value) {
+    if (value is! List) {
+      return const <String>[];
+    }
+    return value
+        .map((entry) => entry?.toString().trim() ?? '')
+        .where((entry) => entry.isNotEmpty)
+        .toList();
+  }
+
+  String? _asString(Object? value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) {
+      return null;
+    }
+    return text;
   }
 }
 
