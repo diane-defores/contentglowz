@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-04-22
+
+### Added
+- Added `BRANDING.md` to document the ContentFlow website brand promise, tone, and UX language.
+
+### Changed
+- Extended `CLAUDE.md` with explicit French writing rules: use informal address and always keep proper accents.
+
 ## 2026-04-20
 
 ### Added

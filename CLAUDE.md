@@ -47,3 +47,5 @@ src/
 
 - Keep language aligned with product behavior: if a feature depends on backend availability, call out degraded-mode behavior.
 - When adding content or pages describing capabilities, include the recovery message for offline support to avoid false expectations.
+- Language rule: in French, always use informal address ("tu"), never "vous".
+- Language rule (French): always use proper accents (accents must not be omitted).
