@@ -96,6 +96,40 @@ void showDiagnosticSnackBar(
   );
 }
 
+void showCopyableDiagnosticSnackBar(
+  BuildContext context,
+  WidgetRef ref, {
+  required String message,
+  required String scope,
+  Object? error,
+  StackTrace? stackTrace,
+  Map<String, Object?> contextData = const <String, Object?>{},
+  Color? backgroundColor,
+  SnackBarBehavior behavior = SnackBarBehavior.floating,
+  ShapeBorder? shape,
+  String copyLabel = 'Copy error',
+}) {
+  final resolvedBackgroundColor =
+      backgroundColor ??
+      Theme.of(context).colorScheme.error.withValues(alpha: 0.92);
+  final resolvedShape =
+      shape ?? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12));
+
+  showDiagnosticSnackBar(
+    context,
+    ref,
+    message: message,
+    scope: scope,
+    error: error,
+    stackTrace: stackTrace,
+    contextData: contextData,
+    backgroundColor: resolvedBackgroundColor,
+    behavior: behavior,
+    shape: resolvedShape,
+    copyLabel: copyLabel,
+  );
+}
+
 class AppErrorView extends ConsumerWidget {
   const AppErrorView({
     super.key,

@@ -1682,11 +1682,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted) return;
     final uri = Uri.tryParse(url);
     if (uri == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('Cannot open URL: invalid format.')),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Cannot open URL: invalid format.'),
+        scope: 'settings.open_url.invalid_format',
+        contextData: {'url': url},
       );
       return;
     }
@@ -1694,11 +1695,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final canOpen = await canLaunchUrl(uri);
     if (!canOpen) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('Could not open link in browser.')),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Could not open link in browser.'),
+        scope: 'settings.open_url.cannot_open',
+        contextData: {'url': url},
       );
       return;
     }
@@ -1741,19 +1743,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (connectUrl == null || connectUrl.isEmpty) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr(
-              'GitHub OAuth is unavailable. Check backend configuration.',
-            ),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'GitHub OAuth is unavailable. Check backend configuration.',
         ),
+        scope: 'settings.github.connect_url_missing',
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
       return;
     }
@@ -1790,17 +1787,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('Could not open browser for GitHub authorization'),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Could not open browser for GitHub authorization'),
+        scope: 'settings.github.browser_unavailable',
+        contextData: {'connectUrl': connectUrl},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     }
   }
@@ -1848,15 +1841,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(content: Text(context.tr('GitHub disconnected.'))),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('Failed to disconnect GitHub.')),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to disconnect GitHub.'),
+        scope: 'settings.github.disconnect',
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     }
   }
@@ -1951,16 +1941,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('Failed to save OpenRouter key: {error}', {
-              'error': error.message,
-            }),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to save OpenRouter key: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.openrouter.save',
+        error: error,
+        contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     } finally {
       if (mounted) {
@@ -1980,27 +1970,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final result = await api.validateOpenRouterCredential();
       ref.invalidate(openRouterCredentialStatusProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message ?? context.tr('Validation completed.')),
-          backgroundColor: result.valid
-              ? AppTheme.approveColor.withAlpha(210)
-              : AppTheme.warningColor.withAlpha(220),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      final validationMessage =
+          result.message ?? context.tr('Validation completed.');
+      if (result.valid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(validationMessage),
+            backgroundColor: AppTheme.approveColor.withAlpha(210),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        showCopyableDiagnosticSnackBar(
+          context,
+          ref,
+          message: validationMessage,
+          scope: 'settings.openrouter.validation_warning',
+          backgroundColor: AppTheme.warningColor.withAlpha(220),
+        );
+      }
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('Failed to validate OpenRouter key: {error}', {
-              'error': error.message,
-            }),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to validate OpenRouter key: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.openrouter.validate',
+        error: error,
+        contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     } finally {
       if (mounted) {
@@ -2061,16 +2061,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('Failed to delete OpenRouter key: {error}', {
-              'error': error.message,
-            }),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to delete OpenRouter key: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.openrouter.delete',
+        error: error,
+        contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     } finally {
       if (mounted) {
@@ -2106,19 +2106,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!mounted) return;
 
     if (connectUrl == null || connectUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('Could not get connect URL for {channelName}', {
-              'channelName': channelName,
-            }),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Could not get connect URL for {channelName}', {
+          'channelName': channelName,
+        }),
+        scope: 'settings.channel.connect_url_missing',
+        contextData: {'channel': channelName, 'platform': platform},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
       return;
     }
@@ -2163,20 +2159,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr(
-              'Could not open browser for {channelName} authorization',
-              {'channelName': channelName},
-            ),
-          ),
-          backgroundColor: AppTheme.rejectColor.withAlpha(200),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'Could not open browser for {channelName} authorization',
+          {'channelName': channelName},
         ),
+        scope: 'settings.channel.browser_unavailable',
+        contextData: {
+          'channel': channelName,
+          'platform': platform,
+          'connectUrl': connectUrl,
+        },
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     }
   }
@@ -2238,19 +2234,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              context.tr('Failed to disconnect {channelName}', {
-                'channelName': channelName,
-              }),
-            ),
-            backgroundColor: AppTheme.rejectColor.withAlpha(200),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
+        showCopyableDiagnosticSnackBar(
+          context,
+          ref,
+          message: context.tr('Failed to disconnect {channelName}', {
+            'channelName': channelName,
+          }),
+          scope: 'settings.channel.disconnect',
+          contextData: {'channel': channelName, 'platform': platform},
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
         );
       }
     }

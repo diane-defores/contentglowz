@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
+import 'app_error_view.dart';
 
 class ProjectPickerAction extends ConsumerWidget {
   const ProjectPickerAction({super.key});
@@ -12,8 +13,8 @@ class ProjectPickerAction extends ConsumerWidget {
     final projectsState = ref.watch(projectsStateProvider);
     final activeProject = ref.watch(activeProjectProvider);
     final isSwitching = ref.watch(activeProjectControllerProvider).isLoading;
-    final activeLabel = activeProject?.name ??
-        context.tr('No project selected');
+    final activeLabel =
+        activeProject?.name ?? context.tr('No project selected');
     final activeColor = Theme.of(context).colorScheme.onSurface;
 
     if (isSwitching) {
@@ -41,23 +42,21 @@ class ProjectPickerAction extends ConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.tr('Could not switch project: {error}', {
-                  'error': '$error',
-                }),
-              ),
-            ),
+          showCopyableDiagnosticSnackBar(
+            context,
+            ref,
+            message: context.tr('Could not switch project: {error}', {
+              'error': '$error',
+            }),
+            scope: 'project_picker.switch',
+            error: error,
           );
         }
       },
       itemBuilder: (context) => projectsState.when(
         data: (state) {
           final availableProjects = state.items
-              .where(
-                (project) => !project.isArchived && !project.isDeleted,
-              )
+              .where((project) => !project.isArchived && !project.isDeleted)
               .toList();
           if (availableProjects.isEmpty) {
             return [

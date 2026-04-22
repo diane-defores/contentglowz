@@ -326,6 +326,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       _showSnackBar(
         msg,
         failed == 0 ? AppTheme.approveColor : AppTheme.warningColor,
+        includeCopyAction: failed > 0,
+        diagnosticScope: 'feed.bulk_approve',
       );
     }
   }
@@ -350,6 +352,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           _showSnackBar(
             result.message,
             _colorForApproveSeverity(result.severity),
+            includeCopyAction:
+                result.severity == ApproveSeverity.warning ||
+                result.severity == ApproveSeverity.error,
+            diagnosticScope: 'feed.swipe_approve',
           );
         });
         return true;
@@ -377,7 +383,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     context.push('/editor/${item.id}');
   }
 
-  void _showSnackBar(String message, Color color) {
+  void _showSnackBar(
+    String message,
+    Color color, {
+    bool includeCopyAction = false,
+    String diagnosticScope = 'feed.snackbar',
+  }) {
+    if (includeCopyAction) {
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: message,
+        scope: diagnosticScope,
+        backgroundColor: color.withAlpha(200),
+      );
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

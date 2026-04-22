@@ -81,7 +81,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         showDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Could not load full content: {error}', {'error': '$error'}),
+          message: context.tr('Could not load full content: {error}', {
+            'error': '$error',
+          }),
           scope: 'editor.load_full_content',
           error: error,
           stackTrace: stackTrace,
@@ -180,8 +182,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             onPressed: () => _showPlatformPreview(item),
           ),
         // Toggle edit/preview
-          IconButton(
-            icon: Icon(_isPreview ? Icons.edit_rounded : Icons.visibility_rounded),
+        IconButton(
+          icon: Icon(
+            _isPreview ? Icons.edit_rounded : Icons.visibility_rounded,
+          ),
           tooltip: _isPreview ? context.tr('Edit') : context.tr('Preview'),
           onPressed: () => setState(() {
             _isPreview = !_isPreview;
@@ -235,22 +239,26 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 8),
-              ...item.channels.map((ch) => Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: palette.surface.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(8),
+              ...item.channels.map(
+                (ch) => Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: palette.surface.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    ch.name,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
-                    child: Text(
-                      ch.name,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  )),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -324,9 +332,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                           ),
                         ),
                       ),
-                      listBullet: TextStyle(
-                        color: theme.colorScheme.onSurface,
-                      ),
+                      listBullet: TextStyle(color: theme.colorScheme.onSurface),
                     ),
                   ),
                 ),
@@ -351,10 +357,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           chips.add(_editorChip(Icons.play_arrow_rounded, item.shortPlatform!));
         }
         if (item.shortDuration != null) {
-          chips.add(_editorChip(Icons.timer_outlined, '${item.shortDuration}s'));
+          chips.add(
+            _editorChip(Icons.timer_outlined, '${item.shortDuration}s'),
+          );
         }
         if (item.shortHashtags.isNotEmpty) {
-          chips.add(_editorChip(Icons.tag, item.shortHashtags.take(3).join(' ')));
+          chips.add(
+            _editorChip(Icons.tag, item.shortHashtags.take(3).join(' ')),
+          );
         }
       case ContentType.socialPost:
         for (final p in item.socialPlatforms) {
@@ -378,11 +388,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 4,
-        children: chips,
-      ),
+      child: Wrap(spacing: 8, runSpacing: 4, children: chips),
     );
   }
 
@@ -442,16 +448,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           if (snapshot.hasError) {
             return _auditContainer(
               child: Text(
-                context.tr(
-                  'Audit trail unavailable: {error}',
-                  {'error': '${snapshot.error}'},
-                ),
+                context.tr('Audit trail unavailable: {error}', {
+                  'error': '${snapshot.error}',
+                }),
                 style: TextStyle(color: AppTheme.rejectColor),
               ),
             );
           }
 
-          final trail = snapshot.data ?? const ContentAuditTrail(transitions: [], edits: []);
+          final trail =
+              snapshot.data ??
+              const ContentAuditTrail(transitions: [], edits: []);
           if (trail.isEmpty) {
             return _auditContainer(
               child: Text(
@@ -464,7 +471,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           return _auditContainer(
             child: Theme(
               data: Theme.of(context).copyWith(
-                dividerColor: theme.colorScheme.outlineVariant.withValues(alpha: 0),
+                dividerColor: theme.colorScheme.outlineVariant.withValues(
+                  alpha: 0,
+                ),
               ),
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
@@ -672,10 +681,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     final palette = AppTheme.paletteOf(context);
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
+        20,
+        12,
+        20,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
+        border: Border(
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
       ),
       child: Row(
         children: [
@@ -702,9 +717,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             child: FilledButton.icon(
               onPressed: () => _publish(item),
               icon: const Icon(Icons.send_rounded),
-              label: Text(_hasChanges
-                  ? context.tr('Save & Publish')
-                  : context.tr('Publish')),
+              label: Text(
+                _hasChanges
+                    ? context.tr('Save & Publish')
+                    : context.tr('Publish'),
+              ),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.approveColor,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -733,30 +750,49 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ref.read(pendingContentProvider.notifier).updateItem(updated);
       } catch (error, stackTrace) {
         if (!mounted) return;
-        showDiagnosticSnackBar(
+        showCopyableDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Could not save changes: {error}', {'error': '$error'}),
+          message: context.tr('Could not save changes: {error}', {
+            'error': '$error',
+          }),
           scope: 'editor.save_changes',
           error: error,
           stackTrace: stackTrace,
           contextData: {'contentId': item.id},
           backgroundColor: AppTheme.warningColor.withAlpha(200),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         );
         return;
       }
     }
-    final result = await ref.read(pendingContentProvider.notifier).approve(item.id);
+    final result = await ref
+        .read(pendingContentProvider.notifier)
+        .approve(item.id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result.message),
-        backgroundColor: _colorForApproveSeverity(result.severity).withAlpha(200),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    final resultColor = _colorForApproveSeverity(result.severity);
+    final shouldShowCopyAction =
+        result.severity == ApproveSeverity.warning ||
+        result.severity == ApproveSeverity.error;
+    if (shouldShowCopyAction) {
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: result.message,
+        scope: 'editor.publish',
+        backgroundColor: resultColor.withAlpha(200),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: resultColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
     context.pop();
   }
 
@@ -803,15 +839,18 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               Navigator.pop(ctx);
               context.pop();
             },
-            child: Text(context.tr('Discard'),
-                style: TextStyle(color: AppTheme.rejectColor)),
+            child: Text(
+              context.tr('Discard'),
+              style: TextStyle(color: AppTheme.rejectColor),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Color _colorForApproveSeverity(ApproveSeverity severity) => switch (severity) {
+  Color _colorForApproveSeverity(ApproveSeverity severity) =>
+      switch (severity) {
         ApproveSeverity.success => AppTheme.approveColor,
         ApproveSeverity.info => AppTheme.infoColor,
         ApproveSeverity.warning => AppTheme.warningColor,
