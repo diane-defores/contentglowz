@@ -142,9 +142,9 @@ class AppDiagnostics {
     List<String> extraLines = const <String>[],
     int recentEntryLimit = 25,
   }) {
-    final currentErrorText = _normalizeMessage(
-      currentError,
-      fallback: formatError(error),
+    final currentErrorText = _normalizeCurrentError(
+      currentError: currentError,
+      error: error,
     );
     final sanitizedContext = _sanitizeContext(context);
     final lines = <String>[
@@ -222,6 +222,17 @@ class AppDiagnostics {
     }
 
     return raw.replaceFirst(RegExp(r'^(Exception|StateError):\s*'), '');
+  }
+
+  String _normalizeCurrentError({String? currentError, Object? error}) {
+    final explicit = currentError?.trim();
+    if (explicit != null && explicit.isNotEmpty) {
+      return explicit;
+    }
+    if (error != null) {
+      return formatError(error);
+    }
+    return 'none';
   }
 
   String _normalizeMessage(String? value, {required String fallback}) {
@@ -339,9 +350,7 @@ class AppDiagnosticsObserver extends ProviderObserver {
       message: 'Provider failure detected.',
       error: error,
       stackTrace: stackTrace,
-      context: <String, Object?>{
-        'provider': provider.toString(),
-      },
+      context: <String, Object?>{'provider': provider.toString()},
     );
   }
 }

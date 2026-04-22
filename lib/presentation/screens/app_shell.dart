@@ -330,12 +330,21 @@ class _ShellContent extends StatelessWidget {
                     IconButton(
                       tooltip: context.tr('Copy diagnostics'),
                       onPressed: () {
+                        final isAccessDegraded = appAccess?.isDegraded == true;
+                        final staleKeyList = offlineSync.staleKeys.toList()
+                          ..sort();
                         copyDiagnosticsToClipboard(
                           context,
                           ref,
-                          title: 'ContentFlow degraded mode diagnostics',
-                          scope: 'app_shell.degraded_mode',
-                          currentError: appAccess?.message,
+                          title: isAccessDegraded
+                              ? 'ContentFlow degraded mode diagnostics'
+                              : 'ContentFlow sync diagnostics',
+                          scope: isAccessDegraded
+                              ? 'app_shell.degraded_mode'
+                              : 'app_shell.sync_warning',
+                          currentError: isAccessDegraded
+                              ? appAccess?.message
+                              : null,
                           contextData: {
                             'accessStage':
                                 appAccess?.diagnosticsLabel ?? 'unknown',
@@ -346,8 +355,13 @@ class _ShellContent extends StatelessWidget {
                             'queuedPaused': offlineSync.pausedAuthCount,
                             'queuedFailed': offlineSync.failedCount,
                             'staleKeys': offlineSync.staleKeys.length,
+                            'staleKeyList': staleKeyList.isEmpty
+                                ? 'none'
+                                : staleKeyList.join(', '),
                           },
-                          successMessage: 'Degraded mode diagnostics copied.',
+                          successMessage: isAccessDegraded
+                              ? 'Degraded mode diagnostics copied.'
+                              : 'Sync diagnostics copied.',
                         );
                       },
                       icon: Icon(Icons.copy_rounded, color: bannerTextColor),
