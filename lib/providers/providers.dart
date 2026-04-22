@@ -18,6 +18,7 @@ import '../data/models/creator_profile.dart';
 import '../data/models/feedback_entry.dart';
 import '../data/models/idea.dart';
 import '../data/models/offline_sync.dart';
+import '../data/models/openrouter_credential.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/ritual.dart';
@@ -1289,7 +1290,9 @@ final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
   }
 
   try {
-    final status = await ref.watch(apiServiceProvider).fetchGithubIntegrationStatus();
+    final status = await ref
+        .watch(apiServiceProvider)
+        .fetchGithubIntegrationStatus();
     return GithubIntegrationState(
       connected: status['connected'] as bool? ?? false,
       username: status['github_username']?.toString(),
@@ -1299,11 +1302,33 @@ final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
       message: status['message']?.toString(),
     );
   } on ApiException catch (error) {
-    return GithubIntegrationState(
-      message: error.message.trim(),
-    );
+    return GithubIntegrationState(message: error.message.trim());
   }
 });
+
+final openRouterCredentialStatusProvider =
+    FutureProvider<OpenRouterCredentialStatus>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+      if (accessState?.canUseWorkspaceData != true) {
+        return const OpenRouterCredentialStatus(
+          provider: 'openrouter',
+          configured: false,
+          validationStatus: 'unknown',
+        );
+      }
+
+      try {
+        return await ref
+            .watch(apiServiceProvider)
+            .fetchOpenRouterCredentialStatus();
+      } on ApiException {
+        return const OpenRouterCredentialStatus(
+          provider: 'openrouter',
+          configured: false,
+          validationStatus: 'unknown',
+        );
+      }
+    });
 
 final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   ref,

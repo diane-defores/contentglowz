@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-22]
+
+### Added
+- Added an OpenRouter settings card with masked key status, save, validate, delete, and direct OpenRouter access from the Settings screen.
+- Added client models, API methods, and a Riverpod provider for the new `/api/settings/integrations/openrouter` backend flow.
+
+### Changed
+- Settings now surfaces OpenRouter credential state alongside backend health and GitHub integration so AI persona draft prerequisites are visible in-app.
+
 ## [2026-04-21]
 
 ### Added

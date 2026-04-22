@@ -25,6 +25,7 @@
 | ✅ | Editor screen — markdown preview + inline edit + publish/skip | ✅ done |
 | ✅ | History screen — timeline published/rejected | ✅ done |
 | ✅ | Settings screen — API URL, 7 channels, notifications | ✅ done |
+| ✅ | Settings — gestion OpenRouter (lecture, enregistrement, validation, suppression de clé) | ✅ done |
 | ✅ | GoRouter (13 routes) + bottom nav shell (Feed/Schedule/History/Settings) | ✅ done |
 
 ## Phase 2 — Psychology Engine & Onboarding ✅

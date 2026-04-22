@@ -10,6 +10,7 @@ import '../../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../data/models/content_item.dart';
+import '../../../data/models/openrouter_credential.dart';
 import '../../../data/services/api_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
@@ -26,16 +27,23 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _apiUrlController;
+  late TextEditingController _openRouterApiKeyController;
+  bool _showOpenRouterKey = false;
+  bool _isSavingOpenRouterKey = false;
+  bool _isValidatingOpenRouterKey = false;
+  bool _isDeletingOpenRouterKey = false;
 
   @override
   void initState() {
     super.initState();
     _apiUrlController = TextEditingController();
+    _openRouterApiKeyController = TextEditingController();
   }
 
   @override
   void dispose() {
     _apiUrlController.dispose();
+    _openRouterApiKeyController.dispose();
     super.dispose();
   }
 
@@ -46,6 +54,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
     final githubIntegration = ref.watch(githubIntegrationStatusProvider);
+    final openRouterCredential = ref.watch(openRouterCredentialStatusProvider);
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
     final languagePreference = ref.watch(appLanguagePreferenceProvider);
@@ -195,6 +204,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _sectionHeader('GitHub integration'),
           const SizedBox(height: 12),
           _buildGithubIntegrationCard(githubIntegration),
+
+          const SizedBox(height: 28),
+
+          _sectionHeader('OpenRouter'),
+          const SizedBox(height: 12),
+          _buildOpenRouterCard(openRouterCredential, authSession: authSession),
 
           const SizedBox(height: 28),
 
@@ -644,6 +659,235 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOpenRouterCard(
+    AsyncValue<OpenRouterCredentialStatus> state, {
+    required AuthSession authSession,
+  }) {
+    final theme = Theme.of(context);
+    final canManage = authSession.isAuthenticated && !authSession.isDemo;
+    final busy =
+        _isSavingOpenRouterKey ||
+        _isValidatingOpenRouterKey ||
+        _isDeletingOpenRouterKey;
+
+    return _buildCard(
+      child: state.when(
+        data: (status) {
+          final statusColor = _openRouterStatusColor(status);
+          final statusLabel = _openRouterStatusLabel(status);
+          final helperText = status.configured
+              ? context.tr(
+                  'Your OpenRouter key is stored server-side in encrypted form. Only the masked version is visible here.',
+                )
+              : context.tr(
+                  'Add your OpenRouter API key to enable AI persona draft generation from your repository.',
+                );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: statusColor,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                helperText,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+              if (status.maskedSecret != null &&
+                  status.maskedSecret!.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.infoColor.withAlpha(12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.infoColor.withAlpha(40)),
+                  ),
+                  child: Text(
+                    context.tr('Stored key: {key}', {
+                      'key': status.maskedSecret!,
+                    }),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+              if (status.updatedAt != null ||
+                  status.lastValidatedAt != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  _openRouterMetaText(status),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: _openRouterApiKeyController,
+                obscureText: !_showOpenRouterKey,
+                enabled: canManage && !busy,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  labelText: context.tr('OpenRouter API key'),
+                  hintText: 'sk-or-v1-...',
+                  helperText: canManage
+                      ? context.tr(
+                          'Paste a new key to replace the current one.',
+                        )
+                      : context.tr('Sign in to manage your OpenRouter key'),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _showOpenRouterKey = !_showOpenRouterKey;
+                      });
+                    },
+                    icon: Icon(
+                      _showOpenRouterKey
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  FilledButton.icon(
+                    onPressed: canManage && !busy
+                        ? _saveOpenRouterCredential
+                        : null,
+                    icon: _isSavingOpenRouterKey
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.key_rounded, size: 18),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.approveColor,
+                    ),
+                    label: Text(context.tr('Save key')),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: canManage && status.configured && !busy
+                        ? _validateOpenRouterCredential
+                        : null,
+                    icon: _isValidatingOpenRouterKey
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.verified_outlined, size: 18),
+                    label: Text(context.tr('Validate')),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: canManage && status.configured && !busy
+                        ? _deleteOpenRouterCredential
+                        : null,
+                    icon: _isDeletingOpenRouterKey
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.delete_outline, size: 18),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.rejectColor,
+                      side: BorderSide(
+                        color: AppTheme.rejectColor.withAlpha(80),
+                      ),
+                    ),
+                    label: Text(context.tr('Delete')),
+                  ),
+                  TextButton.icon(
+                    onPressed: busy
+                        ? null
+                        : () => _openUrl('https://openrouter.ai/keys'),
+                    icon: const Icon(Icons.open_in_new, size: 18),
+                    label: Text(context.tr('Open OpenRouter')),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+        loading: () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.tr('Loading OpenRouter credential status...'),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ),
+        error: (error, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.tr('Unable to load OpenRouter credential state.'),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildErrorDiagnosticRow(
+              details: 'OpenRouter error: ${(error.toString()).trim()}',
+              linkUrl:
+                  '${ref.read(apiBaseUrlProvider)}/api/settings/integrations/openrouter',
+              linkLabel: context.tr('Open OpenRouter endpoint'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1614,6 +1858,226 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       );
+    }
+  }
+
+  Color _openRouterStatusColor(OpenRouterCredentialStatus status) {
+    if (!status.configured) {
+      return Theme.of(context).colorScheme.onSurfaceVariant;
+    }
+    if (status.isValid) {
+      return AppTheme.approveColor;
+    }
+    if (status.isInvalid) {
+      return AppTheme.rejectColor;
+    }
+    if (status.isMissing) {
+      return AppTheme.warningColor;
+    }
+    return AppTheme.warningColor;
+  }
+
+  String _openRouterStatusLabel(OpenRouterCredentialStatus status) {
+    if (!status.configured) {
+      return context.tr('No OpenRouter key configured');
+    }
+    switch (status.validationStatus) {
+      case 'valid':
+        return context.tr('OpenRouter key is valid');
+      case 'invalid':
+        return context.tr('OpenRouter key is invalid');
+      case 'missing':
+        return context.tr('OpenRouter key is missing');
+      default:
+        return context.tr('OpenRouter key saved, not validated yet');
+    }
+  }
+
+  String _openRouterMetaText(OpenRouterCredentialStatus status) {
+    final parts = <String>[];
+    if (status.updatedAt != null) {
+      parts.add(
+        context.tr('Updated: {date}', {
+          'date': _formatDateTime(status.updatedAt!),
+        }),
+      );
+    }
+    if (status.lastValidatedAt != null) {
+      parts.add(
+        context.tr('Validated: {date}', {
+          'date': _formatDateTime(status.lastValidatedAt!),
+        }),
+      );
+    }
+    return parts.join(' • ');
+  }
+
+  String _formatDateTime(DateTime value) {
+    final local = value.toLocal();
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)} ${twoDigits(local.hour)}:${twoDigits(local.minute)}';
+  }
+
+  Future<void> _saveOpenRouterCredential() async {
+    final apiKey = _openRouterApiKeyController.text.trim();
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('Enter an OpenRouter API key first.')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSavingOpenRouterKey = true;
+    });
+    try {
+      final api = ref.read(apiServiceProvider);
+      final status = await api.saveOpenRouterCredential(apiKey);
+      _openRouterApiKeyController.clear();
+      ref.invalidate(openRouterCredentialStatusProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('OpenRouter key saved: {key}', {
+              'key': status.maskedSecret ?? 'masked',
+            }),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Failed to save OpenRouter key: {error}', {
+              'error': error.message,
+            }),
+          ),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingOpenRouterKey = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _validateOpenRouterCredential() async {
+    setState(() {
+      _isValidatingOpenRouterKey = true;
+    });
+    try {
+      final api = ref.read(apiServiceProvider);
+      final result = await api.validateOpenRouterCredential();
+      ref.invalidate(openRouterCredentialStatusProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message ?? context.tr('Validation completed.')),
+          backgroundColor: result.valid
+              ? AppTheme.approveColor.withAlpha(210)
+              : AppTheme.warningColor.withAlpha(220),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Failed to validate OpenRouter key: {error}', {
+              'error': error.message,
+            }),
+          ),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isValidatingOpenRouterKey = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteOpenRouterCredential() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('Delete OpenRouter key?')),
+        content: Text(
+          context.tr(
+            'This removes your stored OpenRouter credential and disables persona draft generation until you add a new one.',
+          ),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.rejectColor,
+            ),
+            child: Text(context.tr('Delete')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isDeletingOpenRouterKey = true;
+    });
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.deleteOpenRouterCredential();
+      _openRouterApiKeyController.clear();
+      ref.invalidate(openRouterCredentialStatusProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('OpenRouter key deleted.')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Failed to delete OpenRouter key: {error}', {
+              'error': error.message,
+            }),
+          ),
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeletingOpenRouterKey = false;
+        });
+      }
     }
   }
 

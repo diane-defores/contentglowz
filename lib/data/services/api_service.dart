@@ -16,6 +16,7 @@ import '../models/drip_plan.dart';
 import '../models/feedback_entry.dart';
 import '../models/idea.dart';
 import '../models/offline_sync.dart';
+import '../models/openrouter_credential.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
 import '../models/ritual.dart';
@@ -398,9 +399,10 @@ class ApiService {
   }
 
   Future<void> _upsertCachedPersona(Persona persona) async {
-    final personas = (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
-        .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
-        .toList();
+    final personas =
+        (await _readCachedList(_personasCacheKey) ?? const <dynamic>[])
+            .map((entry) => Persona.fromJson(_normalizePersonaJson(entry)))
+            .toList();
     final nextPersonas = [
       for (final entry in personas)
         if (entry.id != persona.id) entry,
@@ -925,7 +927,9 @@ class ApiService {
   }) async {
     final idMappings = await _loadIdMappings();
     final resolvedProjectId = _resolveEntityId(projectId, idMappings);
-    final queryParameters = _compactMap({'path': path?.trim().isEmpty == true ? null : path?.trim()});
+    final queryParameters = _compactMap({
+      'path': path?.trim().isEmpty == true ? null : path?.trim(),
+    });
     try {
       final response = await _dio.get(
         '/api/projects/$resolvedProjectId/content-tree',
@@ -1111,9 +1115,7 @@ class ApiService {
     final resolvedProjectId = projectId == null
         ? null
         : _resolveEntityId(projectId, idMappings);
-    final queryParameters = <String, dynamic>{
-      'status': 'pending_review',
-    };
+    final queryParameters = <String, dynamic>{'status': 'pending_review'};
     if (resolvedProjectId != null) {
       queryParameters['project_id'] = resolvedProjectId;
     }
@@ -1958,6 +1960,79 @@ class ApiService {
     }
   }
 
+  Future<OpenRouterCredentialStatus> fetchOpenRouterCredentialStatus() async {
+    if (allowDemoData) {
+      return const OpenRouterCredentialStatus(
+        provider: 'openrouter',
+        configured: false,
+        validationStatus: 'unknown',
+      );
+    }
+
+    try {
+      final response = await _dio.get('/api/settings/integrations/openrouter');
+      return OpenRouterCredentialStatus.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<OpenRouterCredentialStatus> saveOpenRouterCredential(
+    String apiKey,
+  ) async {
+    if (allowDemoData) {
+      return const OpenRouterCredentialStatus(
+        provider: 'openrouter',
+        configured: false,
+        validationStatus: 'unknown',
+      );
+    }
+
+    try {
+      final response = await _dio.put(
+        '/api/settings/integrations/openrouter',
+        data: {'apiKey': apiKey},
+      );
+      return OpenRouterCredentialStatus.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<OpenRouterCredentialValidationResult>
+  validateOpenRouterCredential() async {
+    if (allowDemoData) {
+      return const OpenRouterCredentialValidationResult(
+        provider: 'openrouter',
+        valid: false,
+        validationStatus: 'missing',
+        message: 'No OpenRouter key configured.',
+      );
+    }
+
+    try {
+      final response = await _dio.post(
+        '/api/settings/integrations/openrouter/validate',
+      );
+      return OpenRouterCredentialValidationResult.fromJson(
+        _asMap(response.data),
+      );
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<bool> deleteOpenRouterCredential() async {
+    if (allowDemoData) return false;
+
+    try {
+      await _dio.delete('/api/settings/integrations/openrouter');
+      return true;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchGithubRepos({
     String? query,
     int perPage = 100,
@@ -2008,16 +2083,14 @@ class ApiService {
 
     try {
       return _asMap(
-        (
-          await _dio.get(
-            '/api/integrations/github/repo-tree',
-            queryParameters: _compactMap({
-              'owner': owner.trim(),
-              'repo': repo.trim(),
-              'path': path.trim().isEmpty ? null : path.trim(),
-            }),
-          )
-        ).data,
+        (await _dio.get(
+          '/api/integrations/github/repo-tree',
+          queryParameters: _compactMap({
+            'owner': owner.trim(),
+            'repo': repo.trim(),
+            'path': path.trim().isEmpty ? null : path.trim(),
+          }),
+        )).data,
       );
     } on DioException catch (error) {
       throw _mapDioException(error);
