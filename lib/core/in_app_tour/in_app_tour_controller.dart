@@ -47,7 +47,9 @@ class InAppTourController extends StateNotifier<InAppTourState> {
     final clamped = rawIndex.clamp(0, kInAppTourSteps.length - 1);
     return InAppTourState(
       stepIndex: clamped,
-      active: prefs.getBool(_activeKey) ?? false,
+      // Never auto-resume the tour on app startup/resume; users must explicitly
+      // start or resume it from onboarding/settings.
+      active: false,
       completed: prefs.getBool(_completedKey) ?? false,
     );
   }

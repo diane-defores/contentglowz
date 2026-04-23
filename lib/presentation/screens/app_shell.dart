@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/in_app_tour/in_app_tour_controller.dart';
 import '../../data/models/app_access_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
@@ -139,27 +138,11 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  bool _autoStartChecked = false;
-
-  void _maybeAutoStartTour() {
-    if (_autoStartChecked) return;
-    _autoStartChecked = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final tour = ref.read(inAppTourProvider);
-      if (tour.active || tour.completed || tour.stepIndex != 0) return;
-      ref.read(inAppTourProvider.notifier).start(context);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
     final degradedMode = appAccess?.isDegraded == true;
     final currentRoute = GoRouterState.of(context).uri.path;
-    if (!degradedMode) {
-      _maybeAutoStartTour();
-    }
     final shouldWatchPendingCount = !degradedMode && currentRoute == '/feed';
     final pendingCount = shouldWatchPendingCount
         ? ref.watch(pendingCountProvider)
