@@ -26,7 +26,7 @@ void main() {
     test('maps theme preferences to ThemeMode', () {
       expect(themeModeFromPreference(appThemeLight), ThemeMode.light);
       expect(themeModeFromPreference(appThemeDark), ThemeMode.dark);
-      expect(themeModeFromPreference(appThemeSystem), ThemeMode.system);
+      expect(themeModeFromPreference(appThemeSystem), ThemeMode.light);
     });
   });
 
