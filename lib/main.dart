@@ -75,7 +75,7 @@ class ContentFlowApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = createAppRouter(ref);
+    final router = ref.watch(appRouterProvider);
     final localePreference = normalizeAppLanguagePreference(
       ref.watch(appLanguagePreferenceProvider),
     );
@@ -144,7 +144,12 @@ class _OfflineSyncBridgeState extends ConsumerState<_OfflineSyncBridge>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_triggerReplay(refreshAccess: true));
+      unawaited(
+        _triggerReplay(
+          refreshAccess: true,
+          refreshMode: AppAccessRefreshMode.silentResume,
+        ),
+      );
     }
   }
 
@@ -153,28 +158,45 @@ class _OfflineSyncBridgeState extends ConsumerState<_OfflineSyncBridge>
     ref.listen<AuthSession>(authSessionProvider, (previous, next) {
       if ((previous?.isAuthenticated ?? false) != next.isAuthenticated &&
           next.isAuthenticated) {
-        unawaited(_triggerReplay(refreshAccess: true));
+        unawaited(
+          _triggerReplay(
+            refreshAccess: true,
+            refreshMode: AppAccessRefreshMode.interactive,
+          ),
+        );
       }
     });
     ref.listen<OfflineSyncState>(offlineSyncStateProvider, (previous, next) {
       if ((previous?.requiresReauth ?? false) && !next.requiresReauth) {
-        unawaited(_triggerReplay(refreshAccess: true));
+        unawaited(
+          _triggerReplay(
+            refreshAccess: true,
+            refreshMode: AppAccessRefreshMode.interactive,
+          ),
+        );
       }
     });
     return const SizedBox.shrink();
   }
 
-  Future<void> _triggerReplay({required bool refreshAccess}) async {
+  Future<void> _triggerReplay({
+    required bool refreshAccess,
+    AppAccessRefreshMode refreshMode = AppAccessRefreshMode.interactive,
+  }) async {
     final scope = ref.read(offlineStorageScopeProvider);
     final queue = await ref.read(offlineQueueStoreProvider).load(scope);
     if (queue.isEmpty) {
       if (refreshAccess) {
-        await ref.read(appAccessStateProvider.notifier).refresh();
+        await ref
+            .read(appAccessStateProvider.notifier)
+            .refresh(mode: refreshMode);
       }
       return;
     }
     if (refreshAccess) {
-      await ref.read(appAccessStateProvider.notifier).refresh();
+      await ref
+          .read(appAccessStateProvider.notifier)
+          .refresh(mode: refreshMode);
     }
     await ref.read(offlineQueueControllerProvider.notifier).retryAll();
   }

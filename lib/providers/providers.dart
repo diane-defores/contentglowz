@@ -455,6 +455,12 @@ final appAccessStateProvider =
       AppAccessNotifier.new,
     );
 
+enum AppAccessRefreshMode { interactive, silentResume }
+
+bool shouldEmitIntermediateAppAccessStages(AppAccessRefreshMode mode) {
+  return mode == AppAccessRefreshMode.interactive;
+}
+
 class AuthSessionNotifier extends StateNotifier<AuthSession> {
   AuthSessionNotifier(this.ref)
     : super(const AuthSession(status: AuthStatus.loading)) {
@@ -819,13 +825,24 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
     return _resolve(authSession);
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({
+    AppAccessRefreshMode mode = AppAccessRefreshMode.interactive,
+  }) async {
     final authSession = ref.read(authSessionProvider);
-    state = await AsyncValue.guard(() => _resolve(authSession));
+    state = await AsyncValue.guard(() => _resolve(authSession, mode: mode));
   }
 
-  Future<AppAccessState> _resolve(AuthSession authSession) async {
+  Future<AppAccessState> _resolve(
+    AuthSession authSession, {
+    AppAccessRefreshMode mode = AppAccessRefreshMode.interactive,
+  }) async {
     final diagnostics = ref.read(appDiagnosticsProvider);
+    final emitIntermediateStages = shouldEmitIntermediateAppAccessStages(mode);
+    diagnostics.info(
+      scope: 'app_access.resolve',
+      message: 'Resolving app access.',
+      context: {'mode': mode.name},
+    );
     if (authSession.isLoading) {
       return const AppAccessState(stage: AppAccessStage.restoringSession);
     }
@@ -857,12 +874,14 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
       scope: 'app_access.resolve',
       message: 'Checking backend availability.',
     );
-    state = AsyncData(
-      AppAccessState(
-        stage: AppAccessStage.checkingBackend,
-        checkedAt: DateTime.now(),
-      ),
-    );
+    if (emitIntermediateStages) {
+      state = AsyncData(
+        AppAccessState(
+          stage: AppAccessStage.checkingBackend,
+          checkedAt: DateTime.now(),
+        ),
+      );
+    }
 
     final health = await api.healthCheck();
     final checkedAt = DateTime.now();
@@ -890,13 +909,15 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
       );
     }
 
-    state = AsyncData(
-      AppAccessState(
-        stage: AppAccessStage.checkingWorkspace,
-        backendHealth: health,
-        checkedAt: checkedAt,
-      ),
-    );
+    if (emitIntermediateStages) {
+      state = AsyncData(
+        AppAccessState(
+          stage: AppAccessStage.checkingWorkspace,
+          backendHealth: health,
+          checkedAt: checkedAt,
+        ),
+      );
+    }
 
     try {
       diagnostics.info(

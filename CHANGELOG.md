@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-23]
+
+### Added
+- Added dedicated resume no-jump regression coverage for guarded routes, including `/settings`, deep in-app routes, degraded backend mode, and unauthorized single-redirect behavior.
+- Added notifier-level access refresh tests with mocked API scenarios to verify `silentResume` vs `interactive` stage behavior across healthy, degraded, and unauthorized outcomes.
+
+### Changed
+- Stabilized app resume checks so authenticated users keep the current route while lifecycle revalidation runs in background-first mode.
+- Switched app router wiring to a stable provider-backed `GoRouter` instance with refresh listening on app access state.
+
+### Fixed
+- Fixed resume-time UI bounce regressions that could previously route users through `/entry` during transient access checks.
+- Fixed unauthorized resume handling to avoid redirect loops by allowing a single transition to `/entry` and stopping there.
+
 ## [2026-04-22]
 
 ### Added
