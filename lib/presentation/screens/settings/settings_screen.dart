@@ -1952,6 +1952,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         contextData: {'statusCode': error.statusCode, 'path': error.path},
         backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
+    } catch (error, stackTrace) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to save OpenRouter key: {error}', {
+          'error': '$error',
+        }),
+        scope: 'settings.openrouter.save.unexpected',
+        error: error,
+        stackTrace: stackTrace,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -2000,6 +2013,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         scope: 'settings.openrouter.validate',
         error: error,
         contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } catch (error, stackTrace) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to validate OpenRouter key: {error}', {
+          'error': '$error',
+        }),
+        scope: 'settings.openrouter.validate.unexpected',
+        error: error,
+        stackTrace: stackTrace,
         backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     } finally {
@@ -2070,6 +2096,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         scope: 'settings.openrouter.delete',
         error: error,
         contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } catch (error, stackTrace) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to delete OpenRouter key: {error}', {
+          'error': '$error',
+        }),
+        scope: 'settings.openrouter.delete.unexpected',
+        error: error,
+        stackTrace: stackTrace,
         backgroundColor: AppTheme.rejectColor.withAlpha(200),
       );
     } finally {
