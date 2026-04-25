@@ -43,6 +43,13 @@ src/
 - **contentflow_app** — Flutter application (Web, iOS, Android)
 - **contentflow_lab** — FastAPI backend + AI agents (Python)
 
+## Backend Data Changes (Turso / libSQL)
+
+- Production backend data lives in Turso at `libsql://contentflow-prod2-dianedef.aws-eu-west-1.turso.io`.
+- If a site change also touches backend behavior, app handoff, onboarding, workspace/project data, feedback, jobs, status, or any Turso-backed API contract, always verify whether a SQL migration is required or not.
+- Use the **Turso CLI** for schema checks against the real database; do not decide from code reading alone. Example: `turso db shell contentflow-prod2 ".schema"` or targeted `PRAGMA table_info(...)` queries.
+- State the migration conclusion explicitly in task notes or the final response, even when no migration is needed.
+
 ## Content Positioning Notes
 
 - Keep language aligned with product behavior: if a feature depends on backend availability, call out degraded-mode behavior.
