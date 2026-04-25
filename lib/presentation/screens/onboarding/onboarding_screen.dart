@@ -25,6 +25,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isFinishing = false;
   bool _didLoadProject = false;
   bool _isRepoPickerLoading = false;
+  String? _lastAutoProjectName;
 
   // Page 1: GitHub repo
   final _repoUrlController = TextEditingController();
@@ -92,8 +93,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _onProjectChanged() {
+    _maybeAutofillProjectNameFromRepo();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void _maybeAutofillProjectNameFromRepo() {
+    if (_isDemoMode || _isProjectEditMode) {
+      return;
+    }
+
+    final repoName = extractGithubRepositoryName(_repoUrlController.text);
+    if (repoName == null) {
+      return;
+    }
+
+    final currentProjectName = _projectNameController.text.trim();
+    if (currentProjectName.isNotEmpty &&
+        currentProjectName != _lastAutoProjectName) {
+      return;
+    }
+
+    _lastAutoProjectName = repoName;
+    if (_projectNameController.text != repoName) {
+      _projectNameController.text = repoName;
     }
   }
 
@@ -314,10 +338,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         scope: 'onboarding.github.connect',
         error: error,
         stackTrace: stackTrace,
-        contextData: {
-          'path': error.path,
-          'statusCode': error.statusCode,
-        },
+        contextData: {'path': error.path, 'statusCode': error.statusCode},
       );
       return;
     }

@@ -40,6 +40,33 @@ void main() {
     });
   });
 
+  group('extractGithubRepositoryName', () {
+    test('extracts repo name from a standard github URL', () {
+      expect(
+        extractGithubRepositoryName('https://github.com/openai/openai'),
+        'openai',
+      );
+    });
+
+    test('removes a git suffix', () {
+      expect(
+        extractGithubRepositoryName('https://github.com/acme/contentflow.git'),
+        'contentflow',
+      );
+    });
+
+    test('ignores non-github URLs', () {
+      expect(
+        extractGithubRepositoryName('https://gitlab.com/acme/contentflow'),
+        isNull,
+      );
+    });
+
+    test('requires owner and repo segments', () {
+      expect(extractGithubRepositoryName('https://github.com/acme'), isNull);
+    });
+  });
+
   group('extractApiDetailMessage', () {
     test('formats FastAPI validation detail arrays', () {
       expect(

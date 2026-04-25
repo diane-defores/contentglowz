@@ -31,6 +31,38 @@ bool isValidGithubRepositoryUrl(String value) {
   return pathSegments.length >= 2;
 }
 
+String? extractGithubRepositoryName(String value) {
+  final normalized = normalizeOptionalText(value);
+  if (normalized == null) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(normalized);
+  if (uri == null) {
+    return null;
+  }
+
+  final host = uri.host.toLowerCase();
+  if (host != 'github.com' && host != 'www.github.com') {
+    return null;
+  }
+
+  final pathSegments = uri.pathSegments
+      .where((segment) => segment.trim().isNotEmpty)
+      .toList();
+  if (pathSegments.length < 2) {
+    return null;
+  }
+
+  final repoName = Uri.decodeComponent(
+    pathSegments[1],
+  ).replaceFirst(RegExp(r'\.git$'), '').trim();
+  if (repoName.isEmpty) {
+    return null;
+  }
+  return repoName;
+}
+
 String extractApiDetailMessage(Object? detail) {
   if (detail is String && detail.trim().isNotEmpty) {
     return detail.trim();
