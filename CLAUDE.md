@@ -55,3 +55,10 @@ Backend and auth dependencies:
   - `contentflow_lab` (AI agents and backend services)
 - Prefer consistency with project-wide terminology:
   - **feed**, **onboarding**, **drip**, **workspace**, **angle**, **idea**
+
+## Backend Data Changes (Turso / libSQL)
+
+- Production backend data lives in Turso at `libsql://contentflow-prod2-dianedef.aws-eu-west-1.turso.io`.
+- If an app change touches backend API contracts, onboarding, workspace/project data, feedback, jobs, status, offline replay, or any Turso-backed persistence path, always verify whether a SQL migration is required or not.
+- Use the **Turso CLI** for schema checks against the real database; do not decide from code reading alone. Example: `turso db shell contentflow-prod2 ".schema"` or targeted `PRAGMA table_info(...)` queries.
+- State the migration conclusion explicitly in task notes or the final response, even when no migration is needed.
