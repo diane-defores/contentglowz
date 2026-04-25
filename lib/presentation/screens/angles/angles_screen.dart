@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/openrouter_guard.dart';
 import '../../../data/models/persona.dart';
 import '../../../data/models/ritual.dart';
+import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
@@ -80,14 +82,21 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       showDiagnosticSnackBar(
         context,
         ref,
-        message: 'Angle generation failed: $error',
+        message: requiresOpenRouterCredential(error)
+            ? context.tr(
+                'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+              )
+            : context.tr('Angle generation failed: {error}', {
+                'error': '$error',
+              }),
         scope: 'angles.generate',
         error: error,
         stackTrace: stackTrace,
-        contextData: {
-          'persona': _selectedPersona?.name ?? 'none',
-        },
+        contextData: {'persona': _selectedPersona?.name ?? 'none'},
       );
+      if (requiresOpenRouterCredential(error)) {
+        context.push('/settings');
+      }
     }
   }
 
@@ -124,8 +133,8 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _angles == null || _angles!.isEmpty
-                    ? _buildEmpty()
-                    : _buildAnglesList(),
+                ? _buildEmpty()
+                : _buildAnglesList(),
           ),
         ],
       ),
@@ -163,7 +172,10 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
               _loadAngles();
             },
             child: Chip(
-              avatar: Text(persona.avatar ?? '👤', style: const TextStyle(fontSize: 16)),
+              avatar: Text(
+                persona.avatar ?? '👤',
+                style: const TextStyle(fontSize: 16),
+              ),
               label: Text(persona.name),
               backgroundColor: isSelected
                   ? AppTheme.colorForContentType('Article').withAlpha(30)
@@ -199,7 +211,9 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             decoration: BoxDecoration(
               color: AppTheme.paletteOf(context).surface.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.paletteOf(context).borderSubtle),
+              border: Border.all(
+                color: AppTheme.paletteOf(context).borderSubtle,
+              ),
             ),
             child: Row(
               children: [
@@ -251,7 +265,8 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                narrative.suggestedChapterTitle ?? context.tr('Narrative loaded'),
+                narrative.suggestedChapterTitle ??
+                    context.tr('Narrative loaded'),
                 style: TextStyle(
                   color: AppTheme.colorForContentType('Article'),
                   fontSize: 13,
@@ -272,8 +287,11 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.lightbulb_outline,
-              size: 64, color: theme.colorScheme.outlineVariant),
+          Icon(
+            Icons.lightbulb_outline,
+            size: 64,
+            color: theme.colorScheme.outlineVariant,
+          ),
           const SizedBox(height: 16),
           Text(
             context.tr('No angles available'),
@@ -332,18 +350,20 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
 
   Widget _buildAngleCard(AngleSuggestion angle, int index, bool isSelected) {
     final typeColor = AppTheme.colorForContentType(
-        _contentTypeLabel(angle.contentType));
+      _contentTypeLabel(angle.contentType),
+    );
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     final confidenceColor = angle.confidence >= 80
         ? AppTheme.approveColor
         : angle.confidence >= 60
-            ? AppTheme.warningColor
-            : AppTheme.rejectColor;
+        ? AppTheme.warningColor
+        : AppTheme.rejectColor;
 
     return GestureDetector(
-      onTap: () => setState(() =>
-          _selectedIndex = _selectedIndex == index ? null : index),
+      onTap: () => setState(
+        () => _selectedIndex = _selectedIndex == index ? null : index,
+      ),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 16),
@@ -367,8 +387,10 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: typeColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(8),
@@ -376,15 +398,18 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                   child: Text(
                     _contentTypeLabel(angle.contentType),
                     style: TextStyle(
-                        color: typeColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600),
+                      color: typeColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: confidenceColor.withAlpha(20),
                     borderRadius: BorderRadius.circular(8),
@@ -392,9 +417,10 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                   child: Text(
                     '${angle.confidence}%',
                     style: TextStyle(
-                        color: confidenceColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600),
+                      color: confidenceColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -427,8 +453,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
                 color: palette.surface.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
                 border: Border(
-                  left: BorderSide(
-                      color: typeColor.withAlpha(100), width: 3),
+                  left: BorderSide(color: typeColor.withAlpha(100), width: 3),
                 ),
               ),
               child: Text(
@@ -505,10 +530,16 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
     final palette = AppTheme.paletteOf(context);
     return Container(
       padding: EdgeInsets.fromLTRB(
-          24, 12, 24, 12 + MediaQuery.of(context).padding.bottom),
+        24,
+        12,
+        24,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
+        border: Border(
+          top: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
       ),
       child: FilledButton.icon(
         onPressed: _isGenerating ? null : _generateContent,
@@ -561,13 +592,16 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              context.tr('Content generation in progress: "{contentType}"',
-                  {'contentType': _contentTypeLabel(format), 'title': angle.title}),
+              context.tr('Content generation in progress: "{contentType}"', {
+                'contentType': _contentTypeLabel(format),
+                'title': angle.title,
+              }),
             ),
             backgroundColor: AppTheme.approveColor.withAlpha(200),
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -576,52 +610,41 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _isGenerating = false);
-
-      // Fallback to old method if dispatch-pipeline not available
-      final fallback = await api.createContentFromAngle(angle: angle);
-      if (!mounted) return;
-      if (fallback != null) {
-        ref.read(pendingContentProvider.notifier).refresh();
-        final queued = fallback['queued'] == true;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              queued
-                  ? context.tr('Content queued: "{contentType}"', {
-                      'contentType': _contentTypeLabel(angle.contentType),
-                    })
-                  : context.tr('Content created: "{contentType}"', {
-                      'contentType': _contentTypeLabel(angle.contentType),
-                    }),
-            ),
-            backgroundColor: AppTheme.approveColor.withAlpha(200),
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        context.pop();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('Failed to create content. Check backend connection.')),
-            backgroundColor: AppTheme.rejectColor.withAlpha(200),
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+      final requiresOpenRouterKey = requiresOpenRouterCredential(error);
+      final routeUnavailable =
+          error is ApiException &&
+          (error.statusCode == 404 || error.statusCode == 405);
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: requiresOpenRouterKey
+            ? context.tr(
+                'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+              )
+            : routeUnavailable
+            ? context.tr(
+                'Content generation route unavailable on this backend. Update the backend and retry.',
+              )
+            : context.tr('Content generation failed: {error}', {
+                'error': '$error',
+              }),
+        scope: 'angles.dispatch_pipeline',
+        error: error,
+        contextData: {'title': angle.title, 'contentType': angle.contentType},
+      );
+      if (requiresOpenRouterKey) {
+        context.push('/settings');
       }
     }
   }
 
   String _contentTypeLabel(String type) => switch (type) {
-        'blog_post' || 'article' => 'Article',
-        'social_post' => 'Social',
-        'newsletter' => 'Newsletter',
-        'video_script' => 'Video',
-        'reel' => 'Reel',
-        'short' => 'Short',
-        _ => type,
-      };
+    'blog_post' || 'article' => 'Article',
+    'social_post' => 'Social',
+    'newsletter' => 'Newsletter',
+    'video_script' => 'Video',
+    'reel' => 'Reel',
+    'short' => 'Short',
+    _ => type,
+  };
 }

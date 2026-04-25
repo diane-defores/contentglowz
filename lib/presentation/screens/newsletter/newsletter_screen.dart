@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/openrouter_guard.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -62,10 +64,47 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
               onRetry: () => ref.invalidate(_configProvider),
             ),
             data: (config) {
+              final llmConfigured = config['llm_configured'] == true;
+              final serverReady = config['server_ready'] == true;
               final configured = config['configured'] == true;
               final statusColor = configured
                   ? AppTheme.approveColor
                   : AppTheme.warningColor;
+              final checks =
+                  (config['checks'] as Map?)?.map(
+                    (key, value) => MapEntry(key.toString(), value == true),
+                  ) ??
+                  const <String, bool>{};
+              final missingChecks = checks.entries
+                  .where((entry) => !entry.value)
+                  .map((entry) => _checkLabel(entry.key))
+                  .toList();
+              final statusMessage = configured
+                  ? context.tr('Newsletter agent configured')
+                  : !llmConfigured
+                  ? context.tr(
+                      'OpenRouter key required in Settings > OpenRouter',
+                    )
+                  : !serverReady
+                  ? context.tr(
+                      'Newsletter server tools are not fully configured',
+                    )
+                  : context.tr('Newsletter agent not fully configured');
+              final detailMessage = configured
+                  ? context.tr(
+                      'Your OpenRouter key is ready. Server-managed tools are also available for newsletter generation.',
+                    )
+                  : !llmConfigured
+                  ? context.tr(
+                      'Save and validate your OpenRouter key in Settings before generating newsletters.',
+                    )
+                  : missingChecks.isNotEmpty
+                  ? context.tr('Missing server dependencies: {items}', {
+                      'items': missingChecks.join(', '),
+                    })
+                  : context.tr(
+                      'Some newsletter dependencies are still missing.',
+                    );
               return Card(
                 color: configured
                     ? statusColor.withValues(alpha: 0.1)
@@ -81,13 +120,22 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          configured
-                              ? context.tr('Newsletter agent configured')
-                              : context.tr(
-                                  'Newsletter agent not fully configured',
-                                ),
-                          style: const TextStyle(fontSize: 13),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              statusMessage,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              detailMessage,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -233,18 +281,35 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
       setState(() => _result = result);
     } catch (error, stackTrace) {
       if (mounted) {
+        final requiresOpenRouterKey = requiresOpenRouterCredential(error);
         showDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Generation failed: {error}', {'error': error}),
+          message: requiresOpenRouterKey
+              ? context.tr(
+                  'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+                )
+              : context.tr('Generation failed: {error}', {'error': '$error'}),
           scope: 'newsletter.generate',
           error: error,
           stackTrace: stackTrace,
           contextData: {'name': _nameCtrl.text.trim()},
         );
+        if (requiresOpenRouterKey) {
+          context.push('/settings');
+        }
       }
     } finally {
       if (mounted) setState(() => _generating = false);
     }
   }
+
+  String _checkLabel(String key) => switch (key) {
+    'openrouter_configured' => 'OpenRouter',
+    'sendgrid_configured' => 'SendGrid',
+    'composio_configured' => 'Composio Gmail',
+    'exa_configured' => 'Exa',
+    'imap_configured' => 'IMAP inbox access',
+    _ => key,
+  };
 }

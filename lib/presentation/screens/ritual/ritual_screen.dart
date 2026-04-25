@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/openrouter_guard.dart';
 import '../../../data/models/ritual.dart';
 import '../../../providers/providers.dart';
 import '../../../l10n/app_localizations.dart';
@@ -474,16 +475,24 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
     } catch (error, stackTrace) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
+      final requiresOpenRouterKey = requiresOpenRouterCredential(error);
       showDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Narrative synthesis failed: {error}', {
-          'error': '$error',
-        }),
+        message: requiresOpenRouterKey
+            ? context.tr(
+                'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+              )
+            : context.tr('Narrative synthesis failed: {error}', {
+                'error': '$error',
+              }),
         scope: 'ritual.synthesize',
         error: error,
         stackTrace: stackTrace,
       );
+      if (requiresOpenRouterKey) {
+        context.push('/settings');
+      }
     }
   }
 

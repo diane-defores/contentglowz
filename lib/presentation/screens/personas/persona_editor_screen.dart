@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/openrouter_guard.dart';
 import '../../../data/models/persona.dart';
-import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -475,8 +475,7 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
       if (!mounted) {
         return;
       }
-      final requiresOpenRouterKey =
-          error is ApiException && error.statusCode == 409;
+      final requiresOpenRouterKey = requiresOpenRouterCredential(error);
 
       showDiagnosticSnackBar(
         context,

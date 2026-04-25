@@ -8,6 +8,7 @@ import '../../core/app_diagnostics.dart';
 import '../../core/project_onboarding_validation.dart';
 import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
+import '../models/ai_runtime.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
 import '../models/content_audit.dart';
@@ -1442,7 +1443,16 @@ class ApiService {
           'chapter_title': chapterTitle,
         }),
       );
-      return NarrativeSynthesisResult.fromJson(_asMap(response.data));
+      final taskId = _extractAsyncJobId(
+        _asMap(response.data),
+        label: 'Narrative synthesis',
+      );
+      final result = await _pollAsyncJobResult(
+        jobId: taskId,
+        label: 'Narrative synthesis',
+        fetchStatus: _fetchSynthesisStatus,
+      );
+      return NarrativeSynthesisResult.fromJson(result);
     } on DioException catch (error) {
       if (allowDemoData) {
         return _mockNarrativeResult();
@@ -1677,9 +1687,17 @@ class ApiService {
     try {
       final response = await _dio.post(
         '/api/psychology/refine-persona',
-        data: {'persona': persona.toJson()},
+        data: {'current_persona': persona.toJson()},
       );
-      return _asMap(response.data);
+      final taskId = _extractAsyncJobId(
+        _asMap(response.data),
+        label: 'Persona refinement',
+      );
+      return _pollAsyncJobResult(
+        jobId: taskId,
+        label: 'Persona refinement',
+        fetchStatus: _fetchRefinementStatus,
+      );
     } on DioException catch (error) {
       if (allowDemoData) {
         return {
@@ -1711,8 +1729,16 @@ class ApiService {
           'count': count,
         }),
       );
-      final raw = response.data;
-      final angles = raw is Map<String, dynamic> ? raw['angles'] ?? [] : raw;
+      final taskId = _extractAsyncJobId(
+        _asMap(response.data),
+        label: 'Angle generation',
+      );
+      final result = await _pollAsyncJobResult(
+        jobId: taskId,
+        label: 'Angle generation',
+        fetchStatus: _fetchAnglesStatus,
+      );
+      final angles = result['angles'] ?? const [];
       if (angles is! List) {
         throw const ApiException(
           ApiErrorType.invalidResponse,
@@ -1726,6 +1752,89 @@ class ApiService {
       if (allowDemoData) {
         return _mockAngles();
       }
+      throw _mapDioException(error);
+    }
+  }
+
+  String _extractAsyncJobId(
+    Map<String, dynamic> response, {
+    required String label,
+  }) {
+    final jobId = (response['task_id'] ?? response['job_id'] ?? '')
+        .toString()
+        .trim();
+    if (jobId.isEmpty) {
+      throw ApiException(
+        ApiErrorType.invalidResponse,
+        '$label did not return a job ID.',
+      );
+    }
+    return jobId;
+  }
+
+  Future<Map<String, dynamic>> _pollAsyncJobResult({
+    required String jobId,
+    required String label,
+    required Future<Map<String, dynamic>> Function(String jobId) fetchStatus,
+    int maxAttempts = 45,
+  }) async {
+    for (var i = 0; i < maxAttempts; i++) {
+      await Future.delayed(const Duration(seconds: 1));
+      final job = await fetchStatus(jobId);
+      final status = (job['status'] ?? '').toString().toLowerCase();
+
+      if (status == 'completed') {
+        final result = _asMapOrNull(job['result']);
+        if (result == null) {
+          throw ApiException(
+            ApiErrorType.invalidResponse,
+            '$label completed without usable result data.',
+          );
+        }
+        return result;
+      }
+
+      if (status == 'failed') {
+        final errorMessage = (job['error'] ?? '$label failed.')
+            .toString()
+            .trim();
+        throw ApiException(
+          ApiErrorType.server,
+          errorMessage.isEmpty ? '$label failed.' : errorMessage,
+        );
+      }
+    }
+
+    throw ApiException(ApiErrorType.server, '$label timed out. Please retry.');
+  }
+
+  Future<Map<String, dynamic>> _fetchSynthesisStatus(String taskId) async {
+    try {
+      final response = await _dio.get(
+        '/api/psychology/synthesis-status/$taskId',
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchRefinementStatus(String taskId) async {
+    try {
+      final response = await _dio.get(
+        '/api/psychology/refinement-status/$taskId',
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchAnglesStatus(String taskId) async {
+    try {
+      final response = await _dio.get('/api/psychology/angles-status/$taskId');
+      return _asMap(response.data);
+    } on DioException catch (error) {
       throw _mapDioException(error);
     }
   }
@@ -2062,43 +2171,119 @@ class ApiService {
     }
   }
 
-  Future<OpenRouterCredentialStatus> fetchOpenRouterCredentialStatus() async {
+  Future<AIRuntimeSettings> fetchAiRuntimeSettings() async {
     if (allowDemoData) {
-      return const OpenRouterCredentialStatus(
-        provider: 'openrouter',
+      return AIRuntimeSettings.fallback();
+    }
+
+    try {
+      final response = await _dio.get('/api/settings/ai-runtime');
+      return AIRuntimeSettings.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AIRuntimeSettings> updateAiRuntimeMode(String mode) async {
+    if (allowDemoData) {
+      return AIRuntimeSettings.fallback();
+    }
+
+    try {
+      final response = await _dio.put(
+        '/api/settings/ai-runtime',
+        data: {'mode': mode},
+      );
+      return AIRuntimeSettings.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AIProviderCredentialStatus> fetchProviderCredentialStatus(
+    String provider,
+  ) async {
+    if (allowDemoData) {
+      return AIProviderCredentialStatus(
+        provider: provider,
         configured: false,
         validationStatus: 'unknown',
       );
     }
 
     try {
-      final response = await _dio.get('/api/settings/integrations/openrouter');
-      return OpenRouterCredentialStatus.fromJson(_asMap(response.data));
+      final response = await _dio.get('/api/settings/integrations/$provider');
+      return AIProviderCredentialStatus.fromJson(_asMap(response.data));
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
   }
 
-  Future<OpenRouterCredentialStatus> saveOpenRouterCredential(
-    String apiKey,
+  Future<AIProviderCredentialStatus> saveProviderCredential(
+    String provider,
+    String secret,
   ) async {
     if (allowDemoData) {
-      return const OpenRouterCredentialStatus(
-        provider: 'openrouter',
-        configured: false,
+      return AIProviderCredentialStatus(
+        provider: provider,
+        configured: true,
         validationStatus: 'unknown',
       );
     }
 
     try {
       final response = await _dio.put(
-        '/api/settings/integrations/openrouter',
-        data: {'apiKey': apiKey},
+        '/api/settings/integrations/$provider',
+        data: {'secret': secret},
       );
-      return OpenRouterCredentialStatus.fromJson(_asMap(response.data));
+      return AIProviderCredentialStatus.fromJson(_asMap(response.data));
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
+  }
+
+  Future<bool> deleteProviderCredential(String provider) async {
+    if (allowDemoData) {
+      return true;
+    }
+
+    try {
+      final response = await _dio.delete(
+        '/api/settings/integrations/$provider',
+      );
+      final payload = _asMapOrNull(response.data);
+      if (payload == null) {
+        return true;
+      }
+      return payload['deleted'] as bool? ?? true;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  OpenRouterCredentialStatus _toOpenRouterStatus(
+    AIProviderCredentialStatus status,
+  ) {
+    return OpenRouterCredentialStatus(
+      provider: status.provider,
+      configured: status.configured,
+      maskedSecret: status.maskedSecret,
+      validationStatus: status.validationStatus,
+      lastValidatedAt: status.lastValidatedAt,
+      updatedAt: status.updatedAt,
+    );
+  }
+
+  Future<OpenRouterCredentialStatus> fetchOpenRouterCredentialStatus() async {
+    final status = await fetchProviderCredentialStatus('openrouter');
+    return _toOpenRouterStatus(status);
+  }
+
+  Future<OpenRouterCredentialStatus> saveOpenRouterCredential(
+    String apiKey,
+  ) async {
+    final status = await saveProviderCredential('openrouter', apiKey);
+    return _toOpenRouterStatus(status);
   }
 
   Future<OpenRouterCredentialValidationResult>
@@ -2125,14 +2310,7 @@ class ApiService {
   }
 
   Future<bool> deleteOpenRouterCredential() async {
-    if (allowDemoData) return false;
-
-    try {
-      await _dio.delete('/api/settings/integrations/openrouter');
-      return true;
-    } on DioException catch (error) {
-      throw _mapDioException(error);
-    }
+    return deleteProviderCredential('openrouter');
   }
 
   Future<List<Map<String, dynamic>>> fetchGithubRepos({

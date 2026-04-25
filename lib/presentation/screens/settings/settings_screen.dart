@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/app_language.dart';
 import '../../../core/app_theme_preference.dart';
 import '../../../core/in_app_tour/in_app_tour_controller.dart';
+import '../../../data/models/ai_runtime.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../data/models/content_item.dart';
@@ -29,6 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _apiUrlController;
   late TextEditingController _openRouterApiKeyController;
   bool _showOpenRouterKey = false;
+  bool _isSavingRuntimeMode = false;
   bool _isSavingOpenRouterKey = false;
   bool _isValidatingOpenRouterKey = false;
   bool _isDeletingOpenRouterKey = false;
@@ -54,6 +56,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
     final githubIntegration = ref.watch(githubIntegrationStatusProvider);
+    final aiRuntimeSettings = ref.watch(aiRuntimeSettingsProvider);
     final openRouterCredential = ref.watch(openRouterCredentialStatusProvider);
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
@@ -207,7 +210,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           const SizedBox(height: 28),
 
-          _sectionHeader('OpenRouter'),
+          _sectionHeader('AI Runtime'),
+          const SizedBox(height: 12),
+          _buildAiRuntimeCard(aiRuntimeSettings, authSession: authSession),
+
+          const SizedBox(height: 28),
+
+          _sectionHeader('OpenRouter Key'),
           const SizedBox(height: 12),
           _buildOpenRouterCard(openRouterCredential, authSession: authSession),
 
@@ -663,6 +672,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildAiRuntimeCard(
+    AsyncValue<AIRuntimeSettings> state, {
+    required AuthSession authSession,
+  }) {
+    final theme = Theme.of(context);
+    final canManage = authSession.isAuthenticated && !authSession.isDemo;
+
+    return _buildCard(
+      child: state.when(
+        data: (settings) => AiRuntimeSettingsCard(
+          settings: settings,
+          canManage: canManage,
+          isUpdating: _isSavingRuntimeMode,
+          onModeSelected: canManage ? _setAiRuntimeMode : null,
+        ),
+        loading: () => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.tr('Loading AI runtime settings...'),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ],
+        ),
+        error: (error, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.tr('Unable to load AI runtime settings.'),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildErrorDiagnosticRow(
+              details: 'AI runtime error: ${(error.toString()).trim()}',
+              linkUrl:
+                  '${ref.read(apiBaseUrlProvider)}/api/settings/ai-runtime',
+              linkLabel: context.tr('Open AI runtime endpoint'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildOpenRouterCard(
     AsyncValue<OpenRouterCredentialStatus> state, {
     required AuthSession authSession,
@@ -681,10 +746,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final statusLabel = _openRouterStatusLabel(status);
           final helperText = status.configured
               ? context.tr(
-                  'Your OpenRouter key is stored server-side in encrypted form. Only the masked version is visible here.',
+                  'Your OpenRouter key is stored server-side in encrypted form and used for AI features across the app. Only the masked version is visible here.',
                 )
               : context.tr(
-                  'Add your OpenRouter API key to enable AI persona draft generation from your repository.',
+                  'Add your OpenRouter API key to enable AI features across the app, including persona prefill, ritual, angles, newsletter, and research.',
                 );
 
           return Column(
@@ -769,7 +834,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   hintText: 'sk-or-v1-...',
                   helperText: canManage
                       ? context.tr(
-                          'Paste a new key to replace the current one.',
+                          'Paste a new key to replace the current one for all AI features.',
                         )
                       : context.tr('Sign in to manage your OpenRouter key'),
                   suffixIcon: IconButton(
@@ -1851,6 +1916,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _setAiRuntimeMode(String mode) async {
+    if (_isSavingRuntimeMode) {
+      return;
+    }
+    setState(() {
+      _isSavingRuntimeMode = true;
+    });
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.updateAiRuntimeMode(mode);
+      if (!mounted) return;
+      ref.invalidate(aiRuntimeSettingsProvider);
+      ref.invalidate(openRouterCredentialStatusProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('AI runtime mode updated to {mode}.', {'mode': mode}),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: error.message.trim().isEmpty
+            ? context.tr('Failed to update AI runtime mode.')
+            : error.message.trim(),
+        scope: 'settings.ai_runtime.update',
+        contextData: {'mode': mode, 'responseBody': error.responseBody},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSavingRuntimeMode = false;
+        });
+      }
+    }
+  }
+
   Color _openRouterStatusColor(OpenRouterCredentialStatus status) {
     if (!status.configured) {
       return Theme.of(context).colorScheme.onSurfaceVariant;
@@ -2044,7 +2151,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: Text(context.tr('Delete OpenRouter key?')),
         content: Text(
           context.tr(
-            'This removes your stored OpenRouter credential and disables persona draft generation until you add a new one.',
+            'This removes your stored OpenRouter credential and disables AI features across the app until you add a new one.',
           ),
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -2302,5 +2409,169 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
     }
     return null;
+  }
+}
+
+class AiRuntimeSettingsCard extends StatelessWidget {
+  const AiRuntimeSettingsCard({
+    super.key,
+    required this.settings,
+    required this.canManage,
+    required this.isUpdating,
+    this.onModeSelected,
+  });
+
+  final AIRuntimeSettings settings;
+  final bool canManage;
+  final bool isUpdating;
+  final Future<void> Function(String mode)? onModeSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final selectedMode = settings.mode == 'platform' ? 'platform' : 'byok';
+    final byok = settings.modeAvailability('byok');
+    final platform = settings.modeAvailability('platform');
+
+    Widget modeChip({
+      required String mode,
+      required String label,
+      required AIRuntimeModeAvailability? availability,
+    }) {
+      final enabled = availability?.enabled ?? (mode == 'byok');
+      final selected = selectedMode == mode;
+      final isDisabled = !enabled || !canManage || isUpdating;
+      final subtitle = enabled
+          ? null
+          : availability?.message ?? 'Not available for this account';
+      return Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ChoiceChip(
+              key: Key('ai-runtime-mode-$mode'),
+              label: Text(label),
+              selected: selected,
+              onSelected: isDisabled
+                  ? null
+                  : (_) {
+                      final callback = onModeSelected;
+                      if (callback != null) {
+                        callback(mode);
+                      }
+                    },
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr(
+            'Select how AI providers are funded and resolved for user-triggered generation.',
+          ),
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            modeChip(
+              mode: 'byok',
+              label: context.tr('BYOK'),
+              availability: byok,
+            ),
+            const SizedBox(width: 12),
+            modeChip(
+              mode: 'platform',
+              label: context.tr('Platform'),
+              availability: platform,
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        if (!canManage)
+          Text(
+            context.tr(
+              'Sign in to manage AI runtime mode and provider states.',
+            ),
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
+          ),
+        if (isUpdating) ...[
+          const SizedBox(height: 10),
+          const LinearProgressIndicator(minHeight: 2),
+        ],
+        const SizedBox(height: 14),
+        ...settings.providers.map((provider) {
+          final providerLabel = switch (provider.provider) {
+            'openrouter' => 'OpenRouter',
+            'exa' => 'Exa',
+            'firecrawl' => 'Firecrawl',
+            _ => provider.provider,
+          };
+          final byokLabel = provider.byok.configured
+              ? context.tr('BYOK configured')
+              : context.tr('BYOK missing');
+          final platformLabel = provider.platform.available
+              ? context.tr('Platform ready')
+              : provider.platform.configured
+              ? context.tr('Platform configured (locked)')
+              : context.tr('Platform missing');
+          return Container(
+            key: Key('ai-runtime-provider-${provider.provider}'),
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withAlpha(120),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    providerLabel,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Text(
+                  '$byokLabel · $platformLabel',
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
   }
 }

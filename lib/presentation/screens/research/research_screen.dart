@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/openrouter_guard.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../widgets/app_error_view.dart';
@@ -40,12 +42,17 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(context.tr('Competitor Analysis'), style: theme.textTheme.titleMedium),
+          Text(
+            context.tr('Competitor Analysis'),
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: 4),
           Text(
             context.tr('Analyze your site against competitors'),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 16),
 
           TextField(
@@ -62,7 +69,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             controller: _competitorsCtrl,
             decoration: InputDecoration(
               labelText: context.tr('Competitor URLs (one per line)'),
-              hintText: context.tr('https://competitor1.com\nhttps://competitor2.com'),
+              hintText: context.tr(
+                'https://competitor1.com\nhttps://competitor2.com',
+              ),
             ),
             maxLines: 3,
             keyboardType: TextInputType.url,
@@ -72,7 +81,7 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           TextField(
             controller: _keywordsCtrl,
             decoration: InputDecoration(
-              labelText: context.tr('Keywords (comma-separated, optional)'),
+              labelText: context.tr('Keywords (comma-separated)'),
               hintText: context.tr('saas, flutter, ai'),
             ),
           ),
@@ -82,10 +91,14 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             onPressed: _analyzing ? null : _analyze,
             icon: _analyzing
                 ? const SizedBox(
-                    height: 18, width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.analytics),
-            label: Text(_analyzing ? context.tr('Analyzing...') : context.tr('Analyze')),
+            label: Text(
+              _analyzing ? context.tr('Analyzing...') : context.tr('Analyze'),
+            ),
           ),
 
           if (_result != null) ...[
@@ -96,8 +109,10 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.tr('Analysis Results'),
-                        style: theme.textTheme.titleSmall),
+                    Text(
+                      context.tr('Analysis Results'),
+                      style: theme.textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 8),
                     ..._buildResults(),
                   ],
@@ -119,35 +134,61 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
           (comp as Map)['name']?.toString() ?? context.tr('Unknown'),
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         ),
-        if (comp['strengths'] case final List strengths when strengths.isNotEmpty)
+        if (comp['strengths'] case final List strengths
+            when strengths.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),
             child: Text(
-                context.tr('Strengths: {list}', {'list': strengths.join(', ')}),
-                style: const TextStyle(fontSize: 12)),
+              context.tr('Strengths: {list}', {'list': strengths.join(', ')}),
+              style: const TextStyle(fontSize: 12),
+            ),
           ),
-        if (comp['weaknesses'] case final List weaknesses when weaknesses.isNotEmpty)
+        if (comp['weaknesses'] case final List weaknesses
+            when weaknesses.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 2),
             child: Text(
-                context.tr(
-                    'Weaknesses: {list}', {'list': weaknesses.join(', ')}),
-                style: const TextStyle(fontSize: 12)),
+              context.tr('Weaknesses: {list}', {'list': weaknesses.join(', ')}),
+              style: const TextStyle(fontSize: 12),
+            ),
           ),
         const SizedBox(height: 8),
       ],
       if (competitors.isEmpty)
-        Text(context.tr('No competitor data returned.'),
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(
+          context.tr('No competitor data returned.'),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
     ];
   }
 
   Future<void> _analyze() async {
-    if (_targetUrlCtrl.text.trim().isEmpty || _competitorsCtrl.text.trim().isEmpty) {
+    if (_targetUrlCtrl.text.trim().isEmpty ||
+        _competitorsCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                context.tr('Site URL and at least one competitor are required'))),
+          content: Text(
+            context.tr('Site URL and at least one competitor are required'),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final keywords = _keywordsCtrl.text
+        .split(',')
+        .map((k) => k.trim())
+        .where((k) => k.isNotEmpty)
+        .toList();
+    if (keywords.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Add at least one keyword before running research.'),
+          ),
+        ),
       );
       return;
     }
@@ -166,19 +207,20 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             .map((l) => l.trim())
             .where((l) => l.isNotEmpty)
             .toList(),
-        keywords: _keywordsCtrl.text
-            .split(',')
-            .map((k) => k.trim())
-            .where((k) => k.isNotEmpty)
-            .toList(),
+        keywords: keywords,
       );
       setState(() => _result = result);
     } catch (error, stackTrace) {
       if (mounted) {
+        final requiresOpenRouterKey = requiresOpenRouterCredential(error);
         showDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Analysis failed: {error}', {'error': '$error'}),
+          message: requiresOpenRouterKey
+              ? context.tr(
+                  'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+                )
+              : context.tr('Analysis failed: {error}', {'error': '$error'}),
           scope: 'research.competitor_analysis',
           error: error,
           stackTrace: stackTrace,
@@ -187,6 +229,9 @@ class _ResearchScreenState extends ConsumerState<ResearchScreen> {
             'competitors': _competitorsCtrl.text.trim(),
           },
         );
+        if (requiresOpenRouterKey) {
+          context.push('/settings');
+        }
       }
     } finally {
       if (mounted) setState(() => _analyzing = false);

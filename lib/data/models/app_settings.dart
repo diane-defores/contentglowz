@@ -31,6 +31,17 @@ class AppSettings {
   Map<String, dynamic> get contentFrequency =>
       (robotSettings?['contentFrequency'] as Map<String, dynamic>?) ?? {};
 
+  /// Runtime mode from robotSettings.aiRuntime.mode
+  String get aiRuntimeMode {
+    final aiRuntime =
+        robotSettings?['aiRuntime'] as Map<String, dynamic>? ?? const {};
+    final mode = (aiRuntime['mode'] ?? 'byok').toString();
+    if (mode == 'platform') {
+      return 'platform';
+    }
+    return 'byok';
+  }
+
   AppSettings copyWith({
     String? id,
     String? userId,

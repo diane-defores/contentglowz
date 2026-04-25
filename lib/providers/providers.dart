@@ -8,6 +8,7 @@ import '../core/app_language.dart';
 import '../core/app_theme_preference.dart';
 import '../core/shared_preferences_provider.dart';
 import '../data/models/affiliate_link.dart';
+import '../data/models/ai_runtime.dart';
 import '../data/models/drip_plan.dart';
 import '../data/models/app_access_state.dart';
 import '../data/models/app_bootstrap.dart';
@@ -1350,6 +1351,21 @@ final openRouterCredentialStatusProvider =
         );
       }
     });
+
+final aiRuntimeSettingsProvider = FutureProvider<AIRuntimeSettings>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (accessState?.canUseWorkspaceData != true) {
+    return AIRuntimeSettings.fallback();
+  }
+
+  try {
+    return await ref.watch(apiServiceProvider).fetchAiRuntimeSettings();
+  } on ApiException {
+    return AIRuntimeSettings.fallback();
+  }
+});
 
 final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   ref,
