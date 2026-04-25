@@ -129,10 +129,14 @@ pm2 restart contentflow
 ## Production DB (Turso / libSQL) — Critical Gotcha
 
 - Turso uses **SQLite (libSQL/Hrana)**, not MySQL/Postgres.
+- Production database URL: `libsql://contentflow-prod2-dianedef.aws-eu-west-1.turso.io`.
+- Before any backend change that reads/writes Turso-backed data, always verify whether a SQL migration is required or not. State the conclusion explicitly in the task notes or final response.
+- Use the **Turso CLI** for migration/schema checks and production inspection. Do not rely only on local code reading when deciding whether the live database already has the required tables/columns/indexes.
 - Any backend change that depends on **new tables/columns/indexes** must ship with a **schema migration** (or at minimum an idempotent `CREATE TABLE IF NOT EXISTS ...` on startup).
 - Symptom when you forget: runtime errors like `SQLite error: no such table: UserSettings`, which can cascade into 502s and app flows (onboarding/project selection) that appear "stuck" or reset on every login.
 
 **Rule of thumb**
+- Check current schema with Turso CLI first, for example `turso db shell contentflow-prod2 ".schema"` or targeted `PRAGMA table_info(...)` queries.
 - New table (simple): add `ensure_*_table()` and call it during FastAPI startup (idempotent).
 - Column/constraint/backfill: add a versioned SQL migration and apply it as part of the deploy.
 
