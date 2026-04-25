@@ -73,6 +73,7 @@
 | ✅ | Ajouter un mode dégradé avec shell limité, diagnostics enrichis et warning global quand FastAPI tombe | ✅ done |
 | ✅ | Afficher clairement l'état de session dans Settings (email connecté + bouton logout) pour éviter l'ambiguïté sur l'auth active | ✅ done |
 | 🔴 | Stabiliser la reprise mobile/web sans mouvement d'UI: aucun jump vers `/entry` ni reroutage visible lors du retour d'app (checks uniquement en arrière-plan) | ✅ done |
+| 🔴 | Corriger la régression de contraste UI (fond clair + texte blanc illisible) observée après le dernier commit | 🔄 in progress |
 
 ---
 
