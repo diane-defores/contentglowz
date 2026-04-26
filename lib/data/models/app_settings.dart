@@ -1,3 +1,15 @@
+const projectSelectionModeAuto = 'auto';
+const projectSelectionModeSelected = 'selected';
+const projectSelectionModeNone = 'none';
+
+String normalizeProjectSelectionMode(String? raw) {
+  final value = (raw ?? projectSelectionModeAuto).trim().toLowerCase();
+  if (value == projectSelectionModeSelected || value == projectSelectionModeNone) {
+    return value;
+  }
+  return projectSelectionModeAuto;
+}
+
 class AppSettings {
   final String id;
   final String userId;
@@ -6,6 +18,7 @@ class AppSettings {
   final bool emailNotifications;
   final String? webhookUrl;
   final String? defaultProjectId;
+  final String projectSelectionMode;
   final Map<String, dynamic>? dashboardLayout;
   final Map<String, dynamic>? robotSettings;
 
@@ -17,6 +30,7 @@ class AppSettings {
     this.emailNotifications = true,
     this.webhookUrl,
     this.defaultProjectId,
+    this.projectSelectionMode = projectSelectionModeAuto,
     this.dashboardLayout,
     this.robotSettings,
   });
@@ -52,6 +66,7 @@ class AppSettings {
     bool clearWebhookUrl = false,
     String? defaultProjectId,
     bool clearDefaultProjectId = false,
+    String? projectSelectionMode,
     Map<String, dynamic>? dashboardLayout,
     Map<String, dynamic>? robotSettings,
   }) {
@@ -65,6 +80,9 @@ class AppSettings {
       defaultProjectId: clearDefaultProjectId
           ? null
           : (defaultProjectId ?? this.defaultProjectId),
+      projectSelectionMode: normalizeProjectSelectionMode(
+        projectSelectionMode ?? this.projectSelectionMode,
+      ),
       dashboardLayout: dashboardLayout ?? this.dashboardLayout,
       robotSettings: robotSettings ?? this.robotSettings,
     );
@@ -79,6 +97,9 @@ class AppSettings {
       emailNotifications: json['emailNotifications'] as bool? ?? true,
       webhookUrl: json['webhookUrl'] as String?,
       defaultProjectId: json['defaultProjectId'] as String?,
+      projectSelectionMode: normalizeProjectSelectionMode(
+        json['projectSelectionMode'] as String?,
+      ),
       dashboardLayout: json['dashboardLayout'] as Map<String, dynamic>?,
       robotSettings: json['robotSettings'] as Map<String, dynamic>?,
     );
@@ -93,6 +114,7 @@ class AppSettings {
       'emailNotifications': emailNotifications,
       'webhookUrl': webhookUrl,
       'defaultProjectId': defaultProjectId,
+      'projectSelectionMode': projectSelectionMode,
       'dashboardLayout': dashboardLayout,
       'robotSettings': robotSettings,
     };
@@ -105,6 +127,7 @@ class AppSettings {
       'emailNotifications': emailNotifications,
       'webhookUrl': webhookUrl,
       'defaultProjectId': defaultProjectId,
+      'projectSelectionMode': projectSelectionMode,
       'dashboardLayout': dashboardLayout,
       'robotSettings': robotSettings,
     };

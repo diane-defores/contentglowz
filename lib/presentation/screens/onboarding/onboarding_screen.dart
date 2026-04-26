@@ -27,7 +27,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isRepoPickerLoading = false;
   String? _lastAutoProjectName;
 
-  // Page 1: GitHub repo
+  // Page 1: Project source
   final _repoUrlController = TextEditingController();
   final _projectNameController = TextEditingController();
 
@@ -127,15 +127,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   bool get _hasValidProjectStep =>
       _projectName.isNotEmpty &&
-      (_isDemoMode || isValidGithubRepositoryUrl(_repoUrl));
+      (_isDemoMode || _repoUrl.isEmpty || isValidProjectSourceUrl(_repoUrl));
 
   String? get _repoUrlErrorText {
-    if (_isDemoMode ||
-        _repoUrl.isEmpty ||
-        isValidGithubRepositoryUrl(_repoUrl)) {
+    if (_isDemoMode || _repoUrl.isEmpty || isValidProjectSourceUrl(_repoUrl)) {
       return null;
     }
-    return context.tr('Enter a valid GitHub repository URL.');
+    return context.tr('Enter a valid HTTP(S) source URL.');
   }
 
   @override
@@ -232,7 +230,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         if (_isDemoMode) ...[_buildDemoBanner(), const SizedBox(height: 24)],
         Text(
           context.tr(
-            _isProjectEditMode ? 'Project settings' : 'Connect your project',
+            _isProjectEditMode ? 'Project settings' : 'Connect your project source',
           ),
           style: TextStyle(
             fontSize: 24,
@@ -243,7 +241,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 8),
         Text(
           context.tr(
-            'Link your GitHub repository so the AI can analyze your codebase and generate relevant content.',
+            'Add an optional source URL (GitHub or public website). You can continue with just a project name.',
           ),
           style: TextStyle(
             fontSize: 15,
@@ -266,13 +264,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           controller: _repoUrlController,
           readOnly: _isDemoMode,
           decoration: InputDecoration(
-            labelText: context.tr('GitHub URL'),
-            hintText: context.tr('https://github.com/user/repo'),
+            labelText: context.tr('Source URL (optional)'),
+            hintText: context.tr('https://example.com or https://github.com/user/repo'),
             prefixIcon: const Icon(Icons.link),
             suffixIcon: _isDemoMode
                 ? null
                 : IconButton(
-                    tooltip: context.tr('Choose from connected GitHub repos'),
+                    tooltip: context.tr('Choose from connected GitHub repos (optional)'),
                     icon: _isRepoPickerLoading
                         ? const SizedBox(
                             width: 16,
@@ -294,7 +292,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 10),
           Text(
             context.tr(
-              'Connectez votre compte GitHub pour sélectionner un dépôt.',
+              'GitHub connection is optional. Connect it only if you want to pick a repository automatically.',
             ),
             style: Theme.of(context).textTheme.bodySmall,
           ),
@@ -694,7 +692,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ? context.tr('Project')
               : _projectNameController.text,
           subtitle: _repoUrlController.text.isEmpty
-              ? context.tr('No repo linked')
+              ? context.tr('No source linked')
               : _isDemoMode
               ? '${_repoUrlController.text}\nLive demo: ${DemoSeed.siteUrl}'
               : _repoUrlController.text,
@@ -847,7 +845,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            context.tr('Enter a valid GitHub repository URL to continue.'),
+            context.tr(
+              'Enter a valid HTTP(S) source URL, or leave it empty to continue.',
+            ),
           ),
         ),
       );
@@ -886,18 +886,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         await mutationController.updateProject(
           projectId: _projectId!,
           name: _projectName,
-          githubUrl: _repoUrl,
+          sourceUrl: _repoUrl,
           contentTypes: _contentTypes,
         );
-      } else if (_isProjectCreateMode) {
+      } else if (_isProjectCreateMode || _isWorkspaceSetupMode) {
         await mutationController.createProject(
           name: _projectName,
-          githubUrl: _repoUrl,
+          sourceUrl: _repoUrl,
           contentTypes: _contentTypes,
         );
-      } else {
-        final api = ref.read(apiServiceProvider);
-        await api.onboardProject(_repoUrl, _projectName);
       }
       ref.invalidate(projectsProvider);
       ref.invalidate(appBootstrapProvider);

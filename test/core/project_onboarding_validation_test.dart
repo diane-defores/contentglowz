@@ -40,6 +40,24 @@ void main() {
     });
   });
 
+  group('isValidProjectSourceUrl', () {
+    test('accepts a generic https website URL', () {
+      expect(isValidProjectSourceUrl('https://example.com'), isTrue);
+    });
+
+    test('accepts an http URL', () {
+      expect(isValidProjectSourceUrl('http://example.com/docs'), isTrue);
+    });
+
+    test('rejects invalid schemes', () {
+      expect(isValidProjectSourceUrl('file:///tmp/content.md'), isFalse);
+    });
+
+    test('rejects malformed urls', () {
+      expect(isValidProjectSourceUrl('not-a-url'), isFalse);
+    });
+  });
+
   group('extractGithubRepositoryName', () {
     test('extracts repo name from a standard github URL', () {
       expect(
@@ -72,11 +90,11 @@ void main() {
       expect(
         extractApiDetailMessage([
           {
-            'loc': ['body', 'github_url'],
+            'loc': ['body', 'source_url'],
             'msg': 'Input should be a valid URL',
           },
         ]),
-        'github url: Input should be a valid URL',
+        'source url: Input should be a valid URL',
       );
     });
 

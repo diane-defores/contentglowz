@@ -41,7 +41,7 @@ class Project {
   factory Project.fromJson(Map<String, dynamic> json) => Project(
     id: json['id'] as String,
     name: json['name'] as String,
-    url: (json['url'] ?? json['github_url'] ?? '') as String,
+    url: (json['url'] ?? json['source_url'] ?? json['github_url'] ?? '') as String,
     description: json['description'] as String?,
     isDefault: json['is_default'] as bool? ?? false,
     isArchived: json['is_archived'] as bool? ?? (json['archived_at'] != null),
@@ -96,6 +96,7 @@ class Project {
       'id': id,
       'name': name,
       'url': url,
+      'source_url': url,
       'github_url': url,
       'description': description,
       'is_default': isDefault,

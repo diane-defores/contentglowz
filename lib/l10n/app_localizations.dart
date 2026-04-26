@@ -110,6 +110,10 @@ class AppLocalizations {
     'Backend Connection': 'Connexion backend',
     'Blog articles': 'Articles de blog',
     'Cancel': 'Annuler',
+    'Archive': 'Archiver',
+    'Archive this project from the active workspace list?':
+        'Archiver ce projet de la liste active du workspace ?',
+    'Archived': 'Archivé',
     'Change project & content type settings':
         'Modifier le projet et les paramètres de type de contenu',
     'Channel Distribution': 'Répartition par canal',
@@ -128,6 +132,9 @@ class AppLocalizations {
     'Common objections': 'Objections fréquentes',
     'Connect': 'Connecter',
     'Connect your project': 'Connectez votre projet',
+    'Connect your project source': 'Connectez la source de votre projet',
+    'GitHub connection is optional. Connect it only if you want to pick a repository automatically.':
+        'La connexion GitHub est optionnelle. Connecte-la seulement si tu veux sélectionner un dépôt automatiquement.',
     'Connected': 'Connecté',
     'Connecting {channelName}': 'Connexion à {channelName}',
     'Content': 'Contenu',
@@ -189,6 +196,9 @@ class AppLocalizations {
         'Entrez une URL de dépôt GitHub valide pour continuer.',
     'Enter a valid GitHub repository URL.':
         'Entrez une URL de dépôt GitHub valide.',
+    'Enter a valid HTTP(S) source URL.': 'Entrez une URL source HTTP(S) valide.',
+    'Enter a valid HTTP(S) source URL, or leave it empty to continue.':
+        'Entrez une URL source HTTP(S) valide, ou laissez ce champ vide pour continuer.',
     'Error checking status': 'Erreur lors de la vérification du statut',
     'Error copied to clipboard.': 'L’erreur a été copiée.',
     'Failed to disconnect {channelName}':
@@ -342,6 +352,7 @@ class AppLocalizations {
     'Project updated.': 'Projet mis à jour.',
     'No project selected': 'Aucun projet sélectionné',
     'No projects yet': 'Aucun projet pour le moment',
+    'No source linked': 'Aucune source liée',
     'Loading projects...': 'Chargement des projets...',
     'Refresh': 'Rafraîchir',
     'Default': 'Par défaut',
@@ -353,6 +364,7 @@ class AppLocalizations {
     'Sign in with Google before editing a project.':
         'Connectez-vous avec Google avant de modifier un projet.',
     'Project name': 'Nom du projet',
+    'Source URL (optional)': 'URL source (optionnelle)',
     'Push notifications': 'Notifications push',
     'Publish': 'Publier',
     'Publish account connections are unavailable until the backend publish integration is configured.':

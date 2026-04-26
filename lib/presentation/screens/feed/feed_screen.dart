@@ -428,11 +428,13 @@ class _FeedEmptyDashboard extends ConsumerWidget {
     final dripPlansAsync = ref.watch(dripPlansProvider);
     final queueAsync = ref.watch(offlineQueueEntriesProvider);
     final historyAsync = ref.watch(contentHistoryProvider);
+    final activeProjectId = ref.watch(activeProjectIdProvider);
 
     final dripCount = dripPlansAsync.valueOrNull?.length ?? 0;
     final queuedActions = _countPendingQueueActions(queueAsync.valueOrNull);
     final publishedCount = historyAsync.valueOrNull?.length ?? 0;
     final colorScheme = Theme.of(context).colorScheme;
+    final onboardingSetupRoute = _buildOnboardingSetupRoute(activeProjectId);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -450,7 +452,7 @@ class _FeedEmptyDashboard extends ConsumerWidget {
               'Check your project, content types, and generation frequency before the first run.',
             ),
             ctaLabel: context.tr('Open setup'),
-            onTap: () => context.push('/onboarding?intent=entry'),
+            onTap: () => context.push(onboardingSetupRoute),
           ),
           _ActionCard(
             compact: isCompact,
@@ -550,7 +552,7 @@ class _FeedEmptyDashboard extends ConsumerWidget {
               _HeroCard(
                 compact: isCompact,
                 isNarrow: isNarrow,
-                onPrimaryTap: () => context.push('/onboarding?intent=entry'),
+                onPrimaryTap: () => context.push(onboardingSetupRoute),
                 onSecondaryTap: () => context.push('/angles'),
               ),
               const SizedBox(height: 20),
@@ -613,6 +615,20 @@ class _FeedEmptyDashboard extends ConsumerWidget {
       return 0;
     }
     return entries.where((entry) => !entry.isTerminal).length;
+  }
+
+  String _buildOnboardingSetupRoute(String? activeProjectId) {
+    final queryParameters = <String, String>{'intent': 'entry'};
+    if (activeProjectId != null && activeProjectId.trim().isNotEmpty) {
+      queryParameters['mode'] = 'edit';
+      queryParameters['projectId'] = activeProjectId;
+    } else {
+      queryParameters['mode'] = 'create';
+    }
+    return Uri(
+      path: '/onboarding',
+      queryParameters: queryParameters,
+    ).toString();
   }
 }
 

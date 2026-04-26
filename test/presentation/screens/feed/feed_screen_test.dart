@@ -1,6 +1,8 @@
 import 'package:contentflow_app/data/models/content_item.dart';
 import 'package:contentflow_app/data/models/drip_plan.dart';
 import 'package:contentflow_app/data/models/offline_sync.dart';
+import 'package:contentflow_app/data/models/project.dart';
+import 'package:contentflow_app/data/models/app_settings.dart';
 import 'package:contentflow_app/l10n/app_localizations.dart';
 import 'package:contentflow_app/presentation/screens/feed/feed_screen.dart';
 import 'package:contentflow_app/providers/providers.dart';
@@ -33,7 +35,32 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('onboarding screen'), findsOneWidget);
+    expect(find.text('onboarding mode=create projectId='), findsOneWidget);
+  });
+
+  testWidgets('empty feed opens onboarding in edit mode when active project exists', (
+    tester,
+  ) async {
+    await _pumpFeedScreen(
+      tester,
+      items: const [],
+      activeProject: Project(
+        id: 'project-42',
+        name: 'Project 42',
+        url: 'https://example.com',
+        createdAt: DateTime(2026, 4, 21),
+      ),
+    );
+
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Review creation settings'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('onboarding mode=edit projectId=project-42'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('empty feed links to the drip queue', (tester) async {
@@ -100,6 +127,7 @@ Future<void> _pumpFeedScreen(
   required List<ContentItem> items,
   List<DripPlan> dripPlans = const [],
   List<QueuedOfflineAction> queuedActions = const [],
+  Project? activeProject,
 }) async {
   final router = GoRouter(
     initialLocation: '/feed',
@@ -107,8 +135,13 @@ Future<void> _pumpFeedScreen(
       GoRoute(path: '/feed', builder: (context, state) => const FeedScreen()),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) =>
-            const Scaffold(body: Center(child: Text('onboarding screen'))),
+        builder: (context, state) => Scaffold(
+          body: Center(
+            child: Text(
+              'onboarding mode=${state.uri.queryParameters['mode'] ?? ''} projectId=${state.uri.queryParameters['projectId'] ?? ''}',
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/angles',
@@ -147,7 +180,16 @@ Future<void> _pumpFeedScreen(
         projectsStateProvider.overrideWith(
           (ref) async => const ProjectsState(),
         ),
-        activeProjectProvider.overrideWith((ref) => null),
+        activeProjectProvider.overrideWith((ref) => activeProject),
+        currentUserSettingsProvider.overrideWith(
+          () => _TestUserSettingsNotifier(
+            const AppSettings(
+              id: 'settings-1',
+              userId: 'user-1',
+              projectSelectionMode: projectSelectionModeAuto,
+            ),
+          ),
+        ),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -167,6 +209,15 @@ class _TestPendingContentNotifier extends PendingContentNotifier {
 
   @override
   Future<List<ContentItem>> build() async => items;
+}
+
+class _TestUserSettingsNotifier extends UserSettingsNotifier {
+  _TestUserSettingsNotifier(this._settings);
+
+  final AppSettings _settings;
+
+  @override
+  Future<AppSettings?> build() async => _settings;
 }
 
 DripPlan _dripPlan(String id) {

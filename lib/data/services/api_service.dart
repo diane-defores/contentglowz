@@ -618,10 +618,11 @@ class ApiService {
           resolvedAction.actionType == 'create' &&
           (mapped.statusCode == 404 || mapped.statusCode == 405)) {
         final name = resolvedAction.payload?['name']?.toString() ?? '';
-        final githubUrl = normalizeOptionalText(
-          resolvedAction.payload?['github_url']?.toString(),
+        final sourceUrl = normalizeOptionalText(
+          resolvedAction.payload?['source_url']?.toString() ??
+              resolvedAction.payload?['github_url']?.toString(),
         );
-        await onboardProject(githubUrl, name);
+        await onboardProject(sourceUrl, name);
         final projects = await fetchProjects();
         final normalizedName = name.trim().toLowerCase();
         final project = projects.firstWhere(
@@ -740,12 +741,12 @@ class ApiService {
         .toList();
   }
 
-  Future<void> onboardProject(String? githubUrl, String name) async {
+  Future<void> onboardProject(String? sourceUrl, String name) async {
     try {
       await _dio.post(
         '/api/projects/onboard',
         data: _compactMap({
-          'github_url': normalizeOptionalText(githubUrl),
+          'source_url': normalizeOptionalText(sourceUrl),
           'name': name.trim(),
         }),
       );
@@ -756,13 +757,14 @@ class ApiService {
 
   Future<Project> createProject({
     required String name,
-    String? githubUrl,
+    String? sourceUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
     final normalizedName = name.trim();
+    final normalizedSourceUrl = normalizeOptionalText(sourceUrl);
     final payload = _compactMap({
       'name': normalizedName,
-      'github_url': normalizeOptionalText(githubUrl),
+      'source_url': normalizedSourceUrl,
       'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
     });
     try {
@@ -777,7 +779,7 @@ class ApiService {
     } on DioException catch (error) {
       final mapped = _mapDioException(error);
       if (mapped.statusCode == 404 || mapped.statusCode == 405) {
-        await onboardProject(githubUrl, normalizedName);
+        await onboardProject(normalizedSourceUrl, normalizedName);
         final projects = await fetchProjects();
         final loweredName = normalizedName.toLowerCase();
         return projects.firstWhere(
@@ -793,7 +795,7 @@ class ApiService {
       final optimistic = Project(
         id: tempId,
         name: normalizedName,
-        url: normalizeOptionalText(githubUrl) ?? '',
+        url: normalizedSourceUrl ?? '',
         settings: ProjectSettings(contentTypes: contentTypes),
         createdAt: DateTime.now(),
       );
@@ -823,7 +825,7 @@ class ApiService {
   Future<Project> updateProject({
     required String projectId,
     required String name,
-    String? githubUrl,
+    String? sourceUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
     final idMappings = await _loadIdMappings();
@@ -831,7 +833,7 @@ class ApiService {
     final dependsOnTempIds = _dependsOnTempIdsForIds([projectId], idMappings);
     final payload = _compactMap({
       'name': name.trim(),
-      'github_url': normalizeOptionalText(githubUrl),
+      'source_url': normalizeOptionalText(sourceUrl),
       'content_types': contentTypes.map((entry) => entry.toJson()).toList(),
     });
     try {
@@ -873,7 +875,7 @@ class ApiService {
             (entry) => entry.id == projectId || entry.id == resolvedProjectId
                 ? entry.copyWith(
                     name: name.trim(),
-                    url: normalizeOptionalText(githubUrl) ?? entry.url,
+                    url: normalizeOptionalText(sourceUrl) ?? entry.url,
                     settings: entry.settings?.copyWith(
                       contentTypes: contentTypes,
                     ),
@@ -905,7 +907,7 @@ class ApiService {
           orElse: () => Project(
             id: projectId,
             name: name.trim(),
-            url: normalizeOptionalText(githubUrl) ?? '',
+            url: normalizeOptionalText(sourceUrl) ?? '',
             settings: ProjectSettings(contentTypes: contentTypes),
             createdAt: DateTime.now(),
           ),
@@ -918,6 +920,22 @@ class ApiService {
   Future<void> deleteProject(String projectId) async {
     try {
       await _dio.delete('/api/projects/$projectId');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> archiveProject(String projectId) async {
+    try {
+      await _dio.post('/api/projects/$projectId/archive');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> unarchiveProject(String projectId) async {
+    try {
+      await _dio.post('/api/projects/$projectId/unarchive');
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
@@ -984,7 +1002,8 @@ class ApiService {
       final response = await _dio.patch('/api/settings', data: resolvedUpdates);
       final settings = AppSettings.fromJson(_asMap(response.data));
       await _writeCachedData(_settingsCacheKey, settings.toJson());
-      if (resolvedUpdates.containsKey('defaultProjectId')) {
+      if (resolvedUpdates.containsKey('defaultProjectId') ||
+          resolvedUpdates.containsKey('projectSelectionMode')) {
         await _syncBootstrapCache(
           updateDefaultProject: true,
           defaultProjectId: settings.defaultProjectId,
@@ -998,7 +1017,8 @@ class ApiService {
       merged.putIfAbsent('id', () => 'offline-settings');
       merged.putIfAbsent('userId', () => offlineScope);
       await _writeCachedData(_settingsCacheKey, merged);
-      if (resolvedUpdates.containsKey('defaultProjectId')) {
+      if (resolvedUpdates.containsKey('defaultProjectId') ||
+          resolvedUpdates.containsKey('projectSelectionMode')) {
         await _syncBootstrapCache(
           updateDefaultProject: true,
           defaultProjectId: resolvedUpdates['defaultProjectId']?.toString(),

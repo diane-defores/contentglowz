@@ -48,6 +48,12 @@ class ProjectsScreen extends ConsumerWidget {
           final availableProjects = state.items
               .where((project) => !project.isDeleted)
               .toList();
+          final activeProjects = availableProjects
+              .where((project) => !project.isArchived)
+              .toList();
+          final archivedProjects = availableProjects
+              .where((project) => project.isArchived)
+              .toList();
           if (availableProjects.isEmpty) {
             return _EmptyProjectsState(isDegraded: state.isDegraded);
           }
@@ -69,14 +75,7 @@ class ProjectsScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              if (activeProject != null)
-                _ProjectCard(
-                  project: activeProject,
-                  isActive: true,
-                  onSwitch: null,
-                )
-              else
-                _NoticeCard(message: context.tr('No project selected')),
+              _ActiveProjectSummary(project: activeProject),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -96,7 +95,7 @@ class ProjectsScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ...availableProjects.map(
+              ...activeProjects.map(
                 (project) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ProjectCard(
@@ -108,6 +107,25 @@ class ProjectsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (archivedProjects.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Text(
+                  context.tr('Archived projects'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                ...archivedProjects.map(
+                  (project) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _ProjectCard(
+                      project: project,
+                      isActive: false,
+                      onSwitch: null,
+                      archivedView: true,
+                    ),
+                  ),
+                ),
+              ],
             ],
           );
         },
@@ -144,20 +162,59 @@ class ProjectsScreen extends ConsumerWidget {
   }
 }
 
+class _ActiveProjectSummary extends StatelessWidget {
+  const _ActiveProjectSummary({required this.project});
+
+  final Project? project;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.folder_copy_rounded, color: colorScheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              project?.name ?? context.tr('No project selected'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ProjectCard extends ConsumerWidget {
   const _ProjectCard({
     required this.project,
     required this.isActive,
     required this.onSwitch,
+    this.archivedView = false,
   });
 
   final Project project;
   final bool isActive;
   final VoidCallback? onSwitch;
+  final bool archivedView;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mutationState = ref.watch(projectMutationControllerProvider);
+    final isDemoMode = ref.watch(authSessionProvider).isDemo;
     final syncInfo = ref.watch(
       offlineEntitySyncProvider(offlineEntityKey('project', project.id)),
     );
@@ -194,16 +251,17 @@ class _ProjectCard extends ConsumerWidget {
               ],
               if (isActive)
                 Chip(label: Text(context.tr('Active project')))
+              else if (project.isArchived || archivedView)
+                Chip(label: Text(context.tr('Archived')))
               else if (project.isDefault)
                 Chip(label: Text(context.tr('Default'))),
             ],
           ),
           const SizedBox(height: 8),
-          if (project.url.isNotEmpty)
-            Text(
-              project.url,
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
-            ),
+          Text(
+            project.url.isNotEmpty ? project.url : context.tr('No source linked'),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -224,29 +282,37 @@ class _ProjectCard extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (onSwitch != null)
+              if (archivedView && !isDemoMode)
                 OutlinedButton(
-                  onPressed: isBusy ? null : onSwitch,
-                  child: Text(context.tr('Switch project')),
+                  onPressed: isBusy ? null : () => _unarchiveProject(context, ref),
+                  child: Text(context.tr('Unarchive project')),
+                )
+              else ...[
+                if (onSwitch != null)
+                  OutlinedButton(
+                    onPressed: isBusy ? null : onSwitch,
+                    child: Text(context.tr('Switch project')),
+                  ),
+                OutlinedButton(
+                  onPressed: isBusy
+                      ? null
+                      : () => context.push(
+                          '/onboarding?mode=edit&intent=project-manage&projectId=${project.id}',
+                        ),
+                  child: Text(context.tr('Edit project')),
                 ),
-              OutlinedButton(
-                onPressed: isBusy
-                    ? null
-                    : () => context.push(
-                        '/onboarding?mode=edit&intent=project-manage&projectId=${project.id}',
-                      ),
-                child: Text(context.tr('Edit project')),
-              ),
-              OutlinedButton(
-                onPressed: isBusy
-                    ? null
-                    : () => _setDefaultProject(context, ref, project),
-                child: Text(context.tr('Set as default')),
-              ),
-              TextButton(
-                onPressed: isBusy ? null : () => _confirmDelete(context, ref),
-                child: Text(context.tr('Delete project')),
-              ),
+                OutlinedButton(
+                  onPressed: isBusy
+                      ? null
+                      : () => _setDefaultProject(context, ref, project),
+                  child: Text(context.tr('Set as default')),
+                ),
+                if (!isDemoMode)
+                  TextButton(
+                    onPressed: isBusy ? null : () => _confirmArchive(context, ref),
+                    child: Text(context.tr('Archive project')),
+                  ),
+              ],
             ],
           ),
           if (project.settings?.contentDirectories.isNotEmpty == true) ...[
@@ -323,13 +389,13 @@ class _ProjectCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmArchive(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(context.tr('Delete project')),
+        title: Text(context.tr('Archive project')),
         content: Text(
-          context.tr('Delete this project from the active workspace list?'),
+          context.tr('Archive this project from the active workspace list?'),
         ),
         actions: [
           TextButton(
@@ -338,7 +404,7 @@ class _ProjectCard extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.tr('Delete')),
+            child: Text(context.tr('Archive')),
           ),
         ],
       ),
@@ -349,9 +415,21 @@ class _ProjectCard extends ConsumerWidget {
       ref,
       action: () => ref
           .read(projectMutationControllerProvider.notifier)
-          .deleteProject(project.id),
-      scope: 'projects.delete',
-      failureMessage: 'Could not delete project: ${project.name}',
+          .archiveProject(project.id),
+      scope: 'projects.archive',
+      failureMessage: 'Could not archive project: ${project.name}',
+    );
+  }
+
+  Future<void> _unarchiveProject(BuildContext context, WidgetRef ref) async {
+    await _runMutation(
+      context,
+      ref,
+      action: () => ref
+          .read(projectMutationControllerProvider.notifier)
+          .unarchiveProject(project.id),
+      scope: 'projects.unarchive',
+      failureMessage: 'Could not unarchive project: ${project.name}',
     );
   }
 

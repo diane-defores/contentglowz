@@ -12,11 +12,12 @@ bool isValidGithubRepositoryUrl(String value) {
     return false;
   }
 
+  if (!isValidProjectSourceUrl(normalized)) {
+    return false;
+  }
+
   final uri = Uri.tryParse(normalized);
-  if (uri == null ||
-      !uri.hasScheme ||
-      (uri.scheme != 'http' && uri.scheme != 'https') ||
-      uri.host.isEmpty) {
+  if (uri == null) {
     return false;
   }
 
@@ -29,6 +30,22 @@ bool isValidGithubRepositoryUrl(String value) {
       .where((segment) => segment.trim().isNotEmpty)
       .toList();
   return pathSegments.length >= 2;
+}
+
+bool isValidProjectSourceUrl(String value) {
+  final normalized = normalizeOptionalText(value);
+  if (normalized == null) {
+    return false;
+  }
+
+  final uri = Uri.tryParse(normalized);
+  if (uri == null ||
+      !uri.hasScheme ||
+      (uri.scheme != 'http' && uri.scheme != 'https') ||
+      uri.host.isEmpty) {
+    return false;
+  }
+  return true;
 }
 
 String? extractGithubRepositoryName(String value) {

@@ -1239,18 +1239,31 @@ final availableProjectsProvider = Provider<List<Project>>((ref) {
 
 final activeProjectProvider = Provider<Project?>((ref) {
   final availableProjects = ref.watch(availableProjectsProvider);
-  if (availableProjects.isEmpty) {
+  final selectableProjects = availableProjects
+      .where((project) => !project.isArchived)
+      .toList();
+  if (selectableProjects.isEmpty) {
     return null;
   }
 
   final userSettings = ref.watch(currentUserSettingsProvider).valueOrNull;
   final bootstrap = ref.watch(appBootstrapProvider);
+  if (userSettings == null &&
+      bootstrap != null &&
+      bootstrap.user.workspaceExists &&
+      (bootstrap.defaultProjectId == null ||
+          bootstrap.defaultProjectId!.trim().isEmpty)) {
+    return null;
+  }
+  final selectionMode = normalizeProjectSelectionMode(
+    userSettings?.projectSelectionMode,
+  );
 
   Project? byId(String? id) {
     if (id == null || id.trim().isEmpty) {
       return null;
     }
-    for (final project in availableProjects) {
+    for (final project in selectableProjects) {
       if (project.id == id) {
         return project;
       }
@@ -1258,11 +1271,19 @@ final activeProjectProvider = Provider<Project?>((ref) {
     return null;
   }
 
+  if (selectionMode == projectSelectionModeNone) {
+    return null;
+  }
+
+  if (selectionMode == projectSelectionModeSelected) {
+    return byId(userSettings?.defaultProjectId);
+  }
+
   return byId(userSettings?.defaultProjectId) ??
       byId(bootstrap?.defaultProjectId) ??
-      availableProjects.cast<Project?>().firstWhere(
+      selectableProjects.cast<Project?>().firstWhere(
         (project) => project?.isDefault == true,
-        orElse: () => availableProjects.first,
+        orElse: () => selectableProjects.first,
       );
 });
 
@@ -1422,6 +1443,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   Future<List<ContentItem>> build() async {
     final api = ref.read(apiServiceProvider);
     final activeProjectId = ref.watch(activeProjectIdProvider);
+    if (activeProjectId == null) {
+      return const <ContentItem>[];
+    }
     try {
       return await api.fetchPendingContent(projectId: activeProjectId);
     } catch (error, stackTrace) {
@@ -1444,6 +1468,10 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     final previous = state.valueOrNull ?? const <ContentItem>[];
     state = const AsyncLoading();
     final activeProjectId = ref.watch(activeProjectIdProvider);
+    if (activeProjectId == null) {
+      state = const AsyncData(<ContentItem>[]);
+      return;
+    }
     try {
       final api = ref.read(apiServiceProvider);
       final items = await api.fetchPendingContent(projectId: activeProjectId);
@@ -1718,6 +1746,9 @@ void _logDegradedRead(
 final contentHistoryProvider = FutureProvider<List<ContentItem>>((ref) async {
   final api = ref.read(apiServiceProvider);
   final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return const <ContentItem>[];
+  }
   try {
     return await api.fetchContentHistory(projectId: activeProjectId);
   } catch (error, stackTrace) {
@@ -1912,9 +1943,15 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     if (current == null) {
       return null;
     }
+    final nextSelectionMode = projectId == null
+        ? projectSelectionModeNone
+        : projectSelectionModeSelected;
 
     if (ref.read(authSessionProvider).isDemo) {
-      final updated = current.copyWith(defaultProjectId: projectId);
+      final updated = current.copyWith(
+        defaultProjectId: projectId,
+        projectSelectionMode: nextSelectionMode,
+      );
       state = AsyncData(updated);
       return updated;
     }
@@ -1922,7 +1959,10 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiServiceProvider);
-      return api.updateSettings({'defaultProjectId': projectId});
+      return api.updateSettings({
+        'defaultProjectId': projectId,
+        'projectSelectionMode': nextSelectionMode,
+      });
     });
     if (state.hasError) {
       throw state.error!;
@@ -1969,6 +2009,7 @@ class ActiveProjectController extends AsyncNotifier<void> {
       await ref
           .read(currentUserSettingsProvider.notifier)
           .setDefaultProjectId(projectId);
+      ref.invalidate(appBootstrapProvider);
       ref.invalidate(projectsStateProvider);
       ref.invalidate(projectsProvider);
       ref.invalidate(pendingContentProvider);
@@ -1977,6 +2018,7 @@ class ActiveProjectController extends AsyncNotifier<void> {
       ref.invalidate(personasProvider);
       ref.invalidate(affiliationsProvider);
       ref.invalidate(ideasProvider);
+      ref.invalidate(dripPlansProvider);
     });
     if (state.hasError) {
       if (previous != null) {
@@ -1998,7 +2040,7 @@ class ProjectMutationController extends AsyncNotifier<void> {
 
   Future<void> createProject({
     required String name,
-    String? githubUrl,
+    String? sourceUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
     state = const AsyncLoading();
@@ -2006,7 +2048,7 @@ class ProjectMutationController extends AsyncNotifier<void> {
       final api = ref.read(apiServiceProvider);
       final project = await api.createProject(
         name: name,
-        githubUrl: githubUrl,
+        sourceUrl: sourceUrl,
         contentTypes: contentTypes,
       );
       ref.invalidate(projectsStateProvider);
@@ -2023,7 +2065,7 @@ class ProjectMutationController extends AsyncNotifier<void> {
   Future<void> updateProject({
     required String projectId,
     required String name,
-    String? githubUrl,
+    String? sourceUrl,
     List<ContentTypeConfig> contentTypes = const <ContentTypeConfig>[],
   }) async {
     state = const AsyncLoading();
@@ -2032,7 +2074,7 @@ class ProjectMutationController extends AsyncNotifier<void> {
       await api.updateProject(
         projectId: projectId,
         name: name,
-        githubUrl: githubUrl,
+        sourceUrl: sourceUrl,
         contentTypes: contentTypes,
       );
       ref.invalidate(projectsStateProvider);
@@ -2042,11 +2084,11 @@ class ProjectMutationController extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> deleteProject(String projectId) async {
+  Future<void> archiveProject(String projectId) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final api = ref.read(apiServiceProvider);
-      await api.deleteProject(projectId);
+      await api.archiveProject(projectId);
       ref.invalidate(projectsStateProvider);
       final activeProject = ref.read(activeProjectProvider);
       if (activeProject?.id == projectId) {
@@ -2059,6 +2101,22 @@ class ProjectMutationController extends AsyncNotifier<void> {
       throw state.error!;
     }
   }
+
+  Future<void> unarchiveProject(String projectId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.unarchiveProject(projectId);
+      ref.invalidate(projectsStateProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> deleteProject(String projectId) async {
+    await archiveProject(projectId);
+  }
 }
 
 final creatorProfileProvider = FutureProvider<CreatorProfile?>((ref) async {
@@ -2069,18 +2127,27 @@ final creatorProfileProvider = FutureProvider<CreatorProfile?>((ref) async {
 
   final api = ref.read(apiServiceProvider);
   final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return null;
+  }
   return api.fetchCreatorProfile(projectId: activeProjectId);
 });
 
 final personasProvider = FutureProvider<List<Persona>>((ref) async {
   final api = ref.read(apiServiceProvider);
   final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return const <Persona>[];
+  }
   return api.fetchPersonas(projectId: activeProjectId);
 });
 
 final affiliationsProvider = FutureProvider<List<AffiliateLink>>((ref) async {
   final api = ref.read(apiServiceProvider);
   final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return const <AffiliateLink>[];
+  }
   return api.fetchAffiliations(projectId: activeProjectId);
 });
 
@@ -2105,6 +2172,9 @@ class IdeasNotifier extends AsyncNotifier<List<Idea>> {
   Future<List<Idea>> build() async {
     final api = ref.read(apiServiceProvider);
     final activeProjectId = ref.watch(activeProjectIdProvider);
+    if (activeProjectId == null) {
+      return const <Idea>[];
+    }
     return api.fetchIdeas(
       status: _statusFilter == 'all' ? null : _statusFilter,
       source: _sourceFilter == 'all' ? null : _sourceFilter,
