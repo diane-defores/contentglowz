@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-25]
+
+### Added
+- Added widget coverage for project management and picker flows: active summary/no duplicate active card rendering, archived section rendering, and picker commands for explicit no-selection and create-project intent routing.
+
+### Changed
+- Project selection now persists as tri-state mode (`auto`, `selected`, `none`) so users can explicitly keep no active project without fallback auto-selection.
+- Onboarding/project source input now accepts optional source URLs (HTTP/S), no longer forcing GitHub-only repository links.
+
+### Fixed
+- Project lifecycle handling now follows archive-first behavior in app flows, with unarchive support and clearer handling of archived projects in selection surfaces.
+
 ## [2026-04-23]
 
 ### Added

@@ -350,7 +350,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
       return;
@@ -396,7 +396,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
     }
