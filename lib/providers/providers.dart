@@ -1970,6 +1970,33 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     return state.valueOrNull;
   }
 
+  Future<AppSettings?> setNoProjectSelected() async {
+    final current = state.valueOrNull;
+    if (current == null) {
+      return null;
+    }
+
+    if (ref.read(authSessionProvider).isDemo) {
+      final updated = current.copyWith(
+        projectSelectionMode: projectSelectionModeNone,
+      );
+      state = AsyncData(updated);
+      return updated;
+    }
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      return api.updateSettings({
+        'projectSelectionMode': projectSelectionModeNone,
+      });
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+    return state.valueOrNull;
+  }
+
   Future<void> updateTheme(String theme) async {
     final normalizedTheme = normalizeAppThemePreference(theme);
     await ref.read(appThemePreferenceProvider.notifier).update(normalizedTheme);
@@ -2006,9 +2033,13 @@ class ActiveProjectController extends AsyncNotifier<void> {
     final previous = ref.read(currentUserSettingsProvider).valueOrNull;
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      await ref
-          .read(currentUserSettingsProvider.notifier)
-          .setDefaultProjectId(projectId);
+      if (projectId == null) {
+        await ref.read(currentUserSettingsProvider.notifier).setNoProjectSelected();
+      } else {
+        await ref
+            .read(currentUserSettingsProvider.notifier)
+            .setDefaultProjectId(projectId);
+      }
       ref.invalidate(appBootstrapProvider);
       ref.invalidate(projectsStateProvider);
       ref.invalidate(projectsProvider);

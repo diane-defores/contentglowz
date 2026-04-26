@@ -353,6 +353,7 @@ class ApiService {
   Future<void> _syncBootstrapCache({
     String? defaultProjectId,
     bool updateDefaultProject = false,
+    bool syncProjectDefaults = true,
     bool? workspaceExists,
     String? workspaceStatus,
     int? projectsCount,
@@ -395,7 +396,7 @@ class ApiService {
     }
 
     await _writeCachedData(_bootstrapCacheKey, next);
-    if (updateDefaultProject) {
+    if (updateDefaultProject && syncProjectDefaults) {
       await _syncCachedProjectDefaults(defaultProjectId);
     }
   }
@@ -995,6 +996,14 @@ class ApiService {
     final idMappings = await _loadIdMappings();
     final resolvedUpdates =
         _asMapOrNull(rewriteOfflineIdsInValue(updates, idMappings)) ?? updates;
+    final hasSelectionModeUpdate = resolvedUpdates.containsKey(
+      'projectSelectionMode',
+    );
+    final requestedSelectionMode = hasSelectionModeUpdate
+        ? normalizeProjectSelectionMode(
+            resolvedUpdates['projectSelectionMode']?.toString(),
+          )
+        : null;
     final dependsOnTempIds = _dependsOnTempIdsForIds([
       updates['defaultProjectId']?.toString(),
     ], idMappings);
@@ -1004,9 +1013,14 @@ class ApiService {
       await _writeCachedData(_settingsCacheKey, settings.toJson());
       if (resolvedUpdates.containsKey('defaultProjectId') ||
           resolvedUpdates.containsKey('projectSelectionMode')) {
+        final bootstrapDefaultProjectId =
+            requestedSelectionMode == projectSelectionModeNone
+            ? null
+            : settings.defaultProjectId;
         await _syncBootstrapCache(
           updateDefaultProject: true,
-          defaultProjectId: settings.defaultProjectId,
+          syncProjectDefaults: requestedSelectionMode != projectSelectionModeNone,
+          defaultProjectId: bootstrapDefaultProjectId,
         );
       }
       return settings;
@@ -1019,9 +1033,14 @@ class ApiService {
       await _writeCachedData(_settingsCacheKey, merged);
       if (resolvedUpdates.containsKey('defaultProjectId') ||
           resolvedUpdates.containsKey('projectSelectionMode')) {
+        final bootstrapDefaultProjectId =
+            requestedSelectionMode == projectSelectionModeNone
+            ? null
+            : resolvedUpdates['defaultProjectId']?.toString();
         await _syncBootstrapCache(
           updateDefaultProject: true,
-          defaultProjectId: resolvedUpdates['defaultProjectId']?.toString(),
+          syncProjectDefaults: requestedSelectionMode != projectSelectionModeNone,
+          defaultProjectId: bootstrapDefaultProjectId,
         );
       }
       if (mapped.isOffline) {
