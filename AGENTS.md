@@ -4,6 +4,15 @@ This file provides guidance for AI agents working in the contentflow codebase. I
 
 ---
 
+## Operator Boundary — Do Not Cross
+
+- `/home/claude/contentflow/contentflow_lab_deploy` is an operator-controlled deployment copy. Agents must not read, edit, test from, diff against, or use that directory as context.
+- PM2 and live service control are operator-only. Agents must not run `pm2 start`, `pm2 restart`, `pm2 stop`, `pm2 logs`, or equivalent production process commands.
+- If a bug affects production, diagnose from the source repo and report the exact operator action needed. Do not apply changes to the deployment copy and do not restart services.
+- Work in `contentflow_lab` only unless the user explicitly changes this project boundary.
+
+---
+
 ## Project Overview
 
 This is a **multi-component intelligent automation system** with three major subsystems:
@@ -116,13 +125,9 @@ pnpm preview              # Preview production build
 # Render (Python API)
 # Uses render.yaml config
 # Health check: /health endpoint
-
-# PM2 (manual server management)
-pm2 start ecosystem.config.cjs
-pm2 status
-pm2 logs contentflow
-pm2 restart contentflow
 ```
+
+PM2/manual server management is operator-only. Agents must not run PM2 commands or touch the deployment checkout.
 
 ---
 

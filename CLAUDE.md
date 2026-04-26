@@ -63,6 +63,8 @@ open http://localhost:8000/redoc
 
 - `/home/claude/contentflow/contentflow_lab_deploy` is an operator-controlled deployment copy of `contentflow_lab`.
 - Agents must treat that directory as out of scope: do not read it, modify it, run tests from it, diff against it, restart services from it, or use it as context unless the user explicitly asks for that exact path.
+- PM2 and live service control are also out of scope: do not run `pm2 start`, `pm2 restart`, `pm2 stop`, `pm2 logs`, or equivalent process-management commands.
+- For production incidents, report diagnosis and exact operator commands/actions without applying them.
 - Work in `contentflow_lab` only; the user decides when and how deployment copies are updated.
 
 ## References

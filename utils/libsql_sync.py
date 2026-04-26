@@ -13,6 +13,8 @@ from typing import Any, Iterable
 
 import libsql
 
+from utils.libsql_params import inline_null_params
+
 
 @dataclass
 class Row:
@@ -87,7 +89,14 @@ class Connection:
         statement: str,
         params: Iterable[Any] | None = None,
     ) -> Cursor:
-        cursor = self._conn.execute(statement, list(params or []))
+        sql_params = list(params or [])
+        try:
+            cursor = self._conn.execute(statement, sql_params)
+        except Exception as exc:
+            if not _should_retry_with_inline_nulls(exc, sql_params):
+                raise
+            retry_statement, retry_params = inline_null_params(statement, sql_params)
+            cursor = self._conn.execute(retry_statement, retry_params)
         return Cursor(cursor)
 
     def executescript(self, script: str) -> None:
@@ -104,6 +113,13 @@ class Connection:
 
 def create_connection(*, url: str, auth_token: str | None = None) -> Connection:
     return Connection(database=url, auth_token=auth_token)
+
+
+def _should_retry_with_inline_nulls(exc: Exception, params: list[Any]) -> bool:
+    if not any(param is None for param in params):
+        return False
+    message = str(exc)
+    return "SQL_PARSE_ERROR" in message and '"None"' in message
 
 
 def _split_statements(script: str) -> list[str]:

@@ -29,6 +29,7 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | P1 | Backend persona autofill + repo understanding + user keys | Done |
+| P0 | Fix Turso Hrana NULL binding failure during persona draft jobs | Done |
 | P0 | Persona AI draft fallback when project clone is missing | ✅ done |
 | P0 | Feedback Admin v1 — finaliser la config prod backend feedback | Backend live pour le texte, secrets Bunny/admin encore à configurer |
 | P0 | Dual-mode AI runtime (BYOK + platform) all providers — implement ready spec | 🔄 in progress |
@@ -76,8 +77,8 @@ Note infra:
 - Le texte est déjà live sur `https://api.winflowz.com/api/feedback/text`
 - L'upload audio crée maintenant bien une `uploadUrl`, mais l'upload réel reste bloqué tant que `BUNNY_STORAGE_ZONE` et `BUNNY_STORAGE_API_KEY` ne sont pas configurés en prod
 - L'admin côté serveur reste bloqué tant que `FEEDBACK_ADMIN_EMAILS` n'est pas défini en prod
-- Le process PM2 live tourne actuellement depuis `/home/claude/contentflow_lab_deploy` pour éviter les changements non commités du repo principal
-- Au prochain déploiement backend, mettre à jour ce checkout clean puis redémarrer PM2
+- Le process PM2 live et le checkout de déploiement sont operator-only: les agents ne doivent pas les lire, les modifier, les tester, ni les redémarrer
+- Pour un incident prod, l'agent doit fournir le diagnostic et les actions opérateur à exécuter, sans toucher au checkout de déploiement ni à PM2
 
 ### Audit: Code (2026-04-07)
 
