@@ -110,10 +110,11 @@ class UserDataStore:
             "webhookUrl": row[5],
             "apiKeys": _mask_api_keys(_json_load(row[6], None)),
             "defaultProjectId": row[7],
-            "dashboardLayout": _json_load(row[8], None),
-            "robotSettings": _json_load(row[9], None),
-            "createdAt": _ts(row[10]),
-            "updatedAt": _ts(row[11]),
+            "projectSelectionMode": row[8] or "auto",
+            "dashboardLayout": _json_load(row[9], None),
+            "robotSettings": _json_load(row[10], None),
+            "createdAt": _ts(row[11]),
+            "updatedAt": _ts(row[12]),
         }
 
     def _creator_profile_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
@@ -152,7 +153,7 @@ class UserDataStore:
         rs = await self.db_client.execute(
             """
             SELECT id, userId, theme, language, emailNotifications, webhookUrl,
-                   apiKeys, defaultProjectId, dashboardLayout, robotSettings,
+                   apiKeys, defaultProjectId, projectSelectionMode, dashboardLayout, robotSettings,
                    createdAt, updatedAt
             FROM UserSettings
             WHERE userId = ?
@@ -167,10 +168,10 @@ class UserDataStore:
         settings_id = str(uuid.uuid4())
         await self.db_client.execute(
             """
-            INSERT INTO UserSettings (id, userId, theme, language, emailNotifications, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO UserSettings (id, userId, theme, language, emailNotifications, projectSelectionMode, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            [settings_id, user_id, "system", "en", True, now, now],
+            [settings_id, user_id, "system", "en", True, "auto", now, now],
         )
         return await self.get_user_settings(user_id)
 
@@ -186,6 +187,7 @@ class UserDataStore:
             "emailNotifications": "emailNotifications",
             "webhookUrl": "webhookUrl",
             "defaultProjectId": "defaultProjectId",
+            "projectSelectionMode": "projectSelectionMode",
         }
         for key, column in mapping.items():
             if key in updates:
@@ -251,12 +253,32 @@ class UserDataStore:
                 webhookUrl TEXT,
                 apiKeys TEXT,
                 defaultProjectId TEXT,
+                projectSelectionMode TEXT NOT NULL DEFAULT 'auto',
                 dashboardLayout TEXT,
                 robotSettings TEXT,
                 createdAt INTEGER NOT NULL,
                 updatedAt INTEGER NOT NULL
             )
             """
+        )
+        await self._ensure_user_settings_column(
+            "projectSelectionMode",
+            "TEXT NOT NULL DEFAULT 'auto'",
+        )
+
+    async def _ensure_user_settings_column(
+        self,
+        column_name: str,
+        column_definition: str,
+    ) -> None:
+        rs = await self.db_client.execute("PRAGMA table_info(UserSettings)")
+        existing = {
+            row[1] for row in rs.rows if isinstance(row, (tuple, list)) and len(row) > 1
+        }
+        if column_name in existing:
+            return
+        await self.db_client.execute(
+            f"ALTER TABLE UserSettings ADD COLUMN {column_name} {column_definition}"
         )
 
     async def ensure_creator_profile_table(self) -> None:

@@ -59,6 +59,90 @@ router = APIRouter(
     responses={404: {"description": "Project not found"}},
 )
 
+_PROJECT_SELECTION_AUTO = "auto"
+_PROJECT_SELECTION_SELECTED = "selected"
+_PROJECT_SELECTION_NONE = "none"
+
+
+def _normalize_selection_mode(raw_mode: Any) -> str:
+    mode = str(raw_mode or _PROJECT_SELECTION_AUTO).strip().lower()
+    if mode in {
+        _PROJECT_SELECTION_AUTO,
+        _PROJECT_SELECTION_SELECTED,
+        _PROJECT_SELECTION_NONE,
+    }:
+        return mode
+    return _PROJECT_SELECTION_AUTO
+
+
+def _is_selectable_project(project: Project) -> bool:
+    return project.archived_at is None and project.deleted_at is None
+
+
+def _normalize_source_url(raw_url: Optional[str]) -> str:
+    return (raw_url or "").strip()
+
+
+def _resolve_project_type(source_url: str) -> str:
+    normalized = source_url.strip()
+    if not normalized:
+        return "manual"
+    host = normalized.lower()
+    if "://github.com/" in host or "://www.github.com/" in host:
+        return "github"
+    return "website"
+
+
+def _derive_project_name(explicit_name: Optional[str], source_url: str) -> str:
+    if explicit_name and explicit_name.strip():
+        return explicit_name.strip()
+    normalized = source_url.strip().rstrip("/")
+    if normalized:
+        candidate = normalized.rsplit("/", 1)[-1].replace(".git", "").strip()
+        if candidate:
+            return candidate
+    return "Untitled project"
+
+
+async def _resolve_user_project_selection(
+    user_id: str,
+    projects: Optional[list[Project]] = None,
+) -> tuple[str, Optional[str]]:
+    settings = await user_data_store_module.user_data_store.get_user_settings(user_id)
+    mode = _normalize_selection_mode(settings.get("projectSelectionMode"))
+    configured_default = settings.get("defaultProjectId")
+    configured_default = configured_default if isinstance(configured_default, str) else None
+
+    available_projects = projects
+    if available_projects is None:
+        available_projects = await project_store_module.project_store.get_by_user(
+            user_id,
+            include_archived=True,
+            include_deleted=False,
+        )
+    selectable_projects = [project for project in available_projects if _is_selectable_project(project)]
+
+    if mode == _PROJECT_SELECTION_NONE:
+        return mode, None
+
+    if mode == _PROJECT_SELECTION_SELECTED:
+        if configured_default and any(project.id == configured_default for project in selectable_projects):
+            return mode, configured_default
+        return mode, None
+
+    if configured_default and any(project.id == configured_default for project in selectable_projects):
+        return mode, configured_default
+
+    flagged_default = next(
+        (project.id for project in selectable_projects if project.is_default),
+        None,
+    )
+    if flagged_default:
+        return mode, flagged_default
+
+    fallback = selectable_projects[0].id if selectable_projects else None
+    return mode, fallback
+
 
 def _build_project_tree_root(project_path: str) -> Path:
     repo_root = Path(project_path).expanduser().resolve()
@@ -103,29 +187,42 @@ def project_to_response(project: Project, *, default_project_id: str | None = No
         type=project.type,
         description=project.description,
         is_default=project.id == default_project_id,
+        is_archived=project.archived_at is not None,
+        is_deleted=project.deleted_at is not None,
         settings=project.settings,
         last_analyzed_at=project.last_analyzed_at,
+        archived_at=project.archived_at,
+        deleted_at=project.deleted_at,
         created_at=project.created_at
     )
 
 
 async def get_user_default_project_id(user_id: str) -> str | None:
-    """Return the last-opened project id stored in user settings."""
-    settings = await user_data_store_module.user_data_store.get_user_settings(user_id)
-    default_project_id = settings.get("defaultProjectId")
-    return default_project_id if isinstance(default_project_id, str) else None
+    """Resolve the effective active project id for the current selection mode."""
+    _, default_project_id = await _resolve_user_project_selection(user_id)
+    return default_project_id
 
 
 async def require_owned_project(
     project_id: str,
     current_user: CurrentUser,
+    *,
+    allow_archived: bool = True,
+    allow_deleted: bool = False,
 ) -> Project:
     """Load a project and ensure the current user owns it."""
-    project = await project_store_module.project_store.get_by_id(project_id)
+    project = await project_store_module.project_store.get_by_id(
+        project_id,
+        include_deleted=allow_deleted,
+    )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.user_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Forbidden")
+    if project.deleted_at is not None and not allow_deleted:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.archived_at is not None and not allow_archived:
+        raise HTTPException(status_code=409, detail="Archived project")
     return project
 
 
@@ -235,12 +332,45 @@ async def onboard_project(
     request: OnboardProjectRequest,
     current_user: CurrentUser = Depends(require_current_user),
 ) -> OnboardProjectResponse:
-    """Start onboarding a new project."""
+    """Start onboarding a new project.
+
+    For manual or website sources (or empty source), this creates the project
+    directly and marks onboarding as completed because there is no GitHub clone
+    step to run in this route.
+    """
+    source_url = _normalize_source_url(request.source_url)
+    source_type = _resolve_project_type(source_url)
+
+    if source_type != "github":
+        project = await project_store_module.project_store.create(
+            user_id=current_user.user_id,
+            name=_derive_project_name(request.name, source_url),
+            url=source_url,
+            description=request.description,
+            project_type=source_type,
+        )
+        await project_store_module.project_store.update_onboarding_status(
+            project.id,
+            OnboardingStatus.COMPLETED,
+        )
+        await user_data_store_module.user_data_store.update_user_settings(
+            current_user.user_id,
+            {
+                "defaultProjectId": project.id,
+                "projectSelectionMode": _PROJECT_SELECTION_SELECTED,
+            },
+        )
+        return OnboardProjectResponse(
+            project_id=project.id,
+            status=OnboardingStatus.COMPLETED,
+            message="Project created.",
+        )
+
     return await project_onboarding_service.initiate_onboarding(
         user_id=current_user.user_id,
-        github_url=str(request.github_url),
+        github_url=source_url,
         name=request.name,
-        description=request.description
+        description=request.description,
     )
 
 
@@ -255,10 +385,13 @@ async def create_project(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> Any:
     """Create a project without running the full onboarding wizard."""
+    source_url = _normalize_source_url(request.source_url)
+    source_type = _resolve_project_type(source_url)
     project = await project_store_module.project_store.create(
         user_id=current_user.user_id,
-        name=request.name or str(request.github_url).rstrip("/").split("/")[-1],
-        url=str(request.github_url),
+        name=_derive_project_name(request.name, source_url),
+        url=source_url,
+        project_type=source_type,
         description=request.description,
     )
 
@@ -270,14 +403,14 @@ async def create_project(
         OnboardingStatus.COMPLETED,
     ) or project
 
-    default_project_id = await get_user_default_project_id(current_user.user_id)
-    if not default_project_id:
-        await user_data_store_module.user_data_store.update_user_settings(
-            current_user.user_id,
-            {"defaultProjectId": project.id},
-        )
-        default_project_id = project.id
-    return project_to_response(project, default_project_id=default_project_id)
+    await user_data_store_module.user_data_store.update_user_settings(
+        current_user.user_id,
+        {
+            "defaultProjectId": project.id,
+            "projectSelectionMode": _PROJECT_SELECTION_SELECTED,
+        },
+    )
+    return project_to_response(project, default_project_id=project.id)
 
 
 @router.post(
@@ -308,7 +441,7 @@ async def analyze_project(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> ProjectDetectionResult:
     """Analyze project repository and detect settings."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
 
     integration = await user_data_store_module.user_data_store.get_github_integration(current_user.user_id)
     github_token = integration.get("token") if integration else None
@@ -368,7 +501,7 @@ async def confirm_project(
     # Ensure project_id in path matches request
     if request.project_id != project_id:
         request.project_id = project_id
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
 
     try:
         project = await project_onboarding_service.confirm_project(request)
@@ -392,8 +525,15 @@ async def list_projects(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> ProjectListResponse:
     """Get all projects for current user."""
-    projects = await project_store_module.project_store.get_by_user(current_user.user_id)
-    default_project_id = await get_user_default_project_id(current_user.user_id)
+    projects = await project_store_module.project_store.get_by_user(
+        current_user.user_id,
+        include_archived=True,
+        include_deleted=False,
+    )
+    _, default_project_id = await _resolve_user_project_selection(
+        current_user.user_id,
+        projects,
+    )
 
     return ProjectListResponse(
         projects=[
@@ -434,11 +574,17 @@ async def update_project(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> Any:
     """Update project details."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
+    project_type = (
+        _resolve_project_type(request.source_url)
+        if request.source_url is not None
+        else None
+    )
     project = await project_store_module.project_store.update(
         project_id=project_id,
         name=request.name,
-        url=str(request.github_url) if request.github_url else None,
+        url=request.source_url,
+        project_type=project_type,
         description=request.description,
         content_directories=request.content_directories,
         config_overrides=request.config_overrides,
@@ -480,11 +626,86 @@ async def delete_project(
     project_id: str,
     current_user: CurrentUser = Depends(require_current_user),
 ) -> dict:
-    """Delete a project."""
-    await require_owned_project(project_id, current_user)
+    """Hard-delete a project (reserved explicit path; default UI should archive)."""
+    await require_owned_project(project_id, current_user, allow_archived=True, allow_deleted=False)
+    await project_store_module.project_store.hard_delete(project_id)
 
-    await project_store_module.project_store.delete(project_id)
+    settings = await user_data_store_module.user_data_store.get_user_settings(
+        current_user.user_id
+    )
+    if settings.get("defaultProjectId") == project_id:
+        await user_data_store_module.user_data_store.update_user_settings(
+            current_user.user_id,
+            {
+                "defaultProjectId": None,
+                "projectSelectionMode": _PROJECT_SELECTION_NONE,
+            },
+        )
     return {"deleted": True, "project_id": project_id}
+
+
+@router.post(
+    "/{project_id}/archive",
+    response_model=ProjectResponse,
+    summary="Archive project",
+    description="Archive a project (default removal action in UI).",
+)
+async def archive_project(
+    project_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+) -> Any:
+    project = await require_owned_project(
+        project_id,
+        current_user,
+        allow_archived=True,
+        allow_deleted=False,
+    )
+    if project.archived_at is not None:
+        default_project_id = await get_user_default_project_id(current_user.user_id)
+        return project_to_response(project, default_project_id=default_project_id)
+
+    archived = await project_store_module.project_store.archive(project_id)
+    if not archived:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    settings = await user_data_store_module.user_data_store.get_user_settings(
+        current_user.user_id
+    )
+    if settings.get("defaultProjectId") == project_id:
+        await user_data_store_module.user_data_store.update_user_settings(
+            current_user.user_id,
+            {
+                "defaultProjectId": None,
+                "projectSelectionMode": _PROJECT_SELECTION_NONE,
+            },
+        )
+        return project_to_response(archived, default_project_id=None)
+
+    default_project_id = await get_user_default_project_id(current_user.user_id)
+    return project_to_response(archived, default_project_id=default_project_id)
+
+
+@router.post(
+    "/{project_id}/unarchive",
+    response_model=ProjectResponse,
+    summary="Unarchive project",
+    description="Restore an archived project back to normal lists.",
+)
+async def unarchive_project(
+    project_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+) -> Any:
+    await require_owned_project(
+        project_id,
+        current_user,
+        allow_archived=True,
+        allow_deleted=False,
+    )
+    project = await project_store_module.project_store.unarchive(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    default_project_id = await get_user_default_project_id(current_user.user_id)
+    return project_to_response(project, default_project_id=default_project_id)
 
 
 @router.post(
@@ -498,15 +719,20 @@ async def set_default_project(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> Any:
     """Set project as default."""
-    await require_owned_project(project_id, current_user)
-    await user_data_store_module.user_data_store.update_user_settings(
+    await require_owned_project(project_id, current_user, allow_archived=False)
+    project = await project_store_module.project_store.set_default(
         current_user.user_id,
-        {"defaultProjectId": project_id},
+        project_id,
     )
-    project = await project_store_module.project_store.get_by_id(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-
+    await user_data_store_module.user_data_store.update_user_settings(
+        current_user.user_id,
+        {
+            "defaultProjectId": project_id,
+            "projectSelectionMode": _PROJECT_SELECTION_SELECTED,
+        },
+    )
     return project_to_response(project, default_project_id=project_id)
 
 
@@ -531,7 +757,7 @@ async def refresh_project(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> ProjectDetectionResult:
     """Re-analyze project repository."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
     integration = await user_data_store_module.user_data_store.get_github_integration(current_user.user_id)
     github_token = integration.get("token") if integration else None
     try:
@@ -567,7 +793,7 @@ async def scan_project_content(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> dict:
     """Import all markdown content from the project into the scheduling queue."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
     try:
         from agents.scheduler.tools.content_scanner import get_content_scanner
     except Exception as exc:
@@ -604,7 +830,7 @@ async def propose_schedule(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> dict:
     """Generate an AI-powered cluster scheduling proposal."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
     try:
         from agents.scheduler.tools.cluster_scheduler import get_cluster_scheduler
     except Exception as exc:
@@ -642,7 +868,7 @@ async def apply_schedule(
     current_user: CurrentUser = Depends(require_current_user),
 ) -> dict:
     """Apply the validated schedule to all pending articles."""
-    await require_owned_project(project_id, current_user)
+    await require_owned_project(project_id, current_user, allow_archived=False)
     try:
         from agents.scheduler.tools.cluster_scheduler import get_cluster_scheduler
     except Exception as exc:

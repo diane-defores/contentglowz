@@ -58,6 +58,7 @@ class UserSettingsResponse(BaseModel):
     webhookUrl: str | None = None
     apiKeys: SafeApiKeys | None = None
     defaultProjectId: str | None = None
+    projectSelectionMode: Literal["auto", "selected", "none"] = "auto"
     dashboardLayout: DashboardLayout | None = None
     robotSettings: RobotSettings | None = None
     createdAt: datetime
@@ -70,6 +71,7 @@ class UserSettingsUpdateRequest(BaseModel):
     emailNotifications: bool | None = None
     webhookUrl: str | None = None
     defaultProjectId: str | None = None
+    projectSelectionMode: Literal["auto", "selected", "none"] | None = None
     dashboardLayout: dict[str, Any] | None = None
     robotSettings: dict[str, Any] | None = None
 

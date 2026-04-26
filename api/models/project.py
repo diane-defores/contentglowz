@@ -1,7 +1,9 @@
 """Pydantic models for Project management and onboarding"""
 
-from pydantic import BaseModel, HttpUrl, Field, model_validator
-from typing import Optional, Literal, List
+from urllib.parse import urlparse
+
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Any, Optional, Literal, List
 from enum import Enum
 from datetime import datetime
 
@@ -138,12 +140,14 @@ class Project(BaseModel):
     id: str = Field(..., description="Unique project identifier")
     user_id: str = Field(..., description="Owner user ID")
     name: str = Field(..., description="Project display name")
-    url: str = Field(..., description="GitHub repository URL")
-    type: str = Field(default="github", description="Repository type")
+    url: str = Field(default="", description="Canonical source URL (empty for manual projects)")
+    type: str = Field(default="manual", description="Source type: github | website | manual")
     description: Optional[str] = Field(default=None, description="Project description")
     is_default: bool = Field(default=False, description="Whether this is the default project")
     settings: Optional[ProjectSettings] = Field(default=None, description="Project settings JSON")
     last_analyzed_at: Optional[datetime] = Field(default=None, description="Last analysis timestamp")
+    archived_at: Optional[datetime] = Field(default=None, description="Archive timestamp")
+    deleted_at: Optional[datetime] = Field(default=None, description="Soft delete timestamp")
     created_at: datetime = Field(..., description="Creation timestamp")
 
 
@@ -153,19 +157,56 @@ class Project(BaseModel):
 
 class OnboardProjectRequest(BaseModel):
     """Request to start project onboarding"""
-    github_url: HttpUrl = Field(
-        ...,
-        description="GitHub repository URL",
-        examples=["https://github.com/user/my-site"]
+    source_url: Optional[str] = Field(
+        default=None,
+        description="Optional project source URL (GitHub or generic public HTTP(S) URL)",
+        examples=["https://github.com/user/my-site", "https://example.com"]
+    )
+    github_url: Optional[str] = Field(
+        default=None,
+        description="Legacy alias for source_url"
+    )
+    url: Optional[str] = Field(
+        default=None,
+        description="Legacy alias for source_url"
     )
     name: Optional[str] = Field(
         default=None,
-        description="Optional project name (defaults to repo name)"
+        description="Optional project name"
     )
     description: Optional[str] = Field(
         default=None,
         description="Optional project description"
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_source_aliases(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if data.get("source_url") is not None:
+            return data
+        source = data.get("github_url")
+        if source is None:
+            source = data.get("url")
+        if source is None:
+            return data
+        next_data = dict(data)
+        next_data["source_url"] = source
+        return next_data
+
+    @field_validator("source_url")
+    @classmethod
+    def _validate_source_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            return ""
+        parsed = urlparse(normalized)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("source_url must be a valid HTTP(S) URL")
+        return normalized
 
 
 class AnalyzeProjectRequest(BaseModel):
@@ -203,13 +244,17 @@ class ConfirmProjectRequest(BaseModel):
 class UpdateProjectRequest(BaseModel):
     """Request to update project details"""
     name: Optional[str] = Field(default=None, description="New project name")
-    github_url: Optional[HttpUrl] = Field(
+    source_url: Optional[str] = Field(
         default=None,
-        description="Updated GitHub repository URL"
+        description="Updated source URL (GitHub or generic public HTTP(S) URL)"
     )
-    url: Optional[HttpUrl] = Field(
+    github_url: Optional[str] = Field(
         default=None,
-        description="Compatibility alias for github_url"
+        description="Legacy alias for source_url"
+    )
+    url: Optional[str] = Field(
+        default=None,
+        description="Legacy alias for source_url"
     )
     description: Optional[str] = Field(default=None, description="New description")
     content_directories: Optional[List[ContentDirectoryConfig]] = Field(
@@ -228,13 +273,32 @@ class UpdateProjectRequest(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def _normalize_legacy_url_alias(cls, data: dict) -> dict:
-        """Backwards compatibility: accept legacy `url` payload from older clients."""
-        if isinstance(data, dict) and data.get("github_url") is None:
+        """Backwards compatibility: accept legacy aliases from older clients."""
+        if not isinstance(data, dict):
+            return data
+        if data.get("source_url") is not None:
+            return data
+        legacy_url = data.get("github_url")
+        if legacy_url is None:
             legacy_url = data.get("url")
-            if legacy_url is not None:
-                data = dict(data)
-                data["github_url"] = legacy_url
-        return data
+        if legacy_url is None:
+            return data
+        next_data = dict(data)
+        next_data["source_url"] = legacy_url
+        return next_data
+
+    @field_validator("source_url")
+    @classmethod
+    def _validate_source_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            return ""
+        parsed = urlparse(normalized)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("source_url must be a valid HTTP(S) URL")
+        return normalized
 
 
 # ─────────────────────────────────────────────────
@@ -279,8 +343,12 @@ class ProjectResponse(BaseModel):
     type: str
     description: Optional[str]
     is_default: bool
+    is_archived: bool = False
+    is_deleted: bool = False
     settings: Optional[ProjectSettings]
     last_analyzed_at: Optional[datetime]
+    archived_at: Optional[datetime]
+    deleted_at: Optional[datetime]
     created_at: datetime
 
 

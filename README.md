@@ -55,18 +55,27 @@ Primary concern of this repo is service reliability:
 
 ## Project Selection Contract
 
-- The current project for a signed-in user is persisted in `UserSettings.defaultProjectId`.
-- `GET /api/me` and `GET /api/bootstrap` resolve the last-opened project from that setting first.
+- Active project selection for a signed-in user is persisted in:
+  - `UserSettings.projectSelectionMode` (`auto` | `selected` | `none`)
+  - `UserSettings.defaultProjectId`
+- `GET /api/me` and `GET /api/bootstrap` resolve project context from that pair:
+  - `none` => no default project returned
+  - `selected` => only the explicit `defaultProjectId` if it is still active
+  - `auto` => explicit default first, then fallback to first active project
 - `Project.isDefault` may still exist in stored rows for backward compatibility, but it is no longer treated as the source of truth for Flutter routing.
+- Project create/update payloads now use canonical `source_url` (legacy `github_url`/`url` aliases remain accepted).
 - Supported project routes used by the app:
   - `GET /api/projects`
   - `POST /api/projects`
   - `GET /api/projects/{id}`
   - `PATCH /api/projects/{id}`
+  - `POST /api/projects/{id}/archive`
+  - `POST /api/projects/{id}/unarchive`
   - `DELETE /api/projects/{id}`
   - `POST /api/projects/onboard`
   - `POST /api/projects/{id}/analyze`
   - `POST /api/projects/{id}/confirm`
+- `DELETE /api/projects/{id}` now marks rows as deleted (`deletedAt`) rather than physically removing them.
 
 ## Project Analysis Data Exposed To Clients
 
