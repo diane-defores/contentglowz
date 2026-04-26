@@ -26,9 +26,10 @@ escape_replacement() {
   printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
 }
 
-mkdir -p "$BUILD_DIR/sign-in" "$BUILD_DIR/sso-callback"
+mkdir -p "$BUILD_DIR/sign-in" "$BUILD_DIR/sign-up" "$BUILD_DIR/sso-callback"
 
 cp "$SOURCE_DIR/sign-in.html" "$BUILD_DIR/sign-in/index.html"
+cp "$SOURCE_DIR/sign-up.html" "$BUILD_DIR/sign-up/index.html"
 cp "$SOURCE_DIR/sso-callback.html" "$BUILD_DIR/sso-callback/index.html"
 cp "$SOURCE_DIR/clerk-auth.css" "$BUILD_DIR/clerk-auth.css"
 

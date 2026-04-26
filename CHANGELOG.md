@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-26]
+
+### Added
+- Added a dedicated ClerkJS `/sign-up` auth page so email account creation no longer falls through to the Flutter app.
+
+### Fixed
+- Fixed Clerk sign-up routing by pointing the sign-in widget at `/sign-up` and serving Clerk's sign-in/sign-up sub-routes from the auth pages instead of the SPA fallback.
+
 ## [2026-04-25]
 
 ### Added

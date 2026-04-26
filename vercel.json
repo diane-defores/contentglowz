@@ -7,6 +7,10 @@
   "rewrites": [
     { "source": "/sign-in", "destination": "/sign-in/index.html" },
     { "source": "/sign-in/", "destination": "/sign-in/index.html" },
+    { "source": "/sign-in/(.*)", "destination": "/sign-in/index.html" },
+    { "source": "/sign-up", "destination": "/sign-up/index.html" },
+    { "source": "/sign-up/", "destination": "/sign-up/index.html" },
+    { "source": "/sign-up/(.*)", "destination": "/sign-up/index.html" },
     { "source": "/sso-callback", "destination": "/sso-callback/index.html" },
     { "source": "/sso-callback/", "destination": "/sso-callback/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }

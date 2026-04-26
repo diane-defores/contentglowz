@@ -77,6 +77,19 @@ const server = http.createServer((req, res) => {
     }
   }
 
+  const authRoute = requestPath.match(/^\/(sign-in|sign-up)(?:\/|$)/);
+  if (authRoute) {
+    const authIndexPath = path.join(BUILD_DIR, authRoute[1], 'index.html');
+    if (fs.existsSync(authIndexPath) && fs.statSync(authIndexPath).isFile()) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-cache',
+      });
+      fs.createReadStream(authIndexPath).pipe(res);
+      return;
+    }
+  }
+
   // SPA fallback: serve index.html for all routes (GoRouter handles client-side)
   const indexPath = path.join(BUILD_DIR, 'index.html');
   if (fs.existsSync(indexPath)) {

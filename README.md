@@ -14,7 +14,7 @@ The target architecture is:
 The migration away from the legacy JavaScript runtime is advanced but not fully finished.
 
 What is already in place:
-- ClerkJS web sign-in routes on the app domain (`/sign-in`, `/sso-callback`)
+- ClerkJS web auth routes on the app domain (`/sign-in`, `/sign-up`, `/sso-callback`)
 - Clerk session restore and bootstrap-driven entry gate
 - FastAPI-backed `projects`, `settings`, `creator-profile`, `personas`, and content/status flows
 - real onboarding path that creates a workspace in FastAPI

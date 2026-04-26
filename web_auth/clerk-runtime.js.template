@@ -172,7 +172,7 @@
           ? { ClerkUI: window.__internal_ClerkUICtor }
           : undefined,
         signInUrl: '/sign-in',
-        signUpUrl: '/sign-in',
+        signUpUrl: '/sign-up',
         afterSignOutUrl: '/#/entry',
       });
       return clerk;
@@ -240,7 +240,29 @@
       fallbackRedirectUrl: redirectUrlComplete,
       signUpForceRedirectUrl: redirectUrlComplete,
       signUpFallbackRedirectUrl: redirectUrlComplete,
-      signUpUrl: '/sign-in',
+      signUpUrl: '/sign-up',
+    });
+
+    return true;
+  }
+
+  async function mountSignUp(node, options) {
+    const clerk = await load();
+    const redirectUrlComplete = resolveRedirectComplete(
+      (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
+    );
+    const redirectUrl = buildOAuthCallbackUrl(redirectUrlComplete);
+
+    clerk.mountSignUp(node, {
+      path: '/sign-up',
+      routing: 'path',
+      oauthFlow: 'redirect',
+      redirectUrl,
+      forceRedirectUrl: redirectUrlComplete,
+      fallbackRedirectUrl: redirectUrlComplete,
+      signInForceRedirectUrl: redirectUrlComplete,
+      signInFallbackRedirectUrl: redirectUrlComplete,
+      signInUrl: '/sign-in',
     });
 
     return true;
@@ -304,6 +326,7 @@
     getUser,
     signOut,
     mountSignIn,
+    mountSignUp,
     startGoogleSignIn,
     handleRedirectCallback,
     getDiagnostics,
