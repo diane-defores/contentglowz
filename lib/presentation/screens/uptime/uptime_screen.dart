@@ -20,6 +20,7 @@ class UptimeScreen extends ConsumerStatefulWidget {
 class _UptimeScreenState extends ConsumerState<UptimeScreen> {
   final List<_PingResult> _history = [];
   bool _checking = false;
+  bool _refreshingStaleData = false;
 
   @override
   void initState() {
@@ -143,6 +144,13 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                       context.tr('Cached data is currently being used.'),
                       style: theme.textTheme.bodySmall,
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      context.tr('Affected views: {views}', {
+                        'views': _describeStaleKeys(offlineSync.staleKeys),
+                      }),
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ],
                   const SizedBox(height: 12),
                   Wrap(
@@ -164,6 +172,22 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
                             .refresh(),
                         icon: const Icon(Icons.refresh_rounded),
                         label: Text(context.tr('Refresh queue')),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed:
+                            offlineSync.hasStaleData && !_refreshingStaleData
+                            ? _refreshStaleData
+                            : null,
+                        icon: _refreshingStaleData
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.cloud_sync_rounded),
+                        label: Text(context.tr('Refresh stale data')),
                       ),
                     ],
                   ),
@@ -405,6 +429,74 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
   Future<void> _checkAgain() async {
     await _checkOnce();
     ref.invalidate(backendStatusProvider);
+  }
+
+  Future<void> _refreshStaleData() async {
+    final staleKeys = ref.read(offlineSyncStateProvider).staleKeys;
+    if (staleKeys.isEmpty) {
+      return;
+    }
+
+    setState(() => _refreshingStaleData = true);
+    try {
+      final refreshes = <Future<void>>[];
+
+      if (staleKeys.any((key) => key.startsWith('content.pending_review'))) {
+        refreshes.add(
+          ref.refresh(pendingContentProvider.future).then((_) => null),
+        );
+      }
+      if (staleKeys.any((key) => key.startsWith('content.history'))) {
+        refreshes.add(
+          ref.refresh(contentHistoryProvider.future).then((_) => null),
+        );
+      }
+      if (staleKeys.any((key) => key.startsWith('drip.plans'))) {
+        refreshes.add(ref.refresh(dripPlansProvider.future).then((_) => null));
+      }
+      if (staleKeys.any((key) => key.startsWith('projects'))) {
+        refreshes.add(
+          ref.refresh(projectsStateProvider.future).then((_) => null),
+        );
+      }
+      if (staleKeys.any((key) => key.startsWith('settings'))) {
+        refreshes.add(
+          ref.refresh(currentUserSettingsProvider.future).then((_) => null),
+        );
+      }
+
+      if (refreshes.isNotEmpty) {
+        await Future.wait(refreshes);
+      }
+
+      ref.invalidate(backendStatusProvider);
+    } finally {
+      if (mounted) {
+        setState(() => _refreshingStaleData = false);
+      }
+    }
+  }
+
+  String _describeStaleKeys(Set<String> staleKeys) {
+    final labels = <String>{};
+    for (final key in staleKeys) {
+      if (key.startsWith('content.pending_review')) {
+        labels.add('review queue');
+      } else if (key.startsWith('content.history')) {
+        labels.add('history');
+      } else if (key.startsWith('drip.plans')) {
+        labels.add('drip plans');
+      } else if (key.startsWith('projects')) {
+        labels.add('projects');
+      } else if (key.startsWith('settings')) {
+        labels.add('settings');
+      } else {
+        labels.add(key);
+      }
+    }
+
+    final sorted = labels.toList()..sort();
+    return sorted.join(', ');
   }
 }
 
