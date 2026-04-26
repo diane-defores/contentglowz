@@ -2,6 +2,11 @@
 
 All notable changes to Content Flows are documented here.
 
+## [2026-04-26]
+
+### Fixed
+- Hardened persona draft GitHub repository understanding to use GitHub's README API endpoint and return actionable repository-access errors instead of the generic "Could not load GitHub repository content."
+
 ## [2026-04-25]
 
 ### Added

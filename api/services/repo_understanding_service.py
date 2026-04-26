@@ -43,6 +43,40 @@ def _parse_github_repo(url: str) -> tuple[str, str] | None:
     return owner, repo
 
 
+def _github_repo_access_error(
+    status_code: int,
+    owner: str,
+    repo: str,
+    *,
+    token_present: bool,
+) -> str:
+    repo_name = f"{owner}/{repo}"
+    if status_code == 401:
+        return (
+            f"GitHub token for {repo_name} is invalid or expired. "
+            "Reconnect GitHub and retry."
+        )
+    if status_code == 403:
+        return (
+            f"GitHub denied repository content access for {repo_name}. "
+            "Reconnect GitHub or confirm the token can read repository contents."
+        )
+    if status_code == 404:
+        if token_present:
+            return (
+                f"GitHub repository {repo_name} was not found or is not accessible "
+                "with the connected GitHub account."
+            )
+        return (
+            f"GitHub repository {repo_name} was not found or is private. "
+            "Connect GitHub or verify the repository URL."
+        )
+    return (
+        f"GitHub repository {repo_name} could not be loaded "
+        f"(status {status_code})."
+    )
+
+
 def _extract_json_block(payload: Any) -> dict[str, Any]:
     if isinstance(payload, dict):
         return payload
@@ -157,57 +191,69 @@ class RepoUnderstandingService:
 
         evidence: list[EvidenceItem] = []
         chunks: list[str] = []
-        readme_urls = [
-            f"https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.md",
-            f"https://raw.githubusercontent.com/{owner}/{repo}/HEAD/readme.md",
-            f"https://raw.githubusercontent.com/{owner}/{repo}/HEAD/README.mdx",
-        ]
 
         async with httpx.AsyncClient(timeout=12.0) as client:
-            for url in readme_urls:
-                response = await client.get(url, headers=headers)
-                if response.status_code < 400 and response.text.strip():
-                    evidence.append(
-                        EvidenceItem(
-                            source="github_repo",
-                            location=url,
-                            snippet=_snippet(response.text, limit=300),
-                        )
-                    )
-                    chunks.append(f"## README\n{_truncate(response.text)}")
-                    break
-
             repo_api = await client.get(
                 f"https://api.github.com/repos/{owner}/{repo}",
                 headers=headers,
             )
-            if repo_api.status_code < 400:
-                payload = repo_api.json() if isinstance(repo_api.json(), dict) else {}
-                summary = {
-                    "name": payload.get("full_name"),
-                    "description": payload.get("description"),
-                    "homepage": payload.get("homepage"),
-                    "topics": payload.get("topics") or [],
-                }
-                summary_json = json.dumps(summary, ensure_ascii=True)
+            if repo_api.status_code >= 400:
+                raise RuntimeError(
+                    _github_repo_access_error(
+                        repo_api.status_code,
+                        owner,
+                        repo,
+                        token_present=bool(token),
+                    )
+                )
+
+            payload = repo_api.json() if isinstance(repo_api.json(), dict) else {}
+            summary = {
+                "name": payload.get("full_name"),
+                "description": payload.get("description"),
+                "homepage": payload.get("homepage"),
+                "topics": payload.get("topics") or [],
+                "default_branch": payload.get("default_branch"),
+            }
+            summary_json = json.dumps(summary, ensure_ascii=True)
+            evidence.append(
+                EvidenceItem(
+                    source="github_repo",
+                    location=f"{owner}/{repo}",
+                    snippet=_snippet(summary_json, limit=300),
+                )
+            )
+            chunks.append(f"## Repo metadata\n{summary_json}")
+
+            homepage = payload.get("homepage")
+            if isinstance(homepage, str) and homepage.strip():
                 evidence.append(
                     EvidenceItem(
                         source="github_repo",
-                        location=f"{owner}/{repo}",
-                        snippet=_snippet(summary_json, limit=300),
+                        location=homepage.strip(),
+                        snippet=_snippet(homepage.strip(), limit=300),
                     )
                 )
-                chunks.append(f"## Repo metadata\n{summary_json}")
 
-                homepage = payload.get("homepage")
-                if isinstance(homepage, str) and homepage.strip():
-                    evidence.append(
-                        EvidenceItem(
-                            source="github_repo",
-                            location=homepage.strip(),
-                            snippet=_snippet(homepage.strip(), limit=300),
-                        )
+            readme_api = await client.get(
+                f"https://api.github.com/repos/{owner}/{repo}/readme",
+                headers={
+                    **headers,
+                    "Accept": "application/vnd.github.raw+json",
+                },
+            )
+            if readme_api.status_code < 400 and readme_api.text.strip():
+                location = f"{owner}/{repo}/README"
+                if isinstance(readme_api.headers, httpx.Headers):
+                    location = readme_api.headers.get("x-github-media-type", location)
+                evidence.append(
+                    EvidenceItem(
+                        source="github_repo",
+                        location=location,
+                        snippet=_snippet(readme_api.text, limit=300),
                     )
+                )
+                chunks.append(f"## README\n{_truncate(readme_api.text)}")
 
             contents_api = await client.get(
                 f"https://api.github.com/repos/{owner}/{repo}/contents",
@@ -246,7 +292,9 @@ class RepoUnderstandingService:
                             break
 
         if not chunks:
-            raise RuntimeError("Could not load GitHub repository content.")
+            raise RuntimeError(
+                f"GitHub repository {owner}/{repo} is reachable but no usable content was found."
+            )
         return "\n\n".join(chunks[:10]), evidence[:10]
 
     async def _collect_public_site(

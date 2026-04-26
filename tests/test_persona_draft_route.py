@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import httpx
 import pytest
 from fastapi import HTTPException
 
@@ -207,6 +208,24 @@ async def test_repo_understanding_uses_connected_github_source(monkeypatch):
     assert result.project_summary == "summary"
 
 
+class _FakeAsyncClient:
+    def __init__(self, responses):
+        self._responses = responses
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return None
+
+    async def get(self, url, headers=None):
+        del headers
+        response = self._responses.get(url)
+        if response is None:
+            raise AssertionError(f"Unexpected URL: {url}")
+        return response
+
+
 @pytest.mark.asyncio
 async def test_repo_understanding_project_repo_falls_back_to_request_github_url(monkeypatch):
     monkeypatch.setattr(
@@ -317,6 +336,67 @@ async def test_repo_understanding_accepts_public_github_manual_url(monkeypatch):
     )
 
     assert result.project_summary == "summary"
+
+
+@pytest.mark.asyncio
+async def test_collect_github_repo_uses_readme_endpoint(monkeypatch):
+    responses = {
+        "https://api.github.com/repos/acme/repo": httpx.Response(
+            200,
+            json={
+                "full_name": "acme/repo",
+                "description": "Demo repo",
+                "homepage": "https://example.com",
+                "topics": ["saas"],
+                "default_branch": "main",
+            },
+        ),
+        "https://api.github.com/repos/acme/repo/readme": httpx.Response(
+            200,
+            text="# Demo\nUseful README",
+        ),
+        "https://api.github.com/repos/acme/repo/contents": httpx.Response(
+            200,
+            json=[],
+        ),
+    }
+    monkeypatch.setattr(
+        repo_understanding_module.httpx,
+        "AsyncClient",
+        lambda timeout=12.0: _FakeAsyncClient(responses),
+    )
+
+    content, evidence = await repo_understanding_module.repo_understanding_service._collect_github_repo(
+        "https://github.com/acme/repo",
+        token="gh-token",
+    )
+
+    assert "## README" in content
+    assert any(item.location == "acme/repo" for item in evidence)
+    assert any("Demo" in item.snippet for item in evidence)
+
+
+@pytest.mark.asyncio
+async def test_collect_github_repo_returns_actionable_private_repo_error(monkeypatch):
+    responses = {
+        "https://api.github.com/repos/acme/private-repo": httpx.Response(
+            404,
+            json={"message": "Not Found"},
+        ),
+    }
+    monkeypatch.setattr(
+        repo_understanding_module.httpx,
+        "AsyncClient",
+        lambda timeout=12.0: _FakeAsyncClient(responses),
+    )
+
+    with pytest.raises(RuntimeError) as exc:
+        await repo_understanding_module.repo_understanding_service._collect_github_repo(
+            "https://github.com/acme/private-repo",
+            token="gh-token",
+        )
+
+    assert "not found or is not accessible with the connected GitHub account" in str(exc.value)
 
 
 @pytest.mark.asyncio
