@@ -11,6 +11,7 @@ import 'presentation/screens/feedback/feedback_admin_screen.dart';
 import 'presentation/screens/feedback/feedback_screen.dart';
 import 'presentation/screens/history/history_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
+import 'presentation/screens/settings/integrations_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 import 'presentation/screens/entry/entry_screen.dart';
 import 'presentation/screens/auth/auth_screen.dart';
@@ -308,6 +309,11 @@ List<RouteBase> buildAppRoutes() {
       path: '/angles',
       pageBuilder: (context, state) =>
           const MaterialPage(child: AnglesScreen()),
+    ),
+    GoRoute(
+      path: '/settings/integrations',
+      pageBuilder: (context, state) =>
+          const MaterialPage(child: IntegrationsScreen()),
     ),
   ];
 }
