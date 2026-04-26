@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "api.main:app",
-        host="::",
+        host="0.0.0.0",
         port=port,
         reload=reload_enabled,
         log_level="info",

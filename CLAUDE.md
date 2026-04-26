@@ -57,6 +57,12 @@ open http://localhost:8000/redoc
 - `contentflow_app` — Flutter application and web shell.
 - `contentflow_site` — marketing/auth entrypoint.
 
+## Forbidden Paths
+
+- `/home/claude/contentflow/contentflow_lab_deploy` is an operator-controlled deployment copy of `contentflow_lab`.
+- Agents must treat that directory as out of scope: do not read it, modify it, run tests from it, diff against it, restart services from it, or use it as context unless the user explicitly asks for that exact path.
+- Work in `contentflow_lab` only; the user decides when and how deployment copies are updated.
+
 ## References
 
 - `AGENTS.md` for conventions and operational notes.

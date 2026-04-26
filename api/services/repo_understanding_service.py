@@ -391,9 +391,17 @@ Collected content:
             if not project or project.user_id != user_id:
                 raise RuntimeError("Project not found.")
             repo_path = project.settings.local_repo_path if project.settings else None
-            if not repo_path:
-                raise RuntimeError("Project local_repo_path is missing. Analyze project first.")
-            content, evidence = await self._collect_local_repo(repo_path)
+            if repo_path:
+                content, evidence = await self._collect_local_repo(repo_path)
+            else:
+                repo_url = request.repo_url or project.url
+                if not repo_url or not _parse_github_repo(repo_url):
+                    raise RuntimeError(
+                        "Project local_repo_path is missing and no GitHub repo URL is available."
+                    )
+                integration = await user_data_store.get_github_integration(user_id)
+                token = integration.get("token") if integration else None
+                content, evidence = await self._collect_github_repo(repo_url, token=token)
             return await self._synthesize_understanding(
                 user_id,
                 content=content,

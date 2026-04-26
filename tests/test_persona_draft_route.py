@@ -208,6 +208,93 @@ async def test_repo_understanding_uses_connected_github_source(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_repo_understanding_project_repo_falls_back_to_request_github_url(monkeypatch):
+    monkeypatch.setattr(
+        repo_understanding_module.project_store,
+        "get_by_id",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                user_id="user-1",
+                url="https://example.com/not-github",
+                settings=SimpleNamespace(local_repo_path=None),
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        repo_understanding_module.user_data_store,
+        "get_github_integration",
+        AsyncMock(return_value={"token": "gh-token"}),
+    )
+    collect_mock = AsyncMock(return_value=("repo content", []))
+    monkeypatch.setattr(
+        repo_understanding_module.repo_understanding_service,
+        "_collect_github_repo",
+        collect_mock,
+    )
+    monkeypatch.setattr(
+        repo_understanding_module.repo_understanding_service,
+        "_synthesize_understanding",
+        AsyncMock(return_value=RepoUnderstandingResult(project_summary="summary")),
+    )
+
+    result = await repo_understanding_module.repo_understanding_service.understand(
+        "user-1",
+        PersonaDraftRequest(
+            repo_source="project_repo",
+            project_id="project-1",
+            repo_url="https://github.com/acme/repo",
+            mode="suggest_from_repo",
+        ),
+    )
+
+    assert result.project_summary == "summary"
+    collect_mock.assert_awaited_once_with("https://github.com/acme/repo", token="gh-token")
+
+
+@pytest.mark.asyncio
+async def test_repo_understanding_project_repo_falls_back_to_stored_github_url(monkeypatch):
+    monkeypatch.setattr(
+        repo_understanding_module.project_store,
+        "get_by_id",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                user_id="user-1",
+                url="https://github.com/acme/stored-repo",
+                settings=SimpleNamespace(local_repo_path=None),
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        repo_understanding_module.user_data_store,
+        "get_github_integration",
+        AsyncMock(return_value=None),
+    )
+    collect_mock = AsyncMock(return_value=("repo content", []))
+    monkeypatch.setattr(
+        repo_understanding_module.repo_understanding_service,
+        "_collect_github_repo",
+        collect_mock,
+    )
+    monkeypatch.setattr(
+        repo_understanding_module.repo_understanding_service,
+        "_synthesize_understanding",
+        AsyncMock(return_value=RepoUnderstandingResult(project_summary="summary")),
+    )
+
+    result = await repo_understanding_module.repo_understanding_service.understand(
+        "user-1",
+        PersonaDraftRequest(
+            repo_source="project_repo",
+            project_id="project-1",
+            mode="suggest_from_repo",
+        ),
+    )
+
+    assert result.project_summary == "summary"
+    collect_mock.assert_awaited_once_with("https://github.com/acme/stored-repo", token=None)
+
+
+@pytest.mark.asyncio
 async def test_repo_understanding_accepts_public_github_manual_url(monkeypatch):
     monkeypatch.setattr(
         repo_understanding_module.repo_understanding_service,

@@ -29,6 +29,7 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | P1 | Backend persona autofill + repo understanding + user keys | Done |
+| P0 | Persona AI draft fallback when project clone is missing | ✅ done |
 | P0 | Feedback Admin v1 — finaliser la config prod backend feedback | Backend live pour le texte, secrets Bunny/admin encore à configurer |
 | P0 | Dual-mode AI runtime (BYOK + platform) all providers — implement ready spec | 🔄 in progress |
 | P0 | Project flows selection onboarding archive — optional source_url, projectSelectionMode tri-state, archive/unarchive API + bootstrap no-selection | ✅ done |
