@@ -1,15 +1,15 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: guidelines
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: none
 docs_impact: yes
@@ -21,8 +21,8 @@ evidence:
   - BUSINESS.md
   - BRANDING.md
 depends_on:
-  - BUSINESS.md@0.1.0
-  - BRANDING.md@0.1.0
+  - BUSINESS.md@1.0.0
+  - BRANDING.md@1.0.0
 supersedes: []
 next_review: "2026-07-26"
 next_step: /sf-docs audit GUIDELINES.md
@@ -52,8 +52,8 @@ This document defines conventions for working on the Astro website in `contentfl
 
 - `APP_SITE_URL`: used for site URL fallback/SEO setup.
 - `APP_WEB_URL`: public app handoff target.
-- `API_BASE_URL`: backend API base URL for handoff-aware messaging.
-- `CLERK_PUBLISHABLE_KEY`: front-end Clerk auth key.
+- `API_BASE_URL`: backend API base URL exposed in `src/config/site.ts`.
+- `POLAR_CREATOR_CHECKOUT_URL`, `POLAR_PRO_CHECKOUT_URL`: optional absolute overrides for checkout links.
 - `VERCEL_GIT_COMMIT_SHA`, `VERCEL_ENV`, `BUILD_TIMESTAMP`: build telemetry metadata used for observability.
 
 ## Content Governance

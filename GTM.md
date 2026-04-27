@@ -1,11 +1,11 @@
 ---
 artifact: gtm_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow_site"
 created: "2026-04-26"
-updated: "2026-04-26"
-status: "draft"
+updated: "2026-04-27"
+status: "reviewed"
 source_skill: sf-docs
 scope: gtm
 owner: "Diane"
@@ -22,12 +22,12 @@ evidence:
   - "src/components/*.astro"
   - "src/pages/launch.astro"
 linked_artifacts:
-  - "BUSINESS.md@0.1.0"
-  - "BRANDING.md@0.1.0"
-  - "PRODUCT.md@0.1.0"
+  - "BUSINESS.md@1.0.0"
+  - "BRANDING.md@1.0.0"
+  - "PRODUCT.md@1.0.0"
 depends_on:
-  - "BUSINESS.md@0.1.0"
-  - "PRODUCT.md@0.1.0"
+  - "BUSINESS.md@1.0.0"
+  - "PRODUCT.md@1.0.0"
 supersedes: []
 next_review: "2026-07-26"
 next_step: "/sf-docs audit GTM.md"
@@ -46,6 +46,7 @@ proof_points: "stack Astro SEO-first, handoff app via `/launch`, documentation d
 ## Offre
 Tu expliques le produit comme un passage simple : du message public à un espace exécutable,
 avec continuité, visibilité des limites et contrôle humain.
+La vérité produit et business reste portée par `contentflow_app`; le site convertit sans réécrire ce contrat.
 
 ## Positionnement
 Tu positionnes le site comme preuve de clarté : pas de buzz IA, pas de promesse de publication autonome,

@@ -1,11 +1,11 @@
 ---
 artifact: agent_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: technical_core
 owner: "Diane"
@@ -14,10 +14,10 @@ risk_level: medium
 security_impact: low
 docs_impact: yes
 depends_on:
-  - CLAUDE.md@0.1.0
+  - CLAUDE.md@1.0.0
   - BUSINESS.md@0.1.0
   - BRANDING.md@0.1.0
-  - GUIDELINES.md@0.1.0
+  - GUIDELINES.md@1.0.0
 evidence:
   - README.md
   - CLAUDE.md
@@ -62,7 +62,7 @@ next_step: /sf-docs audit AGENT.md
 - Ne jamais réactiver un flux d’authentification local côté site en dehors de la redirection vers `contentflow.app`.
 - Ne jamais retirer la logique de routes dynamiques (`getStaticPaths`) qui alimente le référencement documentaire.
 - Ne jamais casser la navigation principale (`/`, `/blog`, `/privacy`, `/#features`, `/#pricing`, `/#faq`).
-- Les variables d’environnement de handoff (`APP_SITE_URL`, `APP_WEB_URL`, `API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`) doivent rester explicites et documentées.
+  - Les variables d’environnement de handoff (`APP_SITE_URL`, `APP_WEB_URL`, `API_BASE_URL`) doivent rester explicites et documentées.
 
 ## Gouvernance de modif
 - Après toute évolution de routing ou d’architecture du site:

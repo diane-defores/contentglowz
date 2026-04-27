@@ -1,20 +1,20 @@
 ---
 artifact: brand_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: brand
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: none
 docs_impact: yes
-brand_voice: unknown
-trust_posture: unknown
+brand_voice: clear, practical, transparent
+trust_posture: explicit constraints, no hype, human-in-the-loop
 depends_on:
   - CLAUDE.md@0.1.0
 evidence:
@@ -36,6 +36,7 @@ next_step: /sf-docs audit BRANDING.md
 
 The website presents ContentFlow as an execution assistant, not a fully automated ghost writer.
 It should support trust, clarity, and transparency before conversion intent.
+All public claims must stay aligned with `contentflow_app`, which is the canonical product/business truth.
 
 ## Voice and Tone
 

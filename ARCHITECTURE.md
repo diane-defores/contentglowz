@@ -1,22 +1,22 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
-updated: "2026-04-26"
+updated: "2026-04-27"
 created: "2026-04-26"
-status: draft
+status: reviewed
 source_skill: sf-docs
 scope: architecture
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: low
 docs_impact: yes
 depends_on:
-  - AGENT.md@0.1.0
-  - CONTEXT.md@0.1.0
-  - CONTEXT-FUNCTION-TREE.md@0.1.0
+  - AGENT.md@1.0.0
+  - CONTEXT.md@1.0.0
+  - CONTEXT-FUNCTION-TREE.md@1.0.0
 evidence:
   - astro.config.mjs
   - src/layouts
@@ -31,12 +31,10 @@ linked_systems:
   - Node.js
   - Vercel
   - Markdown
-  - Clerk
 external_dependencies:
   - npm/Node ecosystem (astro, @astrojs/sitemap)
   - Vercel platform services (headers, build, deploy)
-  - Clerk publishable keys (front-end handoff)
-  - App API endpoint (APP_WEB_URL/API_BASE_URL)
+  - App handoff endpoints (APP_WEB_URL/API_BASE_URL)
 invariants:
   - src/content schemas should remain backward compatible with existing frontmatter keys.
   - sign-in/sign-up/launch routes must keep the same handoff behavior unless CLAUDE.md is updated.
@@ -70,8 +68,8 @@ next_step: /sf-docs update ARCHITECTURE.md
   Vercel (headers + domaine + assets)
 ```
 
-Le site est une application frontale de documentation/acquisition.  
-Il ne contient pas de logique métier backend ni de règles business sensibles ; il sert de point d’entrée et de relais vers l’app Flutter.
+Le site est une application frontale de documentation/acquisition.
+Il ne contient pas de logique métier backend ni de règles business sensibles ; il sert de point d’entrée et de relais vers l’app web.
 
 ## 2) Couche de rendu
 - **Compilation**: Astro + Node (scripts `astro dev`, `astro build`, `astro preview`).
@@ -95,8 +93,8 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
   - table des matières,
   - articles liés.
 
-## 4) Couche application/publicité
-- `src/config/site.ts` centralise les endpoints publicitaires/interop:
+## 4) Couche handoff app
+- `src/config/site.ts` centralise les endpoints de site et de redirection:
   - `siteUrl`, `appWebUrl`, `appSignInUrl`, `appEntryUrl`,
   - `apiBaseUrl`, `buildCommitSha`, `buildEnvironment`, `buildTimestamp`.
 - `/sign-in`, `/sign-up`, `/launch` sont des pages de transition vers l’app.

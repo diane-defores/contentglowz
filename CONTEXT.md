@@ -1,23 +1,23 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: technique
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: low
 docs_impact: yes
 depends_on:
-  - AGENT.md@0.1.0
+  - AGENT.md@1.0.0
   - BUSINESS.md@0.1.0
   - BRANDING.md@0.1.0
-  - GUIDELINES.md@0.1.0
+  - GUIDELINES.md@1.0.0
   - README.md@0.1.0
 evidence:
   - src/pages
@@ -67,11 +67,11 @@ Le site assure:
 
 ## Variables et dépendances
 - `APP_SITE_URL`: source de vérité pour URL canonical/site.
-- `APP_WEB_URL`: racine de l’application de destination (Google sign-in / app entry).
-- `API_BASE_URL`: mentionné dans la doc produit pour contextualiser la continuité backend.
-- `CLERK_PUBLISHABLE_KEY`: clé front-end attendue par l’écosystème Clerk.
+- `APP_WEB_URL`: racine de l’application de destination (`/sign-in`, `/#/entry`).
+- `API_BASE_URL`: endpoint public de référence exposé dans `src/config/site.ts`.
+- `POLAR_CREATOR_CHECKOUT_URL`, `POLAR_PRO_CHECKOUT_URL`: overrides checkout optionnels, sinon fallback sur `appSignInUrl?plan=...`.
 - `VERCEL_GIT_COMMIT_SHA`, `VERCEL_ENV`, `BUILD_TIMESTAMP`: metadata d’observabilité.
-- `BUILD` headers via `import.meta.env.PROD` pour scripts analytics cookie-free.
+- `import.meta.env.PROD`: garde d’activation du script analytics dans `Layout.astro`.
 
 ## Contraintes
 - Les routes d’authentification du site sont **devenues des pages de redirection**, pas de gestion d’identité.

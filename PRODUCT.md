@@ -1,11 +1,11 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow_site"
 created: "2026-04-26"
-updated: "2026-04-26"
-status: "draft"
+updated: "2026-04-27"
+status: "reviewed"
 source_skill: sf-docs
 scope: product
 owner: "Diane"
@@ -26,13 +26,13 @@ evidence:
   - "src/pages/sign-up.astro"
   - "src/content"
 linked_artifacts:
-  - "BUSINESS.md@0.1.0"
-  - "BRANDING.md@0.1.0"
-  - "GUIDELINES.md@0.1.0"
+  - "BUSINESS.md@1.0.0"
+  - "BRANDING.md@1.0.0"
+  - "GUIDELINES.md@1.0.0"
 depends_on:
-  - "BUSINESS.md@0.1.0"
-  - "BRANDING.md@0.1.0"
-  - "GUIDELINES.md@0.1.0"
+  - "BUSINESS.md@1.0.0"
+  - "BRANDING.md@1.0.0"
+  - "GUIDELINES.md@1.0.0"
 supersedes: []
 next_review: "2026-07-26"
 target_user: "Fondateurs, équipes content ops, creators indépendants"
@@ -58,6 +58,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 ## Problème
 Le site positionne le produit, rassure sur les limites techniques et guide rapidement vers `contentflow_app`.
 Sans ce site, la promesse produit est morcelée entre pages, et le passage vers l’app est moins crédible.
+`contentflow_app` reste la source canonique pour les capacités produit et le contrat business.
 
 ## Sorties souhaitées
 - Traiter la découverte, la preuve sociale, la preuve de valeur et la conversion initiale.
@@ -76,7 +77,7 @@ Sans ce site, la promesse produit est morcelée entre pages, et le passage vers 
 - Message de reprise en cas d’indisponibilité backend (honnêteté opérationnelle).
 
 ## Périmètre (out)
-- Logique métier métier d’exécution complète du contenu.
+- Logique métier d’exécution complète du contenu.
 - Auth native de bout en bout et publication multicanale (repos liés).
 - Gestion des jobs backend, files d’attente et scoring avancé.
 

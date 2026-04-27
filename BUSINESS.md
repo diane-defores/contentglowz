@@ -1,21 +1,21 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_site
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: business
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: none
 docs_impact: yes
 target_audience: creators, independent operators, SMB content teams
 value_proposition: turn content ideas into publish-ready outcomes with predictable, transparent execution
-business_model: inbound marketing + conversion through app handoff and paid plans
+business_model: acquisition and qualification on site, then handoff to contentflow_app where product and commercial truth is defined
 market: content teams, founders, and solo operators
 depends_on:
   - CLAUDE.md@0.1.0
@@ -35,7 +35,8 @@ next_step: /sf-docs audit BUSINESS.md
 It presents the product, sets expectations, captures trust signals, and routes users into the
 authenticated Flutter app handoff flow.
 
-For product truth, `contentflow_app` is the canonical repository. This site should mirror the promise and constraints of the app, not create a parallel contract.
+For product and business truth, `contentflow_app` is the canonical repository. This site mirrors
+that contract and must not create a parallel product or pricing truth.
 
 ## Problem
 
@@ -62,7 +63,7 @@ The site should position ContentFlow as a practical execution layer with transpa
 
 ## Commercial Scope
 
-- The site sets product context, trust framing, and conversion pathways (pricing, FAQs, CTA flows).
+- The site sets product context, trust framing, and conversion pathways (pricing pages, FAQs, CTA flows).
 - It does not own backend business logic or auth token brokerage rules (those belong to app/backend repos),
   but it must communicate app-level constraints accurately.
 
