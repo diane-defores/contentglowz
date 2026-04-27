@@ -1,15 +1,15 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
-status: draft
+artifact_version: "1.0.0"
+status: reviewed
 project: contentflow_lab
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-04-27"
 source_skill: sf-docs
 scope: context
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: high
 security_impact: yes
 docs_impact: yes
@@ -73,7 +73,7 @@ It combines:
 - API lifecycle (`api/main.py`):
   - adds global CORS, rate limiting, and error handler middleware
   - registers domain routers with `/api/...` prefixes
-  - starts scheduler task during startup (`scheduler.schedulER_service`)
+  - starts scheduler task during startup (`scheduler/scheduler_service.py`)
   - ensures required tables/services via idempotent startup migrations
 
 - Authentication:

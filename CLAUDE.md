@@ -1,22 +1,38 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_lab
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: technical
 owner: "Diane"
 confidence: medium
 risk_level: medium
-security_impact: none
+security_impact: yes
 docs_impact: yes
-evidence: []
+evidence:
+  - README.md
+  - api/main.py
+  - api/routers/__init__.py
+  - api/dependencies/auth.py
+  - api/services/user_data_store.py
+  - api/services/user_key_store.py
+  - scheduler/scheduler_service.py
+  - requirements.txt
 depends_on: []
 supersedes: []
-linked_systems: []
+linked_systems:
+  - FastAPI
+  - Turso/libsql
+  - Clerk
+  - OpenRouter
+  - Exa
+  - Firecrawl
+  - SendGrid
+  - Doppler
 next_review: "2026-07-26"
 next_step: /sf-docs audit CLAUDE.md
 ---
@@ -42,7 +58,7 @@ It hosts:
 - `agents/` — CrewAI/PydanticAI pipelines.
 - `scheduler/` — periodic orchestration.
 - `status/`, `data/`, `utils/` — service and persistence helpers.
-- `api/services/` — integrations (analytics, job store, feedback, feedback, drip services, auth/webhand-off helpers).
+- `api/services/` — integrations (analytics, job store, feedback, drip services, auth/webhand-off helpers).
 
 ## Common Commands
 

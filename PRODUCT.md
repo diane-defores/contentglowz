@@ -1,15 +1,15 @@
 ---
 artifact: product
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_lab
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 scope: product
 source_skill: sf-docs
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: unknown
 docs_impact: yes
@@ -26,9 +26,9 @@ evidence:
   - specs/SPEC-strict-byok-llm-app-visible-ai.md
   - specs/social-listener.md
 depends_on:
-  - BUSINESS.md@0.1.0
-  - BRANDING.md@0.1.0
-  - GUIDELINES.md@0.1.0
+  - BUSINESS.md@1.0.0
+  - BRANDING.md@1.0.0
+  - GUIDELINES.md@1.0.0
 supersedes: []
 next_review: "2026-07-26"
 next_step: /sf-docs audit PRODUCT.md

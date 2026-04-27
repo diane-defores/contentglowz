@@ -1,7 +1,7 @@
 # Core AI Frameworks
 crewai>=0.1.0,<1.0
 pydantic-ai>=0.1.0,<1.0
-pydantic>=2.0.0,<3.0
+pydantic>=2.4.0,<3.0
 
 # FastAPI Server
 fastapi[standard]>=0.128.0,<1.0
@@ -12,13 +12,13 @@ knowledge-storm>=1.1.0,<2.0
 
 # LLM Provider - Simplified with OpenRouter
 openai>=1.0.0,<3.0  # Single package for ALL models via OpenRouter (Groq, GPT-4, Claude, etc.)
-litellm>=1.0.0,<3.0  # Required by STORM and CrewAI (supports Groq, OpenRouter, etc.)
+litellm>=1.83.14,<3.0  # Keep floor above known proxy/security advisory ranges.
 
 # Data Collection & Analysis
 exa-py>=1.0.0,<2.0
 firecrawl-py>=0.0.1,<2.0
 beautifulsoup4>=4.12.0,<5.0
-requests>=2.31.0,<3.0
+requests>=2.33.0,<3.0
 svix>=1.28.0,<2.0
 
 # SEO & Research Tools
@@ -33,7 +33,7 @@ python-louvain>=0.16,<1.0  # Community detection for topical mesh analysis
 mem0ai>=0.1.0,<1.0
 
 # Email & Templates
-jinja2>=3.1.0,<4.0
+jinja2>=3.1.6,<4.0
 sendgrid>=6.11.0,<7.0
 imap-tools>=1.0.0,<2.0  # IMAP email fetching for newsletter ingestion
 
@@ -47,15 +47,11 @@ instagrapi>=2.0.0,<3.0
 textstat>=0.7.0,<1.0
 
 # Utilities
-pytest
-pytest-asyncio
-pytest-cov
-
 python-dotenv>=1.0.0,<2.0
 pyyaml>=6.0.0,<7.0
 pandas>=2.0.0,<3.0  # Required by advertools
 libsql>=0.1.11,<1.0
-cryptography>=42,<44
+cryptography>=46.0.5,<48
 
 # Google Analytics (Psychology Engine)
 google-analytics-data>=0.18.0,<1.0
