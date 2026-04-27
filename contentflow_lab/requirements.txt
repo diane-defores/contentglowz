@@ -1,0 +1,61 @@
+# Core AI Frameworks
+crewai>=0.1.0,<1.0
+pydantic-ai>=0.1.0,<1.0
+pydantic>=2.4.0,<3.0
+
+# FastAPI Server
+fastapi[standard]>=0.128.0,<1.0
+uvicorn[standard]>=0.32.0,<1.0
+
+# STORM - Stanford AI Research & Article Generation
+knowledge-storm>=1.1.0,<2.0
+
+# LLM Provider - Simplified with OpenRouter
+openai>=1.0.0,<3.0  # Single package for ALL models via OpenRouter (Groq, GPT-4, Claude, etc.)
+litellm>=1.83.14,<3.0  # Keep floor above known proxy/security advisory ranges.
+
+# Data Collection & Analysis
+exa-py>=1.0.0,<2.0
+firecrawl-py>=0.0.1,<2.0
+beautifulsoup4>=4.12.0,<5.0
+requests>=2.33.0,<3.0
+svix>=1.28.0,<2.0
+
+# SEO & Research Tools
+advertools>=0.14.0,<1.0  # SEO keyword generation, crawling, sitemap analysis
+serpapi>=0.1.0,<1.0
+spacy>=3.7.0,<4.0
+networkx>=3.0.0,<4.0
+matplotlib>=3.8.0,<4.0
+python-louvain>=0.16,<1.0  # Community detection for topical mesh analysis
+
+# Memory Layer
+mem0ai>=0.1.0,<1.0
+
+# Email & Templates
+jinja2>=3.1.6,<4.0
+sendgrid>=6.11.0,<7.0
+imap-tools>=1.0.0,<2.0  # IMAP email fetching for newsletter ingestion
+
+# Composio - AI Agent Integration (Gmail, Slack, etc.)
+composio-crewai>=0.2.0,<1.0
+
+# Instagram Reels
+instagrapi>=2.0.0,<3.0
+
+# Content Quality Analysis
+textstat>=0.7.0,<1.0
+
+# Utilities
+python-dotenv>=1.0.0,<2.0
+pyyaml>=6.0.0,<7.0
+pandas>=2.0.0,<3.0  # Required by advertools
+libsql>=0.1.11,<1.0
+cryptography>=46.0.5,<48
+
+# Google Analytics (Psychology Engine)
+google-analytics-data>=0.18.0,<1.0
+
+# Google Indexing API + Search Console (publishing pipeline)
+google-api-python-client>=2.100.0,<3.0
+google-auth>=2.23.0,<3.0

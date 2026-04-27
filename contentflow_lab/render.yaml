@@ -1,0 +1,43 @@
+services:
+  # FastAPI backend only. The Next.js chatbot and Astro site are not deployed by this blueprint.
+  - type: web
+    name: contentflow-api
+    runtime: python
+    rootDir: .
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: python main.py
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: LOG_LEVEL
+        value: INFO
+      - key: UVICORN_RELOAD
+        value: "false"
+      # Render's filesystem is ephemeral. Persist app state in Turso rather than local SQLite.
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      # Core model access
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # SEO / research integrations
+      - key: SERP_API_KEY
+        sync: false
+      - key: EXA_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: YDC_API_KEY
+        sync: false
+      # Optional outbound integrations
+      - key: SENDGRID_API_KEY
+        sync: false
