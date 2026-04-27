@@ -1,3 +1,26 @@
+---
+artifact: technical_guidelines
+metadata_schema_version: "1.0"
+artifact_version: "1.0.0"
+project: contentflow_app
+created: "2026-04-26"
+updated: "2026-04-26"
+status: reviewed
+source_skill: sf-docs
+scope: technical
+owner: "Diane"
+confidence: medium
+risk_level: medium
+security_impact: none
+docs_impact: yes
+evidence: []
+depends_on: []
+supersedes: none
+linked_systems: []
+next_review: "2026-07-26"
+next_step: /sf-ready claude-instructions
+---
+
 # CLAUDE.md
 
 ## Project Overview

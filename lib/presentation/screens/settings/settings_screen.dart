@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
     final languagePreference = ref.watch(appLanguagePreferenceProvider);
     final themePreference = ref.watch(appThemePreferenceProvider);
     final userSettings = ref.watch(currentUserSettingsProvider);
-    final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
+    final feedbackAdminCapability = ref.watch(isFeedbackAdminProvider);
     final tour = ref.watch(inAppTourProvider);
     final isAuthenticated = authSession.isAuthenticated;
 
@@ -132,20 +132,68 @@ class SettingsScreen extends ConsumerWidget {
                 iconColor: AppTheme.colorForContentType('Article'),
                 onTap: () => context.push('/feedback'),
               ),
-              if (isFeedbackAdmin)
-                SettingsRow(
-                  icon: Icons.admin_panel_settings_outlined,
-                  title: 'Feedback Admin',
-                  subtitle: 'Review incoming user feedback',
-                  iconColor: AppTheme.approveColor,
-                  onTap: () => context.push('/feedback-admin'),
-                ),
+              _FeedbackAdminAccessRow(
+                capability: feedbackAdminCapability,
+                onRetry: () => ref.invalidate(isFeedbackAdminProvider),
+              ),
               const _AboutRow(),
             ],
           ),
 
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+}
+
+class _FeedbackAdminAccessRow extends StatelessWidget {
+  const _FeedbackAdminAccessRow({
+    required this.capability,
+    required this.onRetry,
+  });
+
+  final AsyncValue<bool> capability;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return capability.when(
+      data: (canAccess) {
+        if (canAccess) {
+          return SettingsRow(
+            icon: Icons.admin_panel_settings_outlined,
+            title: 'Feedback Admin',
+            subtitle: 'Review incoming user feedback',
+            iconColor: AppTheme.approveColor,
+            onTap: () => context.push('/feedback-admin'),
+          );
+        }
+        return SettingsRow(
+          icon: Icons.admin_panel_settings_outlined,
+          title: 'Feedback Admin',
+          subtitle: 'Requires an allowlisted signed-in account',
+          iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+      },
+      loading: () => SettingsRow(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'Feedback Admin',
+        subtitle: 'Checking access...',
+        iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        trailing: const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (_, _) => SettingsRow(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'Feedback Admin',
+        subtitle: 'Could not verify access. Tap to retry.',
+        iconColor: AppTheme.warningColor,
+        trailing: const Icon(Icons.refresh_rounded),
+        onTap: onRetry,
       ),
     );
   }
@@ -171,24 +219,22 @@ class _AccountGroup extends ConsumerWidget {
     final statusLabel = isSignedIn
         ? context.tr('Connected')
         : isDemo
-            ? context.tr('Demo mode')
-            : context.tr('Signed out');
+        ? context.tr('Demo mode')
+        : context.tr('Signed out');
     final statusColor = isSignedIn
         ? AppTheme.approveColor
         : isDemo
-            ? AppTheme.warningColor
-            : theme.colorScheme.onSurfaceVariant;
+        ? AppTheme.warningColor
+        : theme.colorScheme.onSurfaceVariant;
     final subtitle = isSignedIn
         ? (hasEmail
-            ? context.tr('Connected as {email}', {'email': email})
-            : context.tr('Connected with an active Clerk session'))
+              ? context.tr('Connected as {email}', {'email': email})
+              : context.tr('Connected with an active Clerk session'))
         : isDemo
-            ? context.tr(
-                'You are using the demo workspace without a real account.',
-              )
-            : context.tr(
-                'Sign in to sync projects, GitHub connections, and settings.',
-              );
+        ? context.tr('You are using the demo workspace without a real account.')
+        : context.tr(
+            'Sign in to sync projects, GitHub connections, and settings.',
+          );
 
     return SettingsGroup(
       title: 'Account',
@@ -210,8 +256,8 @@ class _AccountGroup extends ConsumerWidget {
                       isSignedIn
                           ? Icons.check_circle_outline
                           : isDemo
-                              ? Icons.science_outlined
-                              : Icons.lock_outline,
+                          ? Icons.science_outlined
+                          : Icons.lock_outline,
                       color: statusColor,
                       size: 20,
                     ),
@@ -286,7 +332,8 @@ class _IntegrationsLinkGroup extends ConsumerWidget {
     final openRouter = ref.watch(openRouterCredentialStatusProvider);
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
 
-    final backendOk = backendStatus.valueOrNull?['status'] == 'ok' ||
+    final backendOk =
+        backendStatus.valueOrNull?['status'] == 'ok' ||
         backendStatus.valueOrNull?['status'] == 'healthy';
     final githubOk = githubIntegration.valueOrNull?.connected ?? false;
     final openRouterOk = openRouter.valueOrNull?.configured ?? false;
@@ -316,10 +363,9 @@ class _IntegrationsLinkGroup extends ConsumerWidget {
               const SizedBox(width: 6),
               Icon(
                 Icons.chevron_right,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurfaceVariant
-                    .withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ],
           ),
@@ -406,9 +452,7 @@ class _IdeaPoolBlock extends ConsumerWidget {
               ),
               subtitle: Text(
                 enabled
-                    ? context.tr(
-                        'Content generation waits for your review',
-                      )
+                    ? context.tr('Content generation waits for your review')
                     : context.tr('Content is generated automatically'),
                 style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -486,9 +530,7 @@ class _FrequencyBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final unavailableMessage = isAuthenticated
-        ? context.tr(
-            'Content frequency settings are temporarily unavailable',
-          )
+        ? context.tr('Content frequency settings are temporarily unavailable')
         : context.tr('Sign in to configure content frequency');
 
     return userSettings.when(
@@ -776,10 +818,7 @@ class _AppearanceRow extends ConsumerWidget {
                       value: appThemeLight,
                       child: Text('light'),
                     ),
-                    DropdownMenuItem(
-                      value: appThemeDark,
-                      child: Text('dark'),
-                    ),
+                    DropdownMenuItem(value: appThemeDark, child: Text('dark')),
                   ],
                   onChanged: (value) {
                     if (value == null) return;
@@ -901,11 +940,13 @@ class _NotificationsRow extends ConsumerWidget {
             onChanged: settings == null
                 ? null
                 : (v) => ref
-                    .read(currentUserSettingsProvider.notifier)
-                    .toggleNotifications(v),
+                      .read(currentUserSettingsProvider.notifier)
+                      .toggleNotifications(v),
             activeTrackColor: AppTheme.approveColor,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
         );
       },

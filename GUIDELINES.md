@@ -1,23 +1,28 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-25"
-status: draft
+updated: "2026-04-26"
+status: reviewed
 source_skill: sf-docs
 scope: guidelines
-owner: unknown
+owner: "Diane"
 confidence: low
 risk_level: medium
-security_impact: unknown
+security_impact: none
 docs_impact: yes
 linked_systems: []
-depends_on: []
+evidence:
+  - CLAUDE.md
+  - BUSINESS.md
+  - BRANDING.md
+depends_on:
+  - BUSINESS.md@0.1.0
+  - BRANDING.md@0.1.0
 supersedes: []
-evidence: []
-next_review: "unknown"
+next_review: "2026-07-26"
 next_step: /sf-docs audit GUIDELINES.md
 ---
 # Development Guidelines

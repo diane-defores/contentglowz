@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../core/app_language.dart';
-import '../../core/app_config.dart';
 import '../models/auth_session.dart';
 import '../models/feedback_entry.dart';
 import 'api_service.dart';
@@ -44,14 +43,6 @@ class FeedbackService {
 
   Future<List<LocalFeedbackSubmission>> loadRecentSubmissions() async {
     return _localStore().loadRecentSubmissions();
-  }
-
-  bool get isFeedbackAdmin {
-    final email = _authSession().email?.trim().toLowerCase();
-    if (email == null || email.isEmpty) {
-      return false;
-    }
-    return AppConfig.feedbackAdminEmails.contains(email);
   }
 
   Future<FeedbackEntry> submitText(String message) async {
@@ -125,6 +116,10 @@ class FeedbackService {
       status: query.statusParam,
       type: query.typeParam,
     );
+  }
+
+  Future<bool> fetchAdminCapability() async {
+    return _api().fetchFeedbackAdminCapability();
   }
 
   Future<void> markReviewed(String feedbackId) async {

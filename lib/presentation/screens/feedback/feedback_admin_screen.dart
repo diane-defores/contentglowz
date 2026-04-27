@@ -50,118 +50,150 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
       );
     }
 
-    final isFeedbackAdmin = ref.watch(isFeedbackAdminProvider);
-    if (!isFeedbackAdmin) {
-      return Scaffold(
+    final capabilityAsync = ref.watch(isFeedbackAdminProvider);
+    return capabilityAsync.when(
+      loading: () => Scaffold(
         appBar: AppBar(title: Text(context.tr('Feedback Admin'))),
         body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              context.tr(
-                'Access denied. This view is visible only to allowlisted accounts.',
-              ),
-              textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 12),
+              Text(context.tr('Checking access...')),
+            ],
+          ),
+        ),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        appBar: AppBar(title: Text(context.tr('Feedback Admin'))),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: AppErrorView(
+              scope: 'feedback_admin.capability',
+              title: 'Could not verify access',
+              error: error,
+              stackTrace: stackTrace,
+              onRetry: () => ref.invalidate(isFeedbackAdminProvider),
             ),
           ),
         ),
-      );
-    }
-
-    final entriesAsync = ref.watch(feedbackAdminEntriesProvider(_query));
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.tr('Feedback Admin')),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.invalidate(feedbackAdminEntriesProvider(_query));
-            },
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text(
-            context.tr(
-              'User feedback received by the backend. Real access control still lives server-side.',
-            ),
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(height: 1.5),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final filter in FeedbackAdminStatusFilter.values)
-                ChoiceChip(
-                  label: Text(context.tr(_statusLabel(filter))),
-                  selected: _statusFilter == filter,
-                  onSelected: (_) => setState(() => _statusFilter = filter),
+      data: (canAccess) {
+        if (!canAccess) {
+          return Scaffold(
+            appBar: AppBar(title: Text(context.tr('Feedback Admin'))),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  context.tr(
+                    'Access denied. This view is visible only to allowlisted accounts.',
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final filter in FeedbackAdminTypeFilter.values)
-                ChoiceChip(
-                  label: Text(context.tr(_typeLabel(filter))),
-                  selected: _typeFilter == filter,
-                  onSelected: (_) => setState(() => _typeFilter = filter),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          entriesAsync.when(
-            data: (entries) {
-              if (entries.isEmpty) {
-                return Text(context.tr('No feedback for this filter.'));
-              }
-              return Column(
-                children: [
-                  for (final entry in entries)
-                    _FeedbackEntryCard(
-                      entry: entry,
-                      isPlaying: _playingEntryId == entry.id,
-                      onTogglePlayback: entry.audioUrl == null
-                          ? null
-                          : () => _togglePlayback(entry),
-                      onMarkReviewed:
-                          entry.status == FeedbackEntryStatus.reviewed
-                          ? null
-                          : () => _markReviewed(entry.id),
-                    ),
-                ],
-              );
-            },
-            loading: () => const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (error, stackTrace) => Padding(
-              padding: const EdgeInsets.all(16),
-              child: AppErrorView(
-                scope: 'feedback_admin.load',
-                title: context.tr('Could not load feedback'),
-                error: error,
-                stackTrace: stackTrace,
-                compact: true,
-                showIcon: false,
-                onRetry: () =>
-                    ref.invalidate(feedbackAdminEntriesProvider(_query)),
               ),
             ),
+          );
+        }
+
+        final entriesAsync = ref.watch(feedbackAdminEntriesProvider(_query));
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(context.tr('Feedback Admin')),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  ref.invalidate(isFeedbackAdminProvider);
+                  ref.invalidate(feedbackAdminEntriesProvider(_query));
+                },
+                icon: const Icon(Icons.refresh_rounded),
+              ),
+            ],
           ),
-        ],
-      ),
+          body: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(
+                context.tr(
+                  'User feedback received by the backend. Real access control still lives server-side.',
+                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final filter in FeedbackAdminStatusFilter.values)
+                    ChoiceChip(
+                      label: Text(context.tr(_statusLabel(filter))),
+                      selected: _statusFilter == filter,
+                      onSelected: (_) => setState(() => _statusFilter = filter),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final filter in FeedbackAdminTypeFilter.values)
+                    ChoiceChip(
+                      label: Text(context.tr(_typeLabel(filter))),
+                      selected: _typeFilter == filter,
+                      onSelected: (_) => setState(() => _typeFilter = filter),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              entriesAsync.when(
+                data: (entries) {
+                  if (entries.isEmpty) {
+                    return Text(context.tr('No feedback for this filter.'));
+                  }
+                  return Column(
+                    children: [
+                      for (final entry in entries)
+                        _FeedbackEntryCard(
+                          entry: entry,
+                          isPlaying: _playingEntryId == entry.id,
+                          onTogglePlayback: entry.audioUrl == null
+                              ? null
+                              : () => _togglePlayback(entry),
+                          onMarkReviewed:
+                              entry.status == FeedbackEntryStatus.reviewed
+                              ? null
+                              : () => _markReviewed(entry.id),
+                        ),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stackTrace) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: AppErrorView(
+                    scope: 'feedback_admin.load',
+                    title: context.tr('Could not load feedback'),
+                    error: error,
+                    stackTrace: stackTrace,
+                    compact: true,
+                    showIcon: false,
+                    onRetry: () =>
+                        ref.invalidate(feedbackAdminEntriesProvider(_query)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -196,10 +228,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
     } catch (error, stackTrace) {
       if (!mounted) return;
       _showSnack(
-        l10n.tr(
-          'Failed to update: {error}',
-          params: {'error': error},
-        ),
+        l10n.tr('Failed to update: {error}', params: {'error': error}),
         error: error,
         stackTrace: stackTrace,
         scope: 'feedback_admin.mark_reviewed',

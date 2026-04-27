@@ -1019,7 +1019,8 @@ class ApiService {
             : settings.defaultProjectId;
         await _syncBootstrapCache(
           updateDefaultProject: true,
-          syncProjectDefaults: requestedSelectionMode != projectSelectionModeNone,
+          syncProjectDefaults:
+              requestedSelectionMode != projectSelectionModeNone,
           defaultProjectId: bootstrapDefaultProjectId,
         );
       }
@@ -1039,7 +1040,8 @@ class ApiService {
             : resolvedUpdates['defaultProjectId']?.toString();
         await _syncBootstrapCache(
           updateDefaultProject: true,
-          syncProjectDefaults: requestedSelectionMode != projectSelectionModeNone,
+          syncProjectDefaults:
+              requestedSelectionMode != projectSelectionModeNone,
           defaultProjectId: bootstrapDefaultProjectId,
         );
       }
@@ -2604,16 +2606,71 @@ class ApiService {
     }
   }
 
+  Future<bool> fetchFeedbackAdminCapability() async {
+    if (allowDemoData) {
+      return false;
+    }
+
+    try {
+      final response = await _dio.get('/api/feedback/admin/capability');
+      final payload = response.data;
+      if (payload is bool) {
+        return payload;
+      }
+
+      final json = _asMap(payload);
+      final canAccess = _asBool(
+        json['canAccess'] ??
+            json['can_access'] ??
+            json['allowed'] ??
+            json['isAdmin'] ??
+            json['is_admin'] ??
+            json['enabled'],
+      );
+      if (canAccess == null) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid feedback admin capability response from FastAPI.',
+        );
+      }
+      return canAccess;
+    } on DioException catch (error) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode == 401 || statusCode == 403) {
+        return false;
+      }
+      throw _mapDioException(error);
+    }
+  }
+
   Future<List<FeedbackEntry>> listAdminFeedback({
     String? status,
     String? type,
   }) async {
     final query = _compactMap({'status': status, 'type': type});
-    final data = await _getCachedData(
-      '/api/feedback/admin',
-      cacheKey: _cacheKeyFor(_feedbackAdminCacheKey, query),
-      queryParameters: query,
-    );
+    final cacheKey = _cacheKeyFor(_feedbackAdminCacheKey, query);
+    dynamic data;
+    try {
+      final response = await _dio.get(
+        '/api/feedback/admin',
+        queryParameters: query,
+      );
+      data = response.data;
+      await _writeCachedData(cacheKey, data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      final statusCode = error.response?.statusCode;
+      if (mapped.isUnauthorized || statusCode == 403) {
+        throw mapped;
+      }
+      final cached = await cacheStore?.read(offlineScope, cacheKey);
+      if (cached == null) {
+        throw mapped;
+      }
+      await onCacheKeyStale?.call(cacheKey);
+      data = cached.data;
+    }
+
     final items = data is List
         ? data
         : (_asMap(data)['items'] ?? _asMap(data)['entries'] ?? []);
@@ -3198,6 +3255,25 @@ class ApiService {
     Map<String, dynamic> fallback = const {},
   }) {
     return data is Map<String, dynamic> ? data : fallback;
+  }
+
+  bool? _asBool(Object? value) {
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+    return null;
   }
 
   Map<String, dynamic> _normalizePersonaJson(dynamic data) {

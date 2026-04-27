@@ -1,17 +1,17 @@
 ---
 artifact: business_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-25"
-status: draft
+updated: "2026-04-26"
+status: reviewed
 source_skill: sf-docs
 scope: business
-owner: unknown
+owner: "Diane"
 confidence: low
 risk_level: medium
-security_impact: unknown
+security_impact: none
 docs_impact: yes
 target_audience: unknown
 value_proposition: unknown
@@ -19,8 +19,10 @@ business_model: unknown
 market: unknown
 depends_on: []
 supersedes: []
-evidence: []
-next_review: "unknown"
+evidence:
+  - CLAUDE.md
+  - README.md
+next_review: "2026-07-26"
 next_step: /sf-docs audit BUSINESS.md
 ---
 # Business Context
@@ -28,6 +30,8 @@ next_step: /sf-docs audit BUSINESS.md
 ## Purpose
 
 ContentFlow is a user-facing Flutter application for creators, independent operators, and small content teams who need to move ideas into published content faster without owning a complex operations stack.
+
+For the ContentFlow ecosystem, this repository should be treated as the canonical product contract. The supporting site and lab repositories should align to the user-facing promise described here rather than define a competing product narrative.
 
 The app coordinates planning, ideation, drafting, review, and schedule management across content surfaces while integrating with a backend powered by FastAPI services.
 

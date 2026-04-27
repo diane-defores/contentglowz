@@ -267,3 +267,12 @@
 > **Priority last updated**: 2026-04-20
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
 > **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing, finir la passe i18n secondaire et finaliser les crédits DataForSEO
+
+### Audit: Code (2026-04-27)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Remove `FEEDBACK_ADMIN_EMAILS` from Flutter web build defines to avoid exposing admin allowlist identities in client bundles | ✅ done |
+| ✅ | Switch feedback-admin entry visibility to authenticated-session discovery while keeping backend `403` as the real authorization gate | ✅ done |
+| ✅ | Add backend capability probe-driven feedback-admin visibility (`/api/feedback/admin/capability`) to avoid optimistic UI exposure for non-admin users | ✅ done |
+| 🟡 | Add CI checks for `flutter analyze` plus targeted auth/offline regression tests | 📋 todo |

@@ -400,13 +400,16 @@ final Provider<FeedbackService> feedbackServiceProvider =
       );
     });
 
-final isFeedbackAdminProvider = Provider<bool>((ref) {
+final isFeedbackAdminProvider = FutureProvider<bool>((ref) async {
   final session = ref.watch(authSessionProvider);
-  final email = session.email?.trim().toLowerCase();
-  if (email == null || email.isEmpty) {
+  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  if (!session.isAuthenticated || session.isDemo) {
     return false;
   }
-  return AppConfig.feedbackAdminEmails.contains(email);
+  if (accessState?.canUseWorkspaceData != true) {
+    return false;
+  }
+  return ref.read(feedbackServiceProvider).fetchAdminCapability();
 });
 
 final Provider<String> feedbackDraftProvider = Provider<String>((ref) {
@@ -2034,7 +2037,9 @@ class ActiveProjectController extends AsyncNotifier<void> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       if (projectId == null) {
-        await ref.read(currentUserSettingsProvider.notifier).setNoProjectSelected();
+        await ref
+            .read(currentUserSettingsProvider.notifier)
+            .setNoProjectSelected();
       } else {
         await ref
             .read(currentUserSettingsProvider.notifier)
