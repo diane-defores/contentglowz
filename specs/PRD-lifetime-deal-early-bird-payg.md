@@ -4,16 +4,16 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-25"
+updated: "2026-04-27"
 status: draft
 source_skill: sf-docs
 scope: feature
-owner: unknown
+owner: "Diane"
 confidence: low
 risk_level: medium
 security_impact: unknown
 docs_impact: yes
-user_story: "unknown (legacy spec migrated to ShipFlow metadata)"
+user_story: "En tant que fondatrice, je veux cadrer une offre Lifetime Deal BYOK economiquement soutenable pour lancer l'acquisition sans promesse de cout IA impossible a tenir."
 linked_systems: []
 depends_on: []
 supersedes: []
@@ -27,6 +27,12 @@ Date: 2026-04-23
 Status: draft de travail
 
 Owner: Founder / Product
+
+## Questions ouvertes (bloquantes)
+
+- Quel prix exact est retenu pour le lancement (et la devise de reference) ?
+- Le deal couvre-t-il 1 utilisateur, 1 workspace, ou une petite equipe ?
+- Quelle politique de remboursement est retenue pour la phase early ?
 
 ## Intention
 

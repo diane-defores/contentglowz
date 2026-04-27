@@ -1,19 +1,19 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-25"
-status: draft
+updated: "2026-04-27"
+status: ready
 source_skill: sf-docs
 scope: feature
-owner: unknown
-confidence: low
+owner: "Diane"
+confidence: medium
 risk_level: medium
-security_impact: unknown
+security_impact: yes
 docs_impact: yes
-user_story: "unknown (legacy spec migrated to ShipFlow metadata)"
+user_story: "En tant qu'admin ContentFlow, je veux un ecran in-app pour lister, filtrer et traiter les feedbacks utilisateurs textes et audio."
 linked_systems: []
 depends_on: []
 supersedes: []

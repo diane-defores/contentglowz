@@ -69,6 +69,7 @@
 | ✅ | Remplacer l'auth web Flutter beta / handoff par ClerkJS officiel sur le domaine app (`/sign-in`, `/sso-callback`, Google direct) | ✅ done |
 | ✅ | Corriger le callback OAuth Clerk web pour finaliser la session sur `/sso-callback` avant le retour vers `/#/entry` | ✅ done |
 | ✅ | Corriger le flux Clerk email sign-up sur `/sign-up` au lieu du fallback Flutter `/sign-up#/entry` | ✅ done |
+| 🔴 | Corriger le double envoi d'email OTP Clerk pendant la création de compte email, probablement déclenché par une actualisation/re-mount impromptu de la page sign-up | 📋 todo |
 | ✅ | Bloquer la création workspace/onboarding tant qu'aucune session Clerk authentifiée n'est présente | ✅ done |
 | ✅ | Introduire un `AppAccessState` central pour séparer session Clerk, health FastAPI et bootstrap workspace | ✅ done |
 | ✅ | Ajouter un mode dégradé avec shell limité, diagnostics enrichis et warning global quand FastAPI tombe | ✅ done |

@@ -1,16 +1,16 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
-draft: true
+artifact_version: "1.0.0"
+draft: false
 project: contentflow_app
 created: "2026-04-26"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: technical
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: yes
 docs_impact: yes

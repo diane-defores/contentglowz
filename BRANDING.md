@@ -1,25 +1,25 @@
 ---
 artifact: brand_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-26"
-status: draft
+updated: "2026-04-27"
+status: reviewed
 source_skill: sf-docs
 scope: brand
 owner: "Diane"
-confidence: low
+confidence: medium
 risk_level: medium
 security_impact: none
 docs_impact: yes
-brand_voice: unknown
-trust_posture: unknown
+brand_voice: clear, practical, direct
+trust_posture: transparency over hype
 evidence:
   - BUSINESS.md
   - README.md
 depends_on:
-  - BUSINESS.md@0.1.0
+  - BUSINESS.md@1.0.0
 supersedes: []
 next_review: "2026-07-26"
 next_step: /sf-docs audit BRANDING.md
