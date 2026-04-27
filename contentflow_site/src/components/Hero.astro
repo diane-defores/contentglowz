@@ -1,0 +1,194 @@
+---
+import { appEntryUrl, appSignInUrl } from '../config/site';
+---
+
+<section id="main-content" class="hero">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        AI creates your <span class="gradient-text rotating-words" aria-label="articles, newsletters, social posts, video scripts">
+          <span class="word active" aria-hidden="true">articles</span>
+          <span class="word" aria-hidden="true">newsletters</span>
+          <span class="word" aria-hidden="true">social posts</span>
+          <span class="word" aria-hidden="true">video scripts</span>
+        </span>.<br/>You swipe to publish.
+      </h1>
+      <p class="hero-subtitle">
+        ContentFlow is a complete AI content pipeline. Your creator voice feeds AI agents
+        that generate multi-format content. Review in a Tinder-like feed. Swipe right to publish,
+        left to skip. If the backend is briefly unavailable, your app stays usable: reads use
+        cached data and supported writes are queued locally for replay.
+      </p>
+      <div class="hero-cta">
+        <a href={appSignInUrl} class="btn-primary">Continue with Google</a>
+        <a href={appEntryUrl} class="btn-secondary">Open App</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">5 min</span>
+          <span class="stat-label">daily input</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">6x</span>
+          <span class="stat-label">more content</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">0</span>
+          <span class="stat-label">platforms to manage</span>
+        </div>
+      </div>
+      <p class="hero-trust">Built by a solo founder. Bootstrapped. No VC, no fluff.</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: 10rem 0 6rem;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    z-index: -1;
+  }
+
+  .hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 1.2rem + 4.17vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+    position: relative;
+    height: 1.2em;
+  }
+
+  .rotating-words {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .word {
+    position: absolute;
+    opacity: 0;
+    animation: rotateWord 12s linear infinite;
+  }
+
+  .word:nth-child(1) { animation-delay: 0s; }
+  .word:nth-child(2) { animation-delay: 3s; }
+  .word:nth-child(3) { animation-delay: 6s; }
+  .word:nth-child(4) { animation-delay: 9s; }
+
+  @keyframes rotateWord {
+    0% { opacity: 0; transform: translateY(20px); }
+    2% { opacity: 1; transform: translateY(0); }
+    23% { opacity: 1; transform: translateY(0); }
+    25% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 0; }
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--color-gray);
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    background: white;
+    padding: 1.5rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--color-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--color-light-gray);
+  }
+
+  .hero-trust {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--color-gray);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding: 8rem 0 4rem;
+    }
+
+    .hero-cta {
+      flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+    }
+
+    .hero-stats {
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+    }
+  }
+</style>

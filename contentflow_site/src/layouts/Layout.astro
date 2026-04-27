@@ -1,0 +1,251 @@
+---
+import { siteUrl } from '../config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  canonicalUrl?: string;
+  publishDate?: Date;
+  author?: string;
+  tags?: string[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = "AI content pipeline — generate, review, and publish multi-format content",
+  ogImage = '/og-default.jpg',
+  ogType = 'website',
+  canonicalUrl,
+  publishDate,
+  author = 'ContentFlow Team',
+  tags = [],
+  noindex = false,
+} = Astro.props;
+
+const resolvedSiteUrl = Astro.site?.toString().replace(/\/$/, '') ?? siteUrl;
+const canonical = canonicalUrl ?? `${resolvedSiteUrl}${Astro.url.pathname}`;
+const ogImageAbsolute = ogImage.startsWith('http') ? ogImage : `${resolvedSiteUrl}${ogImage}`;
+
+const articleSchema = ogType === 'article' ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": title,
+  "description": description,
+  "image": ogImageAbsolute,
+  "author": { "@type": "Person", "name": author },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ContentFlow",
+    "url": resolvedSiteUrl,
+  },
+  "datePublished": publishDate?.toISOString(),
+  "keywords": tags.join(', '),
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+} : null;
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ContentFlow",
+  "url": resolvedSiteUrl,
+  "description": "AI content pipeline — generate, review, and publish multi-format content",
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ContentFlow",
+  "url": resolvedSiteUrl,
+};
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageAbsolute} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="ContentFlow" />
+    {publishDate && <meta property="article:published_time" content={publishDate.toISOString()} />}
+    {tags.map(tag => <meta property="article:tag" content={tag} />)}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbsolute} />
+
+    <!-- Schema.org -->
+    <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+    {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+
+    <!-- Favicon & theme -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- ContentFlow Analytics (cookie-free, production only) -->
+    {import.meta.env.PROD && (
+      <script defer src="https://api.contentflow.com/a/s.js"></script>
+    )}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --color-primary: #3b82f6;
+    --color-primary-dark: #2563eb;
+    --color-secondary: #8b5cf6;
+    --color-accent: #06b6d4;
+    --color-dark: #0f172a;
+    --color-gray: #64748b;
+    --color-light-gray: #f1f5f9;
+    --color-light-blue: #dbeafe;
+    --color-code-text: #e2e8f0;
+    --color-badge-bg: #fef3c7;
+    --color-badge-text: #92400e;
+    --color-white: #ffffff;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-main);
+    color: var(--color-dark);
+    line-height: 1.6;
+    background-color: var(--color-white);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* Section header */
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-header h2 {
+    font-size: clamp(2rem, 1.2rem + 3.33vw, 3rem);
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .section-header p {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+  }
+
+  /* Button system */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: var(--color-white);
+    color: var(--color-primary);
+    padding: 1rem 2.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: 2px solid var(--color-primary);
+    transition: background 0.2s, color 0.2s;
+    display: inline-block;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  /* Focus styles — WCAG 2.4.11 Focus Appearance */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+  }
+</style>

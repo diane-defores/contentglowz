@@ -1,0 +1,68 @@
+---
+import { appSignInUrl } from '../config/site';
+---
+
+<section class="closing-cta">
+  <div class="container">
+    <h2>Ready to publish 6x more content?</h2>
+    <p>Join solo founders who stopped writing and started shipping. Free plan, no credit card.</p>
+    <div class="closing-cta-buttons">
+      <a href={appSignInUrl} class="btn-primary">Start Free</a>
+      <a href="/blog" class="btn-secondary">Read the Blog</a>
+    </div>
+    <p class="closing-note">
+      Built for real-world conditions: offline fallback, local queue sync, and automatic retry after outages.
+    </p>
+  </div>
+</section>
+
+<style>
+  .closing-cta {
+    padding: 5rem 0;
+    text-align: center;
+    background: white;
+  }
+
+  .container {
+    max-width: 700px;
+  }
+
+  .closing-cta h2 {
+    font-size: clamp(1.8rem, 1.1rem + 2.92vw, 2.5rem);
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .closing-cta p {
+    font-size: 1.15rem;
+    color: var(--color-gray);
+    margin-bottom: 2rem;
+    line-height: 1.7;
+  }
+
+  .closing-cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .closing-note {
+    margin-top: 1rem;
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+
+  @media (max-width: 768px) {
+    .closing-cta-buttons {
+      flex-direction: column;
+    }
+
+    .btn-primary, .btn-secondary {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

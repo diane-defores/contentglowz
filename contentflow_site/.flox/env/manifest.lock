@@ -1,0 +1,138 @@
+{
+  "lockfile-version": 1,
+  "manifest": {
+    "version": 1,
+    "install": {
+      "python312": {
+        "pkg-path": "python312"
+      }
+    },
+    "hook": {
+      "on-activate": "  # Create venv if it doesn't exist\n  if [ ! -d \"$FLOX_ENV_PROJECT/venv\" ]; then\n    echo \"🐍 Creating Python venv...\"\n    python -m venv \"$FLOX_ENV_PROJECT/venv\"\n  fi\n"
+    },
+    "profile": {
+      "common": "  # Activate the Python venv\n  source \"$FLOX_ENV_PROJECT/venv/bin/activate\"\n\n  # Install/update requirements if needed\n  if [ -f \"$FLOX_ENV_PROJECT/requirements.txt\" ]; then\n    pip install -r \"$FLOX_ENV_PROJECT/requirements.txt\" -q 2>/dev/null\n  fi\n\n  echo \"🐍 Python venv activated: $(python --version)\"\n"
+    },
+    "options": {}
+  },
+  "packages": [
+    {
+      "attr_path": "python312",
+      "broken": false,
+      "derivation": "/nix/store/966md1v0pdipqfkadjv92jcl0vbjvnrb-python3-3.12.11.drv",
+      "description": "High-level dynamically-typed programming language",
+      "install_id": "python312",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "name": "python3-3.12.11",
+      "pname": "python312",
+      "rev": "b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "rev_count": 858212,
+      "rev_date": "2025-09-08T16:06:28Z",
+      "scrape_date": "2025-09-10T02:03:06.183869Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "python3-3.12.11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/msrmjs47wva2hk6bvqzh4b40rd5n0sqx-python3-3.12.11"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python312",
+      "broken": false,
+      "derivation": "/nix/store/d2fv45wa7bh3qfbc8bqhrbmh7l3qs098-python3-3.12.11.drv",
+      "description": "High-level dynamically-typed programming language",
+      "install_id": "python312",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "name": "python3-3.12.11",
+      "pname": "python312",
+      "rev": "b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "rev_count": 858212,
+      "rev_date": "2025-09-08T16:06:28Z",
+      "scrape_date": "2025-09-10T02:34:13.941761Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "python3-3.12.11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/p4m00kdb42yvby08ch987ql95kpqig3c-python3-3.12.11-debug",
+        "out": "/nix/store/hz4bs0j928y9f2fpdgy86ms050sn43k7-python3-3.12.11"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python312",
+      "broken": false,
+      "derivation": "/nix/store/i6wl3zy7zsagy668xhgpawcg7gqy8axl-python3-3.12.11.drv",
+      "description": "High-level dynamically-typed programming language",
+      "install_id": "python312",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "name": "python3-3.12.11",
+      "pname": "python312",
+      "rev": "b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "rev_count": 858212,
+      "rev_date": "2025-09-08T16:06:28Z",
+      "scrape_date": "2025-09-10T03:01:43.603710Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "python3-3.12.11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/xb3siyaqnb0icxdjrh6frh9r8xa0wr7g-python3-3.12.11"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python312",
+      "broken": false,
+      "derivation": "/nix/store/miahxibg7w7vha8l3nhzrxirm6awgzih-python3-3.12.11.drv",
+      "description": "High-level dynamically-typed programming language",
+      "install_id": "python312",
+      "license": "Python-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "name": "python3-3.12.11",
+      "pname": "python312",
+      "rev": "b599843bad24621dcaa5ab60dac98f9b0eb1cabe",
+      "rev_count": 858212,
+      "rev_date": "2025-09-08T16:06:28Z",
+      "scrape_date": "2025-09-10T03:34:47.037369Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "python3-3.12.11",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "debug": "/nix/store/1wha6vczhs0rx3b1k6imgdwsa6q4yzqm-python3-3.12.11-debug",
+        "out": "/nix/store/18l19gnl8dq75v6knghbcgkrikmpc0yv-python3-3.12.11"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+  title="Privacy Policy | ContentFlow"
+  description="How ContentFlow uses your data and how to manage your analytics preferences."
+>
+  <Navbar />
+  <main id="main-content" class="privacy-main">
+    <h1>Privacy Policy</h1>
+    <p class="last-updated">Last updated: March 2026</p>
+
+    <div class="privacy-content">
+      <section>
+        <h2>Data Collected</h2>
+        <p>
+          ContentFlow uses its own lightweight, cookie-free analytics to understand how your sites are used: pages visited, referral source, UTM campaign parameters, and device type. No personally identifiable information is collected — no IP addresses are stored, no browser fingerprinting is used, and no third-party tracking scripts are loaded.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cookie-Free by Design</h2>
+        <p>
+          Our analytics system does not use cookies, localStorage, or any client-side storage mechanism. Each pageview is an independent, anonymous event. This means no consent banner is required — our approach is fully compliant with GDPR, CCPA, ePrivacy, and PECR out of the box.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Hosting</h2>
+        <p>
+          All analytics data is processed and stored exclusively in the European Union. We do not share data with any third party, advertising network, or data broker. You can export your data at any time from the dashboard.
+        </p>
+      </section>
+
+      <section>
+        <h2>What We Track</h2>
+        <ul>
+          <li>Page URL and path (which pages are visited)</li>
+          <li>Referrer (where visitors come from)</li>
+          <li>UTM parameters (campaign tracking)</li>
+          <li>Device type, browser, and OS (parsed server-side from the user-agent)</li>
+          <li>Country (derived from CDN headers, no IP stored)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>What We Don't Track</h2>
+        <ul>
+          <li>IP addresses (never stored)</li>
+          <li>Individual visitors (no session or visitor IDs)</li>
+          <li>Browser fingerprints</li>
+          <li>Scroll position, mouse movements, or clicks</li>
+          <li>Form inputs or personal data</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          For any data-related questions, contact us via the official channels on the site.
+        </p>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .privacy-main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 8rem 2rem 4rem;
+  }
+
+  .privacy-main h1 {
+    font-size: clamp(2rem, 1.2rem + 3.33vw, 2.5rem);
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--color-dark);
+  }
+
+  .last-updated {
+    color: var(--color-gray);
+    margin-bottom: 3rem;
+    font-size: 0.9rem;
+  }
+
+  .privacy-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .privacy-content h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .privacy-content p {
+    color: var(--color-gray);
+    line-height: 1.7;
+  }
+
+  .privacy-content ul {
+    color: var(--color-gray);
+    line-height: 2;
+    padding-left: 1.5rem;
+  }
+</style>

@@ -1,0 +1,99 @@
+---
+---
+
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>From Idea to Published. Automatically.</h2>
+      <p>A complete pipeline that turns your creator voice into multi-format content</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Your Voice, Not Generic AI</h3>
+        <p>A 5-minute weekly ritual teaches the AI how you think and write. Every piece of content sounds like you — not like a chatbot.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔀</div>
+        <h3>One Idea, Six Formats</h3>
+        <p>Write once, publish everywhere. One idea becomes a blog post, newsletter, Twitter thread, LinkedIn post, short video script, and reel.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Content That Ranks</h3>
+        <p>Real keyword data and competitor analysis drive every article. Your content targets keywords people actually search for — not guesswork.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h3>Publish Everywhere at Once</h3>
+        <p>Connected to Twitter, LinkedIn, Instagram, TikTok, YouTube, Ghost, and WordPress. Approve once, it goes everywhere. No copy-pasting.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🛠️</div>
+        <h3>Reliable Even if the API Fails</h3>
+        <p>When network or API access drops, your workspace keeps functioning in degraded mode:
+          reads use the latest local cache and supported actions are queued for automatic sync
+          when the backend is reachable again.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Review From Your Phone</h3>
+        <p>The app works on Android, iOS, and web. Review and approve content on the train, in line for coffee, or between meetings. 5 minutes a day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features-section {
+    padding: 6rem 0;
+    background: white;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .feature-card {
+    background: var(--color-light-gray);
+    padding: 2rem;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:hover {
+    background: white;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+  }
+
+  .feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .feature-card p {
+    color: var(--color-gray);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
