@@ -1127,6 +1127,277 @@ class AppLocalizations {
     'Contient des fichiers markdown': 'Contient des fichiers markdown',
     'webhook': 'webhook',
     'yourhandle': 'votrecompte',
+    'A browser opened for authorization. Once you finish, return here and tap Refresh.':
+        'Une fenêtre de navigateur s’est ouverte pour l’autorisation. Une fois terminé, revenez ici puis appuyez sur Actualiser.',
+    'AI runtime mode updated to {mode}.':
+        'Le mode d’exécution IA a été mis à jour vers {mode}.',
+    'AI runtime, API keys, GitHub and publishing destinations live here.':
+        'Le runtime IA, les clés API, GitHub et les destinations de publication se gèrent ici.',
+    'Action needed': 'Action requise',
+    'Actualiser': 'Actualiser',
+    'Add an optional source URL (GitHub or public website). You can continue with just a project name.':
+        'Ajoutez une URL source optionnelle (GitHub ou site public). Vous pouvez continuer avec seulement un nom de projet.',
+    'Add at least one keyword before running research.':
+        'Ajoutez au moins un mot-clé avant de lancer la recherche.',
+    'Affected views: {views}': 'Vues impactées : {views}',
+    'All set': 'Tout est prêt',
+    'Angle generation failed: {error}':
+        'La génération d’angles a échoué : {error}',
+    'Annuler': 'Annuler',
+    'Apply': 'Appliquer',
+    'Après chaque exécution du drip, Drip peut notifier Google (Indexing API) pour accélérer la découverte des pages déjà publiées. C’est une notification de "mise à jour", pas une garantie d’indexation instantanée.':
+        'Après chaque exécution du drip, Drip peut notifier Google (Indexing API) pour accélérer la découverte des pages déjà publiées. C’est une notification de "mise à jour", pas une garantie d’indexation instantanée.',
+    'Aucun dépôt trouvé pour ce compte.': 'Aucun dépôt trouvé pour ce compte.',
+    'Aucune description': 'Aucune description',
+    'Auto (détection sémantique des cocons)':
+        'Auto (détection sémantique des cocons)',
+    'BYOK': 'BYOK',
+    'BYOK configured': 'BYOK configuré',
+    'BYOK missing': 'BYOK manquant',
+    'Cached data is currently being used.':
+        'Des données en cache sont actuellement utilisées.',
+    'Cannot open URL: invalid format.':
+        'Impossible d’ouvrir l’URL : format invalide.',
+    'Champ front matter utilisé pour appliquer/retirer le noindex tant que le contenu n’est pas réellement publié.':
+        'Champ front matter utilisé pour appliquer/retirer le noindex tant que le contenu n’est pas réellement publié.',
+    'Champ lu quand le mode sécurisé est actif. Seuls les fichiers qui possèdent ce champ peuvent être modifiés par le drip.':
+        'Champ lu quand le mode sécurisé est actif. Seuls les fichiers qui possèdent ce champ peuvent être modifiés par le drip.',
+    'Checking GitHub integration...': 'Vérification de l’intégration GitHub...',
+    'Checking access...': 'Vérification de l’accès...',
+    'Choisir un dépôt GitHub': 'Choisir un dépôt GitHub',
+    'Choisissez un dépôt GitHub': 'Choisissez un dépôt GitHub',
+    'Choose GitHub repository': 'Choisir un dépôt GitHub',
+    'Choose a daily time window. Publishing will be random inside this window.':
+        'Choisissez une plage horaire quotidienne. La publication sera aléatoire dans cette plage.',
+    'Choose from connected GitHub repos':
+        'Choisir parmi les dépôts GitHub connectés',
+    'Choose from connected GitHub repos (optional)':
+        'Choisir parmi les dépôts GitHub connectés (optionnel)',
+    'Connect GitHub': 'Connecter GitHub',
+    'Connect your stack': 'Connectez votre stack',
+    'Connected as {email}': 'Connecté en tant que {email}',
+    'Connected as {username}': 'Connecté en tant que {username}',
+    'Connected with an active Clerk session':
+        'Connecté avec une session Clerk active',
+    'Connecter GitHub': 'Connecter GitHub',
+    'Connectez votre compte GitHub pour sélectionner un dépôt public ou privé.':
+        'Connectez votre compte GitHub pour sélectionner un dépôt public ou privé.',
+    'Connectez votre compte GitHub pour sélectionner un dépôt.':
+        'Connectez votre compte GitHub pour sélectionner un dépôt.',
+    'Connexion GitHub': 'Connexion GitHub',
+    'Content generation failed: {error}':
+        'Échec de génération de contenu : {error}',
+    'Content generation route unavailable on this backend. Update the backend and retry.':
+        'La route de génération de contenu est indisponible sur ce backend. Mettez le backend à jour puis réessayez.',
+    'Copy': 'Copier',
+    'Copy access diagnostics': 'Copier le diagnostic d’accès',
+    'Could not open browser for GitHub authorization':
+        'Impossible d’ouvrir le navigateur pour l’autorisation GitHub',
+    'Could not open link in browser.':
+        'Impossible d’ouvrir le lien dans le navigateur.',
+    'Could not switch project: {error}':
+        'Impossible de changer de projet : {error}',
+    'Current project has no repository URL. Set it first in project settings.':
+        'Le projet actuel n’a pas d’URL de dépôt. Définissez-la d’abord dans les paramètres du projet.',
+    'Date de publication future (recommandé)':
+        'Date de publication future (recommandé)',
+    'Degraded mode is active. The app stays available, cached data may be stale, and queued actions will replay when FastAPI recovers.':
+        'Le mode dégradé est actif. L’app reste disponible, les données en cache peuvent être obsolètes, et les actions en file seront rejouées quand FastAPI sera rétabli.',
+    'Delete OpenRouter key?': 'Supprimer la clé OpenRouter ?',
+    'Demo mode': 'Mode démo',
+    'Disconnect GitHub': 'Déconnecter GitHub',
+    'Disconnect GitHub?': 'Déconnecter GitHub ?',
+    'Drapeau draft': 'Drapeau draft',
+    'Déploiement': 'Déploiement',
+    'Enter an OpenRouter API key first.':
+        'Saisissez d’abord une clé API OpenRouter.',
+    'Failed to delete OpenRouter key: {error}':
+        'Impossible de supprimer la clé OpenRouter : {error}',
+    'Failed to disconnect GitHub.': 'Impossible de déconnecter GitHub.',
+    'Failed to prefill persona with AI: {error}':
+        'Impossible de préremplir le persona avec l’IA : {error}',
+    'Failed to save OpenRouter key: {error}':
+        'Impossible d’enregistrer la clé OpenRouter : {error}',
+    'Failed to update AI runtime mode.':
+        'Impossible de mettre à jour le mode d’exécution IA.',
+    'Failed to validate OpenRouter key: {error}':
+        'Impossible de valider la clé OpenRouter : {error}',
+    'Fermer': 'Fermer',
+    'Framework SSG': 'Framework SSG',
+    'From (HH:MM)': 'De (HH:MM)',
+    'Get a key': 'Obtenir une clé',
+    'GitHub Actions lance un workflow `daily-drip.yml` via `workflow_dispatch` (branche main par défaut). Requiert `GITHUB_TOKEN` côté backend/API pour l’authentification.':
+        'GitHub Actions lance un workflow `daily-drip.yml` via `workflow_dispatch` (branche main par défaut). Requiert `GITHUB_TOKEN` côté backend/API pour l’authentification.',
+    'GitHub OAuth is unavailable. Check backend configuration.':
+        'OAuth GitHub est indisponible. Vérifiez la configuration backend.',
+    'GitHub OAuth is unavailable: {error}':
+        'OAuth GitHub est indisponible : {error}',
+    'GitHub connection': 'Connexion GitHub',
+    'GitHub disconnected.': 'GitHub déconnecté.',
+    'Granted scopes: {scope}': 'Scopes accordés : {scope}',
+    'Hide key': 'Masquer la clé',
+    'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.':
+        'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
+    'Index-proof': 'Preuve d’indexation',
+    'Integrations': 'Intégrations',
+    'La logique backend soumet les URL via l’API d’indexation Google et vérifie ensuite l’état en mode inspection si disponible. La limite par défaut est de 200 URLs/jour, cohérente avec le comportement courant de l’API, et dépend du quota réel de votre projet Google.':
+        'La logique backend soumet les URL via l’API d’indexation Google et vérifie ensuite l’état en mode inspection si disponible. La limite par défaut est de 200 URLs/jour, cohérente avec le comportement courant de l’API, et dépend du quota réel de votre projet Google.',
+    'Le clustering est la logique de groupement thématique qui décide de l’ordre d’apparition des articles.':
+        'Le clustering est la logique de groupement thématique qui décide de l’ordre d’apparition des articles.',
+    'Le clustering par dossier exploite la structure du dépôt (`/blog`, `/blog/seo`, `/newsletter`).':
+        'Le clustering par dossier exploite la structure du dépôt (`/blog`, `/blog/seo`, `/newsletter`).',
+    'Le clustering par tags lit les métadonnées `front matter` et regroupe les contenus qui partagent des sujets similaires.':
+        'Le clustering par tags lit les métadonnées `front matter` et regroupe les contenus qui partagent des sujets similaires.',
+    'Le mode Auto reconstruit les cocons automatiquement à partir des similarités sémantiques du corpus.':
+        'Le mode Auto reconstruit les cocons automatiquement à partir des similarités sémantiques du corpus.',
+    'Le mode “Sans clustering” ne force aucun regroupement éditorial.':
+        'Le mode “Sans clustering” ne force aucun regroupement éditorial.',
+    'Le webhook notifie votre pipeline CI/CD à chaque exécution Drip.':
+        'Le webhook notifie votre pipeline CI/CD à chaque exécution Drip.',
+    'Le “pilier” est l’article central d’un thème ; les “satellites” sont les contenus qui l’approfondissent.':
+        'Le “pilier” est l’article central d’un thème ; les “satellites” sont les contenus qui l’approfondissent.',
+    'Les deux': 'Les deux',
+    'Loading AI runtime settings...':
+        'Chargement des paramètres du runtime IA...',
+    'Loading OpenRouter credential status...':
+        'Chargement de l’état des identifiants OpenRouter...',
+    'L’authentification GitHub est indisponible : {error}':
+        'L’authentification GitHub est indisponible : {error}',
+    'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.':
+        'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
+    'Manuel': 'Manuel',
+    'Met automatiquement un marqueur noindex dans le front matter tant que le contenu n’est pas publié. Ce mode limite fortement l’indexation prématurée, mais n’est pas une garantie absolue : c’est efficace si votre stack (build, CDN, headers, robots/meta) applique bien ce signal au crawl.':
+        'Met automatiquement un marqueur noindex dans le front matter tant que le contenu n’est pas publié. Ce mode limite fortement l’indexation prématurée, mais n’est pas une garantie absolue : c’est efficace si votre stack (build, CDN, headers, robots/meta) applique bien ce signal au crawl.',
+    'Missing server dependencies: {items}':
+        'Dépendances serveur manquantes : {items}',
+    'Mode manuel = aucun déclenchement automatique.':
+        'Mode manuel = aucun déclenchement automatique.',
+    'Mode sécurisé (opt-in requis)': 'Mode sécurisé (opt-in requis)',
+    'Méthode combinée : Drip applique à la fois la date future et `draft: true`, puis lève les deux en même temps.':
+        'Méthode combinée : Drip applique à la fois la date future et `draft: true`, puis lève les deux en même temps.',
+    'Méthode de contrôle': 'Méthode de contrôle',
+    'Méthode de contrôle par date : le front matter reçoit une date de publication future.':
+        'Méthode de contrôle par date : le front matter reçoit une date de publication future.',
+    'Méthode de contrôle par flag : le front matter est écrit avec `draft: true` (ou équivalent) avant publication.':
+        'Méthode de contrôle par flag : le front matter est écrit avec `draft: true` (ou équivalent) avant publication.',
+    'Méthode de rebuild': 'Méthode de rebuild',
+    'Newsletter server tools are not fully configured':
+        'Les outils serveur newsletter ne sont pas entièrement configurés',
+    'No OpenRouter key configured': 'Aucune clé OpenRouter configurée',
+    'No active project selected.': 'Aucun projet actif sélectionné.',
+    'No description': 'Aucune description',
+    'No repository found for this account.':
+        'Aucun dépôt trouvé pour ce compte.',
+    'Not connected': 'Non connecté',
+    'Objectif éditorial : publier les contenus dans une séquence qui fait sens (des concepts larges vers les déclinaisons), pour réduire la dispersion et faciliter la lecture continue.':
+        'Objectif éditorial : publier les contenus dans une séquence qui fait sens (des concepts larges vers les déclinaisons), pour réduire la dispersion et faciliter la lecture continue.',
+    'Offline Sync': 'Sync hors ligne',
+    'Open AI runtime endpoint': 'Ouvrir l’endpoint runtime IA',
+    'Open GitHub status endpoint': 'Ouvrir l’endpoint de statut GitHub',
+    'Open OpenRouter endpoint': 'Ouvrir l’endpoint OpenRouter',
+    'OpenRouter API key': 'Clé API OpenRouter',
+    'OpenRouter key deleted.': 'Clé OpenRouter supprimée.',
+    'OpenRouter key is invalid': 'La clé OpenRouter est invalide',
+    'OpenRouter key is missing': 'La clé OpenRouter est manquante',
+    'OpenRouter key is valid': 'La clé OpenRouter est valide',
+    'OpenRouter key required in Settings > OpenRouter':
+        'Clé OpenRouter requise dans Réglages > OpenRouter',
+    'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.':
+        'Clé OpenRouter requise. Allez dans Réglages > OpenRouter, enregistrez et validez votre clé, puis réessayez.',
+    'OpenRouter key saved, not validated yet':
+        'Clé OpenRouter enregistrée, pas encore validée',
+    'OpenRouter key saved: {key}': 'Clé OpenRouter enregistrée : {key}',
+    'Options avancées': 'Options avancées',
+    'Par structure de dossier': 'Par structure de dossier',
+    'Par tag de front matter': 'Par tag de front matter',
+    'Paste a new key to replace the current one.':
+        'Collez une nouvelle clé pour remplacer l’actuelle.',
+    'Persona draft generated and pre-filled.':
+        'Brouillon de persona généré et prérempli.',
+    'Platform': 'Plateforme',
+    'Platform configured (locked)': 'Plateforme configurée (verrouillée)',
+    'Platform missing': 'Plateforme manquante',
+    'Platform ready': 'Plateforme prête',
+    'Prefill with AI': 'Préremplir avec l’IA',
+    'Protection indexation précoce (noindex jusqu’à publication)':
+        'Protection indexation précoce (noindex jusqu’à publication)',
+    'Publier le pilier avant les satellites':
+        'Publier le pilier avant les satellites',
+    'Queue status unavailable': 'État de la file indisponible',
+    'Queued Actions': 'Actions en file',
+    'Queued actions are paused until you sign in again.':
+        'Les actions en file sont en pause jusqu’à votre reconnexion.',
+    'Queued actions are replaying in the background.':
+        'Les actions en file sont rejouées en arrière-plan.',
+    'Random publish time': 'Heure de publication aléatoire',
+    'Recommandé si votre repository mélange du contenu Drip et du contenu éditorial indépendant. Quand ce mode est actif, on ne modifie le front matter que pour les fichiers qui portent explicitement le champ d’opt-in (ex: dripManaged: true), évitant de toucher aux pages non Drip.':
+        'Recommandé si votre repository mélange du contenu Drip et du contenu éditorial indépendant. Quand ce mode est actif, on ne modifie le front matter que pour les fichiers qui portent explicitement le champ d’opt-in (ex: dripManaged: true), évitant de toucher aux pages non Drip.',
+    'Refresh queue': 'Actualiser la file',
+    'Refresh stale data': 'Actualiser les données obsolètes',
+    'Retry now': 'Réessayer maintenant',
+    'Retry queued actions': 'Réessayer les actions en file',
+    'Référentiel GitHub': 'Référentiel GitHub',
+    'Safe mode': 'Mode sécurisé',
+    'Sans clustering (ordre alphabétique)':
+        'Sans clustering (ordre alphabétique)',
+    'Save and validate your OpenRouter key in Settings before generating newsletters.':
+        'Enregistrez et validez votre clé OpenRouter dans Réglages avant de générer des newsletters.',
+    'Save key': 'Enregistrer la clé',
+    'Show key': 'Afficher la clé',
+    'Sign in': 'Se connecter',
+    'Sign in to manage AI runtime mode and provider states.':
+        'Connectez-vous pour gérer le mode d’exécution IA et l’état des fournisseurs.',
+    'Sign in to manage your OpenRouter key':
+        'Connectez-vous pour gérer votre clé OpenRouter',
+    'Sign in to sync projects, GitHub connections, and settings.':
+        'Connectez-vous pour synchroniser les projets, les connexions GitHub et les réglages.',
+    'Signed out': 'Déconnecté',
+    'Some newsletter dependencies are still missing.':
+        'Certaines dépendances newsletter sont encore manquantes.',
+    'Some screens are using cached data and may be stale.':
+        'Certains écrans utilisent des données en cache et peuvent être obsolètes.',
+    'Soumettre les URL': 'Soumettre les URL',
+    'Soumissions max / jour': 'Soumissions max / jour',
+    'Stored key: {key}': 'Clé enregistrée : {key}',
+    'Stratégie de clustering': 'Stratégie de clustering',
+    'Suggestions depuis le projet actif':
+        'Suggestions depuis le projet actif',
+    'Tap Connect to authorize': 'Appuyez sur Connecter pour autoriser',
+    'This removes your GitHub connection and hides private repository data from the picker.':
+        'Cette action supprime votre connexion GitHub et masque les données des dépôts privés dans le sélecteur.',
+    'This removes your stored OpenRouter credential and disables AI features across the app until you add a new one.':
+        'Cette action supprime vos identifiants OpenRouter enregistrés et désactive les fonctionnalités IA dans l’app jusqu’à l’ajout d’une nouvelle clé.',
+    'To (HH:MM)': 'À (HH:MM)',
+    'Try reconnecting': 'Essayez de vous reconnecter',
+    'URL de la propriété GSC': 'URL de la propriété GSC',
+    'URL du webhook': 'URL du webhook',
+    'Unable to load AI runtime settings.':
+        'Impossible de charger les paramètres du runtime IA.',
+    'Unable to load GitHub integration state.':
+        'Impossible de charger l’état de l’intégration GitHub.',
+    'Unable to load OpenRouter credential state.':
+        'Impossible de charger l’état des identifiants OpenRouter.',
+    'Une connexion GitHub est requise pour charger la liste des dépôts.':
+        'Une connexion GitHub est requise pour charger la liste des dépôts.',
+    'Une fenêtre navigateur s’est ouverte pour autoriser ContentFlow.':
+        'Une fenêtre navigateur s’est ouverte pour autoriser ContentFlow.',
+    'Updated: {date}': 'Mis à jour : {date}',
+    'Validate': 'Valider',
+    'Validated: {date}': 'Validé : {date}',
+    'Validation completed.': 'Validation terminée.',
+    'You are using the demo workspace without a real account.':
+        'Vous utilisez le workspace démo sans compte réel.',
+    'Your OpenRouter key is ready. Server-managed tools are also available for newsletter generation.':
+        'Votre clé OpenRouter est prête. Les outils gérés côté serveur sont aussi disponibles pour la génération de newsletters.',
+    'e.g. dripManaged': 'ex. dripManaged',
+    'e.g. robots': 'ex. robots',
+    'https://example.com or https://github.com/user/repo':
+        'https://example.com or https://github.com/user/repo',
+    'https://your-site.com': 'https://votre-site.com',
+    '{count} actions are waiting to sync.':
+        '{count} actions sont en attente de synchronisation.',
+    '{count} queued actions need manual review.':
+        '{count} actions en file nécessitent une revue manuelle.',
   };
 
   static const Map<String, Map<String, String>> _localizedValues =
