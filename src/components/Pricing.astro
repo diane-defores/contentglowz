@@ -1,4 +1,6 @@
 ---
+import { appSignInUrl, creatorCheckoutUrl, proCheckoutUrl } from '../config/site';
+
 const pricingSchema = {
   "@context": "https://schema.org",
   "@type": "Product",
@@ -61,7 +63,7 @@ const pricingSchema = {
           <li>Basic analytics</li>
           <li>Community support</li>
         </ul>
-        <button class="cta-btn">Get Started</button>
+        <a class="cta-btn" href={appSignInUrl}>Get Started</a>
       </div>
 
       <div class="pricing-card featured">
@@ -85,7 +87,9 @@ const pricingSchema = {
           <li>Full analytics</li>
           <li>Email support</li>
         </ul>
-        <button class="cta-btn primary">Start 14-Day Trial</button>
+        <a class="cta-btn primary" href={creatorCheckoutUrl}>
+          Start 14-Day Trial
+        </a>
       </div>
 
       <div class="pricing-card">
@@ -108,7 +112,9 @@ const pricingSchema = {
           <li>Priority support</li>
           <li>API access</li>
         </ul>
-        <button class="cta-btn">Start 14-Day Trial</button>
+        <a class="cta-btn" href={proCheckoutUrl}>
+          Start 14-Day Trial
+        </a>
       </div>
     </div>
 

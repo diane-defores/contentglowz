@@ -3,22 +3,24 @@ artifact: brand_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
 project: contentflow_site
-created: "2026-04-25"
-updated: "2026-04-25"
+created: "2026-04-26"
+updated: "2026-04-26"
 status: draft
 source_skill: sf-docs
 scope: brand
-owner: unknown
+owner: "Diane"
 confidence: low
 risk_level: medium
-security_impact: unknown
+security_impact: none
 docs_impact: yes
 brand_voice: unknown
 trust_posture: unknown
-depends_on: []
+depends_on:
+  - CLAUDE.md@0.1.0
+evidence:
+  - CLAUDE.md
 supersedes: []
-evidence: []
-next_review: "unknown"
+next_review: "2026-07-26"
 next_step: /sf-docs audit BRANDING.md
 ---
 # Branding Guide (Website)

@@ -7,6 +7,19 @@ function normalizeBuildValue(value: string | undefined, fallback: string) {
   return normalized && normalized.length > 0 ? normalized : fallback;
 }
 
+function normalizeOptionalAbsoluteUrl(value: string | undefined) {
+  const normalized = value?.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    return new URL(normalized).toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export const siteUrl = normalizeUrl(
   import.meta.env.APP_SITE_URL,
   'https://contentflow.winflowz.com',
@@ -20,6 +33,20 @@ export const appWebUrl = normalizeUrl(
 export const appSignInUrl = `${appWebUrl}/sign-in`;
 
 export const appEntryUrl = `${appWebUrl}/#/entry`;
+
+const polarCreatorCheckoutEnvUrl = normalizeOptionalAbsoluteUrl(
+  import.meta.env.POLAR_CREATOR_CHECKOUT_URL,
+);
+
+const polarProCheckoutEnvUrl = normalizeOptionalAbsoluteUrl(
+  import.meta.env.POLAR_PRO_CHECKOUT_URL,
+);
+
+export const creatorCheckoutUrl =
+  polarCreatorCheckoutEnvUrl ?? `${appSignInUrl}?plan=creator`;
+
+export const proCheckoutUrl =
+  polarProCheckoutEnvUrl ?? `${appSignInUrl}?plan=pro`;
 
 export const apiBaseUrl = normalizeUrl(
   import.meta.env.API_BASE_URL,

@@ -1,3 +1,31 @@
+---
+artifact: project_context
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: contentflow_site
+created: "2026-04-26"
+updated: "2026-04-26"
+status: draft
+source_skill: sf-docs
+scope: operations
+owner: "Diane"
+confidence: medium
+risk_level: medium
+security_impact: low
+docs_impact: yes
+depends_on:
+  - BUSINESS.md@0.1.0
+  - BRANDING.md@0.1.0
+  - GUIDELINES.md@0.1.0
+evidence:
+  - README.md
+  - src/config/site.ts
+  - astro.config.mjs
+supersedes: []
+next_review: "2026-07-26"
+next_step: /sf-docs audit CLAUDE.md
+---
+
 # CLAUDE.md
 
 ## Project Overview
