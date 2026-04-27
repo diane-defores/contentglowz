@@ -333,11 +333,11 @@ class _IntegrationsLinkGroup extends ConsumerWidget {
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
 
     final backendOk =
-        backendStatus.valueOrNull?['status'] == 'ok' ||
-        backendStatus.valueOrNull?['status'] == 'healthy';
-    final githubOk = githubIntegration.valueOrNull?.connected ?? false;
-    final openRouterOk = openRouter.valueOrNull?.configured ?? false;
-    final publishOk = publishAccountsState.valueOrNull?.isUnavailable != true;
+        backendStatus.value?['status'] == 'ok' ||
+        backendStatus.value?['status'] == 'healthy';
+    final githubOk = githubIntegration.value?.connected ?? false;
+    final openRouterOk = openRouter.value?.configured ?? false;
+    final publishOk = publishAccountsState.value?.isUnavailable != true;
 
     final allOk = backendOk && githubOk && openRouterOk && publishOk;
     final pillColor = allOk ? AppTheme.approveColor : AppTheme.warningColor;

@@ -459,7 +459,7 @@ class _RitualScreenState extends ConsumerState<RitualScreen> {
 
     try {
       final api = ref.read(apiServiceProvider);
-      final creatorProfile = ref.read(creatorProfileProvider).valueOrNull;
+      final creatorProfile = ref.read(creatorProfileProvider).value;
       final result = await api.synthesizeNarrative(
         profileId: creatorProfile?.id ?? 'default',
         entries: entries,

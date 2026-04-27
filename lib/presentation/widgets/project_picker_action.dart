@@ -17,12 +17,13 @@ class ProjectPickerAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsState = ref.watch(projectsStateProvider);
     final activeProject = ref.watch(activeProjectProvider);
-    final settings = ref.watch(currentUserSettingsProvider).valueOrNull;
+    final settings = ref.watch(currentUserSettingsProvider).value;
     final isNoSelectionMode =
         normalizeProjectSelectionMode(settings?.projectSelectionMode) ==
         projectSelectionModeNone;
     final isSwitching = ref.watch(activeProjectControllerProvider).isLoading;
-    final activeLabel = activeProject?.name ?? context.tr('No project selected');
+    final activeLabel =
+        activeProject?.name ?? context.tr('No project selected');
     final activeColor = Theme.of(context).colorScheme.onSurface;
 
     if (isSwitching) {
@@ -45,7 +46,8 @@ class ProjectPickerAction extends ConsumerWidget {
         }
 
         final projectId = selection == _commandNoSelection ? null : selection;
-        if (selection != _commandNoSelection && projectId == activeProject?.id) {
+        if (selection != _commandNoSelection &&
+            projectId == activeProject?.id) {
           return;
         }
         try {

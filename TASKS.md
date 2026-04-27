@@ -276,3 +276,13 @@
 | ✅ | Switch feedback-admin entry visibility to authenticated-session discovery while keeping backend `403` as the real authorization gate | ✅ done |
 | ✅ | Add backend capability probe-driven feedback-admin visibility (`/api/feedback/admin/capability`) to avoid optimistic UI exposure for non-admin users | ✅ done |
 | 🟡 | Add CI checks for `flutter analyze` plus targeted auth/offline regression tests | 📋 todo |
+
+### Audit: Deps (2026-04-27)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🟠 | Plan and execute major upgrades for core packages (`flutter_riverpod`, `go_router`, `google_fonts`, `riverpod_annotation`, `riverpod_generator`) with regression matrix | ✅ done |
+| 🟠 | Replace or mitigate discontinued transitive build packages (`build_resolvers`, `build_runner_core`) by upgrading the generator stack | ✅ done |
+| 🟡 | Remove or justify likely unused dependencies (`cached_network_image`, `responsive_framework`, `cupertino_icons`, annotations if codegen stays unused) | 📋 todo |
+| ✅ | Add dependency update automation baseline (`.github/dependabot.yml` for pub + GitHub Actions) | ✅ done |
+| ✅ | Pin Flutter toolchain version (`.fvmrc` -> 3.41.7) for reproducible dependency resolution | ✅ done |

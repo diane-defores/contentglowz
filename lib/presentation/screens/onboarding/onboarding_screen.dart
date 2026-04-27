@@ -75,8 +75,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
 
-    final projects =
-        ref.read(projectsProvider).valueOrNull ?? const <Project>[];
+    final projects = ref.read(projectsProvider).value ?? const <Project>[];
     final project = projects
         .where((candidate) => candidate.id == _projectId)
         .cast<Project?>()
@@ -140,7 +139,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final projectsAsync = ref.watch(projectsProvider);
     final projectToEdit = _isProjectEditMode
-        ? projectsAsync.valueOrNull
+        ? projectsAsync.value
               ?.where((project) => project.id == _projectId)
               .cast<Project?>()
               .firstWhere((_) => true, orElse: () => null)
@@ -223,14 +222,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildProjectPage() {
     final theme = Theme.of(context);
-    final githubStatus = ref.watch(githubIntegrationStatusProvider).valueOrNull;
+    final githubStatus = ref.watch(githubIntegrationStatusProvider).value;
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         if (_isDemoMode) ...[_buildDemoBanner(), const SizedBox(height: 24)],
         Text(
           context.tr(
-            _isProjectEditMode ? 'Project settings' : 'Connect your project source',
+            _isProjectEditMode
+                ? 'Project settings'
+                : 'Connect your project source',
           ),
           style: TextStyle(
             fontSize: 24,
@@ -265,12 +266,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           readOnly: _isDemoMode,
           decoration: InputDecoration(
             labelText: context.tr('Source URL (optional)'),
-            hintText: context.tr('https://example.com or https://github.com/user/repo'),
+            hintText: context.tr(
+              'https://example.com or https://github.com/user/repo',
+            ),
             prefixIcon: const Icon(Icons.link),
             suffixIcon: _isDemoMode
                 ? null
                 : IconButton(
-                    tooltip: context.tr('Choose from connected GitHub repos (optional)'),
+                    tooltip: context.tr(
+                      'Choose from connected GitHub repos (optional)',
+                    ),
                     icon: _isRepoPickerLoading
                         ? const SizedBox(
                             width: 16,
@@ -808,7 +813,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _copyOnboardingDiagnostics() {
     final authSession = ref.read(authSessionProvider);
-    final accessState = ref.read(appAccessStateProvider).valueOrNull;
+    final accessState = ref.read(appAccessStateProvider).value;
     copyDiagnosticsToClipboard(
       context,
       ref,

@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,8 +37,7 @@ class InAppTourState {
 }
 
 class InAppTourController extends StateNotifier<InAppTourState> {
-  InAppTourController(this._prefs)
-    : super(_loadInitial(_prefs));
+  InAppTourController(this._prefs) : super(_loadInitial(_prefs));
 
   final SharedPreferences _prefs;
 

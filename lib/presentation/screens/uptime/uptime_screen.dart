@@ -36,7 +36,7 @@ class _UptimeScreenState extends ConsumerState<UptimeScreen> {
     final statusAsync = ref.watch(backendStatusProvider);
     final offlineSync = ref.watch(offlineSyncStateProvider);
     final queueAsync = ref.watch(offlineQueueEntriesProvider);
-    final accessState = appAccess.valueOrNull;
+    final accessState = appAccess.value;
 
     return Scaffold(
       appBar: AppBar(

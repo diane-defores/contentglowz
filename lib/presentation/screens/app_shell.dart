@@ -140,7 +140,7 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
-    final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
+    final appAccess = ref.watch(appAccessStateProvider).value;
     final degradedMode = appAccess?.isDegraded == true;
     final currentRoute = GoRouterState.of(context).uri.path;
     final shouldWatchPendingCount = !degradedMode && currentRoute == '/feed';

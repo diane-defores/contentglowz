@@ -51,23 +51,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       appBar: AppBar(
         title: Text(context.tr('Content Feed')),
         actions: [
-          if (contentAsync.valueOrNull != null &&
-              contentAsync.valueOrNull!.length > 1)
+          if (contentAsync.value != null && contentAsync.value!.length > 1)
             isCompactAppBar
                 ? IconButton(
                     tooltip: context.tr('All ({count})', {
-                      'count': contentAsync.valueOrNull!.length,
+                      'count': contentAsync.value!.length,
                     }),
-                    onPressed: () => _bulkApprove(contentAsync.valueOrNull!),
+                    onPressed: () => _bulkApprove(contentAsync.value!),
                     icon: const Icon(Icons.done_all),
                     color: AppTheme.approveColor,
                   )
                 : TextButton.icon(
-                    onPressed: () => _bulkApprove(contentAsync.valueOrNull!),
+                    onPressed: () => _bulkApprove(contentAsync.value!),
                     icon: const Icon(Icons.done_all, size: 18),
                     label: Text(
                       context.tr('All ({count})', {
-                        'count': contentAsync.valueOrNull!.length,
+                        'count': contentAsync.value!.length,
                       }),
                     ),
                     style: TextButton.styleFrom(
@@ -430,9 +429,9 @@ class _FeedEmptyDashboard extends ConsumerWidget {
     final historyAsync = ref.watch(contentHistoryProvider);
     final activeProjectId = ref.watch(activeProjectIdProvider);
 
-    final dripCount = dripPlansAsync.valueOrNull?.length ?? 0;
-    final queuedActions = _countPendingQueueActions(queueAsync.valueOrNull);
-    final publishedCount = historyAsync.valueOrNull?.length ?? 0;
+    final dripCount = dripPlansAsync.value?.length ?? 0;
+    final queuedActions = _countPendingQueueActions(queueAsync.value);
+    final publishedCount = historyAsync.value?.length ?? 0;
     final colorScheme = Theme.of(context).colorScheme;
     final onboardingSetupRoute = _buildOnboardingSetupRoute(activeProjectId);
 

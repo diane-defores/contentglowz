@@ -333,24 +333,23 @@ class AppDiagnostics {
   }
 }
 
-class AppDiagnosticsObserver extends ProviderObserver {
+final class AppDiagnosticsObserver extends ProviderObserver {
   AppDiagnosticsObserver(this.diagnostics);
 
   final AppDiagnostics diagnostics;
 
   @override
   void providerDidFail(
-    ProviderBase<Object?> provider,
+    ProviderObserverContext context,
     Object error,
     StackTrace stackTrace,
-    ProviderContainer container,
   ) {
     diagnostics.error(
       scope: 'riverpod.provider',
       message: 'Provider failure detected.',
       error: error,
       stackTrace: stackTrace,
-      context: <String, Object?>{'provider': provider.toString()},
+      context: <String, Object?>{'provider': context.provider.toString()},
     );
   }
 }

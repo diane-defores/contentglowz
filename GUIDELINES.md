@@ -62,6 +62,11 @@ This document describes conventions for working in `contentflow_app`, the Flutte
    - reconciliation strategy,
    - user-visible error status.
 
+## Riverpod Migration Policy
+
+- Keep existing manual providers (`StateProvider`, `StateNotifierProvider`) on Riverpod 3 legacy imports (`package:flutter_riverpod/legacy.dart`) unless a dedicated refactor is explicitly scoped.
+- Do not introduce new Riverpod codegen (`@riverpod` + generated `.g.dart`) opportunistically during dependency bumps; treat codegen adoption as a separate planned migration.
+
 ## Offline and Sync Rules (Mandatory)
 
 - Do not remove or bypass local cache reads when API data is unavailable for read operations.

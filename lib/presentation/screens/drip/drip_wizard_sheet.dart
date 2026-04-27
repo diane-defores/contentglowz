@@ -874,7 +874,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
       ],
       if (_rebuildMethod == 'github_actions') ...[
         const SizedBox(height: 16),
-        if (ref.watch(githubIntegrationStatusProvider).valueOrNull?.connected !=
+        if (ref.watch(githubIntegrationStatusProvider).value?.connected !=
             true) ...[
           Text(
             context.tr(
@@ -907,7 +907,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
                   ? null
                   : ref
                             .watch(githubIntegrationStatusProvider)
-                            .valueOrNull
+                            .value
                             ?.connected ==
                         true
                   ? _openGithubRepoPickerForDrip
@@ -917,8 +917,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
             hintText: context.tr('owner/repo'),
           ),
         ),
-        if (ref.watch(githubIntegrationStatusProvider).valueOrNull?.connected !=
-            true)
+        if (ref.watch(githubIntegrationStatusProvider).value?.connected != true)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
@@ -1105,7 +1104,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
   }
 
   Future<void> _openGithubRepoPickerForDrip() async {
-    final githubStatus = ref.read(githubIntegrationStatusProvider).valueOrNull;
+    final githubStatus = ref.read(githubIntegrationStatusProvider).value;
     if (githubStatus?.connected != true) {
       await _connectGithubFromDrip();
       return;
@@ -1202,10 +1201,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
         scope: 'drip.github.connect',
         error: error,
         stackTrace: stackTrace,
-        contextData: {
-          'path': error.path,
-          'statusCode': error.statusCode,
-        },
+        contextData: {'path': error.path, 'statusCode': error.statusCode},
       );
       return;
     }
@@ -1219,7 +1215,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
       return;
@@ -1265,7 +1261,7 @@ class _DripWizardSheetState extends ConsumerState<DripWizardSheet> {
               'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
     }

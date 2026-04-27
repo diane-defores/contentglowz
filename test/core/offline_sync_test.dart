@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:contentflow_app/data/models/app_access_state.dart';
@@ -157,39 +158,47 @@ void main() {
       );
     }
 
-    test('maps entity sync to the highest-severity status per entity', () async {
-      final container = ProviderContainer(
-        overrides: <Override>[
-          offlineQueueEntriesProvider.overrideWith((ref) async {
-            return [
-              queuedAction(
-                id: 'pending',
-                status: OfflineQueueStatus.pending,
-                entityId: 'project-1',
-                createdAt: DateTime(2026, 4, 20, 12),
-              ),
-              queuedAction(
-                id: 'blocked',
-                status: OfflineQueueStatus.blockedDependency,
-                entityId: 'project-1',
-                createdAt: DateTime(2026, 4, 20, 12, 1),
-              ),
-            ];
-          }),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'maps entity sync to the highest-severity status per entity',
+      () async {
+        final container = ProviderContainer(
+          overrides: <Override>[
+            offlineQueueEntriesProvider.overrideWith((ref) async {
+              return [
+                queuedAction(
+                  id: 'pending',
+                  status: OfflineQueueStatus.pending,
+                  entityId: 'project-1',
+                  createdAt: DateTime(2026, 4, 20, 12),
+                ),
+                queuedAction(
+                  id: 'blocked',
+                  status: OfflineQueueStatus.blockedDependency,
+                  entityId: 'project-1',
+                  createdAt: DateTime(2026, 4, 20, 12, 1),
+                ),
+              ];
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final entries = await container.read(offlineQueueEntriesProvider.future);
-      expect(entries, hasLength(2));
+        final entries = await container.read(
+          offlineQueueEntriesProvider.future,
+        );
+        expect(entries, hasLength(2));
 
-      final syncMap = container.read(offlineEntitySyncMapProvider);
-      expect(
-        syncMap[offlineEntityKey('content', 'project-1')]?.status,
-        OfflineEntitySyncStatus.blockedDependency,
-      );
-      expect(syncMap[offlineEntityKey('content', 'project-1')]?.actionCount, 2);
-    });
+        final syncMap = container.read(offlineEntitySyncMapProvider);
+        expect(
+          syncMap[offlineEntityKey('content', 'project-1')]?.status,
+          OfflineEntitySyncStatus.blockedDependency,
+        );
+        expect(
+          syncMap[offlineEntityKey('content', 'project-1')]?.actionCount,
+          2,
+        );
+      },
+    );
 
     test('maps failed action as highest priority for entity status', () async {
       final container = ProviderContainer(
@@ -224,25 +233,28 @@ void main() {
   });
 
   group('AppAccessState', () {
-    test('allows cached workspace data in degraded mode when bootstrap exists', () {
-      const bootstrap = AppBootstrap(
-        user: AppBootstrapUser(
-          userId: 'user-1',
-          workspaceExists: true,
+    test(
+      'allows cached workspace data in degraded mode when bootstrap exists',
+      () {
+        const bootstrap = AppBootstrap(
+          user: AppBootstrapUser(
+            userId: 'user-1',
+            workspaceExists: true,
+            defaultProjectId: 'project-1',
+          ),
+          projectsCount: 1,
           defaultProjectId: 'project-1',
-        ),
-        projectsCount: 1,
-        defaultProjectId: 'project-1',
-        workspaceStatus: 'ready',
-      );
+          workspaceStatus: 'ready',
+        );
 
-      const state = AppAccessState(
-        stage: AppAccessStage.apiUnavailable,
-        bootstrap: bootstrap,
-      );
+        const state = AppAccessState(
+          stage: AppAccessStage.apiUnavailable,
+          bootstrap: bootstrap,
+        );
 
-      expect(state.isDegraded, isTrue);
-      expect(state.canUseWorkspaceData, isTrue);
-    });
+        expect(state.isDegraded, isTrue);
+        expect(state.canUseWorkspaceData, isTrue);
+      },
+    );
   });
 }

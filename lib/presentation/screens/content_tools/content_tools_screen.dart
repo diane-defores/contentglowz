@@ -11,10 +11,7 @@ import '../../widgets/project_picker_action.dart';
 final _validationsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final api = ref.read(apiServiceProvider);
   final activeProjectId = ref.watch(activeProjectIdProvider);
-  return api.fetchPendingValidations(
-    daysAhead: 14,
-    projectId: activeProjectId,
-  );
+  return api.fetchPendingValidations(daysAhead: 14, projectId: activeProjectId);
 });
 
 class ContentToolsScreen extends ConsumerWidget {
@@ -26,7 +23,7 @@ class ContentToolsScreen extends ConsumerWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-        title: Text(context.tr('Content Tools')),
+          title: Text(context.tr('Content Tools')),
           bottom: TabBar(
             isScrollable: true,
             tabs: [
@@ -152,8 +149,8 @@ class _FunnelTab extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final allContent = [
-      ...pendingAsync.valueOrNull ?? [],
-      ...historyAsync.valueOrNull ?? [],
+      ...pendingAsync.value ?? [],
+      ...historyAsync.value ?? [],
     ];
 
     if (allContent.isEmpty) {
@@ -280,8 +277,8 @@ class _AuditTab extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final allContent = [
-      ...pendingAsync.valueOrNull ?? [],
-      ...historyAsync.valueOrNull ?? [],
+      ...pendingAsync.value ?? [],
+      ...historyAsync.value ?? [],
     ];
 
     if (allContent.isEmpty) {

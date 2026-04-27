@@ -14,7 +14,8 @@ class DripPlanDetailScreen extends ConsumerStatefulWidget {
   final String planId;
 
   @override
-  ConsumerState<DripPlanDetailScreen> createState() => _DripPlanDetailScreenState();
+  ConsumerState<DripPlanDetailScreen> createState() =>
+      _DripPlanDetailScreenState();
 }
 
 class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
@@ -23,8 +24,7 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final idMappings =
-        ref.watch(offlineIdMappingsProvider).valueOrNull ??
-        const <String, String>{};
+        ref.watch(offlineIdMappingsProvider).value ?? const <String, String>{};
     final resolvedPlanId = idMappings[widget.planId] ?? widget.planId;
     final plansAsync = ref.watch(dripPlansProvider);
     final statsAsync = ref.watch(dripStatsProvider(resolvedPlanId));
@@ -47,7 +47,8 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
         ),
         actions: [
           plan.when(
-            data: (p) => _ActionMenu(plan: p, onAction: (a) => _handleAction(a, p)),
+            data: (p) =>
+                _ActionMenu(plan: p, onAction: (a) => _handleAction(a, p)),
             loading: () => const SizedBox.shrink(),
             error: (error, stackTrace) => const SizedBox.shrink(),
           ),
@@ -81,12 +82,17 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
 
               // Progress
               statsAsync.when(
-                loading: () => const Card(child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
-                )),
+                loading: () => const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
                 error: (_, _) => const SizedBox.shrink(),
-                data: (stats) => _ProgressCard(stats: stats, colorScheme: Theme.of(context).colorScheme),
+                data: (stats) => _ProgressCard(
+                  stats: stats,
+                  colorScheme: Theme.of(context).colorScheme,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -94,7 +100,10 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
               statsAsync.when(
                 loading: () => const SizedBox.shrink(),
                 error: (_, _) => const SizedBox.shrink(),
-                data: (stats) => _ClustersCard(stats: stats, colorScheme: Theme.of(context).colorScheme),
+                data: (stats) => _ClustersCard(
+                  stats: stats,
+                  colorScheme: Theme.of(context).colorScheme,
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -103,11 +112,12 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
               const SizedBox(height: 16),
 
               // Action buttons
-              if (!p.isTerminal) _ActionButtons(
-                plan: p,
-                loading: _loading,
-                onAction: (a) => _handleAction(a, p),
-              ),
+              if (!p.isTerminal)
+                _ActionButtons(
+                  plan: p,
+                  loading: _loading,
+                  onAction: (a) => _handleAction(a, p),
+                ),
             ],
           ),
         ),
@@ -137,14 +147,18 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
             params: {'severity': severity, 'count': '$count'},
           );
         case 'import':
-          final dir = plan.ssgConfig['content_directory'] as String? ?? 'src/data';
+          final dir =
+              plan.ssgConfig['content_directory'] as String? ?? 'src/data';
           final result = await api.importDripContent(plan.id, dir);
           message = l10n.tr(
             'Imported {count} articles',
             params: {'count': '${result['items_imported']}'},
           );
         case 'cluster':
-          final result = await api.clusterDripPlan(plan.id, mode: plan.clusterMode);
+          final result = await api.clusterDripPlan(
+            plan.id,
+            mode: plan.clusterMode,
+          );
           message = l10n.tr(
             'Clustered into {count} groups',
             params: {'count': '${result['total_clusters']}'},
@@ -192,10 +206,7 @@ class _DripPlanDetailScreenState extends ConsumerState<DripPlanDetailScreen> {
       showDiagnosticSnackBar(
         context,
         ref,
-        message: l10n.tr(
-          'Action failed: {error}',
-          params: {'error': '$error'},
-        ),
+        message: l10n.tr('Action failed: {error}', params: {'error': '$error'}),
         scope: 'drip.plan_detail.action',
         error: error,
         stackTrace: stackTrace,
@@ -305,7 +316,10 @@ class _StatusHeader extends StatelessWidget {
                 _formatIso(plan.nextDripAt!, context),
               ),
             if (plan.lastDripAt != null)
-              _infoRow(context.tr('Last drip'), _formatIso(plan.lastDripAt!, context)),
+              _infoRow(
+                context.tr('Last drip'),
+                _formatIso(plan.lastDripAt!, context),
+              ),
           ],
         ),
       ),
@@ -315,7 +329,10 @@ class _StatusHeader extends StatelessWidget {
   static String _formatIso(String raw, BuildContext context) {
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
-    return DateFormat('MMM d, HH:mm', context.localeTag).format(parsed.toLocal());
+    return DateFormat(
+      'MMM d, HH:mm',
+      context.localeTag,
+    ).format(parsed.toLocal());
   }
 
   Widget _infoRow(String label, String value) => Builder(
@@ -334,9 +351,7 @@ class _StatusHeader extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: Text(value, style: theme.textTheme.bodySmall),
-            ),
+            Expanded(child: Text(value, style: theme.textTheme.bodySmall)),
           ],
         ),
       );
@@ -360,13 +375,14 @@ class _StatusHeader extends StatelessWidget {
     },
   );
 
-  Color _statusColor(String status, ColorScheme colorScheme) => switch (status) {
-    'active' => AppTheme.approveColor,
-    'paused' => AppTheme.warningColor,
-    'completed' => AppTheme.infoColor,
-    'cancelled' => colorScheme.onSurfaceVariant,
-    _ => colorScheme.onSurfaceVariant,
-  };
+  Color _statusColor(String status, ColorScheme colorScheme) =>
+      switch (status) {
+        'active' => AppTheme.approveColor,
+        'paused' => AppTheme.warningColor,
+        'completed' => AppTheme.infoColor,
+        'cancelled' => colorScheme.onSurfaceVariant,
+        _ => colorScheme.onSurfaceVariant,
+      };
 }
 
 class _ProgressCard extends StatelessWidget {
@@ -381,9 +397,11 @@ class _ProgressCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Text(context.tr('Progress'),
-                style: Theme.of(context).textTheme.titleSmall),
+          children: [
+            Text(
+              context.tr('Progress'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -405,23 +423,27 @@ class _ProgressCard extends StatelessWidget {
             const SizedBox(height: 8),
             Wrap(
               spacing: 16,
-              children: stats.byStatus.entries.map((e) => Chip(
-                avatar: CircleAvatar(
-                  radius: 6,
-                  backgroundColor: _statusDotColor(
-                    e.key,
-                    Theme.of(context).colorScheme,
-                  ),
-                ),
-                label: Text(
-                  context.tr('{status}: {count}', {
-                    'status': context.tr(e.key),
-                    'count': '${e.value}',
-                  }),
-                  style: const TextStyle(fontSize: 12),
-                ),
-                visualDensity: VisualDensity.compact,
-              )).toList(),
+              children: stats.byStatus.entries
+                  .map(
+                    (e) => Chip(
+                      avatar: CircleAvatar(
+                        radius: 6,
+                        backgroundColor: _statusDotColor(
+                          e.key,
+                          Theme.of(context).colorScheme,
+                        ),
+                      ),
+                      label: Text(
+                        context.tr('{status}: {count}', {
+                          'status': context.tr(e.key),
+                          'count': '${e.value}',
+                        }),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),
@@ -445,31 +467,38 @@ class _ClustersCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('Clusters'),
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              context.tr('Clusters'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 12),
-            ...stats.clusters.map((c) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Icon(
-                    c.isComplete ? Icons.check_circle : Icons.circle_outlined,
-                    size: 18,
-                    color: c.isComplete
-                        ? AppTheme.approveColor
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(c.name, style: const TextStyle(fontSize: 13)),
-                  ),
-                  Text(
-                    '${c.published}/${c.total}',
-                    style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.6)),
-                  ),
-                ],
+            ...stats.clusters.map(
+              (c) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      c.isComplete ? Icons.check_circle : Icons.circle_outlined,
+                      size: 18,
+                      color: c.isComplete
+                          ? AppTheme.approveColor
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(c.name, style: const TextStyle(fontSize: 13)),
+                    ),
+                    Text(
+                      '${c.published}/${c.total}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -489,15 +518,26 @@ class _ConfigCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('Configuration'),
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              context.tr('Configuration'),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 12),
             _row(context.tr('Framework'), plan.ssgFramework),
-            _row(context.tr('Gating'), plan.ssgConfig['gating_method'] as String? ?? '?'),
+            _row(
+              context.tr('Gating'),
+              plan.ssgConfig['gating_method'] as String? ?? '?',
+            ),
             _row(context.tr('Rebuild'), plan.rebuildMethod),
             _row(context.tr('Clustering'), context.tr(plan.clusterMode)),
-            _row(context.tr('Timezone'), plan.cadenceConfig['timezone'] as String? ?? 'UTC'),
-            _row(context.tr('Publish time'), plan.cadenceConfig['publish_time'] as String? ?? '06:00'),
+            _row(
+              context.tr('Timezone'),
+              plan.cadenceConfig['timezone'] as String? ?? 'UTC',
+            ),
+            _row(
+              context.tr('Publish time'),
+              plan.cadenceConfig['publish_time'] as String? ?? '06:00',
+            ),
             if (plan.ssgConfig['enforce_robots_noindex_until_publish'] == true)
               _row(context.tr('Index-proof'), context.tr('Enabled')),
             if (plan.ssgConfig['require_opt_in'] == true)
@@ -526,9 +566,7 @@ class _ConfigCard extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: Text(value, style: theme.textTheme.bodySmall),
-            ),
+            Expanded(child: Text(value, style: theme.textTheme.bodySmall)),
           ],
         ),
       );
@@ -537,7 +575,11 @@ class _ConfigCard extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({required this.plan, required this.loading, required this.onAction});
+  const _ActionButtons({
+    required this.plan,
+    required this.loading,
+    required this.onAction,
+  });
   final DripPlan plan;
   final bool loading;
   final void Function(String) onAction;
@@ -545,10 +587,12 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(16),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return Column(
@@ -638,11 +682,20 @@ class _ActionMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       onSelected: onAction,
       itemBuilder: (_) => [
-        PopupMenuItem(value: 'preflight', child: Text(context.tr('Run preflight'))),
+        PopupMenuItem(
+          value: 'preflight',
+          child: Text(context.tr('Run preflight')),
+        ),
         if (plan.isDraft)
-          PopupMenuItem(value: 'delete', child: Text(context.tr('Delete plan'))),
+          PopupMenuItem(
+            value: 'delete',
+            child: Text(context.tr('Delete plan')),
+          ),
         if (plan.isActive)
-          PopupMenuItem(value: 'cancel', child: Text(context.tr('Cancel plan'))),
+          PopupMenuItem(
+            value: 'cancel',
+            child: Text(context.tr('Cancel plan')),
+          ),
         if (plan.isPaused) ...[
           PopupMenuItem(value: 'resume', child: Text(context.tr('Resume'))),
           PopupMenuItem(value: 'cancel', child: Text(context.tr('Cancel'))),

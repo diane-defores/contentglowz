@@ -73,7 +73,7 @@ String? resolveAppRedirect({
       onboardingIntent == 'project-manage' ||
       onboardingMode == 'create' ||
       onboardingMode == 'edit';
-  final access = appAccessAsync.valueOrNull;
+  final access = appAccessAsync.value;
 
   if (appAccessAsync.isLoading || access == null) {
     if (isRoot) {

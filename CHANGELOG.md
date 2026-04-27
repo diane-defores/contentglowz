@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-27]
+
+### Changed
+- Migrated Flutter core majors to stable hosted versions on `https://pub.dev`: `flutter_riverpod 3.3.1`, `riverpod_annotation 4.0.2`, `riverpod_generator 4.0.3` (dev), `go_router 17.2.2`, `google_fonts 8.0.2`.
+
+### Verified
+- Migration validation gate passed: `flutter analyze`, `flutter test`, and `dart run build_runner build --delete-conflicting-outputs`.
+- Accepted transitive dev exception required by `riverpod_generator 4.0.3`: `riverpod_analyzer_utils 1.0.0-dev.9` (hosted on `https://pub.dev`).
+- Scope remained Flutter app dependency/runtime only; no backend FastAPI or Turso/libSQL changes were introduced by this migration.
+
 ## [2026-04-26]
 
 ### Added

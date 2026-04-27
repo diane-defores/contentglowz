@@ -28,7 +28,7 @@ void main() {
         final sub = harness.container.listen<AsyncValue<AppAccessState>>(
           appAccessStateProvider,
           (_, next) {
-            final stage = next.valueOrNull?.stage;
+            final stage = next.value?.stage;
             if (stage != null) {
               observed.add(stage);
             }
@@ -62,7 +62,7 @@ void main() {
         await refresh;
 
         expect(
-          harness.container.read(appAccessStateProvider).valueOrNull?.stage,
+          harness.container.read(appAccessStateProvider).value?.stage,
           AppAccessStage.ready,
         );
       },
@@ -82,9 +82,7 @@ void main() {
             .read(appAccessStateProvider.notifier)
             .refresh(mode: AppAccessRefreshMode.silentResume);
 
-        final state = harness.container
-            .read(appAccessStateProvider)
-            .valueOrNull;
+        final state = harness.container.read(appAccessStateProvider).value;
         expect(state?.stage, AppAccessStage.apiUnavailable);
         expect(state?.bootstrap, isNotNull);
       },
@@ -111,7 +109,7 @@ void main() {
           .refresh(mode: AppAccessRefreshMode.silentResume);
 
       expect(
-        harness.container.read(appAccessStateProvider).valueOrNull?.stage,
+        harness.container.read(appAccessStateProvider).value?.stage,
         AppAccessStage.bootstrapUnauthorized,
       );
     });
@@ -127,7 +125,7 @@ void main() {
         final sub = harness.container.listen<AsyncValue<AppAccessState>>(
           appAccessStateProvider,
           (_, next) {
-            final stage = next.valueOrNull?.stage;
+            final stage = next.value?.stage;
             if (stage != null) {
               observed.add(stage);
             }
@@ -179,7 +177,7 @@ void main() {
         await interactiveRefresh;
 
         expect(
-          harness.container.read(appAccessStateProvider).valueOrNull?.stage,
+          harness.container.read(appAccessStateProvider).value?.stage,
           AppAccessStage.ready,
         );
       },
@@ -195,7 +193,7 @@ Future<void> _waitForStableReady(ProviderContainer container) async {
   var consecutiveReady = 0;
   for (var i = 0; i < 200; i++) {
     final value = container.read(appAccessStateProvider);
-    if (!value.isLoading && value.valueOrNull?.stage == AppAccessStage.ready) {
+    if (!value.isLoading && value.value?.stage == AppAccessStage.ready) {
       consecutiveReady += 1;
       if (consecutiveReady >= 3) {
         return;

@@ -31,7 +31,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final githubStatus = ref.watch(githubIntegrationStatusProvider).valueOrNull;
+    final githubStatus = ref.watch(githubIntegrationStatusProvider).value;
 
     return Scaffold(
       appBar: AppBar(
@@ -153,7 +153,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
 
   Future<void> _openGithubRepoPicker() async {
     final api = ref.read(apiServiceProvider);
-    final githubStatus = ref.read(githubIntegrationStatusProvider).valueOrNull;
+    final githubStatus = ref.read(githubIntegrationStatusProvider).value;
     if (githubStatus?.connected != true) {
       await _connectGithubFromSeo();
       return;
@@ -254,10 +254,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
         scope: 'seo.github.connect',
         error: error,
         stackTrace: stackTrace,
-        contextData: {
-          'path': error.path,
-          'statusCode': error.statusCode,
-        },
+        contextData: {'path': error.path, 'statusCode': error.statusCode},
       );
       return;
     }
@@ -271,7 +268,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
               'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
       return;
@@ -317,7 +314,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
               'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
             ),
           ),
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),
       );
     }

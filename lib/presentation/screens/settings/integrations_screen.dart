@@ -52,7 +52,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   @override
   Widget build(BuildContext context) {
     final apiBaseUrl = ref.watch(apiBaseUrlProvider);
-    final appAccess = ref.watch(appAccessStateProvider).valueOrNull;
+    final appAccess = ref.watch(appAccessStateProvider).value;
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
     final githubIntegration = ref.watch(githubIntegrationStatusProvider);
@@ -120,9 +120,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               title: 'GitHub',
               gap: 0,
               children: [
-                SettingsBlock(
-                  child: _buildGithubBody(githubIntegration),
-                ),
+                SettingsBlock(child: _buildGithubBody(githubIntegration)),
               ],
             ),
             SizedBox(height: groupGap),
@@ -355,8 +353,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
           const SizedBox(height: 8),
           SettingsErrorDiagnostic(
             details: 'AI runtime error: ${(error.toString()).trim()}',
-            linkUrl:
-                '${ref.read(apiBaseUrlProvider)}/api/settings/ai-runtime',
+            linkUrl: '${ref.read(apiBaseUrlProvider)}/api/settings/ai-runtime',
             linkLabel: context.tr('Open AI runtime endpoint'),
           ),
         ],
@@ -406,7 +403,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   }) {
     final theme = Theme.of(context);
     final canManage = authSession.isAuthenticated && !authSession.isDemo;
-    final busy = _isSavingOpenRouterKey ||
+    final busy =
+        _isSavingOpenRouterKey ||
         _isValidatingOpenRouterKey ||
         _isDeletingOpenRouterKey;
 
@@ -421,30 +419,37 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             SettingsStatusPill(
               label: statusLabel,
               color: statusColor,
-              icon: status.configured ? Icons.key_rounded : Icons.add_circle_outline,
+              icon: status.configured
+                  ? Icons.key_rounded
+                  : Icons.add_circle_outline,
             ),
             if (status.maskedSecret != null &&
                 status.maskedSecret!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.infoColor.withAlpha(12),
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: AppTheme.infoColor.withAlpha(40)),
+                  border: Border.all(color: AppTheme.infoColor.withAlpha(40)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.lock_outline,
-                        size: 16, color: AppTheme.infoColor),
+                    Icon(
+                      Icons.lock_outline,
+                      size: 16,
+                      color: AppTheme.infoColor,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        context.tr('Stored key: {key}',
-                            {'key': status.maskedSecret!}),
+                        context.tr('Stored key: {key}', {
+                          'key': status.maskedSecret!,
+                        }),
                         style: TextStyle(
                           color: theme.colorScheme.onSurface,
                           fontSize: 13,
@@ -456,8 +461,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 ),
               ),
             ],
-            if (status.updatedAt != null ||
-                status.lastValidatedAt != null) ...[
+            if (status.updatedAt != null || status.lastValidatedAt != null) ...[
               const SizedBox(height: 8),
               Text(
                 _openRouterMetaText(status),
@@ -478,9 +482,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 labelText: context.tr('OpenRouter API key'),
                 hintText: 'sk-or-v1-...',
                 helperText: canManage
-                    ? context.tr(
-                        'Paste a new key to replace the current one.',
-                      )
+                    ? context.tr('Paste a new key to replace the current one.')
                     : context.tr('Sign in to manage your OpenRouter key'),
                 helperMaxLines: 2,
                 isDense: true,
@@ -504,8 +506,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               runSpacing: 10,
               children: [
                 FilledButton.icon(
-                  onPressed:
-                      canManage && !busy ? _saveOpenRouterCredential : null,
+                  onPressed: canManage && !busy
+                      ? _saveOpenRouterCredential
+                      : null,
                   icon: _isSavingOpenRouterKey
                       ? const SizedBox(
                           width: 16,
@@ -548,9 +551,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : const Icon(Icons.delete_outline, size: 18),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.rejectColor,
-                    side: BorderSide(
-                      color: AppTheme.rejectColor.withAlpha(80),
-                    ),
+                    side: BorderSide(color: AppTheme.rejectColor.withAlpha(80)),
                     minimumSize: const Size(0, 44),
                   ),
                   label: Text(context.tr('Delete')),
@@ -559,15 +560,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                   onPressed: busy
                       ? null
                       : () => openSettingsUrl(
-                            context,
-                            ref,
-                            'https://openrouter.ai/keys',
-                          ),
+                          context,
+                          ref,
+                          'https://openrouter.ai/keys',
+                        ),
                   icon: const Icon(Icons.open_in_new, size: 18),
                   label: Text(context.tr('Get a key')),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(0, 44),
-                  ),
+                  style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
                 ),
               ],
             ),
@@ -638,12 +637,18 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   String _openRouterMetaText(OpenRouterCredentialStatus status) {
     final parts = <String>[];
     if (status.updatedAt != null) {
-      parts.add(context.tr('Updated: {date}',
-          {'date': _formatDateTime(status.updatedAt!)}));
+      parts.add(
+        context.tr('Updated: {date}', {
+          'date': _formatDateTime(status.updatedAt!),
+        }),
+      );
     }
     if (status.lastValidatedAt != null) {
-      parts.add(context.tr('Validated: {date}',
-          {'date': _formatDateTime(status.lastValidatedAt!)}));
+      parts.add(
+        context.tr('Validated: {date}', {
+          'date': _formatDateTime(status.lastValidatedAt!),
+        }),
+      );
     }
     return parts.join(' • ');
   }
@@ -677,8 +682,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            context.tr('OpenRouter key saved: {key}',
-                {'key': status.maskedSecret ?? 'masked'}),
+            context.tr('OpenRouter key saved: {key}', {
+              'key': status.maskedSecret ?? 'masked',
+            }),
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -688,8 +694,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to save OpenRouter key: {error}',
-            {'error': error.message}),
+        message: context.tr('Failed to save OpenRouter key: {error}', {
+          'error': error.message,
+        }),
         scope: 'settings.openrouter.save',
         error: error,
         contextData: {'statusCode': error.statusCode, 'path': error.path},
@@ -700,8 +707,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to save OpenRouter key: {error}',
-            {'error': '$error'}),
+        message: context.tr('Failed to save OpenRouter key: {error}', {
+          'error': '$error',
+        }),
         scope: 'settings.openrouter.save.unexpected',
         error: error,
         stackTrace: stackTrace,
@@ -743,8 +751,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to validate OpenRouter key: {error}',
-            {'error': error.message}),
+        message: context.tr('Failed to validate OpenRouter key: {error}', {
+          'error': error.message,
+        }),
         scope: 'settings.openrouter.validate',
         error: error,
         contextData: {'statusCode': error.statusCode, 'path': error.path},
@@ -755,8 +764,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to validate OpenRouter key: {error}',
-            {'error': '$error'}),
+        message: context.tr('Failed to validate OpenRouter key: {error}', {
+          'error': '$error',
+        }),
         scope: 'settings.openrouter.validate.unexpected',
         error: error,
         stackTrace: stackTrace,
@@ -816,8 +826,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to delete OpenRouter key: {error}',
-            {'error': error.message}),
+        message: context.tr('Failed to delete OpenRouter key: {error}', {
+          'error': error.message,
+        }),
         scope: 'settings.openrouter.delete',
         error: error,
         contextData: {'statusCode': error.statusCode, 'path': error.path},
@@ -828,8 +839,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Failed to delete OpenRouter key: {error}',
-            {'error': '$error'}),
+        message: context.tr('Failed to delete OpenRouter key: {error}', {
+          'error': '$error',
+        }),
         scope: 'settings.openrouter.delete.unexpected',
         error: error,
         stackTrace: stackTrace,
@@ -853,15 +865,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
           children: [
             SettingsStatusPill(
               label: connected
-                  ? context.tr('Connected as {username}',
-                      {'username': value.username ?? context.tr('unknown')})
+                  ? context.tr('Connected as {username}', {
+                      'username': value.username ?? context.tr('unknown'),
+                    })
                   : context.tr('Not connected'),
               color: connected
                   ? AppTheme.approveColor
                   : theme.colorScheme.onSurfaceVariant,
-              icon: connected
-                  ? Icons.check_circle_outline
-                  : Icons.link_off,
+              icon: connected ? Icons.check_circle_outline : Icons.link_off,
             ),
             if (value.scope != null && value.scope!.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -947,8 +958,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('GitHub OAuth is unavailable: {error}',
-            {'error': error.message}),
+        message: context.tr('GitHub OAuth is unavailable: {error}', {
+          'error': error.message,
+        }),
         scope: 'settings.github.connect',
         error: error,
         stackTrace: stackTrace,
@@ -1072,29 +1084,32 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     required AsyncValue<PublishAccountsState> publishAccountsState,
   }) {
     final notices = <Widget>[];
-    final unavailable =
-        publishAccountsState.valueOrNull?.isUnavailable == true;
-    final hasError = publishAccountsState.valueOrNull?.hasError == true;
+    final unavailable = publishAccountsState.value?.isUnavailable == true;
+    final hasError = publishAccountsState.value?.hasError == true;
 
     if (unavailable) {
-      notices.add(SettingsBlock(
-        child: _buildPublishAccountsNotice(
-          context.tr(
-            'Publish account connections are unavailable until the backend publish integration is configured.',
+      notices.add(
+        SettingsBlock(
+          child: _buildPublishAccountsNotice(
+            context.tr(
+              'Publish account connections are unavailable until the backend publish integration is configured.',
+            ),
+            detail: publishAccountsState.value?.message,
           ),
-          detail: publishAccountsState.valueOrNull?.message,
         ),
-      ));
+      );
     } else if (hasError) {
-      notices.add(SettingsBlock(
-        child: _buildPublishAccountsNotice(
-          context.tr(
-            'Connected accounts could not be loaded right now. Publishing stays available only for already-resolved flows.',
+      notices.add(
+        SettingsBlock(
+          child: _buildPublishAccountsNotice(
+            context.tr(
+              'Connected accounts could not be loaded right now. Publishing stays available only for already-resolved flows.',
+            ),
+            detail: publishAccountsState.value?.message,
+            tone: AppTheme.warningColor,
           ),
-          detail: publishAccountsState.valueOrNull?.message,
-          tone: AppTheme.warningColor,
         ),
-      ));
+      );
     }
 
     final channels = [
@@ -1110,9 +1125,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     final rows = channels.map((ch) {
       final (name, channel, icon) = ch;
       final platform = channelToPlatform(channel);
-      final account = accountsAsync.valueOrNull == null || platform == null
+      final account = accountsAsync.value == null || platform == null
           ? null
-          : _accountForPlatform(accountsAsync.valueOrNull!, platform);
+          : _accountForPlatform(accountsAsync.value!, platform);
       final connected = account != null;
 
       return SettingsRow(
@@ -1177,10 +1192,10 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     if (accountsAsync.isLoading) {
       return context.tr('Loading connected accounts...');
     }
-    if (publishAccountsState.valueOrNull?.isUnavailable == true) {
+    if (publishAccountsState.value?.isUnavailable == true) {
       return context.tr('Publish connections unavailable');
     }
-    if (publishAccountsState.valueOrNull?.hasError == true ||
+    if (publishAccountsState.value?.hasError == true ||
         accountsAsync.hasError) {
       return context.tr('Could not fetch connected accounts');
     }
@@ -1218,8 +1233,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       );
     }
 
-    if (publishAccountsState.valueOrNull?.isUnavailable == true ||
-        publishAccountsState.valueOrNull?.hasError == true) {
+    if (publishAccountsState.value?.isUnavailable == true ||
+        publishAccountsState.value?.hasError == true) {
       return Text(
         context.tr('Unavailable'),
         style: TextStyle(
@@ -1290,8 +1305,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showCopyableDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr('Could not get connect URL for {channelName}',
-            {'channelName': channelName}),
+        message: context.tr('Could not get connect URL for {channelName}', {
+          'channelName': channelName,
+        }),
         scope: 'settings.channel.connect_url_missing',
         contextData: {'channel': channelName, 'platform': platform},
         backgroundColor: AppTheme.rejectColor.withAlpha(200),
@@ -1307,8 +1323,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text(context.tr('Connecting {channelName}',
-              {'channelName': channelName})),
+          title: Text(
+            context.tr('Connecting {channelName}', {
+              'channelName': channelName,
+            }),
+          ),
           content: Text(
             context.tr(
               'A browser window has opened for you to authorize {channelName}.\n\nOnce done, tap "Refresh" to see your connected account.',
@@ -1353,18 +1372,20 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   }
 
   Future<void> _disconnectChannel(String channelName, String platform) async {
-    final accounts = ref.read(publishAccountsProvider).valueOrNull ?? [];
+    final accounts = ref.read(publishAccountsProvider).value ?? [];
     final account = _accountForPlatform(accounts, platform);
     if (account == null) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(context.tr('Disconnect {channelName}?',
-            {'channelName': channelName})),
+        title: Text(
+          context.tr('Disconnect {channelName}?', {'channelName': channelName}),
+        ),
         content: Text(
-          context.tr('This will remove the connection to {displayName}.',
-              {'displayName': account.displayName}),
+          context.tr('This will remove the connection to {displayName}.', {
+            'displayName': account.displayName,
+          }),
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -1395,8 +1416,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         ref.invalidate(publishAccountsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.tr('Disconnected {channelName}',
-                {'channelName': channelName})),
+            content: Text(
+              context.tr('Disconnected {channelName}', {
+                'channelName': channelName,
+              }),
+            ),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1407,8 +1431,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         showCopyableDiagnosticSnackBar(
           context,
           ref,
-          message: context.tr('Failed to disconnect {channelName}',
-              {'channelName': channelName}),
+          message: context.tr('Failed to disconnect {channelName}', {
+            'channelName': channelName,
+          }),
           scope: 'settings.channel.disconnect',
           contextData: {'channel': channelName, 'platform': platform},
           backgroundColor: AppTheme.rejectColor.withAlpha(200),
@@ -1544,8 +1569,8 @@ class AiRuntimeSettingsCard extends StatelessWidget {
           final platformLabel = provider.platform.available
               ? context.tr('Platform ready')
               : provider.platform.configured
-                  ? context.tr('Platform configured (locked)')
-                  : context.tr('Platform missing');
+              ? context.tr('Platform configured (locked)')
+              : context.tr('Platform missing');
           return Container(
             key: Key('ai-runtime-provider-${provider.provider}'),
             width: double.infinity,

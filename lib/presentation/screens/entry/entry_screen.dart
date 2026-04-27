@@ -185,7 +185,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: theme.colorScheme.onSurface,
                     side: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.9),
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.9,
+                      ),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -402,7 +404,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }
 
   Widget _buildFeatureGrid() {
-        final items = [
+    final items = [
       (
         'Onboarding that creates a plan',
         'Project, repo, formats, and cadence are captured before generation starts.',
@@ -562,7 +564,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: theme.colorScheme.onSurface,
                   side: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(alpha: 0.9),
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.9,
+                    ),
                   ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
@@ -597,7 +601,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     AuthSession authSession,
     AsyncValue<AppAccessState> appAccessAsync,
   ) {
-    final accessState = appAccessAsync.valueOrNull;
+    final accessState = appAccessAsync.value;
     final stage = accessState?.stage;
 
     if (appAccessAsync.isLoading || stage == AppAccessStage.restoringSession) {
@@ -701,7 +705,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/feed'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: _buildCopyFlowDiagnostics(context, ref, authSession, accessState),
+        extra: _buildCopyFlowDiagnostics(
+          context,
+          ref,
+          authSession,
+          accessState,
+        ),
       );
     }
 
@@ -718,7 +727,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         onPrimary: () => context.go('/onboarding?intent=entry'),
         secondaryLabel: 'Sign out',
         onSecondary: () => ref.read(authSessionProvider.notifier).signOut(),
-        extra: _buildCopyFlowDiagnostics(context, ref, authSession, accessState),
+        extra: _buildCopyFlowDiagnostics(
+          context,
+          ref,
+          authSession,
+          accessState,
+        ),
       );
     }
 
@@ -776,14 +790,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 'backendStatus': accessState?.backendStatusLabel ?? 'unknown',
                 'backendGitSha':
                     accessState?.backendHealth?['git_sha']?.toString() ??
-                        'unknown',
+                    'unknown',
                 'bootstrapStatus':
                     accessState?.bootstrapStatusLabel ?? 'not_started',
                 'workspaceStatus':
                     accessState?.bootstrap?.workspaceStatus ?? 'none',
                 'workspaceExists':
                     accessState?.bootstrap?.user.workspaceExists ?? false,
-                'projectsCount': accessState?.bootstrap?.projectsCount ?? 'none',
+                'projectsCount':
+                    accessState?.bootstrap?.projectsCount ?? 'none',
                 'defaultProjectId':
                     accessState?.bootstrap?.defaultProjectId ?? 'none',
               },
@@ -879,7 +894,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             Text(
               context.tr(caption),
               style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.8,
+                ),
                 fontSize: 12,
                 height: 1.5,
               ),
@@ -909,7 +926,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: theme.colorScheme.onSurfaceVariant,
                 side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.9),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.9,
+                  ),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(

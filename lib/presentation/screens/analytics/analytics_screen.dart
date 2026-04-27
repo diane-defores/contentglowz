@@ -17,8 +17,8 @@ class AnalyticsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final List<ContentItem> allContent = [
-      ...pendingAsync.valueOrNull ?? [],
-      ...historyAsync.valueOrNull ?? [],
+      ...pendingAsync.value ?? [],
+      ...historyAsync.value ?? [],
     ];
 
     return Scaffold(

@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:contentflow_app/data/models/app_access_state.dart';
 import 'package:contentflow_app/data/models/app_bootstrap.dart';
@@ -129,6 +131,28 @@ void main() {
       );
 
       expect(redirect, '/feed');
+    });
+  });
+
+  group('GoRouter matching', () {
+    testWidgets('does not match differently cased paths as app routes', (
+      tester,
+    ) async {
+      final router = GoRouter(
+        initialLocation: '/Feed',
+        routes: [
+          GoRoute(
+            path: '/feed',
+            builder: (context, state) => const Text('feed route matched'),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      expect(find.text('feed route matched'), findsNothing);
     });
   });
 }

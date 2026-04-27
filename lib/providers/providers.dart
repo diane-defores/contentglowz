@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 import '../core/app_config.dart';
 import '../core/app_diagnostics.dart';
@@ -301,8 +303,7 @@ OfflineEntitySyncStatus _offlineEntityStatusFromQueueStatus(
 
 final offlineEntitySyncMapProvider =
     Provider<Map<String, OfflineEntitySyncInfo>>((ref) {
-      final queue =
-          ref.watch(offlineQueueEntriesProvider).valueOrNull ?? const [];
+      final queue = ref.watch(offlineQueueEntriesProvider).value ?? const [];
       final entries = <String, OfflineEntitySyncInfo>{};
 
       for (final action in queue) {
@@ -387,8 +388,7 @@ final Provider<FeedbackService> feedbackServiceProvider =
         api: () => ref.read(apiServiceProvider),
         localStore: () => ref.read(feedbackLocalStoreProvider),
         authSession: () => ref.read(authSessionProvider),
-        language: () =>
-            ref.read(currentUserSettingsProvider).valueOrNull?.language,
+        language: () => ref.read(currentUserSettingsProvider).value?.language,
         invalidateRecentSubmissions: () {
           ref.invalidate(feedbackRecentSubmissionsProvider);
         },
@@ -402,7 +402,7 @@ final Provider<FeedbackService> feedbackServiceProvider =
 
 final isFeedbackAdminProvider = FutureProvider<bool>((ref) async {
   final session = ref.watch(authSessionProvider);
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (!session.isAuthenticated || session.isDemo) {
     return false;
   }
@@ -987,7 +987,7 @@ class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
 }
 
 final appBootstrapProvider = Provider<AppBootstrap?>((ref) {
-  return ref.watch(appAccessStateProvider).valueOrNull?.bootstrap;
+  return ref.watch(appAccessStateProvider).value?.bootstrap;
 });
 
 final offlineQueueControllerProvider =
@@ -1205,7 +1205,7 @@ class ProjectsState {
 }
 
 final projectsStateProvider = FutureProvider<ProjectsState>((ref) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (accessState?.canUseWorkspaceData != true) {
     return const ProjectsState();
   }
@@ -1236,7 +1236,7 @@ final projectsProvider = FutureProvider<List<Project>>((ref) async {
 });
 
 final availableProjectsProvider = Provider<List<Project>>((ref) {
-  final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
+  final projects = ref.watch(projectsProvider).value ?? const <Project>[];
   return projects.where((project) => !project.isDeleted).toList();
 });
 
@@ -1249,7 +1249,7 @@ final activeProjectProvider = Provider<Project?>((ref) {
     return null;
   }
 
-  final userSettings = ref.watch(currentUserSettingsProvider).valueOrNull;
+  final userSettings = ref.watch(currentUserSettingsProvider).value;
   final bootstrap = ref.watch(appBootstrapProvider);
   if (userSettings == null &&
       bootstrap != null &&
@@ -1330,7 +1330,7 @@ class GithubIntegrationState {
 final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
   ref,
 ) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (accessState?.canUseWorkspaceData != true) {
     return const GithubIntegrationState();
   }
@@ -1354,7 +1354,7 @@ final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
 
 final openRouterCredentialStatusProvider =
     FutureProvider<OpenRouterCredentialStatus>((ref) async {
-      final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+      final accessState = ref.watch(appAccessStateProvider).value;
       if (accessState?.canUseWorkspaceData != true) {
         return const OpenRouterCredentialStatus(
           provider: 'openrouter',
@@ -1379,7 +1379,7 @@ final openRouterCredentialStatusProvider =
 final aiRuntimeSettingsProvider = FutureProvider<AIRuntimeSettings>((
   ref,
 ) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (accessState?.canUseWorkspaceData != true) {
     return AIRuntimeSettings.fallback();
   }
@@ -1394,7 +1394,7 @@ final aiRuntimeSettingsProvider = FutureProvider<AIRuntimeSettings>((
 final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   ref,
 ) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (accessState?.canUseWorkspaceData != true) {
     return const PublishAccountsState();
   }
@@ -1468,7 +1468,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   }
 
   Future<void> refresh() async {
-    final previous = state.valueOrNull ?? const <ContentItem>[];
+    final previous = state.value ?? const <ContentItem>[];
     state = const AsyncLoading();
     final activeProjectId = ref.watch(activeProjectIdProvider);
     if (activeProjectId == null) {
@@ -1497,7 +1497,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   }
 
   Future<ApproveResult> approve(String id) async {
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     final item = current.where((c) => c.id == id).firstOrNull;
     state = AsyncData(current.where((c) => c.id != id).toList());
     try {
@@ -1651,7 +1651,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   }
 
   Future<void> reject(String id) async {
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     state = AsyncData(current.where((c) => c.id != id).toList());
     try {
       final api = ref.read(apiServiceProvider);
@@ -1663,7 +1663,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
   }
 
   void updateItem(ContentItem updated) {
-    final current = state.valueOrNull ?? [];
+    final current = state.value ?? [];
     state = AsyncData(
       current.map((c) => c.id == updated.id ? updated : c).toList(),
     );
@@ -1771,11 +1771,11 @@ final contentHistoryProvider = FutureProvider<List<ContentItem>>((ref) async {
 });
 
 final pendingCountProvider = Provider<int>((ref) {
-  return ref.watch(pendingContentProvider).valueOrNull?.length ?? 0;
+  return ref.watch(pendingContentProvider).value?.length ?? 0;
 });
 
 final backendStatusProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+  final accessState = ref.watch(appAccessStateProvider).value;
   if (accessState?.backendHealth != null) {
     return accessState!.backendHealth!;
   }
@@ -1792,7 +1792,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
   @override
   Future<AppSettings?> build() async {
     final authSession = ref.watch(authSessionProvider);
-    final accessState = ref.watch(appAccessStateProvider).valueOrNull;
+    final accessState = ref.watch(appAccessStateProvider).value;
     if (authSession.isLoading || authSession.status == AuthStatus.signedOut) {
       return null;
     }
@@ -1844,7 +1844,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
   }
 
   Future<void> toggleNotifications(bool enabled) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return;
     }
@@ -1862,7 +1862,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
   }
 
   Future<void> toggleIdeaPool(bool enabled) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) return;
 
     if (ref.read(authSessionProvider).isDemo) {
@@ -1885,7 +1885,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     required String key,
     required int value,
   }) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return;
     }
@@ -1921,7 +1921,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
         .read(appLanguagePreferenceProvider.notifier)
         .update(normalizedLanguage);
 
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return;
     }
@@ -1942,7 +1942,7 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
   }
 
   Future<AppSettings?> setDefaultProjectId(String? projectId) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return null;
     }
@@ -1970,11 +1970,11 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     if (state.hasError) {
       throw state.error!;
     }
-    return state.valueOrNull;
+    return state.value;
   }
 
   Future<AppSettings?> setNoProjectSelected() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return null;
     }
@@ -1997,14 +1997,14 @@ class UserSettingsNotifier extends AsyncNotifier<AppSettings?> {
     if (state.hasError) {
       throw state.error!;
     }
-    return state.valueOrNull;
+    return state.value;
   }
 
   Future<void> updateTheme(String theme) async {
     final normalizedTheme = normalizeAppThemePreference(theme);
     await ref.read(appThemePreferenceProvider.notifier).update(normalizedTheme);
 
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) {
       return;
     }
@@ -2033,7 +2033,7 @@ class ActiveProjectController extends AsyncNotifier<void> {
   Future<void> build() async {}
 
   Future<void> setActiveProject(String? projectId) async {
-    final previous = ref.read(currentUserSettingsProvider).valueOrNull;
+    final previous = ref.read(currentUserSettingsProvider).value;
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       if (projectId == null) {

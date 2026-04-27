@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  Widget _wrap(Widget child) {
+  Widget wrap(Widget child) {
     return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -39,7 +39,7 @@ void main() {
     });
 
     await tester.pumpWidget(
-      _wrap(
+      wrap(
         AiRuntimeSettingsCard(
           settings: settings,
           canManage: true,
@@ -74,7 +74,7 @@ void main() {
     String? selectedMode;
 
     await tester.pumpWidget(
-      _wrap(
+      wrap(
         AiRuntimeSettingsCard(
           settings: settings,
           canManage: true,

@@ -22,7 +22,7 @@ Future<void> copyDiagnosticsToClipboard(
 }) async {
   final diagnostics = ref.read(appDiagnosticsProvider);
   final authSession = ref.read(authSessionProvider);
-  final accessState = ref.read(appAccessStateProvider).valueOrNull;
+  final accessState = ref.read(appAccessStateProvider).value;
   final report = diagnostics.buildReport(
     title: title,
     authSession: authSession,

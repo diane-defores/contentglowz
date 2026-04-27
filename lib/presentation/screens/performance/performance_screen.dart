@@ -81,8 +81,8 @@ class PerformanceScreen extends ConsumerWidget {
     AsyncValue<List<ContentItem>> pendingAsync,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
-    final pending = pendingAsync.valueOrNull?.length ?? 0;
-    final history = historyAsync.valueOrNull ?? [];
+    final pending = pendingAsync.value?.length ?? 0;
+    final history = historyAsync.value ?? [];
     final published = history
         .where((c) => c.status == ContentStatus.published)
         .length;
@@ -125,7 +125,7 @@ class PerformanceScreen extends ConsumerWidget {
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
-    final history = historyAsync.valueOrNull ?? [];
+    final history = historyAsync.value ?? [];
     if (history.isEmpty) {
       return Text(
         context.tr('No content data yet'),
@@ -168,7 +168,7 @@ class PerformanceScreen extends ConsumerWidget {
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
-    final published = (historyAsync.valueOrNull ?? [])
+    final published = (historyAsync.value ?? [])
         .where((c) => c.status == ContentStatus.published)
         .toList();
 
@@ -254,7 +254,7 @@ class PerformanceScreen extends ConsumerWidget {
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
-    final history = historyAsync.valueOrNull ?? [];
+    final history = historyAsync.value ?? [];
     if (history.isEmpty) {
       return Text(
         context.tr('No data yet'),
@@ -293,10 +293,7 @@ class PerformanceScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   context.tr('Approval Rate'),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.approveColor,
-                  ),
+                  style: TextStyle(fontSize: 12, color: AppTheme.approveColor),
                 ),
               ],
             ),
@@ -341,7 +338,7 @@ class PerformanceScreen extends ConsumerWidget {
     ThemeData theme,
     AsyncValue<List<ContentItem>> historyAsync,
   ) {
-    final published = (historyAsync.valueOrNull ?? [])
+    final published = (historyAsync.value ?? [])
         .where((c) => c.status == ContentStatus.published)
         .take(5)
         .toList();

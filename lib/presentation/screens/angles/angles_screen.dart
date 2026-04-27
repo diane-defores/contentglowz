@@ -51,7 +51,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
     try {
       final api = ref.read(apiServiceProvider);
       final narrative = ref.read(lastNarrativeProvider);
-      final creatorProfile = ref.read(creatorProfileProvider).valueOrNull;
+      final creatorProfile = ref.read(creatorProfileProvider).value;
 
       final angles = await api.generateAngles(
         personaData: _selectedPersona!.toJson(),
@@ -573,7 +573,7 @@ class _AnglesScreenState extends ConsumerState<AnglesScreen> {
     setState(() => _isGenerating = true);
 
     final api = ref.read(apiServiceProvider);
-    final creatorProfile = ref.read(creatorProfileProvider).valueOrNull;
+    final creatorProfile = ref.read(creatorProfileProvider).value;
 
     try {
       final result = await api.dispatchPipeline(
