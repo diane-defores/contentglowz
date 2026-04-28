@@ -129,10 +129,11 @@ async def lifespan(app: FastAPI):
             await user_data_store.ensure_work_domain_table()
             await user_data_store.ensure_github_integration_table()
             await user_data_store.ensure_github_oauth_state_table()
+            await user_data_store.ensure_publish_integration_tables()
             rotation = await user_data_store.rotate_legacy_github_tokens()
             print(
                 "✅ UserSettings + CreatorProfile + CustomerPersona + "
-                "AffiliateLink + ActivityLog + WorkDomain tables ensured"
+                "AffiliateLink + ActivityLog + WorkDomain + Publish integration tables ensured"
             )
             if bool(rotation.get("key_configured")):
                 print(

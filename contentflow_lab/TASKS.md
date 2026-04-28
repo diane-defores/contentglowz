@@ -81,6 +81,18 @@ Note infra:
 - Le process PM2 live et le checkout de déploiement sont operator-only: les agents ne doivent pas les lire, les modifier, les tester, ni les redémarrer
 - Pour un incident prod, l'agent doit fournir le diagnostic et les actions opérateur à exécuter, sans toucher au checkout de déploiement ni à PM2
 
+### Audit: Code (2026-04-28)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Require an owned `content_record_id` for `POST /api/publish` so authenticated callers cannot publish arbitrary text outside the ContentFlow review/status lifecycle | ✅ done |
+| ✅ | Decision: keep one shared Zernio API key for all connected publish accounts for now; publishing is provider-wide, not per-user tenant-isolated | ✅ done |
+| ✅ | Implement `ProjectPublishAccount` (or equivalent) so each Zernio `account_id` is explicitly authorized for `userId + projectId` before `/api/publish` calls Zernio | ✅ done |
+| ✅ | Add product/operator guardrails for the shared Zernio model: do not present it as tenant-isolated until project-level account scoping is implemented | ✅ done |
+| ✅ | Add route regressions for project-scoped accounts, forged account refusal before provider call, local disconnect, connect state, scheduled, published and partial publish results | ✅ done |
+| 🟡 | Run manual Zernio smoke with real `ZERNIO_API_KEY`, two projects, one connected social account, publish success, forged account `403`, and provider error recovery before prod rollout | 📋 todo |
+| 🟡 | Modernize deprecated Pydantic v1 validators and FastAPI `regex=` query parameters surfaced by the publish-router test run | 📋 todo |
+
 ### Audit: Code (2026-04-07)
 
 | Sev | Issue | Location | Status |

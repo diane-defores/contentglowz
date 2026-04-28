@@ -1398,9 +1398,13 @@ final publishAccountsStateProvider = FutureProvider<PublishAccountsState>((
   if (accessState?.canUseWorkspaceData != true) {
     return const PublishAccountsState();
   }
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return const PublishAccountsState();
+  }
   final api = ref.watch(apiServiceProvider);
   try {
-    final accounts = await api.fetchPublishAccounts();
+    final accounts = await api.fetchPublishAccounts(projectId: activeProjectId);
     return PublishAccountsState(accounts: accounts);
   } on ApiException catch (error) {
     final message = error.message.trim();
@@ -1574,16 +1578,32 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
 
       final platforms = <Map<String, String>>[];
       final missingAccounts = <String>[];
+      final ambiguousAccounts = <String>[];
 
       for (final channel in publishableChannels) {
         final platform = channelToPlatform(channel);
         if (platform == null) continue;
         final account = _resolvePublishAccount(accounts, platform);
         if (account == null) {
-          missingAccounts.add(platform);
+          if (_hasAmbiguousPublishAccount(accounts, platform)) {
+            ambiguousAccounts.add(platform);
+          } else {
+            missingAccounts.add(platform);
+          }
           continue;
         }
         platforms.add({'platform': platform, 'account_id': account.id});
+      }
+
+      if (ambiguousAccounts.isNotEmpty) {
+        ref.invalidate(contentHistoryProvider);
+        return ApproveResult(
+          approved: true,
+          published: false,
+          message:
+              'Approved "${item.title}", but multiple LATE accounts are available without a default for: ${ambiguousAccounts.join(', ')}. Choose a default account in Settings.',
+          severity: ApproveSeverity.warning,
+        );
       }
 
       if (platforms.isEmpty) {
@@ -1621,11 +1641,12 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
 
       if (!success) {
         final error = (response['error'] ?? 'Publishing failed').toString();
+        final status = (response['status'] ?? '').toString();
         return ApproveResult(
           approved: true,
           published: false,
           message:
-              'Approved "${item.title}", but publish failed: $error${warnings.isNotEmpty ? ' (${warnings.join(' | ')})' : ''}.',
+              'Approved "${item.title}", but publish ${status == 'partial' ? 'partially failed' : 'failed'}: $error${warnings.isNotEmpty ? ' (${warnings.join(' | ')})' : ''}.',
           severity: ApproveSeverity.warning,
         );
       }
@@ -1699,17 +1720,25 @@ PublishAccount? _resolvePublishAccount(
   List<PublishAccount> accounts,
   String platform,
 ) {
-  for (final account in accounts) {
-    if (account.platform == platform && account.isActive) {
-      return account;
-    }
-  }
-  for (final account in accounts) {
-    if (account.platform == platform) {
-      return account;
-    }
-  }
+  final active = accounts
+      .where((account) => account.platform == platform && account.isActive)
+      .toList();
+  if (active.isEmpty) return null;
+  final defaults = active.where((account) => account.isDefault).toList();
+  if (defaults.length == 1) return defaults.single;
+  if (active.length == 1) return active.single;
   return null;
+}
+
+bool _hasAmbiguousPublishAccount(
+  List<PublishAccount> accounts,
+  String platform,
+) {
+  final active = accounts
+      .where((account) => account.platform == platform && account.isActive)
+      .toList();
+  if (active.length < 2) return false;
+  return active.where((account) => account.isDefault).length != 1;
 }
 
 bool _isNonCriticalReadFailure(Object error) {

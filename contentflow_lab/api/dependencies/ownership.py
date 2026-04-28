@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 from agents.seo.config.project_store import project_store
 from api.dependencies.auth import CurrentUser
+from api.services.user_data_store import user_data_store
 from status.schemas import ContentRecord
 from status.service import ContentNotFoundError, StatusService
 
@@ -83,3 +84,33 @@ async def require_owned_content_record(
 
     await require_owned_project_id(record.project_id, current_user)
     return record
+
+
+async def require_active_publish_account(
+    *,
+    current_user: CurrentUser,
+    project_id: str,
+    account_id: str,
+    platform: str,
+    provider: str = "zernio",
+) -> dict:
+    """Ensure a publish account mapping is active for this user/project/platform."""
+    await require_owned_project_id(project_id, current_user)
+    try:
+        account = await user_data_store.get_publish_account(
+            current_user.user_id,
+            project_id,
+            account_id,
+            provider=provider,
+            platform=platform,
+            active_only=True,
+        )
+    except RuntimeError as exc:
+        raise _database_not_configured(str(exc)) from exc
+
+    if not account:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Publish account is not authorized for this project.",
+        )
+    return account

@@ -2139,15 +2139,19 @@ class ApiService {
     }
   }
 
-  Future<List<PublishAccount>> fetchPublishAccounts() async {
+  Future<List<PublishAccount>> fetchPublishAccounts({
+    required String projectId,
+  }) async {
     if (allowDemoData) {
       return const [];
     }
 
+    final query = {'project_id': projectId};
     try {
       final data = await _getCachedData(
         '/api/publish/accounts',
-        cacheKey: _publishAccountsCacheKey,
+        queryParameters: query,
+        cacheKey: _cacheKeyFor(_publishAccountsCacheKey, query),
       );
       final accounts = _asMap(data)['accounts'] ?? [];
       if (accounts is! List) {
@@ -2419,24 +2423,36 @@ class ApiService {
   }
 
   /// Get OAuth connect URL for a platform. Opens in browser to authorize.
-  Future<String?> getConnectUrl(String platform) async {
+  Future<String?> getConnectUrl(
+    String platform, {
+    required String projectId,
+  }) async {
     if (allowDemoData) return null;
 
     try {
-      final response = await _dio.get('/api/publish/connect/$platform');
+      final response = await _dio.get(
+        '/api/publish/connect/$platform',
+        queryParameters: {'project_id': projectId},
+      );
       final data = _asMap(response.data);
-      return data['connect_url'] as String?;
+      return (data['connect_url'] ?? data['authUrl']) as String?;
     } on DioException {
       return null;
     }
   }
 
   /// Disconnect a social account.
-  Future<bool> disconnectAccount(String accountId) async {
+  Future<bool> disconnectAccount(
+    String accountId, {
+    required String projectId,
+  }) async {
     if (allowDemoData) return false;
 
     try {
-      await _dio.delete('/api/publish/accounts/$accountId');
+      await _dio.delete(
+        '/api/publish/accounts/$accountId',
+        queryParameters: {'project_id': projectId},
+      );
       return true;
     } on DioException {
       return false;
@@ -2446,10 +2462,10 @@ class ApiService {
   Future<Map<String, dynamic>> publishContent({
     required String content,
     required List<Map<String, String>> platforms,
+    required String contentRecordId,
     String? title,
     List<String> mediaUrls = const [],
     List<String> tags = const [],
-    String? contentRecordId,
     bool publishNow = true,
   }) async {
     if (allowDemoData) {
@@ -2481,7 +2497,7 @@ class ApiService {
         method: 'POST',
         path: '/api/publish',
         dedupeKey:
-            'publish:${contentRecordId ?? title ?? content.hashCode}:${platforms.map((entry) => entry['platform']).join(',')}',
+            'publish:$contentRecordId:${platforms.map((entry) => entry['platform']).join(',')}',
         payload: payload,
         blockedMessage:
             'Publishing is unavailable until FastAPI and publish integrations are back.',

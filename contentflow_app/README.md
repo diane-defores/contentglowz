@@ -26,7 +26,6 @@ What is already in place:
 What still blocks deleting the JavaScript app/runtime:
 - full runtime verification of the new ClerkJS web path is still pending
 - native auth remains intentionally disabled until Clerk ships a stable Flutter SDK
-- publish metadata persistence is not finished in the backend
 - Next.js decommission has not been validated end-to-end yet
 
 ## Product Flow
@@ -104,6 +103,26 @@ Notes:
 - `401/403` pauses replay until the user signs in again.
 - validation/business `4xx` errors move queued actions to manual review.
 - Drip reads now only fallback to cache for real offline connectivity failures so malformed backend payloads stay visible.
+
+## Zernio / LATE Publishing
+
+Publishing is server-owned and project-scoped:
+- FastAPI reads `ZERNIO_API_KEY` or legacy `LATE_API_KEY` server-side only.
+- Flutter never receives or sends a Zernio API key or `profileId`.
+- Each ContentFlow project maps to a server-persisted Zernio profile.
+- Connected accounts are stored as `ProjectPublishAccount` rows scoped to `userId + projectId + provider + platform + providerAccountId`.
+- `/api/publish/accounts`, `/api/publish/connect/{platform}`, and `/api/publish/accounts/{account_id}` require `project_id`.
+- `POST /api/publish` requires an owned `content_record_id` and validates every selected account mapping before calling Zernio.
+
+Supported direct publish channels in this app are Twitter/X, LinkedIn, Instagram, YouTube, and TikTok. WordPress and Ghost remain excluded from Zernio auto-publish in this release and must show a clear unsupported-state message.
+
+Manual verification checklist:
+- Set `ZERNIO_API_KEY` on the FastAPI server.
+- Create two projects for the same signed-in user.
+- Connect a social account from Settings while Project A is active.
+- Confirm Project B does not list or use Project A's account.
+- Approve a publishable item and verify `ContentRecord.metadata.publish` includes `providerPostId`, `publishStatus`, `platformResults`, and recoverable error details for `partial` or `failed`.
+- Try a forged `account_id` and confirm the backend returns `403` before any Zernio call.
 
 ## Quick Start
 
@@ -194,6 +213,8 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   Public app URL used by the dedicated ClerkJS auth routes
 - `FEEDBACK_ADMIN_EMAILS` (optional)
   Comma-separated allowlist compiled into the frontend only to show the feedback admin entry point
+- `ZERNIO_API_KEY` / `LATE_API_KEY`
+  Server-only FastAPI secret for Zernio publishing. Never expose it to Flutter or Vercel frontend build defines.
 - `PORT`
   Port used by `server.js` / `pm2-web.sh` / `build.sh --serve`
 

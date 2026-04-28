@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-04-28]
+
+### Added
+- Added project-scoped Zernio/LATE publish persistence for profiles, account mappings, and one-use connect sessions.
+- Added backend regressions for project-scoped account listing, forged account refusal before provider calls, connect state handling, local unlink, scheduled/published results, and partial publish recovery.
+
+### Changed
+- Scoped publish account listing, connect, disconnect, and approve-to-publish flows to the active ContentFlow project instead of a provider-wide account list.
+- Documented server-only `ZERNIO_API_KEY`, unsupported WordPress/Ghost auto-publish behavior, and manual Zernio smoke verification steps.
+
+### Security
+- Prevented client-supplied or cross-project Zernio account ids from reaching the provider before local `userId + projectId` authorization succeeds.
+- Revalidated Zernio connect callbacks against persisted server state and current project ownership before creating local mappings.
+
 ## [2026-04-27]
 
 ### Changed
@@ -235,7 +249,8 @@ The format is based on Keep a Changelog.
 - Flutter router, entry screen, onboarding, and Dio client depend on centralized session state.
 - Demo onboarding flow locked to one pre-populated public repository.
 - Onboarding creates a real workspace via FastAPI.
-- FastAPI publish routes require auth, verify ownership, persist Zernio metadata.
+- FastAPI publish routes require auth, verify ownership, persist Zernio metadata, and scope Zernio/LATE accounts to `userId + projectId`.
+- Zernio connect/disconnect/account listing now uses local project-scoped mappings instead of provider-wide account exposure.
 
 ### Fixed
 - Scheduling API method aligned with FastAPI (POST → PATCH).

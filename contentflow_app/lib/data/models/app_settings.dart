@@ -4,7 +4,8 @@ const projectSelectionModeNone = 'none';
 
 String normalizeProjectSelectionMode(String? raw) {
   final value = (raw ?? projectSelectionModeAuto).trim().toLowerCase();
-  if (value == projectSelectionModeSelected || value == projectSelectionModeNone) {
+  if (value == projectSelectionModeSelected ||
+      value == projectSelectionModeNone) {
     return value;
   }
   return projectSelectionModeAuto;
@@ -136,19 +137,27 @@ class AppSettings {
 
 class PublishAccount {
   final String id;
+  final String projectId;
+  final String provider;
   final String platform;
+  final String providerAccountId;
   final String username;
   final String displayName;
   final String? avatar;
   final String status;
+  final bool isDefault;
 
   const PublishAccount({
     required this.id,
+    required this.projectId,
+    required this.provider,
     required this.platform,
+    required this.providerAccountId,
     required this.username,
     required this.displayName,
     this.avatar,
     this.status = 'active',
+    this.isDefault = false,
   });
 
   bool get isActive => status.toLowerCase() == 'active';
@@ -160,11 +169,17 @@ class PublishAccount {
 
     return PublishAccount(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
+      projectId: (json['projectId'] ?? json['project_id'] ?? '').toString(),
+      provider: (json['provider'] ?? 'zernio').toString(),
       platform: (json['platform'] ?? '').toString().toLowerCase(),
+      providerAccountId: (json['providerAccountId'] ?? json['accountId'] ?? '')
+          .toString(),
       username: username,
       displayName: displayName.isEmpty ? username : displayName,
       avatar: json['avatar'] as String?,
       status: (json['status'] ?? 'active').toString(),
+      isDefault:
+          json['isDefault'] as bool? ?? json['is_default'] as bool? ?? false,
     );
   }
 }

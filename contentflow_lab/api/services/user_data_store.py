@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import secrets
 import string
 import uuid
 from datetime import datetime
@@ -404,6 +405,456 @@ class UserDataStore:
             )
             """
         )
+
+    async def ensure_publish_integration_tables(self) -> None:
+        """Create project-scoped publish integration tables (idempotent)."""
+        self._ensure_connected()
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ProjectPublishProfile (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                providerProfileId TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL
+            )
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_publish_profile_scope
+            ON ProjectPublishProfile(userId, projectId, provider)
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ProjectPublishAccount (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                platform TEXT NOT NULL,
+                providerAccountId TEXT NOT NULL,
+                providerProfileId TEXT NOT NULL,
+                displayName TEXT,
+                username TEXT,
+                avatar TEXT,
+                status TEXT NOT NULL DEFAULT 'active',
+                isDefault INTEGER NOT NULL DEFAULT 0,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                lastSyncedAt INTEGER
+            )
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_publish_account_provider_scope
+            ON ProjectPublishAccount(userId, projectId, provider, providerAccountId)
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_publish_account_project_platform
+            ON ProjectPublishAccount(userId, projectId, provider, platform, status)
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS PublishConnectSession (
+                state TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                provider TEXT NOT NULL,
+                platform TEXT NOT NULL,
+                providerProfileId TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                expiresAt INTEGER NOT NULL,
+                consumedAt INTEGER
+            )
+            """
+        )
+        await self.db_client.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_publish_connect_session_scope
+            ON PublishConnectSession(userId, projectId, provider, platform, expiresAt)
+            """
+        )
+
+    def _publish_account_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "provider": row[3],
+            "platform": row[4],
+            "providerAccountId": row[5],
+            "providerProfileId": row[6],
+            "displayName": row[7],
+            "username": row[8],
+            "avatar": row[9],
+            "status": row[10] or "active",
+            "isDefault": bool(row[11]),
+            "createdAt": _ts(row[12]),
+            "updatedAt": _ts(row[13]),
+            "lastSyncedAt": _ts(row[14]) if row[14] else None,
+        }
+
+    def _publish_profile_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "provider": row[3],
+            "providerProfileId": row[4],
+            "createdAt": _ts(row[5]),
+            "updatedAt": _ts(row[6]),
+        }
+
+    def _publish_session_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "state": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "provider": row[3],
+            "platform": row[4],
+            "providerProfileId": row[5],
+            "createdAt": _ts(row[6]),
+            "expiresAt": _ts(row[7]),
+            "consumedAt": _ts(row[8]) if row[8] else None,
+        }
+
+    async def get_publish_profile(
+        self,
+        user_id: str,
+        project_id: str,
+        provider: str = "zernio",
+    ) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT id, userId, projectId, provider, providerProfileId, createdAt, updatedAt
+            FROM ProjectPublishProfile
+            WHERE userId = ? AND projectId = ? AND provider = ?
+            LIMIT 1
+            """,
+            [user_id, project_id, provider],
+        )
+        if not rs.rows:
+            return None
+        return self._publish_profile_from_row(rs.rows[0])
+
+    async def upsert_publish_profile(
+        self,
+        user_id: str,
+        project_id: str,
+        provider_profile_id: str,
+        provider: str = "zernio",
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        existing = await self.get_publish_profile(user_id, project_id, provider)
+        if existing:
+            await self.db_client.execute(
+                """
+                UPDATE ProjectPublishProfile
+                SET providerProfileId = ?, updatedAt = ?
+                WHERE id = ? AND userId = ?
+                """,
+                [provider_profile_id, now, existing["id"], user_id],
+            )
+        else:
+            await self.db_client.execute(
+                """
+                INSERT INTO ProjectPublishProfile (
+                    id, userId, projectId, provider, providerProfileId, createdAt, updatedAt
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    str(uuid.uuid4()),
+                    user_id,
+                    project_id,
+                    provider,
+                    provider_profile_id,
+                    now,
+                    now,
+                ],
+            )
+        profile = await self.get_publish_profile(user_id, project_id, provider)
+        if not profile:
+            raise RuntimeError("Failed to persist publish profile")
+        return profile
+
+    async def create_publish_connect_session(
+        self,
+        user_id: str,
+        project_id: str,
+        *,
+        provider: str,
+        platform: str,
+        provider_profile_id: str,
+        ttl_seconds: int = 900,
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        state = secrets.token_urlsafe(32)
+        await self.db_client.execute(
+            """
+            INSERT INTO PublishConnectSession (
+                state, userId, projectId, provider, platform, providerProfileId,
+                createdAt, expiresAt, consumedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
+            """,
+            [
+                state,
+                user_id,
+                project_id,
+                provider,
+                platform,
+                provider_profile_id,
+                now,
+                now + ttl_seconds,
+            ],
+        )
+        return {
+            "state": state,
+            "userId": user_id,
+            "projectId": project_id,
+            "provider": provider,
+            "platform": platform,
+            "providerProfileId": provider_profile_id,
+            "createdAt": _ts(now),
+            "expiresAt": _ts(now + ttl_seconds),
+            "consumedAt": None,
+        }
+
+    async def consume_publish_connect_session(self, state: str) -> dict[str, Any] | None:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        try:
+            rs = await self.db_client.execute(
+                """
+                UPDATE PublishConnectSession
+                SET consumedAt = ?
+                WHERE state = ? AND expiresAt >= ? AND consumedAt IS NULL
+                RETURNING state, userId, projectId, provider, platform, providerProfileId,
+                          createdAt, expiresAt, consumedAt
+                """,
+                [now, state, now],
+            )
+            if rs.rows:
+                return self._publish_session_from_row(rs.rows[0])
+            return None
+        except Exception as exc:
+            message = str(exc).upper()
+            if "RETURNING" not in message and "SQL_PARSE_ERROR" not in message:
+                raise
+
+        async with self._oauth_state_lock:
+            rs = await self.db_client.execute(
+                """
+                SELECT state, userId, projectId, provider, platform, providerProfileId,
+                       createdAt, expiresAt, consumedAt
+                FROM PublishConnectSession
+                WHERE state = ? AND expiresAt >= ?
+                LIMIT 1
+                """,
+                [state, now],
+            )
+            if not rs.rows:
+                return None
+            session = self._publish_session_from_row(rs.rows[0])
+            if session["consumedAt"] is not None:
+                return None
+            await self.db_client.execute(
+                """
+                UPDATE PublishConnectSession
+                SET consumedAt = ?
+                WHERE state = ? AND consumedAt IS NULL
+                """,
+                [now, state],
+            )
+            session["consumedAt"] = _ts(now)
+            return session
+
+    async def list_publish_accounts(
+        self,
+        user_id: str,
+        project_id: str,
+        *,
+        provider: str = "zernio",
+        include_inactive: bool = False,
+    ) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        query = """
+            SELECT id, userId, projectId, provider, platform, providerAccountId,
+                   providerProfileId, displayName, username, avatar, status,
+                   isDefault, createdAt, updatedAt, lastSyncedAt
+            FROM ProjectPublishAccount
+            WHERE userId = ? AND projectId = ? AND provider = ?
+        """
+        params: list[Any] = [user_id, project_id, provider]
+        if not include_inactive:
+            query += " AND status = 'active'"
+        query += " ORDER BY platform ASC, isDefault DESC, updatedAt DESC"
+        rs = await self.db_client.execute(query, params)
+        return [self._publish_account_from_row(row) for row in rs.rows]
+
+    async def get_publish_account(
+        self,
+        user_id: str,
+        project_id: str,
+        account_id: str,
+        *,
+        provider: str = "zernio",
+        platform: str | None = None,
+        active_only: bool = True,
+    ) -> dict[str, Any] | None:
+        self._ensure_connected()
+        query = """
+            SELECT id, userId, projectId, provider, platform, providerAccountId,
+                   providerProfileId, displayName, username, avatar, status,
+                   isDefault, createdAt, updatedAt, lastSyncedAt
+            FROM ProjectPublishAccount
+            WHERE userId = ? AND projectId = ? AND provider = ?
+              AND (id = ? OR providerAccountId = ?)
+        """
+        params: list[Any] = [user_id, project_id, provider, account_id, account_id]
+        if platform is not None:
+            query += " AND platform = ?"
+            params.append(platform)
+        if active_only:
+            query += " AND status = 'active'"
+        query += " LIMIT 1"
+        rs = await self.db_client.execute(query, params)
+        if not rs.rows:
+            return None
+        return self._publish_account_from_row(rs.rows[0])
+
+    async def upsert_publish_account(
+        self,
+        user_id: str,
+        project_id: str,
+        *,
+        provider: str,
+        platform: str,
+        provider_account_id: str,
+        provider_profile_id: str,
+        display_name: str | None = None,
+        username: str | None = None,
+        avatar: str | None = None,
+        status: str = "active",
+        is_default: bool = False,
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        now = int(datetime.now().timestamp())
+        existing = await self.get_publish_account(
+            user_id,
+            project_id,
+            provider_account_id,
+            provider=provider,
+            active_only=False,
+        )
+        if is_default:
+            await self.db_client.execute(
+                """
+                UPDATE ProjectPublishAccount
+                SET isDefault = 0, updatedAt = ?
+                WHERE userId = ? AND projectId = ? AND provider = ? AND platform = ?
+                """,
+                [now, user_id, project_id, provider, platform],
+            )
+        if existing:
+            await self.db_client.execute(
+                """
+                UPDATE ProjectPublishAccount
+                SET platform = ?, providerProfileId = ?, displayName = ?, username = ?,
+                    avatar = ?, status = ?, isDefault = ?, updatedAt = ?, lastSyncedAt = ?
+                WHERE id = ? AND userId = ?
+                """,
+                [
+                    platform,
+                    provider_profile_id,
+                    display_name,
+                    username,
+                    avatar,
+                    status,
+                    1 if is_default else int(existing.get("isDefault", False)),
+                    now,
+                    now,
+                    existing["id"],
+                    user_id,
+                ],
+            )
+            account_id = existing["id"]
+        else:
+            account_id = str(uuid.uuid4())
+            await self.db_client.execute(
+                """
+                INSERT INTO ProjectPublishAccount (
+                    id, userId, projectId, provider, platform, providerAccountId,
+                    providerProfileId, displayName, username, avatar, status,
+                    isDefault, createdAt, updatedAt, lastSyncedAt
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    account_id,
+                    user_id,
+                    project_id,
+                    provider,
+                    platform,
+                    provider_account_id,
+                    provider_profile_id,
+                    display_name,
+                    username,
+                    avatar,
+                    status,
+                    1 if is_default else 0,
+                    now,
+                    now,
+                    now,
+                ],
+            )
+        account = await self.get_publish_account(
+            user_id,
+            project_id,
+            account_id,
+            provider=provider,
+            active_only=False,
+        )
+        if not account:
+            raise RuntimeError("Failed to persist publish account")
+        return account
+
+    async def unlink_publish_account(
+        self,
+        user_id: str,
+        project_id: str,
+        account_id: str,
+        *,
+        provider: str = "zernio",
+    ) -> bool:
+        self._ensure_connected()
+        existing = await self.get_publish_account(
+            user_id,
+            project_id,
+            account_id,
+            provider=provider,
+            active_only=True,
+        )
+        if not existing:
+            return False
+        await self.db_client.execute(
+            """
+            UPDATE ProjectPublishAccount
+            SET status = 'inactive', isDefault = 0, updatedAt = ?
+            WHERE id = ? AND userId = ? AND projectId = ?
+            """,
+            [int(datetime.now().timestamp()), existing["id"], user_id, project_id],
+        )
+        return True
 
     async def rotate_legacy_github_tokens(self) -> dict[str, int | bool]:
         """

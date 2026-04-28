@@ -1296,8 +1296,26 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       return;
     }
 
+    final activeProjectId = ref.read(activeProjectIdProvider);
+    if (activeProjectId == null) {
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr(
+          'Select a project before connecting a publish account.',
+        ),
+        scope: 'settings.channel.no_project',
+        contextData: {'channel': channelName, 'platform': platform},
+        backgroundColor: AppTheme.warningColor.withAlpha(200),
+      );
+      return;
+    }
+
     final api = ref.read(apiServiceProvider);
-    final connectUrl = await api.getConnectUrl(platform);
+    final connectUrl = await api.getConnectUrl(
+      platform,
+      projectId: activeProjectId,
+    );
 
     if (!mounted) return;
 
@@ -1345,6 +1363,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
+                ref.invalidate(publishAccountsStateProvider);
                 ref.invalidate(publishAccountsProvider);
               },
               child: Text(context.tr('Refresh')),
@@ -1375,6 +1394,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     final accounts = ref.read(publishAccountsProvider).value ?? [];
     final account = _accountForPlatform(accounts, platform);
     if (account == null) return;
+    final activeProjectId = ref.read(activeProjectIdProvider);
+    if (activeProjectId == null) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1409,10 +1430,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     if (confirmed != true || !mounted) return;
 
     final api = ref.read(apiServiceProvider);
-    final success = await api.disconnectAccount(account.id);
+    final success = await api.disconnectAccount(
+      account.id,
+      projectId: activeProjectId,
+    );
 
     if (mounted) {
       if (success) {
+        ref.invalidate(publishAccountsStateProvider);
         ref.invalidate(publishAccountsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1446,14 +1471,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     List<PublishAccount> accounts,
     String platform,
   ) {
-    for (final account in accounts) {
-      if (account.platform == platform && account.isActive) {
-        return account;
-      }
-    }
-    for (final account in accounts) {
-      if (account.platform == platform) return account;
-    }
+    final active = accounts
+        .where((account) => account.platform == platform && account.isActive)
+        .toList();
+    if (active.isEmpty) return null;
+    final defaults = active.where((account) => account.isDefault).toList();
+    if (defaults.length == 1) return defaults.single;
+    if (active.length == 1) return active.single;
     return null;
   }
 }

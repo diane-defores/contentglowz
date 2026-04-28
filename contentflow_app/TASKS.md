@@ -269,6 +269,17 @@
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
 > **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing, finir la passe i18n secondaire et finaliser les crédits DataForSEO
 
+### Audit: Code (2026-04-28)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| ✅ | Replace web-auth diagnostic `innerHTML` rendering with text-node construction on `/sign-in`, `/sign-up`, and `/sso-callback` | ✅ done |
+| ✅ | Make `ApiService.publishContent` require `contentRecordId` to match the backend publish authorization contract | ✅ done |
+| ✅ | Move publishing account selection to the active project: Settings binds Zernio accounts to `userId + projectId`, not a global platform list | ✅ done |
+| 🟡 | Run manual Zernio smoke with real `ZERNIO_API_KEY`, two projects, one connected social account, publish success, forged account `403`, and provider error recovery before prod rollout | 📋 todo |
+| 🟠 | Add a browser regression test that loads `/sso-callback?redirect_url=<img...>` and asserts diagnostics render as text, not HTML | 📋 todo |
+| 🟡 | Add a Flutter unit test around `publishContent` payload construction with required `contentRecordId` | 📋 todo |
+
 ### Audit: Code (2026-04-27)
 
 | Pri | Task | Status |

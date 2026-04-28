@@ -152,6 +152,18 @@ Notes:
 - destructive deletes
 - complex server-first jobs (queue/execute/tick/import-like operations)
 
+## 4.5 Zernio/LATE publish scoping
+
+- The Zernio API key is server-only (`ZERNIO_API_KEY`, with `LATE_API_KEY` as a legacy alias).
+- Flutter calls project-scoped publish endpoints and never provides a Zernio profile id.
+- FastAPI persists:
+  - `ProjectPublishProfile`: `userId + projectId + provider -> providerProfileId`.
+  - `ProjectPublishAccount`: authorized accounts scoped to `userId + projectId + provider + platform`.
+  - `PublishConnectSession`: opaque one-use OAuth state expiring in 15 minutes.
+- `POST /api/publish` requires an owned `content_record_id`, resolves its project, validates each account mapping locally, then calls Zernio.
+- `partial`, `failed`, timeout, and provider errors remain recoverable and must not transition content to a full `published` state.
+- WordPress and Ghost are not supported by the Zernio auto-publish contract in this release.
+
 ## 5) Build/deployment topology
 
 ### 5.1 Local/web artifacts
