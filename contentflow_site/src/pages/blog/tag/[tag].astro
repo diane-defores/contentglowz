@@ -51,7 +51,7 @@ const { label, posts } = Astro.props;
 
     <div class="posts-grid">
       {posts.map((post) => (
-        <a href={`/blog/${post.slug}`} class="post-card">
+        <a href={`/blog/${post.id}`} class="post-card">
           {post.data.cover && (
             <img src={post.data.cover} alt={`Illustration for ${post.data.title}`} width="400" height="210" />
           )}

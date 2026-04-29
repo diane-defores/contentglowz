@@ -3,9 +3,9 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, next work is migration + production hardening
+**Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Implement the ready Astro 6 migration for `contentflow_site`, then finish the backend feedback production configuration and manual Zernio smoke validation.
+**Top priority**: Finish the backend feedback production configuration and manual Zernio smoke validation.
 
 ---
 
@@ -24,8 +24,8 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using `contentflow_site/specs/SPEC-migrate-astro-v6.md` | 📋 todo |
-| 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | 📋 todo |
+| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using `contentflow_site/specs/SPEC-migrate-astro-v6.md` | ✅ done |
+| 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | ✅ done |
 | ✅ | Website auth handoff, resilience messaging, and brand documentation are in place | ✅ done |
 
 ---

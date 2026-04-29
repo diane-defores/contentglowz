@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "contentflow_site"
 created: "2026-04-27"
-updated: "2026-04-27"
+updated: "2026-04-28"
 status: ready
 source_skill: sf-spec
 scope: "migration"
@@ -489,3 +489,21 @@ No user questions were asked by instruction. The implementation should proceed w
 - Assumption: `docs` collection remains defined for type/content access but remains unexposed unless existing routes expose it later.
 - Assumption: if Markdown ToC anchors diverge, aligning `BlogPost.astro` to Astro 6 heading IDs is preferred over preserving Astro 5 IDs globally.
 - Assumption: official Astro v6 docs are the source of truth; community migration notes are not needed unless a concrete build issue appears.
+
+## Current Chantier Flow
+
+- sf-spec: implemented
+- sf-ready: implemented
+- sf-start: implemented
+- sf-verify: partial
+- sf-end: closed
+- sf-ship: shipped
+
+## Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|----------|-------|-------|--------|--------|-----------|
+| 2026-04-29 | sf-start | gpt-5 | Implemented Astro 6 migration, updated docs, regenerated lockfile, and validated build/preview outputs | implemented | /sf-verify Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-04-29 | sf-verify | gpt-5 | Verified Astro 6 migration against spec, docs, dependencies, generated output, bug gate, and quick risk checks | partial | Align root tracker and verify with npm 11 / Vercel preview before final ship |
+| 2026-04-29 | sf-end | gpt-5 | Closed Astro 6 migration session, aligned trackers, and updated changelog | closed | /sf-ship Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-04-29 | sf-ship | gpt-5 | Prepared commit and push for the Astro 6 migration closure | shipped | Verify Vercel preview after push |

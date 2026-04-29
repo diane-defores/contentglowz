@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-04-29
+
+### Changed
+- Migrated the site from Astro 5 to Astro 6 with Content Layer collections in `src/content.config.ts`.
+- Updated dynamic content routes, article rendering, table-of-contents headings, related links, and breadcrumbs to use Astro 6 `render(entry)` and entry IDs.
+- Updated site documentation references from the legacy `src/content/config.ts` path to `src/content.config.ts`.
+
+### Removed
+- Removed the legacy Astro content collections config at `src/content/config.ts`.
+
 ## 2026-04-22
 
 ### Added

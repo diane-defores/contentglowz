@@ -8,7 +8,7 @@ const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const featured = posts.find((p) => p.data.featured);
-const rest = posts.filter((p) => p.slug !== featured?.slug);
+const rest = posts.filter((p) => p.id !== featured?.id);
 ---
 
 <Layout
@@ -26,7 +26,7 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
 
     <!-- Featured post -->
     {featured && (
-      <a href={`/blog/${featured.slug}`} class="featured-card">
+      <a href={`/blog/${featured.id}`} class="featured-card">
         {featured.data.cover && (
           <img src={featured.data.cover} alt={`Featured: ${featured.data.title}`} width="800" height="420" />
         )}
@@ -56,7 +56,7 @@ const rest = posts.filter((p) => p.slug !== featured?.slug);
         <h2 class="section-title">All articles</h2>
         <div class="posts-grid">
           {rest.map((post) => (
-            <a href={`/blog/${post.slug}`} class="post-card">
+            <a href={`/blog/${post.id}`} class="post-card">
               {post.data.cover && (
                 <img src={post.data.cover} alt={`Illustration for ${post.data.title}`} width="400" height="210" />
               )}

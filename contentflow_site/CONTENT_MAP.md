@@ -70,7 +70,7 @@ Les claims de ces surfaces doivent rester alignés sur `contentflow_app` (source
 | Startup journey | `src/content/startup-journey/*` + `src/pages/startup-journey/[...slug].astro` | Crédibilité marque et storytelling | Markdown + pages dynamiques | Histoire produit | Mise à jour d’expérience historique |
 | Technical optimization | `src/content/technical-optimization/*` + `src/pages/technical-optimization/[...slug].astro` | Confiance technique et décisions | Markdown | GUIDELINES / repos liés | Changement d’architecture |
 | Conversion runtime | `src/pages/launch.astro`, `sign-in.astro`, `sign-up.astro` | Handoff web vers app | Astro | APP_WEB_URL / GUIDE produit | Ajustement de tunnel |
-| Support documentaire | `src/pages/privacy.astro`, `src/content/config.ts`, `astro.config.mjs` | Confiance, SEO technique, conformité | mixte | Conventions techniques | Modification légale ou technique |
+| Support documentaire | `src/pages/privacy.astro`, `src/content.config.ts`, `astro.config.mjs` | Confiance, SEO technique, conformité | mixte | Conventions techniques | Modification légale ou technique |
 
 ## Règles de mise à jour
 - Toute modification du tunnel de conversion met à jour `GTM.md` + `PRODUCT.md`.

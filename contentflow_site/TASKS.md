@@ -3,7 +3,7 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Astro 5.17, TypeScript, static Vercel deployment | **Phase**: Astro 6 migration ready
+**Stack**: Astro 6.1, TypeScript, static Vercel deployment | **Phase**: Astro 6 migrated and closed
 
 **Top priority**: Implement the Astro 6 migration from `specs/SPEC-migrate-astro-v6.md` without breaking content routes, sitemap, SEO metadata, or app handoff routes.
 
@@ -13,9 +13,9 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using the ready spec | 📋 todo |
-| 🟠 | Validate `npm run build` after migration and compare generated content routes, sitemap, `robots.txt`, and auth handoff pages | 📋 todo |
-| 🟡 | Update site docs and changelog after the migration ships | 📋 todo |
+| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using the ready spec | ✅ done |
+| 🟠 | Validate `npm run build` after migration and compare generated content routes, sitemap, `robots.txt`, and auth handoff pages | ✅ done |
+| 🟡 | Update site docs and changelog after the migration ships | ✅ done |
 
 ---
 

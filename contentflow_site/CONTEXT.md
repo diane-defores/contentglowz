@@ -24,7 +24,7 @@ evidence:
   - src/layouts
   - src/components
   - src/content
-  - src/content/config.ts
+  - src/content.config.ts
   - src/config/site.ts
   - astro.config.mjs
   - vercel.json
@@ -52,7 +52,7 @@ Le site assure:
 
 ## Architecture logique (résumée)
 1. Les routes d’entrée (`src/pages`) composent les pages avec des layouts et composants.
-2. Les collections Markdown (`src/content/config.ts`) fournissent des métadonnées normalisées et un schéma commun.
+2. Les collections Markdown (`src/content.config.ts`) fournissent des métadonnées normalisées et un schéma commun.
 3. `Layout.astro` applique la couche SEO générale (meta, canonical, JSON-LD, Open Graph/Twitter).
 4. `BlogPost.astro` applique la présentation d’article avancée (ToC, temps de lecture, relations entre posts).
 5. `src/config/site.ts` centralise les URLs et paramètres de build pour la cohérence des liens de handoff.

@@ -23,7 +23,7 @@ evidence:
   - src/pages
   - src/components
   - src/content
-  - src/content/config.ts
+  - src/content.config.ts
   - src/config/site.ts
   - vercel.json
 linked_systems:
@@ -83,7 +83,7 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
 ## 3) Couche contenu
 - Sources éditoriales dans `src/content/*` :
   - `blog`, `ai-agents`, `platform`, `seo-strategy`, `startup-journey`, `technical-optimization`, `tutorials`.
-- Schéma commun dans `src/content/config.ts` :
+- Schéma commun dans `src/content.config.ts` via Content Layer API :
   - validation frontmatter,
   - transformation dates (`date` normalisée),
   - champs dérivés (`cover`, `byline`).

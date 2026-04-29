@@ -2,6 +2,8 @@
 
 An Astro-based landing page for the intelligent automation robot suite.
 
+Requires Node `22.12.0` or newer within the `22.x` line and npm `11.x` for Astro 6 builds.
+
 ## 🚀 Quick Start
 
 ```bash
@@ -17,6 +19,11 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+## Runtime
+
+- Node: `>=22.12.0 <23`
+- npm: `>=11 <12`
 
 ## Auth Handoff Setup
 

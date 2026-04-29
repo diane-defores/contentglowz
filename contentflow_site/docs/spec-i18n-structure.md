@@ -38,7 +38,7 @@ evidence:
   - "astro.config.mjs"
   - "src/layouts/Layout.astro"
   - "src/layouts/BlogPost.astro"
-  - "src/content/config.ts"
+  - "src/content.config.ts"
   - "src/config/site.ts"
   - "src/pages/**/*.astro"
   - "src/components/Navbar.astro"
@@ -172,7 +172,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 5, sans migrer tout 
 - `src/layouts/BlogPost.astro`: doit produire dates, breadcrumbs, labels et related posts dans la bonne locale.
 - `src/components/Navbar.astro` et `src/components/Footer.astro`: tous les liens internes doivent passer par les helpers localisés.
 - `src/pages/*.astro` et `src/pages/fr/*.astro`: les pages statiques doivent coexister sans casser la home actuelle.
-- `src/content/config.ts`: le schema doit permettre `locale` et `translationKey`.
+- `src/content.config.ts`: le schema doit permettre `locale` et `translationKey`.
 - `src/pages/*/[...slug].astro`: les collections doivent filtrer par locale et construire les chemins localisés.
 - SEO: sitemap, canonical, `hreflang`, `og:locale`, JSON-LD breadcrumbs et URLs absolues doivent rester cohérents.
 - Accessibility: le sélecteur de langue doit être un lien ou contrôle accessible avec libellé clair.
@@ -247,7 +247,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 5, sans migrer tout 
   - Notes: Avoid duplicating whole component files unless the component structure diverges.
 
 - [ ] Task 7: Extend content schema for locale mapping
-  - File: `src/content/config.ts`
+  - File: `src/content.config.ts`
   - Action: Add optional or required `locale` and `translationKey` fields with defaults/migration plan.
   - User story link: allows Markdown content to be translated and linked safely.
   - Depends on: Task 2.
@@ -329,7 +329,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 5, sans migrer tout 
   - `astro.config.mjs`
   - `src/layouts/Layout.astro`
   - `src/components/Navbar.astro`
-  - `src/content/config.ts`
+  - `src/content.config.ts`
   - `src/pages/blog/[...slug].astro`
 - Implementation order:
   - configure Astro i18n;

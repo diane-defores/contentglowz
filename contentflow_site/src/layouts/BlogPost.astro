@@ -9,25 +9,19 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   post: CollectionEntry<'blog'> | CollectionEntry<'ai-agents'> | CollectionEntry<'platform'> | CollectionEntry<'seo-strategy'> | CollectionEntry<'startup-journey'> | CollectionEntry<'technical-optimization'> | CollectionEntry<'tutorials'>;
+  headings?: { depth: number; slug: string; text: string }[];
 }
 
-const { post } = Astro.props;
+const { post, headings: renderedHeadings = [] } = Astro.props;
 const { title, description, date, cover, byline, tags = [], featured } = post.data;
 
 // Reading time: ~200 words/minute
 const wordCount = post.body.split(/\s+/).length;
 const readingTime = Math.max(1, Math.round(wordCount / 200));
 
-// ToC: extract h2/h3 headings from markdown
-const headings: { depth: 2 | 3; slug: string; text: string }[] = [];
-const headingRe = /^(#{2,3})\s+(.+)$/gm;
-let match;
-while ((match = headingRe.exec(post.body)) !== null) {
-  const depth = match[1].length as 2 | 3;
-  const text = match[2].replace(/[*_`]/g, '').trim();
-  const slug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-  headings.push({ depth, slug, text });
-}
+const headings = renderedHeadings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
 const hasToc = headings.length >= 3;
 
 // Collection-aware section name and path
@@ -47,7 +41,7 @@ const sectionPath = `/${collectionId}`;
 // Related posts: same collection, same tags, exclude self
 const allPosts = await getCollection(collectionId as any, ({ data }: any) => !data.draft);
 const related = allPosts
-  .filter((p: any) => p.slug !== post.slug && p.data.tags?.some((t: string) => tags.includes(t)))
+  .filter((p: any) => p.id !== post.id && p.data.tags?.some((t: string) => tags.includes(t)))
   .sort((a: any, b: any) => {
     const sharedA = a.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
     const sharedB = b.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
@@ -69,7 +63,7 @@ const breadcrumbSchema = {
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Home", "item": resolvedSiteUrl },
     { "@type": "ListItem", "position": 2, "name": sectionLabel, "item": `${resolvedSiteUrl}${sectionPath}` },
-    { "@type": "ListItem", "position": 3, "name": title, "item": `${resolvedSiteUrl}${sectionPath}/${post.slug}` },
+    { "@type": "ListItem", "position": 3, "name": title, "item": `${resolvedSiteUrl}${sectionPath}/${post.id}` },
   ],
 };
 ---
@@ -155,7 +149,7 @@ const breadcrumbSchema = {
         <h2>Related articles</h2>
         <div class="related-grid">
           {related.map((rp) => (
-            <a href={`${sectionPath}/${rp.slug}`} class="related-card">
+            <a href={`${sectionPath}/${rp.id}`} class="related-card">
               {rp.data.cover && (
                 <img src={rp.data.cover} alt={`Illustration for ${rp.data.title}`} width="400" height="210" />
               )}

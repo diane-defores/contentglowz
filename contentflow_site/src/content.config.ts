@@ -1,4 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const baseSchema = z.object({
   title: z.string(),
@@ -23,15 +25,20 @@ const baseSchema = z.object({
   byline: data.author ?? data.authors?.join(', ') ?? 'ContentFlow Team',
 }));
 
-const contentCollection = defineCollection({ type: 'content', schema: baseSchema });
+function contentCollection(base: string) {
+  return defineCollection({
+    loader: glob({ base, pattern: '**/[^_]*.{md,mdx}' }),
+    schema: baseSchema,
+  });
+}
 
 export const collections = {
-  blog: contentCollection,
-  docs: contentCollection,
-  'ai-agents': contentCollection,
-  platform: contentCollection,
-  'seo-strategy': contentCollection,
-  'startup-journey': contentCollection,
-  'technical-optimization': contentCollection,
-  tutorials: contentCollection,
+  blog: contentCollection('./src/content/blog'),
+  docs: contentCollection('./src/content/docs'),
+  'ai-agents': contentCollection('./src/content/ai-agents'),
+  platform: contentCollection('./src/content/platform'),
+  'seo-strategy': contentCollection('./src/content/seo-strategy'),
+  'startup-journey': contentCollection('./src/content/startup-journey'),
+  'technical-optimization': contentCollection('./src/content/technical-optimization'),
+  tutorials: contentCollection('./src/content/tutorials'),
 };

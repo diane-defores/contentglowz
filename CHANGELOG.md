@@ -10,3 +10,4 @@ All notable changes to the ContentFlow monorepo are documented here.
 
 ### Changed
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.
+- Migrated `contentflow_site` tracking to Astro 6 completion and documented the site migration closure.

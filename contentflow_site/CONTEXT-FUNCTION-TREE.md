@@ -20,7 +20,7 @@ evidence:
   - src/pages
   - src/layouts
   - src/components
-  - src/content/config.ts
+  - src/content.config.ts
   - src/config/site.ts
 supersedes: []
 next_review: "2026-07-26"
@@ -52,7 +52,7 @@ next_step: /sf-docs update CONTEXT-FUNCTION-TREE.md
   - rendu liste + carte featured.
 - `src/pages/blog/[...slug].astro`
   - `getStaticPaths()` sur collection `blog`
-  - résout chaque `post` puis `post.render()` dans `BlogPost.astro`.
+  - résout chaque `post` puis `render(post)` dans `BlogPost.astro`.
 - `src/pages/blog/tag/[tag].astro`
   - agrège tous les tags existants depuis `blog` (`getCollection`)
   - génère un chemin par tag avec slug
@@ -96,7 +96,7 @@ next_step: /sf-docs update CONTEXT-FUNCTION-TREE.md
     - `APP_SITE_URL` -> `siteUrl`
     - `APP_WEB_URL` -> `appWebUrl`, `appSignInUrl`, `appEntryUrl`
     - `API_BASE_URL` + metadata Vercel.
-- `src/content/config.ts`
+- `src/content.config.ts`
   - schéma commun `baseSchema` (title, description, dates, image, tags, draft, etc.)
   - `transform` pour `date`, `cover`, `byline`.
 - `astro.config.mjs`

@@ -22,7 +22,7 @@ evidence:
   - README.md
   - CLAUDE.md
   - src/config/site.ts
-  - src/content/config.ts
+  - src/content.config.ts
   - src/pages
   - src/components
   - astro.config.mjs
@@ -45,7 +45,7 @@ next_step: /sf-docs audit AGENT.md
   - Utiliser des composants Astro (`src/components`, `src/layouts`) et des routes `src/pages`.
 2. **Données éditoriales**
   - Utiliser les collections Markdown sous `src/content/*`.
-  - Laisser `src/content/config.ts` comme source de vérité pour validation et normalisation du frontmatter.
+  - Laisser `src/content.config.ts` comme source de vérité pour validation et normalisation du frontmatter.
 3. **Handoff vers l’app**
   - Conserver les redirections officielles:
     - `/sign-in` -> `APP_WEB_URL + /sign-in`
