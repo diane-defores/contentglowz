@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-05-02]
+
+### Fixed
+- Prevented feed previews from being treated as authoritative content bodies in editor and publish flows.
+- Blocked cached full-body fallback after authorization failures so protected content edits require a valid body response.
+
 ## [2026-04-28]
 
 ### Added

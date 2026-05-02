@@ -1440,6 +1440,20 @@ final publishAccountsProvider = FutureProvider<List<PublishAccount>>((
   return state.accounts;
 });
 
+final contentDetailProvider = FutureProvider.family<ContentItem, String>((
+  ref,
+  contentId,
+) async {
+  final pendingItems =
+      ref.watch(pendingContentProvider).value ?? const <ContentItem>[];
+  final fallback = pendingItems
+      .where((item) => item.id == contentId)
+      .firstOrNull;
+  return ref
+      .watch(apiServiceProvider)
+      .fetchContentDetail(contentId, fallback: fallback);
+});
+
 final pendingContentProvider =
     AsyncNotifierProvider<PendingContentNotifier, List<ContentItem>>(
       PendingContentNotifier.new,
@@ -1500,16 +1514,21 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     }
   }
 
-  Future<ApproveResult> approve(String id) async {
+  Future<ApproveResult> approve(
+    String id, {
+    String? bodyOverride,
+    String? titleOverride,
+  }) async {
     final current = state.value ?? [];
     final item = current.where((c) => c.id == id).firstOrNull;
     state = AsyncData(current.where((c) => c.id != id).toList());
     try {
       final api = ref.read(apiServiceProvider);
-      await api.approveContent(id);
 
       if (item == null) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return const ApproveResult(
           approved: true,
           published: false,
@@ -1518,7 +1537,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       }
 
       if (item.channels.isEmpty) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1539,7 +1560,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       }
 
       if (publishableChannels.isEmpty) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1555,7 +1578,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       final accounts = publishAccountsState.accounts;
 
       if (publishAccountsState.isUnavailable) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1566,7 +1591,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       }
 
       if (publishAccountsState.hasError) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1596,7 +1623,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       }
 
       if (ambiguousAccounts.isNotEmpty) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1607,7 +1636,9 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       }
 
       if (platforms.isEmpty) {
+        await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
+        ref.invalidate(contentDetailProvider(id));
         return ApproveResult(
           approved: true,
           published: false,
@@ -1617,15 +1648,25 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
         );
       }
 
+      final publishBody = await _resolvePublishBody(
+        api,
+        item,
+        bodyOverride: bodyOverride,
+      );
+      final publishTitle = titleOverride ?? item.title;
+
+      await api.approveContent(id);
+
       final response = await api.publishContent(
-        content: item.body,
+        content: publishBody,
         platforms: platforms,
-        title: item.title,
+        title: publishTitle,
         tags: item.tags,
         contentRecordId: item.id,
       );
 
       ref.invalidate(contentHistoryProvider);
+      ref.invalidate(contentDetailProvider(id));
 
       final success = response['success'] == true;
       final publishedPlatforms = platforms
@@ -1678,6 +1719,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       final api = ref.read(apiServiceProvider);
       await api.rejectContent(id);
       ref.invalidate(contentHistoryProvider);
+      ref.invalidate(contentDetailProvider(id));
     } catch (_) {
       state = AsyncData(current);
     }
@@ -1688,6 +1730,27 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     state = AsyncData(
       current.map((c) => c.id == updated.id ? updated : c).toList(),
     );
+    ref.invalidate(contentDetailProvider(updated.id));
+  }
+
+  Future<String> _resolvePublishBody(
+    ApiService api,
+    ContentItem item, {
+    String? bodyOverride,
+  }) async {
+    final override = bodyOverride?.trim();
+    if (override != null && override.isNotEmpty) {
+      return bodyOverride!;
+    }
+
+    final body = await api.fetchContentBody(item.id, allowStaleCache: false);
+    if (body == null || body.trim().isEmpty) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Full content body is unavailable. Open the editor and retry after sync before publishing.',
+      );
+    }
+    return body;
   }
 }
 

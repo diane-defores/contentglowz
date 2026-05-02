@@ -6,8 +6,26 @@
       "cmake": {
         "pkg-path": "cmake"
       },
+      "pip-audit": {
+        "pkg-path": "pip-audit"
+      },
+      "pytest": {
+        "pkg-path": "python313Packages.pytest"
+      },
+      "pytest-asyncio": {
+        "pkg-path": "python313Packages.pytest-asyncio"
+      },
+      "pytest-timeout": {
+        "pkg-path": "python313Packages.pytest-timeout"
+      },
       "python3": {
         "pkg-path": "python3"
+      },
+      "turso": {
+        "pkg-path": "turso"
+      },
+      "turso-cli": {
+        "pkg-path": "turso-cli"
       }
     },
     "hook": {},
@@ -22,15 +40,17 @@
       "description": "Cross-platform, open-source build system generator",
       "install_id": "cmake",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "cmake-4.1.2",
       "pname": "cmake",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T06:03:33.385665Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:03:20.101885Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "4.1.2",
@@ -51,15 +71,17 @@
       "description": "Cross-platform, open-source build system generator",
       "install_id": "cmake",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "cmake-4.1.2",
       "pname": "cmake",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T06:34:58.949938Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:36:37.482977Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "4.1.2",
@@ -81,15 +103,17 @@
       "description": "Cross-platform, open-source build system generator",
       "install_id": "cmake",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "cmake-4.1.2",
       "pname": "cmake",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T07:05:08.450344Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:08:11.883961Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "4.1.2",
@@ -110,15 +134,17 @@
       "description": "Cross-platform, open-source build system generator",
       "install_id": "cmake",
       "license": "BSD-3-Clause",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "cmake-4.1.2",
       "pname": "cmake",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T07:39:13.098339Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:44:39.738931Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "4.1.2",
@@ -134,25 +160,552 @@
       "priority": 5
     },
     {
+      "attr_path": "pip-audit",
+      "broken": false,
+      "derivation": "/nix/store/i4rcn77cjg81f0qxswpnk5b9y8xbn8i2-pip-audit-2.10.0.drv",
+      "description": "Tool for scanning Python environments for known vulnerabilities",
+      "install_id": "pip-audit",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "pip-audit-2.10.0",
+      "pname": "pip-audit",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:03:57.343971Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.10.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/xbnblhklfq9dadlijvnymk5i3f2cv2ch-pip-audit-2.10.0-dist",
+        "out": "/nix/store/x9sy3rg0mhsa7ss1ld6ldq4laz7fyil8-pip-audit-2.10.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pip-audit",
+      "broken": false,
+      "derivation": "/nix/store/nldz47n49ghvih1bdjbp3403dhy0mnqr-pip-audit-2.10.0.drv",
+      "description": "Tool for scanning Python environments for known vulnerabilities",
+      "install_id": "pip-audit",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "pip-audit-2.10.0",
+      "pname": "pip-audit",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:32.935242Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.10.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/4bznrnaxkjvd76i62kiyk3985ljx1rl2-pip-audit-2.10.0-dist",
+        "out": "/nix/store/kvc4fs6xsk0x9mg3hqpxbphqs15mmb28-pip-audit-2.10.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pip-audit",
+      "broken": false,
+      "derivation": "/nix/store/lj0xv94a0hygs29apxgn23xsh4lrz6vj-pip-audit-2.10.0.drv",
+      "description": "Tool for scanning Python environments for known vulnerabilities",
+      "install_id": "pip-audit",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "pip-audit-2.10.0",
+      "pname": "pip-audit",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:08:50.172881Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.10.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/734pw748vz4a9si0y656libgfr7cvax9-pip-audit-2.10.0-dist",
+        "out": "/nix/store/9xqki497z9jn0pandvcbf1kbnq8f4750-pip-audit-2.10.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "pip-audit",
+      "broken": false,
+      "derivation": "/nix/store/n9ilnhp2pjfqg2p9a610ymbrlfk3zf2l-pip-audit-2.10.0.drv",
+      "description": "Tool for scanning Python environments for known vulnerabilities",
+      "install_id": "pip-audit",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "pip-audit-2.10.0",
+      "pname": "pip-audit",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:45:40.995851Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.10.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/cz181df9av2zfra67a6rv3w3370zn2rh-pip-audit-2.10.0-dist",
+        "out": "/nix/store/9jdjn5ab24zw6hs4i6c309naj5n9vc21-pip-audit-2.10.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/n636ng8h158dssv217jpd8w8ayy18amz-python3.13-pytest-9.0.2.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-9.0.2",
+      "pname": "pytest",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:13.369455Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "9.0.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/819ggkpdvin9y4akljvll2ws1b1hlpvh-python3.13-pytest-9.0.2-dist",
+        "out": "/nix/store/0xm2ndxjgabk4h0j78xix5grswigdk0q-python3.13-pytest-9.0.2",
+        "testout": "/nix/store/l3vncf0rgcw49nzc8vhnm37f30f08335-python3.13-pytest-9.0.2-testout"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/p5a6xpr04d3mjm1nv28yjss6i7la5yvf-python3.13-pytest-9.0.2.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-9.0.2",
+      "pname": "pytest",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:53.466347Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "9.0.2",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/v6hdml06rwj6ry77xnva6wdyn0g2dar5-python3.13-pytest-9.0.2-dist",
+        "out": "/nix/store/wfqvyiddshyd4776imk2qa3yfaswbx1y-python3.13-pytest-9.0.2",
+        "testout": "/nix/store/jin75phhpy12kszhz758zm6l37d4cnbq-python3.13-pytest-9.0.2-testout"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/prbk63s0rbs7wlbmir3ssjq447li0h84-python3.13-pytest-9.0.2.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-9.0.2",
+      "pname": "pytest",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:06.642055Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "9.0.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/nb3nziy105kirbizkbyfxj6b7np3q1ak-python3.13-pytest-9.0.2-dist",
+        "out": "/nix/store/zgssf2rq8g0dbqj1lfyfs87l6ipfjyl4-python3.13-pytest-9.0.2",
+        "testout": "/nix/store/flvyhwbwsm9p72izqmylsqpd7lhk8vaf-python3.13-pytest-9.0.2-testout"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest",
+      "broken": false,
+      "derivation": "/nix/store/xmw9ji0n9mvyz6139b6i77slxa5c5m0q-python3.13-pytest-9.0.2.drv",
+      "description": "Framework for writing tests",
+      "install_id": "pytest",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-9.0.2",
+      "pname": "pytest",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:03.050728Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "9.0.2",
+      "outputs_to_install": [
+        "out",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/kqkqlbhm13k2449hprbhx27chgj4xcpa-python3.13-pytest-9.0.2-dist",
+        "out": "/nix/store/0wnscii4625qqnngfh93mw44lxq5w5b2-python3.13-pytest-9.0.2",
+        "testout": "/nix/store/g99vmwklkfs3q57fa76jsag2qai7y3b9-python3.13-pytest-9.0.2-testout"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-asyncio",
+      "broken": false,
+      "derivation": "/nix/store/r8n7f3j9p29ypy3w3wpf370pxjwbahp3-python3.13-pytest-asyncio-1.3.0.drv",
+      "description": "Library for testing asyncio code with pytest",
+      "install_id": "pytest-asyncio",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-asyncio-1.3.0",
+      "pname": "pytest-asyncio",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:13.390107Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/wwpyj4gy7p4cmp3p3kk28indzcxl2qs3-python3.13-pytest-asyncio-1.3.0-dist",
+        "out": "/nix/store/b0aadlh5ram7z0p37g09kygjxyqwqvdz-python3.13-pytest-asyncio-1.3.0",
+        "testout": "/nix/store/49ify956ymi91l5sxd7k9vkybbdjpivc-python3.13-pytest-asyncio-1.3.0-testout"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-asyncio",
+      "broken": false,
+      "derivation": "/nix/store/gsv8v8vpvhvvg6vfv6dxd58p74d9pl9i-python3.13-pytest-asyncio-1.3.0.drv",
+      "description": "Library for testing asyncio code with pytest",
+      "install_id": "pytest-asyncio",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-asyncio-1.3.0",
+      "pname": "pytest-asyncio",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:53.491940Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/vbi2w1n3gzqyfll5b1b5ifz00jf5qvbr-python3.13-pytest-asyncio-1.3.0-dist",
+        "out": "/nix/store/j9iacnpmlpzy03cal0kalnxnsxfzdvv4-python3.13-pytest-asyncio-1.3.0",
+        "testout": "/nix/store/k2rwv8dwr13m1f0637wsyg0bx5iscz7q-python3.13-pytest-asyncio-1.3.0-testout"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-asyncio",
+      "broken": false,
+      "derivation": "/nix/store/2gkb8h1c1nr8mjddc1wdky90dhwgsxb5-python3.13-pytest-asyncio-1.3.0.drv",
+      "description": "Library for testing asyncio code with pytest",
+      "install_id": "pytest-asyncio",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-asyncio-1.3.0",
+      "pname": "pytest-asyncio",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:06.663599Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/gq9jngmpww9igwibpwflb5ghzpb0agm8-python3.13-pytest-asyncio-1.3.0-dist",
+        "out": "/nix/store/afsc5z7zqnrkwf6cpk8dv3q4v6x1j71d-python3.13-pytest-asyncio-1.3.0",
+        "testout": "/nix/store/idgwv19g0f7gg9kv5zyyh49472pnqzmy-python3.13-pytest-asyncio-1.3.0-testout"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-asyncio",
+      "broken": false,
+      "derivation": "/nix/store/mdgbg4vqj29x3x9j7wrhlcnz0ddrkgds-python3.13-pytest-asyncio-1.3.0.drv",
+      "description": "Library for testing asyncio code with pytest",
+      "install_id": "pytest-asyncio",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-asyncio-1.3.0",
+      "pname": "pytest-asyncio",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:03.078304Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.3.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/vj1w9zdfha4ibm4inicplqryaqnj6p1f-python3.13-pytest-asyncio-1.3.0-dist",
+        "out": "/nix/store/2jbb1cb2fqqbq2w11jqjp4xzbqzy92ir-python3.13-pytest-asyncio-1.3.0",
+        "testout": "/nix/store/v2vlf8irrkjsw19wzff12ab4q1764s7r-python3.13-pytest-asyncio-1.3.0-testout"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-timeout",
+      "broken": false,
+      "derivation": "/nix/store/i6wf78bjs4jqkjy74c7s1cm4zv7mgn3j-python3.13-pytest-timeout-2.4.0.drv",
+      "description": "Pytest plugin to abort hanging tests",
+      "install_id": "pytest-timeout",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-timeout-2.4.0",
+      "pname": "pytest-timeout",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:13.655697Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/cyplh33d5m942gwi3gigvgshffhzrf8c-python3.13-pytest-timeout-2.4.0-dist",
+        "out": "/nix/store/mv79cnkqgjnx9d33blbsr88717z9g784-python3.13-pytest-timeout-2.4.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-timeout",
+      "broken": false,
+      "derivation": "/nix/store/2xicirpnfcnib1kfpk2cipaqash0qa2p-python3.13-pytest-timeout-2.4.0.drv",
+      "description": "Pytest plugin to abort hanging tests",
+      "install_id": "pytest-timeout",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-timeout-2.4.0",
+      "pname": "pytest-timeout",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:53.812068Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/nahk28lqq29h2mih4lx18wrgqiwrhqbd-python3.13-pytest-timeout-2.4.0-dist",
+        "out": "/nix/store/8qaclmjhx8k21nbbx5mgamh5qfn8nhs0-python3.13-pytest-timeout-2.4.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-timeout",
+      "broken": false,
+      "derivation": "/nix/store/xg2212sdkdclnj6ylv26ggb44q97hbz0-python3.13-pytest-timeout-2.4.0.drv",
+      "description": "Pytest plugin to abort hanging tests",
+      "install_id": "pytest-timeout",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-timeout-2.4.0",
+      "pname": "pytest-timeout",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:06.938763Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/39jnlllbz8lfy2ghv3ayzhc5fbxpafpy-python3.13-pytest-timeout-2.4.0-dist",
+        "out": "/nix/store/a6syvxba39hai1a172ig1av50qhi2p6c-python3.13-pytest-timeout-2.4.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pytest-timeout",
+      "broken": false,
+      "derivation": "/nix/store/02clypsvk4ylngmwfbgamcvvabwps32y-python3.13-pytest-timeout-2.4.0.drv",
+      "description": "Pytest plugin to abort hanging tests",
+      "install_id": "pytest-timeout",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pytest-timeout-2.4.0",
+      "pname": "pytest-timeout",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:03.423785Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/kj3mp9xjcv2q1l85qiinzzb5zzhm7a3p-python3.13-pytest-timeout-2.4.0-dist",
+        "out": "/nix/store/wk67ycmd7b2yinqaq9zqh0fll6q8adp9-python3.13-pytest-timeout-2.4.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
       "attr_path": "python3",
       "broken": false,
       "derivation": "/nix/store/krwwaljrhx0f8rykjbxzwhjqhn8iq64d-python3-3.13.12.drv",
       "description": "High-level dynamically-typed programming language",
       "install_id": "python3",
       "license": "Python-2.0",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "python3-3.13.12",
       "pname": "python3",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T06:04:14.497710Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:03:59.651315Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "3.13.12",
       "outputs_to_install": [
+        "out",
         "out",
         "out"
       ],
@@ -170,15 +723,17 @@
       "description": "High-level dynamically-typed programming language",
       "install_id": "python3",
       "license": "Python-2.0",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "python3-3.13.12",
       "pname": "python3",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T06:35:57.999535Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:36.385855Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "3.13.12",
@@ -203,15 +758,17 @@
       "description": "High-level dynamically-typed programming language",
       "install_id": "python3",
       "license": "Python-2.0",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "python3-3.13.12",
       "pname": "python3",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T07:05:48.190245Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:08:52.539311Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "3.13.12",
@@ -233,19 +790,24 @@
       "description": "High-level dynamically-typed programming language",
       "install_id": "python3",
       "license": "Python-2.0",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=4c1018dae018162ec878d42fec712642d214fdfa",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
       "name": "python3-3.13.12",
       "pname": "python3",
-      "rev": "4c1018dae018162ec878d42fec712642d214fdfa",
-      "rev_count": 977467,
-      "rev_date": "2026-04-09T04:48:10Z",
-      "scrape_date": "2026-04-11T07:40:15.762720Z",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:45:44.760344Z",
       "stabilities": [
-        "unstable"
+        "staging",
+        "unstable",
+        "stable"
       ],
       "unfree": false,
       "version": "3.13.12",
       "outputs_to_install": [
+        "out",
+        "out",
+        "out",
         "out",
         "out",
         "out",
@@ -254,6 +816,254 @@
       "outputs": {
         "debug": "/nix/store/nj0fy51wymai8wp1y7dbk08g6pvjw1a1-python3-3.13.12-debug",
         "out": "/nix/store/pzdalg368npikvpq4ncz2saxnz19v53k-python3-3.13.12"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso",
+      "broken": false,
+      "derivation": "/nix/store/w3kljbjsy2lfygjw91da651bwp6bifly-turso-0.4.0.drv",
+      "description": "Interactive SQL shell for Turso",
+      "install_id": "turso",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-0.4.0",
+      "pname": "turso",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:05:33.015698Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/kb2690w0v2qrcpnxfn9iwfvrbd3m1ny1-turso-0.4.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso",
+      "broken": false,
+      "derivation": "/nix/store/njp0f1b77z180asdwk8rz2bpgsnp1xh4-turso-0.4.0.drv",
+      "description": "Interactive SQL shell for Turso",
+      "install_id": "turso",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-0.4.0",
+      "pname": "turso",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:39:37.100596Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/mv5c4vvwqkqpglj356gbhffhhgr5fy6r-turso-0.4.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso",
+      "broken": false,
+      "derivation": "/nix/store/lq8jq852v5ks6yni881pbwzqw3q05rmq-turso-0.4.0.drv",
+      "description": "Interactive SQL shell for Turso",
+      "install_id": "turso",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-0.4.0",
+      "pname": "turso",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:10:28.709219Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/bahxd44ik03y7lx3iwnr7gpqksiybcqf-turso-0.4.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso",
+      "broken": false,
+      "derivation": "/nix/store/cgcyrr5y610skdgp33fnjlsyci73hd9p-turso-0.4.0.drv",
+      "description": "Interactive SQL shell for Turso",
+      "install_id": "turso",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-0.4.0",
+      "pname": "turso",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:47:53.211996Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.4.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/bikhg6xxczaybv4kdi1vdvxps5qfsnna-turso-0.4.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso-cli",
+      "broken": false,
+      "derivation": "/nix/store/zk9gwx6944lk1k02g5npvbvya1svg61k-turso-cli-1.0.19.drv",
+      "description": "CLI for Turso",
+      "install_id": "turso-cli",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-cli-1.0.19",
+      "pname": "turso-cli",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:05:33.019146Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.0.19",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/zhqwsy1xn7la1nn8icxh6dgzx2940gy2-turso-cli-1.0.19"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso-cli",
+      "broken": false,
+      "derivation": "/nix/store/bsmspadky7yr0j79g2fnr0bdrxp7bnr5-turso-cli-1.0.19.drv",
+      "description": "CLI for Turso",
+      "install_id": "turso-cli",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-cli-1.0.19",
+      "pname": "turso-cli",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:39:37.104433Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.0.19",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/5y5i89340zmiwxq3f6db5casw88759la-turso-cli-1.0.19"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso-cli",
+      "broken": false,
+      "derivation": "/nix/store/apck7lfi8nh70plymslaw3dg4f75rmxc-turso-cli-1.0.19.drv",
+      "description": "CLI for Turso",
+      "install_id": "turso-cli",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-cli-1.0.19",
+      "pname": "turso-cli",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:10:28.712748Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.0.19",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/alyqfmi92hgykf2pji3mfwxd6wl5ivd4-turso-cli-1.0.19"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "turso-cli",
+      "broken": false,
+      "derivation": "/nix/store/qgkgvd7m7ql9ysx4mzc0fl9hzs1jlfly-turso-cli-1.0.19.drv",
+      "description": "CLI for Turso",
+      "install_id": "turso-cli",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "turso-cli-1.0.19",
+      "pname": "turso-cli",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:47:53.215947Z",
+      "stabilities": [
+        "staging",
+        "unstable",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "1.0.19",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/1xwd2qjyjz4019ijl6xjgrvbai7l8i9b-turso-cli-1.0.19"
       },
       "system": "x86_64-linux",
       "group": "toplevel",

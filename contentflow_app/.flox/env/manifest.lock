@@ -2,9 +2,136 @@
   "lockfile-version": 1,
   "manifest": {
     "version": 1,
+    "install": {
+      "flutter": {
+        "pkg-path": "flutter",
+        "version": "3.41.5-sdk-links"
+      }
+    },
     "hook": {},
     "profile": {},
     "options": {}
   },
-  "packages": []
+  "packages": [
+    {
+      "attr_path": "flutter",
+      "broken": false,
+      "derivation": "/nix/store/0vv1wz8y3ym9h1kn1mjh58g0kc2ziixa-flutter-wrapped-3.41.5-sdk-links.drv",
+      "description": "Makes it easy and fast to build beautiful apps for mobile and beyond",
+      "install_id": "flutter",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "name": "flutter-wrapped-3.41.5-sdk-links",
+      "pname": "flutter",
+      "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "rev_count": 972949,
+      "rev_date": "2026-04-01T09:47:46Z",
+      "scrape_date": "2026-04-02T18:01:04.248896Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.41.5-sdk-links",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/4m3rdq6ilpfm18j6hk5bcqirm5fmb0c8-flutter-wrapped-3.41.5-sdk-links"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "flutter",
+      "broken": false,
+      "derivation": "/nix/store/aqkfblndy4v7ds63p5l4621dsnq821vj-flutter-wrapped-3.41.5-sdk-links.drv",
+      "description": "Makes it easy and fast to build beautiful apps for mobile and beyond",
+      "install_id": "flutter",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "name": "flutter-wrapped-3.41.5-sdk-links",
+      "pname": "flutter",
+      "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "rev_count": 972949,
+      "rev_date": "2026-04-01T09:47:46Z",
+      "scrape_date": "2026-04-02T18:32:36.573793Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.41.5-sdk-links",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/3raj1lvr0v3f89asxsnpzn8nrpw2madw-flutter-wrapped-3.41.5-sdk-links"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "flutter",
+      "broken": false,
+      "derivation": "/nix/store/h16nvc4czr4y7n1bpvm95lajm307nvvx-flutter-wrapped-3.41.5-sdk-links.drv",
+      "description": "Makes it easy and fast to build beautiful apps for mobile and beyond",
+      "install_id": "flutter",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "name": "flutter-wrapped-3.41.5-sdk-links",
+      "pname": "flutter",
+      "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "rev_count": 972949,
+      "rev_date": "2026-04-01T09:47:46Z",
+      "scrape_date": "2026-04-02T19:02:19.096084Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.41.5-sdk-links",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/l089540cw57clrc57znk8jd03spr0yad-flutter-wrapped-3.41.5-sdk-links"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "flutter",
+      "broken": false,
+      "derivation": "/nix/store/yaxszwgj4s2n1xlw6shsk47i320fq3n6-flutter-wrapped-3.41.5-sdk-links.drv",
+      "description": "Makes it easy and fast to build beautiful apps for mobile and beyond",
+      "install_id": "flutter",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "name": "flutter-wrapped-3.41.5-sdk-links",
+      "pname": "flutter",
+      "rev": "6201e203d09599479a3b3450ed24fa81537ebc4e",
+      "rev_count": 972949,
+      "rev_date": "2026-04-01T09:47:46Z",
+      "scrape_date": "2026-04-02T19:36:32.807461Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "3.41.5-sdk-links",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/kgbas685r5dnnymlqwsa2ik0wwrh4248-flutter-wrapped-3.41.5-sdk-links"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    }
+  ]
 }

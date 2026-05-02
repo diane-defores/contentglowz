@@ -17,6 +17,12 @@ version = 1
 [install]
 python3.pkg-path = "python3"
 cmake.pkg-path = "cmake"
+pytest.pkg-path = "python313Packages.pytest"
+pytest-asyncio.pkg-path = "python313Packages.pytest-asyncio"
+pytest-timeout.pkg-path = "python313Packages.pytest-timeout"
+pip-audit.pkg-path = "pip-audit"
+turso.pkg-path = "turso"
+turso-cli.pkg-path = "turso-cli"
 # gum.pkg-path = "gum"
 # gum.version = "^0.14.5"
 

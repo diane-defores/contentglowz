@@ -121,6 +121,8 @@ class AppLocalizations {
     'Checking...': 'Vérification...',
     'Check your project, content types, and generation frequency before the first run.':
         'Vérifiez votre projet, les types de contenu et la fréquence de génération avant le premier lancement.',
+    'Changes are queued for sync. Publishing is blocked until the full body is saved online.':
+        'Les changements sont en attente de synchronisation. La publication est bloquée tant que le contenu complet n’est pas enregistré en ligne.',
     'Choose how ContentFlow chooses its interface language.':
         'Choisissez comment ContentFlow sélectionne la langue de son interface.',
     'Choose whether ContentFlow stays bright, stays dark, or follows your device appearance automatically.':
@@ -196,7 +198,8 @@ class AppLocalizations {
         'Entrez une URL de dépôt GitHub valide pour continuer.',
     'Enter a valid GitHub repository URL.':
         'Entrez une URL de dépôt GitHub valide.',
-    'Enter a valid HTTP(S) source URL.': 'Entrez une URL source HTTP(S) valide.',
+    'Enter a valid HTTP(S) source URL.':
+        'Entrez une URL source HTTP(S) valide.',
     'Enter a valid HTTP(S) source URL, or leave it empty to continue.':
         'Entrez une URL source HTTP(S) valide, ou laissez ce champ vide pour continuer.',
     'Error checking status': 'Erreur lors de la vérification du statut',
@@ -1360,8 +1363,7 @@ class AppLocalizations {
     'Soumissions max / jour': 'Soumissions max / jour',
     'Stored key: {key}': 'Clé enregistrée : {key}',
     'Stratégie de clustering': 'Stratégie de clustering',
-    'Suggestions depuis le projet actif':
-        'Suggestions depuis le projet actif',
+    'Suggestions depuis le projet actif': 'Suggestions depuis le projet actif',
     'Tap Connect to authorize': 'Appuyez sur Connecter pour autoriser',
     'This removes your GitHub connection and hides private repository data from the picker.':
         'Cette action supprime votre connexion GitHub et masque les données des dépôts privés dans le sélecteur.',

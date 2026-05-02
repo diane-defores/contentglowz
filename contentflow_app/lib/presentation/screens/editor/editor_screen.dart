@@ -29,7 +29,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   bool _hasChanges = false;
 
   ContentItem? _item;
-  bool _bodyLoaded = false;
   Future<ContentAuditTrail>? _auditFuture;
 
   @override
@@ -52,12 +51,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       _titleController.text = item.title;
       _bodyController.text = item.body;
       _hasChanges = false;
-      _bodyLoaded = item.body.isNotEmpty;
       _auditFuture = _loadAuditTrail(item.id);
-      // If body is empty/preview only, fetch full body from API
-      if (!_bodyLoaded) {
-        _loadFullBody(item.id);
-      }
     }
   }
 
@@ -66,36 +60,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     return api.fetchContentAuditTrail(contentId);
   }
 
-  Future<void> _loadFullBody(String contentId) async {
-    try {
-      final api = ref.read(apiServiceProvider);
-      final body = await api.fetchContentBody(contentId);
-      if (body != null && mounted) {
-        setState(() {
-          _bodyController.text = body;
-          _bodyLoaded = true;
-        });
-      }
-    } catch (error, stackTrace) {
-      if (mounted) {
-        showDiagnosticSnackBar(
-          context,
-          ref,
-          message: context.tr('Could not load full content: {error}', {
-            'error': '$error',
-          }),
-          scope: 'editor.load_full_content',
-          error: error,
-          stackTrace: stackTrace,
-          contextData: {'contentId': contentId},
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final contentAsync = ref.watch(pendingContentProvider);
+    final contentAsync = ref.watch(contentDetailProvider(widget.contentId));
 
     return contentAsync.when(
       loading: () =>
@@ -108,19 +75,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             title: context.tr('Could not open the editor'),
             error: error,
             stackTrace: stackTrace,
-            onRetry: () => ref.invalidate(pendingContentProvider),
+            onRetry: () =>
+                ref.invalidate(contentDetailProvider(widget.contentId)),
           ),
         ),
       ),
-      data: (items) {
-        final item = items.where((c) => c.id == widget.contentId).firstOrNull;
-        if (item == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text(context.tr('Content not found'))),
-          );
-        }
-
+      data: (item) {
         _initFromItem(item);
 
         return Scaffold(
@@ -741,7 +701,23 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       try {
         final api = ref.read(apiServiceProvider);
         await api.updateContent(item.id, title: _titleController.text);
-        await api.saveContentBody(item.id, _bodyController.text);
+        final savedOnline = await api.saveContentBody(
+          item.id,
+          _bodyController.text,
+        );
+        if (!savedOnline) {
+          if (!mounted) return;
+          showCopyableDiagnosticSnackBar(
+            context,
+            ref,
+            message: context.tr(
+              'Changes are queued for sync. Publishing is blocked until the full body is saved online.',
+            ),
+            scope: 'editor.save_body_queued',
+            backgroundColor: AppTheme.warningColor.withAlpha(200),
+          );
+          return;
+        }
 
         final updated = item.copyWith(
           title: _titleController.text,
@@ -767,7 +743,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     }
     final result = await ref
         .read(pendingContentProvider.notifier)
-        .approve(item.id);
+        .approve(
+          item.id,
+          bodyOverride: _bodyController.text,
+          titleOverride: _titleController.text,
+        );
     if (!mounted) return;
     final resultColor = _colorForApproveSeverity(result.severity);
     final shouldShowCopyAction =
@@ -793,7 +773,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ),
       );
     }
-    context.pop();
+    if (result.approved) {
+      context.pop();
+    }
   }
 
   void _reject(ContentItem item) {

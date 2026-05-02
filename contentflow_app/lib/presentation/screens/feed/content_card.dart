@@ -250,6 +250,10 @@ class ContentCard extends ConsumerWidget {
 
   Widget _buildBody(BuildContext context) {
     final theme = Theme.of(context);
+    final summary = item.summary?.trim();
+    final previewText = summary != null && summary.isNotEmpty
+        ? item.summary!
+        : _truncateBody(item.body);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Column(
@@ -269,7 +273,7 @@ class ContentCard extends ConsumerWidget {
           const SizedBox(height: 10),
           Expanded(
             child: Text(
-              item.summary ?? _truncateBody(item.body),
+              previewText,
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 14,
@@ -296,13 +300,13 @@ class ContentCard extends ConsumerWidget {
           ...item.channels.map(
             (channel) => Padding(
               padding: const EdgeInsets.only(right: 8),
-                child: Icon(
-                  _iconForChannel(channel),
-                  size: 18,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              child: Icon(
+                _iconForChannel(channel),
+                size: 18,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+          ),
           const Spacer(),
           // Swipe hints — hidden on very narrow screens to prevent overflow
           if (showHints)

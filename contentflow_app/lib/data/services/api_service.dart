@@ -1195,20 +1195,87 @@ class ApiService {
     return _parseContentList(data);
   }
 
-  Future<String?> fetchContentBody(String id) async {
+  Future<ContentItem> fetchContentDetail(
+    String id, {
+    ContentItem? fallback,
+    bool allowStaleBodyCache = true,
+  }) async {
+    if (allowDemoData) {
+      final demo = _demoContentById(id);
+      if (demo != null) return demo;
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    ContentItem? item = fallback;
+
+    try {
+      final data = _asMap(
+        await _getCachedData(
+          '/api/status/content/$resolvedId',
+          cacheKey: 'content.detail.$resolvedId',
+        ),
+      );
+      item = ContentItem.fromJson(data);
+    } on ApiException catch (error) {
+      if (fallback == null || error.isUnauthorized) {
+        rethrow;
+      }
+    }
+
+    final body = await fetchContentBody(
+      id,
+      allowStaleCache: allowStaleBodyCache,
+    );
+    if (body == null || body.trim().isEmpty) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Full content body is unavailable. Retry after sync before editing or publishing.',
+      );
+    }
+
+    final resolvedItem = item ?? fallback;
+    if (resolvedItem == null) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Content metadata is unavailable.',
+      );
+    }
+
+    return resolvedItem.copyWith(body: body);
+  }
+
+  Future<String?> fetchContentBody(
+    String id, {
+    bool allowStaleCache = true,
+  }) async {
     if (allowDemoData) {
       return _demoContentById(id)?.body;
     }
 
     final idMappings = await _loadIdMappings();
     final resolvedId = _resolveEntityId(id, idMappings);
+    final cacheKey = 'content.body.$resolvedId';
 
-    final data = _asMap(
-      await _getCachedData(
-        '/api/status/content/$resolvedId/body',
-        cacheKey: 'content.body.$resolvedId',
-      ),
-    );
+    late final Map<String, dynamic> data;
+    try {
+      final response = await _dio.get('/api/status/content/$resolvedId/body');
+      data = _asMap(response.data);
+      await _writeCachedData(cacheKey, data);
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (allowStaleCache && mapped.isOffline) {
+        final cached = await cacheStore?.read(offlineScope, cacheKey);
+        if (cached != null) {
+          await onCacheKeyStale?.call(cacheKey);
+          data = _asMap(cached.data);
+        } else {
+          throw mapped;
+        }
+      } else {
+        throw mapped;
+      }
+    }
     return data['body'] as String? ?? data['content'] as String?;
   }
 
@@ -1303,20 +1370,20 @@ class ApiService {
       return true;
     } on DioException catch (error) {
       final mapped = _mapDioException(error);
-      await _writeCachedData('content.body.$resolvedId', payload);
-      final current = await _readCachedPendingContentItems();
-      final next = current
-          .map(
-            (entry) => entry.id == id || entry.id == resolvedId
-                ? entry.copyWith(body: body)
-                : entry,
-          )
-          .toList();
-      await _writeCachedData(
-        _pendingContentCacheKey,
-        next.map((entry) => entry.toJson()).toList(),
-      );
       if (mapped.isOffline) {
+        await _writeCachedData('content.body.$resolvedId', payload);
+        final current = await _readCachedPendingContentItems();
+        final next = current
+            .map(
+              (entry) => entry.id == id || entry.id == resolvedId
+                  ? entry.copyWith(body: body)
+                  : entry,
+            )
+            .toList();
+        await _writeCachedData(
+          _pendingContentCacheKey,
+          next.map((entry) => entry.toJson()).toList(),
+        );
         await _enqueueOfflineAction(
           resourceType: 'content',
           actionType: 'save_body',
@@ -1331,7 +1398,7 @@ class ApiService {
             dependsOnTempIds: dependsOnTempIds,
           ),
         );
-        return true;
+        return false;
       }
       throw mapped;
     }
@@ -3314,10 +3381,13 @@ class ApiService {
     final responseBody = _stringifyResponseData(error.response?.data);
     final responseHeaders = _flattenHeaders(error.response?.headers);
 
-    if (statusCode == 401) {
+    if (statusCode == 401 || statusCode == 403) {
+      final fallbackMessage = statusCode == 403
+          ? 'You are not allowed to access this resource.'
+          : 'Your Clerk session expired.';
       return ApiException(
         ApiErrorType.unauthorized,
-        message.isEmpty ? 'Your Clerk session expired.' : message,
+        message.isEmpty ? fallbackMessage : message,
         statusCode: statusCode,
         responseBody: responseBody.isEmpty ? null : responseBody,
         responseHeaders: responseHeaders,

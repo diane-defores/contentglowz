@@ -1,11 +1,9 @@
-const cwd = process.env.CF_MAIN_REPO || "/home/claude/contentflow/contentflow_lab";
-
 module.exports = {
   apps: [{
     name: "contentflow_lab",
-    cwd,
+    cwd: "/home/ubuntu/contentflow/contentflow_lab",
     script: "bash",
-    args: ["-lc", `cd "${cwd}" && export PORT=3000 && flox activate -- doppler run --project contentflow_app --config prd -- bash -lc './run_seo_tools.sh ./.venv/bin/python3 main.py'`],
+    args: ["-lc", "export PORT=3000 && flox activate -- doppler run -- bash -lc 'env PORT=3000 python3 main.py'"],
     env: {
       PORT: 3000
     },

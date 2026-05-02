@@ -1,19 +1,6 @@
-enum ContentType {
-  blogPost,
-  socialPost,
-  newsletter,
-  videoScript,
-  reel,
-  short,
-}
+enum ContentType { blogPost, socialPost, newsletter, videoScript, reel, short }
 
-enum ContentStatus {
-  pending,
-  approved,
-  rejected,
-  published,
-  editing,
-}
+enum ContentStatus { pending, approved, rejected, published, editing }
 
 enum PublishingChannel {
   wordpress,
@@ -116,76 +103,74 @@ class ContentItem {
   /// Parse from backend ContentResponse or mock data.
   /// Backend sends: content_type (string), status (string), content_preview, etc.
   /// Mock sends: type (enum string), body, channels, etc.
+  ///
+  /// `content_preview` is display-only and must not become authoritative body.
   factory ContentItem.fromJson(Map<String, dynamic> json) {
     return ContentItem(
       id: json['id'] as String,
       title: json['title'] as String,
-      body: json['body'] as String? ??
-          json['content_preview'] as String? ??
-          '',
-      summary: json['summary'] as String? ??
-          json['content_preview'] as String?,
+      body: json['body'] as String? ?? json['content'] as String? ?? '',
+      summary: json['summary'] as String? ?? json['content_preview'] as String?,
       type: _parseContentType(
-          json['content_type'] as String? ?? json['type'] as String? ?? 'article'),
+        json['content_type'] as String? ?? json['type'] as String? ?? 'article',
+      ),
       status: _parseStatus(json['status'] as String? ?? 'pending'),
       channels: _parseChannels(json['channels'] ?? json['tags'] ?? []),
       imageUrl: json['image_url'] as String?,
-      projectName: json['project_name'] as String? ??
-          json['project_id'] as String?,
+      projectName:
+          json['project_name'] as String? ?? json['project_id'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: _parseDateTime(json['created_at']),
       publishedAt: json['published_at'] != null
           ? _parseDateTime(json['published_at'])
           : null,
       priority: json['priority'] as int? ?? 3,
-      tags: (json['tags'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           [],
       sourceRobot: json['source_robot'] as String?,
       reviewedBy: json['reviewed_by'] as String?,
       reviewActorType: json['review_actor_type'] as String?,
       reviewActorId: json['review_actor_id'] as String?,
       reviewActorLabel: json['review_actor_label'] as String?,
-      reviewActorMetadata: json['review_actor_metadata'] as Map<String, dynamic>?,
+      reviewActorMetadata:
+          json['review_actor_metadata'] as Map<String, dynamic>?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'body': body,
-        'summary': summary,
-        'content_type': _contentTypeToString(type),
-        'status': _statusToString(status),
-        'channels':
-            channels.map((c) => c.name).toList(),
-        'image_url': imageUrl,
-        'project_name': projectName,
-        'metadata': metadata,
-        'created_at': createdAt.toIso8601String(),
-        'published_at': publishedAt?.toIso8601String(),
-        'priority': priority,
-        'tags': tags,
-        'source_robot': sourceRobot,
-        'reviewed_by': reviewedBy,
-        'review_actor_type': reviewActorType,
-        'review_actor_id': reviewActorId,
-        'review_actor_label': reviewActorLabel,
-        'review_actor_metadata': reviewActorMetadata,
-      };
+    'id': id,
+    'title': title,
+    'body': body,
+    'summary': summary,
+    'content_type': _contentTypeToString(type),
+    'status': _statusToString(status),
+    'channels': channels.map((c) => c.name).toList(),
+    'image_url': imageUrl,
+    'project_name': projectName,
+    'metadata': metadata,
+    'created_at': createdAt.toIso8601String(),
+    'published_at': publishedAt?.toIso8601String(),
+    'priority': priority,
+    'tags': tags,
+    'source_robot': sourceRobot,
+    'reviewed_by': reviewedBy,
+    'review_actor_type': reviewActorType,
+    'review_actor_id': reviewActorId,
+    'review_actor_label': reviewActorLabel,
+    'review_actor_metadata': reviewActorMetadata,
+  };
 
   String get typeLabel => switch (type) {
-        ContentType.blogPost => 'Article',
-        ContentType.socialPost => 'Social',
-        ContentType.newsletter => 'Newsletter',
-        ContentType.videoScript => 'Video',
-        ContentType.reel => 'Reel',
-        ContentType.short => 'Short',
-      };
+    ContentType.blogPost => 'Article',
+    ContentType.socialPost => 'Social',
+    ContentType.newsletter => 'Newsletter',
+    ContentType.videoScript => 'Video',
+    ContentType.reel => 'Reel',
+    ContentType.short => 'Short',
+  };
 
-  String get channelLabels =>
-      channels.map((c) => c.name).join(', ');
+  String get channelLabels => channels.map((c) => c.name).join(', ');
 
   String? get reviewActorDisplay =>
       reviewActorLabel ?? reviewActorId ?? reviewedBy;
@@ -193,8 +178,9 @@ class ContentItem {
   // ── Format-specific metadata helpers ──
 
   /// SEO keyword for blog articles (from angle enrichment)
-  String? get seoKeyword => metadata?['seo_keyword'] as String?
-      ?? metadata?['angle']?['seo_keyword'] as String?;
+  String? get seoKeyword =>
+      metadata?['seo_keyword'] as String? ??
+      metadata?['angle']?['seo_keyword'] as String?;
 
   /// Primary keyword search volume
   int? get seoVolume => metadata?['seo_signals']?['volume'] as int?;
@@ -203,28 +189,33 @@ class ContentItem {
   String? get shortPlatform => metadata?['platform'] as String?;
 
   /// Short: duration in seconds
-  int? get shortDuration => metadata?['duration_seconds'] as int?
-      ?? metadata?['max_duration'] as int?;
+  int? get shortDuration =>
+      metadata?['duration_seconds'] as int? ??
+      metadata?['max_duration'] as int?;
 
   /// Short: hashtags list
   List<String> get shortHashtags =>
       (metadata?['hashtags'] as List<dynamic>?)
           ?.map((e) => e.toString())
-          .toList() ?? [];
+          .toList() ??
+      [];
 
   /// Social: target platforms
   List<String> get socialPlatforms =>
       (metadata?['platforms'] as List<dynamic>?)
           ?.map((e) => e.toString())
-          .toList() ?? [];
+          .toList() ??
+      [];
 
   /// Angle confidence score
-  int? get angleConfidence => metadata?['confidence'] as int?
-      ?? metadata?['angle']?['confidence'] as int?;
+  int? get angleConfidence =>
+      metadata?['confidence'] as int? ??
+      metadata?['angle']?['confidence'] as int?;
 
   /// Narrative thread this content draws from
-  String? get narrativeThread => metadata?['narrative_thread'] as String?
-      ?? metadata?['angle']?['narrative_thread'] as String?;
+  String? get narrativeThread =>
+      metadata?['narrative_thread'] as String? ??
+      metadata?['angle']?['narrative_thread'] as String?;
 
   /// SEO keyword difficulty (0-100)
   int? get seoDifficulty => metadata?['seo_signals']?['difficulty'] as int?;
@@ -233,11 +224,13 @@ class ContentItem {
   List<String> get sourceIdeaIds =>
       (metadata?['source_idea_ids'] as List<dynamic>?)
           ?.map((e) => e.toString())
-          .toList() ?? [];
+          .toList() ??
+      [];
 
   /// Source of the idea (seo_keywords, competitor_watch, weekly_ritual, etc.)
-  String? get ideaSource => metadata?['source_idea_source'] as String?
-      ?? metadata?['angle']?['source'] as String?;
+  String? get ideaSource =>
+      metadata?['source_idea_source'] as String? ??
+      metadata?['angle']?['source'] as String?;
 
   /// Human-readable reason why this content was generated
   String? get generationReason {
@@ -252,7 +245,9 @@ class ContentItem {
       return 'SERP refresh';
     }
     if (keyword != null && vol != null) {
-      final volLabel = vol >= 1000 ? '${(vol / 1000).toStringAsFixed(1)}K' : '$vol';
+      final volLabel = vol >= 1000
+          ? '${(vol / 1000).toStringAsFixed(1)}K'
+          : '$vol';
       return 'SEO: $keyword ($volLabel vol)';
     }
     if (keyword != null) {
@@ -275,8 +270,10 @@ class ContentItem {
   static ContentType _parseContentType(String raw) {
     final normalized = raw.toLowerCase().replaceAll('-', '_');
     return switch (normalized) {
-      'blog_post' || 'article' || 'seo_content' || 'seo-content' =>
-        ContentType.blogPost,
+      'blog_post' ||
+      'article' ||
+      'seo_content' ||
+      'seo-content' => ContentType.blogPost,
       'social_post' || 'social' => ContentType.socialPost,
       'newsletter' => ContentType.newsletter,
       'video_script' || 'video' => ContentType.videoScript,
@@ -289,8 +286,10 @@ class ContentItem {
   static ContentStatus _parseStatus(String raw) {
     final normalized = raw.toLowerCase().replaceAll('-', '_');
     return switch (normalized) {
-      'pending' || 'pending_review' || 'todo' || 'generated' =>
-        ContentStatus.pending,
+      'pending' ||
+      'pending_review' ||
+      'todo' ||
+      'generated' => ContentStatus.pending,
       'approved' || 'scheduled' => ContentStatus.approved,
       'rejected' => ContentStatus.rejected,
       'published' => ContentStatus.published,
@@ -326,19 +325,19 @@ class ContentItem {
   }
 
   static String _contentTypeToString(ContentType type) => switch (type) {
-        ContentType.blogPost => 'article',
-        ContentType.socialPost => 'social_post',
-        ContentType.newsletter => 'newsletter',
-        ContentType.videoScript => 'video_script',
-        ContentType.reel => 'reel',
-        ContentType.short => 'short',
-      };
+    ContentType.blogPost => 'article',
+    ContentType.socialPost => 'social_post',
+    ContentType.newsletter => 'newsletter',
+    ContentType.videoScript => 'video_script',
+    ContentType.reel => 'reel',
+    ContentType.short => 'short',
+  };
 
   static String _statusToString(ContentStatus status) => switch (status) {
-        ContentStatus.pending => 'pending_review',
-        ContentStatus.approved => 'approved',
-        ContentStatus.rejected => 'rejected',
-        ContentStatus.published => 'published',
-        ContentStatus.editing => 'in_progress',
-      };
+    ContentStatus.pending => 'pending_review',
+    ContentStatus.approved => 'approved',
+    ContentStatus.rejected => 'rejected',
+    ContentStatus.published => 'published',
+    ContentStatus.editing => 'in_progress',
+  };
 }

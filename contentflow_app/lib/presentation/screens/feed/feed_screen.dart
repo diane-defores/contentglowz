@@ -308,8 +308,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     for (final item in List.of(items)) {
       try {
-        await notifier.approve(item.id);
-        approved++;
+        final result = await notifier.approve(item.id);
+        if (result.approved) {
+          approved++;
+        } else {
+          failed++;
+        }
       } catch (_) {
         failed++;
       }
