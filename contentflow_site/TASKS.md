@@ -3,9 +3,9 @@
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
 
-**Stack**: Astro 6.1, TypeScript, static Vercel deployment | **Phase**: Astro 6 migrated and closed
+**Stack**: Astro 6.1, TypeScript, static Vercel deployment | **Phase**: Astro 6 cleanup shipped; Vercel post-ship verification pending
 
-**Top priority**: Implement the Astro 6 migration from `specs/SPEC-migrate-astro-v6.md` without breaking content routes, sitemap, SEO metadata, or app handoff routes.
+**Top priority**: Verify the post-cleanup Vercel deployment logs use `npm@11.12.1`, then re-audit the marketing site.
 
 ---
 
@@ -16,6 +16,7 @@
 | 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using the ready spec | ✅ done |
 | 🟠 | Validate `npm run build` after migration and compare generated content routes, sitemap, `robots.txt`, and auth handoff pages | ✅ done |
 | 🟡 | Update site docs and changelog after the migration ships | ✅ done |
+| 🟠 | Verify post-cleanup Vercel build logs use `npm@11.12.1` after ship | 📋 todo |
 
 ---
 

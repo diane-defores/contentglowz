@@ -41,6 +41,18 @@ npm run build      # Production build
 npm run preview    # Preview production build
 ```
 
+## ShipFlow Development Mode
+
+- development_mode: hybrid
+- validation_surface: mixed
+- ship_before_preview_test: conditional
+- post_ship_verification: sf-prod
+- deployment_provider: vercel
+- preview_source: Vercel MCP deployment target_url
+- production_url: https://contentflow.winflowz.com
+- notes: Use local checks and browser preview for static Astro output. Use sf-ship -> sf-prod -> preview/browser validation for Vercel build settings, deployed headers, protected preview access, and app handoff routes.
+- last_reviewed: 2026-05-03
+
 ## Architecture
 
 - **Framework**: Astro with sitemap integration

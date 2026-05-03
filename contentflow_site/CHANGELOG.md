@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-05-03
+
+### Changed
+- Pinned Vercel install and build commands to `npm@11.12.1` so deployment matches the package engine constraint.
+- Documented the ShipFlow hybrid development mode for local Astro checks plus Vercel post-ship validation.
+- Refreshed stale Astro migration documentation references for Astro 6 and Content Layer collections.
+
+### Removed
+- Removed the local Python `venv/` from Git tracking and ignored it going forward.
+
 ## 2026-04-29
 
 ### Changed

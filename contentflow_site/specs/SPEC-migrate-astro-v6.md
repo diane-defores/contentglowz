@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "contentflow_site"
 created: "2026-04-27"
-updated: "2026-04-28"
+updated: "2026-05-03"
 status: ready
 source_skill: sf-spec
 scope: "migration"
@@ -507,3 +507,7 @@ No user questions were asked by instruction. The implementation should proceed w
 | 2026-04-29 | sf-verify | gpt-5 | Verified Astro 6 migration against spec, docs, dependencies, generated output, bug gate, and quick risk checks | partial | Align root tracker and verify with npm 11 / Vercel preview before final ship |
 | 2026-04-29 | sf-end | gpt-5 | Closed Astro 6 migration session, aligned trackers, and updated changelog | closed | /sf-ship Migrate contentflow_site from Astro 5 to Astro 6 |
 | 2026-04-29 | sf-ship | gpt-5 | Prepared commit and push for the Astro 6 migration closure | shipped | Verify Vercel preview after push |
+| 2026-05-03 | sf-verify | gpt-5 | Re-verified Astro 6 migration post-ship with current docs, dependency checks, Vercel deploy evidence, protected preview fetches, local preview, and handoff browser checks | partial | Fix npm/Vercel engine alignment, repo hygiene, dev-mode docs, and stale architecture note, then rerun sf-verify |
+| 2026-05-03 | sf-start | gpt-5 | Implemented post-verify cleanup: pinned Vercel npm commands, removed tracked venv from Git scope, documented development mode, and fixed stale architecture note | implemented | /sf-verify Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-05-03 | sf-verify | gpt-5 | Re-ran post-cleanup verification: npm 11.12.1 install/build/audit, dependency tree, doc freshness scan, local preview routes, and app handoff checks | partial | /sf-ship post-cleanup changes, then /sf-prod verify Vercel build logs use npm 11.12.1 |
+| 2026-05-03 | sf-ship | gpt-5 | Shipped post-cleanup fixes for npm/Vercel alignment, repo hygiene, dev-mode docs, stale docs, changelog, and trackers | shipped | /sf-prod contentflow_site |

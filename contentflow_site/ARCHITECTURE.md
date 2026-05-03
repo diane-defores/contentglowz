@@ -57,7 +57,7 @@ next_step: /sf-docs update ARCHITECTURE.md
         v
   Pages Astro SSG (src/pages, composants)
         |
-        +--> ContentLayer (src/content + content/config.ts)
+        +--> ContentLayer (src/content + src/content.config.ts)
         +--> SEO metadata (Layout.astro)
         +--> Handoff links (src/config/site.ts)
         |

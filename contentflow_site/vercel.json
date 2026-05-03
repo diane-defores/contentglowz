@@ -1,4 +1,7 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npx --yes npm@11.12.1 install",
+  "buildCommand": "npx --yes npm@11.12.1 run build",
   "headers": [
     {
       "source": "/(.*)",

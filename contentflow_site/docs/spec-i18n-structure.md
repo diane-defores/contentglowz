@@ -109,7 +109,7 @@ Si une étape échoue:
 `contentflow_site` est aujourd'hui un site Astro statique sans structure i18n. Les pages et composants contiennent des liens absolus internes (`/blog`, `/#features`, etc.), le layout force `html lang="en"`, et les collections Markdown n'ont pas de champ de locale. Cela rend impossible un `sf-audit-translate sync` fiable sur le site: il n'existe pas de surface claire où ajouter les traductions ni de contrat SEO pour publier les variantes.
 
 ## Solution
-Ajouter une fondation i18n progressive, alignée avec Astro 5, sans migrer tout le contenu dans la même tâche. La stratégie retenue est:
+Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Layer collections, sans migrer tout le contenu dans la même tâche. La stratégie retenue est:
 
 - anglais par défaut sans préfixe pour préserver les URLs actuelles;
 - français sous `/fr` pour publier progressivement;
