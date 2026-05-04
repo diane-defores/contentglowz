@@ -1,0 +1,74 @@
+name: Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION_FILE: contentflow_app/.fvmrc
+  APP_DIR: contentflow_app
+  API_BASE_URL: ${{ vars.API_BASE_URL || 'https://api.winflowz.com' }}
+  APP_SITE_URL: ${{ vars.APP_SITE_URL || 'https://contentflow.winflowz.com' }}
+  APP_WEB_URL: ${{ vars.APP_WEB_URL || 'https://app.contentflow.winflowz.com' }}
+  CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+
+jobs:
+  build-apk:
+    name: Build release APK
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: ${{ env.FLUTTER_VERSION_FILE }}
+          cache: true
+
+      - name: Print Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Build APK
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          flutter build apk --release \
+            --dart-define=API_BASE_URL="${API_BASE_URL}" \
+            --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY}" \
+            --dart-define=APP_SITE_URL="${APP_SITE_URL}" \
+            --dart-define=APP_WEB_URL="${APP_WEB_URL}" \
+            --dart-define=BUILD_COMMIT_SHA="${GITHUB_SHA}" \
+            --dart-define=BUILD_ENVIRONMENT="github-actions" \
+            --dart-define=BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: contentflow-android-apk
+          path: contentflow_app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14

@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## 2026-05-04
+
+### Changed
+- Documented the Vercel monorepo reconnect verification path for the site/app deployment move.
+
 ## 2026-05-03
 
 ### Changed

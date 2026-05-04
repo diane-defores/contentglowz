@@ -9,6 +9,7 @@ The format is based on Keep a Changelog.
 ### Added
 - Added Android-first local device capture with MediaProjection screenshots, foreground-service screen recording, optional microphone audio, local capture history, preview, discard, and share/export.
 - Added focused capture model/store/widget coverage and documented the local-only Android capture scope.
+- Added GitHub Actions APK build documentation for the Blacksmith runner workflow and CLI artifact retrieval.
 
 ### Security
 - Kept captured screen media local-only in V1 with no backend upload, synced asset library, or offline binary replay.

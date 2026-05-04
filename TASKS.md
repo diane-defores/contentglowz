@@ -5,7 +5,7 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Finish the backend feedback production configuration and manual Zernio smoke validation.
+**Top priority**: Reconnect Vercel auto-deploys to the organization repo, then finish the backend feedback production configuration and manual Zernio smoke validation.
 
 ---
 
@@ -14,9 +14,10 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | ✅ | Consolidate ContentFlow surfaces into the canonical monorepo | ✅ done |
-| ✅ | Keep GitHub source of truth on `dianedef/contentflow` with Vercel roots for site and app | ✅ done |
+| ✅ | Move GitHub source of truth to `diane-defores/contentflow` with Vercel roots for site and app | ✅ done |
 | ✅ | Create root and site task tracking from existing subproject state | ✅ done |
 | 🟠 | Keep root tracker, subproject trackers, and ShipFlow master dashboard aligned after each shipped task | 🔄 in progress |
+| 🔴 | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | 📋 todo |
 
 ---
 
@@ -41,6 +42,7 @@
 | 🟠 | Add a simplified guided tour for “publish fast” first-run mode | 📋 todo |
 | 🟠 | Add a real account section in Settings for Clerk/account/provider management | 📋 todo |
 | 🟠 | Finish the secondary i18n pass on partially translated screens | 🔄 in progress |
+| 🟠 | Finish Android APK CI setup: enable Blacksmith app on the repo, add `CLERK_PUBLISHABLE_KEY`, trigger the first run, download/install the APK, and verify logs via CLI | 📋 todo |
 
 ---
 

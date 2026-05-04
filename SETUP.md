@@ -136,14 +136,25 @@ cp .env.example .env
 # Edit .env locally. Never commit it.
 ```
 
-## 6. Turso CLI Connection
+## 6. Turso CLI Install and Connection
 
-`contentflow_lab` includes Turso tooling in Flox:
+`contentflow_lab` installs the Turso CLI through its project-local Flox environment. After cloning, do not install Turso globally with curl for normal project work; activate the repo-managed CLI from `contentflow_lab`:
 
 ```bash
 cd contentflow_lab
 flox activate --command 'turso --version'
 flox activate --command 'tursodb --version'
+```
+
+Expected tools:
+
+- `turso`: Turso Cloud CLI used for auth, database listing, and schema checks.
+- `tursodb`: local Turso/libSQL shell.
+
+If those commands are missing, repair the project-local Flox manifest from `contentflow_lab`:
+
+```bash
+flox install turso turso-cli
 ```
 
 Use a Turso API token for CLI commands:
@@ -166,7 +177,30 @@ Do not confuse:
 - `TURSO_API_TOKEN`: CLI token used by `turso db ...`, `turso auth whoami`, and other Turso Cloud commands.
 - `TURSO_AUTH_TOKEN`: database runtime token used by the FastAPI app together with `TURSO_DATABASE_URL`.
 
-## 7. Fast Sanity Checklist
+## 7. Android APK CI
+
+GitHub Actions builds the Android APK on every push through `.github/workflows/android-apk.yml`.
+The job runs on the Blacksmith runner label `blacksmith-4vcpu-ubuntu-2404` and uploads `contentflow-android-apk`.
+
+Repository or organization prerequisite:
+
+- Install and enable the Blacksmith GitHub app for the repository that receives pushes.
+
+Optional GitHub Actions configuration:
+
+- `CLERK_PUBLISHABLE_KEY` secret: compiled into the APK for the production Clerk flow.
+- `API_BASE_URL`, `APP_SITE_URL`, and `APP_WEB_URL` repository variables: override the default runtime URLs if needed.
+
+Useful CLI commands:
+
+```bash
+gh run list --workflow android-apk.yml --limit 5
+gh run view <run-id> --log
+gh run download <run-id> -n contentflow-android-apk -D ./artifacts/android
+adb install -r ./artifacts/android/app-release.apk
+```
+
+## 8. Fast Sanity Checklist
 
 From a clean clone, these commands should be enough to prove the local toolchains are usable:
 
