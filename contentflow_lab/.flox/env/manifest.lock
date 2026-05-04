@@ -1,25 +1,38 @@
 {
   "lockfile-version": 1,
   "manifest": {
-    "version": 1,
+    "schema-version": "1.11.0",
     "install": {
       "cmake": {
         "pkg-path": "cmake"
       },
+      "fastapi": {
+        "pkg-path": "python313Packages.fastapi"
+      },
       "pip-audit": {
-        "pkg-path": "pip-audit"
+        "pkg-path": "pip-audit",
+        "outputs": "all"
+      },
+      "pydantic": {
+        "pkg-path": "python313Packages.pydantic"
       },
       "pytest": {
-        "pkg-path": "python313Packages.pytest"
+        "pkg-path": "python313Packages.pytest",
+        "outputs": "all"
       },
       "pytest-asyncio": {
-        "pkg-path": "python313Packages.pytest-asyncio"
+        "pkg-path": "python313Packages.pytest-asyncio",
+        "outputs": "all"
       },
       "pytest-timeout": {
-        "pkg-path": "python313Packages.pytest-timeout"
+        "pkg-path": "python313Packages.pytest-timeout",
+        "outputs": "all"
       },
       "python3": {
         "pkg-path": "python3"
+      },
+      "requests": {
+        "pkg-path": "python313Packages.requests"
       },
       "turso": {
         "pkg-path": "turso"
@@ -28,8 +41,12 @@
         "pkg-path": "turso-cli"
       }
     },
-    "hook": {},
-    "profile": {},
+    "hook": {
+      "on-activate": "  set -e\n\n  venv=\"$FLOX_ENV_CACHE/python-venv\"\n  flox_python_minor=\"$(python3 -c 'import sys; print(\".\".join(map(str, sys.version_info[:2])))')\"\n  venv_python_minor=\"\"\n  if [ -x \"$venv/bin/python\" ]; then\n    venv_python_minor=\"$(\"$venv/bin/python\" -c 'import sys; print(\".\".join(map(str, sys.version_info[:2])))' 2>/dev/null || true)\"\n  fi\n\n  if [ ! -x \"$venv/bin/python\" ] || [ \"$venv_python_minor\" != \"$flox_python_minor\" ]; then\n    rm -rf \"$venv\"\n    python3 -m venv --system-site-packages \"$venv\"\n  fi\n\n  \"$venv/bin/python\" - <<'PY' 2>/dev/null || \"$venv/bin/python\" -m pip install --quiet 'libsql>=0.1.11,<1.0'\nimport libsql\nPY\n"
+    },
+    "profile": {
+      "common": "  export VIRTUAL_ENV=\"$FLOX_ENV_CACHE/python-venv\"\n  export PATH=\"$VIRTUAL_ENV/bin:$PATH\"\n"
+    },
     "options": {}
   },
   "packages": [
@@ -48,8 +65,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:03:20.101885Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -79,8 +96,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:36:37.482977Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -111,8 +128,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:08:11.883961Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -142,8 +159,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:44:39.738931Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -154,6 +171,135 @@
       "outputs": {
         "debug": "/nix/store/pcqkiw67hcv58ng00vnlvhwj5j1s2hmy-cmake-4.1.2-debug",
         "out": "/nix/store/q800b7nrqa8csf2gcds2i83w1icsda5w-cmake-4.1.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.fastapi",
+      "broken": false,
+      "derivation": "/nix/store/4z8yk7di8g4fb9iyvdqpdsa7dccvagfc-python3.13-fastapi-0.128.0.drv",
+      "description": "Web framework for building APIs",
+      "install_id": "fastapi",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-fastapi-0.128.0",
+      "pname": "fastapi",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:04.206023Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.128.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/akwvjmxxznmxzybs1z5zd37dsdq2434c-python3.13-fastapi-0.128.0-dist",
+        "out": "/nix/store/9sj16287bxcfxbni5clkzahxjkwk72sq-python3.13-fastapi-0.128.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.fastapi",
+      "broken": false,
+      "derivation": "/nix/store/zf893xxy372ybal6m39p8rx7dkf8r48j-python3.13-fastapi-0.128.0.drv",
+      "description": "Web framework for building APIs",
+      "install_id": "fastapi",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-fastapi-0.128.0",
+      "pname": "fastapi",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:42.053003Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.128.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/rizg87ygilfd3vng5k8ypb6q4yldmqiz-python3.13-fastapi-0.128.0-dist",
+        "out": "/nix/store/10igliqgvy752yqhswqcbgy16nmpvfy2-python3.13-fastapi-0.128.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.fastapi",
+      "broken": false,
+      "derivation": "/nix/store/5qqa4kblxl1bp3wjy45fsrj6h1q48wpw-python3.13-fastapi-0.128.0.drv",
+      "description": "Web framework for building APIs",
+      "install_id": "fastapi",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-fastapi-0.128.0",
+      "pname": "fastapi",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:08:57.166377Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.128.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/rqsk6fh9jvi6gxnsang5ps2w4vxvz81j-python3.13-fastapi-0.128.0-dist",
+        "out": "/nix/store/7r9xgmh9d4sx2a44g041x8h0sv8rrxz4-python3.13-fastapi-0.128.0"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.fastapi",
+      "broken": false,
+      "derivation": "/nix/store/08ig4ympl3ik1wwsqcwqhbhdghwjxmg1-python3.13-fastapi-0.128.0.drv",
+      "description": "Web framework for building APIs",
+      "install_id": "fastapi",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-fastapi-0.128.0",
+      "pname": "fastapi",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:45:50.842971Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.128.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/d7fgzlj682akyvmcdb0aqxjd0ynqx79z-python3.13-fastapi-0.128.0-dist",
+        "out": "/nix/store/kk0h2y5x6xrcwbmiy96zw8pxnjyr5xgj-python3.13-fastapi-0.128.0"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -174,8 +320,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:03:57.343971Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -206,8 +352,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:37:32.935242Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -238,8 +384,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:08:50.172881Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -270,8 +416,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:45:40.995851Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -282,6 +428,140 @@
       "outputs": {
         "dist": "/nix/store/cz181df9av2zfra67a6rv3w3370zn2rh-pip-audit-2.10.0-dist",
         "out": "/nix/store/9jdjn5ab24zw6hs4i6c309naj5n9vc21-pip-audit-2.10.0"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pydantic",
+      "broken": false,
+      "derivation": "/nix/store/ddqlv0c1nibnysljscw6zvl67vyl79im-python3.13-pydantic-2.12.5.drv",
+      "description": "Data validation and settings management using Python type hinting",
+      "install_id": "pydantic",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pydantic-2.12.5",
+      "pname": "pydantic",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:11.812738Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.12.5",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/b51sa43r1p88p565g540f3y2w4c4ysc8-python3.13-pydantic-2.12.5-dist",
+        "out": "/nix/store/z2548hn1vpdmh3z6dyn0x2xhar151dwq-python3.13-pydantic-2.12.5"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pydantic",
+      "broken": false,
+      "derivation": "/nix/store/4z8xb5w96zanc7djnkwzx7hxqq3gw37r-python3.13-pydantic-2.12.5.drv",
+      "description": "Data validation and settings management using Python type hinting",
+      "install_id": "pydantic",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pydantic-2.12.5",
+      "pname": "pydantic",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:51.562829Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.12.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/55pr2lzz4lxncdj7z19njqb5x0bl83pz-python3.13-pydantic-2.12.5-dist",
+        "out": "/nix/store/2sh17bkdn3vd6hjld0agfyr9pvppbk8k-python3.13-pydantic-2.12.5"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pydantic",
+      "broken": false,
+      "derivation": "/nix/store/nbz6bh1j59fbf4jl7lp9lg8x1rqbbj2z-python3.13-pydantic-2.12.5.drv",
+      "description": "Data validation and settings management using Python type hinting",
+      "install_id": "pydantic",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pydantic-2.12.5",
+      "pname": "pydantic",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:05.009783Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.12.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/v7c7p71bi6vj8bz5a25jp0vg6q7pwnri-python3.13-pydantic-2.12.5-dist",
+        "out": "/nix/store/5nhk2affmjwq9gr453l3przc5y6gmryp-python3.13-pydantic-2.12.5"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.pydantic",
+      "broken": false,
+      "derivation": "/nix/store/2y7v4y745bkll28mkwcqdd79kp0j9l3p-python3.13-pydantic-2.12.5.drv",
+      "description": "Data validation and settings management using Python type hinting",
+      "install_id": "pydantic",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-pydantic-2.12.5",
+      "pname": "pydantic",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:00.919142Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.12.5",
+      "outputs_to_install": [
+        "out",
+        "out",
+        "out",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/8alg536d88vq9531hcwm1hrlgsskjq2y-python3.13-pydantic-2.12.5-dist",
+        "out": "/nix/store/29jcxy6ib2m084wrip51dm6wx7bvs3ff-python3.13-pydantic-2.12.5"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -302,8 +582,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:04:13.369455Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -335,8 +615,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:37:53.466347Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -369,8 +649,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:09:06.642055Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -402,8 +682,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:46:03.050728Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -438,8 +718,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:04:13.390107Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -471,8 +751,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:37:53.491940Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -504,8 +784,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:09:06.663599Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -537,8 +817,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:46:03.078304Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -570,8 +850,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:04:13.655697Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -602,8 +882,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:37:53.812068Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -634,8 +914,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:09:06.938763Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -666,8 +946,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:46:03.423785Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -698,8 +978,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:03:59.651315Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -731,8 +1011,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:37:36.385855Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -766,8 +1046,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:08:52.539311Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -798,8 +1078,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:45:44.760344Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -822,6 +1102,139 @@
       "priority": 5
     },
     {
+      "attr_path": "python313Packages.requests",
+      "broken": false,
+      "derivation": "/nix/store/g5gcbm3mrk5naw42ygxqam9yxp48zj20-python3.13-requests-2.32.5.drv",
+      "description": "HTTP library for Python",
+      "install_id": "requests",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-requests-2.32.5",
+      "pname": "requests",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:14.872484Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.32.5",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/sw23w3rfwnq8mr5zy6dmxf6a71h5xqyy-python3.13-requests-2.32.5-dist",
+        "out": "/nix/store/zjnfxjxq8vbapq5w5mqkfk6gyf978nzg-python3.13-requests-2.32.5"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.requests",
+      "broken": false,
+      "derivation": "/nix/store/d2idfh78n2662nhfv13fj0sd7d0v77ml-python3.13-requests-2.32.5.drv",
+      "description": "HTTP library for Python",
+      "install_id": "requests",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-requests-2.32.5",
+      "pname": "requests",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:37:55.345418Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.32.5",
+      "outputs_to_install": [
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/mql3lj72asdfg7sqglv4d24rlc0wsqky-python3.13-requests-2.32.5-dist",
+        "out": "/nix/store/s8mjykmxhnahk83nr9mww6ybp9g7wwj5-python3.13-requests-2.32.5"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.requests",
+      "broken": false,
+      "derivation": "/nix/store/m0qhim8xd3xwb8ax38hplinvyrpjd844-python3.13-requests-2.32.5.drv",
+      "description": "HTTP library for Python",
+      "install_id": "requests",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-requests-2.32.5",
+      "pname": "requests",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:08.197521Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.32.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/xaam4ahz5i2a5pbcnvshng7vzli69jjy-python3.13-requests-2.32.5-dist",
+        "out": "/nix/store/b8wlzskjz5rwqx6kaw47w3916wq6pp7w-python3.13-requests-2.32.5"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.requests",
+      "broken": false,
+      "derivation": "/nix/store/rn76imqsq53m7ha2a9p7d16qac8vd89s-python3.13-requests-2.32.5.drv",
+      "description": "HTTP library for Python",
+      "install_id": "requests",
+      "license": "Apache-2.0",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-requests-2.32.5",
+      "pname": "requests",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:05.127316Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "2.32.5",
+      "outputs_to_install": [
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/pxxn1yrjcazvxvbn83cah8a3vrm45icn-python3.13-requests-2.32.5-dist",
+        "out": "/nix/store/knlk45h5km3r1i6i38izw3cmk6xznpqz-python3.13-requests-2.32.5"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
       "attr_path": "turso",
       "broken": false,
       "derivation": "/nix/store/w3kljbjsy2lfygjw91da651bwp6bifly-turso-0.4.0.drv",
@@ -836,8 +1249,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:05:33.015698Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -867,8 +1280,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:39:37.100596Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -898,8 +1311,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:10:28.709219Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -929,8 +1342,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:47:53.211996Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -960,8 +1373,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:05:33.019146Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -991,8 +1404,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T06:39:37.104433Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -1022,8 +1435,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:10:28.712748Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,
@@ -1053,8 +1466,8 @@
       "rev_date": "2026-04-18T21:33:21Z",
       "scrape_date": "2026-04-21T07:47:53.215947Z",
       "stabilities": [
-        "staging",
         "unstable",
+        "staging",
         "stable"
       ],
       "unfree": false,

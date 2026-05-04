@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [2026-05-04]
+
+### Added
+- Added Android-first local device capture with MediaProjection screenshots, foreground-service screen recording, optional microphone audio, local capture history, preview, discard, and share/export.
+- Added focused capture model/store/widget coverage and documented the local-only Android capture scope.
+
+### Security
+- Kept captured screen media local-only in V1 with no backend upload, synced asset library, or offline binary replay.
+
 ## [2026-05-02]
 
 ### Fixed

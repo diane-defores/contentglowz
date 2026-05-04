@@ -8,6 +8,10 @@ Canonical monorepo for the full ContentFlow platform.
 - `contentflow_app` - Flutter application, including the web build deployed on Vercel
 - `contentflow_lab` - FastAPI backend and internal tooling
 
+## Setup
+
+Start with [SETUP.md](SETUP.md) after cloning the repository. It lists the required local tools, Flox commands, app/site/backend checks, and Turso CLI authentication flow.
+
 ## Deployment Model
 
 - GitHub source of truth: `dianedef/contentflow`

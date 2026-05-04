@@ -92,6 +92,7 @@ Currently supported offline writes:
 Currently blocked offline:
 - publish actions to external platforms
 - audio uploads / binary uploads
+- capture media uploads / synced screen-capture library
 - destructive deletes
 - drip import / cluster / execute-tick
 - server-first flows that do not have a safe local representation yet
@@ -103,6 +104,24 @@ Notes:
 - `401/403` pauses replay until the user signs in again.
 - validation/business `4xx` errors move queued actions to manual review.
 - Drip reads now only fallback to cache for real offline connectivity failures so malformed backend payloads stay visible.
+
+## Android Device Capture
+
+The Android app includes a local-only Capture surface for creator assets:
+- screenshot capture saves a PNG in app-scoped storage
+- screen recording saves an MP4 in app-scoped storage
+- every capture asks for Android MediaProjection consent
+- recording runs through a visible foreground service and stops at 5 minutes
+- microphone audio is optional and off by default
+- local captures can be previewed, discarded, or shared/exported by the user
+
+V1 does not upload capture files, create backend asset records, or replay binary uploads offline. Web, iOS, internal audio capture, gallery save, trimming, and cloud sync are follow-up scopes.
+
+Android-specific requirements:
+- `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, and `POST_NOTIFICATIONS` are required for the recording service path.
+- `FOREGROUND_SERVICE_MICROPHONE` and `RECORD_AUDIO` are used only when the user enables microphone audio.
+- Protected third-party screens can render black or partial captures when Android or the source app blocks capture.
+- Android 14+ uses a fresh MediaProjection consent/token for every screenshot or recording session.
 
 ## Zernio / LATE Publishing
 

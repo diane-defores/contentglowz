@@ -1445,7 +1445,7 @@ final contentDetailProvider = FutureProvider.family<ContentItem, String>((
   contentId,
 ) async {
   final pendingItems =
-      ref.watch(pendingContentProvider).value ?? const <ContentItem>[];
+      ref.read(pendingContentProvider).value ?? const <ContentItem>[];
   final fallback = pendingItems
       .where((item) => item.id == contentId)
       .firstOrNull;
@@ -1528,7 +1528,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (item == null) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return const ApproveResult(
           approved: true,
           published: false,
@@ -1539,7 +1539,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (item.channels.isEmpty) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1562,7 +1562,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (publishableChannels.isEmpty) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1580,7 +1580,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (publishAccountsState.isUnavailable) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1593,7 +1593,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (publishAccountsState.hasError) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1625,7 +1625,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (ambiguousAccounts.isNotEmpty) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1638,7 +1638,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       if (platforms.isEmpty) {
         await api.approveContent(id);
         ref.invalidate(contentHistoryProvider);
-        ref.invalidate(contentDetailProvider(id));
+        _invalidateContentDetail(id);
         return ApproveResult(
           approved: true,
           published: false,
@@ -1666,7 +1666,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       );
 
       ref.invalidate(contentHistoryProvider);
-      ref.invalidate(contentDetailProvider(id));
+      _invalidateContentDetail(id);
 
       final success = response['success'] == true;
       final publishedPlatforms = platforms
@@ -1719,10 +1719,14 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       final api = ref.read(apiServiceProvider);
       await api.rejectContent(id);
       ref.invalidate(contentHistoryProvider);
-      ref.invalidate(contentDetailProvider(id));
+      _invalidateContentDetail(id);
     } catch (_) {
       state = AsyncData(current);
     }
+  }
+
+  void _invalidateContentDetail(String id) {
+    ref.invalidate(contentDetailProvider(id));
   }
 
   void updateItem(ContentItem updated) {
@@ -1730,7 +1734,7 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     state = AsyncData(
       current.map((c) => c.id == updated.id ? updated : c).toList(),
     );
-    ref.invalidate(contentDetailProvider(updated.id));
+    _invalidateContentDetail(updated.id);
   }
 
   Future<String> _resolvePublishBody(

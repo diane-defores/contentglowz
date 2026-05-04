@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "contentflow_app"
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-04"
 status: "reviewed"
 source_skill: sf-docs
 scope: product
@@ -53,6 +53,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 - provides authenticated onboarding and workspace bootstrap via Clerk + FastAPI session flow;
 - supports multi-project workspace management with an explicit active-project selection model;
 - runs content workflows (feed, ideas, angles, editor, personas, scheduling, drip plans, affiliation/content domains);
+- captures local Android screenshots and screen recordings for creator reference assets;
 - supports production-adjacent resilience through degraded mode (cached reads + queued writes + replay + sync state)
 - exposes diagnostics and observability (`/uptime`, `/performance`, `/analytics`, `/activity`) so operators understand backend and queue health;
 - supports feedback capture (text/audio) and admin review for support triage.
@@ -66,6 +67,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 
 ## Product boundaries (what is currently documented and delivered)
 - **In scope:** human-in-the-loop review/publish preparation, project configuration, content status, offline continuity, and workflow surfaces.
+- **Android-only V1 scope:** local device screenshot and screen-recording capture with Android consent, app-scoped storage, preview, discard, and share/export.
 - **Partially in scope / not finished:** end-to-end external publish execution by channel.
   - Route and UX for publish actions exists in some paths, but full channel-account linking and feedback loop are not fully closed yet.
 - **Explicitly out of scope in this repo:** marketing site, public SEO/landing content, pricing mechanics, and full AI orchestration decisions (owned by surrounding repos and services).
@@ -80,6 +82,7 @@ next_step: "/sf-docs audit PRODUCT.md"
 - Not positioned as a fully autonomous publishing factory.
 - Not responsible for marketing pages or external campaign channel management.
 - Not a native-auth-first mobile rewrite yet (web auth path is the active production path in this repo).
+- Not a cloud screen-recording asset library yet; capture uploads, retention, and sync need a separate backend spec.
 
 ## Business-facing constraints to keep synchronized
 - The app depends on consistent workspace/project semantics from backend contracts.

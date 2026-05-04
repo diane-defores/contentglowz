@@ -81,6 +81,15 @@ This document describes conventions for working in `contentflow_app`, the Flutte
 - Avoid forcing navigation into full app flows when bootstrap fails for non-recoverable reasons.
 - Preserve the explicit separation between authenticated app mode, demo mode, and entry/auth screens.
 
+## Native Platform Channels
+
+- Keep native platform-channel APIs typed at the service/model boundary before they reach widgets.
+- Android MediaProjection work must request fresh user consent per capture session.
+- Screen capture and recording must run through foreground-service paths that match the declared Android service type.
+- Store captured media files only in app-scoped storage unless a separate export/save-to-gallery scope says otherwise.
+- Persist only metadata and local file paths in SharedPreferences; never store binary capture data there.
+- Keep backend upload, sync, retention, and storage-cost behavior out of local native capture work unless a separate backend spec is ready.
+
 ## UX and Copy Standards
 
 - Surface backend availability state early in flows where users may expect immediate write confirmation.

@@ -375,15 +375,19 @@ None for Spec 1. Decision: direct feed publish must pay the cost of resolving fu
 | 2026-05-02 10:26:50 UTC | sf-check | GPT-5 Codex | Ran available syntax/dependency checks; Flutter, Dart, Pytest, pip-audit, and Turso CLI are unavailable in this shell | blocked | Install/use the project toolchains, then rerun /sf-check |
 | 2026-05-02 13:58:45 UTC | sf-check | GPT-5 Codex | Reran Flutter checks through the provisioned voiceflowz Flox Flutter env; analyze and targeted Flutter tests passed, while backend Pytest, pip-audit, and Turso CLI remain unavailable | partial | Run backend Pytest and Turso schema verification, then /sf-verify content editing full body preview |
 | 2026-05-02 14:27:54 UTC | sf-check | GPT-5 Codex | Installed project Flox tooling, reran Flutter analyze/tests and backend body tests; dependency audit and Turso schema proof remain blocked by resolver/auth | partial | Resolve dependency audit, authenticate Turso, then /sf-verify content editing full body preview |
+| 2026-05-04 17:43:32 UTC | sf-build | GPT-5 Codex | Continued interrupted verification, fixed editor save/publish ordering, added editor regression coverage, and reran targeted Flutter/backend checks | partial | Resolve dependency audit, authenticate Turso, isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
+| 2026-05-04 18:56:42 UTC | sf-build | GPT-5 Codex | Repaired contentflow_lab Flox Python/Turso environment, verified backend body tests and dependency audit inside Flox, and confirmed Turso CLI availability | partial | Login to Turso and run schema verification, isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
+| 2026-05-04 19:28:13 UTC | sf-build | GPT-5 Codex | Completed Turso schema proof with `TURSO_API_TOKEN`; production `content_records.current_version`, `content_bodies`, and `content_edits` exist | partial | Isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
 
 ## Current Chantier Flow
 
 - sf-spec: done for Spec 1 draft.
 - sf-ready: ready.
 - sf-start: implemented.
-- sf-verify: partial; code contract reviewed and body cache fallback tightened; local targeted Flutter/backend tests now pass, but Turso schema proof is not verified.
-- sf-check: partial; Flutter analyze and targeted Flutter tests pass in `contentflow_app` Flox, backend body tests and `pip check` pass in the local backend venv, but `pip-audit` is blocked by `crewai<1.0` versus `litellm>=1.83.14` and Turso schema proof is blocked by CLI auth/config.
+- sf-verify: partial; code contract reviewed, body cache fallback tightened, editor save/publish ordering fixed, local targeted Flutter/backend tests pass, and Turso schema proof confirms required production tables/columns.
+- sf-check: pass for required local checks; `flutter analyze`, targeted Flutter model/provider/editor/feed tests, backend body-history pytest, Flox `pip-audit -r requirements.txt`, and Turso schema proof pass.
+- sf-build: partial; continued the lifecycle and verification evidence, but did not close or ship because proof and worktree gates remain unresolved.
 - sf-end: not launched.
 - sf-ship: not launched.
 
-Next lifecycle command: resolve the dependency audit through a dependency-migration pass, authenticate Turso and run schema verification, then `/sf-verify content editing full body preview`.
+Next lifecycle command: isolate unrelated dirty files, then `/sf-verify content editing full body preview`.

@@ -700,7 +700,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (_hasChanges) {
       try {
         final api = ref.read(apiServiceProvider);
-        await api.updateContent(item.id, title: _titleController.text);
         final savedOnline = await api.saveContentBody(
           item.id,
           _bodyController.text,
@@ -718,6 +717,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           );
           return;
         }
+        await api.updateContent(item.id, title: _titleController.text);
 
         final updated = item.copyWith(
           title: _titleController.text,

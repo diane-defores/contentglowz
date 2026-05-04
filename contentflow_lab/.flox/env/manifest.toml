@@ -1,12 +1,4 @@
-## Flox Environment Manifest -----------------------------------------
-##
-##   _Everything_ you need to know about the _manifest_ is here:
-##
-##   https://flox.dev/docs/reference/command-reference/manifest.toml/
-##
-## -------------------------------------------------------------------
-# Flox manifest version managed by Flox CLI
-version = 1
+schema-version = "1.11.0"
 
 
 ## Install Packages --------------------------------------------------
@@ -18,11 +10,18 @@ version = 1
 python3.pkg-path = "python3"
 cmake.pkg-path = "cmake"
 pytest.pkg-path = "python313Packages.pytest"
+pytest.outputs = "all"
 pytest-asyncio.pkg-path = "python313Packages.pytest-asyncio"
+pytest-asyncio.outputs = "all"
 pytest-timeout.pkg-path = "python313Packages.pytest-timeout"
+pytest-timeout.outputs = "all"
 pip-audit.pkg-path = "pip-audit"
+pip-audit.outputs = "all"
 turso.pkg-path = "turso"
 turso-cli.pkg-path = "turso-cli"
+pydantic.pkg-path = "python313Packages.pydantic"
+requests.pkg-path = "python313Packages.requests"
+fastapi.pkg-path = "python313Packages.fastapi"
 # gum.pkg-path = "gum"
 # gum.version = "^0.14.5"
 
@@ -39,14 +38,25 @@ turso-cli.pkg-path = "turso-cli"
 ##  ... run by _bash_ shell when you run 'flox activate'.
 ## -------------------------------------------------------------------
 [hook]
-# on-activate = '''
-#   # -> Set variables, create files and directories
-#   # -> Perform initialization steps, e.g. create a python venv
-#   # -> Useful environment variables:
-#   #      - FLOX_ENV_PROJECT=/home/user/example
-#   #      - FLOX_ENV=/home/user/example/.flox/run
-#   #      - FLOX_ENV_CACHE=/home/user/example/.flox/cache
-# '''
+on-activate = '''
+  set -e
+
+  venv="$FLOX_ENV_CACHE/python-venv"
+  flox_python_minor="$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')"
+  venv_python_minor=""
+  if [ -x "$venv/bin/python" ]; then
+    venv_python_minor="$("$venv/bin/python" -c 'import sys; print(".".join(map(str, sys.version_info[:2])))' 2>/dev/null || true)"
+  fi
+
+  if [ ! -x "$venv/bin/python" ] || [ "$venv_python_minor" != "$flox_python_minor" ]; then
+    rm -rf "$venv"
+    python3 -m venv --system-site-packages "$venv"
+  fi
+
+  "$venv/bin/python" - <<'PY' 2>/dev/null || "$venv/bin/python" -m pip install --quiet 'libsql>=0.1.11,<1.0'
+import libsql
+PY
+'''
 
 
 ## Profile script ----------------------------------------------------
@@ -59,6 +69,10 @@ turso-cli.pkg-path = "turso-cli"
 #   --align center --width 50 --margin "1 2" --padding "2 4" \
 #     $INTRO_MESSAGE
 # '''
+common = '''
+  export VIRTUAL_ENV="$FLOX_ENV_CACHE/python-venv"
+  export PATH="$VIRTUAL_ENV/bin:$PATH"
+'''
 ## Shell-specific customizations such as setting aliases go here:
 # bash = ...
 # zsh  = ...

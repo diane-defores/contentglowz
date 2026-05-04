@@ -63,6 +63,11 @@ const _sections = [
         path: '/reels',
       ),
       _NavItem(
+        icon: Icons.screen_share_rounded,
+        label: 'Capture',
+        path: '/capture',
+      ),
+      _NavItem(
         icon: Icons.link_rounded,
         label: 'Affiliations',
         path: '/affiliations',
