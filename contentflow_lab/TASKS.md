@@ -518,12 +518,14 @@ Garder `allow_delegation=False` sur les agents terminaux (ceux qui produisent l'
 | 🟠 | Roll out `USER_SECRETS_MASTER_KEY` in all deployed environments so GitHub integration endpoints remain available in production | 📋 todo |
 | 🟡 | Add anti-automation controls for anonymous feedback upload URL issuance (captcha/challenge or stricter endpoint-specific quotas) | 📋 todo |
 
-### Audit: Deps (2026-04-27)
+### Audit: Deps (2026-05-02)
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Pin backend dependencies with a lockfile (`uv.lock` or equivalent) and disallow unpinned production installs | 📋 todo |
-| 🟠 | Resolve remaining advisory exposure: floor versions raised for `litellm`/`cryptography`/`jinja2`/`requests`, but `pydantic-ai` still needs a major-line migration to clear the last ignored advisory | 🔄 in progress |
+| ✅ | Pin backend dependencies with lockfiles (`requirements.lock`, `requirements-dev.lock`) and route production installs through the production lock | ✅ done |
+| ✅ | Complete the existing `pydantic-ai` major-line migration; full local pytest and `pip-audit` are clean after moving to `pydantic-ai>=1.56.0,<2.0` | ✅ done |
+| ✅ | Document isolated-runtime strategy for excluded STORM/Reels integrations (`knowledge-storm`, `instagrapi`) if those flows remain product-critical | ✅ done |
+| ✅ | Resolve the default `crewai`/`litellm` resolver conflict without lowering the LiteLLM security floor | ✅ done |
 | ✅ | Move test-only packages (`pytest`, `pytest-asyncio`, `pytest-cov`) out of runtime requirements (`requirements-dev.txt`) | ✅ done |
 | ✅ | Add dependency automation baseline (`.github/dependabot.yml` for pip + GitHub Actions) | ✅ done |
-| 🟡 | Establish project-scoped license inventory and review unknown license metadata for `libsql` | 📋 todo |
+| ✅ | Establish project-scoped license inventory and review unknown license metadata for `libsql` | ✅ done |

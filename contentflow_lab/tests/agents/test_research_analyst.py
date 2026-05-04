@@ -13,8 +13,10 @@ sys.path.insert(0, str(project_root))
 
 @pytest.mark.unit
 @pytest.mark.agents
-def test_research_analyst_import():
+def test_research_analyst_import(monkeypatch):
     """Test that ResearchAnalystAgent can be imported."""
+    monkeypatch.setenv("DATAFORSEO_LOGIN", "test-login")
+    monkeypatch.setenv("DATAFORSEO_PASSWORD", "test-password")
     try:
         from agents.seo.research_analyst import ResearchAnalystAgent
         agent = ResearchAnalystAgent()

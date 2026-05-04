@@ -11,7 +11,7 @@ fi
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Python version check
-REQUIRED_PYTHON_VERSION="3.11"
+REQUIRED_PYTHON_VERSION="3.12"
 CURRENT_PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
 
 if [[ "$(printf '%s\n' "$REQUIRED_PYTHON_VERSION" "$CURRENT_PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_PYTHON_VERSION" ]]; then
@@ -32,10 +32,17 @@ source "${PROJECT_ROOT}/venv/bin/activate"
 pip install --upgrade pip setuptools wheel
 
 # Install project dependencies
-pip install -r "${PROJECT_ROOT}/requirements.txt"
+if [ -f "${PROJECT_ROOT}/requirements-dev.lock" ]; then
+    pip install -r "${PROJECT_ROOT}/requirements-dev.lock"
+elif [ -f "${PROJECT_ROOT}/requirements.lock" ]; then
+    pip install -r "${PROJECT_ROOT}/requirements.lock"
+    pip install -r "${PROJECT_ROOT}/requirements-dev.txt"
+else
+    pip install -r "${PROJECT_ROOT}/requirements-dev.txt"
+fi
 
-# Install development dependencies
-pip install pytest pylint mypy black
+# Install local development tools not yet captured in requirements-dev.txt
+pip install pylint mypy black
 
 # Configure environment variables
 if [ -f "${PROJECT_ROOT}/.env" ]; then

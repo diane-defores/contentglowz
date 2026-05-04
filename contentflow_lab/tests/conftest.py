@@ -8,6 +8,7 @@ for testing the SEO multi-agent system.
 import os
 import sys
 import pytest
+import requests
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Dict, Any, Generator
@@ -15,6 +16,21 @@ from typing import Dict, Any, Generator
 # Add project root to Python path for imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+LIVE_API_TEST_FILES = {
+    "test_analytics.py",
+    "test_e2e_pipeline.py",
+    "test_new_domains.py",
+}
+
+
+def _live_api_available() -> bool:
+    base_url = os.getenv("CONTENTFLOW_LIVE_TEST_BASE_URL", "http://localhost:8000").rstrip("/")
+    try:
+        response = requests.get(f"{base_url}/health", timeout=1)
+    except requests.RequestException:
+        return False
+    return response.status_code == 200
 
 
 def pytest_configure(config):
@@ -36,7 +52,22 @@ def pytest_collection_modifyitems(config, items):
         config: pytest config object
         items: List of test items
     """
+    live_api_available = None
     for item in items:
+        filename = Path(str(item.fspath)).name
+        if filename in LIVE_API_TEST_FILES:
+            if live_api_available is None:
+                live_api_available = _live_api_available()
+            if not live_api_available:
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason=(
+                            "Live API tests require CONTENTFLOW_LIVE_TEST_BASE_URL "
+                            "or http://localhost:8000 to be reachable"
+                        )
+                    )
+                )
+
         # Add markers based on test file location
         if "agents/" in str(item.fspath):
             item.add_marker(pytest.mark.agents)
@@ -111,6 +142,8 @@ def setup_test_environment():
         "OPENROUTER_API_KEY": "test-openrouter-key",
         "GROQ_API_KEY": "test-groq-key",
         "SERP_API_KEY": "test-serp-key",
+        "DATAFORSEO_LOGIN": "test-dataforseo-login",
+        "DATAFORSEO_PASSWORD": "test-dataforseo-password",
         "EXA_API_KEY": "test-exa-key",
         "YDC_API_KEY": "test-ydc-key"
     }

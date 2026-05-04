@@ -2,6 +2,24 @@
 
 All notable changes to Content Flows are documented here.
 
+## [2026-05-04]
+
+### Added
+- Added `requirements.lock` / `requirements-dev.lock` so production and development installs can use pinned dependency resolutions.
+- Added a centralized PydanticAI runtime adapter and routed repo-understanding synthesis through it with explicit request-scoped OpenRouter credentials.
+- Added shared URL safety validation for LLM-callable Exa/Firecrawl URL-fetching tools.
+- Added optional integration guidance for Reels/STORM so incompatible packages stay isolated from the core API runtime.
+- Added technical docs for the PydanticAI adapter, URL safety gate, and local pytest/live API validation policy.
+
+### Changed
+- Upgraded `pydantic-ai` to the supported v1 line (`>=1.56.0,<2.0`) to clear CVE-2026-25580 without relaxing the LiteLLM security floor.
+- Updated Render and setup docs/scripts to install from lockfiles and align runtime setup on Python 3.12.
+- Moved `pytest-httpx` into the development lock path and made live API pytest files skip explicitly when no local/API test server is reachable.
+
+### Fixed
+- Ensured public-site repo understanding uses normalized safe URLs before Firecrawl map/scrape calls.
+- Fixed pytest marker configuration so checked-in markers are recognized during full local test runs.
+
 ## [2026-04-26]
 
 ### Fixed

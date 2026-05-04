@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentflow_lab
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-04"
 status: reviewed
 source_skill: sf-docs
 scope: technical
@@ -22,6 +22,9 @@ evidence:
   - api/services/user_key_store.py
   - scheduler/scheduler_service.py
   - requirements.txt
+  - requirements.lock
+  - pytest.ini
+  - render.yaml
 depends_on: []
 supersedes: []
 linked_systems:
@@ -64,7 +67,7 @@ It hosts:
 
 ```bash
 # one-time setup
-pip install -r requirements.txt
+pip install -r requirements.lock
 flox activate  # if using flox
 
 # run API with secrets
@@ -77,6 +80,18 @@ curl http://localhost:8000/health
 open http://localhost:8000/docs
 open http://localhost:8000/redoc
 ```
+
+## ShipFlow Development Mode
+
+- development_mode: local
+- validation_surface: local
+- ship_before_preview_test: no
+- post_ship_verification: none
+- deployment_provider: other
+- preview_source: not applicable
+- production_url: https://api.winflowz.com
+- notes: Validate source changes with local pytest/compile/audit checks. Hosted Render/PM2 rollout is operator-controlled and out of scope for agents.
+- last_reviewed: 2026-05-04
 
 ## Backend Focus
 

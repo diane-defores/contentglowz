@@ -32,11 +32,13 @@ router = APIRouter(
 
 @router.post("/cookies", summary="Upload Instagram cookies")
 async def upload_cookies(req: UploadCookiesRequest):
-    from agents.reels.instagram_service import save_cookies
+    from agents.reels.instagram_service import InstagramClientUnavailable, save_cookies
 
     try:
         save_cookies(req.user_id, req.cookies_content)
         return {"success": True}
+    except InstagramClientUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -46,10 +48,16 @@ async def upload_cookies(req: UploadCookiesRequest):
 
 @router.get("/cookies/status", summary="Check Instagram cookie status")
 async def cookie_status(user_id: str) -> CookieStatusResponse:
-    from agents.reels.instagram_service import get_cookie_status
+    from agents.reels.instagram_service import (
+        InstagramClientUnavailable,
+        get_cookie_status,
+    )
 
-    result = get_cookie_status(user_id)
-    return CookieStatusResponse(**result)
+    try:
+        result = get_cookie_status(user_id)
+        return CookieStatusResponse(**result)
+    except InstagramClientUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
 
 
 @router.delete("/cookies", summary="Delete Instagram cookies")
@@ -66,7 +74,7 @@ async def delete_cookies(req: DeleteCookiesRequest):
     summary="Download reel, extract audio, upload to Bunny CDN",
 )
 async def download_reel(req: DownloadReelRequest):
-    from agents.reels.instagram_service import download_reel
+    from agents.reels.instagram_service import InstagramClientUnavailable, download_reel
     from agents.reels.audio_extractor import extract_audio
     from agents.reels.bunny_uploader import upload_to_bunny
 
@@ -114,6 +122,8 @@ async def download_reel(req: DownloadReelRequest):
             author=result.get("author"),
         )
 
+    except InstagramClientUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         logger.error(f"Reel download failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

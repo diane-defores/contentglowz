@@ -4,11 +4,12 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentflow_lab
 created: "2026-04-27"
-updated: "2026-04-27"
-status: ready
+updated: "2026-05-04"
+status: reviewed
 source_skill: sf-spec
 scope: migration
 owner: "Diane"
+confidence: high
 user_story: "En tant que mainteneuse du backend ContentFlow, je veux introduire PydanticAI via un adapter unique sur des flux JSON structurés, afin que les sorties IA soient typées, testables et compatibles avec les credentials BYOK/platform existants."
 risk_level: medium
 security_impact: yes
@@ -40,13 +41,13 @@ depends_on:
     artifact_version: "unknown"
     required_status: "active"
   - artifact: "Pydantic AI Upgrade Guide"
-    artifact_version: "docs current on 2026-04-27"
+    artifact_version: "docs current on 2026-05-04"
     required_status: "reviewed"
   - artifact: "Pydantic AI Version Policy"
-    artifact_version: "docs current on 2026-04-27"
+    artifact_version: "docs current on 2026-05-04"
     required_status: "reviewed"
   - artifact: "Pydantic AI OpenRouter Docs"
-    artifact_version: "docs current on 2026-04-27"
+    artifact_version: "docs current on 2026-05-04"
     required_status: "reviewed"
 supersedes: []
 evidence:
@@ -62,18 +63,29 @@ evidence:
   - "Pydantic AI Version Policy: V2 no earlier than April 2026; V1 security fixes continue at least 6 months after V2"
   - "Pydantic AI OpenRouter docs: OpenRouterModel can use explicit OpenRouterProvider(api_key=...) or OPENROUTER_API_KEY env"
   - "Exploration 2026-04-27: PydanticAI is not currently imported at runtime, but has concrete value for repo understanding, psychology agents, and typed BYOK flows"
-next_step: "Implement PydanticAI adapter spike on repo understanding or psychology JSON flow"
+next_step: "No ShipFlow follow-up; hosted rollout remains operator-controlled if needed"
 ---
 # Title
 Introduce PydanticAI Through A Single Runtime Adapter
 
 # Status
-Ready. The product/technical direction is confirmed: do not remove `pydantic-ai` as a default action. Introduce it deliberately through one adapter and one or two high-value structured-output flows.
+Implemented and verified locally. The product/technical direction is confirmed: do not remove `pydantic-ai` as a default action. The dependency now targets supported PydanticAI v1 through one adapter and the first structured-output pilot is wired through `repo_understanding_service.py`.
+
+# Current Chantier Flow
+
+| Step | Status | Notes |
+|------|--------|-------|
+| sf-spec | done | Spec created 2026-04-27. |
+| sf-ready | done | Direction locked: adapter-based PydanticAI introduction, not removal. |
+| sf-start | done | Dependency range, lockfiles, adapter, pilot flow, URL safety, optional integration docs, and tests implemented locally. |
+| sf-verify | done | Full local pytest suite passed with explicit skips for live API/optional integrations; targeted adapter, dependency, URL safety, persona, research, agent import, metadata, diff, compile, and no-deps pip-audit checks passed. |
+| sf-end | done | Full-mode closeout updated local/master task tracking, changelog, technical docs, and project development-mode notes. |
+| sf-ship | done | Full local checks passed; bounded PydanticAI migration scope prepared for commit and push. |
 
 # Questions ouvertes (non bloquantes)
-- Version cible exacte a verifier au moment de l'implementation avec les docs et metadonnees package officielles.
-- Premier flux pilote a choisir entre `repo_understanding_service.py` et les agents psychology.
-- Strategie de rollout: feature flag temporaire ou chemin interne non expose jusqu'aux tests.
+- Live API tests remain conditional; run them with `CONTENTFLOW_LIVE_TEST_BASE_URL` or a reachable `http://localhost:8000` before claiming hosted endpoint proof.
+- PydanticAI v2 migration remains out of scope for this chantier; open a separate spec if the project chooses to cross the major boundary later.
+- Register or clean existing pytest warnings separately if warning-free CI output becomes a release requirement.
 
 # User Story
 En tant que mainteneuse du backend ContentFlow, je veux introduire `pydantic-ai` via un adapter unique sur des flux IA structurés, afin que les réponses JSON fragiles deviennent typées, testables, et compatibles avec les règles BYOK/platform existantes.
@@ -275,7 +287,7 @@ Metadata debt:
 - Parallel-agent changes in dependency files must be preserved and merged manually, not overwritten.
 
 # Implementation Tasks
-- [ ] Tâche 1 : Reconfirm dependency and usage inventory
+- [x] Tâche 1 : Reconfirm dependency and usage inventory
   - Fichier : `requirements.txt`, `requirements-dev.txt`, `agents/`, `api/`, `tests/`
   - Action : Run a fresh full-repo search for `pydantic_ai`, `pydantic-ai`, `from pydantic_ai`, `result_type`, `result_retries`, `.data`, `AgentRunResult`, `RunContext`, `OpenRouterModel`, and direct provider/env patterns before editing dependencies.
   - User story link : Establishes the current baseline before introducing the adapter.
@@ -283,7 +295,7 @@ Metadata debt:
   - Validate with : `rg -n "pydantic_ai|pydantic-ai|from pydantic_ai|result_type|result_retries|AgentRunResult|OpenRouterModel|RunContext" .`
   - Notes : Do not overwrite existing dirty changes in `requirements.txt` or `requirements-dev.txt`; inspect diffs first.
 
-- [ ] Tâche 2 : Update `requirements.txt` to a supported PydanticAI major
+- [x] Tâche 2 : Update `requirements.txt` to a supported PydanticAI major
   - Fichier : `requirements.txt`
   - Action : Replace `pydantic-ai>=0.1.0,<1.0` with a supported current major range chosen from official docs/package metadata and record why.
   - User story link : Keeps the dependency intentional and compatible before adding runtime usage.
@@ -291,7 +303,7 @@ Metadata debt:
   - Validate with : `git diff -- requirements.txt` and dependency install/resolve command used by the project environment.
   - Notes : Do not remove `pydantic-ai`; this spec intentionally introduces it through one adapter.
 
-- [ ] Tâche 3 : Add dependency-policy regression test
+- [x] Tâche 3 : Add dependency-policy regression test
   - Fichier : `tests/test_dependency_policy.py`
   - Action : Add a test that scans repo Python files and fails if `pydantic_ai` is imported outside an approved adapter path. Assert the approved range is not `<1.0` and the adapter path exists once migration starts.
   - User story link : Prevents the risk from reappearing silently.
@@ -299,7 +311,7 @@ Metadata debt:
   - Validate with : `pytest tests/test_dependency_policy.py`
   - Notes : Keep the test lightweight and independent of installing `pydantic-ai`.
 
-- [ ] Tâche 4 : Introduce PydanticAI adapter
+- [x] Tâche 4 : Introduce PydanticAI adapter
   - Fichier : `api/services/pydantic_ai_runtime.py`
   - Action : Create a narrow adapter that accepts an already-resolved ContentFlow runtime secret and returns current PydanticAI model/agent primitives using explicit provider construction. Expose helper methods for result `.output` access and typed dependency injection.
   - User story link : Keeps compatibility and credential behavior centralized if migration is necessary.
@@ -307,7 +319,7 @@ Metadata debt:
   - Validate with : Unit tests using PydanticAI test/function model or monkeypatched adapter imports.
   - Notes : Keep the adapter small; it should not replace CrewAI orchestration globally.
 
-- [ ] Tâche 5 : Add adapter compatibility tests
+- [x] Tâche 5 : Add adapter compatibility tests
   - Fichier : `tests/test_pydantic_ai_runtime.py`
   - Action : Test explicit OpenRouter provider construction path, no ambient env fallback, result output access, runtime error translation, and dependency injection assumptions.
   - User story link : Verifies the supported-major API is used correctly.
@@ -315,7 +327,7 @@ Metadata debt:
   - Validate with : `pytest tests/test_pydantic_ai_runtime.py`
   - Notes : Prefer monkeypatching over live provider calls; no network calls in unit tests.
 
-- [ ] Tâche 6 : Add shared URL safety gate for LLM-callable external tools
+- [x] Tâche 6 : Add shared URL safety gate for LLM-callable external tools
   - Fichier : `api/services/url_safety.py`
   - Action : Implement URL normalization and public-network validation for HTTP(S) URLs: reject empty values, unsupported schemes, credentials in URL, localhost, loopback, private, link-local, multicast, reserved, metadata IPs, and suspicious redirects if redirect resolution is added.
   - User story link : Ensures migration does not broaden SSRF exposure.
@@ -323,7 +335,7 @@ Metadata debt:
   - Validate with : `pytest tests/test_url_safety.py`
   - Notes : Use `urllib.parse`, `ipaddress`, and DNS resolution carefully. If DNS resolution is not appropriate in unit tests, split pure parsing from resolver-injected checks.
 
-- [ ] Tâche 7 : Apply URL safety to Firecrawl tools
+- [x] Tâche 7 : Apply URL safety to Firecrawl tools
   - Fichier : `agents/shared/tools/firecrawl_tools.py`
   - Action : Call the shared URL safety gate before `scrape_url`, `crawl_site`, and `map_site` reach `FirecrawlApp`; return a safe error string without calling the provider when rejected.
   - User story link : Protects LLM-guided crawl/scrape surfaces.
@@ -331,7 +343,7 @@ Metadata debt:
   - Validate with : Unit tests that monkeypatch `FirecrawlApp` and assert rejected URLs never instantiate/call provider.
   - Notes : `search_web(query)` is query-based, not direct URL-fetching, but returned URLs should not be subsequently trusted without validation.
 
-- [ ] Tâche 8 : Apply URL safety to Exa URL tools
+- [x] Tâche 8 : Apply URL safety to Exa URL tools
   - Fichier : `agents/shared/tools/exa_tools.py`
   - Action : Validate input to `exa_find_similar(url)` and each URL passed to `exa_get_contents(urls)` before provider calls.
   - User story link : Protects content-fetch and similar-page surfaces.
@@ -339,7 +351,7 @@ Metadata debt:
   - Validate with : Unit tests that monkeypatch `Exa` and assert private/localhost URLs are rejected before provider calls.
   - Notes : `exa_search(query, ...)` remains query-based; do not over-sanitize normal search queries as URLs.
 
-- [ ] Tâche 9 : Preserve research route runtime behavior
+- [x] Tâche 9 : Preserve research route runtime behavior
   - Fichier : `api/routers/research.py`, `tests/test_research_router.py`
   - Action : Confirm no adapter work bypasses `ai_runtime_service.preflight_providers`, `bind_provider_env`, `user_llm_service.get_crewai_llm`, or optional Firecrawl gating. Add a regression test if needed.
   - User story link : Keeps app-visible AI behavior stable.
@@ -347,7 +359,7 @@ Metadata debt:
   - Validate with : `pytest tests/test_research_router.py`
   - Notes : Do not convert this route to PydanticAI as the first pilot unless the implementation explicitly chooses research post-processing as the pilot flow.
 
-- [ ] Tâche 10 : Migrate one structured-output pilot flow
+- [x] Tâche 10 : Migrate one structured-output pilot flow
   - Fichier : `api/services/repo_understanding_service.py` or one file in `agents/psychology/`
   - Action : Route one JSON-heavy flow through the adapter with a typed Pydantic model and deterministic error mapping.
   - User story link : Proves PydanticAI has practical value in the repo instead of remaining a declared-only dependency.
@@ -355,7 +367,7 @@ Metadata debt:
   - Validate with : focused unit tests for the chosen pilot flow.
   - Notes : Prefer `repo_understanding_service.py` unless implementation discovers a lower-risk psychology flow.
 
-- [ ] Tâche 11 : Verify agent import and fixture health
+- [x] Tâche 11 : Verify agent import and fixture health
   - Fichier : `tests/agents/test_research_analyst.py`, `tests/fixtures/agent_fixtures.py`
   - Action : Run relevant tests and repair only migration-related fixture breakage. If stale `get_balanced_llm` patches fail independently, document as pre-existing unless fixing is necessary for migration checks.
   - User story link : Ensures active agent surfaces still import and construct safely.
@@ -363,7 +375,7 @@ Metadata debt:
   - Validate with : `pytest tests/agents/test_research_analyst.py tests/test_research_router.py`
   - Notes : Keep lazy imports; avoid requiring provider secrets in unit tests.
 
-- [ ] Tâche 12 : Run dependency and backend checks
+- [x] Tâche 12 : Run dependency and backend checks
   - Fichier : `requirements.txt`, `tests/`
   - Action : Run the smallest reliable checks first, then broader pytest if dependency installation is available.
   - User story link : Demonstrates migration is safe enough to ship.
@@ -371,7 +383,7 @@ Metadata debt:
   - Validate with : `pytest tests/test_dependency_policy.py tests/test_url_safety.py tests/test_research_router.py tests/agents/test_research_analyst.py` and project dependency install/resolve command.
   - Notes : If dependency installation is impossible in the current environment, capture exact command and failure.
 
-- [ ] Tâche 13 : Update docs/changelog
+- [x] Tâche 13 : Update docs/changelog
   - Fichier : `CHANGELOG.md`, optionally `AGENTS.md` or `CLAUDE.md`
   - Action : Document the supported PydanticAI range, the adapter rule, and the first pilot flow migrated.
   - User story link : Keeps future agents from reintroducing dependency/security drift.
@@ -379,7 +391,7 @@ Metadata debt:
   - Validate with : Review diff for concise, accurate notes.
   - Notes : Do not update app docs if API contracts do not change.
 
-- [ ] Tâche 14 : Record migration and rollback notes
+- [x] Tâche 14 : Record migration and rollback notes
   - Fichier : PR description or implementation notes; no code file required unless project convention demands it
   - Action : State Turso migration requirement `no`, adapter decision, pilot flow, test results, and rollback command strategy.
   - User story link : Enables safe operational handling.
@@ -461,9 +473,17 @@ Manual verification:
 - Rollback: revert the dependency/test/adapter/pilot changes from the migration commit. If the adapter path was added behind a flag, disable the flag first, then revert.
 - Incremental order: inventory, dependency range update, adapter, pilot flow, policy test, URL guard, wrapper application, route regression tests, docs/rollback note.
 
+# Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|----------|-------|-------|--------|--------|-----------|
+| 2026-05-03 | sf-deps + sf-migrate + continue | GPT-5 | Closed remaining dependency/security risks after the CrewAI/LiteLLM resolver fix | PydanticAI v1 range and adapter added, production/dev lockfiles generated, repo-understanding pilot migrated, Exa/Firecrawl URL safety added, optional STORM/Reels isolation documented, focused tests and pip-audit passed | Commit and push the local changes |
+| 2026-05-04 | sf-build | GPT-5 | Resumed the PydanticAI adapter chantier, fixed normalized safe URL use in public-site crawl, corrected CrewAI/tool test isolation, bootstrapped technical docs, repaired local full-suite prerequisites, and reran targeted plus full-suite verification | implemented | Run sf-end then sf-ship for the bounded PydanticAI migration scope |
+| 2026-05-04 | sf-ship | GPT-5 | Closed and shipped the bounded PydanticAI adapter migration with task/changelog/dev-mode bookkeeping and full local verification | shipped | No ShipFlow follow-up; hosted rollout remains operator-controlled if needed |
+
 # Open Questions
 - Assumption locked for implementation: direct `pydantic_ai` usage remains absent until the adapter/pilot work introduces it.
 - Assumption locked for implementation: preferred resolution is adapter-based introduction, not removal.
 - Assumption locked for implementation: URL safety can reject private/internal URLs for app-visible research tools without breaking the intended product contract.
 - Assumption locked for implementation: no Turso migration is needed.
-- Assumption locked for implementation: exact supported PydanticAI major/range must be verified again from official docs/package metadata at implementation time because April 2026 is within the documented earliest V2 window.
+- Assumption locked for implementation: exact supported PydanticAI major/range was rechecked on 2026-05-04 from official docs/package metadata; this chantier stays on the supported v1 range and does not attempt a v2 migration.

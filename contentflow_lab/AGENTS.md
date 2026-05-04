@@ -22,7 +22,7 @@ This is a **multi-component intelligent automation system** with three major sub
 3. **Astro Website** - Static site for content deployment
 
 The system uses a **hybrid stack**:
-- **Backend**: Python 3.11 (CrewAI, PydanticAI, FastAPI, STORM, advertools)
+- **Backend**: Python 3.12 (CrewAI, PydanticAI, FastAPI, STORM, advertools)
 - **Frontend**: Next.js 16 + React 19 RC (TypeScript strict mode)
 - **Website**: Astro 4.x
 - **Environment**: Flox for declarative dependencies + Doppler for secrets management
@@ -39,7 +39,7 @@ The system uses a **hybrid stack**:
 flox activate
 
 # Install Python dependencies
-pip install -r requirements.txt
+pip install -r requirements.lock
 
 # Sync .env to Doppler (one-time setup)
 ./sync_env_to_doppler.sh
@@ -70,11 +70,11 @@ python test_storm_integration.py
 
 #### Testing
 ```bash
-# No pytest.ini found - tests are individual Python scripts
-python test_research_analyst.py
-python test_seo_system.py
-python test_existing_mesh.py
-python test_topical_mesh_simple.py
+# Local pytest suite with pinned development dependencies
+uv run --no-project --python 3.12 --with-requirements requirements-dev.lock python -m pytest
+
+# Live API tests are skipped unless http://localhost:8000 or
+# CONTENTFLOW_LIVE_TEST_BASE_URL is reachable during pytest collection.
 ```
 
 ### Next.js Chatbot (chatbot/ directory)
@@ -260,7 +260,8 @@ git pull origin main
 ├── examples/                  # Usage examples
 ├── data/                      # Generated data
 ├── main.py                    # Python entry point
-├── requirements.txt           # Python dependencies
+├── requirements.txt           # Python dependency policy
+├── requirements.lock          # Pinned production install
 └── test_*.py                  # Test scripts
 ```
 
@@ -488,12 +489,12 @@ const messageSchema = z.object({
 **Pattern**: Use Flox for system dependencies, venv for Python packages
 
 ```bash
-# Flox provides: Python 3.11, gcc, zlib, system libraries
+# Flox provides: Python 3.12, gcc, zlib, system libraries
 flox activate
 
 # Python packages installed via pip in venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.lock
 
 # Library path issues (numpy/pandas)
 # Use wrapper script:

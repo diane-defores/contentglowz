@@ -10,6 +10,7 @@ import logging
 from typing import Optional
 from crewai.tools import tool
 from api.services.runtime_provider_context import get_runtime_provider_secret
+from api.services.url_safety import URLSafetyError, validate_public_http_url
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +45,13 @@ def scrape_url(url: str) -> str:
         Clean markdown content of the page
     """
     try:
+        safe_url = validate_public_http_url(url)
         client = _get_client()
-        result = client.scrape_url(url, formats=["markdown"])
+        result = client.scrape_url(safe_url, formats=["markdown"])
         return result.get("markdown", result.get("content", "No content returned"))
+    except URLSafetyError as e:
+        logger.warning(f"Rejected unsafe Firecrawl scrape URL: {e}")
+        return f"Unsafe URL rejected: {str(e)}"
     except Exception as e:
         logger.error(f"Firecrawl scrape_url failed for {url}: {e}")
         return f"Error scraping {url}: {str(e)}"
@@ -67,9 +72,10 @@ def crawl_site(url: str, max_pages: int = 10) -> str:
         Combined markdown content from all crawled pages
     """
     try:
+        safe_url = validate_public_http_url(url)
         client = _get_client()
         result = client.crawl_url(
-            url,
+            safe_url,
             params={
                 "limit": max_pages,
                 "scrapeOptions": {"formats": ["markdown"]}
@@ -87,6 +93,9 @@ def crawl_site(url: str, max_pages: int = 10) -> str:
                 combined.append(f"## {page_url}\n\n{content}")
 
         return "\n\n---\n\n".join(combined)
+    except URLSafetyError as e:
+        logger.warning(f"Rejected unsafe Firecrawl crawl URL: {e}")
+        return f"Unsafe URL rejected: {str(e)}"
     except Exception as e:
         logger.error(f"Firecrawl crawl_site failed for {url}: {e}")
         return f"Error crawling {url}: {str(e)}"
@@ -106,12 +115,16 @@ def map_site(url: str) -> str:
         List of URLs found on the site
     """
     try:
+        safe_url = validate_public_http_url(url)
         client = _get_client()
-        result = client.map_url(url)
+        result = client.map_url(safe_url)
         urls = result.get("links", [])
         if not urls:
-            return f"No URLs found when mapping {url}"
+            return f"No URLs found when mapping {safe_url}"
         return "\n".join(urls)
+    except URLSafetyError as e:
+        logger.warning(f"Rejected unsafe Firecrawl map URL: {e}")
+        return f"Unsafe URL rejected: {str(e)}"
     except Exception as e:
         logger.error(f"Firecrawl map_site failed for {url}: {e}")
         return f"Error mapping {url}: {str(e)}"

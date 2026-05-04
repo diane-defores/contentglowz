@@ -208,6 +208,49 @@ async def test_repo_understanding_uses_connected_github_source(monkeypatch):
     assert result.project_summary == "summary"
 
 
+@pytest.mark.asyncio
+async def test_repo_understanding_synthesis_uses_pydantic_ai_adapter(monkeypatch):
+    captured: dict[str, object] = {}
+
+    async def fake_run_openrouter_structured(user_id, **kwargs):
+        captured["user_id"] = user_id
+        captured.update(kwargs)
+        return RepoUnderstandingResult(
+            project_summary="typed summary",
+            target_audiences=["founders"],
+        )
+
+    monkeypatch.setattr(
+        repo_understanding_module.pydantic_ai_runtime,
+        "run_openrouter_structured",
+        fake_run_openrouter_structured,
+    )
+
+    result = await repo_understanding_module.repo_understanding_service._synthesize_understanding(
+        "user-1",
+        content="README content",
+        evidence=[
+            repo_understanding_module.EvidenceItem(
+                source="local_repo",
+                location="README.md",
+                snippet="README content",
+            )
+        ],
+        request=PersonaDraftRequest(
+            repo_source="project_repo",
+            project_id="project-1",
+            mode="suggest_from_repo",
+        ),
+    )
+
+    assert result.project_summary == "typed summary"
+    assert result.target_audiences == ["founders"]
+    assert result.evidence[0].location == "README.md"
+    assert captured["user_id"] == "user-1"
+    assert captured["route"] == "personas.draft"
+    assert captured["output_type"] is RepoUnderstandingResult
+
+
 class _FakeAsyncClient:
     def __init__(self, responses):
         self._responses = responses

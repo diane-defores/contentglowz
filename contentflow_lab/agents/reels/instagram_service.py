@@ -8,12 +8,32 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-from instagrapi import Client
-from instagrapi.exceptions import LoginRequired
+try:
+    from instagrapi import Client
+    from instagrapi.exceptions import LoginRequired
+except ImportError:
+    Client = None
+
+    class LoginRequired(RuntimeError):
+        pass
 
 logger = logging.getLogger(__name__)
 
 COOKIES_DIR = Path("data/reels/cookies")
+
+
+class InstagramClientUnavailable(RuntimeError):
+    """Raised when the optional Instagram client integration is not installed."""
+
+
+def _new_client():
+    if Client is None:
+        raise InstagramClientUnavailable(
+            "Instagram Reels integration is unavailable in the default runtime: "
+            "instagrapi currently pins pydantic/requests versions that conflict "
+            "with the core AI dependency set."
+        )
+    return Client()
 
 
 def _user_cookie_path(user_id: str) -> Path:
@@ -40,7 +60,7 @@ def save_cookies(user_id: str, cookies_content: str) -> None:
         raise ValueError("No valid cookies found in the provided content")
 
     # Create an instagrapi client to validate and save session
-    cl = Client()
+    cl = _new_client()
     cl.set_cookies(cookie_dict)
 
     # Save session as JSON
@@ -56,11 +76,13 @@ def get_cookie_status(user_id: str) -> dict:
         return {"has_cookies": False, "username": None}
 
     try:
-        cl = Client()
+        cl = _new_client()
         cl.load_settings(path)
         cl.login_by_sessionid(cl.sessionid)
         username = cl.account_info().username
         return {"has_cookies": True, "username": username}
+    except InstagramClientUnavailable:
+        raise
     except Exception as e:
         logger.warning(f"Cookie validation failed: {e}")
         return {"has_cookies": False, "username": None}
@@ -102,7 +124,7 @@ def download_reel(user_id: str, url: str) -> dict:
     if not path.exists():
         raise LoginRequired("No cookies found. Please upload Instagram cookies first.")
 
-    cl = Client()
+    cl = _new_client()
     cl.load_settings(path)
 
     try:

@@ -13,6 +13,7 @@ import logging
 from typing import Optional
 from crewai.tools import tool
 from api.services.runtime_provider_context import get_runtime_provider_secret
+from api.services.url_safety import URLSafetyError, validate_public_http_url
 
 logger = logging.getLogger(__name__)
 
@@ -92,14 +93,15 @@ def exa_find_similar(url: str, num_results: int = 5) -> str:
         List of similar pages with title, URL, and excerpt
     """
     try:
+        safe_url = validate_public_http_url(url)
         client = _get_client()
         results = client.find_similar_and_contents(
-            url,
+            safe_url,
             num_results=num_results,
             text={"max_characters": 600}
         )
         if not results.results:
-            return f"No similar pages found for: {url}"
+            return f"No similar pages found for: {safe_url}"
 
         output = []
         for r in results.results:
@@ -110,6 +112,9 @@ def exa_find_similar(url: str, num_results: int = 5) -> str:
                 f"{excerpt}"
             )
         return "\n\n---\n\n".join(output)
+    except URLSafetyError as e:
+        logger.warning(f"Rejected unsafe Exa similar URL: {e}")
+        return f"Unsafe URL rejected: {str(e)}"
     except Exception as e:
         logger.error(f"Exa find_similar failed for '{url}': {e}")
         return f"Error finding similar pages for '{url}': {str(e)}"
@@ -129,11 +134,15 @@ def exa_get_contents(urls: str) -> str:
         Full text content of each URL
     """
     try:
-        client = _get_client()
-        url_list = [u.strip() for u in urls.split(",") if u.strip()]
+        url_list = [
+            validate_public_http_url(u.strip())
+            for u in urls.split(",")
+            if u.strip()
+        ]
         if not url_list:
             return "No URLs provided"
 
+        client = _get_client()
         results = client.get_contents(url_list, text={"max_characters": 2000})
         if not results.results:
             return "No content returned"
@@ -143,6 +152,9 @@ def exa_get_contents(urls: str) -> str:
             content = (r.text or "No content available")
             output.append(f"### {r.title}\n**URL:** {r.url}\n\n{content}")
         return "\n\n---\n\n".join(output)
+    except URLSafetyError as e:
+        logger.warning(f"Rejected unsafe Exa contents URL: {e}")
+        return f"Unsafe URL rejected: {str(e)}"
     except Exception as e:
         logger.error(f"Exa get_contents failed: {e}")
         return f"Error fetching contents: {str(e)}"

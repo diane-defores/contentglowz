@@ -16,8 +16,9 @@ from api.models.persona_draft import (
     PersonaDraftRequest,
     RepoUnderstandingResult,
 )
+from api.services import pydantic_ai_runtime
+from api.services.url_safety import URLSafetyError, validate_public_http_url
 from api.services.user_data_store import user_data_store
-from api.services.user_llm_service import user_llm_service
 
 
 def _snippet(text: str, limit: int = 300) -> str:
@@ -311,13 +312,14 @@ class RepoUnderstandingService:
         except Exception as exc:
             raise RuntimeError("firecrawl-py is not installed.") from exc
 
+        safe_manual_url = validate_public_http_url(manual_url)
         app = FirecrawlApp(api_key=firecrawl_api_key)
         evidence: list[EvidenceItem] = []
         chunks: list[str] = []
-        parsed = urlparse(manual_url)
+        parsed = urlparse(safe_manual_url)
         root = f"{parsed.scheme}://{parsed.netloc}"
         preferred: list[str] = [
-            manual_url,
+            safe_manual_url,
             f"{root}/about",
             f"{root}/pricing",
             f"{root}/docs",
@@ -325,15 +327,19 @@ class RepoUnderstandingService:
         ]
 
         try:
-            mapped = app.map_url(manual_url)
+            mapped = app.map_url(safe_manual_url)
             links = mapped.get("links", []) if isinstance(mapped, dict) else []
             scored: list[str] = []
             for url in links:
                 if not isinstance(url, str):
                     continue
-                lowered = url.lower()
+                try:
+                    safe_url = validate_public_http_url(url)
+                except URLSafetyError:
+                    continue
+                lowered = safe_url.lower()
                 if any(key in lowered for key in ("/about", "/pricing", "/docs", "/blog")):
-                    scored.append(url)
+                    scored.append(safe_url)
             for url in scored:
                 if url not in preferred:
                     preferred.append(url)
@@ -344,7 +350,8 @@ class RepoUnderstandingService:
 
         for url in preferred[:5]:
             try:
-                result = app.scrape_url(url, formats=["markdown"])
+                safe_url = validate_public_http_url(url)
+                result = app.scrape_url(safe_url, formats=["markdown"])
             except Exception:
                 continue
             markdown = ""
@@ -355,11 +362,11 @@ class RepoUnderstandingService:
             evidence.append(
                 EvidenceItem(
                     source="manual_url",
-                    location=url,
+                    location=safe_url,
                     snippet=_snippet(markdown, limit=300),
                 )
             )
-            chunks.append(f"## {url}\n{_truncate(markdown)}")
+            chunks.append(f"## {safe_url}\n{_truncate(markdown)}")
 
         if not chunks:
             raise RuntimeError("No crawlable content found for manual_url.")
@@ -412,13 +419,19 @@ Evidence:
 Collected content:
 {content}
 """
-        payload = await user_llm_service.generate_json(
+        payload = await pydantic_ai_runtime.run_openrouter_structured(
             user_id,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            output_type=RepoUnderstandingResult,
             route="personas.draft",
         )
-        data = _extract_json_block(payload)
+        if isinstance(payload, RepoUnderstandingResult):
+            data = payload.model_dump()
+        elif hasattr(payload, "model_dump"):
+            data = payload.model_dump()
+        else:
+            data = _extract_json_block(payload)
         data["evidence"] = [item.model_dump() for item in evidence]
         return RepoUnderstandingResult(**data)
 

@@ -26,7 +26,7 @@ This repository hosts the product API used by:
 
 ## Quick Start
 
-1. Install dependencies: `pip install -r requirements.txt`
+1. Install dependencies: `pip install -r requirements.lock`
 2. Configure secrets with Doppler or `.env` fallback:
    - `doppler login`
    - `doppler setup` (`contentflow` project + `dev`)

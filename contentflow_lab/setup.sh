@@ -27,7 +27,7 @@ fi
 if [ ! -d ".flox" ]; then
     echo "📦 Initializing Flox environment..."
     flox init
-    flox install python311
+    flox install python312
 else
     echo "✅ Flox environment already initialized"
 fi
@@ -41,11 +41,16 @@ else
 fi
 
 # Install Python dependencies
-if [ -f "requirements.txt" ]; then
+if [ -f "requirements.lock" ]; then
+    echo "📥 Installing Python dependencies..."
+    flox activate -- ./venv/bin/pip install --upgrade pip -q
+    flox activate -- ./venv/bin/pip install -r requirements.lock -q
+    echo "✅ Dependencies installed"
+elif [ -f "requirements.txt" ]; then
     echo "📥 Installing Python dependencies..."
     flox activate -- ./venv/bin/pip install --upgrade pip -q
     flox activate -- ./venv/bin/pip install -r requirements.txt -q
-    echo "✅ Dependencies installed"
+    echo "✅ Dependencies installed from unpinned fallback"
 else
     echo "⚠️  No requirements.txt found"
 fi

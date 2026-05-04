@@ -110,3 +110,53 @@ async def test_competitor_analysis_normalizes_request_payload(monkeypatch):
         "comp-one.com",
         "comp-two.io",
     ]
+
+
+@pytest.mark.asyncio
+async def test_competitor_analysis_excludes_firecrawl_tools_when_optional_provider_missing(monkeypatch):
+    captured: dict[str, object] = {}
+
+    class FakeResearchAnalystAgent:
+        def __init__(self, llm_model, use_consensus_ai=False, include_firecrawl_tools=True):
+            del llm_model, use_consensus_ai
+            captured["include_firecrawl_tools"] = include_firecrawl_tools
+            self.use_consensus_ai = False
+
+        def run_analysis(self, target_keyword, competitor_domains=None):
+            del target_keyword, competitor_domains
+            return types.SimpleNamespace(raw="## Competitors\n- competitor.com")
+
+    fake_module = types.ModuleType("agents.seo.research_analyst")
+    fake_module.ResearchAnalystAgent = FakeResearchAnalystAgent
+    monkeypatch.setitem(sys.modules, "agents.seo.research_analyst", fake_module)
+    monkeypatch.setattr(
+        research_router.ai_runtime_service,
+        "preflight_providers",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                mode="byok",
+                has_optional_provider=lambda _provider: False,
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        research_router.ai_runtime_service,
+        "bind_provider_env",
+        lambda _resolution: nullcontext(),
+    )
+    monkeypatch.setattr(
+        research_router.user_llm_service,
+        "get_crewai_llm",
+        AsyncMock(return_value="llm-object"),
+    )
+
+    await research_router.competitor_analysis(
+        request=CompetitorAnalysisRequest(
+            target_url="https://example.com",
+            competitors=["https://competitor.com"],
+            keywords=["ai workflows"],
+        ),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+
+    assert captured["include_firecrawl_tools"] is False

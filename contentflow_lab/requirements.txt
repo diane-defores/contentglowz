@@ -1,14 +1,15 @@
 # Core AI Frameworks
-crewai>=0.1.0,<1.0
-pydantic-ai>=0.1.0,<1.0
+crewai>=1.6.1,<1.7  # Compatible with litellm>=1.83.14; newer CrewAI 1.14.x requires openai>=2.30.
+pydantic-ai>=1.56.0,<2.0  # Keep on supported v1; 1.56.0 fixes CVE-2026-25580.
 pydantic>=2.4.0,<3.0
 
 # FastAPI Server
 fastapi[standard]>=0.128.0,<1.0
 uvicorn[standard]>=0.32.0,<1.0
 
-# STORM - Stanford AI Research & Article Generation
-knowledge-storm>=1.1.0,<2.0
+# STORM is excluded from the default runtime install because knowledge-storm/dspy
+# currently pin older OpenAI/LiteLLM versions that conflict with the LiteLLM
+# security floor below.
 
 # LLM Provider - Simplified with OpenRouter
 openai>=1.0.0,<3.0  # Single package for ALL models via OpenRouter (Groq, GPT-4, Claude, etc.)
@@ -41,7 +42,10 @@ imap-tools>=1.0.0,<2.0  # IMAP email fetching for newsletter ingestion
 composio-crewai>=0.2.0,<1.0
 
 # Instagram Reels
-instagrapi>=2.0.0,<3.0
+# instagrapi is excluded from the default runtime install because current
+# releases pin pydantic/requests versions that conflict with the core AI stack
+# and the requests security floor. Reels operations that need the Instagram
+# client return 503 unless this integration is supplied in an isolated runtime.
 
 # Content Quality Analysis
 textstat>=0.7.0,<1.0
