@@ -136,6 +136,43 @@ class ContentRecord(BaseModel):
         use_enum_values = True
 
 
+class ContentAssetStatus(str, Enum):
+    """Metadata state for assets attached to a content record."""
+    LOCAL_ONLY = "local_only"
+    PENDING_UPLOAD = "pending_upload"
+    UPLOADED = "uploaded"
+    DELETED = "deleted"
+
+
+class ContentAssetRecord(BaseModel):
+    """Metadata for a client or stored asset attached to a content record."""
+    id: str = Field(..., description="Unique asset metadata identifier")
+    content_id: str = Field(..., description="Associated content record ID")
+    project_id: str = Field(..., description="Associated project ID")
+    user_id: str = Field(..., description="Owner user ID from Clerk auth")
+    client_asset_id: Optional[str] = Field(None, description="Client-side asset ID")
+    source: str = Field(default="device_capture", description="Asset source")
+    kind: str = Field(..., description="Asset kind, e.g. screenshot or recording")
+    mime_type: str = Field(..., description="Asset MIME type")
+    file_name: Optional[str] = Field(None, description="Display filename")
+    byte_size: Optional[int] = Field(None, description="File size in bytes")
+    width: Optional[int] = Field(None, description="Pixel width")
+    height: Optional[int] = Field(None, description="Pixel height")
+    duration_ms: Optional[int] = Field(None, description="Duration for time-based media")
+    storage_uri: Optional[str] = Field(None, description="Future cloud storage URI")
+    status: ContentAssetStatus = Field(
+        default=ContentAssetStatus.LOCAL_ONLY,
+        description="Asset storage/sync state",
+    )
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    deleted_at: Optional[datetime] = None
+
+    class Config:
+        use_enum_values = True
+
+
 class StatusChange(BaseModel):
     """Audit trail entry for a status transition."""
     id: str = Field(..., description="Unique change identifier")

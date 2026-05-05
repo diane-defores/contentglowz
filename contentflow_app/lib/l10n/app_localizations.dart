@@ -121,8 +121,12 @@ class AppLocalizations {
     'Checking...': 'Vérification...',
     'Check your project, content types, and generation frequency before the first run.':
         'Vérifiez votre projet, les types de contenu et la fréquence de génération avant le premier lancement.',
+    'Close app': 'Fermer l’application',
+    'Close ContentFlow?': 'Fermer ContentFlow ?',
     'Changes are queued for sync. Publishing is blocked until the full body is saved online.':
         'Les changements sont en attente de synchronisation. La publication est bloquée tant que le contenu complet n’est pas enregistré en ligne.',
+    'Are you sure you want to close the application?':
+        'Est-ce que vous êtes sûr de vouloir fermer l’application ?',
     'Choose how ContentFlow chooses its interface language.':
         'Choisissez comment ContentFlow sélectionne la langue de son interface.',
     'Choose whether ContentFlow stays bright, stays dark, or follows your device appearance automatically.':
@@ -1359,6 +1363,7 @@ class AppLocalizations {
         'Certaines dépendances newsletter sont encore manquantes.',
     'Some screens are using cached data and may be stale.':
         'Certains écrans utilisent des données en cache et peuvent être obsolètes.',
+    'Stay': 'Rester',
     'Soumettre les URL': 'Soumettre les URL',
     'Soumissions max / jour': 'Soumissions max / jour',
     'Stored key: {key}': 'Clé enregistrée : {key}',

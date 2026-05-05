@@ -15,6 +15,8 @@ from status.db import get_connection, init_db
 from status.audit import AuditActor, actor_from_string, coerce_actor
 from status.schemas import (
     ContentLifecycleStatus,
+    ContentAssetRecord,
+    ContentAssetStatus,
     ContentRecord,
     StatusChange,
     WorkDomainRecord,
@@ -578,6 +580,172 @@ class StatusService:
             for row in rows
         ]
 
+    # ─── Content Assets ───────────────────────────────
+
+    def list_content_assets(self, content_id: str) -> List[ContentAssetRecord]:
+        """List non-deleted asset metadata records attached to content."""
+        self.get_content(content_id)
+        rows = self._conn.execute(
+            """
+            SELECT * FROM content_assets
+            WHERE content_id = ? AND deleted_at IS NULL
+            ORDER BY created_at DESC
+            """,
+            (content_id,),
+        ).fetchall()
+        return [self._row_to_asset(row) for row in rows]
+
+    def create_content_asset(
+        self,
+        *,
+        content_id: str,
+        project_id: str,
+        user_id: str,
+        kind: str,
+        mime_type: str,
+        client_asset_id: Optional[str] = None,
+        source: str = "device_capture",
+        file_name: Optional[str] = None,
+        byte_size: Optional[int] = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        duration_ms: Optional[int] = None,
+        storage_uri: Optional[str] = None,
+        status: str = ContentAssetStatus.LOCAL_ONLY,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> ContentAssetRecord:
+        """Create or refresh asset metadata for a content record."""
+        self.get_content(content_id)
+        ContentAssetStatus(status)
+        now = datetime.utcnow().isoformat()
+        payload_metadata = metadata or {}
+
+        existing = None
+        if client_asset_id:
+            existing = self._conn.execute(
+                """
+                SELECT * FROM content_assets
+                WHERE content_id = ? AND client_asset_id = ? AND deleted_at IS NULL
+                LIMIT 1
+                """,
+                (content_id, client_asset_id),
+            ).fetchone()
+
+        if existing:
+            self._conn.execute(
+                """
+                UPDATE content_assets
+                SET source = ?, kind = ?, mime_type = ?, file_name = ?, byte_size = ?,
+                    width = ?, height = ?, duration_ms = ?, storage_uri = ?, status = ?,
+                    metadata = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    source,
+                    kind,
+                    mime_type,
+                    file_name,
+                    byte_size,
+                    width,
+                    height,
+                    duration_ms,
+                    storage_uri,
+                    status,
+                    json.dumps(payload_metadata),
+                    now,
+                    existing["id"],
+                ),
+            )
+            self._conn.commit()
+            return self.get_content_asset(content_id, existing["id"])
+
+        asset_id = str(uuid.uuid4())
+        self._conn.execute(
+            """
+            INSERT INTO content_assets (
+                id, content_id, project_id, user_id, client_asset_id, source,
+                kind, mime_type, file_name, byte_size, width, height, duration_ms,
+                storage_uri, status, metadata, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                asset_id,
+                content_id,
+                project_id,
+                user_id,
+                client_asset_id,
+                source,
+                kind,
+                mime_type,
+                file_name,
+                byte_size,
+                width,
+                height,
+                duration_ms,
+                storage_uri,
+                status,
+                json.dumps(payload_metadata),
+                now,
+                now,
+            ),
+        )
+        self._conn.commit()
+        return self.get_content_asset(content_id, asset_id)
+
+    def get_content_asset(self, content_id: str, asset_id: str) -> ContentAssetRecord:
+        """Get one asset metadata record for content."""
+        row = self._conn.execute(
+            "SELECT * FROM content_assets WHERE content_id = ? AND id = ?",
+            (content_id, asset_id),
+        ).fetchone()
+        if not row:
+            raise ContentNotFoundError(f"Asset {asset_id} not found")
+        return self._row_to_asset(row)
+
+    def update_content_asset(
+        self,
+        content_id: str,
+        asset_id: str,
+        **kwargs: Any,
+    ) -> ContentAssetRecord:
+        """Update mutable asset metadata fields."""
+        self.get_content_asset(content_id, asset_id)
+        allowed = {"storage_uri", "status", "metadata"}
+        updates = {k: v for k, v in kwargs.items() if k in allowed}
+        if not updates:
+            return self.get_content_asset(content_id, asset_id)
+
+        if "status" in updates:
+            ContentAssetStatus(updates["status"])
+        if "metadata" in updates:
+            updates["metadata"] = json.dumps(updates["metadata"] or {})
+        updates["updated_at"] = datetime.utcnow().isoformat()
+
+        set_clause = ", ".join(f"{k} = ?" for k in updates)
+        values = list(updates.values()) + [content_id, asset_id]
+        self._conn.execute(
+            f"UPDATE content_assets SET {set_clause} WHERE content_id = ? AND id = ?",
+            values,
+        )
+        self._conn.commit()
+        return self.get_content_asset(content_id, asset_id)
+
+    def delete_content_asset(self, content_id: str, asset_id: str) -> ContentAssetRecord:
+        """Tombstone asset metadata without deleting the content record."""
+        self.get_content_asset(content_id, asset_id)
+        now = datetime.utcnow().isoformat()
+        self._conn.execute(
+            """
+            UPDATE content_assets
+            SET status = ?, deleted_at = ?, updated_at = ?
+            WHERE content_id = ? AND id = ?
+            """,
+            (ContentAssetStatus.DELETED.value, now, now, content_id, asset_id),
+        )
+        self._conn.commit()
+        return self.get_content_asset(content_id, asset_id)
+
     # ─── Schedule Jobs ────────────────────────────────
 
     def create_schedule_job(self, **kwargs: Any) -> Dict[str, Any]:
@@ -712,6 +880,30 @@ class StatusService:
             "created_at": row["created_at"],
             "updated_at": row["updated_at"],
         }
+
+    def _row_to_asset(self, row: sqlite3.Row) -> ContentAssetRecord:
+        """Convert a database row to a ContentAssetRecord."""
+        return ContentAssetRecord(
+            id=row["id"],
+            content_id=row["content_id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            client_asset_id=row["client_asset_id"],
+            source=row["source"],
+            kind=row["kind"],
+            mime_type=row["mime_type"],
+            file_name=row["file_name"],
+            byte_size=row["byte_size"],
+            width=row["width"],
+            height=row["height"],
+            duration_ms=row["duration_ms"],
+            storage_uri=row["storage_uri"],
+            status=row["status"],
+            metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+            deleted_at=datetime.fromisoformat(row["deleted_at"]) if row["deleted_at"] else None,
+        )
 
     # ─── Sync Helpers ─────────────────────────────────
 

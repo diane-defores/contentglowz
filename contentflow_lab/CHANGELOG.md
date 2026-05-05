@@ -5,6 +5,7 @@ All notable changes to Content Flows are documented here.
 ## [2026-05-04]
 
 ### Added
+- Added a `content_assets` metadata contract for local-only capture assets linked to authenticated content records, with future-ready nullable storage URI fields and no media upload requirement.
 - Added `requirements.lock` / `requirements-dev.lock` so production and development installs can use pinned dependency resolutions.
 - Added a centralized PydanticAI runtime adapter and routed repo-understanding synthesis through it with explicit request-scoped OpenRouter credentials.
 - Added shared URL safety validation for LLM-callable Exa/Firecrawl URL-fetching tools.

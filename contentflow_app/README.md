@@ -114,14 +114,17 @@ The Android app includes a local-only Capture surface for creator assets:
 - recording runs through a visible foreground service and stops at 5 minutes
 - microphone audio is optional and off by default
 - local captures can be previewed, discarded, or shared/exported by the user
+- local captures can be linked to a content draft or attached to pending content
+- backend asset records store metadata only (`local_only`) and never store Android local file paths
 
-V1 does not upload capture files, create backend asset records, or replay binary uploads offline. Web, iOS, internal audio capture, gallery save, trimming, and cloud sync are follow-up scopes.
+V1 does not upload capture files or replay binary uploads offline. The backend contract can track a local-only asset relationship for content, with `storage_uri` reserved for future cloud upload work. Web, iOS, internal audio capture, gallery save, trimming, and cloud sync are follow-up scopes.
 
 Android-specific requirements:
 - `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, and `POST_NOTIFICATIONS` are required for the recording service path.
 - `FOREGROUND_SERVICE_MICROPHONE` and `RECORD_AUDIO` are used only when the user enables microphone audio.
 - Protected third-party screens can render black or partial captures when Android or the source app blocks capture.
 - Android 14+ uses a fresh MediaProjection consent/token for every screenshot or recording session.
+- When creating content from a capture, the app creates a manual content draft and links capture metadata to that content when FastAPI is reachable.
 
 ## Zernio / LATE Publishing
 

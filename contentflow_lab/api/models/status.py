@@ -78,6 +78,52 @@ class ContentResponse(BaseModel):
     synced_at: Optional[datetime]
 
 
+class CreateContentAssetRequest(BaseModel):
+    """Request to attach asset metadata to a content record."""
+    client_asset_id: Optional[str] = None
+    source: str = Field(default="device_capture")
+    kind: str = Field(..., description="Asset kind: screenshot, recording, image, video, etc.")
+    mime_type: str = Field(..., description="MIME type")
+    file_name: Optional[str] = None
+    byte_size: Optional[int] = Field(None, ge=0)
+    width: Optional[int] = Field(None, ge=0)
+    height: Optional[int] = Field(None, ge=0)
+    duration_ms: Optional[int] = Field(None, ge=0)
+    storage_uri: Optional[str] = None
+    status: str = Field(default="local_only")
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class UpdateContentAssetRequest(BaseModel):
+    """Request to update asset metadata."""
+    storage_uri: Optional[str] = None
+    status: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class ContentAssetResponse(BaseModel):
+    """Response representing asset metadata attached to content."""
+    id: str
+    content_id: str
+    project_id: str
+    user_id: str
+    client_asset_id: Optional[str]
+    source: str
+    kind: str
+    mime_type: str
+    file_name: Optional[str]
+    byte_size: Optional[int]
+    width: Optional[int]
+    height: Optional[int]
+    duration_ms: Optional[int]
+    storage_uri: Optional[str]
+    status: str
+    metadata: Dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: Optional[datetime]
+
+
 class StatusChangeResponse(BaseModel):
     """Response representing a status change in the audit trail."""
     id: str

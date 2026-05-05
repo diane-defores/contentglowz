@@ -11,6 +11,7 @@ import '../models/affiliate_link.dart';
 import '../models/ai_runtime.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
+import '../models/capture_asset.dart';
 import '../models/content_audit.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
@@ -1527,6 +1528,110 @@ class ApiService {
         return true;
       }
       throw mapped;
+    }
+  }
+
+  Future<ContentItem> createContentDraftFromCapture({
+    required CaptureAsset asset,
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return ContentItem.fromJson({
+        'id': 'demo-capture-content-${asset.id}',
+        'title': _captureDraftTitle(asset),
+        'body': _captureDraftBody(asset),
+        'content_type': 'manual',
+        'status': 'pending_review',
+        'project_id': projectId,
+        'source_robot': 'manual',
+        'created_at': DateTime.now().toIso8601String(),
+        'metadata': _captureAssetMetadata(asset),
+      });
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final body = _captureDraftBody(asset);
+    final payload = {
+      'title': _captureDraftTitle(asset),
+      'content_type': 'manual',
+      'source_robot': 'manual',
+      'status': 'pending_review',
+      'project_id': resolvedProjectId,
+      'content_preview': _capturePreview(asset),
+      'priority': 3,
+      'tags': ['device_capture', asset.kind.name],
+      'metadata': {
+        'created_from': 'device_capture',
+        'capture_asset': _captureAssetMetadata(asset),
+      },
+    };
+
+    try {
+      final response = await _dio.post('/api/status/content', data: payload);
+      final data = _asMap(response.data);
+      final contentId = data['id']?.toString();
+      if (contentId == null || contentId.isEmpty) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Backend did not return a content id.',
+        );
+      }
+
+      await saveContentBody(
+        contentId,
+        body,
+        editNote: 'Created from local device capture',
+      );
+      await attachCaptureAssetToContent(contentId: contentId, asset: asset);
+
+      final item = ContentItem.fromJson({
+        ...payload,
+        ...data,
+        'id': contentId,
+        'body': body,
+        'status': data['status'] ?? 'pending_review',
+        'created_at': data['created_at'] ?? DateTime.now().toIso8601String(),
+      });
+      await _upsertCachedPendingContentItem(item);
+      return item;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>?> attachCaptureAssetToContent({
+    required String contentId,
+    required CaptureAsset asset,
+  }) async {
+    if (allowDemoData) {
+      return {'id': 'demo-content-asset-${asset.id}', 'status': 'local_only'};
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedContentId = _resolveEntityId(contentId, idMappings);
+    final payload = {
+      'client_asset_id': asset.id,
+      'source': 'device_capture',
+      'kind': asset.kind.name,
+      'mime_type': asset.mimeType,
+      'file_name': _fileNameFromPath(asset.path),
+      'byte_size': asset.byteSize,
+      'width': asset.width,
+      'height': asset.height,
+      'duration_ms': asset.durationMs,
+      'status': 'local_only',
+      'metadata': _captureAssetMetadata(asset),
+    };
+
+    try {
+      final response = await _dio.post(
+        '/api/status/content/$resolvedContentId/assets',
+        data: payload,
+      );
+      return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
     }
   }
 
@@ -4311,4 +4416,45 @@ extension DripApi on ApiService {
       );
     }
   }
+}
+
+String _captureDraftTitle(CaptureAsset asset) {
+  final kind = asset.isScreenshot ? 'Screenshot' : 'Screen recording';
+  final created = asset.createdAt.toLocal().toIso8601String().split('.').first;
+  return '$kind $created';
+}
+
+String _captureDraftBody(CaptureAsset asset) {
+  final kind = asset.isScreenshot ? 'screenshot' : 'screen recording';
+  return [
+    '# ${_captureDraftTitle(asset)}',
+    '',
+    'Local $kind attached from Android device capture.',
+    '',
+    'Notes:',
+    '',
+  ].join('\n');
+}
+
+String _capturePreview(CaptureAsset asset) {
+  final kind = asset.isScreenshot ? 'Screenshot' : 'Screen recording';
+  final details = [
+    '${asset.width}x${asset.height}',
+    if (asset.durationMs != null) '${asset.durationMs}ms',
+  ].join(' ');
+  return '$kind captured locally. $details'.trim();
+}
+
+Map<String, dynamic> _captureAssetMetadata(CaptureAsset asset) {
+  return {
+    'capture_scope_label': asset.captureScopeLabel,
+    'microphone_enabled': asset.microphoneEnabled,
+    'captured_at': asset.createdAt.toIso8601String(),
+  };
+}
+
+String _fileNameFromPath(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  final parts = normalized.split('/');
+  return parts.isEmpty ? normalized : parts.last;
 }

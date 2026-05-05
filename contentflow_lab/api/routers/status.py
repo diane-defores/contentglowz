@@ -22,6 +22,9 @@ from api.models.status import (
     SaveContentBodyRequest,
     ContentBodyResponse,
     ContentEditResponse,
+    CreateContentAssetRequest,
+    UpdateContentAssetRequest,
+    ContentAssetResponse,
     RegenerateRequest,
     ScheduleContentRequest,
 )
@@ -64,6 +67,31 @@ def _record_to_response(record) -> ContentResponse:
         scheduled_for=record.scheduled_for,
         published_at=record.published_at,
         synced_at=record.synced_at,
+    )
+
+
+def _asset_to_response(asset) -> ContentAssetResponse:
+    """Convert a ContentAssetRecord to a response model."""
+    return ContentAssetResponse(
+        id=asset.id,
+        content_id=asset.content_id,
+        project_id=asset.project_id,
+        user_id=asset.user_id,
+        client_asset_id=asset.client_asset_id,
+        source=asset.source,
+        kind=asset.kind,
+        mime_type=asset.mime_type,
+        file_name=asset.file_name,
+        byte_size=asset.byte_size,
+        width=asset.width,
+        height=asset.height,
+        duration_ms=asset.duration_ms,
+        storage_uri=asset.storage_uri,
+        status=asset.status,
+        metadata=asset.metadata,
+        created_at=asset.created_at,
+        updated_at=asset.updated_at,
+        deleted_at=asset.deleted_at,
     )
 
 
@@ -251,6 +279,113 @@ async def get_content_history(
         )
         for h in history
     ]
+
+
+# ─── Content Assets ────────────────────────────────────
+
+
+@router.get(
+    "/content/{content_id}/assets",
+    response_model=List[ContentAssetResponse],
+    summary="List content assets",
+    description="List asset metadata linked to a content record. Local device paths are never returned.",
+)
+async def list_content_assets(
+    content_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    """List asset metadata attached to a content record."""
+    svc = get_status_service()
+    await require_owned_content_record(content_id, current_user, svc)
+    return [_asset_to_response(asset) for asset in svc.list_content_assets(content_id)]
+
+
+@router.post(
+    "/content/{content_id}/assets",
+    response_model=ContentAssetResponse,
+    status_code=201,
+    summary="Attach content asset metadata",
+    description="Attach local-only or uploaded asset metadata to a content record.",
+)
+async def create_content_asset(
+    content_id: str,
+    request: CreateContentAssetRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    """Create or refresh asset metadata for a content record."""
+    svc = get_status_service()
+    record = await require_owned_content_record(content_id, current_user, svc)
+    try:
+        asset = svc.create_content_asset(
+            content_id=content_id,
+            project_id=record.project_id or "",
+            user_id=current_user.user_id,
+            client_asset_id=request.client_asset_id,
+            source=request.source,
+            kind=request.kind,
+            mime_type=request.mime_type,
+            file_name=request.file_name,
+            byte_size=request.byte_size,
+            width=request.width,
+            height=request.height,
+            duration_ms=request.duration_ms,
+            storage_uri=request.storage_uri,
+            status=request.status,
+            metadata=request.metadata,
+        )
+        return _asset_to_response(asset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
+
+
+@router.patch(
+    "/content/{content_id}/assets/{asset_id}",
+    response_model=ContentAssetResponse,
+    summary="Update content asset metadata",
+    description="Update mutable storage status or metadata for an attached asset.",
+)
+async def update_content_asset(
+    content_id: str,
+    asset_id: str,
+    request: UpdateContentAssetRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    """Update asset metadata for a content record."""
+    svc = get_status_service()
+    await require_owned_content_record(content_id, current_user, svc)
+    try:
+        asset = svc.update_content_asset(
+            content_id,
+            asset_id,
+            **request.model_dump(exclude_none=True),
+        )
+        return _asset_to_response(asset)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Asset {asset_id} not found")
+
+
+@router.delete(
+    "/content/{content_id}/assets/{asset_id}",
+    response_model=ContentAssetResponse,
+    summary="Delete content asset metadata",
+    description="Tombstone asset metadata without deleting the content record.",
+)
+async def delete_content_asset(
+    content_id: str,
+    asset_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    """Tombstone asset metadata for a content record."""
+    svc = get_status_service()
+    await require_owned_content_record(content_id, current_user, svc)
+    try:
+        return _asset_to_response(svc.delete_content_asset(content_id, asset_id))
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Asset {asset_id} not found")
 
 
 # ─── Statistics ────────────────────────────────────────

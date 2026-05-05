@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/app_exit_confirmation.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -153,45 +156,66 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           : ContentTypeConfig.defaults();
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          context.tr(_isProjectEditMode ? 'Project settings' : 'Setup'),
-        ),
-        leading: _currentPage > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _previousPage,
-              )
-            : null,
-        actions: [
-          IconButton(
-            tooltip: context.tr('Copy diagnostics'),
-            onPressed: _copyOnboardingDiagnostics,
-            icon: const Icon(Icons.copy_rounded),
+    final routeIsFirst = ModalRoute.of(context)?.isFirst ?? true;
+
+    return PopScope<void>(
+      canPop: _currentPage == 0 && !routeIsFirst,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _handleSystemBack();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            context.tr(_isProjectEditMode ? 'Project settings' : 'Setup'),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Progress indicator
-          _buildProgressBar(),
-          // Pages
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              onPageChanged: (i) => setState(() => _currentPage = i),
-              children: [
-                _buildProjectPage(),
-                _buildContentTypesPage(),
-                _buildSummaryPage(),
-              ],
+          leading: _currentPage > 0
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _previousPage,
+                )
+              : null,
+          actions: [
+            IconButton(
+              tooltip: context.tr('Copy diagnostics'),
+              onPressed: _copyOnboardingDiagnostics,
+              icon: const Icon(Icons.copy_rounded),
             ),
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              // Progress indicator
+              _buildProgressBar(),
+              // Pages
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  children: [
+                    _buildProjectPage(),
+                    _buildContentTypesPage(),
+                    _buildSummaryPage(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
+  }
+
+  void _handleSystemBack() {
+    if (_currentPage > 0) {
+      _previousPage();
+      return;
+    }
+
+    unawaited(confirmAndExitApp(context));
   }
 
   Widget _buildProgressBar() {

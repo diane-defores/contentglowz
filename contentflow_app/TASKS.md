@@ -219,6 +219,8 @@
 | ✅ | Firebase Cloud Messaging scaffold (service layer ready, needs Firebase config) | ✅ done |
 | ✅ | Diagnostics centralisés + copie d'erreurs/logs exportables dans l'app (runtime, API, auth, Riverpod, snackbars) | ✅ done |
 | ✅ | Mobile UX audit — bottom nav redesign, responsive typography, touch targets, layout fixes | ✅ done |
+| 🟡 | Corriger l'overlap Android de l'onboarding demo avec la barre systeme native | ✅ done - retest appareil suivi dans BUG-2026-05-05-001 |
+| 🟡 | Corriger le bouton retour Android: revenir dans la demo et confirmer avant fermeture app | ✅ done - retest appareil suivi dans BUG-2026-05-05-002 |
 | ✅ | Rebrand produit `ContentFlowz` → `ContentFlow` (nom app, package Android, manifests web, scripts et docs) | ✅ done |
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | ✅ done |
 | ✅ | Ajouter un accès direct au rituel dans le menu mobile "More" pour augmenter la fréquence de remplissage | ✅ done |

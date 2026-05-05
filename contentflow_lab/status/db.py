@@ -60,6 +60,29 @@ def _run_migrations(conn: Connection) -> None:
         "ALTER TABLE content_edits ADD COLUMN actor_id TEXT",
         "ALTER TABLE content_edits ADD COLUMN actor_label TEXT",
         "ALTER TABLE content_edits ADD COLUMN actor_metadata TEXT",
+        """
+        CREATE TABLE IF NOT EXISTS content_assets (
+            id TEXT PRIMARY KEY,
+            content_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            client_asset_id TEXT,
+            source TEXT NOT NULL DEFAULT 'device_capture',
+            kind TEXT NOT NULL,
+            mime_type TEXT NOT NULL,
+            file_name TEXT,
+            byte_size INTEGER,
+            width INTEGER,
+            height INTEGER,
+            duration_ms INTEGER,
+            storage_uri TEXT,
+            status TEXT NOT NULL DEFAULT 'local_only',
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            deleted_at TEXT
+        )
+        """,
     ]:
         try:
             conn.execute(stmt)
@@ -80,6 +103,10 @@ def _run_migrations(conn: Connection) -> None:
         "CREATE INDEX IF NOT EXISTS idx_jobs_project ON schedule_jobs(project_id)",
         "CREATE INDEX IF NOT EXISTS idx_changes_actor_id ON status_changes(actor_id)",
         "CREATE INDEX IF NOT EXISTS idx_edits_actor_id ON content_edits(actor_id)",
+        "CREATE INDEX IF NOT EXISTS idx_assets_content ON content_assets(content_id)",
+        "CREATE INDEX IF NOT EXISTS idx_assets_project ON content_assets(project_id)",
+        "CREATE INDEX IF NOT EXISTS idx_assets_user ON content_assets(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_assets_client ON content_assets(content_id, client_asset_id)",
     ]:
         conn.execute(stmt)
     conn.commit()

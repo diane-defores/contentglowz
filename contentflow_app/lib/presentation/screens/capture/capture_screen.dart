@@ -1,30 +1,37 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/models/capture_asset.dart';
+import '../../../data/models/capture_content_link.dart';
+import '../../../data/models/content_item.dart';
+import '../../../data/services/api_service.dart';
 import '../../../data/services/capture_local_store.dart';
 import '../../../data/services/device_capture_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../providers/providers.dart';
 import 'capture_asset_preview.dart';
 
-class CaptureScreen extends StatefulWidget {
+class CaptureScreen extends ConsumerStatefulWidget {
   const CaptureScreen({super.key, this.captureService, this.localStore});
 
   final DeviceCaptureClient? captureService;
   final CaptureLocalStore? localStore;
 
   @override
-  State<CaptureScreen> createState() => _CaptureScreenState();
+  ConsumerState<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends State<CaptureScreen> {
+class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   late final DeviceCaptureClient _captureService;
   CaptureLocalStore? _store;
   CaptureSupport? _support;
   StreamSubscription<CaptureNativeEvent>? _eventSubscription;
   List<CaptureAsset> _assets = const <CaptureAsset>[];
+  List<CaptureContentLink> _links = const <CaptureContentLink>[];
   bool _loading = true;
   bool _busy = false;
   bool _recording = false;
@@ -61,6 +68,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
       _support = support;
       _store = store;
       _assets = store!.loadRecentAssets();
+      _links = store.loadContentLinks();
       _loading = false;
     });
   }
@@ -133,7 +141,10 @@ class _CaptureScreenState extends State<CaptureScreen> {
       await _captureService.deleteAsset(asset);
       final next = await _store!.removeAsset(asset.id);
       if (!mounted) return;
-      setState(() => _assets = next);
+      setState(() {
+        _assets = next;
+        _links = _store!.loadContentLinks();
+      });
     } catch (error) {
       _showError(error);
     }
@@ -143,6 +154,120 @@ class _CaptureScreenState extends State<CaptureScreen> {
     final next = await _store!.addAsset(asset);
     if (!mounted) return;
     setState(() => _assets = next);
+  }
+
+  Future<void> _createContentFromAsset(CaptureAsset asset) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null || projectId.isEmpty) {
+      setState(() {
+        _message = context.tr(
+          'Choose an active project before creating content.',
+        );
+      });
+      return;
+    }
+
+    setState(() {
+      _busy = true;
+      _message = context.tr('Creating content from capture.');
+      _noticeMessage = null;
+    });
+
+    try {
+      final api = ref.read(apiServiceProvider);
+      final item = await api.createContentDraftFromCapture(
+        asset: asset,
+        projectId: projectId,
+      );
+      await _store!.linkAssetToContent(
+        CaptureContentLink(
+          assetId: asset.id,
+          contentId: item.id,
+          projectId: projectId,
+          syncState: CaptureContentLinkSyncState.backendLinked,
+          createdAt: DateTime.now(),
+        ),
+      );
+      ref.invalidate(pendingContentProvider);
+      if (!mounted) return;
+      setState(() {
+        _links = _store!.loadContentLinks();
+        _busy = false;
+        _message = context.tr('Content created from capture.');
+      });
+      context.go('/editor/${item.id}');
+    } catch (error) {
+      _showError(error);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _attachAssetToContent(CaptureAsset asset) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null || projectId.isEmpty) {
+      setState(() {
+        _message = context.tr(
+          'Choose an active project before linking assets.',
+        );
+      });
+      return;
+    }
+
+    final pending =
+        ref.read(pendingContentProvider).value ?? const <ContentItem>[];
+    final selected = await showModalBottomSheet<ContentItem>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => _ContentPickerSheet(items: pending),
+    );
+    if (selected == null) return;
+
+    setState(() {
+      _busy = true;
+      _message = context.tr('Linking capture to content.');
+      _noticeMessage = null;
+    });
+
+    var syncState = CaptureContentLinkSyncState.backendLinked;
+    String? backendAssetId;
+    try {
+      final response = await ref
+          .read(apiServiceProvider)
+          .attachCaptureAssetToContent(contentId: selected.id, asset: asset);
+      backendAssetId = response?['id']?.toString();
+    } catch (error) {
+      if (error is ApiException && error.isOffline) {
+        syncState = CaptureContentLinkSyncState.pendingBackend;
+        if (mounted) {
+          _noticeMessage = context.tr(
+            'Backend link is unavailable. The local link stays on this device.',
+          );
+        }
+      } else {
+        _showError(error);
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
+    }
+
+    await _store!.linkAssetToContent(
+      CaptureContentLink(
+        assetId: asset.id,
+        contentId: selected.id,
+        projectId: projectId,
+        backendAssetId: backendAssetId,
+        syncState: syncState,
+        createdAt: DateTime.now(),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {
+      _links = _store!.loadContentLinks();
+      _busy = false;
+      _message = context.tr('Capture linked to content.');
+    });
   }
 
   void _handleCaptureEvent(CaptureNativeEvent event) {
@@ -216,6 +341,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
   @override
   Widget build(BuildContext context) {
     final support = _support;
+    final contentItems =
+        ref.watch(pendingContentProvider).value ?? const <ContentItem>[];
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('Capture'))),
       body: _loading || support == null
@@ -238,6 +365,10 @@ class _CaptureScreenState extends State<CaptureScreen> {
               onStop: _recording ? _stopRecording : null,
               onShare: _shareAsset,
               onDiscard: _discardAsset,
+              onCreateContent: _busy ? null : _createContentFromAsset,
+              onAttachContent: _busy ? null : _attachAssetToContent,
+              links: _links,
+              contentItems: contentItems,
             )
           : _UnsupportedCaptureView(support: support),
     );
@@ -306,6 +437,10 @@ class _SupportedCaptureView extends StatelessWidget {
     required this.onStop,
     required this.onShare,
     required this.onDiscard,
+    required this.onCreateContent,
+    required this.onAttachContent,
+    required this.links,
+    required this.contentItems,
   });
 
   final List<CaptureAsset> assets;
@@ -322,6 +457,10 @@ class _SupportedCaptureView extends StatelessWidget {
   final VoidCallback? onStop;
   final ValueChanged<CaptureAsset> onShare;
   final ValueChanged<CaptureAsset> onDiscard;
+  final ValueChanged<CaptureAsset>? onCreateContent;
+  final ValueChanged<CaptureAsset>? onAttachContent;
+  final List<CaptureContentLink> links;
+  final List<ContentItem> contentItems;
 
   @override
   Widget build(BuildContext context) {
@@ -426,24 +565,56 @@ class _SupportedCaptureView extends StatelessWidget {
           for (final asset in assets)
             _CaptureAssetCard(
               asset: asset,
+              link: _linkForAsset(asset.id),
+              linkedContent: _contentForAsset(asset.id),
               onShare: () => onShare(asset),
               onDiscard: () => onDiscard(asset),
+              onCreateContent: onCreateContent == null
+                  ? null
+                  : () => onCreateContent!(asset),
+              onAttachContent: onAttachContent == null
+                  ? null
+                  : () => onAttachContent!(asset),
             ),
       ],
     );
+  }
+
+  CaptureContentLink? _linkForAsset(String assetId) {
+    for (final link in links) {
+      if (link.assetId == assetId) return link;
+    }
+    return null;
+  }
+
+  ContentItem? _contentForAsset(String assetId) {
+    final link = _linkForAsset(assetId);
+    if (link == null) return null;
+    for (final item in contentItems) {
+      if (item.id == link.contentId) return item;
+    }
+    return null;
   }
 }
 
 class _CaptureAssetCard extends StatelessWidget {
   const _CaptureAssetCard({
     required this.asset,
+    required this.link,
+    required this.linkedContent,
     required this.onShare,
     required this.onDiscard,
+    required this.onCreateContent,
+    required this.onAttachContent,
   });
 
   final CaptureAsset asset;
+  final CaptureContentLink? link;
+  final ContentItem? linkedContent;
   final VoidCallback onShare;
   final VoidCallback onDiscard;
+  final VoidCallback? onCreateContent;
+  final VoidCallback? onAttachContent;
 
   @override
   Widget build(BuildContext context) {
@@ -488,10 +659,35 @@ class _CaptureAssetCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  if (link != null) ...[
+                    Text(
+                      linkedContent == null
+                          ? context.tr('Linked to content')
+                          : context.tr('Linked to {title}', {
+                              'title': linkedContent!.title,
+                            }),
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Wrap(
                     spacing: 4,
                     runSpacing: 4,
                     children: [
+                      IconButton.filled(
+                        tooltip: context.tr('Create content'),
+                        onPressed: onCreateContent,
+                        icon: const Icon(Icons.note_add_rounded),
+                      ),
+                      IconButton.filledTonal(
+                        tooltip: context.tr('Link to content'),
+                        onPressed: onAttachContent,
+                        icon: const Icon(Icons.playlist_add_rounded),
+                      ),
                       IconButton.filledTonal(
                         tooltip: context.tr('Share'),
                         onPressed: onShare,
@@ -509,6 +705,48 @@ class _CaptureAssetCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ContentPickerSheet extends StatelessWidget {
+  const _ContentPickerSheet({required this.items});
+
+  final List<ContentItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          Text(
+            context.tr('Link to content'),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                context.tr('No pending content is available for this project.'),
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            )
+          else
+            for (final item in items)
+              ListTile(
+                leading: const Icon(Icons.article_outlined),
+                title: Text(item.title),
+                subtitle: Text(item.typeLabel),
+                onTap: () => Navigator.of(context).pop(item),
+              ),
+        ],
       ),
     );
   }

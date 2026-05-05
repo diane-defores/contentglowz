@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../../data/models/app_access_state.dart';
 import '../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../widgets/app_error_view.dart';
+import '../widgets/app_exit_confirmation.dart';
 
 class _NavItem {
   const _NavItem({required this.icon, required this.label, required this.path});
@@ -159,49 +162,67 @@ class _AppShellState extends ConsumerState<AppShell> {
     final allItems = _allItems;
 
     if (isWide) {
-      return Scaffold(
-        body: Row(
-          children: [
-            _SideRail(
-              sections: sections,
-              selectedPath: selectedPath,
-              pendingCount: pendingCount,
-              colorScheme: colorScheme,
-              onNavigate: (path) => context.go(path),
-            ),
-            VerticalDivider(
-              width: 1,
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-            Expanded(
-              child: _ShellContent(
-                degradedMode: degradedMode,
-                appAccess: appAccess,
-                ref: ref,
-                child: widget.child,
+      return _wrapWithExitConfirmation(
+        context,
+        Scaffold(
+          body: Row(
+            children: [
+              _SideRail(
+                sections: sections,
+                selectedPath: selectedPath,
+                pendingCount: pendingCount,
+                colorScheme: colorScheme,
+                onNavigate: (path) => context.go(path),
               ),
-            ),
-          ],
+              VerticalDivider(
+                width: 1,
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+              Expanded(
+                child: _ShellContent(
+                  degradedMode: degradedMode,
+                  appAccess: appAccess,
+                  ref: ref,
+                  child: widget.child,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return Scaffold(
-      body: _ShellContent(
-        degradedMode: degradedMode,
-        appAccess: appAccess,
-        ref: ref,
-        child: widget.child,
+    return _wrapWithExitConfirmation(
+      context,
+      Scaffold(
+        body: _ShellContent(
+          degradedMode: degradedMode,
+          appAccess: appAccess,
+          ref: ref,
+          child: widget.child,
+        ),
+        bottomNavigationBar: _BottomNav(
+          sections: sections,
+          items: allItems,
+          degradedMode: degradedMode,
+          selectedPath: selectedPath,
+          pendingCount: pendingCount,
+          colorScheme: colorScheme,
+          onNavigate: (path) => context.go(path),
+        ),
       ),
-      bottomNavigationBar: _BottomNav(
-        sections: sections,
-        items: allItems,
-        degradedMode: degradedMode,
-        selectedPath: selectedPath,
-        pendingCount: pendingCount,
-        colorScheme: colorScheme,
-        onNavigate: (path) => context.go(path),
-      ),
+    );
+  }
+
+  Widget _wrapWithExitConfirmation(BuildContext context, Widget child) {
+    final routeIsFirst = ModalRoute.of(context)?.isFirst ?? true;
+    return PopScope<void>(
+      canPop: !routeIsFirst,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        unawaited(confirmAndExitApp(context));
+      },
+      child: child,
     );
   }
 

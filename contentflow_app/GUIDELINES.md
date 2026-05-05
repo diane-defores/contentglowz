@@ -88,7 +88,8 @@ This document describes conventions for working in `contentflow_app`, the Flutte
 - Screen capture and recording must run through foreground-service paths that match the declared Android service type.
 - Store captured media files only in app-scoped storage unless a separate export/save-to-gallery scope says otherwise.
 - Persist only metadata and local file paths in SharedPreferences; never store binary capture data there.
-- Keep backend upload, sync, retention, and storage-cost behavior out of local native capture work unless a separate backend spec is ready.
+- Backend capture asset contracts may store metadata and client asset IDs, but must not store device-local file paths as durable server truth.
+- Keep backend upload, sync, retention, and storage-cost behavior out of local native capture work unless a separate upload/storage spec is ready.
 
 ## UX and Copy Standards
 
