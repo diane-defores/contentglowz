@@ -8,3 +8,4 @@
 | 2026-04-27 | full project | B- | — | — | — | — | — | — | — | — | 0/1/2 |
 | 2026-04-27 | dependencies | — | — | — | — | — | — | C | — | C | 0/2/3 (major upgrades + discontinued transitive tooling) |
 | 2026-04-27 | dependencies (fix pass) | — | — | — | — | — | — | C | — | C | 0/1/2 (toolchain pin + automation added; major deps still pending) |
+| 2026-04-28 | monorepo code audit | B | — | — | — | — | — | — | — | B | 1/1/2 (auth diagnostics XSS fixed; publish client requires content record id) |

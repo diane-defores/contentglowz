@@ -11,3 +11,4 @@
 | 2026-05-02 | dependencies (resolver conflict) | — | — | — | — | — | — | B- | — | B- | 0/1/3 (default resolver fixed; `pydantic-ai` CVE + lockfile/optional integrations pending) |
 | 2026-05-03 | dependencies (risk closure) | — | — | — | — | — | — | A- | — | A- | 0/0/1 (`pip-audit` clean; lockfiles + PydanticAI adapter + URL safety added; license inventory pending) |
 | 2026-05-03 | dependencies (license inventory) | — | — | — | — | — | — | A | — | A | 0/0/0 (283 production packages inventoried; 0 AGPL/SSPL/GPL-only blockers; `libsql` source license verified as MIT) |
+| 2026-04-28 | monorepo code audit | B- | — | — | — | — | — | — | — | B- | 1/2/3 (publish now requires owned ContentRecord; account ownership decision remains) |

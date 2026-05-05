@@ -85,7 +85,8 @@
 
         function renderMeta() {
           const diagnostics = bridge.getDiagnostics();
-          metaEl.innerHTML = [
+          metaEl.replaceChildren(
+            ...[
             `Build commit: ${diagnostics.buildCommitSha}`,
             `Build environment: ${diagnostics.buildEnvironment}`,
             `Build timestamp: ${diagnostics.buildTimestamp}`,
@@ -95,9 +96,12 @@
             `OAuth callback URL: ${diagnostics.oauthCallbackUrl}`,
             `Clerk frontend API: ${diagnostics.clerkFrontendApi}`,
             `Key preview: ${diagnostics.keyPreview}`,
-          ]
-            .map((line) => `<div>${line}</div>`)
-            .join('');
+          ].map((line) => {
+              const item = document.createElement('div');
+              item.textContent = line;
+              return item;
+            }),
+          );
         }
 
         async function bootstrap() {
