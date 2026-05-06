@@ -9,6 +9,7 @@ status: active
 source_skill: sf-start
 scope: "migrate-flutter-core-majors-baseline"
 owner: "Diane"
+confidence: medium
 risk_level: "high"
 security_impact: "low"
 docs_impact: "yes"
@@ -16,6 +17,9 @@ depends_on:
   - artifact: "specs/SPEC-migrate-flutter-core-majors.md"
     artifact_version: "1.1.0"
     required_status: "ready"
+supersedes: []
+evidence:
+  - "Baseline execution log records toolchain, dirty worktree state, dependency matrix, and runtime smoke validation for SPEC-migrate-flutter-core-majors.md."
 next_step: "/sf-start Migrate Flutter Core Majors: Riverpod, GoRouter, Google Fonts, Riverpod Codegen"
 ---
 

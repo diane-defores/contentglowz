@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow_app"
 created: "2026-05-04"
 created_at: "2026-05-04 19:29:42 UTC"
 updated: "2026-05-04"
 updated_at: "2026-05-04 21:27:40 UTC"
-status: implemented_pending_device_qa
+status: active
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "En tant que créateur ContentFlow sur Android, je veux capturer une photo ou une vidéo de tout l'écran de mon appareil avec consentement système explicite, afin de produire rapidement des assets visuels réutilisables dans mes contenus."
 risk_level: high
 security_impact: "yes"

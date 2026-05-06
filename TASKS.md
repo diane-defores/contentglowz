@@ -16,6 +16,7 @@
 | ✅ | Consolidate ContentFlow surfaces into the canonical monorepo | ✅ done |
 | ✅ | Move GitHub source of truth to `diane-defores/contentflow` with Vercel roots for site and app | ✅ done |
 | ✅ | Create root and site task tracking from existing subproject state | ✅ done |
+| ✅ | Bring active ShipFlow documentation metadata and governance layers back into lint compliance for app/site/root docs | ✅ done |
 | 🟠 | Keep root tracker, subproject trackers, and ShipFlow master dashboard aligned after each shipped task | 🔄 in progress |
 | 🔴 | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | 📋 todo |
 

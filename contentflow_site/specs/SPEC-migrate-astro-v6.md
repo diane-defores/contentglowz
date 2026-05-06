@@ -9,6 +9,7 @@ status: ready
 source_skill: sf-spec
 scope: "migration"
 owner: "Diane"
+confidence: medium
 user_story: "En tant que mainteneuse du site marketing ContentFlow, je veux migrer contentflow_site d'Astro 5 vers Astro 6, afin de garder un build supporté, sécurisé et déployable sans régression SEO ni rupture des pages de contenu."
 risk_level: "high"
 security_impact: "yes"

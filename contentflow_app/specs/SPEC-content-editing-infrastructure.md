@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "En tant que créateur ContentFlow, je veux pouvoir relire, personnaliser, versionner et publier les contenus proposés par l'IA, afin de garder ma voix et mon contrôle avant toute publication."
 risk_level: high
 security_impact: "yes"

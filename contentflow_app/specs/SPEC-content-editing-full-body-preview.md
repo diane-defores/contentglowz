@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow_app"
 created: "2026-05-02"
 created_at: "2026-05-02 06:03:02 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: bug
 owner: "Diane"
+confidence: medium
 user_story: "En tant que créateur ContentFlow, je veux éditer et publier le contenu complet proposé par l'IA, afin de ne jamais valider par erreur un simple aperçu tronqué."
 risk_level: high
 security_impact: "yes"

@@ -1,3 +1,32 @@
+---
+artifact: execution_log
+metadata_schema_version: "1.0"
+artifact_version: "0.1.0"
+project: "contentflow_app"
+created: "2026-05-05"
+updated: "2026-05-05"
+status: draft
+source_skill: tmux-capture-conversation
+scope: "local-capture-assets-linked-to-content-conversation"
+owner: "Diane"
+confidence: low
+risk_level: medium
+security_impact: unknown
+docs_impact: yes
+linked_systems:
+  - "contentflow_app/specs/SPEC-local-capture-assets-linked-to-content.md"
+  - "contentflow_app Flutter capture flow"
+  - "contentflow_lab FastAPI status router"
+depends_on:
+  - artifact: "contentflow_app/specs/SPEC-local-capture-assets-linked-to-content.md"
+    artifact_version: "1.0.0"
+    required_status: active
+supersedes: []
+evidence:
+  - "Conversation capture header records captured_at 2026-05-05 18:50:19 UTC."
+next_step: "/sf-docs audit contentflow_app/specs/conversation-local-capture-assets-linked-to-content-20260505.md"
+---
+
 # Conversation - local capture assets linked to content
 
 - Captured at: `2026-05-05 18:50:19 UTC`

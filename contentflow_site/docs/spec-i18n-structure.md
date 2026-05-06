@@ -9,6 +9,7 @@ status: ready
 source_skill: sf-spec
 scope: "feature"
 owner: "Diane"
+confidence: medium
 user_story: "En tant que mainteneuse du site marketing ContentFlow, je veux préparer une structure i18n FR/EN dans le site Astro, afin de publier progressivement une version française sans casser les URLs anglaises, le SEO, ni les parcours de conversion vers l'application."
 risk_level: "medium"
 security_impact: "none"

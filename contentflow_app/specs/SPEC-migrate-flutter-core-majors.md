@@ -9,6 +9,7 @@ status: ready
 source_skill: sf-spec
 scope: "migration"
 owner: "Diane"
+confidence: medium
 user_story: "En tant que mainteneur de ContentFlow, je veux migrer les dépendances Flutter coeur vers leurs versions majeures actuelles par lots sûrs, afin de réduire la dette de maintenance sans casser l'accès, l'état applicatif, la navigation ni le build web."
 risk_level: "high"
 security_impact: "low, mitigated by preserving server-side/auth contracts, validating guarded routes, avoiding prereleases/untrusted sources, and keeping diagnostics sanitized"

@@ -1,18 +1,19 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow_app"
 created: "2026-05-05"
 created_at: "2026-05-05 00:00:00 UTC"
 updated: "2026-05-05"
 updated_at: "2026-05-05 00:00:00 UTC"
-status: shipped_pending_manual_qa
+status: active
 source_skill: sf-build
 source_model: "GPT-5"
 scope: feature
 owner: "Diane"
-user_story: "En tant que createur ContentFlow sur Android, je veux rattacher une capture locale a un contenu existant ou a creer, afin de transformer immediatement un screenshot ou une video d'ecran en asset de travail sans upload cloud automatique."
+confidence: medium
+user_story: "En tant que créateur ContentFlow sur Android, je veux rattacher une capture locale à un contenu existant ou à créer, afin de transformer immédiatement un screenshot ou une vidéo d'écran en asset de travail sans upload cloud automatique."
 risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
@@ -24,8 +25,8 @@ linked_systems:
   - "contentflow_lab Turso/libSQL status schema"
 depends_on:
   - artifact: "contentflow_app/specs/SPEC-android-device-screen-capture.md"
-    artifact_version: "0.1.0"
-    required_status: "implemented_pending_device_qa"
+    artifact_version: "1.0.0"
+    required_status: active
   - artifact: "contentflow_app/GUIDELINES.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
@@ -48,7 +49,7 @@ Shipped pending manual Android QA. This chantier extends the Android capture V1 
 
 ## User Story
 
-En tant que createur ContentFlow sur Android, je veux rattacher une capture locale a un contenu existant ou a creer, afin de transformer immediatement un screenshot ou une video d'ecran en asset de travail sans upload cloud automatique.
+En tant que créateur ContentFlow sur Android, je veux rattacher une capture locale à un contenu existant ou à créer, afin de transformer immédiatement un screenshot ou une vidéo d'écran en asset de travail sans upload cloud automatique.
 
 ## Minimal Behavior Contract
 

@@ -10,6 +10,7 @@ source_skill: sf-docs
 scope: setup
 owner: Diane
 confidence: medium
+risk_level: medium
 security_impact: yes
 docs_impact: yes
 linked_systems:
