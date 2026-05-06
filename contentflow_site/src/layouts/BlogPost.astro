@@ -330,7 +330,7 @@ const breadcrumbSchema = {
   .prose :global(a) {
     color: var(--color-primary);
     text-decoration: underline;
-    text-decoration-color: rgba(59, 130, 246, 0.3);
+    text-decoration-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
     text-underline-offset: 3px;
   }
 
@@ -428,7 +428,7 @@ const breadcrumbSchema = {
   }
 
   .related-card:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-card);
     transform: translateY(-2px);
   }
 

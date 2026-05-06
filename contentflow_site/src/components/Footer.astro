@@ -51,9 +51,9 @@
 
 <style>
   .footer {
-    background: var(--color-dark);
+    background: var(--color-text-primary);
     color: white;
-    padding: 4rem 0 2rem;
+    padding: var(--space-16) 0 var(--space-8);
   }
 
   .footer-content {
@@ -94,10 +94,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    background: var(--color-overlay-dark);
+    border-radius: var(--radius-sm);
     color: white;
-    transition: all 0.3s ease;
+    transition: background var(--duration-slow), transform var(--duration-slow);
   }
 
   .social-links a:hover {
@@ -128,7 +128,7 @@
 
   .link-column a {
     color: rgba(255, 255, 255, 0.7);
-    transition: color 0.3s ease;
+    transition: color var(--duration-slow);
   }
 
   .link-column a:hover {
@@ -136,8 +136,8 @@
   }
 
   .footer-bottom {
-    padding-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border-dark-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;

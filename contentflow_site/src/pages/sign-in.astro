@@ -39,7 +39,7 @@ import { appSignInUrl } from '../config/site';
     place-items: center;
     padding: 2rem;
     background:
-      radial-gradient(circle at top, rgba(59, 130, 246, 0.12), transparent 45%),
+      radial-gradient(circle at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 45%),
       linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
   }
 
@@ -47,9 +47,9 @@ import { appSignInUrl } from '../config/site';
     width: min(100%, 540px);
     padding: 2rem;
     border-radius: 24px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    background: var(--color-surface-card-glass);
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--shadow-card-lg);
     text-align: center;
   }
 

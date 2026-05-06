@@ -51,10 +51,10 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     left: 0;
     right: 0;
     z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-surface-navbar);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: var(--space-4) 0;
   }
 
   .container {
@@ -83,9 +83,9 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .nav-links a {
-    color: var(--color-gray);
+    color: var(--color-text-muted);
     font-weight: 500;
-    transition: color 0.2s;
+    transition: color var(--duration-base);
   }
 
   .nav-links a:hover {
@@ -95,15 +95,15 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   .cta-button {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-sm);
     font-weight: 600;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform var(--duration-base), box-shadow var(--duration-base);
   }
 
   .cta-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-primary);
   }
 
   .hamburger {
@@ -121,9 +121,9 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     display: block;
     width: 24px;
     height: 2px;
-    background: var(--color-dark);
+    background: var(--color-text-primary);
     border-radius: 2px;
-    transition: transform 0.2s, opacity 0.2s;
+    transition: transform var(--duration-base), opacity var(--duration-base);
   }
 
   .hamburger[aria-expanded="true"] .hamburger-line:nth-child(1) {
@@ -146,11 +146,11 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
       left: 0;
       right: 0;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.98);
+      background: var(--color-surface-card-glass);
       backdrop-filter: blur(10px);
-      padding: 1.5rem 2rem;
-      gap: 1rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: var(--space-6) var(--space-8);
+      gap: var(--space-4);
+      border-bottom: 1px solid var(--color-border-subtle);
     }
 
     .nav-links.open {
