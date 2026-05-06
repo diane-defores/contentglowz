@@ -123,6 +123,6 @@ open http://localhost:8000/redoc
 
 ## References
 
-- `AGENTS.md` for conventions and operational notes.
+- `AGENT.md` for conventions and operational notes; `AGENTS.md` is a compatibility symlink.
 - `CHANGELOG.md` for endpoint/domain-level changes.
 - `ENVIRONMENT_SETUP.md` for secrets and runtime configuration.

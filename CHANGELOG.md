@@ -16,3 +16,4 @@ All notable changes to the ContentFlow monorepo are documented here.
 - Migrated `contentflow_site` tracking to Astro 6 completion and documented the site migration closure.
 - Prioritized Vercel monorepo reconnect verification for the organization repository.
 - Fixed ShipFlow frontmatter compliance for active root, app, and site documentation artifacts.
+- Consolidated `contentflow_lab` agent guidance into `AGENT.md` and kept `AGENTS.md` as the compatibility symlink.

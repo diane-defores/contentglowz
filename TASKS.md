@@ -53,6 +53,7 @@
 |-----|------|--------|
 | 🟠 | Finish production feedback config: `FEEDBACK_ADMIN_EMAILS`, Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 🔄 in progress |
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
+| ✅ | Consolidate Lab agent guidance into `AGENT.md` and keep `AGENTS.md` as a compatibility symlink | ✅ done |
 | 🟡 | Run manual Zernio smoke with a real key, two projects, connected account, forged account refusal, and provider error recovery | 📋 todo |
 | 🟡 | Modernize deprecated Pydantic v1 validators and FastAPI `regex=` query parameters surfaced by publish-router tests | 📋 todo |
 
