@@ -5,6 +5,7 @@ All notable changes to the ContentFlow monorepo are documented here.
 ## [Unreleased]
 
 ### Added
+- Added privacy capture planning artifacts for Android, Web, Windows, macOS, iOS, and Linux, plus shared contract, post-production review, and QA matrix documents.
 - Added root monorepo task tracking and a site-specific tracker aligned with the ready Astro 6 migration spec.
 - Added a ShipFlow master dashboard entry for ContentFlow.
 - Added Android APK CI setup documentation and a Blacksmith-backed GitHub Actions workflow.
