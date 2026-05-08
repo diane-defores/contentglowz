@@ -17,6 +17,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
       <a href="/#faq">FAQ</a>
       <a href="/blog">Blog</a>
       <a href={appEntryUrl}>Open App</a>
+      <a href={appSignInUrl} class="mobile-cta">Continue with Google</a>
     </div>
     <a href={appSignInUrl} class="cta-button">Continue with Google</a>
     <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation menu">
@@ -138,6 +139,10 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     transform: translateY(-7px) rotate(-45deg);
   }
 
+  .mobile-cta {
+    display: none;
+  }
+
   @media (max-width: 768px) {
     .nav-links {
       display: none;
@@ -148,7 +153,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
       flex-direction: column;
       background: var(--color-surface-card-glass);
       backdrop-filter: blur(10px);
-      padding: var(--space-6) var(--space-8);
+      padding: var(--space-6) var(--space-4);
       gap: var(--space-4);
       border-bottom: 1px solid var(--color-border-subtle);
     }
@@ -163,6 +168,17 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
     .cta-button {
       display: none;
+    }
+
+    .mobile-cta {
+      display: block;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white !important;
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-align: center;
+      margin-top: var(--space-2);
     }
   }
 </style>

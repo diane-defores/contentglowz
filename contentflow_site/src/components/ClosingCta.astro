@@ -18,9 +18,9 @@ import { appSignInUrl } from '../config/site';
 
 <style>
   .closing-cta {
-    padding: 5rem 0;
+    padding: var(--space-20) 0;
     text-align: center;
-    background: white;
+    background: var(--color-surface);
   }
 
   .container {
@@ -28,34 +28,42 @@ import { appSignInUrl } from '../config/site';
   }
 
   .closing-cta h2 {
-    font-size: clamp(1.8rem, 1.1rem + 2.92vw, 2.5rem);
+    font-size: var(--text-h2);
     font-weight: 900;
-    margin-bottom: 1rem;
-    color: var(--color-dark);
+    margin-bottom: var(--space-4);
+    color: var(--color-text-primary);
   }
 
   .closing-cta p {
-    font-size: 1.15rem;
-    color: var(--color-gray);
-    margin-bottom: 2rem;
-    line-height: 1.7;
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-8);
+    line-height: var(--leading-relaxed);
   }
 
   .closing-cta-buttons {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-4);
     justify-content: center;
   }
 
   .closing-note {
-    margin-top: 1rem;
-    color: var(--color-gray);
-    font-size: 0.9rem;
+    margin-top: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
     max-width: 640px;
     margin-inline: auto;
   }
 
   @media (max-width: 768px) {
+    .closing-cta {
+      padding: var(--space-16) 0;
+    }
+
+    .closing-cta p {
+      font-size: var(--text-base);
+    }
+
     .closing-cta-buttons {
       flex-direction: column;
     }

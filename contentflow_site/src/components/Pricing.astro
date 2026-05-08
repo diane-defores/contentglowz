@@ -263,8 +263,20 @@ const pricingSchema = {
   }
 
   @media (max-width: 768px) {
+    .pricing-section {
+      padding: var(--space-16) 0;
+    }
+
+    .pricing-grid {
+      grid-template-columns: 1fr;
+    }
+
     .pricing-card.featured {
       transform: scale(1);
+    }
+
+    .pricing-card {
+      padding: var(--space-8);
     }
   }
 </style>

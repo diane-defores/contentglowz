@@ -175,7 +175,11 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
   @media (max-width: 768px) {
     .hero {
-      padding: 8rem 0 var(--space-16);
+      padding: 5.5rem 0 var(--space-12);
+    }
+
+    .hero-subtitle {
+      font-size: var(--text-base);
     }
 
     .hero-cta {
@@ -184,11 +188,17 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
     .btn-primary, .btn-secondary {
       width: 100%;
+      text-align: center;
     }
 
     .hero-stats {
-      gap: var(--space-4);
-      padding: var(--space-5) var(--space-6);
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      max-width: 100%;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
     }
   }
 </style>
