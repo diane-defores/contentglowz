@@ -246,6 +246,15 @@
 | 🟠 | Tokeniser les couleurs directes restantes (`Colors.red`, `Colors.white`, alphas de bordures) hors fichiers de thème générés | 📋 todo |
 | 🟠 | Ajouter une vérification automatisée qui bloque les nouveaux `fontSize`, `EdgeInsets` et `BorderRadius.circular` hors exceptions autorisées | 📋 todo |
 
+### Audit: Copywriting (2026-05-10 — App entry homepage — Overall: C+)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🟠 | Repositionner `/entry` comme page de reprise/récupération pour utilisateurs existants et réserver la promesse produit complète aux pages onboarding/feed où la valeur est visible | ✅ done |
+| 🟠 | Aligner les claims amont du site (`swipe to publish`, `6x more content`, `0 platforms to manage`, automatisation) avec les limites réelles app: human review, publish externe partiel, mode dégradé borné | ✅ done |
+| 🟡 | Ajouter un CTA alternatif plus léger et rassurant depuis l’entry/sign-in pour les nouveaux visiteurs: démo guidée, aperçu onboarding, ou explication claire de ce qui se passe après Google | ✅ done |
+| 🟡 | Déplacer les preuves opérationnelles trop techniques (`Auth`, `API`, `Workspace`) vers une preuve orientée résultat utilisateur: reprise de travail, état de sync compréhensible, diagnostic copiable en cas de blocage | ✅ done |
+
 ### 🟠 P1 — Content Drip (Publication Progressive)
 
 | Pri | Task | Status |

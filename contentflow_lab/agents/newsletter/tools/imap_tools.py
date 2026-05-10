@@ -80,13 +80,21 @@ class IMAPNewsletterReader:
         mailbox.login(self.email, self.password)
         return mailbox
 
+    def validate_connection(self, folder: str = "INBOX") -> bool:
+        """Validate credentials and that the configured folder is selectable."""
+        with self._connect() as mailbox:
+            mailbox.folder.set(folder)
+        return True
+
     def _detect_newsletter(self, msg) -> bool:
         """Detect if an email is likely a newsletter."""
+        subject = (msg.subject or "").lower()
+        text = (msg.text or "").lower()
         indicators = [
-            "newsletter" in msg.subject.lower(),
-            "digest" in msg.subject.lower(),
-            "weekly" in msg.subject.lower(),
-            "unsubscribe" in msg.text.lower() if msg.text else False,
+            "newsletter" in subject,
+            "digest" in subject,
+            "weekly" in subject,
+            "unsubscribe" in text,
             "list-unsubscribe" in str(msg.headers).lower(),
         ]
         return any(indicators)

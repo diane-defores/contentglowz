@@ -152,3 +152,68 @@ async def test_validate_openrouter_credential_marks_invalid_on_http_error(monkey
         provider="openrouter",
         validation_status="invalid",
     )
+
+
+@pytest.mark.asyncio
+async def test_put_email_source_stores_metadata_without_returning_password(monkeypatch):
+    upsert = AsyncMock(
+        return_value={
+            "configured": True,
+            "email": "user@gmail.com",
+            "host": "imap.gmail.com",
+            "sourceFolder": "Newsletters",
+            "archiveFolder": "CONTENTFLOW_DONE",
+            "projectId": "project-1",
+            "validationStatus": "unknown",
+            "lastValidatedAt": None,
+            "updatedAt": None,
+        }
+    )
+    monkeypatch.setattr(router, "upsert_email_source", upsert)
+    require_project = AsyncMock()
+    monkeypatch.setattr(router, "require_owned_project_id", require_project)
+
+    response = await router.put_email_source_integration(
+        request=router.EmailSourceUpsertRequest(
+            email="user@gmail.com",
+            appPassword="gmail-app-password",
+            sourceFolder="Newsletters",
+            archiveFolder="CONTENTFLOW_DONE",
+            projectId="project-1",
+        ),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+    payload = response.model_dump(by_alias=True)
+
+    assert payload["configured"] is True
+    assert payload["sourceFolder"] == "Newsletters"
+    assert payload["projectId"] == "project-1"
+    assert "gmail-app-password" not in str(payload)
+    require_project.assert_awaited_once()
+    upsert.assert_awaited_once_with(
+        "user-1",
+        email="user@gmail.com",
+        app_password="gmail-app-password",
+        host="imap.gmail.com",
+        source_folder="Newsletters",
+        archive_folder="CONTENTFLOW_DONE",
+        project_id="project-1",
+    )
+
+
+@pytest.mark.asyncio
+async def test_validate_email_source_returns_missing_when_unconfigured(monkeypatch):
+    from api.services.email_source_service import EmailSourceConfigurationError
+
+    monkeypatch.setattr(
+        router,
+        "validate_email_source",
+        AsyncMock(side_effect=EmailSourceConfigurationError("Connect an email source.")),
+    )
+
+    response = await router.validate_email_source_integration(
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+
+    assert response.valid is False
+    assert response.validation_status == "missing"

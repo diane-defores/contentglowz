@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-10"
 status: reviewed
 source_skill: sf-docs
 scope: architecture
@@ -78,6 +78,7 @@ The app is structured as a **single Flutter client boundary** with backend data 
 - Route shell and protected layout in `screens/app_shell.dart`.
 - Route graph in `lib/router.dart`.
 - Screen modules for workflows: feed/review, onboarding, projects, settings, drip, content tools, research/seo/analytics, uptime.
+- Settings integrations include a minimal email-source panel for per-user IMAP connection, validation, sender preview, and ingestion to the active project's Idea Pool.
 
 ### 2.2 State layer (`lib/providers/providers.dart`)
 - Single-provider root controls:
@@ -91,6 +92,7 @@ The app is structured as a **single Flutter client boundary** with backend data 
 
 ### 2.3 Data layer (`lib/data/services`, `lib/data/models`)
 - `ApiService` owns HTTP transport, endpoint mapping, demo fallback and caching/replay hooks.
+- `email_source.dart` models the per-user IMAP status, validation result, and sender preview payloads returned by FastAPI.
 - `offline_storage_service.dart` stores:
   - `offline_cache_v1`
   - `offline_queue_v1`
@@ -118,6 +120,7 @@ The app is structured as a **single Flutter client boundary** with backend data 
 Notes:
 - Native password auth methods are present in type definitions but are intentionally not production enabled (web path is canonical).
 - `CLERK_PUBLISHABLE_KEY` must be present for normal auth-enabled builds.
+- Settings > Integrations lets an authenticated user connect an IMAP email source by choosing the mailbox folder and processed folder. The app saves the active project with the integration; backend scheduling then checks the folder every 6 hours, so the app does not expose a manual "send emails to Idea Pool" action.
 
 ## 4) Offline architecture and queue model
 

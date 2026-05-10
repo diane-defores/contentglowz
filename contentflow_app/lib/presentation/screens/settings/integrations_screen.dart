@@ -6,6 +6,7 @@ import '../../../data/models/ai_runtime.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/models/auth_session.dart';
 import '../../../data/models/content_item.dart';
+import '../../../data/models/email_source.dart';
 import '../../../data/models/openrouter_credential.dart';
 import '../../../data/services/api_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -29,23 +30,44 @@ class IntegrationsScreen extends ConsumerStatefulWidget {
 class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   late TextEditingController _apiUrlController;
   late TextEditingController _openRouterApiKeyController;
+  late TextEditingController _emailSourceEmailController;
+  late TextEditingController _emailSourcePasswordController;
+  late TextEditingController _emailSourceHostController;
+  late TextEditingController _emailSourceFolderController;
+  late TextEditingController _emailSourceArchiveController;
   bool _showOpenRouterKey = false;
+  bool _showEmailSourcePassword = false;
   bool _isSavingRuntimeMode = false;
   bool _isSavingOpenRouterKey = false;
   bool _isValidatingOpenRouterKey = false;
   bool _isDeletingOpenRouterKey = false;
+  bool _isSavingEmailSource = false;
+  bool _isValidatingEmailSource = false;
+  bool _isDeletingEmailSource = false;
 
   @override
   void initState() {
     super.initState();
     _apiUrlController = TextEditingController();
     _openRouterApiKeyController = TextEditingController();
+    _emailSourceEmailController = TextEditingController();
+    _emailSourcePasswordController = TextEditingController();
+    _emailSourceHostController = TextEditingController(text: 'imap.gmail.com');
+    _emailSourceFolderController = TextEditingController(text: 'Newsletters');
+    _emailSourceArchiveController = TextEditingController(
+      text: 'CONTENTFLOW_DONE',
+    );
   }
 
   @override
   void dispose() {
     _apiUrlController.dispose();
     _openRouterApiKeyController.dispose();
+    _emailSourceEmailController.dispose();
+    _emailSourcePasswordController.dispose();
+    _emailSourceHostController.dispose();
+    _emailSourceFolderController.dispose();
+    _emailSourceArchiveController.dispose();
     super.dispose();
   }
 
@@ -56,10 +78,12 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
     final githubIntegration = ref.watch(githubIntegrationStatusProvider);
+    final emailSourceStatus = ref.watch(emailSourceStatusProvider);
     final aiRuntimeSettings = ref.watch(aiRuntimeSettingsProvider);
     final openRouterCredential = ref.watch(openRouterCredentialStatusProvider);
     final publishAccountsState = ref.watch(publishAccountsStateProvider);
     final publishAccounts = ref.watch(publishAccountsProvider);
+    final activeProjectId = ref.watch(activeProjectIdProvider);
 
     if (_apiUrlController.text.isEmpty) {
       _apiUrlController.text = apiBaseUrl;
@@ -121,6 +145,23 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               gap: 0,
               children: [
                 SettingsBlock(child: _buildGithubBody(githubIntegration)),
+              ],
+            ),
+            SizedBox(height: groupGap),
+
+            SettingsGroup(
+              title: 'Email source',
+              caption:
+                  'Use an IMAP folder as a private idea source. Gmail requires an app password.',
+              gap: 0,
+              children: [
+                SettingsBlock(
+                  child: _buildEmailSourceBody(
+                    emailSourceStatus,
+                    authSession: authSession,
+                    activeProjectId: activeProjectId,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: groupGap),
@@ -849,6 +890,460 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       );
     } finally {
       if (mounted) setState(() => _isDeletingOpenRouterKey = false);
+    }
+  }
+
+  // ----- Email source ----------------------------------------------------
+
+  Widget _buildEmailSourceBody(
+    AsyncValue<EmailSourceStatus> state, {
+    required AuthSession authSession,
+    required String? activeProjectId,
+  }) {
+    final theme = Theme.of(context);
+    final canManage = authSession.isAuthenticated && !authSession.isDemo;
+    final busy =
+        _isSavingEmailSource ||
+        _isValidatingEmailSource ||
+        _isDeletingEmailSource;
+
+    return state.when(
+      data: (status) {
+        _primeEmailSourceControllers(status);
+        final statusColor = _emailSourceStatusColor(status);
+        final statusLabel = _emailSourceStatusLabel(status);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SettingsStatusPill(
+              label: statusLabel,
+              color: statusColor,
+              icon: status.configured
+                  ? Icons.mark_email_read_outlined
+                  : Icons.alternate_email,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              context.tr(
+                'Connect a mailbox folder once. ContentFlow checks it every 6 hours, turns useful emails into ideas, then moves processed emails to the archive folder.',
+              ),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _emailSourceEmailController,
+              enabled: canManage && !busy,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: context.tr('Email address'),
+                hintText: 'you@gmail.com',
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _emailSourcePasswordController,
+              enabled: canManage && !busy,
+              obscureText: !_showEmailSourcePassword,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: InputDecoration(
+                labelText: context.tr('App password'),
+                hintText: status.configured
+                    ? context.tr('Leave blank to keep current password')
+                    : 'xxxx xxxx xxxx xxxx',
+                helperText: context.tr(
+                  'For Gmail: Google Account > Security > App passwords.',
+                ),
+                helperMaxLines: 2,
+                isDense: true,
+                suffixIcon: IconButton(
+                  onPressed: () => setState(
+                    () => _showEmailSourcePassword = !_showEmailSourcePassword,
+                  ),
+                  tooltip: _showEmailSourcePassword
+                      ? context.tr('Hide password')
+                      : context.tr('Show password'),
+                  icon: Icon(
+                    _showEmailSourcePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _emailSourceHostController,
+              enabled: canManage && !busy,
+              decoration: InputDecoration(
+                labelText: context.tr('IMAP host'),
+                hintText: 'imap.gmail.com',
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _emailSourceFolderController,
+                    enabled: canManage && !busy,
+                    decoration: InputDecoration(
+                      labelText: context.tr('Folder to scan'),
+                      hintText: 'Newsletters',
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _emailSourceArchiveController,
+                    enabled: canManage && !busy,
+                    decoration: InputDecoration(
+                      labelText: context.tr('Processed folder'),
+                      hintText: 'CONTENTFLOW_DONE',
+                      isDense: true,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (status.updatedAt != null || status.lastValidatedAt != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _emailSourceMetaText(status),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.icon(
+                  onPressed: canManage && activeProjectId != null && !busy
+                      ? _saveEmailSourceIntegration
+                      : null,
+                  icon: _isSavingEmailSource
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save_rounded, size: 18),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.approveColor,
+                    minimumSize: const Size(0, 44),
+                  ),
+                  label: Text(context.tr('Save')),
+                ),
+                OutlinedButton.icon(
+                  onPressed: canManage && status.configured && !busy
+                      ? _validateEmailSourceIntegration
+                      : null,
+                  icon: _isValidatingEmailSource
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.verified_outlined, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                  ),
+                  label: Text(context.tr('Validate')),
+                ),
+                OutlinedButton.icon(
+                  onPressed: canManage && status.configured && !busy
+                      ? _deleteEmailSourceIntegration
+                      : null,
+                  icon: _isDeletingEmailSource
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.delete_outline, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.rejectColor,
+                    side: BorderSide(color: AppTheme.rejectColor.withAlpha(80)),
+                    minimumSize: const Size(0, 44),
+                  ),
+                  label: Text(context.tr('Delete')),
+                ),
+              ],
+            ),
+            if (activeProjectId == null) ...[
+              const SizedBox(height: 10),
+              Text(
+                context.tr(
+                  'Select a project before enabling automatic email ingestion.',
+                ),
+                style: TextStyle(
+                  color: AppTheme.warningColor.withAlpha(220),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+      loading: () => Row(
+        children: [
+          const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            context.tr('Loading email source...'),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      error: (error, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr('Unable to load email source state.'),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          SettingsErrorDiagnostic(
+            details: 'Email source error: ${(error.toString()).trim()}',
+            linkUrl:
+                '${ref.read(apiBaseUrlProvider)}/api/settings/integrations/email-source',
+            linkLabel: context.tr('Open email source endpoint'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _primeEmailSourceControllers(EmailSourceStatus status) {
+    if (_emailSourceEmailController.text.isEmpty && status.email != null) {
+      _emailSourceEmailController.text = status.email!;
+    }
+    if (_emailSourceHostController.text.isEmpty) {
+      _emailSourceHostController.text = status.host;
+    }
+    if (_emailSourceFolderController.text.isEmpty) {
+      _emailSourceFolderController.text = status.sourceFolder;
+    }
+    if (_emailSourceArchiveController.text.isEmpty) {
+      _emailSourceArchiveController.text = status.archiveFolder;
+    }
+  }
+
+  Color _emailSourceStatusColor(EmailSourceStatus status) {
+    if (!status.configured) {
+      return Theme.of(context).colorScheme.onSurfaceVariant;
+    }
+    if (status.isValid) return AppTheme.approveColor;
+    if (status.isInvalid) return AppTheme.rejectColor;
+    return AppTheme.warningColor;
+  }
+
+  String _emailSourceStatusLabel(EmailSourceStatus status) {
+    if (!status.configured) {
+      return context.tr('No email source connected');
+    }
+    switch (status.validationStatus) {
+      case 'valid':
+        return context.tr('Email source is valid');
+      case 'invalid':
+        return context.tr('Email source needs attention');
+      default:
+        return context.tr('Email source saved, not validated yet');
+    }
+  }
+
+  String _emailSourceMetaText(EmailSourceStatus status) {
+    final parts = <String>[];
+    if (status.updatedAt != null) {
+      parts.add(
+        context.tr('Updated: {date}', {
+          'date': _formatDateTime(status.updatedAt!),
+        }),
+      );
+    }
+    if (status.lastValidatedAt != null) {
+      parts.add(
+        context.tr('Validated: {date}', {
+          'date': _formatDateTime(status.lastValidatedAt!),
+        }),
+      );
+    }
+    return parts.join(' • ');
+  }
+
+  Future<void> _saveEmailSourceIntegration() async {
+    final activeProjectId = ref.read(activeProjectIdProvider);
+    if (activeProjectId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr('Select a project before enabling email ingestion.'),
+          ),
+        ),
+      );
+      return;
+    }
+    final email = _emailSourceEmailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('Enter an email address first.'))),
+      );
+      return;
+    }
+
+    setState(() => _isSavingEmailSource = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.saveEmailSource(
+        email: email,
+        appPassword: _emailSourcePasswordController.text,
+        host: _emailSourceHostController.text.trim().isEmpty
+            ? 'imap.gmail.com'
+            : _emailSourceHostController.text.trim(),
+        sourceFolder: _emailSourceFolderController.text.trim().isEmpty
+            ? 'Newsletters'
+            : _emailSourceFolderController.text.trim(),
+        archiveFolder: _emailSourceArchiveController.text.trim().isEmpty
+            ? 'CONTENTFLOW_DONE'
+            : _emailSourceArchiveController.text.trim(),
+        projectId: activeProjectId,
+      );
+      _emailSourcePasswordController.clear();
+      ref.invalidate(emailSourceStatusProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Email source saved. Automatic checks run every 6 hours.',
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to save email source: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.email_source.save',
+        error: error,
+        contextData: {'statusCode': error.statusCode, 'path': error.path},
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingEmailSource = false);
+    }
+  }
+
+  Future<void> _validateEmailSourceIntegration() async {
+    setState(() => _isValidatingEmailSource = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      final result = await api.validateEmailSource();
+      ref.invalidate(emailSourceStatusProvider);
+      if (!mounted) return;
+      final color = result.valid
+          ? AppTheme.approveColor.withAlpha(210)
+          : AppTheme.warningColor.withAlpha(220);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: color,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to validate email source: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.email_source.validate',
+        error: error,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isValidatingEmailSource = false);
+    }
+  }
+
+  Future<void> _deleteEmailSourceIntegration() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('Delete email source?')),
+        content: Text(
+          context.tr(
+            'This removes the stored IMAP app password and stops email-based idea ingestion.',
+          ),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.rejectColor,
+            ),
+            child: Text(context.tr('Delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDeletingEmailSource = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.deleteEmailSource();
+      _emailSourcePasswordController.clear();
+      ref.invalidate(emailSourceStatusProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('Email source deleted.'))),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: context.tr('Failed to delete email source: {error}', {
+          'error': error.message,
+        }),
+        scope: 'settings.email_source.delete',
+        error: error,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isDeletingEmailSource = false);
     }
   }
 

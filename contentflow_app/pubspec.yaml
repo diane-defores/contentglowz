@@ -1,5 +1,5 @@
 name: contentflow_app
-description: "Content approval pipeline - AI generates, you swipe to publish."
+description: "Human-led AI content workspace for review, scheduling, and supported publishing flows."
 publish_to: 'none'
 version: 0.1.0+1
 

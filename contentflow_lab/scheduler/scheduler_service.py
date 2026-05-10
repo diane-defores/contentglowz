@@ -474,6 +474,26 @@ class SchedulerService:
         config = job.get("configuration", {})
         user_id = job.get("user_id")
         project_id = job.get("project_id")
+        email_config = None
+        reader = None
+
+        if user_id and user_id != "system":
+            try:
+                from api.services.email_source_service import (
+                    EmailSourceConfigurationError,
+                    require_email_source_config,
+                )
+                from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
+
+                email_config = await require_email_source_config(user_id)
+                reader = IMAPNewsletterReader(
+                    email=email_config["email"],
+                    app_password=email_config["appPassword"],
+                    host=email_config["host"],
+                )
+            except EmailSourceConfigurationError:
+                print(f"ℹ️  Newsletter ingestion job {job['id']}: no email source configured")
+                return
 
         # Pre-fetch persona/niche context (async) for LLM scoring
         persona_context = ""
@@ -494,11 +514,17 @@ class SchedulerService:
             count = await asyncio.to_thread(
                 ingest_newsletter_inbox,
                 days_back=config.get("days_back", 7),
-                folder=config.get("folder", "Newsletters"),
+                folder=config.get("folder")
+                or (email_config or {}).get("sourceFolder")
+                or "Newsletters",
                 max_results=config.get("max_results", 20),
                 project_id=project_id,
                 persona_context=persona_context,
-                archive_folder=config.get("archive_folder", "CONTENTFLOW_DONE"),
+                archive_folder=config.get("archive_folder")
+                or (email_config or {}).get("archiveFolder")
+                or "CONTENTFLOW_DONE",
+                user_id=user_id if user_id != "system" else None,
+                reader=reader,
             )
             print(f"✅ Newsletter ingestion: {count} ideas")
 
@@ -867,6 +893,9 @@ class SchedulerService:
         elif schedule == "hourly":
             next_run = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
             return next_run.isoformat()
+
+        elif schedule == "every_6_hours":
+            return (now + timedelta(hours=6)).replace(second=0, microsecond=0).isoformat()
 
         elif schedule == "weekly":
             day = schedule_day if schedule_day is not None else 0  # Monday

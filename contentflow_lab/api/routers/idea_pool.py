@@ -175,7 +175,7 @@ async def bulk_ingest(
 
 class IngestNewslettersRequest(BaseModel):
     days_back: int = 7
-    folder: str = "Newsletters"
+    folder: Optional[str] = None
     max_results: int = 20
     project_id: Optional[str] = None
 
@@ -223,7 +223,28 @@ async def ingest_newsletters(
     current_user: CurrentUser = Depends(require_current_user),
 ):
     """Pull newsletters from IMAP inbox, extract ideas with LLM, and archive."""
+    from fastapi import HTTPException
+    from api.services.email_source_service import (
+        EmailSourceConfigurationError,
+        require_email_source_config,
+    )
     from agents.sources.ingest import ingest_newsletter_inbox
+
+    try:
+        from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
+
+        email_config = await require_email_source_config(current_user.user_id)
+        reader = IMAPNewsletterReader(
+            email=email_config["email"],
+            app_password=email_config["appPassword"],
+            host=email_config["host"],
+        )
+    except EmailSourceConfigurationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Email source unavailable: {exc}") from exc
 
     persona_context = ""
     if request.project_id:
@@ -239,11 +260,13 @@ async def ingest_newsletters(
 
     count = ingest_newsletter_inbox(
         days_back=request.days_back,
-        folder=request.folder,
+        folder=request.folder or email_config["sourceFolder"],
         max_results=request.max_results,
         project_id=request.project_id,
         persona_context=persona_context,
         user_id=current_user.user_id,
+        archive_folder=email_config["archiveFolder"],
+        reader=reader,
     )
     return {"source": "newsletter_inbox", "ingested": count}
 

@@ -5,7 +5,7 @@ artifact_version: "1.0.0"
 status: reviewed
 project: contentflow_lab
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-10"
 source_skill: sf-docs
 scope: architecture
 owner: "Diane"
@@ -106,10 +106,12 @@ Client surfaces
 - **Application layer (composition + policy)**
   - `api/dependencies/*` implements auth ownership and provider injection.
   - `api/services/*` contains domain orchestration and external API integration logic.
+  - `api/services/email_source_service.py` stores per-user IMAP email-source metadata in `UserSettings.robotSettings.emailSource` and the app password in encrypted `UserProviderCredential`.
 
 - **Agent/domain service layer**
   - `agents/*` host the CrewAI/PydanticAI pipelines.
   - Heavy imports are deferred using `lru_cache` providers to protect startup latency.
+  - Newsletter inbox ingestion reads a user-configured IMAP folder, extracts ideas, writes them to the Idea Pool with user/project ownership, and archives processed messages to the configured folder when possible.
 
 - **Persistence layer**
   - User/project/security-critical state is persisted to Turso (`libsql`).
@@ -132,6 +134,8 @@ Client surfaces
 - **Email and productivity integrations**
   - SendGrid for outbound mail.
   - IMAP / Gmail-based newsletter intake paths in newsletter tools.
+  - Per-user email source settings store non-secret IMAP metadata in `UserSettings.robotSettings.emailSource` and the app password in encrypted `UserProviderCredential`.
+  - Saving an email source creates/updates a managed `ingest_newsletters` scheduler job. The job runs every 6 hours, reads the configured folder with the user's IMAP credentials, creates `newsletter_inbox` ideas for the configured project, and moves processed emails to the archive folder when IMAP supports it.
 
 ## Constraints and invariants
 

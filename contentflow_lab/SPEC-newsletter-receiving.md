@@ -1,5 +1,13 @@
 # Newsletter Receiving - IMAP Integration
 
+> Legacy/operator note (2026-05-10): this document describes the original
+> server-managed newsletter inbox setup using environment variables and optional
+> Composio. The app-facing user flow is now specified in
+> `../specs/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md`: per-user
+> IMAP settings live in the app, the app password is encrypted server-side, and
+> Idea Pool ingestion is now driven by a managed per-user scheduler job that uses
+> the authenticated user's IMAP config rather than global env credentials.
+
 ## Overview
 
 The Newsletter Robot now supports two backends for receiving newsletter emails:

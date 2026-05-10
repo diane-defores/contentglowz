@@ -108,6 +108,8 @@ def ingest_newsletter_inbox(
     project_id: Optional[str] = None,
     persona_context: Optional[str] = None,
     archive_folder: str = "CONTENTFLOW_DONE",
+    user_id: Optional[str] = None,
+    reader=None,
 ) -> int:
     """Read newsletters via IMAP, extract ideas with LLM, and archive.
 
@@ -134,11 +136,12 @@ def ingest_newsletter_inbox(
         print("⚠ imap-tools not installed, skipping newsletter inbox ingestion")
         return 0
 
-    try:
-        reader = IMAPNewsletterReader()
-    except (ValueError, ImportError) as e:
-        print(f"⚠ IMAP not configured: {e}")
-        return 0
+    if reader is None:
+        try:
+            reader = IMAPNewsletterReader()
+        except (ValueError, ImportError) as e:
+            print(f"⚠ IMAP not configured: {e}")
+            return 0
 
     emails = reader.fetch_newsletters(
         days_back=days_back,
@@ -170,6 +173,7 @@ def ingest_newsletter_inbox(
         source="newsletter_inbox",
         items=items,
         project_id=project_id,
+        user_id=user_id,
     )
     print(f"✅ Ingested {count} ideas from newsletter inbox")
 

@@ -16,6 +16,7 @@ import '../models/content_audit.dart';
 import '../models/content_item.dart';
 import '../models/creator_profile.dart';
 import '../models/drip_plan.dart';
+import '../models/email_source.dart';
 import '../models/feedback_entry.dart';
 import '../models/idea.dart';
 import '../models/offline_sync.dart';
@@ -2528,6 +2529,77 @@ class ApiService {
 
   Future<bool> deleteOpenRouterCredential() async {
     return deleteProviderCredential('openrouter');
+  }
+
+  Future<EmailSourceStatus> fetchEmailSourceStatus() async {
+    if (allowDemoData) {
+      return const EmailSourceStatus(
+        configured: false,
+        validationStatus: 'missing',
+      );
+    }
+
+    try {
+      final response = await _dio.get(
+        '/api/settings/integrations/email-source',
+      );
+      return EmailSourceStatus.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<EmailSourceStatus> saveEmailSource({
+    required String email,
+    required String host,
+    required String sourceFolder,
+    required String archiveFolder,
+    String? projectId,
+    String? appPassword,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        'email': email,
+        'host': host,
+        'sourceFolder': sourceFolder,
+        'archiveFolder': archiveFolder,
+        'projectId': projectId,
+      };
+      final password = appPassword?.trim();
+      if (password != null && password.isNotEmpty) {
+        payload['appPassword'] = password;
+      }
+      final response = await _dio.put(
+        '/api/settings/integrations/email-source',
+        data: payload,
+      );
+      return EmailSourceStatus.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<EmailSourceValidationResult> validateEmailSource() async {
+    try {
+      final response = await _dio.post(
+        '/api/settings/integrations/email-source/validate',
+      );
+      return EmailSourceValidationResult.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<bool> deleteEmailSource() async {
+    try {
+      final response = await _dio.delete(
+        '/api/settings/integrations/email-source',
+      );
+      final payload = _asMapOrNull(response.data);
+      return payload?['deleted'] as bool? ?? true;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchGithubRepos({

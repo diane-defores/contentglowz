@@ -19,6 +19,7 @@ import '../data/models/auth_session.dart';
 import '../data/models/content_item.dart';
 import '../data/models/creator_profile.dart';
 import '../data/models/feedback_entry.dart';
+import '../data/models/email_source.dart';
 import '../data/models/idea.dart';
 import '../data/models/offline_sync.dart';
 import '../data/models/openrouter_credential.dart';
@@ -1424,6 +1425,27 @@ final openRouterCredentialStatusProvider =
         );
       }
     });
+
+final emailSourceStatusProvider = FutureProvider<EmailSourceStatus>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).value;
+  if (accessState?.canUseWorkspaceData != true) {
+    return const EmailSourceStatus(
+      configured: false,
+      validationStatus: 'missing',
+    );
+  }
+
+  try {
+    return await ref.watch(apiServiceProvider).fetchEmailSourceStatus();
+  } on ApiException {
+    return const EmailSourceStatus(
+      configured: false,
+      validationStatus: 'unknown',
+    );
+  }
+});
 
 final aiRuntimeSettingsProvider = FutureProvider<AIRuntimeSettings>((
   ref,

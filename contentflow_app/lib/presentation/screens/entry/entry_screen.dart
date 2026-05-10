@@ -27,6 +27,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     await launchUrl(url);
   }
 
+  Future<void> _openWebsiteSignUp() async {
+    final url = kIsWeb
+        ? Uri.parse('${Uri.base.origin}/sign-up')
+        : Uri.parse('${AppConfig.appWebUrl}/sign-up');
+    await launchUrl(url);
+  }
+
   Widget? _buildEntryErrorDiagnostics(
     AuthSession authSession,
     AppAccessState? accessState,
@@ -77,261 +84,20 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Center(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.lg,
+              ),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1160),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHero(context, ref, stateCard),
-                    SizedBox(height: AppSpacing.md),
-                    _buildProofStrip(),
-                    SizedBox(height: AppSpacing.md),
-                    _buildHowItWorks(),
-                    SizedBox(height: AppSpacing.md),
-                    _buildFeatureGrid(),
-                  ],
-                ),
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: stateCard,
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHero(BuildContext context, WidgetRef ref, Widget stateCard) {
-    final theme = Theme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 900;
-        final left = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _pill(icon: Icons.workspaces_outline, label: 'ContentFlow app'),
-            const SizedBox(height: 14),
-            Builder(
-              builder: (context) {
-                final sw = MediaQuery.sizeOf(context).width;
-                final heroSize = sw < 400
-                    ? 22.0
-                    : sw < 600
-                    ? 28.0
-                    : 38.0;
-                return Text(
-                  context.tr('Welcome back to your content workspace.'),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: heroSize,
-                    fontWeight: FontWeight.w800,
-                    height: 1.12,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 10),
-            Text(
-              context.tr(
-                'Use this page to restore your session, open your workspace, finish onboarding, or recover cleanly when the backend is unavailable.',
-              ),
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 15,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: const [
-                _MetricChip(value: 'Auth', label: 'session status first'),
-                _MetricChip(value: 'API', label: 'backend readiness visible'),
-                _MetricChip(
-                  value: 'Workspace',
-                  label: 'dashboard or onboarding route',
-                ),
-              ],
-            ),
-          ],
-        );
-
-        if (compact) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [stateCard, const SizedBox(height: 16), left],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 5, child: left),
-            const SizedBox(width: 24),
-            Expanded(flex: 6, child: stateCard),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildProofStrip() {
-    final palette = AppTheme.paletteOf(context);
-    const items = [
-      'Session restore',
-      'Google sign-in',
-      'Dashboard access',
-      'Onboarding recovery',
-      'API diagnostics',
-    ];
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Wrap(
-        spacing: AppSpacing.xs,
-        runSpacing: AppSpacing.xs,
-        children: items
-            .map(
-              (item) =>
-                  _pill(icon: Icons.check_circle_outline_rounded, label: item),
-            )
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildHowItWorks() {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    const steps = [
-      (
-        '1. Restore or sign in',
-        'ContentFlow checks Clerk first, then opens the right account path without burying auth below marketing content.',
-      ),
-      (
-        '2. Resolve workspace state',
-        'The app decides whether you should enter the dashboard, finish onboarding, retry the API, or refresh your session.',
-      ),
-      (
-        '3. Continue work',
-        'Once the session and backend are ready, you can return directly to your content pipeline.',
-      ),
-    ];
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(AppRadii.card),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.tr('What happens on this page'),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            context.tr(
-              'This is an app entry page for existing users. It keeps account, workspace, and recovery actions at the top.',
-            ),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 14,
-              height: 1.45,
-            ),
-          ),
-          SizedBox(height: AppSpacing.lg),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final cardWidth = constraints.maxWidth < 700
-                  ? constraints.maxWidth
-                  : 320.0;
-              return Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.md,
-                children: steps
-                    .map(
-                      (step) => SizedBox(
-                        width: cardWidth,
-                        child: _infoCard(
-                          title: step.$1,
-                          description: step.$2,
-                          icon: Icons.arrow_outward_rounded,
-                          accent: AppTheme.editColor,
-                        ),
-                      ),
-                    )
-                    .toList(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureGrid() {
-    final items = [
-      (
-        'Account-first entry',
-        'The visible state card tells users whether they are signed out, restoring, active, blocked, or ready.',
-        Icons.verified_user_outlined,
-        AppTheme.editColor,
-      ),
-      (
-        'Backend-aware recovery',
-        'API and bootstrap failures expose retry, status, reconnect, and diagnostics actions without hiding them lower on the page.',
-        Icons.health_and_safety_outlined,
-        AppTheme.warningColor,
-      ),
-      (
-        'Workspace continuation',
-        'Recognized users can go straight to the dashboard or continue onboarding from the first viewport.',
-        Icons.dashboard_customize_outlined,
-        AppTheme.approveColor,
-      ),
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth < 750
-            ? constraints.maxWidth
-            : 350.0;
-        return Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.md,
-          children: items
-              .map(
-                (item) => SizedBox(
-                  width: cardWidth,
-                  child: _infoCard(
-                    title: item.$1,
-                    description: item.$2,
-                    icon: item.$3,
-                    accent: item.$4,
-                  ),
-                ),
-              )
-              .toList(),
-        );
-      },
     );
   }
 
@@ -354,11 +120,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         accent: AppTheme.editColor,
         primaryLabel: 'Please wait',
         onPrimary: null,
-        secondaryLabel: 'Open Demo Workspace',
-        onSecondary: () {
-          ref.read(authSessionProvider.notifier).signInDemo();
-          context.go('/onboarding?intent=entry');
-        },
       );
     }
 
@@ -415,15 +176,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           }
           context.go('/uptime');
         },
-        secondaryLabel: isUnauthorized ? 'Open Demo Workspace' : 'Retry API',
+        secondaryLabel: isUnauthorized ? 'Sign out' : 'Retry API',
         onSecondary: () {
           if (isUnauthorized) {
-            ref.read(authSessionProvider.notifier).signInDemo();
-            context.go(
-              authSession.onboardingComplete
-                  ? '/feed'
-                  : '/onboarding?intent=entry',
-            );
+            ref.read(authSessionProvider.notifier).signOut();
             return;
           }
           ref.read(appAccessStateProvider.notifier).refresh();
@@ -486,16 +242,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       accent: AppTheme.warningColor,
       primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In',
       onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
-      secondaryLabel: 'Open Demo Workspace',
-      onSecondary: () {
-        ref.read(authSessionProvider.notifier).signInDemo();
-        context.go(
-          authSession.onboardingComplete ? '/feed' : '/onboarding?intent=entry',
-        );
-      },
-      caption: kIsWeb
-          ? 'The stable path is now ClerkJS on `app.contentflow.winflowz.com/sign-in`, with a standard OAuth callback on `/sso-callback`.'
-          : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The old Flutter beta auth path now lives only in the legacy branch.',
+      secondaryLabel: 'Create Account',
+      onSecondary: kIsWeb ? _openWebsiteSignUp : () => context.go('/auth'),
+      caption: 'Sign-in and account creation are handled by Clerk.',
       extra: _buildCopyFlowDiagnostics(context, ref, authSession, accessState),
     );
   }
@@ -562,8 +311,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     required Color accent,
     required String primaryLabel,
     required VoidCallback? onPrimary,
-    required String secondaryLabel,
-    required VoidCallback onSecondary,
+    String? secondaryLabel,
+    VoidCallback? onSecondary,
     String? caption,
     Widget? extra,
   }) {
@@ -574,7 +323,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       padding: EdgeInsets.all(compact ? AppSpacing.lg : 28),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(compact ? AppRadii.xl : AppRadii.card),
+        borderRadius: BorderRadius.circular(
+          compact ? AppRadii.xl : AppRadii.card,
+        ),
         border: Border.all(color: palette.borderSubtle),
         boxShadow: [
           BoxShadow(
@@ -607,7 +358,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 height: compact ? 44 : 56,
                 decoration: BoxDecoration(
                   color: accent.withAlpha(30),
-                  borderRadius: BorderRadius.circular(compact ? AppRadii.lg : AppRadii.xl),
+                  borderRadius: BorderRadius.circular(
+                    compact ? AppRadii.lg : AppRadii.xl,
+                  ),
                 ),
                 child: Icon(icon, color: accent, size: compact ? 24 : 28),
               ),
@@ -647,26 +400,28 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               child: Text(context.tr(primaryLabel)),
             ),
           ),
-          SizedBox(height: AppSpacing.xs),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onSecondary,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.colorScheme.onSurfaceVariant,
-                side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.9,
+          if (secondaryLabel != null && onSecondary != null) ...[
+            SizedBox(height: AppSpacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: onSecondary,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: theme.colorScheme.onSurfaceVariant,
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.9,
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
                   ),
                 ),
-                padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.lg),
-                ),
+                child: Text(context.tr(secondaryLabel)),
               ),
-              child: Text(context.tr(secondaryLabel)),
             ),
-          ),
+          ],
           if (caption != null) ...[
             SizedBox(height: AppSpacing.xs),
             Text(
@@ -681,142 +436,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ),
           ],
           if (extra case final extraWidget?) ...[extraWidget],
-        ],
-      ),
-    );
-  }
-
-  Widget _pill({required IconData icon, required String label}) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: theme.colorScheme.onSurfaceVariant, size: 16),
-          SizedBox(width: AppSpacing.xs),
-          Flexible(
-            child: Text(
-              context.tr(label),
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: AppText.sm,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoCard({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color accent,
-  }) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  context.tr(title),
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              SizedBox(width: AppSpacing.xs),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: accent.withAlpha(26),
-                  borderRadius: BorderRadius.circular(AppRadii.lg),
-                ),
-                child: Icon(icon, color: accent),
-              ),
-            ],
-          ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            context.tr(description),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: AppText.base - 2,
-              height: 1.55,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricChip extends StatelessWidget {
-  const _MetricChip({required this.value, required this.label});
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: AppText.lg,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(width: AppSpacing.xs),
-          Text(
-            context.tr(label),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: AppText.sm,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
         ],
       ),
     );

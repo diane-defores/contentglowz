@@ -170,6 +170,7 @@ class AppLocalizations {
     'Continue': 'Continuer',
     'Continue with Google': 'Continuer avec Google',
     'Create': 'Créer',
+    'Create Account': 'Créer un compte',
     'Create content': 'Créer du contenu',
     'Create your first content': 'Créer votre premier contenu',
     'Copy diagnostics': 'Copier le diagnostic',
@@ -460,6 +461,8 @@ class AppLocalizations {
     'Session error': 'Erreur de session',
     'Sign in to access your workspace':
         'Connectez-vous pour accéder à votre workspace',
+    'Sign-in and account creation are handled by Clerk.':
+        'La connexion et la création de compte sont gérées par Clerk.',
     'Reviewed': 'Relu',
     'Reviewed by {reviewer}{typeSuffix}': 'Relu par {reviewer}{typeSuffix}',
     'Reviewer: {reviewer}': 'Reviewer : {reviewer}',

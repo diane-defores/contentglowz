@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentflow_lab
 created: "2026-05-04"
-updated: "2026-05-04"
+updated: "2026-05-10"
 status: draft
 source_skill: sf-build
 scope: code-docs-map
@@ -37,6 +37,10 @@ Use this map before editing backend runtime, provider, or LLM-callable external-
 | `api/services/pydantic_ai_runtime.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | PydanticAI adapter and request-scoped OpenRouter rules | Any direct PydanticAI, OpenRouter, output schema, or credential-resolution change |
 | `api/services/repo_understanding_service.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Repo/site collection and structured persona understanding synthesis | Any persona draft, repository collection, public-site crawl, or synthesis change |
 | `api/services/url_safety.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Public HTTP URL validation and SSRF guardrails | Any URL parsing, DNS resolution, allowed scheme, or private-network policy change |
+| `api/services/email_source_service.py` | `shipflow_data/technical/architecture.md` | Per-user IMAP metadata, encrypted app-password lookup, validation state, and managed 6-hour ingestion job setup | Any email-source credential, folder, schedule, or validation contract change |
+| `api/routers/settings_integrations.py` | `shipflow_data/technical/architecture.md` | User-managed integration endpoints including OpenRouter and email source | Any integration route, credential response, or settings contract change |
+| `scheduler/scheduler_service.py` / `api/routers/idea_pool.py` / `agents/sources/ingest.py` | `shipflow_data/technical/architecture.md` | Recurring Idea Pool ingestion jobs and newsletter inbox source ingestion | Any source ingestion, scheduler cadence, ownership, or archive behavior change |
+| `agents/newsletter/tools/imap_tools.py` | `shipflow_data/technical/architecture.md` | IMAP reader, folder validation, newsletter detection, processed-email archiving | Any IMAP credential, folder, detection, or archive behavior change |
 | `agents/shared/tools/exa_tools.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Exa search/content tools and URL-fetch guardrails | Any LLM-callable Exa tool change |
 | `agents/shared/tools/firecrawl_tools.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Firecrawl scrape/crawl/map tools and URL-fetch guardrails | Any LLM-callable Firecrawl tool change |
 | `tests/test_pydantic_ai_runtime.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Runtime adapter regression coverage | Any PydanticAI adapter contract change |

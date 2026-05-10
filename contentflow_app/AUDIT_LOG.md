@@ -10,3 +10,4 @@
 | 2026-04-27 | dependencies (fix pass) | — | — | — | — | — | — | C | — | C | 0/1/2 (toolchain pin + automation added; major deps still pending) |
 | 2026-04-28 | monorepo code audit | B | — | — | — | — | — | — | — | B | 1/1/2 (auth diagnostics XSS fixed; publish client requires content record id) |
 | 2026-05-10 | design tokens | — | D+ | — | — | — | — | — | — | D+ | 1/2/1 (theme source exists; 722 app visual literals remain, mobile compacting not tokenized) |
+| 2026-05-10 | app entry homepage copywriting | — | — | C+ | — | — | — | — | — | C+ | 0/3/3 (entry page is operationally clear, but public handoff overpromises automation/publish outcomes vs app state) |
