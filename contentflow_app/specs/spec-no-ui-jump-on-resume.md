@@ -24,6 +24,7 @@ supersedes: []
 evidence:
   - "Production diagnostics on 2026-05-10 showed duplicate app_access.resolve, /health, and /api/bootstrap calls during Clerk session restore."
   - "User report: Google/Clerk login can emit two authentication codes because a page refresh or redundant auth/access cycle occurs between attempts."
+  - "Hosted user retest on 2026-05-10: Clerk/Google auth completed without issue and did not request any authentication code."
 next_step: "/sf-verify specs/spec-no-ui-jump-on-resume.md"
 ---
 # Stabiliser La Reprise Mobile/Web Sans Mouvement UI
@@ -159,6 +160,7 @@ Ce single-flight ne change pas le contrat de securite. Si la resolution partagee
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
+| 2026-05-10 16:43:17 UTC | sf-tasks | GPT-5 Codex | Recorded hosted user retest: Clerk/Google auth worked without requesting an authentication code. | hosted-validated | Ship the current dirty set, then run sf-end/sf-ship closure. |
 | 2026-05-10 16:20:37 UTC | sf-tasks | GPT-5 Codex | Checked dirty state, tracker/changelog alignment, and local verification for the app-access single-flight patch. | tracked | Ship the current dirty set, then retest hosted Clerk restore on the deployed app. |
 | 2026-05-10 10:11:50 UTC | sf-build | GPT-5 Codex | Added app-access single-flight protection and regression coverage for concurrent auth/bootstrap refreshes after Clerk restore; local analyze and full Flutter tests pass. | implemented | Hosted Clerk retest remains pending until the backend Clerk env mismatch is corrected and this scope is deployed. |
 
@@ -167,6 +169,6 @@ Ce single-flight ne change pas le contrat de securite. Si la resolution partagee
 - sf-spec: ready
 - sf-ready: ready
 - sf-start: implemented
-- sf-verify: partial-local-passed
+- sf-verify: hosted-passed
 - sf-end: pending
 - sf-ship: pending
