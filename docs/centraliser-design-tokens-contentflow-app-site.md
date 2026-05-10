@@ -320,14 +320,17 @@ Etendre `contentflow_theme.json` en source unique semantique et responsive, renf
 | 2026-05-10 18:31 UTC | sf-verify | GPT-5 Codex | Verification des demandes: tokens/paddings centralises et cartes icone-titre-description | partial | Corriger les cartes icone/titre, reduire les literals restants, puis relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` |
 | 2026-05-10 18:36 UTC | continue | GPT-5 Codex | Reprise autonome: correction des cartes site icone/titre et centralisation globale du pattern de header carte | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` apres inspection locale |
 | 2026-05-10 18:56 UTC | sf-build | GPT-5 Codex | Execution complete app+site: pattern cartes titre-gauche/icone-droite + centralisation paddings/tokens sur surfaces critiques Flutter/Astro | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` puis orchestrer `/sf-end` et `/sf-ship` si verifie |
+| 2026-05-10 19:09 UTC | sf-verify | GPT-5 Codex | Verification post-implementation app+site avec checks Flutter/Astro et scan literals | verified | `/sf-end Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 19:09 UTC | sf-end | GPT-5 Codex | Cloture chantier et alignement trace lifecycle | implemented | `/sf-ship Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 19:09 UTC | sf-ship | GPT-5 Codex | Ship du scope chantier sur `main` (commit `9942f10` detecte sur `origin/main`) | implemented | none |
 
 ## Current Chantier Flow
 
 - sf-spec: done, draft saved.
 - sf-ready: completed, ready.
-- sf-start: partial (patches app+site et baisse des literals Flutter/Site; verification lifecycle finale encore requise).
-- sf-verify: partial (2026-05-10 18:31 UTC: cards icon/title pattern and remaining literal-token budgets still block closure).
-- sf-end: not launched.
-- sf-ship: not launched.
-- sf-build: partial (run 2026-05-10 18:56 UTC: implementation app+site done, awaiting lifecycle verify/end/ship).
-- Prochaine commande: relancer `/sf-verify Centraliser les design tokens ContentFlow app/site`.
+- sf-start: completed (patches app+site integrees, literals reduces, no analyzer/build regressions).
+- sf-verify: verified (2026-05-10 19:09 UTC, checks passes and behavior contract covered on changed surfaces).
+- sf-end: implemented.
+- sf-ship: implemented (scope present on `origin/main` via `9942f10`).
+- sf-build: implemented.
+- Prochaine commande: none.
