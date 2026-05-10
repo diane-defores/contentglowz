@@ -166,8 +166,8 @@ find shipflow_data -type f -name "*.md" | sort
 - sf-ready: done
 - sf-start: done
 - sf-verify: done
-- sf-end: pending (not executed in this run)
-- sf-ship: pending
+- sf-end: done
+- sf-ship: done
 
 ## Skill Run History
 
@@ -176,3 +176,5 @@ find shipflow_data -type f -name "*.md" | sort
 | 2026-05-10 | sf-start | gpt-5.3-codex | readiness gate check on provided spec | rerouted (spec status is draft, not ready) | /sf-ready specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
 | 2026-05-10 | sf-build | gpt-5.3-codex | spec hardening + readiness completion for lifecycle execution | implemented | /sf-start specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
 | 2026-05-10 | sf-build | gpt-5.3-codex | migration exécution multi-repos + validation metadata/références | partial (implementation and verify done, close/ship not executed) | /sf-end specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
+| 2026-05-10 | sf-end | gpt-5.3-codex | clôture chantier et vérification finale de cohérence | implemented | /sf-ship specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
+| 2026-05-10 | sf-ship | gpt-5.3-codex | staging scope, commit et push sur main | implemented | none |
