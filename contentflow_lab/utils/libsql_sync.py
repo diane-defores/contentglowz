@@ -119,7 +119,9 @@ def _should_retry_with_inline_nulls(exc: Exception, params: list[Any]) -> bool:
     if not any(param is None for param in params):
         return False
     message = str(exc)
-    return "SQL_PARSE_ERROR" in message and '"None"' in message
+    return ("None" in message and "could not be parsed" in message) or (
+        "SQL_PARSE_ERROR" in message and '"None"' in message
+    )
 
 
 def _split_statements(script: str) -> list[str]:
