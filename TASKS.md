@@ -5,7 +5,7 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Reconnect Vercel auto-deploys to the organization repo, then finish the backend feedback production configuration and manual Zernio smoke validation.
+**Top priority**: Finish the backend feedback production configuration, continue the design-token centralization work, then run manual Zernio smoke validation.
 
 ---
 
@@ -19,7 +19,7 @@
 | ✅ | Bring active ShipFlow documentation metadata and governance layers back into lint compliance for app/site/root docs | ✅ done |
 | ✅ | Retirer les artefacts Flutter web `contentflow_app/build` du suivi Git et laisser Vercel reconstruire `build/web` | ✅ done |
 | 🟠 | Keep root tracker, subproject trackers, and ShipFlow master dashboard aligned after each shipped task | 🔄 in progress |
-| 🔴 | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | 📋 todo |
+| ✅ | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | ✅ done |
 
 ---
 

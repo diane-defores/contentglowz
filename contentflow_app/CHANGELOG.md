@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog.
 
+## [Unreleased]
+
+### Fixed
+- Coalesced concurrent app access refreshes for the same Clerk session so resume and manual refresh flows share one backend health/bootstrap pass.
+
 ## [2026-05-04]
 
 ### Added

@@ -465,6 +465,13 @@ bool shouldEmitIntermediateAppAccessStages(AppAccessRefreshMode mode) {
   return mode == AppAccessRefreshMode.interactive;
 }
 
+typedef _AppAccessResolveKey = ({
+  AuthStatus status,
+  String? bearerToken,
+  bool onboardingComplete,
+  String apiBaseUrl,
+});
+
 class AuthSessionNotifier extends StateNotifier<AuthSession> {
   AuthSessionNotifier(this.ref)
     : super(const AuthSession(status: AuthStatus.loading)) {
@@ -822,18 +829,60 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
 }
 
 class AppAccessNotifier extends AsyncNotifier<AppAccessState> {
+  Future<AppAccessState>? _inFlightResolve;
+  _AppAccessResolveKey? _inFlightResolveKey;
+
   @override
   Future<AppAccessState> build() async {
     ref.watch(apiBaseUrlProvider);
     final authSession = ref.watch(authSessionProvider);
-    return _resolve(authSession);
+    return _resolveCoalesced(authSession);
   }
 
   Future<void> refresh({
     AppAccessRefreshMode mode = AppAccessRefreshMode.interactive,
   }) async {
     final authSession = ref.read(authSessionProvider);
-    state = await AsyncValue.guard(() => _resolve(authSession, mode: mode));
+    state = await AsyncValue.guard(
+      () => _resolveCoalesced(authSession, mode: mode),
+    );
+  }
+
+  Future<AppAccessState> _resolveCoalesced(
+    AuthSession authSession, {
+    AppAccessRefreshMode mode = AppAccessRefreshMode.interactive,
+  }) {
+    final key = _resolveKey(authSession);
+    final inFlight = _inFlightResolve;
+    if (inFlight != null && _inFlightResolveKey == key) {
+      ref
+          .read(appDiagnosticsProvider)
+          .info(
+            scope: 'app_access.resolve',
+            message: 'Joining in-flight app access resolution.',
+            context: {'mode': mode.name},
+          );
+      return inFlight;
+    }
+
+    final resolve = _resolve(authSession, mode: mode);
+    _inFlightResolve = resolve;
+    _inFlightResolveKey = key;
+    return resolve.whenComplete(() {
+      if (identical(_inFlightResolve, resolve)) {
+        _inFlightResolve = null;
+        _inFlightResolveKey = null;
+      }
+    });
+  }
+
+  _AppAccessResolveKey _resolveKey(AuthSession authSession) {
+    return (
+      status: authSession.status,
+      bearerToken: authSession.bearerToken,
+      onboardingComplete: authSession.onboardingComplete,
+      apiBaseUrl: ref.read(apiBaseUrlProvider),
+    );
   }
 
   Future<AppAccessState> _resolve(

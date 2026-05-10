@@ -16,8 +16,12 @@ All notable changes to the ContentFlow monorepo are documented here.
 - Added baseline `docs/editorial/` governance for the public Astro site.
 
 ### Changed
+- Reconnected ContentFlow site and app Vercel auto-deploys to the organization monorepo and verified deployment from `main`.
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.
 - Migrated `contentflow_site` tracking to Astro 6 completion and documented the site migration closure.
 - Prioritized Vercel monorepo reconnect verification for the organization repository.
 - Fixed ShipFlow frontmatter compliance for active root, app, and site documentation artifacts.
 - Consolidated `contentflow_lab` agent guidance into `AGENT.md` and kept `AGENTS.md` as the compatibility symlink.
+
+### Fixed
+- Coalesced concurrent Flutter app access refreshes so Clerk restore sends one backend health/bootstrap pass for the same auth session.

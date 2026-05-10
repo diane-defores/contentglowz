@@ -4,21 +4,27 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentflow_app
 created: "2026-04-25"
-updated: "2026-04-27"
+updated: "2026-05-10"
 status: ready
 source_skill: sf-docs
 scope: feature
 owner: unknown
-confidence: low
-risk_level: medium
-security_impact: unknown
+confidence: medium
+risk_level: high
+security_impact: yes
 docs_impact: yes
 user_story: "unknown (legacy spec migrated to ShipFlow metadata)"
-linked_systems: []
+linked_systems:
+  - "Flutter Riverpod app access state"
+  - "GoRouter guarded navigation"
+  - "ClerkJS web auth"
+  - "FastAPI /api/bootstrap"
 depends_on: []
 supersedes: []
-evidence: []
-next_step: "/sf-docs audit specs/spec-no-ui-jump-on-resume.md"
+evidence:
+  - "Production diagnostics on 2026-05-10 showed duplicate app_access.resolve, /health, and /api/bootstrap calls during Clerk session restore."
+  - "User report: Google/Clerk login can emit two authentication codes because a page refresh or redundant auth/access cycle occurs between attempts."
+next_step: "/sf-verify specs/spec-no-ui-jump-on-resume.md"
 ---
 # Stabiliser La Reprise Mobile/Web Sans Mouvement UI
 
@@ -60,6 +66,13 @@ La resolution d'acces continue de tourner au resume pour garder la fiabilite (re
 - Les redirections vers `/entry` ne doivent se produire que pour des etats terminaux ou des routes interdites.
 - Les checks backend/bootstrap doivent continuer a s'executer au resume.
 - Le routeur applicatif doit rester une instance stable tant que le process app n'est pas relance.
+- Une meme session auth ne doit pas declencher deux resolutions d'acces concurrentes avec deux appels `/health` puis deux appels `/api/bootstrap`.
+- Les protections anti-doublon ne doivent pas masquer les transitions terminales de securite: `bootstrapUnauthorized` doit encore forcer une reauth unique.
+
+## Auth Single-Flight Addendum
+Le signal production du 2026-05-10 montre un cas plus strict que le simple no-jump: au retour du flow Clerk/Google, `appAccessStateProvider.build()` et un `refresh()` lance par le bridge offline peuvent partir en parallele. Cela cree des doublons de `GET /health` et `GET /api/bootstrap`, puis amplifie les transitions `bootstrapUnauthorized` et les sign-out locaux. Le correctif doit rendre la resolution d'acces single-flight par session/backend: une resolution deja en cours est rejointe par les refresh concurrents au lieu d'en ouvrir une seconde.
+
+Ce single-flight ne change pas le contrat de securite. Si la resolution partagee conclut a un `401`, l'app garde le comportement actuel: une transition terminale vers `bootstrapUnauthorized`, puis l'utilisateur revient a `/entry` sans boucle.
 
 ## Edge Cases
 - Reprise sur `/editor/:id` avec edition en cours: aucun jump vers `/entry`.
@@ -106,6 +119,16 @@ La resolution d'acces continue de tourner au resume pour garder la fiabilite (re
   - Action: Tester `AppAccessNotifier.refresh(silentResume)` pour verifier que les checks se font sans transition disruptive quand session/backend restent valides, et avec transition vers `/entry` en cas unauthorized.
   - Notes: Mock `ApiService` pour scenarios healthy, degraded, unauthorized.
 
+- [x] Task 8: Dedoublonner les resolutions d'acces concurrentes d'une meme session
+  - File: `lib/providers/providers.dart`
+  - Action: Ajouter un single-flight interne a `AppAccessNotifier` base sur la session auth courante et l'URL backend, afin que `build()` et `refresh()` concurrents partagent le meme `healthCheck` + `fetchBootstrap`.
+  - Notes: Ne pas persister de token; la cle de deduplication reste en memoire et sert seulement a comparer la resolution en cours.
+
+- [x] Task 9: Couvrir le cas double refresh auth/bootstrap
+  - File: `test/core/app_access_resume_test.dart`
+  - Action: Ajouter un test qui lance deux `refresh()` concurrents et verifie qu'un seul `healthCheck` et un seul `fetchBootstrap` sont executes.
+  - Notes: Ce test cible le symptome observe dans les diagnostics production: requetes auth/bootstrap en double.
+
 ## Acceptance Criteria
 - [ ] AC 1: Given un utilisateur authentifie sur `/feed`, when l'app passe background puis resume, then la route visible reste `/feed` sans passage visuel par `/entry`.
 - [ ] AC 2: Given un utilisateur authentifie sur `/editor/123`, when un refresh access est declenche, then aucune redirection vers `/entry` n'a lieu tant que la session reste valide.
@@ -114,17 +137,36 @@ La resolution d'acces continue de tourner au resume pour garder la fiabilite (re
 - [ ] AC 5: Given un utilisateur en `needsOnboarding` sur `/onboarding?intent=entry`, when resume est declenche, then la route reste onboarding (pas de passage par `/entry`).
 - [ ] AC 6: Given Flutter web sur une route hash profonde, when l'onglet est quitte puis restaure, then l'URL et l'ecran visibles restent inchanges hors cas terminal d'auth.
 - [ ] AC 7: Given un resume suivi d'un refresh interactif manuel (ex: action Retry), when le check est relance, then la navigation respecte les memes regles sans reset de route parasite.
+- [x] AC 8: Given une session Clerk restauree et deux resolutions d'acces declenchees simultanement, when les checks backend/bootstrap sont en cours, then l'app n'envoie qu'un seul `/health` et un seul `/api/bootstrap`.
 
 ## Test Strategy
 - Unit: tests notifier sur `AppAccessNotifier` pour transitions de stage en refresh `silentResume` vs `interactive`.
+- Unit: test single-flight sur `AppAccessNotifier` pour les refresh concurrents d'une meme session.
 - Integration: tests widget/router qui simulent lifecycle resume + updates providers et verifient la route active avec routeur stable.
 - Manual: verification sur mobile reel (Android/iOS) et web (Chrome/Safari) avec scenarios: session valide, backend down, unauthorized.
 
 ## Risks
 - Risque de masquer une vraie redirection necessaire si la regle "silent" est trop permissive.
+- Risque de masquer une vraie revalidation si le single-flight fusionne des sessions differentes; mitigation: la cle inclut la session auth et l'URL backend.
 - Risque de complexifier le route guard si singleton router + refresh notifier sont mal synchronises.
 - Risque de regression sur les flux legitimes depuis `/entry` (signedOut/auth flow) sans couverture test suffisante.
 - Risque de divergence entre logs diagnostics et comportement visible si les transitions silent ne sont pas clairement taggees.
 
 ## Open Questions
 - None
+
+## Skill Run History
+
+| Date UTC | Skill | Model | Action | Result | Next step |
+|----------|-------|-------|--------|--------|-----------|
+| 2026-05-10 16:20:37 UTC | sf-tasks | GPT-5 Codex | Checked dirty state, tracker/changelog alignment, and local verification for the app-access single-flight patch. | tracked | Ship the current dirty set, then retest hosted Clerk restore on the deployed app. |
+| 2026-05-10 10:11:50 UTC | sf-build | GPT-5 Codex | Added app-access single-flight protection and regression coverage for concurrent auth/bootstrap refreshes after Clerk restore; local analyze and full Flutter tests pass. | implemented | Hosted Clerk retest remains pending until the backend Clerk env mismatch is corrected and this scope is deployed. |
+
+## Current Chantier Flow
+
+- sf-spec: ready
+- sf-ready: ready
+- sf-start: implemented
+- sf-verify: partial-local-passed
+- sf-end: pending
+- sf-ship: pending

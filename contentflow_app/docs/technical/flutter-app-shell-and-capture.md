@@ -75,6 +75,7 @@ app start
 ## Invariants
 
 - Auth, onboarding, and resume routing must not jump unexpectedly after app start or session restore.
+- App access resolution is single-flight for the same auth session/backend pair: concurrent startup, resume, or manual refresh triggers must share one backend health/bootstrap pass instead of issuing duplicate auth-sensitive requests.
 - Offline queues and local caches must not publish or discard user content silently.
 - Local capture files remain device-local unless the user explicitly shares/exports or a future upload contract is implemented.
 - Backend records must not store raw Android local filesystem paths as durable server truth.
@@ -83,6 +84,7 @@ app start
 ## Failure Modes
 
 - Route guard regressions can strand users in onboarding or close the app unexpectedly.
+- Duplicate app-access refreshes can create redundant `/health` and `/api/bootstrap` requests during Clerk restore, amplifying auth failures or causing visible auth churn.
 - Provider/cache regressions can show stale project, content, or offline state.
 - API payload drift can create backend records that the app cannot reconcile.
 - MediaProjection changes can fail only on real Android devices, so emulator-only checks are not enough for final QA.

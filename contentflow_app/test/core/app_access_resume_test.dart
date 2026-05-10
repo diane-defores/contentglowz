@@ -182,6 +182,45 @@ void main() {
         );
       },
     );
+
+    test('coalesces concurrent refreshes for the same auth session', () async {
+      final harness = await _createHarness();
+      addTearDown(harness.dispose);
+      await _waitForStableReady(harness.container);
+
+      var healthCalls = 0;
+      var bootstrapCalls = 0;
+      final health = Completer<Map<String, dynamic>>();
+      final bootstrap = Completer<AppBootstrap>();
+      harness.api.onHealthCheck = () {
+        healthCalls += 1;
+        return health.future;
+      };
+      harness.api.onFetchBootstrap = () {
+        bootstrapCalls += 1;
+        return bootstrap.future;
+      };
+
+      final notifier = harness.container.read(appAccessStateProvider.notifier);
+      final firstRefresh = notifier.refresh();
+      final secondRefresh = notifier.refresh();
+      await _nextTick();
+
+      expect(healthCalls, 1);
+
+      health.complete(const {'status': 'healthy'});
+      await _nextTick();
+
+      expect(bootstrapCalls, 1);
+
+      bootstrap.complete(_readyBootstrap());
+      await Future.wait([firstRefresh, secondRefresh]);
+
+      expect(
+        harness.container.read(appAccessStateProvider).value?.stage,
+        AppAccessStage.ready,
+      );
+    });
   });
 }
 
