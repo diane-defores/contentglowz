@@ -154,7 +154,7 @@ cd contentflow_app && flutter test
 - sf-start: done
 - sf-verify: done
 - sf-end: done
-- sf-ship: pending
+- sf-ship: done
 
 ## Skill Run History
 
@@ -162,4 +162,5 @@ cd contentflow_app && flutter test
 |----------|-------|-------|--------|--------|-----------|
 | 2026-05-10 | sf-build | gpt-5 | create ready spec for user IMAP email source and begin implementation | implemented | /sf-start specs/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md |
 | 2026-05-10 | sf-build | gpt-5 | implement per-user IMAP source, Flutter integration panel, Idea Pool ingestion, docs, and validation | partial (ship not run) | /sf-ship specs/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md |
-| 2026-05-10 | sf-build | gpt-5 | revise email source to automatic 6-hour scheduler ingestion and remove user preview/manual ingest UI | partial (verification pending) | /sf-verify specs/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md |
+| 2026-05-10 | sf-build | gpt-5 | revise email source to automatic 6-hour scheduler ingestion and remove user preview/manual ingest UI | implemented | /sf-ship specs/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md |
+| 2026-05-10 | sf-ship | gpt-5 | quick ship email source automatic ingestion chantier trace | shipped | none |
