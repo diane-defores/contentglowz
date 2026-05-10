@@ -31,7 +31,7 @@
 | P1 | Backend persona autofill + repo understanding + user keys | Done |
 | P0 | Fix Turso Hrana NULL binding failure during persona draft jobs | Done |
 | P0 | Persona AI draft fallback when project clone is missing | ✅ done |
-| P0 | Feedback Admin v1 — finaliser la config prod backend feedback | Backend live pour le texte, secrets Bunny/admin encore à configurer |
+| P2 | Feedback Admin v1 — finaliser les vérifications prod restantes | Admin email configuré; restent Bunny/audio et validation admin connectée |
 | P0 | Dual-mode AI runtime (BYOK + platform) all providers — implement ready spec | 🔄 in progress |
 | P2 | Consolidate `AGENTS.md` operational guidance into `AGENT.md` and keep compatibility symlink | ✅ done |
 | P0 | Project flows selection onboarding archive — optional source_url, projectSelectionMode tri-state, archive/unarchive API + bootstrap no-selection | ✅ done |
@@ -60,7 +60,7 @@ Fait:
 - [x] Vérifier que la table `FeedbackEntry` est bien créée
 - [x] Vérifier que `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN` sont bien présents en prod
 - [x] Ajouter `FEEDBACK_SIGNING_SECRET` en prod
-- [ ] Ajouter `FEEDBACK_ADMIN_EMAILS` en prod
+- [x] Ajouter `FEEDBACK_ADMIN_EMAILS` en prod
 - [ ] Ajouter `BUNNY_STORAGE_API_KEY` en prod
 - [ ] Ajouter `BUNNY_STORAGE_ZONE` en prod
 - [ ] Vérifier ou ajouter `BUNNY_STORAGE_REGION` en prod si nécessaire
@@ -78,7 +78,7 @@ Note infra:
 - "Configurer Turso" ici veut seulement dire: vérifier que les variables Turso existantes sont bien présentes sur le serveur où tourne FastAPI
 - Le texte est déjà live sur `https://api.winflowz.com/api/feedback/text`
 - L'upload audio crée maintenant bien une `uploadUrl`, mais l'upload réel reste bloqué tant que `BUNNY_STORAGE_ZONE` et `BUNNY_STORAGE_API_KEY` ne sont pas configurés en prod
-- L'admin côté serveur reste bloqué tant que `FEEDBACK_ADMIN_EMAILS` n'est pas défini en prod
+- L'admin côté serveur a maintenant l'allowlist `FEEDBACK_ADMIN_EMAILS`; la validation admin connectée reste à tester
 - Le process PM2 live et le checkout de déploiement sont operator-only: les agents ne doivent pas les lire, les modifier, les tester, ni les redémarrer
 - Pour un incident prod, l'agent doit fournir le diagnostic et les actions opérateur à exécuter, sans toucher au checkout de déploiement ni à PM2
 

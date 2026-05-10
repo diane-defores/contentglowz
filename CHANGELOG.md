@@ -16,6 +16,7 @@ All notable changes to the ContentFlow monorepo are documented here.
 - Added baseline `docs/editorial/` governance for the public Astro site.
 
 ### Changed
+- Reprioritized ContentFlow trackers so feedback production checks are no longer treated as the next blocking win after the admin allowlist was configured.
 - Reconnected ContentFlow site and app Vercel auto-deploys to the organization monorepo and verified deployment from `main`.
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.
 - Migrated `contentflow_site` tracking to Astro 6 completion and documented the site migration closure.

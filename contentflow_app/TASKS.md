@@ -7,7 +7,7 @@
 
 **Backend**: Python FastAPI (23 agents CrewAI/PydanticAI) at ContentFlow_lab/
 
-**Top priority**: Déployer les endpoints FastAPI feedback sur le serveur, puis reprendre Polar billing et finir la passe i18n secondaire
+**Top priority**: Continuer la centralisation des design tokens, puis reprendre Polar billing et finir la passe i18n secondaire
 
 ---
 
@@ -184,7 +184,7 @@
 | ✅ | Localisation app EN/FR — préférence de langue (système/anglais/français) + couverture FR sur les écrans shell, debug et drip | High | Medium | ✅ done — AppLanguage, persistance SharedPreferences et passe UI sur settings/editor/drip/uptime/work domains/runs/research |
 | ✅ | Système de thème complet — light/dark/system persisté + réglage utilisateur + thème éditorial partagé | High | Medium | ✅ done — préférence normalisée, `ThemeMode` branché sur l'app Flutter, palette/tokens centralisés |
 | ✅ | Purger les couleurs hard-codées des écrans Flutter pour rendre le light mode réellement cohérent | High | High | ✅ done — écrans migrés vers `Theme.of(context)` / `AppTheme.paletteOf(context)` sur tout `lib/presentation/screens` |
-| 🟠 | Déployer le backend FastAPI feedback (`/api/feedback/*`), le stockage audio S3-compatible et les URLs signées de lecture admin sur le serveur | High | Medium | 🔄 in progress — contrat backend rédigé, implémentation serveur hors repo |
+| 🟡 | Finaliser les vérifications feedback restantes: stockage audio S3-compatible, URLs signées de lecture admin et validation admin connectée | Medium | Low | 📋 todo — admin email configuré; non bloquant pour le prochain gros chantier |
 | 🔴 | Project flows selection onboarding archive — source URL optionnelle, no-selection explicite persistante, archive/unarchive alignés app+API | High | High | ✅ done |
 | 🟠 | Polar.sh Billing (free, 19€, 49€) | High | Medium | Débloqué maintenant que l'auth Clerk web est stable |
 | ✅ | Tests end-to-end pipeline | High | Low | ✅ done — test_e2e_pipeline.py + test_new_domains.py dans lab |
@@ -279,7 +279,7 @@
 
 > **Priority last updated**: 2026-04-20
 > **Criteria**: Impact/effort matrix — "what makes the product actually work"
-> **Recommended next**: Déployer les endpoints FastAPI feedback sur le serveur, puis brancher Polar billing, finir la passe i18n secondaire et finaliser les crédits DataForSEO
+> **Recommended next**: Continuer la centralisation des design tokens, puis brancher Polar billing, finir la passe i18n secondaire et finaliser les crédits DataForSEO
 
 ### Audit: Code (2026-04-28)
 

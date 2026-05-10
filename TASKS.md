@@ -5,7 +5,7 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Finish the backend feedback production configuration, continue the design-token centralization work, then run manual Zernio smoke validation.
+**Top priority**: Continue the design-token centralization work, then advance the dual-mode AI runtime implementation.
 
 ---
 
@@ -65,7 +65,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🟠 | Finish production feedback config: `FEEDBACK_ADMIN_EMAILS`, Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 🔄 in progress |
+| 🟡 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
 | ✅ | Consolidate Lab agent guidance into `AGENT.md` and keep `AGENTS.md` as a compatibility symlink | ✅ done |
 | 🟡 | Run manual Zernio smoke with a real key, two projects, connected account, forged account refusal, and provider error recovery | 📋 todo |
@@ -90,7 +90,8 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Centraliser les 722 valeurs visuelles Flutter restantes (`fontSize`, `EdgeInsets`, `BorderRadius`, couleurs directes, durations) dans `contentflow_theme.json` + helpers `AppTheme` responsives mobile | 🔄 in progress |
-| 🔴 | Migrer les 223 valeurs CSS site restantes (`font-size`, spacing, radius, motion) vers les variables générées depuis `contentflow_theme.json` | 🔄 in progress |
-| 🟠 | Supprimer les couleurs directes résiduelles du site (`white`, hex de démonstration hors playground, `rgba`) au profit de variables sémantiques | 📋 todo |
-| 🟠 | Ajouter des tokens responsives mobile dédiés pour typographie, espacements et rayons, puis remplacer le simple `TextScaler` global de l'app par des tokens explicites | 🔄 in progress |
+| 🔴 | Implémenter un vrai mode dark côté `contentflow_site` (selector + classes/data-theme + mapping des surfaces/texte) ; aujourd’hui les design tokens dark existent dans `contentflow_theme.json` mais ne sont pas activés dans `Layout.astro` | 📋 todo |
+| 🔴 | Éliminer les valeurs littérales restantes hors design tokens (scan courant: Flutter 128, Site 401) en migrant d’abord les écrans App Shell/Auth/Feed/Settings + Layout/Hero/Pricing/Navbar | 🔄 in progress |
+| 🟠 | Rationaliser les design tokens orphelins ou non consommés (`--button-*`, `--space-mobile-*`, `--breakpoint-tablet/desktop`, etc.) pour réduire la dérive | 📋 todo |
+| 🟠 | Corriger la cohérence d’échelle typo/spacing (ratios instables) et figer une règle modulaire unique (Utopia/base ratio) | 📋 todo |
+| 🟡 | Passer vers un format DTCG (`tokens.json` avec `$value/$type`) puis générer automatiquement Flutter/Astro depuis cette source unique | 📋 todo |
