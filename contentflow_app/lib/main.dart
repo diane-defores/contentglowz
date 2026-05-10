@@ -82,11 +82,12 @@ class ContentFlowApp extends ConsumerWidget {
     final themePreference = normalizeAppThemePreference(
       ref.watch(appThemePreferenceProvider),
     );
+    final useAppTheme = themePreference == appThemeApp;
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.tr('ContentFlow'),
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: useAppTheme ? AppTheme.appTheme : AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeModeFromPreference(themePreference),
       routerConfig: router,
@@ -98,7 +99,7 @@ class ContentFlowApp extends ConsumerWidget {
       builder: (context, child) {
         return Stack(
           children: [
-            ?child,
+            child ?? const SizedBox.shrink(),
             const Positioned.fill(child: _OfflineSyncBridge()),
             const Positioned.fill(child: InAppTourOverlay()),
           ],

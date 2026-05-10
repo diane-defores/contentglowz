@@ -4,6 +4,9 @@ All notable changes to the ContentFlow monorepo are documented here.
 
 ## [Unreleased]
 
+### Removed
+- Removed generated Flutter web build artifacts from Git tracking so Vercel owns `contentflow_app/build/web` generation during deployment.
+
 ### Added
 - Added privacy capture planning artifacts for Android, Web, Windows, macOS, iOS, and Linux, plus shared contract, post-production review, and QA matrix documents.
 - Added root monorepo task tracking and a site-specific tracker aligned with the ready Astro 6 migration spec.

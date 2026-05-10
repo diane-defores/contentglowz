@@ -1,0 +1,207 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const themePath = resolve(root, 'contentflow_theme.json');
+const outputPath = resolve(
+  root,
+  'contentflow_app/lib/presentation/theme/app_theme_tokens.dart',
+);
+
+const theme = JSON.parse(readFileSync(themePath, 'utf8'));
+const { colors, surfaces, typography, spacing, radius, shadow, motion, breakpoints } =
+  theme;
+
+function requireSection(value, path) {
+  if (!value || typeof value !== 'object') {
+    throw new Error(`Expected object for ${path} in ${themePath}`);
+  }
+  return value;
+}
+
+function ensureKeys(value, path, required) {
+  for (const key of required) {
+    if (value[key] == null) {
+      throw new Error(
+        `Missing token "${path}.${key}" in ${themePath}.`,
+      );
+    }
+  }
+}
+
+function dartDouble(token) {
+  const numeric = toNumber(token);
+  const fixed = `${numeric.toFixed(3)}`
+    .replace(/\.0+$/, '.0')
+    .replace(/(\.\d*[1-9])0+$/, '$1')
+    .replace(/\.?0*$/, '');
+  return `${Number.isInteger(numeric) ? `${numeric}.0` : fixed}`;
+}
+
+function toNumber(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`Expected numeric token, got ${value}`);
+  }
+  const trimmed = value.trim();
+  if (trimmed.endsWith('px')) {
+    return parseFloat(trimmed.replace('px', ''));
+  }
+  if (trimmed.endsWith('rem')) {
+    return parseFloat(trimmed.replace('rem', '')) * 16;
+  }
+  const parsed = parseFloat(trimmed);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Expected numeric token, got ${value}`);
+  }
+  return parsed;
+}
+
+function parseDuration(value) {
+  if (typeof value === 'number') {
+    return Math.round(value * 1000);
+  }
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`Expected duration token, got ${value}`);
+  }
+  const trimmed = value.trim();
+  if (trimmed.endsWith('ms')) {
+    return Math.round(parseFloat(trimmed.replace('ms', '')));
+  }
+  if (trimmed.endsWith('s')) {
+    return Math.round(parseFloat(trimmed.replace('s', '')) * 1000);
+  }
+  const parsed = parseFloat(trimmed);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Expected duration token, got ${value}`);
+  }
+  return Math.round(parsed);
+}
+
+function dartColor(hex) {
+  const clean = hex.replace('#', '').toUpperCase();
+  if (!/^[0-9A-F]{6}$/.test(clean)) {
+    throw new Error(`Expected 6-digit hex color, got ${hex}`);
+  }
+  return `Color(0xFF${clean})`;
+}
+
+requireSection(colors, 'colors');
+requireSection(surfaces, 'surfaces');
+requireSection(typography, 'typography');
+requireSection(spacing, 'spacing');
+requireSection(radius, 'radius');
+requireSection(shadow, 'shadow');
+requireSection(motion, 'motion');
+requireSection(breakpoints, 'breakpoints');
+
+ensureKeys(colors, 'colors', ['primary', 'primaryDark', 'secondary', 'accent', 'dark', 'gray', 'lightGray', 'lightBlue', 'white', 'codeText', 'badgeBg', 'badgeText', 'success', 'warning', 'orange', 'green', 'error', 'appPrimary', 'appSecondary', 'appEdit', 'appWarning', 'appError', 'purpleStrong', 'cyanStrong']);
+ensureKeys(surfaces, 'surfaces', ['light', 'dark']);
+ensureKeys(surfaces.light, 'surfaces.light', ['surface', 'mutedSurface', 'inputFill', 'elevatedSurface', 'surfaceTint']);
+ensureKeys(surfaces.dark, 'surfaces.dark', ['surface', 'mutedSurface', 'elevatedSurface', 'surfaceTint']);
+ensureKeys(typography, 'typography', ['fontSans', 'textXs', 'textSm', 'textBase', 'textLg']);
+ensureKeys(spacing, 'spacing', ['0', '1', '2', '3', '4', '5', '6']);
+ensureKeys(radius, 'radius', ['sm', 'md', 'lg', 'xl', '2xl']);
+ensureKeys(shadow, 'shadow', ['sm', 'card', 'cardHover', 'cardLg']);
+ensureKeys(motion, 'motion', ['instant', 'fast', 'base', 'slow', 'standard', 'out']);
+ensureKeys(breakpoints, 'breakpoints', ['mobile', 'tablet', 'desktop']);
+
+const spacingMap = {
+  0: toNumber(spacing['0']),
+  1: toNumber(spacing[1]),
+  2: toNumber(spacing[2]),
+  3: toNumber(spacing[3]),
+  4: toNumber(spacing[4]),
+  5: toNumber(spacing[5]),
+  6: toNumber(spacing[6]),
+};
+
+const radiusMap = {
+  sm: toNumber(radius.sm),
+  md: toNumber(radius.md),
+  lg: toNumber(radius.lg),
+  xl: toNumber(radius.xl),
+  xxl: toNumber(radius['2xl']),
+  pill: toNumber(radius.pill),
+};
+
+const compactRadius = toNumber(radius.lg) - 4;
+
+const source = `import 'package:flutter/material.dart';
+
+// Generated from ../../../../contentflow_theme.json.
+// Keep project-wide visual changes in that shared token file.
+class AppThemeTokens {
+  const AppThemeTokens._();
+
+  static const primary = ${dartColor(colors.primary)};
+  static const primaryDark = ${dartColor(colors.primaryDark)};
+  static const secondary = ${dartColor(colors.secondary)};
+  static const accent = ${dartColor(colors.accent)};
+  static const dark = ${dartColor(colors.dark)};
+  static const gray = ${dartColor(colors.gray)};
+  static const lightGray = ${dartColor(colors.lightGray)};
+  static const lightBlue = ${dartColor(colors.lightBlue)};
+  static const white = ${dartColor(colors.white)};
+  static const codeText = ${dartColor(colors.codeText)};
+  static const badgeBg = ${dartColor(colors.badgeBg)};
+  static const badgeText = ${dartColor(colors.badgeText)};
+  static const success = ${dartColor(colors.success)};
+  static const warning = ${dartColor(colors.warning)};
+  static const orange = ${dartColor(colors.orange)};
+  static const green = ${dartColor(colors.green)};
+  static const error = ${dartColor(colors.error)};
+  static const appPrimary = ${dartColor(colors.appPrimary)};
+  static const appSecondary = ${dartColor(colors.appSecondary)};
+  static const appEdit = ${dartColor(colors.appEdit)};
+  static const appWarning = ${dartColor(colors.appWarning)};
+  static const appError = ${dartColor(colors.appError)};
+  static const purpleStrong = ${dartColor(colors.purpleStrong)};
+  static const cyanStrong = ${dartColor(colors.cyanStrong)};
+
+  static const spacing0 = ${dartDouble(spacingMap[0])};
+  static const spacing1 = ${dartDouble(spacingMap[1])};
+  static const spacing2 = ${dartDouble(spacingMap[2])};
+  static const spacing3 = ${dartDouble(spacingMap[3])};
+  static const spacing4 = ${dartDouble(spacingMap[4])};
+  static const spacing5 = ${dartDouble(spacingMap[5])};
+  static const spacing6 = ${dartDouble(spacingMap[6])};
+
+  static const radiusSm = ${dartDouble(radiusMap.sm)};
+  static const radiusMd = ${dartDouble(radiusMap.md)};
+  static const radiusLg = ${dartDouble(radiusMap.lg)};
+  static const radiusXl = ${dartDouble(radiusMap.xl)};
+  static const radius2xl = ${dartDouble(radiusMap.xxl)};
+  static const radiusPill = ${dartDouble(radiusMap.pill)};
+  static const radiusCompact = ${dartDouble(compactRadius)};
+
+  static const textXs = ${dartDouble(toNumber(typography.textXs))};
+  static const textSm = ${dartDouble(toNumber(typography.textSm))};
+  static const textBase = ${dartDouble(toNumber(typography.textBase))};
+  static const textLg = ${dartDouble(toNumber(typography.textLg))};
+
+  static const darkElevatedSurface = ${dartColor(surfaces.dark.elevatedSurface)};
+  static const darkMutedSurface = ${dartColor(surfaces.dark.mutedSurface)};
+  static const darkSurfaceTint = ${dartColor(surfaces.dark.surfaceTint)};
+  static const lightInputFill = ${dartColor(surfaces.light.inputFill)};
+  static const lightMutedSurface = ${dartColor(surfaces.light.mutedSurface)};
+
+  static const durationInstant = Duration(milliseconds: ${parseDuration(motion.instant)});
+  static const durationFast = Duration(milliseconds: ${parseDuration(motion.fast)});
+  static const durationBase = Duration(milliseconds: ${parseDuration(motion.base)});
+  static const durationSlow = Duration(milliseconds: ${parseDuration(motion.slow)});
+  static const standardMotion = '${motion.standard}';
+  static const outMotion = '${motion.out}';
+  static const springMotion = '${motion.spring}';
+
+  static const mobileBreakpoint = ${breakpoints.mobile};
+  static const desktopBreakpoint = ${breakpoints.desktop};
+  static const tabletBreakpoint = ${breakpoints.tablet};
+  static const mobileDensityScale = ${dartDouble(toNumber(spacing.densityScale?.mobile ?? 0.9))};
+}
+`;
+
+writeFileSync(outputPath, source);

@@ -356,7 +356,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",      # Next.js dev
         "http://localhost:3001",      # Alternative port
+        "http://localhost:3050",      # Flutter web dev/PM2
         "http://127.0.0.1:3000",      # Alternative localhost
+        "http://127.0.0.1:3050",      # Flutter web dev/PM2
         "https://contentflow.com",    # Future production domain
         "https://www.contentflow.com",
         "https://winflowz.com",       # Current production domain

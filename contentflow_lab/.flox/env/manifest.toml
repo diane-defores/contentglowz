@@ -22,6 +22,7 @@ turso-cli.pkg-path = "turso-cli"
 pydantic.pkg-path = "python313Packages.pydantic"
 requests.pkg-path = "python313Packages.requests"
 fastapi.pkg-path = "python313Packages.fastapi"
+uvicorn.pkg-path = "python313Packages.uvicorn"
 # gum.pkg-path = "gum"
 # gum.version = "^0.14.5"
 

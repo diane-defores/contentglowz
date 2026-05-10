@@ -1,0 +1,181 @@
+{
+  "colors": {
+    "primary": "#3b82f6",
+    "primaryDark": "#2563eb",
+    "secondary": "#8b5cf6",
+    "accent": "#06b6d4",
+    "dark": "#0f172a",
+    "gray": "#64748b",
+    "lightGray": "#f1f5f9",
+    "lightBlue": "#dbeafe",
+    "white": "#ffffff",
+    "codeText": "#e2e8f0",
+    "badgeBg": "#fef3c7",
+    "badgeText": "#92400e",
+    "success": "#16a34a",
+    "warning": "#f59e0b",
+    "orange": "#f97316",
+    "green": "#16a34a",
+    "error": "#dc2626",
+    "appPrimary": "#6c5ce7",
+    "appSecondary": "#00b894",
+    "appEdit": "#0984e3",
+    "appWarning": "#f39c4a",
+    "appError": "#e17055",
+    "purpleStrong": "#7c3aed",
+    "cyanStrong": "#0891b2"
+  },
+  "status": {
+    "success": "#16a34a",
+    "warning": "#f59e0b",
+    "error": "#dc2626",
+    "info": "#0891b2"
+  },
+  "actions": {
+    "primary": "#3b82f6",
+    "secondary": "#8b5cf6",
+    "accent": "#06b6d4",
+    "approve": "#16a34a",
+    "reject": "#dc2626",
+    "warning": "#f97316",
+    "edit": "#0984e3",
+    "appPrimary": "#6c5ce7",
+    "appSecondary": "#00b894"
+  },
+  "focus": {
+    "ring": "rgba(59, 130, 246, 0.55)",
+    "ringStrong": "rgba(59, 130, 246, 0.8)",
+    "outlineOffset": "2px"
+  },
+  "surfaces": {
+    "light": {
+      "canvas": "#ffffff",
+      "surface": "#ffffff",
+      "elevatedSurface": "#ffffff",
+      "mutedSurface": "#f1f5f9",
+      "inputFill": "#f8fafc",
+      "surfaceTint": "#dbeafe",
+      "borderSubtle": "rgba(0, 0, 0, 0.05)",
+      "borderLight": "rgba(0, 0, 0, 0.08)",
+      "heroGradient": ["#ffffff", "#f1f5f9", "#dbeafe"]
+    },
+    "dark": {
+      "canvas": "#0f172a",
+      "surface": "#0f172a",
+      "elevatedSurface": "#111827",
+      "mutedSurface": "#1e293b",
+      "inputFill": "#111827",
+      "surfaceTint": "#172554",
+      "borderSubtle": "rgba(255, 255, 255, 0.1)",
+      "borderLight": "rgba(255, 255, 255, 0.1)",
+      "heroGradient": ["#0f172a", "#111827", "#172554"]
+    }
+  },
+  "typography": {
+    "fontSans": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    "textXs": "0.75rem",
+    "textSm": "0.875rem",
+    "textBase": "1rem",
+    "textLg": "1.25rem",
+    "textH3": "1.5rem",
+    "textH2": "clamp(2rem, 1.2rem + 3.33vw, 3rem)",
+    "textH1": "clamp(2.2rem, 1.2rem + 4.17vw, 3.5rem)",
+    "leadingTight": "1.2",
+    "leadingSnug": "1.3",
+    "leadingNormal": "1.6",
+    "leadingRelaxed": "1.8",
+    "trackingWide": "0.04em",
+    "trackingWider": "0.08em"
+  },
+  "spacing": {
+    "0": "0",
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "5": "1.25rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem",
+    "20": "5rem",
+    "24": "6rem",
+    "mobile": {
+      "2": "0.375rem",
+      "3": "0.625rem",
+      "4": "0.875rem",
+      "5": "1rem",
+      "6": "1.25rem",
+      "8": "1.5rem",
+      "10": "2rem"
+    },
+    "densityScale": {
+      "desktop": 1.0,
+      "mobile": 0.9
+    }
+  },
+  "radius": {
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "20px",
+    "2xl": "28px",
+    "pill": "9999px"
+  },
+  "shadow": {
+    "sm": "0 2px 8px rgba(0, 0, 0, 0.06)",
+    "card": "0 4px 20px rgba(0, 0, 0, 0.08)",
+    "cardHover": "0 8px 30px rgba(0, 0, 0, 0.12)",
+    "cardLg": "0 12px 40px rgba(0, 0, 0, 0.15)",
+    "primary": "0 4px 15px rgba(59, 130, 246, 0.3)",
+    "primaryHover": "0 8px 25px rgba(59, 130, 246, 0.4)"
+  },
+  "motion": {
+    "instant": "0.12s",
+    "fast": "0.15s",
+    "base": "0.2s",
+    "slow": "0.3s",
+    "standard": "ease",
+    "out": "ease-out",
+    "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+  },
+  "components": {
+    "card": {
+      "padding": "1rem",
+      "radius": "20px",
+      "shadow": "card",
+      "compactRadius": "18px",
+      "compactPadding": "0.875rem"
+    },
+    "button": {
+      "radius": "16px",
+      "paddingX": "2.5rem",
+      "paddingY": "0.75rem",
+      "compactPaddingY": "0.62rem",
+      "fontWeight": "700",
+      "compactFontScale": 0.95
+    },
+    "input": {
+      "radius": "14px",
+      "radiusCompact": "12px"
+    },
+    "nav": {
+      "radius": "9999px"
+    },
+    "badge": {
+      "radius": "14px"
+    }
+  },
+  "layout": {
+    "containerMaxWidth": "1200px",
+    "sectionGap": "4rem",
+    "heroGap": "1.75rem",
+    "ctaWidth": "max-content"
+  },
+  "breakpoints": {
+    "mobile": 600,
+    "tablet": 900,
+    "desktop": 1200
+  }
+}

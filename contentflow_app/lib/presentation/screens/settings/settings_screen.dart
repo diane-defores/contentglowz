@@ -780,6 +780,7 @@ class _AppearanceRow extends ConsumerWidget {
       appThemeSystem => context.tr('Follow system appearance'),
       appThemeLight => context.tr('Light'),
       appThemeDark => context.tr('Dark'),
+      appThemeApp => context.tr('App colors'),
       _ => selected,
     };
 
@@ -819,6 +820,7 @@ class _AppearanceRow extends ConsumerWidget {
                       child: Text('light'),
                     ),
                     DropdownMenuItem(value: appThemeDark, child: Text('dark')),
+                    DropdownMenuItem(value: appThemeApp, child: Text('app')),
                   ],
                   onChanged: (value) {
                     if (value == null) return;
@@ -871,6 +873,12 @@ class _AppearanceRow extends ConsumerWidget {
               icon: Icons.dark_mode_outlined,
               selected: current == appThemeDark,
               onTap: () => Navigator.pop(ctx, appThemeDark),
+            ),
+            _PickerTile(
+              label: context.tr('App colors'),
+              icon: Icons.auto_awesome_outlined,
+              selected: current == appThemeApp,
+              onTap: () => Navigator.pop(ctx, appThemeApp),
             ),
             const SizedBox(height: 8),
           ],

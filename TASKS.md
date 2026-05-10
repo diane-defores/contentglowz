@@ -17,6 +17,7 @@
 | ✅ | Move GitHub source of truth to `diane-defores/contentflow` with Vercel roots for site and app | ✅ done |
 | ✅ | Create root and site task tracking from existing subproject state | ✅ done |
 | ✅ | Bring active ShipFlow documentation metadata and governance layers back into lint compliance for app/site/root docs | ✅ done |
+| ✅ | Retirer les artefacts Flutter web `contentflow_app/build` du suivi Git et laisser Vercel reconstruire `build/web` | ✅ done |
 | 🟠 | Keep root tracker, subproject trackers, and ShipFlow master dashboard aligned after each shipped task | 🔄 in progress |
 | 🔴 | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | 📋 todo |
 
@@ -84,3 +85,12 @@
 
 ## Audit Findings
 <!-- Populated by /sf-audit — dated sections with Fixed: / Remaining: -->
+
+### Audit: Design Tokens (2026-05-10)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🔴 | Centraliser les 722 valeurs visuelles Flutter restantes (`fontSize`, `EdgeInsets`, `BorderRadius`, couleurs directes, durations) dans `contentflow_theme.json` + helpers `AppTheme` responsives mobile | 🔄 in progress |
+| 🔴 | Migrer les 223 valeurs CSS site restantes (`font-size`, spacing, radius, motion) vers les variables générées depuis `contentflow_theme.json` | 🔄 in progress |
+| 🟠 | Supprimer les couleurs directes résiduelles du site (`white`, hex de démonstration hors playground, `rgba`) au profit de variables sémantiques | 📋 todo |
+| 🟠 | Ajouter des tokens responsives mobile dédiés pour typographie, espacements et rayons, puis remplacer le simple `TextScaler` global de l'app par des tokens explicites | 🔄 in progress |

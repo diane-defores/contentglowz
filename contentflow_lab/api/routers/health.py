@@ -102,21 +102,18 @@ async def health_check():
         except Exception as e:
             agents_status[name] = f"error: {str(e)[:120]}"
     
-    # Overall status
-    all_available = all(
-        status in ["available", "operational"] 
-        for status in agents_status.values()
-    )
+    database_status = await _check_db()
+    core_available = database_status in {"operational", "not_configured"}
     
     return {
-        "status": "healthy" if all_available else "degraded",
+        "status": "healthy" if core_available else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
         "python_version": sys.version,
         "git_sha": _GIT_SHA,
         "agents": agents_status,
         "components": {
             "api": "operational",
-            "database": await _check_db(),
+            "database": database_status,
             "cache": "not_configured"
         }
     }

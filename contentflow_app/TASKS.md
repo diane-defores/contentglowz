@@ -55,6 +55,7 @@
 |-----|------|--------|
 | ✅ | Angles, Schedule, Content update, Personas refresh, Ritual narrative, Persona language model | ✅ done |
 | ✅ | GitHub Actions, Zernio API, Publish accounts, Channel states, Schedule API | ✅ done |
+| ✅ | Retirer les artefacts Flutter web `build/web` du suivi Git et laisser Vercel reconstruire le build au déploiement | ✅ done |
 | ✅ | OAuth channel connections (Connect + Disconnect via Zernio) | ✅ done |
 
 ## Phase 4 — Auth & Workspace Migration ✅
@@ -235,6 +236,15 @@
 | ✅ | Remplacer les cartes vides du feed par une composition responsive mobile-first (CTA empilés, cartes pleine largeur, stats sans débordement) | ✅ done |
 | 🟠 | Valider sur vrai appareil le header mobile du feed avec `ProjectPickerAction` lorsque le nom du projet est très long et qu’un bulk action est présent | 📋 todo |
 | 🟡 | Revoir plus tard la version mobile du feed “avec cartes à swiper” pour confirmer que la zone d’actions basse ne gêne pas les petits écrans 320–360px | 📋 todo |
+
+### Audit: Design Tokens (2026-05-10)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🔴 | Remplacer les 722 valeurs visuelles Flutter hardcodées par des helpers issus de `AppTheme`/`contentflow_theme.json` | 🔄 in progress |
+| 🔴 | Introduire des tokens Flutter responsives mobile pour tailles de texte, padding, gap et rayons, puis migrer les écrans principaux | 🔄 in progress |
+| 🟠 | Tokeniser les couleurs directes restantes (`Colors.red`, `Colors.white`, alphas de bordures) hors fichiers de thème générés | 📋 todo |
+| 🟠 | Ajouter une vérification automatisée qui bloque les nouveaux `fontSize`, `EdgeInsets` et `BorderRadius.circular` hors exceptions autorisées | 📋 todo |
 
 ### 🟠 P1 — Content Drip (Publication Progressive)
 

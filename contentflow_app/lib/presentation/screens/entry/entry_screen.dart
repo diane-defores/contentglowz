@@ -27,13 +27,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     await launchUrl(url);
   }
 
-  Future<void> _openWebsiteLaunch() async {
-    final url = kIsWeb
-        ? Uri.parse('${Uri.base.origin}/#/entry')
-        : Uri.parse('${AppConfig.appWebUrl}/#/entry');
-    await launchUrl(url);
-  }
-
   Widget? _buildEntryErrorDiagnostics(
     AuthSession authSession,
     AppAccessState? accessState,
@@ -85,7 +78,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1160),
@@ -93,18 +86,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHero(context, ref, stateCard),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     _buildProofStrip(),
-                    const SizedBox(height: 24),
-                    _buildPainVsFlow(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     _buildHowItWorks(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     _buildFeatureGrid(),
-                    const SizedBox(height: 24),
-                    _buildFaqSection(),
-                    const SizedBox(height: 32),
-                    _buildBottomCta(context, ref),
                   ],
                 ),
               ),
@@ -123,112 +110,48 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         final left = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _pill(
-              icon: Icons.auto_awesome_rounded,
-              label: 'AI content ops for founders, creators, and lean teams',
-            ),
-            const SizedBox(height: 20),
+            _pill(icon: Icons.workspaces_outline, label: 'ContentFlow app'),
+            const SizedBox(height: 14),
             Builder(
               builder: (context) {
                 final sw = MediaQuery.sizeOf(context).width;
                 final heroSize = sw < 400
-                    ? 28.0
+                    ? 22.0
                     : sw < 600
-                    ? 36.0
-                    : 48.0;
+                    ? 28.0
+                    : 38.0;
                 return Text(
-                  context.tr('Turn one repo into a weekly content machine.'),
+                  context.tr('Welcome back to your content workspace.'),
                   style: TextStyle(
                     color: theme.colorScheme.onSurface,
                     fontSize: heroSize,
                     fontWeight: FontWeight.w800,
-                    height: 1.05,
+                    height: 1.12,
                   ),
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             Text(
               context.tr(
-                'ContentFlow analyzes your product, generates angles and drafts, then lets you approve, edit, schedule, and publish from one workflow instead of juggling prompts, docs, and social tools.',
+                'Use this page to restore your session, open your workspace, finish onboarding, or recover cleanly when the backend is unavailable.',
               ),
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 17,
-                height: 1.6,
+                fontSize: 15,
+                height: 1.45,
               ),
             ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                FilledButton.icon(
-                  onPressed: () {
-                    ref.read(authSessionProvider.notifier).signInDemo();
-                    context.go('/onboarding?intent=entry');
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.approveColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 18,
-                    ),
-                  ),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: Text(context.tr('Open Interactive Demo')),
-                ),
-                OutlinedButton.icon(
-                  onPressed: kIsWeb
-                      ? _openWebsiteSignIn
-                      : () => context.go('/auth'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: theme.colorScheme.onSurface,
-                    side: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withValues(
-                        alpha: 0.9,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 18,
-                    ),
-                  ),
-                  icon: const Icon(Icons.lock_open_rounded),
-                  label: Text(
-                    context.tr(kIsWeb ? 'Continue with Google' : 'Sign In'),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () => context.push('/feedback'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.onSurfaceVariant,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 18,
-                    ),
-                  ),
-                  icon: const Icon(Icons.forum_outlined),
-                  label: Text(context.tr('Share Feedback')),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 14),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               children: const [
+                _MetricChip(value: 'Auth', label: 'session status first'),
+                _MetricChip(value: 'API', label: 'backend readiness visible'),
                 _MetricChip(
-                  value: '1',
-                  label: 'workflow from angle to publish',
-                ),
-                _MetricChip(
-                  value: '3',
-                  label: 'setup steps before first workspace',
-                ),
-                _MetricChip(
-                  value: '7',
-                  label: 'publishing channels already modeled',
+                  value: 'Workspace',
+                  label: 'dashboard or onboarding route',
                 ),
               ],
             ),
@@ -238,16 +161,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         if (compact) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [left, const SizedBox(height: 24), stateCard],
+            children: [stateCard, const SizedBox(height: 16), left],
           );
         }
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(flex: 6, child: left),
+            Expanded(flex: 5, child: left),
             const SizedBox(width: 24),
-            Expanded(flex: 5, child: stateCard),
+            Expanded(flex: 6, child: stateCard),
           ],
         );
       },
@@ -257,17 +180,18 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   Widget _buildProofStrip() {
     final palette = AppTheme.paletteOf(context);
     const items = [
-      'Repo-aware onboarding instead of blank-prompt setup',
-      'Narrative ritual plus personas before generation',
-      'Swipe approval flow tied to real publish actions',
-      'Demo workspace available without sales call',
+      'Session restore',
+      'Google sign-in',
+      'Dashboard access',
+      'Onboarding recovery',
+      'API diagnostics',
     ];
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Wrap(
@@ -283,64 +207,21 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     );
   }
 
-  Widget _buildPainVsFlow() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 900;
-        final withoutCard = _comparisonCard(
-          title: 'Without ContentFlow',
-          accent: AppTheme.rejectColor,
-          items: const [
-            'You explain your product from scratch in every prompt.',
-            'Ideas, drafts, and publishing live in separate tools.',
-            'The team loses momentum between generation and approval.',
-            'Publishing still depends on manual copy-paste.',
-          ],
-        );
-        final withCard = _comparisonCard(
-          title: 'With ContentFlow',
-          accent: AppTheme.approveColor,
-          items: const [
-            'Your workspace starts from a real repo and a real content plan.',
-            'Rituals and personas sharpen the angle before generation.',
-            'Drafts are reviewed with one approval workflow.',
-            'Publishing, scheduling, and channel readiness stay visible.',
-          ],
-        );
-
-        if (compact) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [withoutCard, const SizedBox(height: 20), withCard],
-          );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: withoutCard),
-            const SizedBox(width: 20),
-            Expanded(child: withCard),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildHowItWorks() {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     const steps = [
       (
-        '1. Connect the product context',
-        'Start with your repo, project name, and content mix so the app works from actual context.',
+        '1. Restore or sign in',
+        'ContentFlow checks Clerk first, then opens the right account path without burying auth below marketing content.',
       ),
       (
-        '2. Shape the narrative',
-        'Capture rituals, personas, and angles before asking the model for drafts.',
+        '2. Resolve workspace state',
+        'The app decides whether you should enter the dashboard, finish onboarding, retry the API, or refresh your session.',
       ),
       (
-        '3. Review and publish',
-        'Approve, edit, schedule, and publish content from one queue instead of bouncing across tools.',
+        '3. Continue work',
+        'Once the session and backend are ready, you can return directly to your content pipeline.',
       ),
     ];
 
@@ -355,22 +236,22 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            context.tr('How the workflow actually works'),
+            context.tr('What happens on this page'),
             style: TextStyle(
               color: theme.colorScheme.onSurface,
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             context.tr(
-              'The promise is not "AI writes for you". The promise is a tighter system from source material to published output.',
+              'This is an app entry page for existing users. It keeps account, workspace, and recovery actions at the top.',
             ),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 15,
-              height: 1.6,
+              fontSize: 14,
+              height: 1.45,
             ),
           ),
           const SizedBox(height: 20),
@@ -406,27 +287,21 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   Widget _buildFeatureGrid() {
     final items = [
       (
-        'Onboarding that creates a plan',
-        'Project, repo, formats, and cadence are captured before generation starts.',
-        Icons.rocket_launch_outlined,
-        AppTheme.approveColor,
-      ),
-      (
-        'Angles from persona context',
-        'The app uses ritual and persona inputs to propose more relevant content directions.',
-        Icons.psychology_alt_outlined,
+        'Account-first entry',
+        'The visible state card tells users whether they are signed out, restoring, active, blocked, or ready.',
+        Icons.verified_user_outlined,
         AppTheme.editColor,
       ),
       (
-        'Approval-first feed',
-        'Operators can swipe through content decisions quickly instead of managing a cluttered queue.',
-        Icons.swipe_outlined,
+        'Backend-aware recovery',
+        'API and bootstrap failures expose retry, status, reconnect, and diagnostics actions without hiding them lower on the page.',
+        Icons.health_and_safety_outlined,
         AppTheme.warningColor,
       ),
       (
-        'Publishing visibility',
-        'Channel connections, scheduling state, and publish results stay attached to the workflow.',
-        Icons.publish_outlined,
+        'Workspace continuation',
+        'Recognized users can go straight to the dashboard or continue onboarding from the first viewport.',
+        Icons.dashboard_customize_outlined,
         AppTheme.approveColor,
       ),
     ];
@@ -454,144 +329,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               .toList(),
         );
       },
-    );
-  }
-
-  Widget _buildFaqSection() {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    final items = [
-      (
-        'Why not just use ChatGPT?',
-        'Because the hard part is not getting text. The hard part is preserving product context, deciding what to say next, and moving approved drafts into publishing without friction.',
-      ),
-      (
-        'What makes the demo useful?',
-        'The demo is a stable public workspace, so visitors can inspect the workflow end-to-end before creating their own workspace.',
-      ),
-      (
-        'Is this only for social posts?',
-        'No. The product already models blog posts, newsletters, social posts, video scripts, and short-form video content.',
-      ),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.tr('Common objections'),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _faqItem(question: item.$1, answer: item.$2),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomCta(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.tr('See the workflow before you commit'),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.tr(
-              'Start with the stable demo workspace to inspect the flow, then create your own workspace when you are ready to connect a real product.',
-            ),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 15,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              FilledButton(
-                onPressed: () {
-                  ref.read(authSessionProvider.notifier).signInDemo();
-                  context.go('/onboarding?intent=entry');
-                },
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.approveColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 18,
-                  ),
-                ),
-                child: Text(context.tr('Open Demo Workspace')),
-              ),
-              OutlinedButton(
-                onPressed: kIsWeb
-                    ? _openWebsiteSignIn
-                    : () => context.go('/auth'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: theme.colorScheme.onSurface,
-                  side: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.9,
-                    ),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 18,
-                  ),
-                ),
-                child: Text(
-                  context.tr(kIsWeb ? 'Continue with Google' : 'Sign In'),
-                ),
-              ),
-              TextButton(
-                onPressed: () => context.push('/feedback'),
-                style: TextButton.styleFrom(
-                  foregroundColor: theme.colorScheme.onSurfaceVariant,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                ),
-                child: Text(context.tr('Share Feedback')),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -746,17 +483,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       accent: AppTheme.warningColor,
       primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In',
       onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
-      secondaryLabel: kIsWeb ? 'Open App Entry' : 'Open Demo Workspace',
-      onSecondary: kIsWeb
-          ? _openWebsiteLaunch
-          : () {
-              ref.read(authSessionProvider.notifier).signInDemo();
-              context.go(
-                authSession.onboardingComplete
-                    ? '/feed'
-                    : '/onboarding?intent=entry',
-              );
-            },
+      secondaryLabel: 'Open Demo Workspace',
+      onSecondary: () {
+        ref.read(authSessionProvider.notifier).signInDemo();
+        context.go(
+          authSession.onboardingComplete ? '/feed' : '/onboarding?intent=entry',
+        );
+      },
       caption: kIsWeb
           ? 'The stable path is now ClerkJS on `app.contentflow.winflowz.com/sign-in`, with a standard OAuth callback on `/sso-callback`.'
           : 'The demo uses one fixed public repository and pre-generated content so every visitor sees the same stable workspace. The old Flutter beta auth path now lives only in the legacy branch.',
@@ -833,11 +566,12 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   }) {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
+    final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(compact ? 20 : 28),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(compact ? 18 : 24),
         border: Border.all(color: palette.borderSubtle),
         boxShadow: [
           BoxShadow(
@@ -852,15 +586,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: compact ? 44 : 56,
+            height: compact ? 44 : 56,
             decoration: BoxDecoration(
               color: accent.withAlpha(30),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(compact ? 14 : 18),
             ),
-            child: Icon(icon, color: accent, size: 28),
+            child: Icon(icon, color: accent, size: compact ? 24 : 28),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: compact ? 14 : 20),
           Text(
             context.tr(eyebrow).toUpperCase(),
             style: TextStyle(
@@ -870,17 +604,52 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               letterSpacing: 1.4,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: compact ? 8 : 10),
           Text(
             context.tr(title),
             style: TextStyle(
               color: theme.colorScheme.onSurface,
-              fontSize: 28,
+              fontSize: compact ? 23 : 28,
               fontWeight: FontWeight.bold,
               height: 1.15,
             ),
           ),
+          SizedBox(height: compact ? 16 : 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onPrimary,
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                padding: EdgeInsets.symmetric(vertical: compact ? 15 : 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(context.tr(primaryLabel)),
+            ),
+          ),
           const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onSecondary,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: theme.colorScheme.onSurfaceVariant,
+                side: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.9,
+                  ),
+                ),
+                padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(context.tr(secondaryLabel)),
+            ),
+          ),
+          SizedBox(height: compact ? 16 : 20),
           Text(
             context.tr(description),
             style: TextStyle(
@@ -903,41 +672,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ),
           ],
           if (extra case final extraWidget?) ...[extraWidget],
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: onPrimary,
-              style: FilledButton.styleFrom(
-                backgroundColor: accent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(context.tr(primaryLabel)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onSecondary,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.colorScheme.onSurfaceVariant,
-                side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withValues(
-                    alpha: 0.9,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(context.tr(secondaryLabel)),
-            ),
-          ),
         ],
       ),
     );
@@ -965,59 +699,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 color: theme.colorScheme.onSurface,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _comparisonCard({
-    required String title,
-    required Color accent,
-    required List<String> items,
-  }) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: accent.withAlpha(90)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.tr(title),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.circle, color: accent, size: 10),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      context.tr(item),
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 15,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
@@ -1065,41 +746,6 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           const SizedBox(height: 8),
           Text(
             context.tr(description),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 14,
-              height: 1.55,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _faqItem({required String question, required String answer}) {
-    final theme = Theme.of(context);
-    final palette = AppTheme.paletteOf(context);
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: palette.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.tr(question),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.tr(answer),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
               fontSize: 14,

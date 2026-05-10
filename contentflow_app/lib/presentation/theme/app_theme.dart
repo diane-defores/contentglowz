@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'app_theme_tokens.dart';
+
 class AppTheme {
-  static const _primaryColor = Color(0xFF6C5CE7);
-  static const _secondaryColor = Color(0xFF00B894);
-  static const _errorColor = Color(0xFFE17055);
-  static const _approveColor = Color(0xFF00B894);
-  static const _rejectColor = Color(0xFFE17055);
-  static const _editColor = Color(0xFF0984E3);
-  static const _warningColor = Color(0xFFF39C4A);
-  static const _infoColor = Color(0xFF3C82F6);
+  static const _primaryColor = AppThemeTokens.primary;
+  static const _primaryDarkColor = AppThemeTokens.primaryDark;
+  static const _secondaryColor = AppThemeTokens.secondary;
+  static const _accentColor = AppThemeTokens.accent;
+  static const _errorColor = AppThemeTokens.error;
+  static const _approveColor = AppThemeTokens.success;
+  static const _rejectColor = AppThemeTokens.error;
+  static const _editColor = AppThemeTokens.primary;
+  static const _warningColor = AppThemeTokens.warning;
+  static const _infoColor = AppThemeTokens.primaryDark;
 
   static Color get approveColor => _approveColor;
   static Color get rejectColor => _rejectColor;
@@ -21,42 +25,61 @@ class AppTheme {
 
   static ThemeData get darkTheme => _buildTheme(Brightness.dark);
 
+  static ThemeData get appTheme => _buildTheme(
+    Brightness.light,
+    primary: AppThemeTokens.appPrimary,
+    primaryDark: AppThemeTokens.appPrimary,
+    secondary: AppThemeTokens.appSecondary,
+    accent: AppThemeTokens.appEdit,
+    error: AppThemeTokens.appError,
+    paletteVariant: AppThemePaletteVariant.app,
+  );
+
   static AppThemePalette paletteOf(BuildContext context) {
     final theme = Theme.of(context);
     final extension = theme.extension<AppThemePalette>();
     return extension ?? AppThemePalette.fallback(theme.colorScheme);
   }
 
-  static ThemeData _buildTheme(Brightness brightness) {
+  static ThemeData _buildTheme(
+    Brightness brightness, {
+    Color primary = _primaryColor,
+    Color primaryDark = _primaryDarkColor,
+    Color secondary = _secondaryColor,
+    Color accent = _accentColor,
+    Color error = _errorColor,
+    AppThemePaletteVariant paletteVariant = AppThemePaletteVariant.site,
+  }) {
     final isDark = brightness == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(
-      seedColor: _primaryColor,
-      brightness: brightness,
-    ).copyWith(
-      primary: _primaryColor,
-      secondary: _secondaryColor,
-      error: _errorColor,
-      surface: isDark ? const Color(0xFF161B2B) : const Color(0xFFF7F4EF),
-      surfaceContainerHighest: isDark
-          ? const Color(0xFF23293B)
-          : const Color(0xFFEAE4DA),
-      onSurface: isDark ? const Color(0xFFF7F5F2) : const Color(0xFF19161F),
-      onSurfaceVariant: isDark
-          ? const Color(0xFFB1B8CA)
-          : const Color(0xFF645D6F),
-      outline: isDark ? const Color(0xFF50586E) : const Color(0xFFC8BFCD),
-      outlineVariant: isDark
-          ? const Color(0xFF394157)
-          : const Color(0xFFDAD1DE),
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: primary,
+          brightness: brightness,
+        ).copyWith(
+          primary: primary,
+          secondary: secondary,
+          tertiary: accent,
+          error: error,
+          surface: isDark ? AppThemeTokens.dark : AppThemeTokens.white,
+          surfaceContainerHighest: isDark
+              ? AppThemeTokens.darkMutedSurface
+              : AppThemeTokens.lightGray,
+          onSurface: isDark ? AppThemeTokens.white : AppThemeTokens.dark,
+          onSurfaceVariant: isDark
+              ? const Color(0xB3FFFFFF)
+              : AppThemeTokens.gray,
+          outline: isDark ? const Color(0x1AFFFFFF) : const Color(0x14000000),
+          outlineVariant: isDark
+              ? const Color(0x1AFFFFFF)
+              : const Color(0x0D000000),
+        );
     final textTheme = GoogleFonts.interTextTheme(
       isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
-    ).apply(
-      bodyColor: scheme.onSurface,
-      displayColor: scheme.onSurface,
-    );
+    ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
     final palette = isDark
         ? AppThemePalette.dark(scheme)
+        : paletteVariant == AppThemePaletteVariant.app
+        ? AppThemePalette.app(scheme)
         : AppThemePalette.light(scheme);
 
     return ThemeData(
@@ -80,7 +103,9 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: palette.surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+        ),
         margin: EdgeInsets.zero,
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -101,7 +126,9 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: palette.elevatedSurface,
@@ -119,15 +146,15 @@ class AppTheme {
         labelStyle: TextStyle(color: scheme.onSurfaceVariant),
         hintStyle: TextStyle(color: scheme.onSurfaceVariant),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadii.input),
           borderSide: BorderSide(color: scheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadii.input),
           borderSide: BorderSide(color: scheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadii.input),
           borderSide: BorderSide(color: scheme.primary, width: 1.5),
         ),
       ),
@@ -136,7 +163,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           backgroundColor: scheme.primary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadii.button),
           ),
         ),
       ),
@@ -145,7 +172,7 @@ class AppTheme {
           foregroundColor: scheme.onSurface,
           side: BorderSide(color: scheme.outlineVariant),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadii.button),
           ),
         ),
       ),
@@ -154,7 +181,9 @@ class AppTheme {
         selectedColor: scheme.primary.withValues(alpha: 0.12),
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
         labelStyle: textTheme.bodySmall?.copyWith(color: scheme.onSurface),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.badge),
+        ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
     );
@@ -162,16 +191,64 @@ class AppTheme {
 
   static Color colorForContentType(String type) {
     return switch (type) {
-      'Article' => const Color(0xFF6C5CE7),
-      'Social' => const Color(0xFF0984E3),
-      'Newsletter' => const Color(0xFFFDAA5E),
-      'Video' => const Color(0xFFE17055),
-      'Reel' => const Color(0xFFE84393),
-      'Short' => const Color(0xFFFF6B6B),
+      'Article' => _primaryColor,
+      'Social' => _accentColor,
+      'Newsletter' => _secondaryColor,
+      'Video' => _primaryDarkColor,
+      'Reel' => AppThemeTokens.purpleStrong,
+      'Short' => AppThemeTokens.orange,
       _ => _primaryColor,
     };
   }
 }
+
+class AppSpacing {
+  static double scale(BuildContext context) {
+    return MediaQuery.sizeOf(context).width < AppThemeTokens.mobileBreakpoint
+        ? AppThemeTokens.mobileDensityScale
+        : 1.0;
+  }
+
+  static EdgeInsets page(BuildContext context) {
+    final compact = scale(context);
+    return EdgeInsets.symmetric(
+      horizontal: AppThemeTokens.spacing5 * compact,
+      vertical: AppThemeTokens.spacing4 * compact,
+    );
+  }
+
+  static EdgeInsets card(BuildContext context) {
+    final compact = scale(context);
+    return EdgeInsets.all(AppThemeTokens.spacing4 * compact);
+  }
+}
+
+class AppRadii {
+  static const double card = AppThemeTokens.radius2xl;
+  static const double button = AppThemeTokens.radiusLg;
+  static const double input = AppThemeTokens.radiusMd;
+  static const double badge = AppThemeTokens.radiusMd;
+  static const double pill = AppThemeTokens.radiusCompact;
+}
+
+class AppText {
+  static double get base => AppThemeTokens.textBase;
+  static double compact(BuildContext context, double value) {
+    return value * AppSpacing.scale(context);
+  }
+}
+
+class AppMotion {
+  static const Duration instant = AppThemeTokens.durationInstant;
+  static const Duration fast = AppThemeTokens.durationFast;
+  static const Duration base = AppThemeTokens.durationBase;
+  static const Duration slow = AppThemeTokens.durationSlow;
+  static const String standard = AppThemeTokens.standardMotion;
+  static const String out = AppThemeTokens.outMotion;
+  static const String spring = AppThemeTokens.springMotion;
+}
+
+enum AppThemePaletteVariant { site, app }
 
 class AppThemePalette extends ThemeExtension<AppThemePalette> {
   const AppThemePalette({
@@ -194,32 +271,48 @@ class AppThemePalette extends ThemeExtension<AppThemePalette> {
 
   factory AppThemePalette.dark(ColorScheme scheme) {
     return AppThemePalette(
-      canvas: const Color(0xFF0D1020),
+      canvas: AppThemeTokens.dark,
       surface: scheme.surface,
-      elevatedSurface: const Color(0xFF1C2234),
-      mutedSurface: const Color(0xFF151A2A),
-      inputFill: const Color(0xFF131A2B),
-      borderSubtle: Colors.white.withValues(alpha: 0.08),
+      elevatedSurface: AppThemeTokens.darkElevatedSurface,
+      mutedSurface: AppThemeTokens.darkMutedSurface,
+      inputFill: AppThemeTokens.darkElevatedSurface,
+      borderSubtle: Colors.white.withValues(alpha: 0.1),
       heroGradient: const [
-        Color(0xFF0A1020),
-        Color(0xFF12192C),
-        Color(0xFF1E2235),
+        AppThemeTokens.dark,
+        AppThemeTokens.darkElevatedSurface,
+        AppThemeTokens.darkSurfaceTint,
       ],
     );
   }
 
   factory AppThemePalette.light(ColorScheme scheme) {
     return AppThemePalette(
-      canvas: const Color(0xFFFCF8F2),
+      canvas: AppThemeTokens.white,
       surface: scheme.surface,
-      elevatedSurface: const Color(0xFFFFFFFF),
-      mutedSurface: const Color(0xFFF2ECE2),
-      inputFill: const Color(0xFFFBF6EE),
-      borderSubtle: const Color(0x1419161F),
+      elevatedSurface: AppThemeTokens.white,
+      mutedSurface: AppThemeTokens.lightGray,
+      inputFill: AppThemeTokens.lightInputFill,
+      borderSubtle: const Color(0x0D000000),
       heroGradient: const [
-        Color(0xFFFFFCF8),
-        Color(0xFFF8F1E6),
-        Color(0xFFEFE7F6),
+        AppThemeTokens.white,
+        AppThemeTokens.lightGray,
+        AppThemeTokens.lightBlue,
+      ],
+    );
+  }
+
+  factory AppThemePalette.app(ColorScheme scheme) {
+    return AppThemePalette(
+      canvas: AppThemeTokens.white,
+      surface: scheme.surface,
+      elevatedSurface: AppThemeTokens.white,
+      mutedSurface: AppThemeTokens.lightGray,
+      inputFill: AppThemeTokens.lightInputFill,
+      borderSubtle: const Color(0x0D000000),
+      heroGradient: const [
+        AppThemeTokens.white,
+        AppThemeTokens.lightGray,
+        Color(0xFFEDE9FE),
       ],
     );
   }
@@ -260,18 +353,14 @@ class AppThemePalette extends ThemeExtension<AppThemePalette> {
     return AppThemePalette(
       canvas: Color.lerp(canvas, other.canvas, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
-      elevatedSurface:
-          Color.lerp(elevatedSurface, other.elevatedSurface, t)!,
+      elevatedSurface: Color.lerp(elevatedSurface, other.elevatedSurface, t)!,
       mutedSurface: Color.lerp(mutedSurface, other.mutedSurface, t)!,
       inputFill: Color.lerp(inputFill, other.inputFill, t)!,
       borderSubtle: Color.lerp(borderSubtle, other.borderSubtle, t)!,
       heroGradient: List<Color>.generate(
         heroGradient.length,
-        (index) => Color.lerp(
-          heroGradient[index],
-          other.heroGradient[index],
-          t,
-        )!,
+        (index) =>
+            Color.lerp(heroGradient[index], other.heroGradient[index], t)!,
       ),
     );
   }

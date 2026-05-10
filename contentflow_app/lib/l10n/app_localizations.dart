@@ -69,8 +69,10 @@ class AppLocalizations {
     'AI generates content, you swipe to publish.':
         'L’IA génère du contenu, vous validez d’un swipe pour publier.',
     'API URL': 'URL de l’API',
+    'API diagnostics': 'Diagnostics API',
     'Access denied. This view is visible only to allowlisted accounts.':
         'Accès refusé. Cette vue n’est visible que pour les comptes autorisés.',
+    'Account-first entry': 'Entrée centrée sur le compte',
     'Actions from robots and your work will appear here':
         'Les actions des robots et de votre travail apparaîtront ici',
     'Activity': 'Activité',
@@ -87,6 +89,7 @@ class AppLocalizations {
         'Les analytics apparaîtront à mesure que le contenu avance dans le pipeline.',
     'Analyze': 'Analyser',
     'App language': 'Langue de l’application',
+    'App colors': 'Couleurs app',
     'Appearance': 'Apparence',
     'Approval Rate': 'Taux d’approbation',
     'Approve all?': 'Tout approuver ?',
@@ -105,9 +108,11 @@ class AppLocalizations {
     'Audio ready: {duration}': 'Audio prêt : {duration}',
     'Audio unavailable': 'Audio indisponible',
     'Audit': 'Audit',
+    'Auth': 'Auth',
     'Authentication': 'Authentification',
     'About': 'À propos',
     'Backend Connection': 'Connexion backend',
+    'Backend-aware recovery': 'Récupération orientée backend',
     'Blog articles': 'Articles de blog',
     'Cancel': 'Annuler',
     'Archive': 'Archiver',
@@ -161,6 +166,7 @@ class AppLocalizations {
     'Content is generated automatically':
         'Le contenu est généré automatiquement',
     'ContentFlow': 'ContentFlow',
+    'ContentFlow app': 'App ContentFlow',
     'Continue': 'Continuer',
     'Continue with Google': 'Continuer avec Google',
     'Create': 'Créer',
@@ -450,6 +456,7 @@ class AppLocalizations {
     'Continue Onboarding': 'Continuer l’onboarding',
     'Setup required': 'Configuration requise',
     'Session active': 'Session active',
+    'Session restore': 'Restauration de session',
     'Session error': 'Erreur de session',
     'Sign in to access your workspace':
         'Connectez-vous pour accéder à votre workspace',
@@ -515,6 +522,8 @@ class AppLocalizations {
     'Uptime': 'Disponibilité',
     'Uploading...': 'Upload...',
     'Use the web sign-in flow': 'Utiliser le flux de connexion web',
+    'Welcome back to your content workspace.':
+        'Bienvenue dans votre workspace de contenu.',
     'User feedback received by the backend. Real access control still lives server-side.':
         'Retours utilisateurs reçus par le backend. Le contrôle d’accès réel reste côté serveur.',
     'Validations': 'Validations',
@@ -527,6 +536,32 @@ class AppLocalizations {
         'Qu’est-ce qui vous bloque, manque, ou pourrait être amélioré ?',
     'With ContentFlow': 'Avec ContentFlow',
     'Without ContentFlow': 'Sans ContentFlow',
+    'Workspace': 'Workspace',
+    'Workspace continuation': 'Reprise du workspace',
+    '1. Restore or sign in': '1. Restaurer ou se connecter',
+    '2. Resolve workspace state': '2. Résoudre l’état du workspace',
+    '3. Continue work': '3. Continuer le travail',
+    'API and bootstrap failures expose retry, status, reconnect, and diagnostics actions without hiding them lower on the page.':
+        'Les erreurs API et bootstrap exposent les actions de relance, statut, reconnexion et diagnostic sans les enfouir plus bas dans la page.',
+    'ContentFlow checks Clerk first, then opens the right account path without burying auth below marketing content.':
+        'ContentFlow vérifie Clerk en premier, puis ouvre le bon parcours de compte sans enterrer l’authentification sous du contenu marketing.',
+    'Dashboard access': 'Accès au dashboard',
+    'Google sign-in': 'Connexion Google',
+    'Onboarding recovery': 'Reprise de l’onboarding',
+    'Recognized users can go straight to the dashboard or continue onboarding from the first viewport.':
+        'Les utilisateurs reconnus peuvent aller directement au dashboard ou reprendre l’onboarding dès le premier viewport.',
+    'The app decides whether you should enter the dashboard, finish onboarding, retry the API, or refresh your session.':
+        'L’app détermine s’il faut ouvrir le dashboard, terminer l’onboarding, relancer l’API ou rafraîchir votre session.',
+    'The visible state card tells users whether they are signed out, restoring, active, blocked, or ready.':
+        'La carte d’état visible indique si l’utilisateur est déconnecté, en restauration, actif, bloqué ou prêt.',
+    'This is an app entry page for existing users. It keeps account, workspace, and recovery actions at the top.':
+        'C’est une page d’accueil applicative pour les utilisateurs existants. Elle garde les actions de compte, workspace et récupération en haut.',
+    'Use this page to restore your session, open your workspace, finish onboarding, or recover cleanly when the backend is unavailable.':
+        'Utilisez cette page pour restaurer votre session, ouvrir votre workspace, finir l’onboarding ou récupérer proprement quand le backend est indisponible.',
+    'What happens on this page': 'Ce que fait cette page',
+    'backend readiness visible': 'état backend visible',
+    'dashboard or onboarding route': 'dashboard ou onboarding',
+    'session status first': 'état de session en premier',
     'approved': 'approuvé',
     'completed': 'terminé',
     'editing': 'édition',

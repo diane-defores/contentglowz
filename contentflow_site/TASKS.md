@@ -40,3 +40,11 @@
 
 ## Audit Findings
 <!-- Populated by /sf-audit — dated sections with Fixed: / Remaining: -->
+
+### Audit: Design Tokens (2026-05-10)
+
+| Pri | Task | Status |
+|-----|------|--------|
+| 🔴 | Migrer les 223 valeurs CSS site hardcodées de typographie, spacing, radius et motion vers les variables générées depuis `contentflow_theme.json` | 🔄 in progress |
+| 🟠 | Remplacer les couleurs directes restantes (`white`, `rgba`, hex affichés hors cas de documentation) par variables sémantiques | 📋 todo |
+| 🟠 | Ajouter des variables CSS mobile-first compactes pour sections, cards, listes, CTA et pages article/blog | 📋 todo |

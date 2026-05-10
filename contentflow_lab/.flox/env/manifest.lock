@@ -39,6 +39,9 @@
       },
       "turso-cli": {
         "pkg-path": "turso-cli"
+      },
+      "uvicorn": {
+        "pkg-path": "python313Packages.uvicorn"
       }
     },
     "hook": {
@@ -1477,6 +1480,142 @@
       ],
       "outputs": {
         "out": "/nix/store/1xwd2qjyjz4019ijl6xjgrvbai7l8i9b-turso-cli-1.0.19"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.uvicorn",
+      "broken": false,
+      "derivation": "/nix/store/bqyjzrmjpk2l0xxg3vca1qiw9j2dw2qf-python3.13-uvicorn-0.40.0.drv",
+      "description": "Lightning-fast ASGI server",
+      "install_id": "uvicorn",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-uvicorn-0.40.0",
+      "pname": "uvicorn",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:04:19.716182Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.40.0",
+      "outputs_to_install": [
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/9qp0dw2n3lgq6177j0vbmjb86g6yrxh5-python3.13-uvicorn-0.40.0-dist",
+        "out": "/nix/store/cwg4cmajmmksi77l818x3wb11qbhhy81-python3.13-uvicorn-0.40.0",
+        "testsout": "/nix/store/mk5r7xg3v76f5ri21ksif5kwzi0f6n1l-python3.13-uvicorn-0.40.0-testsout"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.uvicorn",
+      "broken": false,
+      "derivation": "/nix/store/lr9ri46mlqi7bmzmz35ll76hdbdsyw61-python3.13-uvicorn-0.40.0.drv",
+      "description": "Lightning-fast ASGI server",
+      "install_id": "uvicorn",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-uvicorn-0.40.0",
+      "pname": "uvicorn",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T06:38:01.231613Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.40.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/lkc3aqvvsh3l1n75ba545zg4vcicl83c-python3.13-uvicorn-0.40.0-dist",
+        "out": "/nix/store/r9x38zcfrl3jxyh43y7531q4b8qbyhv0-python3.13-uvicorn-0.40.0",
+        "testsout": "/nix/store/xwdbdbs4lhd59i3h0xlc2xn6qdl86lvd-python3.13-uvicorn-0.40.0-testsout"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.uvicorn",
+      "broken": false,
+      "derivation": "/nix/store/qcavnv0fjqa8h8jjd6w33wpv4bjvgs51-python3.13-uvicorn-0.40.0.drv",
+      "description": "Lightning-fast ASGI server",
+      "install_id": "uvicorn",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-uvicorn-0.40.0",
+      "pname": "uvicorn",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:09:13.073470Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.40.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/gh09z337i4qr040g1vipry9hkgd5np2q-python3.13-uvicorn-0.40.0-dist",
+        "out": "/nix/store/gnab9sqzn1vhwiibq59wpd5ixk8cxfb3-python3.13-uvicorn-0.40.0",
+        "testsout": "/nix/store/7ix7q7wrzgs9pag1x1611pi82nsg9icy-python3.13-uvicorn-0.40.0-testsout"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "python313Packages.uvicorn",
+      "broken": false,
+      "derivation": "/nix/store/5j12wqrsi5z9k9ywv9dac5rmqgr3i4id-python3.13-uvicorn-0.40.0.drv",
+      "description": "Lightning-fast ASGI server",
+      "install_id": "uvicorn",
+      "license": "BSD-3-Clause",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "name": "python3.13-uvicorn-0.40.0",
+      "pname": "uvicorn",
+      "rev": "b12141ef619e0a9c1c84dc8c684040326f27cdcc",
+      "rev_count": 982522,
+      "rev_date": "2026-04-18T21:33:21Z",
+      "scrape_date": "2026-04-21T07:46:11.501761Z",
+      "stabilities": [
+        "unstable",
+        "staging",
+        "stable"
+      ],
+      "unfree": false,
+      "version": "0.40.0",
+      "outputs_to_install": [
+        "out",
+        "out",
+        "out",
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/gqa8nkkck2apljp3d7mb7hln90sf7k4v-python3.13-uvicorn-0.40.0-dist",
+        "out": "/nix/store/5y6rxrmvj4qxzbzyl3dslyx72x5ckcbk-python3.13-uvicorn-0.40.0",
+        "testsout": "/nix/store/xgy866dg7l804c4zpbv6b2d9wa2blh8c-python3.13-uvicorn-0.40.0-testsout"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
