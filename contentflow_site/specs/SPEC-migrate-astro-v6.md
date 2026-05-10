@@ -21,19 +21,19 @@ linked_systems:
   - "Sitemap and robots endpoints"
   - "ContentFlow app handoff routes"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "0.1.0"
     required_status: "unknown"
   - artifact: "CLAUDE.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "0.1.0"
     required_status: "draft"
 supersedes: []
@@ -175,10 +175,10 @@ La migration doit être incrémentale:
 Internal dependencies:
 
 - `CLAUDE.md@0.1.0`: contraintes opérationnelles, structure, handoff backend, règles de langue.
-- `BUSINESS.md@1.0.0`: promesse produit et cohérence business.
-- `BRANDING.md@1.0.0`: ton, positionnement, microcopy.
-- `GUIDELINES.md@0.1.0`: dette metadata car statut draft.
-- `ARCHITECTURE.md@0.1.0`: architecture site statique et routes à préserver.
+- `shipflow_data/business/business.md@1.0.0`: promesse produit et cohérence business.
+- `shipflow_data/business/branding.md@1.0.0`: ton, positionnement, microcopy.
+- `shipflow_data/technical/guidelines.md@0.1.0`: dette metadata car statut draft.
+- `shipflow_data/technical/architecture.md@0.1.0`: architecture site statique et routes à préserver.
 - `package.json`: scripts `dev`, `start`, `build`, `preview`; engines Node/npm.
 - `package-lock.json`: lockfile npm v3 à régénérer.
 - `astro.config.mjs`: `site`, `base`, sitemap integration.
@@ -232,14 +232,14 @@ Documentation to update if implementation changes commands, engines, routes, or 
 
 - `CLAUDE.md`: update Common Commands or architecture notes only if scripts, Node/npm requirements, or content collection locations change in a way future agents need.
 - `README.md`: update setup instructions if it lists Astro 5, older Node, or old content collection paths.
-- `ARCHITECTURE.md`: update content collection architecture from `src/content/config.ts` to `src/content.config.ts` if present.
-- `CONTENT_MAP.md`: update only if route paths or content folders change.
+- `shipflow_data/technical/architecture.md`: update content collection architecture from `src/content/config.ts` to `src/content.config.ts` if present.
+- `shipflow_data/editorial/content-map.md`: update only if route paths or content folders change.
 - `CHANGELOG.md`: add migration note after implementation, not during spec writing unless session workflow requires it.
 - This spec itself: update `Status`, `Execution Notes`, and `Acceptance Criteria` evidence after implementation.
 
 Documentation coherence debt already present:
 
-- `GUIDELINES.md` and `ARCHITECTURE.md` are draft metadata, while `BUSINESS.md`, `BRANDING.md`, `PRODUCT.md`, `GTM.md`, and `CONTENT_MAP.md` are reviewed. `/sf-ready` should decide whether draft docs block readiness.
+- `shipflow_data/technical/guidelines.md` and `shipflow_data/technical/architecture.md` are draft metadata, while `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/business/product.md`, `shipflow_data/business/gtm.md`, and `shipflow_data/editorial/content-map.md` are reviewed. `/sf-ready` should decide whether draft docs block readiness.
 
 ## Edge Cases
 - Collection entries named `index.md` currently generate paths like `/ai-agents/index/index.html` under Astro 5 baseline. Do not assume Astro 6 should collapse these paths unless product explicitly wants route cleanup.
@@ -353,11 +353,11 @@ Documentation coherence debt already present:
   - Notes : comparer les chemins, pas les hash assets.
 
 - [ ] Tâche 13 : Mettre à jour la documentation minimale
-  - Fichier : `README.md`, `CLAUDE.md`, `ARCHITECTURE.md`, `CHANGELOG.md`
+  - Fichier : `README.md`, `CLAUDE.md`, `shipflow_data/technical/architecture.md`, `CHANGELOG.md`
   - Action : Mettre à jour seulement les mentions devenues fausses: version Astro, chemin `src/content.config.ts`, Node/npm requis, commandes de validation; ajouter une entrée changelog si le workflow le demande.
   - User story link : aide les futurs mainteneurs à exploiter Astro 6 sans contexte oral.
   - Depends on : Tâche 12.
-  - Validate with : revue de diff; `rg -n "Astro 5|src/content/config.ts|Node 20|node 20|legacy collections" README.md CLAUDE.md ARCHITECTURE.md CHANGELOG.md`.
+  - Validate with : revue de diff; `rg -n "Astro 5|src/content/config.ts|Node 20|node 20|legacy collections" README.md CLAUDE.md shipflow_data/technical/architecture.md CHANGELOG.md`.
   - Notes : ne pas réécrire les docs business non concernées.
 
 - [ ] Tâche 14 : Valider le déploiement preview

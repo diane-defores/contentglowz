@@ -15,9 +15,9 @@ security_impact: low
 docs_impact: yes
 depends_on:
   - CLAUDE.md@1.0.0
-  - BUSINESS.md@0.1.0
-  - BRANDING.md@0.1.0
-  - GUIDELINES.md@1.0.0
+  - shipflow_data/business/business.md@0.1.0
+  - shipflow_data/business/branding.md@0.1.0
+  - shipflow_data/technical/guidelines.md@1.0.0
 evidence:
   - README.md
   - CLAUDE.md
@@ -37,7 +37,7 @@ next_step: /sf-docs audit AGENT.md
 ## Mission
 - Garder `contentflow_site` comme surface d’entrée public stable, cohérente et fidèle au comportement réel de l’écosystème ContentFlow.
 - Traiter ce repo comme un **site de marketing + documentation SEO + conversion vers l’application**, pas comme un backend métier.
-- Aligner `README.md`, `BRANDING.md`, `GUIDELINES.md`, `BUSINESS.md` et les artefacts contextuels à chaque changement de route, d’handoff ou de contenu majeur.
+- Aligner `README.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md`, `shipflow_data/business/business.md` et les artefacts contextuels à chaque changement de route, d’handoff ou de contenu majeur.
 
 ## Mandat technique
 1. **Rendu Astro**
@@ -53,7 +53,7 @@ next_step: /sf-docs audit AGENT.md
     - `/launch` -> `APP_WEB_URL + /#/entry`
   - Préserver la logique de propagation de `redirect_url` quand présente.
 4. **Surface publique**
-  - Les pages de contenu, FAQ, blog, pricing et trust pages doivent rester en phase avec `BRANDING.md` et la promesse de résilience.
+  - Les pages de contenu, FAQ, blog, pricing et trust pages doivent rester en phase avec `shipflow_data/business/branding.md` et la promesse de résilience.
 5. **Sécurité opérationnelle**
   - Conserver les headers HTTP de production (`vercel.json`) et les tags `noindex` quand nécessaire.
   - Préserver `rel="preload"`/`script` d’analytics cookie-free selon l’environnement.
@@ -66,9 +66,9 @@ next_step: /sf-docs audit AGENT.md
 
 ## Gouvernance de modif
 - Après toute évolution de routing ou d’architecture du site:
-  - Mettre à jour `CONTEXT.md`.
-  - Mettre à jour `CONTEXT-FUNCTION-TREE.md`.
-  - Mettre à jour `ARCHITECTURE.md`.
+  - Mettre à jour `shipflow_data/technical/context.md`.
+  - Mettre à jour `shipflow_data/technical/context-function-tree.md`.
+  - Mettre à jour `shipflow_data/technical/architecture.md`.
   - Vérifier que `README.md` et `CLAUDE.md` restent synchronisés.
 
 ## Vérifications de finalisation

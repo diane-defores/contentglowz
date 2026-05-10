@@ -41,14 +41,14 @@ Tracked modified files observed:
 
 - `.gitignore`
 - `AGENT.md`
-- `ARCHITECTURE.md`
+- `shipflow_data/technical/architecture.md`
 - `AUDIT_LOG.md`
-- `BRANDING.md`
-- `CONTENT_MAP.md`
+- `shipflow_data/business/branding.md`
+- `shipflow_data/editorial/content-map.md`
 - `CONTEXT-FUNCTION-TREE.md`
-- `CONTEXT.md`
-- `GTM.md`
-- `PRODUCT.md`
+- `shipflow_data/technical/context.md`
+- `shipflow_data/business/gtm.md`
+- `shipflow_data/business/product.md`
 - `TASKS.md`
 - `pubspec.lock`
 - `pubspec.yaml`

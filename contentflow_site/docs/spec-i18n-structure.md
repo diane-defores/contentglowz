@@ -21,10 +21,10 @@ linked_systems:
   - "Sitemap and SEO metadata"
   - "ContentFlow app handoff URLs"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "CLAUDE.md"
@@ -145,7 +145,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Lay
 - Garder le site statique et compatible `npm run build`.
 - Ne pas dupliquer les composants entiers si un dictionnaire suffit.
 - Ne pas publier de page française partielle.
-- Les textes produit doivent rester alignés avec `BUSINESS.md` et `BRANDING.md`: pas de promesse d'automatisation totale, garder le framing human-in-the-loop.
+- Les textes produit doivent rester alignés avec `shipflow_data/business/business.md` et `shipflow_data/business/branding.md`: pas de promesse d'automatisation totale, garder le framing human-in-the-loop.
 
 ## Dependencies
 - Astro `^5.17.1`, i18n routing officiel.
@@ -185,8 +185,8 @@ Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Lay
   - comment ajouter une string UI;
   - comment ajouter un contenu Markdown traduit.
 - Mettre à jour `CLAUDE.md` si la règle de langue doit mentionner aussi le default locale anglais et la structure `/fr`.
-- Ajouter une note dans `CONTENT_MAP.md` ou doc équivalente si elle existe et est maintenue.
-- Ne pas modifier `BUSINESS.md` et `BRANDING.md` sauf si l'implémentation change les promesses produit.
+- Ajouter une note dans `shipflow_data/editorial/content-map.md` ou doc équivalente si elle existe et est maintenue.
+- Ne pas modifier `shipflow_data/business/business.md` et `shipflow_data/business/branding.md` sauf si l'implémentation change les promesses produit.
 
 ## Edge Cases
 - Page française sans équivalent anglais: autorisée seulement si `translationKey` est unique et si la navigation ne suppose pas d'alternate anglais.
@@ -221,7 +221,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Lay
   - User story link: enables reusable components to render in English or French.
   - Depends on: Task 2.
   - Validate with: build and a missing-key sanity check.
-  - Notes: Keep copy concise and aligned with `BRANDING.md`; French uses tutoiement.
+  - Notes: Keep copy concise and aligned with `shipflow_data/business/branding.md`; French uses tutoiement.
 
 - [ ] Task 4: Make `Layout.astro` locale-aware
   - File: `src/layouts/Layout.astro`
@@ -280,7 +280,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Lay
   - Notes: Add to `package.json` as `check:i18n`.
 
 - [ ] Task 11: Update docs
-  - Files: `README.md`, `CLAUDE.md`, optionally `CONTENT_MAP.md`
+  - Files: `README.md`, `CLAUDE.md`, optionally `shipflow_data/editorial/content-map.md`
   - Action: Document i18n conventions and contributor workflow.
   - User story link: lets future translation work use the structure consistently.
   - Depends on: implementation tasks.
@@ -345,7 +345,7 @@ Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Lay
 - Keep `prefixDefaultLocale: false`.
 - Do not introduce client-side i18n libraries.
 - Stop and reroute if enabling Astro i18n breaks existing English paths in a way that requires moving all current pages under `/en`; preserving current URLs is a hard requirement.
-- Stop and ask for product review if French copy requires business promises not present in `BUSINESS.md` or `BRANDING.md`.
+- Stop and ask for product review if French copy requires business promises not present in `shipflow_data/business/business.md` or `shipflow_data/business/branding.md`.
 
 ## Open Questions
 None blocking for the structural spec. Implementation should proceed with English as default unprefixed and French under `/fr`.

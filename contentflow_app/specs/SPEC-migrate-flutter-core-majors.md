@@ -26,21 +26,21 @@ depends_on:
   - artifact: "CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
 evidence:
   - "CLAUDE.md"
-  - "GUIDELINES.md"
-  - "BUSINESS.md"
-  - "BRANDING.md"
+  - "shipflow_data/technical/guidelines.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/business/branding.md"
   - "pubspec.yaml"
   - "pubspec.lock"
   - "lib/main.dart"
@@ -135,7 +135,7 @@ Exécuter une migration full par lots strictement ordonnés avec validation et s
 - Vérifier qu'il n'existe pas de `@riverpod` ni de `part '*.g.dart'` Riverpod; ne pas introduire de generated providers.
 - Adapter GoRouter production/tests si signatures ou matching changent.
 - Valider `GoogleFonts.interTextTheme` dans `lib/presentation/theme/app_theme.dart`.
-- Mettre à jour `CHANGELOG.md` et `GUIDELINES.md` seulement si la migration change commandes, contraintes, imports legacy ou politique codegen.
+- Mettre à jour `CHANGELOG.md` et `shipflow_data/technical/guidelines.md` seulement si la migration change commandes, contraintes, imports legacy ou politique codegen.
 
 # Scope Out
 
@@ -150,7 +150,7 @@ Exécuter une migration full par lots strictement ordonnés avec validation et s
 # Constraints
 
 - Respecter `CLAUDE.md`: ne pas hard-fail l'accès app quand FastAPI est indisponible; conserver cached reads/offline mode.
-- Respecter `GUIDELINES.md`: ne jamais bypasser `AppAccessState` pour le route gating.
+- Respecter `shipflow_data/technical/guidelines.md`: ne jamais bypasser `AppAccessState` pour le route gating.
 - Collaboration concurrente: relire `git status --short` avant chaque lot et ne pas revert des changements d'autres agents.
 - Les lots doivent être petits, validés et rollbackables.
 - Les versions exactes doivent être confirmées par `flutter pub outdated`, `flutter pub get` et docs officielles actuelles pendant l'implémentation.
@@ -240,7 +240,7 @@ Official sources consulted:
 # Documentation Coherence
 
 - `CHANGELOG.md`: add a dated migration entry with package majors and validation commands after implementation.
-- `GUIDELINES.md`: update only if the implementation establishes a new convention for `package:flutter_riverpod/legacy.dart`, Riverpod retry policy, GoRouter matching, or Riverpod codegen policy.
+- `shipflow_data/technical/guidelines.md`: update only if the implementation establishes a new convention for `package:flutter_riverpod/legacy.dart`, Riverpod retry policy, GoRouter matching, or Riverpod codegen policy.
 - `README.md`: update only if Flutter/Dart minimum setup, commands, or local web smoke flow changes.
 - `CLAUDE.md`: expected no change unless mandatory commands or Turso decision wording changes.
 - Business, pricing, onboarding copy, screenshots and support docs: no change expected because the user-facing feature contract is intentionally unchanged.
@@ -459,11 +459,11 @@ Official sources consulted:
 
 - [x] Tâche 25 : Update developer docs/changelog
   - Fichier : `CHANGELOG.md`
-  - Action : Add migration note with final package majors, validation commands and no-Turso conclusion; update `GUIDELINES.md` only for new Riverpod/GoRouter conventions.
+  - Action : Add migration note with final package majors, validation commands and no-Turso conclusion; update `shipflow_data/technical/guidelines.md` only for new Riverpod/GoRouter conventions.
   - User story link : Helps future maintainers understand migration consequences.
   - Depends on : Tâche 24
   - Validate with : manual docs diff review
-  - Notes : Completed on 2026-04-27 with migration entry in `CHANGELOG.md` and concise Riverpod 3 legacy/codegen policy note in `GUIDELINES.md`. No business/branding docs changed.
+  - Notes : Completed on 2026-04-27 with migration entry in `CHANGELOG.md` and concise Riverpod 3 legacy/codegen policy note in `shipflow_data/technical/guidelines.md`. No business/branding docs changed.
 
 - [x] Tâche 26 : Final rollback and security review
   - Fichier : `pubspec.yaml`, `pubspec.lock`, touched Dart/test/docs files
@@ -491,7 +491,7 @@ Official sources consulted:
 - [x] CA 14 : Given Google Fonts is migrated, when the theme builds, then `GoogleFonts.interTextTheme` compiles and widget tests do not require external font network.
 - [x] CA 15 : Given build_runner runs after annotation/generator migration, when no Riverpod annotations exist, then no Riverpod generated files are added.
 - [x] CA 16 : Given `flutter analyze`, `flutter test`, `dart run build_runner build --delete-conflicting-outputs`, and `flutter build web` run, then all pass before the migration is considered complete.
-- [x] CA 17 : Given implementation changes developer workflow or conventions, when docs are reviewed, then `CHANGELOG.md` and any relevant `GUIDELINES.md` updates are present.
+- [x] CA 17 : Given implementation changes developer workflow or conventions, when docs are reviewed, then `CHANGELOG.md` and any relevant `shipflow_data/technical/guidelines.md` updates are present.
 - [x] CA 18 : Given final diff review, when checking security and data scope, then no backend files, SQL migrations, widened access controls, non-pub.dev package sources, direct prerelease package choices, or secret logs are present.
 
 # Test Strategy

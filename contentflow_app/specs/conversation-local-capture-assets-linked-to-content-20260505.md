@@ -674,7 +674,7 @@ capture_screen_test.dart (+29 -18)
   V1.
 
 • Explored
-  └ Read README.md, CHANGELOG.md, GUIDELINES.md
+  └ Read README.md, CHANGELOG.md, shipflow_data/technical/guidelines.md
 
 • Edited 4 files (+9 -3)
   └ contentflow_app/CHANGELOG.md (+2 -1)
@@ -696,7 +696,7 @@ capture_screen_test.dart (+29 -18)
         lay; backend capture asset records store metadata only.
     17
 
-  └ contentflow_app/GUIDELINES.md (+2 -1)
+  └ contentflow_app/shipflow_data/technical/guidelines.md (+2 -1)
     90  - Persist only metadata and local file paths in SharedPreferen
         ces; never store binary capture data there.
     91 -- Keep backend upload, sync, retention, and storage-cost behav
@@ -851,7 +851,7 @@ presentation/screens/capture/capture_screen_test.dart
 
 • Ran git status --short
   └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/GUIDELINES.md
+     M contentflow_app/shipflow_data/technical/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
     ?? contentflow_app/test/presentation/screens/onboarding/
@@ -926,7 +926,7 @@ content.md (+21 -10)
     146 -- [ ] Task 6: Update docs and changelog.
     146 +- [x] Task 6: Update docs and changelog.
     147    - Files: `contentflow_app/README.md`, `contentflow_app/CHAN
-         GELOG.md`, `contentflow_app/GUIDELINES.md`, `contentflow_lab/
+         GELOG.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_lab/
          CHANGELOG.md`
         ⋮
     163  | 2026-05-05 | sf-build | GPT-5 | Created full-stack local ca
@@ -1068,7 +1068,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git status --short
   └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/GUIDELINES.md
+     M contentflow_app/shipflow_data/technical/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
     ?? contentflow_app/test/presentation/screens/onboarding/
@@ -1092,7 +1092,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git status --short --untracked-files=all
   └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/GUIDELINES.md
+     M contentflow_app/shipflow_data/technical/guidelines.md
     … +24 lines (ctrl + t to view transcript)
     ?? contentflow_app/test/presentation/screens/onboarding/
     onboarding_back_test.dart
@@ -1122,7 +1122,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git diff --stat
   └  contentflow_app/CHANGELOG.md                       |   3 +-
-     contentflow_app/GUIDELINES.md                      |   3 +-
+     contentflow_app/shipflow_data/technical/guidelines.md                      |   3 +-
     … +19 lines (ctrl + t to view transcript)
     ++++++++
      19 files changed, 1093 insertions(+), 96 deletions(-)
@@ -1237,7 +1237,7 @@ bin/python -m pip install pytest
 
 • Ran git diff --name-only
   └ contentflow_app/CHANGELOG.md
-    contentflow_app/GUIDELINES.md
+    contentflow_app/shipflow_data/technical/guidelines.md
     … +15 lines (ctrl + t to view transcript)
     contentflow_lab/status/schemas.py
     contentflow_lab/status/service.py

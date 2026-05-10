@@ -26,16 +26,16 @@ linked_systems:
   - "contentflow_lab generation agents"
   - "contentflow_lab publish router"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "specs/SPEC-content-pipeline-unification.md"
@@ -163,7 +163,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 ## Documentation Coherence
 
 - Update `CHANGELOG.md` when child specs ship user-visible behavior.
-- Update `PRODUCT.md` only if the public product promise changes beyond reliable editing.
+- Update `shipflow_data/business/product.md` only if the public product promise changes beyond reliable editing.
 - Update `specs/SPEC-offline-sync-v2.md` only if queue payloads, cache keys, or offline support semantics change.
 - Update `specs/SPEC-content-pipeline-unification.md` only if format metadata contracts change.
 - No marketing-site copy change is required for Spec 1; later format-aware editing may require a site/product copy alignment pass.

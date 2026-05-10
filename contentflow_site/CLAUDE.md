@@ -14,9 +14,9 @@ risk_level: medium
 security_impact: low
 docs_impact: yes
 depends_on:
-  - BUSINESS.md@1.0.0
-  - BRANDING.md@1.0.0
-  - GUIDELINES.md@1.0.0
+  - shipflow_data/business/business.md@1.0.0
+  - shipflow_data/business/branding.md@1.0.0
+  - shipflow_data/technical/guidelines.md@1.0.0
 evidence:
   - README.md
   - src/config/site.ts

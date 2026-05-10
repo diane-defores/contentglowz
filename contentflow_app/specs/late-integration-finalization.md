@@ -30,16 +30,16 @@ linked_systems:
   - contentflow_app/lib/presentation/screens/feed/feed_screen.dart
   - Zernio API
 depends_on:
-  - artifact: "contentflow_app/BUSINESS.md"
+  - artifact: "contentflow_app/shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/PRODUCT.md"
+  - artifact: "contentflow_app/shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/ARCHITECTURE.md"
+  - artifact: "contentflow_app/shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/GUIDELINES.md"
+  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "contentflow_app/CLAUDE.md"
@@ -190,10 +190,10 @@ Le flow de connexion utilise un profil Zernio par projet ContentFlow. Le backend
 ## Dependencies
 
 Local:
-- `contentflow_app/BUSINESS.md` v1.0.0 reviewed: parcours createur et contraintes business.
-- `contentflow_app/PRODUCT.md` v1.0.0 reviewed: multi-projet et limites produit.
-- `contentflow_app/ARCHITECTURE.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
-- `contentflow_app/GUIDELINES.md` v1.0.0 reviewed: auth, tests, offline/sync.
+- `contentflow_app/shipflow_data/business/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
+- `contentflow_app/shipflow_data/business/product.md` v1.0.0 reviewed: multi-projet et limites produit.
+- `contentflow_app/shipflow_data/technical/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
+- `contentflow_app/shipflow_data/technical/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
 - `contentflow_app/CLAUDE.md` v1.0.0 reviewed: commandes, structure, Turso/libSQL.
 
 External docs freshness:
@@ -240,7 +240,7 @@ Consequences transverses:
 ## Documentation Coherence
 
 - `contentflow_app/README.md`: ajouter `ZERNIO_API_KEY`, base URL, flow de connexion, plateformes supportees, WordPress/Ghost non supportes par Zernio dans ce chantier, checklist manuelle.
-- `contentflow_app/ARCHITECTURE.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
+- `contentflow_app/shipflow_data/technical/architecture.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
 - `contentflow_app/.env.example`: ajouter ou verifier `ZERNIO_API_KEY` si absent.
 - `contentflow_app/CHANGELOG.md`: noter l'integration Zernio project-scoped une fois implementee.
 - Support/onboarding: aucune FAQ dediee dans le repo; si une doc support existe plus tard, elle devra reprendre les erreurs `missing_account`, `partial`, `failed`, `forbidden`.

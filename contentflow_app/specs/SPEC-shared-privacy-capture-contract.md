@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "As a ContentFlow creator who captures screens on multiple platforms for public sharing, I want one shared privacy capture contract for metadata, temporary files, backend payloads, disclosure, and review gates, so Android, Web, Windows, and future iOS/Linux/macOS implementations reduce leaks consistently without forcing the same native pipeline."
 risk_level: high
 security_impact: "yes"
@@ -29,16 +30,16 @@ linked_systems:
   - "Future Linux xdg-desktop-portal/PipeWire privacy capture pipeline"
   - "Future macOS ScreenCaptureKit privacy capture pipeline"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "PRODUCT.md"
+  - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "specs/SPEC-android-privacy-capture-dynamic-redaction.md"
@@ -187,7 +188,7 @@ Local files and contracts:
 - `contentflow_app/test/data/capture_asset_test.dart`: model serialization tests.
 - `contentflow_app/test/data/capture_local_store_test.dart`: local metadata persistence tests.
 - `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`: Capture UI and event-flow tests.
-- `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, and `contentflow_app/CHANGELOG.md`: docs to align after implementation.
+- `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, and `contentflow_app/CHANGELOG.md`: docs to align after implementation.
 
 Source specs and explorations:
 
@@ -324,7 +325,7 @@ Copy constraints:
 
 ## Documentation Coherence
 
-- Update `contentflow_app/GUIDELINES.md` with this shared privacy metadata, backend-safe payload, OCR non-persistence, temp-file/quarantine, and review gate contract.
+- Update `contentflow_app/shipflow_data/technical/guidelines.md` with this shared privacy metadata, backend-safe payload, OCR non-persistence, temp-file/quarantine, and review gate contract.
 - Update `contentflow_app/README.md` with a product-facing explanation of cross-platform privacy capture status, best-effort limitation, local-first processing, and manual review requirement.
 - Update `contentflow_app/CHANGELOG.md` after implementation lands.
 - Update platform specs or implementation notes to reference this spec as the shared contract before platform-specific implementation starts.
@@ -423,7 +424,7 @@ Copy constraints:
   - Notes: Include negative fixtures containing `ocrText`, `recognizedText`, `clearPath`, `tempPath`, `objectUrl`, and raw `boxes` keys and assert they are dropped or rejected.
 
 - [ ] Task 10: Update documentation after implementation.
-  - File: `contentflow_app/GUIDELINES.md`, `contentflow_app/README.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/README.md`, `contentflow_app/CHANGELOG.md`
   - Action: Document the shared contract, data minimization rules, temp-file/quarantine behavior, review gate, and supported platform status.
   - User story link: Aligns implementers and operators with the feature's real guarantees.
   - Depends on: Tasks 1-9.

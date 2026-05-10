@@ -27,10 +27,10 @@ depends_on:
   - artifact: "contentflow_app/specs/SPEC-android-device-screen-capture.md"
     artifact_version: "1.0.0"
     required_status: active
-  - artifact: "contentflow_app/GUIDELINES.md"
+  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/GUIDELINES.md"
+  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -145,7 +145,7 @@ Statuses:
   - Validate with: widget tests and manual Android follow-up.
 
 - [x] Task 6: Update docs and changelog.
-  - Files: `contentflow_app/README.md`, `contentflow_app/CHANGELOG.md`, `contentflow_app/GUIDELINES.md`, `contentflow_lab/CHANGELOG.md`
+  - Files: `contentflow_app/README.md`, `contentflow_app/CHANGELOG.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_lab/CHANGELOG.md`
   - Validate with: docs review.
 
 ## Acceptance Criteria

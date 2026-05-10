@@ -26,16 +26,16 @@ linked_systems:
   - "contentflow_lab status service"
   - "contentflow_lab publish router"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "specs/SPEC-content-editing-infrastructure.md"
@@ -173,7 +173,7 @@ Separate preview display data from authoritative body data, add a content detail
 
 - Update `CHANGELOG.md` after implementation with a short reliability note.
 - Update `specs/SPEC-offline-sync-v2.md` only if queue action schema, cache keys, or offline behavior changes.
-- No `PRODUCT.md` change is required if this only fixes the existing promised behavior.
+- No `shipflow_data/business/product.md` change is required if this only fixes the existing promised behavior.
 - No marketing-site copy change is required.
 - If implementation discovers that publish behavior changes user-visible copy, update `lib/l10n/app_localizations.dart` consistently.
 

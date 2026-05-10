@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "As a ContentFlow creator on Windows desktop who records arbitrary windows or monitors for public videos, I want to enable a privacy mode that dynamically makes text unreadable and redacts sensitive visual regions while preserving workflow readability, so that I can reduce accidental data leaks before sharing without pretending the result is guaranteed safe."
 risk_level: high
 security_impact: "yes"
@@ -29,19 +30,19 @@ linked_systems:
   - "Windows.Media.Transcoding MediaTranscoder"
   - "Microsoft Media Foundation"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "PRODUCT.md"
+  - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "docs/technical/flutter-app-shell-and-capture.md"
+  - artifact: "shipflow_data/technical/flutter-app-shell-and-capture.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "specs/SPEC-local-capture-assets-linked-to-content.md"
@@ -58,7 +59,7 @@ evidence:
   - "docs/explorations/2026-05-08-windows-privacy-capture-redaction.md found Windows.Graphics.Capture feasible for user-selected window/display capture, Win2D/Direct3D feasible for effects, Windows.Media.Ocr feasible for text boxes, and MediaStreamSource/MediaTranscoder feasible for flattened video export."
   - "contentflow_app currently has Android native capture code but no contentflow_app/windows runner directory, so Windows desktop capture is clean slate relative to platform-native code."
   - "contentflow_app/lib/data/services/device_capture_service.dart currently reports non-Android platforms unsupported and uses typed MethodChannel/EventChannel parsing at the service/model boundary."
-  - "contentflow_app/GUIDELINES.md requires typed native platform-channel APIs at the service/model boundary, app-scoped capture storage, metadata-only SharedPreferences persistence, and no durable backend truth based on device-local paths."
+  - "contentflow_app/shipflow_data/technical/guidelines.md requires typed native platform-channel APIs at the service/model boundary, app-scoped capture storage, metadata-only SharedPreferences persistence, and no durable backend truth based on device-local paths."
   - "The Android privacy spec establishes the product pattern for privacy-marked assets, best-effort disclosure, post-production review, and no persistence of recognized text."
 next_step: "/sf-ready windows privacy capture dynamic redaction"
 ---
@@ -184,7 +185,7 @@ Local dependencies and contracts:
 - `contentflow_app/windows/runner/`: prospective Flutter Windows runner files for plugin registration and native method/event channel binding.
 - `contentflow_app/windows/runner/privacy_capture/`: prospective native module for Windows capture, OCR, redaction, encoding, temp cleanup, and event emission.
 - `contentflow_app/pubspec.yaml`: may need Windows desktop plugin or FFI dependencies only if the chosen architecture requires them; prefer native runner integration before adding broad package surface.
-- `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, `contentflow_app/CHANGELOG.md`, and `contentflow_app/docs/technical/flutter-app-shell-and-capture.md`: update after implementation.
+- `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`, and `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`: update after implementation.
 
 Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official Microsoft documentation and the Windows exploration source list.
 
@@ -225,10 +226,10 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 ## Documentation Coherence
 
 - Update `contentflow_app/README.md` with Windows desktop privacy capture scope, best-effort limits, local-only processing, review requirement, and no cloud redaction.
-- Update `contentflow_app/GUIDELINES.md` with Windows native capture temp-file rules, OCR text discard rules, multi-monitor/DPI validation expectations, and review-gated share behavior.
-- Update `contentflow_app/docs/technical/flutter-app-shell-and-capture.md` to add Windows runner/native capture ownership, validation commands, and Windows QA requirements.
+- Update `contentflow_app/shipflow_data/technical/guidelines.md` with Windows native capture temp-file rules, OCR text discard rules, multi-monitor/DPI validation expectations, and review-gated share behavior.
+- Update `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md` to add Windows runner/native capture ownership, validation commands, and Windows QA requirements.
 - Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/PRODUCT.md` only if Windows privacy capture ships publicly and changes platform positioning.
+- Update `contentflow_app/shipflow_data/business/product.md` only if Windows privacy capture ships publicly and changes platform positioning.
 - Do not update `contentflow_site` marketing copy until Windows QA proves the feature usable and wording is legally safe.
 
 ## Edge Cases
@@ -395,7 +396,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: No backend schema migration expected if metadata JSON is sufficient.
 
 - [ ] Task 18: Add tests and documentation updates.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, `contentflow_app/docs/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
   - Action: Cover parsing, support gating, disclosure, review gating, normal capture unchanged behavior, and document Windows-only V1 limits, temp rules, best-effort language, and manual QA.
   - User story link: Prevents regression and aligns operator expectations with actual privacy guarantees.
   - Depends on: Tasks 1-17.
@@ -480,7 +481,7 @@ Read first:
 - `contentflow_app/lib/data/models/capture_asset.dart`
 - `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
 - `contentflow_app/lib/data/services/capture_local_store.dart`
-- `contentflow_app/GUIDELINES.md`
+- `contentflow_app/shipflow_data/technical/guidelines.md`
 - `docs/explorations/2026-05-08-windows-privacy-capture-redaction.md`
 
 Implementation approach:

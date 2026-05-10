@@ -22,13 +22,13 @@ linked_systems:
   - "UserSettings.projectSelectionMode"
   - "Firecrawl-backed public URL analysis"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "unknown"
     required_status: "active"
-  - artifact: "BRANDING.md"
+  - artifact: "shipflow_data/business/branding.md"
     artifact_version: "unknown"
     required_status: "active"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "unknown"
     required_status: "active"
 supersedes: []
@@ -184,7 +184,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
 ## Documentation Coherence
 
 - Update `contentflow_app/CHANGELOG.md` after implementation with source-agnostic project creation, explicit no-project selection, and archive-first project lifecycle.
-- Review `contentflow_app/GUIDELINES.md`, `contentflow_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
+- Review `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
 - Review backend docs in `contentflow_lab/README.md` or project API docs if they document `/api/projects` as GitHub-only or hard-delete-only.
 - No pricing, public marketing page, or FAQ update is required in this spec because the change is inside authenticated app project management and does not alter packaging or public claims.
 - Future Firecrawl crawl documentation is out of scope; this spec must not document non-GitHub URLs as actively crawled until the crawl pipeline exists.

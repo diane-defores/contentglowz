@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "As a ContentFlow creator using the web app in a browser to capture a screen or tab for public sharing, I want a privacy mode that dynamically obscures readable text and sensitive imagery before export, so I can reduce accidental leaks while keeping the workflow video understandable."
 risk_level: high
 security_impact: "yes"
@@ -29,16 +30,16 @@ linked_systems:
   - "Shape Detection TextDetector"
   - "OCR WASM fallback"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "PRODUCT.md"
+  - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "../docs/explorations/2026-05-08-web-privacy-capture-redaction.md"
@@ -218,9 +219,9 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 ## Documentation Coherence
 
 - Update `contentflow_app/README.md` with browser privacy capture scope, best-effort limits, browser support caveats, local-only processing, and review-before-share behavior.
-- Update `contentflow_app/GUIDELINES.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
+- Update `contentflow_app/shipflow_data/technical/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
 - Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/PRODUCT.md` only if the feature ships publicly and changes supported-platform positioning.
+- Update `contentflow_app/shipflow_data/business/product.md` only if the feature ships publicly and changes supported-platform positioning.
 - Do not update `contentflow_site` marketing copy until manual browser QA proves the feature is usable and wording is legally safe.
 - Do not update `.env.example` unless OCR fallback or worker packaging introduces a configurable runtime flag.
 
@@ -349,7 +350,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: No backend schema change expected.
 
 - [ ] Task 14: Update tests, docs, and browser QA notes.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`
   - Action: Cover privacy metadata parsing, review-state persistence, disclosure UI, share/export gating, normal Android unaffected behavior, and document web-only best-effort browser limits.
   - User story link: Keeps the shipped feature honest, testable, and aligned with product guarantees.
   - Depends on: Tasks 1-13.

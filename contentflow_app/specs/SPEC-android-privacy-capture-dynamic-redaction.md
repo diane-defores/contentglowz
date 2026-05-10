@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "En tant que createur ContentFlow sur Android qui enregistre tout son ecran pour publier des videos en ligne, je veux activer un mode confidentialite qui rend les textes illisibles et floute ou pixelise les photos tout en gardant l'interface comprehensible, afin de reduire les fuites d'informations sans produire une video inutilisable."
 risk_level: high
 security_impact: "yes"
@@ -27,16 +28,16 @@ linked_systems:
   - "Google ML Kit Text Recognition and Face Detection"
   - "AndroidX Media3 Transformer"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "PRODUCT.md"
+  - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "specs/SPEC-android-device-screen-capture.md"
@@ -213,9 +214,9 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 ## Documentation Coherence
 
 - Update `contentflow_app/README.md` with privacy capture scope, Android-only status, best-effort limitation, post-production review requirement, and no cloud upload behavior.
-- Update `contentflow_app/GUIDELINES.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
+- Update `contentflow_app/shipflow_data/technical/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
 - Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/PRODUCT.md` only if the feature ships publicly and changes product positioning.
+- Update `contentflow_app/shipflow_data/business/product.md` only if the feature ships publicly and changes product positioning.
 - Do not update `.env.example` in V1 unless implementation introduces a configurable build/runtime flag.
 - Do not update `contentflow_site` marketing copy until QA proves the feature is usable and wording is legally safe.
 
@@ -361,7 +362,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Native frame quality still requires manual/device validation.
 
 - [ ] Task 16: Update docs and changelog.
-  - File: `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`
   - Action: Document Android-only privacy mode, best-effort limits, post-production review, local-only processing, dependencies, and no guarantee/no cloud upload behavior.
   - User story link: Aligns user/operator expectations with the feature's real guarantees.
   - Depends on: Tasks 1-15.

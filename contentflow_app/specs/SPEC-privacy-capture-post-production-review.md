@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: "Diane"
+confidence: medium
 user_story: "As a ContentFlow creator reviewing a privacy capture before publishing or sharing it, I want to inspect the redacted output, add extra redaction where needed, and acknowledge the remaining risk, so that only a reviewed flattened privacy asset can leave the app."
 risk_level: high
 security_impact: "yes"
@@ -28,19 +29,19 @@ linked_systems:
   - "Web privacy capture dynamic redaction"
   - "Windows privacy capture dynamic redaction"
 depends_on:
-  - artifact: "BUSINESS.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "PRODUCT.md"
+  - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "GUIDELINES.md"
+  - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "ARCHITECTURE.md"
+  - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "docs/technical/flutter-app-shell-and-capture.md"
+  - artifact: "shipflow_data/technical/flutter-app-shell-and-capture.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "specs/SPEC-local-capture-assets-linked-to-content.md"
@@ -219,8 +220,8 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
 ## Documentation Coherence
 
 - Update `contentflow_app/README.md` with the privacy capture review workflow: redacted preview, manual corrections, acknowledgement, share/export gating, and no guarantee.
-- Update `contentflow_app/GUIDELINES.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
-- Update `contentflow_app/docs/technical/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
+- Update `contentflow_app/shipflow_data/technical/guidelines.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
+- Update `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
 - Update `contentflow_app/CHANGELOG.md` after implementation.
 - Update related Android/web/Windows privacy specs only if implementation changes their assumed review state contract.
 - Do not update public marketing copy until platform QA proves the flow is usable and product/legal copy is reviewed.
@@ -330,7 +331,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Add fake capture clients rather than platform-native test dependencies.
 
 - [ ] Task 11: Update docs for privacy review behavior.
-  - File: `contentflow_app/README.md`, `contentflow_app/GUIDELINES.md`, `contentflow_app/docs/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
   - Action: Document review-required flow, no-clear compare policy, local-only metadata, no-guarantee copy, manual correction limits, and platform-specific ownership split.
   - User story link: Aligns implementers and users around what privacy review does and does not guarantee.
   - Depends on: Tasks 1-10.
