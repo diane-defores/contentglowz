@@ -652,7 +652,7 @@ class _HeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: EdgeInsets.all(isNarrow ? 16 : 20),
+      padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -662,19 +662,22 @@ class _HeroCard extends StatelessWidget {
             colorScheme.surfaceContainerHighest,
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.xs,
+              vertical: AppSpacing.xs,
+            ),
             decoration: BoxDecoration(
               color: colorScheme.surface.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadii.pill),
             ),
             child: Wrap(
-              spacing: 8,
+              spacing: AppSpacing.xs,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Icon(
@@ -692,7 +695,7 @@ class _HeroCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: AppSpacing.md + AppSpacing.xs),
           Text(
             context.tr('Your content machine is ready to be configured.'),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -701,14 +704,14 @@ class _HeroCard extends StatelessWidget {
               fontSize: compact ? 26 : null,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: AppSpacing.xs),
           Text(
             context.tr(
               'No draft is currently waiting in the review queue. Set your creation rules, generate a first draft, or prepare the upcoming queue.',
             ),
             style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.5),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: AppSpacing.md + AppSpacing.xs),
           if (compact)
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -718,7 +721,7 @@ class _HeroCard extends StatelessWidget {
                   icon: const Icon(Icons.tune_rounded),
                   label: Text(context.tr('Review creation settings')),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.xs),
                 OutlinedButton.icon(
                   onPressed: onSecondaryTap,
                   icon: const Icon(Icons.auto_awesome_rounded),
@@ -728,8 +731,8 @@ class _HeroCard extends StatelessWidget {
             )
           else
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
               children: [
                 FilledButton.icon(
                   onPressed: onPrimaryTap,
@@ -778,21 +781,11 @@ class _ActionCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(AppSpacing.md),
           child: compact
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(icon, color: color),
-                    ),
-                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -807,13 +800,23 @@ class _ActionCard extends StatelessWidget {
                                       ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
+                              SizedBox(width: AppSpacing.xs),
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(AppRadii.lg),
+                                ),
+                                child: Icon(icon, color: color),
+                              ),
                               if (trailing != null) ...[
-                                const SizedBox(width: 10),
+                                SizedBox(width: AppSpacing.xs),
                                 trailing!,
                               ],
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: AppSpacing.xxs + 2),
                           Text(
                             subtitle,
                             style: TextStyle(
@@ -821,20 +824,20 @@ class _ActionCard extends StatelessWidget {
                               height: 1.45,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: AppSpacing.xs),
                           Wrap(
-                            spacing: 10,
-                            runSpacing: 8,
+                            spacing: AppSpacing.xs,
+                            runSpacing: AppSpacing.xs,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xs,
+                                  vertical: AppSpacing.xxs + 2,
                                 ),
                                 decoration: BoxDecoration(
                                   color: color.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(999),
+                                  borderRadius: BorderRadius.circular(AppRadii.pill),
                                 ),
                                 child: Text(
                                   ctaLabel,
@@ -861,15 +864,24 @@ class _ActionCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(AppRadii.lg),
                           ),
                           child: Icon(icon, color: color),
                         ),
-                        const Spacer(),
                         if (trailing != null)
                           Flexible(
                             child: Align(
@@ -879,14 +891,7 @@ class _ActionCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppSpacing.xs),
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -894,7 +899,7 @@ class _ActionCard extends StatelessWidget {
                         height: 1.45,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppSpacing.md),
                     Text(
                       ctaLabel,
                       style: TextStyle(

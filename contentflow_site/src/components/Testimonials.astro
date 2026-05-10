@@ -10,38 +10,50 @@
 
     <div class="testimonials-grid">
       <div class="testimonial-card">
-        <div class="use-case-icon">🚀</div>
-        <h3>Solo Founders</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>Solo Founders</h3>
+          <div class="use-case-icon card-title-icon">🚀</div>
+        </div>
         <p class="quote">You're building a product and need to ship content for SEO, social, and newsletters. But writing isn't your job. ContentFlow generates it from your weekly 5-minute ritual.</p>
       </div>
 
       <div class="testimonial-card">
-        <div class="use-case-icon">✍️</div>
-        <h3>Content Creators</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>Content Creators</h3>
+          <div class="use-case-icon card-title-icon">✍️</div>
+        </div>
         <p class="quote">You have one idea. ContentFlow turns it into a blog post, a Twitter thread, a LinkedIn post, a newsletter section, and a short video script. One idea, six outputs.</p>
       </div>
 
       <div class="testimonial-card">
-        <div class="use-case-icon">📈</div>
-        <h3>SEO-Driven Sites</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>SEO-Driven Sites</h3>
+          <div class="use-case-icon card-title-icon">📈</div>
+        </div>
         <p class="quote">DataForSEO-powered keyword research feeds the pipeline. Articles are optimized for real search volume. SERP tracking shows what's working. Content that ranks, automatically.</p>
       </div>
 
       <div class="testimonial-card">
-        <div class="use-case-icon">💰</div>
-        <h3>Affiliate Marketers</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>Affiliate Marketers</h3>
+          <div class="use-case-icon card-title-icon">💰</div>
+        </div>
         <p class="quote">Register your affiliate programs. AI matches keywords and weaves links into every article naturally. Track which programs are active, paused, or expired. Monetization on autopilot.</p>
       </div>
 
       <div class="testimonial-card">
-        <div class="use-case-icon">🏢</div>
-        <h3>Small Agencies</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>Small Agencies</h3>
+          <div class="use-case-icon card-title-icon">🏢</div>
+        </div>
         <p class="quote">Manage multiple projects with separate personas, voices, and publishing channels. The Pro plan gives unlimited projects. Scale content for all your clients from one dashboard.</p>
       </div>
 
       <div class="testimonial-card">
-        <div class="use-case-icon">📱</div>
-        <h3>Mobile-First Creators</h3>
+        <div class="testimonial-card-header card-title-row">
+          <h3>Mobile-First Creators</h3>
+          <div class="use-case-icon card-title-icon">📱</div>
+        </div>
         <p class="quote">Review content from your phone on the train. Swipe right, it's published. Swipe left, it's gone. The whole approval flow was designed for thumbs, not keyboards.</p>
       </div>
     </div>
@@ -50,8 +62,8 @@
 
 <style>
   .testimonials-section {
-    padding: 6rem 0;
-    background: white;
+    padding: var(--space-24) 0;
+    background: var(--color-white);
   }
 
   .section-header p {
@@ -62,37 +74,35 @@
   .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+    gap: var(--space-8);
   }
 
   .testimonial-card {
     background: var(--color-light-gray);
-    padding: 2rem;
-    border-radius: 16px;
-    transition: all 0.3s ease;
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    transition: background var(--duration-slow), box-shadow var(--duration-slow), transform var(--duration-slow);
   }
 
   .testimonial-card:hover {
-    background: white;
+    background: var(--color-white);
     box-shadow: var(--shadow-card-hover);
     transform: translateY(-5px);
   }
 
-  .use-case-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+  .testimonial-card h3 {
+    font-size: var(--text-lg);
+    color: var(--color-dark);
   }
 
-  .testimonial-card h3 {
-    font-size: 1.3rem;
-    color: var(--color-dark);
-    margin-bottom: 0.75rem;
+  .testimonial-card .card-title-icon {
+    font-size: var(--text-h3);
   }
 
   .quote {
     color: var(--color-gray);
-    line-height: 1.7;
-    font-size: 0.95rem;
+    line-height: var(--leading-relaxed);
+    font-size: var(--text-sm);
   }
 
   @media (max-width: 768px) {

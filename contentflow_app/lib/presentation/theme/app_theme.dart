@@ -203,10 +203,21 @@ class AppTheme {
 }
 
 class AppSpacing {
+  static const double xxs = AppThemeTokens.spacing1;
+  static const double xs = AppThemeTokens.spacing2;
+  static const double sm = AppThemeTokens.spacing3;
+  static const double md = AppThemeTokens.spacing4;
+  static const double lg = AppThemeTokens.spacing5;
+  static const double xl = AppThemeTokens.spacing6;
+
   static double scale(BuildContext context) {
     return MediaQuery.sizeOf(context).width < AppThemeTokens.mobileBreakpoint
         ? AppThemeTokens.mobileDensityScale
         : 1.0;
+  }
+
+  static double scaled(BuildContext context, double value) {
+    return value * scale(context);
   }
 
   static EdgeInsets page(BuildContext context) {
@@ -224,6 +235,11 @@ class AppSpacing {
 }
 
 class AppRadii {
+  static const double sm = AppThemeTokens.radiusSm;
+  static const double md = AppThemeTokens.radiusMd;
+  static const double lg = AppThemeTokens.radiusLg;
+  static const double xl = AppThemeTokens.radiusXl;
+  static const double xxl = AppThemeTokens.radius2xl;
   static const double card = AppThemeTokens.radius2xl;
   static const double button = AppThemeTokens.radiusLg;
   static const double input = AppThemeTokens.radiusMd;
@@ -232,7 +248,10 @@ class AppRadii {
 }
 
 class AppText {
+  static double get xs => AppThemeTokens.textXs;
+  static double get sm => AppThemeTokens.textSm;
   static double get base => AppThemeTokens.textBase;
+  static double get lg => AppThemeTokens.textLg;
   static double compact(BuildContext context, double value) {
     return value * AppSpacing.scale(context);
   }

@@ -317,14 +317,17 @@ Etendre `contentflow_theme.json` en source unique semantique et responsive, renf
 | 2026-05-10 11:26:00 UTC | sf-start | GPT-5.3 Codex | Mise en oeuvre de la centralisation: tokens partagés, générateur renforcé et bascule vers des compactages explicites | Partial |
 | 2026-05-10 09:11 UTC | sf-verify | GPT-5 Codex | Verification ship-readiness du chantier tokens app/site | partial | Corriger les ecarts hors scope et completer scan anti-literals + QA visuelle |
 | 2026-05-10 09:18 UTC | sf-build | GPT-5 Codex + GPT-5.3 Codex Spark | Correction autonome des ecarts sf-verify: garde admin restaure, scan anti-literals ajoute, builds ignores hors jugement | partial | Nettoyer le scope de ship des artefacts generes et changements hors chantier |
+| 2026-05-10 18:31 UTC | sf-verify | GPT-5 Codex | Verification des demandes: tokens/paddings centralises et cartes icone-titre-description | partial | Corriger les cartes icone/titre, reduire les literals restants, puis relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 18:36 UTC | continue | GPT-5 Codex | Reprise autonome: correction des cartes site icone/titre et centralisation globale du pattern de header carte | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` apres inspection locale |
+| 2026-05-10 18:56 UTC | sf-build | GPT-5 Codex | Execution complete app+site: pattern cartes titre-gauche/icone-droite + centralisation paddings/tokens sur surfaces critiques Flutter/Astro | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` puis orchestrer `/sf-end` et `/sf-ship` si verifie |
 
 ## Current Chantier Flow
 
 - sf-spec: done, draft saved.
 - sf-ready: completed, ready.
-- sf-start: partial.
-- sf-verify: partial.
+- sf-start: partial (patches app+site et baisse des literals Flutter/Site; verification lifecycle finale encore requise).
+- sf-verify: partial (2026-05-10 18:31 UTC: cards icon/title pattern and remaining literal-token budgets still block closure).
 - sf-end: not launched.
 - sf-ship: not launched.
-- sf-build: partial (implementation gaps corrected; ship scope still polluted by generated/unrelated dirty files).
-- Prochaine commande: nettoyer le scope de ship puis relancer `/sf-verify Centraliser les design tokens ContentFlow app/site`.
+- sf-build: partial (run 2026-05-10 18:56 UTC: implementation app+site done, awaiting lifecycle verify/end/ship).
+- Prochaine commande: relancer `/sf-verify Centraliser les design tokens ContentFlow app/site`.

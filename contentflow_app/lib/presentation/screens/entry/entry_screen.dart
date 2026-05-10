@@ -78,7 +78,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1160),
@@ -86,11 +89,11 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHero(context, ref, stateCard),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppSpacing.md),
                     _buildProofStrip(),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppSpacing.md),
                     _buildHowItWorks(),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppSpacing.md),
                     _buildFeatureGrid(),
                   ],
                 ),
@@ -188,15 +191,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
+        spacing: AppSpacing.xs,
+        runSpacing: AppSpacing.xs,
         children: items
             .map(
               (item) =>
@@ -226,10 +229,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadii.card),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Column(
@@ -243,7 +246,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppSpacing.xs),
           Text(
             context.tr(
               'This is an app entry page for existing users. It keeps account, workspace, and recovery actions at the top.',
@@ -254,15 +257,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               height: 1.45,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: AppSpacing.lg),
           LayoutBuilder(
             builder: (context, constraints) {
               final cardWidth = constraints.maxWidth < 700
                   ? constraints.maxWidth
                   : 320.0;
               return Wrap(
-                spacing: 16,
-                runSpacing: 16,
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
                 children: steps
                     .map(
                       (step) => SizedBox(
@@ -312,8 +315,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             ? constraints.maxWidth
             : 350.0;
         return Wrap(
-          spacing: 16,
-          runSpacing: 16,
+          spacing: AppSpacing.md,
+          runSpacing: AppSpacing.md,
           children: items
               .map(
                 (item) => SizedBox(
@@ -568,10 +571,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     final palette = AppTheme.paletteOf(context);
     final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      padding: EdgeInsets.all(compact ? 20 : 28),
+      padding: EdgeInsets.all(compact ? AppSpacing.lg : 28),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(compact ? 18 : 24),
+        borderRadius: BorderRadius.circular(compact ? AppRadii.xl : AppRadii.card),
         border: Border.all(color: palette.borderSubtle),
         boxShadow: [
           BoxShadow(
@@ -585,26 +588,32 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: compact ? 44 : 56,
-            height: compact ? 44 : 56,
-            decoration: BoxDecoration(
-              color: accent.withAlpha(30),
-              borderRadius: BorderRadius.circular(compact ? 14 : 18),
-            ),
-            child: Icon(icon, color: accent, size: compact ? 24 : 28),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  context.tr(eyebrow).toUpperCase(),
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: AppText.sm,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ),
+              Container(
+                width: compact ? 44 : 56,
+                height: compact ? 44 : 56,
+                decoration: BoxDecoration(
+                  color: accent.withAlpha(30),
+                  borderRadius: BorderRadius.circular(compact ? AppRadii.lg : AppRadii.xl),
+                ),
+                child: Icon(icon, color: accent, size: compact ? 24 : 28),
+              ),
+            ],
           ),
-          SizedBox(height: compact ? 14 : 20),
-          Text(
-            context.tr(eyebrow).toUpperCase(),
-            style: TextStyle(
-              color: accent,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-            ),
-          ),
-          SizedBox(height: compact ? 8 : 10),
+          SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
           Text(
             context.tr(title),
             style: TextStyle(
@@ -614,7 +623,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               height: 1.15,
             ),
           ),
-          SizedBox(height: compact ? 16 : 24),
+          SizedBox(height: compact ? AppSpacing.md : AppSpacing.xl),
+          Text(
+            context.tr(description),
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
@@ -623,13 +641,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 backgroundColor: accent,
                 padding: EdgeInsets.symmetric(vertical: compact ? 15 : 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
               ),
               child: Text(context.tr(primaryLabel)),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: AppSpacing.xs),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -643,23 +661,14 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 ),
                 padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
               ),
               child: Text(context.tr(secondaryLabel)),
             ),
           ),
-          SizedBox(height: compact ? 16 : 20),
-          Text(
-            context.tr(description),
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 15,
-              height: 1.5,
-            ),
-          ),
           if (caption != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: AppSpacing.xs),
             Text(
               context.tr(caption),
               style: TextStyle(
@@ -681,23 +690,26 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: palette.surface.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: theme.colorScheme.onSurfaceVariant, size: 16),
-          const SizedBox(width: 8),
+          SizedBox(width: AppSpacing.xs),
           Flexible(
             child: Text(
               context.tr(label),
               style: TextStyle(
                 color: theme.colorScheme.onSurface,
-                fontSize: 13,
+                fontSize: AppText.sm,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -716,39 +728,46 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: accent.withAlpha(26),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: accent),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  context.tr(title),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              SizedBox(width: AppSpacing.xs),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: accent.withAlpha(26),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
+                ),
+                child: Icon(icon, color: accent),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            context.tr(title),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppSpacing.xs),
           Text(
             context.tr(description),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 14,
+              fontSize: AppText.base - 2,
               height: 1.55,
             ),
           ),
@@ -769,10 +788,13 @@ class _MetricChip extends StatelessWidget {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: palette.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
@@ -782,16 +804,16 @@ class _MetricChip extends StatelessWidget {
             value,
             style: TextStyle(
               color: theme.colorScheme.onSurface,
-              fontSize: 20,
+              fontSize: AppText.lg,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: AppSpacing.xs),
           Text(
             context.tr(label),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 13,
+              fontSize: AppText.sm,
               fontWeight: FontWeight.w600,
             ),
           ),

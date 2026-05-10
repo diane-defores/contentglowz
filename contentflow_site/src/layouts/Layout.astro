@@ -314,6 +314,24 @@ const themeCssVars = `
     color: var(--color-text-muted);
   }
 
+  .card-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .card-title-row h3 {
+    margin: 0;
+  }
+
+  .card-title-icon {
+    flex: 0 0 auto;
+    font-size: var(--text-h2);
+    line-height: var(--leading-tight);
+  }
+
   @media (max-width: var(--breakpoint-mobile)) {
     .container {
       padding: 0 var(--space-mobile-4);

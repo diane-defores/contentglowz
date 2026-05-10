@@ -23,7 +23,10 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
     Offset cardSize,
   ) {
     if (_positioned && _position != Offset.zero) return;
-    final constrainedWidth = (screenSize.width - 24).clamp(0.0, 420.0);
+    final constrainedWidth = (screenSize.width - AppSpacing.md).clamp(
+      0.0,
+      420.0,
+    );
     final estimatedCardWidth = constrainedWidth.isFinite ? constrainedWidth : 420.0;
     final estimatedCardHeight = 220.0;
     final safeBottom = MediaQuery.of(context).padding.bottom;
@@ -33,10 +36,19 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
       screenSize.height - estimatedCardHeight - safeBottom - bottomBarClearance,
     );
     _position = Offset(
-      _position.dx.clamp(12, (screenSize.width - 12).clamp(12, double.infinity)),
+      _position.dx.clamp(
+        AppSpacing.xs,
+        (screenSize.width - AppSpacing.xs).clamp(
+          AppSpacing.xs,
+          double.infinity,
+        ),
+      ),
       _position.dy.clamp(
-        12,
-        (screenSize.height - 12 - cardSize.dy).clamp(12, double.infinity),
+        AppSpacing.xs,
+        (screenSize.height - AppSpacing.xs - cardSize.dy).clamp(
+          AppSpacing.xs,
+          double.infinity,
+        ),
       ),
     );
     _positioned = true;
@@ -58,10 +70,15 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
       key: stepCardKey,
       color: Colors.transparent,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.md,
+        ),
         decoration: BoxDecoration(
           color: palette.elevatedSurface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
           border: Border.all(color: AppTheme.approveColor.withAlpha(80)),
           boxShadow: [
             BoxShadow(
@@ -76,36 +93,36 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(context, tour, controller),
-            const SizedBox(height: 10),
+            SizedBox(height: AppSpacing.xs),
             _buildProgressBar(context, tour),
-            const SizedBox(height: 14),
+            SizedBox(height: AppSpacing.sm),
             Text(
               context.tr(step.title),
               style: TextStyle(
                 color: colorScheme.onSurface,
-                fontSize: 17,
+                fontSize: AppText.base + 1,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.xs),
             Text(
               context.tr(step.description),
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
-                fontSize: 13.5,
+                fontSize: AppText.sm,
                 height: 1.45,
               ),
             ),
             if (step.hint != null) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: AppSpacing.xs),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
                   color: AppTheme.approveColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                   border: Border.all(
                     color: AppTheme.approveColor.withAlpha(60),
                   ),
@@ -117,13 +134,13 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
                       size: 16,
                       color: AppTheme.approveColor,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(
                         context.tr(step.hint!),
                         style: TextStyle(
                           color: AppTheme.approveColor,
-                          fontSize: 12.5,
+                          fontSize: AppText.sm - 1.5,
                           fontWeight: FontWeight.w500,
                           height: 1.35,
                         ),
@@ -133,7 +150,7 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
                 ),
               ),
             ],
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.md),
             _buildActions(context, tour, controller),
           ],
         ),
@@ -236,24 +253,25 @@ class _InAppTourOverlayState extends ConsumerState<InAppTourOverlay> {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(Icons.tour_rounded, size: 18, color: AppTheme.approveColor),
-        const SizedBox(width: 8),
-        Text(
-          context.tr(
-            'Guided tour · {current}/{total}',
-            {
-              'current': tour.stepIndex + 1,
-              'total': tour.totalSteps,
-            },
-          ),
-          style: TextStyle(
-            color: colorScheme.onSurfaceVariant,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
+        Expanded(
+          child: Text(
+            context.tr(
+              'Guided tour · {current}/{total}',
+              {
+                'current': tour.stepIndex + 1,
+                'total': tour.totalSteps,
+              },
+            ),
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: AppText.xs,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+            ),
           ),
         ),
-        const Spacer(),
+        Icon(Icons.tour_rounded, size: 18, color: AppTheme.approveColor),
+        SizedBox(width: AppSpacing.xs),
         IconButton(
           tooltip: context.tr('Pause tour'),
           onPressed: controller.pause,

@@ -10,14 +10,19 @@ import '../../widgets/app_error_view.dart';
 /// Adaptive page padding: tighter on phones, breathable on tablets/desktop.
 EdgeInsets settingsPagePadding(BuildContext context) {
   final width = MediaQuery.sizeOf(context).width;
-  final horizontal = width < 480 ? 12.0 : 20.0;
-  return EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32);
+  final horizontal = width < 480 ? AppSpacing.xs : AppSpacing.lg;
+  return EdgeInsets.fromLTRB(
+    horizontal,
+    AppSpacing.md,
+    horizontal,
+    AppSpacing.lg + AppSpacing.md,
+  );
 }
 
 /// Spacing between settings groups.
 double settingsGroupGap(BuildContext context) {
   final width = MediaQuery.sizeOf(context).width;
-  return width < 480 ? 20.0 : 28.0;
+  return width < 480 ? AppSpacing.lg : 28.0;
 }
 
 /// A grouped, iOS-style settings section: optional caption + a single rounded
@@ -84,11 +89,16 @@ class SettingsGroup extends StatelessWidget {
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.xxs,
+              0,
+              AppSpacing.xxs,
+              AppSpacing.xs,
+            ),
             child: Text(
               context.tr(title!).toUpperCase(),
               style: TextStyle(
-                fontSize: 11,
+                fontSize: AppText.xs - 1,
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurfaceVariant,
                 letterSpacing: 1.4,
@@ -99,18 +109,23 @@ class SettingsGroup extends StatelessWidget {
           padding: padding ?? EdgeInsets.zero,
           decoration: BoxDecoration(
             color: palette.elevatedSurface,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadii.xl),
             border: Border.all(color: palette.borderSubtle),
           ),
           child: body,
         ),
         if (caption != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.xxs,
+              AppSpacing.xs,
+              AppSpacing.xxs,
+              0,
+            ),
             child: Text(
               context.tr(caption!),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: AppText.xs,
                 color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
@@ -154,7 +169,10 @@ class SettingsRow extends StatelessWidget {
 
     final tile = ListTile(
       contentPadding: contentPadding ??
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xxs + 2,
+          ),
       minVerticalPadding: 10,
       minLeadingWidth: 36,
       leading: Container(
@@ -162,7 +180,7 @@ class SettingsRow extends StatelessWidget {
         height: 36,
         decoration: BoxDecoration(
           color: color.withAlpha(25),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadii.md - 2),
         ),
         child: Icon(icon, color: color, size: 20),
       ),
@@ -170,19 +188,19 @@ class SettingsRow extends StatelessWidget {
         context.tr(title),
         style: TextStyle(
           color: colorScheme.onSurface,
-          fontSize: 15,
+          fontSize: AppText.base - 1,
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: subtitle == null
           ? null
           : Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: EdgeInsets.only(top: AppSpacing.xxs / 2),
               child: Text(
                 context.tr(subtitle!),
                 style: TextStyle(
                   color: colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                   height: 1.35,
                 ),
               ),
@@ -210,7 +228,12 @@ class SettingsBlock extends StatelessWidget {
   const SettingsBlock({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.fromLTRB(16, 16, 16, 16),
+    this.padding = const EdgeInsets.fromLTRB(
+      AppSpacing.md,
+      AppSpacing.md,
+      AppSpacing.md,
+      AppSpacing.md,
+    ),
   });
 
   final Widget child;
@@ -238,23 +261,26 @@ class SettingsStatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xxs + 1,
+      ),
       decoration: BoxDecoration(
         color: color.withAlpha(28),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, color: color, size: 12),
-            const SizedBox(width: 4),
+            Icon(icon, color: color, size: AppText.xs),
+            SizedBox(width: AppSpacing.xxs),
           ],
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: AppText.xs - 1,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.2,
             ),
@@ -289,14 +315,14 @@ class SettingsErrorDiagnostic extends ConsumerWidget {
           clippedDetails,
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 12,
+            fontSize: AppText.xs,
             height: 1.4,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: AppSpacing.xs),
         Wrap(
-          spacing: 10,
-          runSpacing: 8,
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
           children: [
             TextButton.icon(
               onPressed: () => openSettingsUrl(context, ref, linkUrl),
@@ -304,8 +330,10 @@ class SettingsErrorDiagnostic extends ConsumerWidget {
               label: Text(linkLabel),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.infoColor,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.xs,
+                ),
                 minimumSize: const Size(0, _kMinTouch),
               ),
             ),
