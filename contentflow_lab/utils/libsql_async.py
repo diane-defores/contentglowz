@@ -63,7 +63,10 @@ class Client:
         statement: str,
         args: list[Any] | tuple[Any, ...] | None = None,
     ) -> ResultSet:
-        params = list(args) if args is not None else []
+        statement, params = inline_null_params(
+            statement,
+            list(args) if args is not None else [],
+        )
 
         def _run(sql: str, sql_params: list[Any]) -> ResultSet:
             cursor = self._conn.execute(sql, sql_params)

@@ -9,6 +9,7 @@ import '../core/app_diagnostics.dart';
 import '../core/app_language.dart';
 import '../core/app_theme_preference.dart';
 import '../core/shared_preferences_provider.dart';
+import '../data/demo/demo_seed.dart';
 import '../data/models/affiliate_link.dart';
 import '../data/models/ai_runtime.dart';
 import '../data/models/drip_plan.dart';
@@ -1539,7 +1540,11 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       return const <ContentItem>[];
     }
     try {
-      return await api.fetchPendingContent(projectId: activeProjectId);
+      final items = await api.fetchPendingContent(projectId: activeProjectId);
+      if (items.isEmpty && activeProjectId == DemoSeed.projectId) {
+        return await api.seedTestContentBatch(projectId: activeProjectId);
+      }
+      return items;
     } catch (error, stackTrace) {
       if (!_isNonCriticalReadFailure(error)) {
         rethrow;
@@ -1566,7 +1571,10 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     }
     try {
       final api = ref.read(apiServiceProvider);
-      final items = await api.fetchPendingContent(projectId: activeProjectId);
+      var items = await api.fetchPendingContent(projectId: activeProjectId);
+      if (items.isEmpty && activeProjectId == DemoSeed.projectId) {
+        items = await api.seedTestContentBatch(projectId: activeProjectId);
+      }
       state = AsyncData(items);
     } catch (error, stackTrace) {
       if (!_isNonCriticalReadFailure(error)) {
@@ -1583,6 +1591,25 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       );
       state = AsyncData(previous);
     }
+  }
+
+  Future<int> seedTestContentBatch() async {
+    final activeProjectId = ref.read(activeProjectIdProvider);
+    if (activeProjectId == null || activeProjectId.trim().isEmpty) {
+      return 0;
+    }
+
+    final api = ref.read(apiServiceProvider);
+    final seeded = await api.seedTestContentBatch(projectId: activeProjectId);
+    final current = state.value ?? const <ContentItem>[];
+    final mergedById = <String, ContentItem>{
+      for (final item in current) item.id: item,
+      for (final item in seeded) item.id: item,
+    };
+    final merged = mergedById.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    state = AsyncData(merged);
+    return seeded.length;
   }
 
   Future<ApproveResult> approve(

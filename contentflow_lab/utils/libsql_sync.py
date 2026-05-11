@@ -89,7 +89,7 @@ class Connection:
         statement: str,
         params: Iterable[Any] | None = None,
     ) -> Cursor:
-        sql_params = list(params or [])
+        statement, sql_params = inline_null_params(statement, list(params or []))
         try:
             cursor = self._conn.execute(statement, sql_params)
         except Exception as exc:

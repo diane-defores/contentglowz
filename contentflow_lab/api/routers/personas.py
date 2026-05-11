@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 import asyncio
+import logging
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -22,11 +23,16 @@ from api.models.user_data import (
 )
 from api.services.job_store import job_store
 from api.services.ai_runtime_service import AIRuntimeServiceError, ai_runtime_service
+from api.observability import capture_exception
 from api.services.repo_understanding_service import repo_understanding_service
-from api.services.user_llm_service import user_llm_service  # backward-compatible test hook
+from api.services.user_llm_service import (
+    AIRuntimeResolutionError,
+    user_llm_service,  # backward-compatible test hook
+)
 from api.services.user_data_store import user_data_store
 
 router = APIRouter(prefix="/api/personas", tags=["Personas"])
+logger = logging.getLogger(__name__)
 
 
 def _is_github_url(url: str | None) -> bool:
@@ -48,6 +54,95 @@ def _raise_runtime_http(exc: Exception) -> None:
     if isinstance(exc, AIRuntimeServiceError):
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
     raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+def _looks_like_libsql_null_parse_error(exc: Exception) -> bool:
+    message = str(exc)
+    lowered = message.lower()
+    return (
+        "none" in lowered
+        and (
+            "sql_parse_error" in lowered
+            or "sql string could not be parsed" in lowered
+            or "hrana" in lowered
+        )
+    )
+
+
+def _persona_draft_error_payload(exc: Exception) -> dict[str, object | None]:
+    if isinstance(exc, AIRuntimeServiceError):
+        detail = dict(exc.detail)
+        return {
+            "message": detail.get("message") or "AI runtime configuration is incomplete.",
+            "code": detail.get("code") or "ai_runtime_error",
+            "kind": detail.get("kind") or "ai_runtime",
+            "provider": detail.get("provider"),
+            "settings_path": detail.get("settingsPath") or detail.get("settings_path"),
+            "retryable": bool(detail.get("retryable", False)),
+            "detail": detail,
+        }
+
+    if isinstance(exc, AIRuntimeResolutionError):
+        detail = dict(exc.detail)
+        return {
+            "message": detail.get("message") or "AI runtime configuration is incomplete.",
+            "code": detail.get("code") or "ai_runtime_error",
+            "kind": detail.get("kind") or "ai_runtime",
+            "provider": detail.get("provider"),
+            "settings_path": detail.get("settingsPath") or detail.get("settings_path"),
+            "retryable": bool(detail.get("retryable", False)),
+            "detail": detail,
+        }
+
+    if _looks_like_libsql_null_parse_error(exc):
+        return {
+            "message": (
+                "Persona generation is temporarily unavailable because the server "
+                "could not persist the AI job state. Please retry in a few minutes."
+            ),
+            "code": "persona_draft_storage_error",
+            "kind": "dependency",
+            "provider": "turso",
+            "settings_path": None,
+            "retryable": True,
+            "detail": {
+                "code": "persona_draft_storage_error",
+                "kind": "dependency",
+                "provider": "turso",
+                "retryable": True,
+                "reason": "libsql_null_parameter_parse_error",
+            },
+        }
+
+    if isinstance(exc, RuntimeError):
+        message = str(exc).strip()
+        return {
+            "message": message or "Persona source could not be analyzed.",
+            "code": "persona_draft_source_error",
+            "kind": "dependency",
+            "provider": None,
+            "settings_path": None,
+            "retryable": False,
+            "detail": {
+                "code": "persona_draft_source_error",
+                "kind": "dependency",
+                "retryable": False,
+            },
+        }
+
+    return {
+        "message": "Persona generation failed unexpectedly. Please retry.",
+        "code": "persona_draft_unexpected_error",
+        "kind": "dependency",
+        "provider": None,
+        "settings_path": None,
+        "retryable": True,
+        "detail": {
+            "code": "persona_draft_unexpected_error",
+            "kind": "dependency",
+            "retryable": True,
+        },
+    }
 
 
 @router.get("", response_model=list[PersonaResponse], summary="List personas")
@@ -171,13 +266,37 @@ async def _run_persona_draft_job(
             error=None,
         )
     except Exception as exc:
-        await job_store.update(
-            job_id,
-            status="failed",
-            progress=100,
-            message="Persona draft failed.",
-            error=str(exc),
+        payload = _persona_draft_error_payload(exc)
+        if payload["code"] not in {
+            "ai_runtime_user_credential_missing",
+            "ai_runtime_user_credential_invalid",
+            "persona_draft_source_error",
+        }:
+            capture_exception(exc)
+        logger.exception(
+            "Persona draft job failed",
+            extra={
+                "job_id": job_id,
+                "user_id": user_id,
+                "error_code": payload["code"],
+            },
         )
+        try:
+            await job_store.update(
+                job_id,
+                status="failed",
+                progress=100,
+                message="Persona draft failed.",
+                error=payload["message"],
+                error_code=payload["code"],
+                error_kind=payload["kind"],
+                provider=payload["provider"],
+                settings_path=payload["settings_path"],
+                retryable=payload["retryable"],
+                error_detail=payload["detail"],
+            )
+        except Exception:
+            logger.exception("Failed to persist persona draft job failure", extra={"job_id": job_id})
 
 
 @router.post(

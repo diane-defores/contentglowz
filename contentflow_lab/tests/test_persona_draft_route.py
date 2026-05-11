@@ -155,6 +155,52 @@ async def test_persona_draft_project_repo_success_stores_completed_result(monkey
 
 
 @pytest.mark.asyncio
+async def test_persona_draft_job_failure_sanitizes_hrana_sql_error(monkeypatch):
+    personas_router = _load_personas_router_module()
+    monkeypatch.setattr(
+        personas_router.ai_runtime_service,
+        "preflight_providers",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                required_provider_secrets={"openrouter": "k"},
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        personas_router.ai_runtime_service,
+        "bind_provider_env",
+        lambda _resolution: nullcontext(),
+    )
+    update_mock = AsyncMock()
+    monkeypatch.setattr(personas_router.job_store, "update", update_mock)
+    monkeypatch.setattr(
+        personas_router.repo_understanding_service,
+        "understand",
+        AsyncMock(
+            side_effect=RuntimeError(
+                'Hrana: stream error: SQL string could not be parsed near VALUES, "None"'
+            )
+        ),
+    )
+
+    await personas_router._run_persona_draft_job(
+        job_id="job-1",
+        user_id="user-1",
+        request=PersonaDraftRequest(
+            repo_source="project_repo",
+            project_id="project-1",
+            mode="suggest_from_repo",
+        ),
+    )
+
+    last_call = update_mock.await_args_list[-1]
+    assert last_call.kwargs["status"] == "failed"
+    assert last_call.kwargs["error_code"] == "persona_draft_storage_error"
+    assert "Hrana" not in last_call.kwargs["error"]
+    assert last_call.kwargs["retryable"] is True
+
+
+@pytest.mark.asyncio
 async def test_persona_draft_job_status_is_owner_scoped(monkeypatch):
     personas_router = _load_personas_router_module()
     monkeypatch.setattr(

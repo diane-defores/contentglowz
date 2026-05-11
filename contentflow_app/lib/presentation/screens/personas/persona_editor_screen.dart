@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/openrouter_guard.dart';
 import '../../../data/models/persona.dart';
+import '../../../data/services/api_service.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
@@ -476,6 +477,8 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         return;
       }
       final requiresOpenRouterKey = requiresOpenRouterCredential(error);
+      final personaStorageError =
+          error is ApiException && error.code == 'persona_draft_storage_error';
 
       showDiagnosticSnackBar(
         context,
@@ -483,6 +486,10 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         message: requiresOpenRouterKey
             ? context.tr(
                 'OpenRouter key required. Go to Settings > OpenRouter, save + validate your key, then retry.',
+              )
+            : personaStorageError
+            ? context.tr(
+                'Persona generation is temporarily unavailable because the server could not save the AI job. Retry in a few minutes, or copy diagnostics if it keeps failing.',
               )
             : context.tr('Failed to prefill persona with AI: {error}', {
                 'error': '$error',

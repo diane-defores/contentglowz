@@ -78,5 +78,10 @@ class PersonaDraftJobResponse(BaseModel):
     user_id: str = Field(serialization_alias="userId")
     result: PersonaDraftResult | None = None
     error: str | None = None
+    error_code: str | None = None
+    error_kind: str | None = None
+    provider: str | None = None
+    settings_path: str | None = Field(default=None, serialization_alias="settingsPath")
+    retryable: bool | None = None
     created_at: datetime | None = Field(default=None, serialization_alias="createdAt")
     updated_at: datetime | None = Field(default=None, serialization_alias="updatedAt")

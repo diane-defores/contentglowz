@@ -47,6 +47,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   @override
   Widget build(BuildContext context) {
     final contentAsync = ref.watch(pendingContentProvider);
+    final canSeedBatch =
+        contentAsync.value != null && contentAsync.value!.isEmpty;
     final isCompactAppBar = MediaQuery.sizeOf(context).width < 430;
 
     return Scaffold(
@@ -76,6 +78,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                     ),
                   ),
           const ProjectPickerAction(),
+          if (canSeedBatch)
+            IconButton(
+              tooltip: context.tr('Generate test content'),
+              icon: const Icon(Icons.playlist_add_rounded),
+              onPressed: _seedTestBatch,
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () =>
@@ -423,6 +431,24 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         ApproveSeverity.warning => AppTheme.warningColor,
         ApproveSeverity.error => AppTheme.rejectColor,
       };
+
+  Future<void> _seedTestBatch() async {
+    final count = await ref
+        .read(pendingContentProvider.notifier)
+        .seedTestContentBatch();
+    if (!mounted) return;
+    if (count <= 0) {
+      _showSnackBar(
+        context.tr('Select an active project first.'),
+        AppTheme.warningColor,
+      );
+      return;
+    }
+    _showSnackBar(
+      context.tr('{count} test content items generated', {'count': count}),
+      AppTheme.approveColor,
+    );
+  }
 }
 
 class _FeedEmptyDashboard extends ConsumerStatefulWidget {

@@ -1272,6 +1272,8 @@ class AppLocalizations {
     'Failed to disconnect GitHub.': 'Impossible de déconnecter GitHub.',
     'Failed to prefill persona with AI: {error}':
         'Impossible de préremplir le persona avec l’IA : {error}',
+    'Persona generation is temporarily unavailable because the server could not save the AI job. Retry in a few minutes, or copy diagnostics if it keeps failing.':
+        'La génération du persona est temporairement indisponible : le serveur n’a pas pu sauvegarder le job IA. Réessaie dans quelques minutes ou copie le diagnostic si ça continue.',
     'Failed to save OpenRouter key: {error}':
         'Impossible d’enregistrer la clé OpenRouter : {error}',
     'Failed to update AI runtime mode.':

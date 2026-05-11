@@ -40,6 +40,13 @@ bool requiresOpenRouterCredential(Object error) {
     return false;
   }
 
+  if (error.kind == 'ai_runtime' &&
+      error.provider == 'openrouter' &&
+      (error.code == 'ai_runtime_user_credential_missing' ||
+          error.code == 'ai_runtime_user_credential_invalid')) {
+    return true;
+  }
+
   final envelope = _extractErrorEnvelope(error);
   if (envelope != null) {
     final kind = envelope['kind']?.toString();

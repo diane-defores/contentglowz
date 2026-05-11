@@ -25,14 +25,12 @@ def test_inline_null_params_ignores_question_marks_inside_strings():
     assert params == ["job-1"]
 
 
-def test_sync_connection_retries_hrana_none_parse_error_without_rebinding_null(monkeypatch):
+def test_sync_connection_inlines_null_params_before_driver_call(monkeypatch):
     calls = []
 
     class FakeRawConnection:
         def execute(self, statement, params=None):
             calls.append((statement, params))
-            if len(calls) == 1:
-                raise RuntimeError('SQL_PARSE_ERROR near VALUES, "None"')
             return FakeCursor()
 
     class FakeCursor:
@@ -47,6 +45,5 @@ def test_sync_connection_retries_hrana_none_parse_error_without_rebinding_null(m
     conn.execute("INSERT INTO t (a, b, c) VALUES (?, ?, ?)", ["a", None, "c"])
 
     assert calls == [
-        ("INSERT INTO t (a, b, c) VALUES (?, ?, ?)", ["a", None, "c"]),
         ("INSERT INTO t (a, b, c) VALUES (?, NULL, ?)", ["a", "c"]),
     ]

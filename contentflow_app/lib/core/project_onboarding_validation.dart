@@ -96,6 +96,15 @@ String extractApiDetailMessage(Object? detail) {
     }
   }
 
+  if (detail is Map) {
+    for (final key in ['message', 'detail', 'error', 'msg']) {
+      final value = detail[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+  }
+
   return '';
 }
 

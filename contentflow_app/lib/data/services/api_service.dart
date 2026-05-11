@@ -37,6 +37,11 @@ class ApiException implements Exception {
     this.responseHeaders = const <String, String>{},
     this.method,
     this.path,
+    this.code,
+    this.kind,
+    this.provider,
+    this.settingsPath,
+    this.retryable,
   });
 
   final ApiErrorType type;
@@ -46,6 +51,11 @@ class ApiException implements Exception {
   final Map<String, String> responseHeaders;
   final String? method;
   final String? path;
+  final String? code;
+  final String? kind;
+  final String? provider;
+  final String? settingsPath;
+  final bool? retryable;
 
   bool get isUnauthorized => type == ApiErrorType.unauthorized;
   bool get isOffline => type == ApiErrorType.offline;
@@ -1173,6 +1183,116 @@ class ApiService {
     return _parseContentList(data);
   }
 
+  Future<List<ContentItem>> seedTestContentBatch({String? projectId}) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = projectId == null
+        ? null
+        : _resolveEntityId(projectId, idMappings);
+    final now = DateTime.now();
+
+    ContentItem item({
+      required String suffix,
+      required String title,
+      required String body,
+      required ContentType type,
+      required List<PublishingChannel> channels,
+      Map<String, dynamic>? metadata,
+      Duration createdAgo = Duration.zero,
+    }) {
+      return ContentItem.fromJson({
+        'id': 'test-$suffix',
+        'title': title,
+        'body': body,
+        'content_preview': body.split('\n').first,
+        'content_type': switch (type) {
+          ContentType.blogPost => 'blog_post',
+          ContentType.socialPost => 'social_post',
+          ContentType.newsletter => 'newsletter',
+          ContentType.videoScript => 'video_script',
+          ContentType.reel => 'reel',
+          ContentType.short => 'short',
+        },
+        'status': 'pending_review',
+        'project_id': resolvedProjectId,
+        'project_name': DemoSeed.projectName,
+        'created_at': now.subtract(createdAgo).toIso8601String(),
+        'channels': channels.map((c) => c.name).toList(),
+        if (metadata != null) 'metadata': metadata,
+      });
+    }
+
+    final seeded = <ContentItem>[
+      item(
+        suffix: 'blog',
+        title: 'Guide: Structurer un article SEO en 2026',
+        type: ContentType.blogPost,
+        channels: [PublishingChannel.ghost],
+        createdAgo: const Duration(minutes: 18),
+        body:
+            '# Guide: Structurer un article SEO en 2026\n\n## Intro\nUn cadre simple pour produire un article clair, utile et diffusable.\n\n## 1. Intention de recherche\n- Informer\n- Comparer\n- Décider\n\n## 2. Plan recommandé\n- Hook\n- Problème\n- Solution\n- Checklist\n\n## Conclusion\nPublie une version utile puis itère.',
+      ),
+      item(
+        suffix: 'newsletter',
+        title: 'Newsletter hebdo: Roadmap contenu',
+        type: ContentType.newsletter,
+        channels: [PublishingChannel.ghost],
+        createdAgo: const Duration(minutes: 14),
+        body:
+            '# Newsletter hebdo\n\n## Cette semaine\n- 2 articles publiés\n- 1 script vidéo validé\n- 3 idées en attente\n\n## Focus\nAméliorer les intros pour augmenter le taux de lecture.\n\n## CTA\nRéponds avec ton plus gros blocage contenu.',
+      ),
+      item(
+        suffix: 'social',
+        title: 'Post social: arrêter le contenu “générique”',
+        type: ContentType.socialPost,
+        channels: [PublishingChannel.linkedin, PublishingChannel.twitter],
+        createdAgo: const Duration(minutes: 11),
+        body:
+            'Le vrai problème n’est pas de produire plus.\n\nC’est de produire plus clair.\n\n3 règles:\n1) Une idée par post\n2) Un exemple concret\n3) Une fin actionnable\n\n#content #marketing #productivity',
+      ),
+      item(
+        suffix: 'video',
+        title: 'Script vidéo: de l’idée au plan éditorial',
+        type: ContentType.videoScript,
+        channels: [PublishingChannel.youtube],
+        createdAgo: const Duration(minutes: 8),
+        body:
+            'HOOK (0:00-0:10)\n"Tu n\'as pas besoin de plus d’idées, tu as besoin d’un système."\n\nPARTIE 1 (0:10-1:20)\nChoisir 3 piliers éditoriaux.\n\nPARTIE 2 (1:20-2:40)\nTransformer chaque idée en 3 formats.\n\nCTA (2:40-3:00)\n"Commente PLAN pour recevoir le template."',
+      ),
+      item(
+        suffix: 'reel',
+        title: 'Reel: checklist publication 30s',
+        type: ContentType.reel,
+        channels: [PublishingChannel.instagram, PublishingChannel.tiktok],
+        createdAgo: const Duration(minutes: 5),
+        body:
+            'REEL 30s\n\n[0-3s] Hook visuel\n[3-15s] 2 conseils\n[15-25s] exemple\n[25-30s] CTA\n\nSous-titres obligatoires.\n\n#reels #creator',
+      ),
+      item(
+        suffix: 'short',
+        title: 'Short YouTube: Hook/Proof/CTA',
+        type: ContentType.short,
+        channels: [PublishingChannel.youtube],
+        createdAgo: const Duration(minutes: 2),
+        metadata: {
+          'platform': 'youtube_shorts',
+          'duration_seconds': 45,
+          'hashtags': ['#shorts', '#content', '#creator'],
+        },
+        body:
+            'SHORT 45s\n\nHook: "Voici pourquoi ton contenu ne convertit pas."\nProof: mini exemple avant/après.\nCTA: "Teste ce framework sur ton prochain post."',
+      ),
+    ];
+
+    for (final content in seeded) {
+      await _upsertCachedPendingContentItem(content);
+      await _writeCachedData('content.body.${content.id}', {
+        'body': content.body,
+      });
+    }
+
+    return seeded;
+  }
+
   Future<List<ContentItem>> fetchContentHistory({String? projectId}) async {
     if (allowDemoData) {
       return _mockHistory();
@@ -1848,13 +1968,7 @@ class ApiService {
       }
 
       if (status == 'failed') {
-        final errorMessage = (job['error'] ?? 'Persona draft job failed.')
-            .toString()
-            .trim();
-        throw ApiException(
-          ApiErrorType.server,
-          errorMessage.isEmpty ? 'Persona draft job failed.' : errorMessage,
-        );
+        throw _personaDraftJobFailure(job);
       }
     }
 
@@ -3557,6 +3671,7 @@ class ApiService {
     final message = _detailMessage(error);
     final responseBody = _stringifyResponseData(error.response?.data);
     final responseHeaders = _flattenHeaders(error.response?.headers);
+    final envelope = _apiErrorEnvelope(error.response?.data);
 
     if (statusCode == 401 || statusCode == 403) {
       final fallbackMessage = statusCode == 403
@@ -3570,6 +3685,13 @@ class ApiService {
         responseHeaders: responseHeaders,
         method: error.requestOptions.method,
         path: error.requestOptions.path,
+        code: _stringField(envelope, 'code'),
+        kind: _stringField(envelope, 'kind'),
+        provider: _stringField(envelope, 'provider'),
+        settingsPath:
+            _stringField(envelope, 'settingsPath') ??
+            _stringField(envelope, 'settings_path'),
+        retryable: _boolField(envelope, 'retryable'),
       );
     }
 
@@ -3585,6 +3707,13 @@ class ApiService {
         responseHeaders: responseHeaders,
         method: error.requestOptions.method,
         path: error.requestOptions.path,
+        code: _stringField(envelope, 'code'),
+        kind: _stringField(envelope, 'kind'),
+        provider: _stringField(envelope, 'provider'),
+        settingsPath:
+            _stringField(envelope, 'settingsPath') ??
+            _stringField(envelope, 'settings_path'),
+        retryable: _boolField(envelope, 'retryable'),
       );
     }
 
@@ -3599,6 +3728,13 @@ class ApiService {
         responseHeaders: responseHeaders,
         method: error.requestOptions.method,
         path: error.requestOptions.path,
+        code: _stringField(envelope, 'code'),
+        kind: _stringField(envelope, 'kind'),
+        provider: _stringField(envelope, 'provider'),
+        settingsPath:
+            _stringField(envelope, 'settingsPath') ??
+            _stringField(envelope, 'settings_path'),
+        retryable: _boolField(envelope, 'retryable'),
       );
     }
 
@@ -3610,7 +3746,88 @@ class ApiService {
       responseHeaders: responseHeaders,
       method: error.requestOptions.method,
       path: error.requestOptions.path,
+      code: _stringField(envelope, 'code'),
+      kind: _stringField(envelope, 'kind'),
+      provider: _stringField(envelope, 'provider'),
+      settingsPath:
+          _stringField(envelope, 'settingsPath') ??
+          _stringField(envelope, 'settings_path'),
+      retryable: _boolField(envelope, 'retryable'),
     );
+  }
+
+  ApiException _personaDraftJobFailure(Map<String, dynamic> job) {
+    final envelope =
+        _apiErrorEnvelope(job['error_detail']) ?? _apiErrorEnvelope(job);
+    final rawMessage = (job['error_message'] ?? job['error'] ?? '')
+        .toString()
+        .trim();
+    final code =
+        _stringField(envelope, 'code') ??
+        _stringField(envelope, 'error_code') ??
+        job['error_code']?.toString();
+    final kind =
+        _stringField(envelope, 'kind') ??
+        _stringField(envelope, 'error_kind') ??
+        job['error_kind']?.toString();
+    final provider =
+        _stringField(envelope, 'provider') ?? job['provider']?.toString();
+    final settingsPath =
+        _stringField(envelope, 'settingsPath') ??
+        _stringField(envelope, 'settings_path') ??
+        job['settings_path']?.toString();
+    final retryable =
+        _boolField(envelope, 'retryable') ?? _coerceBool(job['retryable']);
+    final publicMessage = _personaDraftPublicErrorMessage(
+      rawMessage: rawMessage,
+      code: code,
+      provider: provider,
+    );
+    final responseBody = envelope == null
+        ? null
+        : jsonEncode({'detail': envelope});
+
+    return ApiException(
+      ApiErrorType.server,
+      publicMessage,
+      responseBody: responseBody,
+      code: code,
+      kind: kind,
+      provider: provider,
+      settingsPath: settingsPath,
+      retryable: retryable,
+      path: '/api/personas/draft-jobs',
+    );
+  }
+
+  String _personaDraftPublicErrorMessage({
+    required String rawMessage,
+    required String? code,
+    required String? provider,
+  }) {
+    if (code == 'ai_runtime_user_credential_missing' &&
+        provider == 'openrouter') {
+      return 'OpenRouter key required. Save and validate your key in Settings, then retry.';
+    }
+    if (code == 'ai_runtime_user_credential_invalid' &&
+        provider == 'openrouter') {
+      return 'OpenRouter key invalid. Validate or replace your key in Settings, then retry.';
+    }
+    if (code == 'persona_draft_storage_error' ||
+        _looksLikeInternalSqlError(rawMessage)) {
+      return 'Persona generation failed because the server could not save the AI job state. Please retry; if it persists, copy diagnostics.';
+    }
+    if (rawMessage.isNotEmpty) {
+      return rawMessage;
+    }
+    return 'Persona draft job failed. Please retry.';
+  }
+
+  bool _looksLikeInternalSqlError(String message) {
+    final lowered = message.toLowerCase();
+    return lowered.contains('hrana') ||
+        lowered.contains('sql_parse_error') ||
+        lowered.contains('sql string could not be parsed');
   }
 
   String _detailMessage(DioException error) {
@@ -3624,6 +3841,59 @@ class ApiService {
     }
 
     return error.message ?? '';
+  }
+
+  Map<String, dynamic>? _apiErrorEnvelope(Object? data) {
+    if (data is Map<String, dynamic>) {
+      final detail = data['detail'];
+      if (detail is Map<String, dynamic>) {
+        return detail;
+      }
+      if (_hasErrorEnvelopeShape(data)) {
+        return data;
+      }
+    }
+    if (data is Map) {
+      final converted = data.map((key, value) => MapEntry('$key', value));
+      return _apiErrorEnvelope(converted);
+    }
+    return null;
+  }
+
+  bool _hasErrorEnvelopeShape(Map<String, dynamic> data) {
+    return data.containsKey('code') ||
+        data.containsKey('error_code') ||
+        data.containsKey('kind') ||
+        data.containsKey('error_kind');
+  }
+
+  String? _stringField(Map<String, dynamic>? data, String key) {
+    final value = data?[key];
+    if (value == null) {
+      return null;
+    }
+    final text = value.toString().trim();
+    return text.isEmpty ? null : text;
+  }
+
+  bool? _boolField(Map<String, dynamic>? data, String key) {
+    return _coerceBool(data?[key]);
+  }
+
+  bool? _coerceBool(Object? value) {
+    if (value is bool) {
+      return value;
+    }
+    if (value is String) {
+      final lowered = value.toLowerCase();
+      if (lowered == 'true') {
+        return true;
+      }
+      if (lowered == 'false') {
+        return false;
+      }
+    }
+    return null;
   }
 
   int? _requestDurationMs(RequestOptions options) {
