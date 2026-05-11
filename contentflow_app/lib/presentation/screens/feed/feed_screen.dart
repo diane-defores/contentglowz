@@ -736,6 +736,7 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
                   onCreate: () => context.push('/angles'),
                 )
               : _MobileActionDeck(
+                  key: ValueKey('flow-action-deck-${visibleActions.first.id}'),
                   action: visibleActions.first,
                   nextAction: visibleActions.length > 1
                       ? visibleActions[1]
@@ -873,6 +874,7 @@ class _DashboardActionDetail {
 
 class _MobileActionDeck extends StatefulWidget {
   const _MobileActionDeck({
+    super.key,
     required this.action,
     required this.positionLabel,
     required this.onLater,
@@ -898,6 +900,16 @@ class _MobileActionDeckState extends State<_MobileActionDeck> {
   double _dragX = 0;
   bool _isDragging = false;
   bool _isCommitting = false;
+
+  @override
+  void didUpdateWidget(covariant _MobileActionDeck oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.action.id != widget.action.id) {
+      _dragX = 0;
+      _isDragging = false;
+      _isCommitting = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1013,9 +1025,14 @@ class _MobileActionDeckState extends State<_MobileActionDeck> {
 
   void _resetDrag() {
     if (_isCommitting) return;
+    _resetSwipeState();
+  }
+
+  void _resetSwipeState() {
     setState(() {
       _dragX = 0;
       _isDragging = false;
+      _isCommitting = false;
     });
   }
 

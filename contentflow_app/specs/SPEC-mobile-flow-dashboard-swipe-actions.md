@@ -6,7 +6,7 @@ project: "contentflow_app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:28:27 UTC"
 updated: "2026-05-11"
-updated_at: "2026-05-11 06:10:00 UTC"
+updated_at: "2026-05-11 06:22:56 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -245,6 +245,7 @@ None.
 | 2026-05-10 | sf-design | GPT-5 Codex | Orchestrated the dashboard redesign from spec-first gate through local design implementation and checks. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 | 2026-05-11 | sf-design | GPT-5 Codex | Added live swipe animation feedback with translation, rotation, directional labels, and exit motion before start/later callbacks. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 | 2026-05-11 | sf-design | GPT-5 Codex | Enriched onboarding action cards with icon-led copy blocks and added format-aware review templates for pending content cards. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
+| 2026-05-11 | sf-design | GPT-5 Codex | Fixed left-swipe completion so the next card starts with a fresh deck state instead of inheriting the outgoing card transform. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 
 ## Current Chantier Flow
 

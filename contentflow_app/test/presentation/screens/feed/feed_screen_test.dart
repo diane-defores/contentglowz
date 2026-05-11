@@ -118,7 +118,10 @@ void main() {
       find.text('Your content machine is ready to be configured.'),
       findsNothing,
     );
+    expect(find.byKey(const Key('flow-action-card-setup')), findsNothing);
+    expect(find.byKey(const Key('flow-action-card-create')), findsOneWidget);
     expect(find.text('Create your first content'), findsOneWidget);
+    expect(find.text('Angle first'), findsOneWidget);
   });
 
   testWidgets('right swipe gives visual feedback before starting action', (
