@@ -41,7 +41,7 @@ This repository hosts the product API used by:
 ## Deployment and Runtime Notes
 
 - `api/main.py` includes startup/shutdown lifecycle hooks and background scheduler initialization.
-- Sentry is initialized at API import time when `SENTRY_DSN` is set. `SENTRY_SEND_DEFAULT_PII` defaults to `true`, and `SENTRY_TRACES_SAMPLE_RATE` defaults to `0.0`.
+- Sentry is initialized at API import time when `SENTRY_DSN` is set. `SENTRY_SEND_DEFAULT_PII` defaults to `false`, `SENTRY_TRACES_SAMPLE_RATE` defaults to `0.0`, and `/health` exposes only redacted Sentry status (`configured`, environment, release, dist).
 - CORS and authentication middleware are configured for Flutter/site/dashboard clients.
 - `render.yaml` and `ecosystem.config.cjs` are used for hosted/manual runtime setups.
 

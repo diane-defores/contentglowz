@@ -6,6 +6,7 @@ void main() {
   group('AppConfig Sentry defaults', () {
     test('keeps Sentry disabled without build-time DSN', () {
       expect(AppConfig.sentryDsn, isEmpty);
+      expect(AppConfig.effectiveSentryDist, isEmpty);
       expect(AppConfig.sentryTracesSampleRate, 0.0);
       expect(AppConfig.sentrySendDefaultPii, isFalse);
       expect(AppConfig.sentryDebug, isFalse);

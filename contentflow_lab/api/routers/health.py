@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 import subprocess
 
+from api.observability import sentry_status
+
 router = APIRouter(tags=["Health & Monitoring"])
 
 def _normalize_git_sha(value: str | None) -> str | None:
@@ -114,8 +116,11 @@ async def health_check():
         "components": {
             "api": "operational",
             "database": database_status,
-            "cache": "not_configured"
-        }
+            "cache": "not_configured",
+        },
+        "observability": {
+            "sentry": sentry_status(),
+        },
     }
 
 
@@ -143,5 +148,6 @@ async def version():
         "git_sha": _GIT_SHA,
         "build_date": "2026-01-14",
         "python_version": sys.version.split()[0],
-        "fastapi_version": "0.128.0"
+        "fastapi_version": "0.128.0",
+        "sentry": sentry_status(),
     }

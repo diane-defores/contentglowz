@@ -38,7 +38,7 @@ def init_sentry() -> bool:
             "SENTRY_TRACES_SAMPLE_RATE",
             default=0.0,
         ),
-        "send_default_pii": _env_bool("SENTRY_SEND_DEFAULT_PII", default=True),
+        "send_default_pii": _env_bool("SENTRY_SEND_DEFAULT_PII", default=False),
         "debug": _env_bool("SENTRY_DEBUG", default=False),
     }
 
@@ -55,9 +55,46 @@ def init_sentry() -> bool:
     if release:
         options["release"] = release
 
+    dist = _first_env_str(
+        "SENTRY_DIST",
+        "BACKEND_BUILD_ID",
+        "RENDER_DEPLOY_ID",
+        "GITHUB_RUN_ID",
+    )
+    if dist:
+        options["dist"] = dist
+
     _sentry_sdk.init(**options)
     _INITIALIZED = True
     return True
+
+
+def sentry_status() -> dict[str, str | bool]:
+    """Return redacted Sentry runtime status for health diagnostics."""
+    return {
+        "configured": bool(_env_str("SENTRY_DSN")),
+        "initialized": _INITIALIZED,
+        "environment": _first_env_str("SENTRY_ENVIRONMENT", "ENVIRONMENT")
+        or "unknown",
+        "release": _first_env_str(
+            "SENTRY_RELEASE",
+            "BACKEND_GIT_SHA",
+            "RENDER_GIT_COMMIT",
+            "GIT_SHA",
+        )
+        or "unknown",
+        "dist": _first_env_str(
+            "SENTRY_DIST",
+            "BACKEND_BUILD_ID",
+            "RENDER_DEPLOY_ID",
+            "GITHUB_RUN_ID",
+        )
+        or "unknown",
+        "send_default_pii": _env_bool("SENTRY_SEND_DEFAULT_PII", default=False),
+        "traces_sample_rate": str(
+            _env_sample_rate("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
+        ),
+    }
 
 
 def capture_exception(exc: BaseException) -> str | None:

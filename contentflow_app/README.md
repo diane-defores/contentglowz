@@ -201,6 +201,7 @@ Required Vercel environment variables:
 - `SENTRY_DSN` (optional)
 - `SENTRY_ENVIRONMENT` (optional)
 - `SENTRY_RELEASE` (optional)
+- `SENTRY_DIST` (optional)
 - `SENTRY_TRACES_SAMPLE_RATE` (optional, defaults to `0.0`)
 - `SENTRY_SEND_DEFAULT_PII` (optional, defaults to `false`)
 - `SENTRY_DEBUG` (optional, defaults to `false`)
@@ -245,6 +246,8 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   Sentry environment name. Defaults to the build environment.
 - `SENTRY_RELEASE` (optional)
   Sentry release name. Defaults to `contentflow_app@BUILD_COMMIT_SHA` when omitted and a commit is available.
+- `SENTRY_DIST` (optional)
+  Sentry distribution/build identifier. Defaults to the build id, CI run id, Vercel commit, or build timestamp depending on the build surface.
 - `SENTRY_TRACES_SAMPLE_RATE` (optional)
   Transaction sample rate from `0.0` to `1.0`. Defaults to `0.0`.
 - `SENTRY_SEND_DEFAULT_PII` (optional)

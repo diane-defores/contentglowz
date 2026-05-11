@@ -18,6 +18,11 @@ env:
   APP_SITE_URL: ${{ vars.APP_SITE_URL || 'https://contentflow.winflowz.com' }}
   APP_WEB_URL: ${{ vars.APP_WEB_URL || 'https://app.contentflow.winflowz.com' }}
   CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'github-actions' }}
+  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.0' }}
+  SENTRY_SEND_DEFAULT_PII: ${{ vars.SENTRY_SEND_DEFAULT_PII || 'false' }}
+  SENTRY_DEBUG: ${{ vars.SENTRY_DEBUG || 'false' }}
 
 jobs:
   build-apk:
@@ -63,7 +68,13 @@ jobs:
             --dart-define=APP_WEB_URL="${APP_WEB_URL}" \
             --dart-define=BUILD_COMMIT_SHA="${GITHUB_SHA}" \
             --dart-define=BUILD_ENVIRONMENT="github-actions" \
-            --dart-define=BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            --dart-define=BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --dart-define=SENTRY_DSN="${SENTRY_DSN}" \
+            --dart-define=SENTRY_ENVIRONMENT="${SENTRY_ENVIRONMENT}" \
+            --dart-define=SENTRY_DIST="${GITHUB_RUN_ID}" \
+            --dart-define=SENTRY_TRACES_SAMPLE_RATE="${SENTRY_TRACES_SAMPLE_RATE}" \
+            --dart-define=SENTRY_SEND_DEFAULT_PII="${SENTRY_SEND_DEFAULT_PII}" \
+            --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

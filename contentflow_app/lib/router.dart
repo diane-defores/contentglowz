@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
+import 'core/app_config.dart';
 import 'data/models/app_access_state.dart';
 import 'providers/providers.dart';
 import 'presentation/screens/app_shell.dart';
@@ -48,12 +50,37 @@ GoRouter createAppRouter(Ref ref, {Listenable? refreshListenable}) {
   return GoRouter(
     initialLocation: '/entry',
     refreshListenable: refreshListenable,
+    observers: [
+      SentryNavigatorObserver(
+        enableAutoTransactions: AppConfig.sentryTracesSampleRate > 0,
+        setRouteNameAsTransaction: true,
+        routeNameExtractor: _sentryRouteSettings,
+      ),
+    ],
     redirect: (context, state) {
       final accessAsync = ref.read(appAccessStateProvider);
       return resolveAppRedirect(uri: state.uri, appAccessAsync: accessAsync);
     },
     routes: buildAppRoutes(),
   );
+}
+
+RouteSettings? _sentryRouteSettings(RouteSettings? settings) {
+  final routeName = settings?.name;
+  if (routeName == null || routeName.isEmpty) {
+    return const RouteSettings(name: 'unknown');
+  }
+  return RouteSettings(name: _sanitizeSentryRouteName(routeName));
+}
+
+String _sanitizeSentryRouteName(String routeName) {
+  if (routeName.startsWith('/editor/')) {
+    return '/editor/:id';
+  }
+  if (routeName.startsWith('/personas/') && routeName != '/personas/new') {
+    return '/personas/:id';
+  }
+  return routeName;
 }
 
 String? resolveAppRedirect({
@@ -150,13 +177,15 @@ String? resolveAppRedirect({
 
 List<RouteBase> buildAppRoutes() {
   return [
-    GoRoute(path: '/', redirect: (context, state) => '/entry'),
+    GoRoute(path: '/', name: 'root', redirect: (context, state) => '/entry'),
     GoRoute(
       path: '/entry',
+      name: 'entry',
       pageBuilder: (context, state) => const MaterialPage(child: EntryScreen()),
     ),
     GoRoute(
       path: '/auth',
+      name: 'auth',
       pageBuilder: (context, state) => const MaterialPage(child: AuthScreen()),
     ),
     ShellRoute(
@@ -164,106 +193,127 @@ List<RouteBase> buildAppRoutes() {
       routes: [
         GoRoute(
           path: '/feed',
+          name: 'feed',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: FeedScreen()),
         ),
         GoRoute(
           path: '/calendar',
+          name: 'calendar',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: CalendarScreen()),
         ),
         GoRoute(
           path: '/history',
+          name: 'history',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: HistoryScreen()),
         ),
         GoRoute(
           path: '/activity',
+          name: 'activity',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: ActivityScreen()),
         ),
         GoRoute(
           path: '/affiliations',
+          name: 'affiliations',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: AffiliationsScreen()),
         ),
         GoRoute(
           path: '/runs',
+          name: 'runs',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: RunsScreen()),
         ),
         GoRoute(
           path: '/templates',
+          name: 'templates',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: TemplatesScreen()),
         ),
         GoRoute(
           path: '/newsletter',
+          name: 'newsletter',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: NewsletterScreen()),
         ),
         GoRoute(
           path: '/research',
+          name: 'research',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: ResearchScreen()),
         ),
         GoRoute(
           path: '/reels',
+          name: 'reels',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: ReelsScreen()),
         ),
         GoRoute(
           path: '/seo',
+          name: 'seo',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: SeoScreen()),
         ),
         GoRoute(
           path: '/drip',
+          name: 'drip',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: DripScreen()),
         ),
         GoRoute(
           path: '/content-tools',
+          name: 'content-tools',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: ContentToolsScreen()),
         ),
         GoRoute(
           path: '/capture',
+          name: 'capture',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: CaptureScreen()),
         ),
         GoRoute(
           path: '/analytics',
+          name: 'analytics',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: AnalyticsScreen()),
         ),
         GoRoute(
           path: '/idea-pool',
+          name: 'idea-pool',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: IdeaPoolScreen()),
         ),
         GoRoute(
           path: '/work-domains',
+          name: 'work-domains',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: WorkDomainsScreen()),
         ),
         GoRoute(
           path: '/performance',
+          name: 'performance',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: PerformanceScreen()),
         ),
         GoRoute(
           path: '/uptime',
+          name: 'uptime',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: UptimeScreen()),
         ),
         GoRoute(
           path: '/settings',
+          name: 'settings',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: SettingsScreen()),
         ),
         GoRoute(
           path: '/projects',
+          name: 'projects',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: ProjectsScreen()),
         ),
@@ -271,53 +321,63 @@ List<RouteBase> buildAppRoutes() {
     ),
     GoRoute(
       path: '/feedback',
+      name: 'feedback',
       pageBuilder: (context, state) =>
           const MaterialPage(child: FeedbackScreen()),
     ),
     GoRoute(
       path: '/feedback-admin',
+      name: 'feedback-admin',
       pageBuilder: (context, state) =>
           const MaterialPage(child: FeedbackAdminScreen()),
     ),
     GoRoute(
       path: '/onboarding',
+      name: 'onboarding',
       pageBuilder: (context, state) =>
           const MaterialPage(child: OnboardingScreen()),
     ),
     GoRoute(
       path: '/editor/:id',
+      name: 'editor-detail',
       pageBuilder: (context, state) => MaterialPage(
         child: EditorScreen(contentId: state.pathParameters['id']!),
       ),
     ),
     GoRoute(
       path: '/ritual',
+      name: 'ritual',
       pageBuilder: (context, state) =>
           const MaterialPage(child: RitualScreen()),
     ),
     GoRoute(
       path: '/personas',
+      name: 'personas',
       pageBuilder: (context, state) =>
           const MaterialPage(child: PersonasListScreen()),
     ),
     GoRoute(
       path: '/personas/new',
+      name: 'personas-new',
       pageBuilder: (context, state) =>
           const MaterialPage(child: PersonaEditorScreen()),
     ),
     GoRoute(
       path: '/personas/:id',
+      name: 'personas-detail',
       pageBuilder: (context, state) => MaterialPage(
         child: PersonaEditorScreen(personaId: state.pathParameters['id']),
       ),
     ),
     GoRoute(
       path: '/angles',
+      name: 'angles',
       pageBuilder: (context, state) =>
           const MaterialPage(child: AnglesScreen()),
     ),
     GoRoute(
       path: '/settings/integrations',
+      name: 'settings-integrations',
       pageBuilder: (context, state) =>
           const MaterialPage(child: IntegrationsScreen()),
     ),

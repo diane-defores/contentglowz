@@ -51,6 +51,11 @@ class AppConfig {
     defaultValue: '',
   );
 
+  static const sentryDist = String.fromEnvironment(
+    'SENTRY_DIST',
+    defaultValue: '',
+  );
+
   static const sentryTracesSampleRateValue = String.fromEnvironment(
     'SENTRY_TRACES_SAMPLE_RATE',
     defaultValue: '0.0',
@@ -83,6 +88,20 @@ class AppConfig {
     }
 
     return 'contentflow_app@$commit';
+  }
+
+  static String get effectiveSentryDist {
+    final configured = sentryDist.trim();
+    if (configured.isNotEmpty) {
+      return configured;
+    }
+
+    final timestamp = buildTimestamp.trim();
+    if (timestamp.isEmpty || timestamp == 'unknown') {
+      return '';
+    }
+
+    return timestamp;
   }
 
   static double get sentryTracesSampleRate {

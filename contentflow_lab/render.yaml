@@ -19,10 +19,12 @@ services:
         sync: false
       - key: SENTRY_ENVIRONMENT
         value: production
+      - key: SENTRY_DIST
+        sync: false
       - key: SENTRY_TRACES_SAMPLE_RATE
         value: "0.0"
       - key: SENTRY_SEND_DEFAULT_PII
-        value: "true"
+        value: "false"
       # Render's filesystem is ephemeral. Persist app state in Turso rather than local SQLite.
       - key: TURSO_DATABASE_URL
         sync: false

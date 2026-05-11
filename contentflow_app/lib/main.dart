@@ -40,10 +40,19 @@ void main() async {
     options.tracesSampleRate = AppConfig.sentryTracesSampleRate;
     options.sendDefaultPii = AppConfig.sentrySendDefaultPii;
     options.debug = AppConfig.sentryDebug;
+    options.enableLogs = false;
+    options.attachScreenshot = false;
+    options.replay.sessionSampleRate = 0.0;
+    options.replay.onErrorSampleRate = 0.0;
 
     final release = AppConfig.effectiveSentryRelease;
     if (release.isNotEmpty) {
       options.release = release;
+    }
+
+    final dist = AppConfig.effectiveSentryDist;
+    if (dist.isNotEmpty) {
+      options.dist = dist;
     }
   }, appRunner: appRunner);
 }
