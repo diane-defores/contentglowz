@@ -18,9 +18,9 @@ evidence:
   - CLAUDE.md
   - shipflow_data/business/business.md
   - shipflow_data/business/branding.md
-  - specs/SPEC-branding.md
-  - specs/SPEC-workflow-visualization.md
-  - specs/social-listener.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-branding.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-workflow-visualization.md
+  - shipflow_data/workflow/specs/contentflow_lab/social-listener.md
 depends_on:
   - shipflow_data/business/business.md@1.0.0
   - shipflow_data/business/branding.md@1.0.0

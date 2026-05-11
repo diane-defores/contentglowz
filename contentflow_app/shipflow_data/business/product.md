@@ -22,9 +22,9 @@ evidence:
   - "lib/router.dart"
   - "lib/data/services/"
   - "lib/presentation/screens/"
-  - "specs/SPEC-offline-sync-v2.md"
-  - "specs/SPEC-project-flows-selection-onboarding-archive.md"
-  - "specs/late-integration-finalization.md"
+  - "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
+  - "shipflow_data/workflow/specs/contentflow_app/SPEC-project-flows-selection-onboarding-archive.md"
+  - "shipflow_data/workflow/specs/contentflow_app/late-integration-finalization.md"
   - ".env.example"
 depends_on:
   - "shipflow_data/business/business.md@1.0.0"

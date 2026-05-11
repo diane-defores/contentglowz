@@ -200,7 +200,7 @@ All notable changes to Content Flows are documented here.
   - `api/routers/preview.py` — `GET /api/preview?url=...` endpoint
   - Zero new dependencies (httpx + bs4 already in stack)
   - 5 tests (full OG, fallbacks, relative images, empty HTML, model)
-- `specs/social-listener.md` — technical specification for social listener module
+- `shipflow_data/workflow/specs/contentflow_lab/social-listener.md` — technical specification for social listener module
 - Feature documentation on ContentFlow site:
   - `platform/social-listening.md` — Social Listening feature page
   - `platform/content-quality-scoring.md` — Content Quality Scoring feature page

@@ -21,7 +21,7 @@ evidence:
   - "web_auth/sso-callback.html"
   - "README.md"
   - "CLAUDE.md"
-  - "specs/*.md"
+  - "shipflow_data/workflow/specs/contentflow_app/*.md"
   - "CHANGELOG.md"
   - "TASKS.md"
 depends_on:
@@ -107,7 +107,7 @@ Primary shell routes:
 - `AUDIT_LOG.md`
 
 ### Execution and technical specs
-- `specs/*.md` (active spec set for current and next implementation phase).
+- `shipflow_data/workflow/specs/contentflow_app/*.md` (active spec set for current and next implementation phase).
 
 ### Task and verification surface
 - `TASKS.md`

@@ -38,7 +38,7 @@ Astro runtime content must preserve the schema declared in `src/content.config.t
 ## Runtime Content Policy
 
 - Do not add ShipFlow governance frontmatter to `src/content/**` unless `src/content.config.ts` explicitly accepts those fields.
-- If content needs ShipFlow governance, place the governance artifact under `shipflow_data/editorial/`, `shipflow_data/technical/`, or `specs/`, then reference the runtime content path.
+- If content needs ShipFlow governance, place the governance artifact under `shipflow_data/editorial/`, `shipflow_data/technical/`, or `shipflow_data/workflow/specs/`, then reference the runtime content path.
 - If the schema changes, update technical docs, editorial docs, and build validation together.
 
 ## Validation

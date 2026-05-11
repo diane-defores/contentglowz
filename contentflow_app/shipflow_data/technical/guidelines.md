@@ -47,7 +47,7 @@ This document describes conventions for working in `contentflow_app`, the Flutte
 - `lib/providers/`: Riverpod providers/notifiers and cross-feature state composition.
 - `lib/presentation/`: screens, widgets, theme, and route-facing UI.
 - `test/`: unit and widget tests focused on routing, offline behavior, and critical state transitions.
-- `specs/`: product/engineering specs and migration notes.
+- `shipflow_data/workflow/specs/contentflow_app/`: product/engineering specs and migration notes.
 - `web_auth/`: Clerk runtime assets copied into web builds.
 
 ## Architecture Rules

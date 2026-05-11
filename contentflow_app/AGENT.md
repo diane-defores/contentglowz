@@ -34,7 +34,7 @@ next_step: "/sf-docs update AGENT.md"
 # AGENT — contentflow_app
 
 ## Mission
-- Keep this repository as the Flutter product application for ContentFlow and maintain all technical decisions described in this artifact and aligned artifacts (`README.md`, `CLAUDE.md`, `specs/*.md`).
+- Keep this repository as the Flutter product application for ContentFlow and maintain all technical decisions described in this artifact and aligned artifacts (`README.md`, `CLAUDE.md`, `shipflow_data/workflow/specs/**/*.md`).
 - Ensure all future edits preserve explicit Flutter + FastAPI + Clerk behavior and the offline-sync queue contract.
 
 ## Technical mandate for contributors
@@ -76,7 +76,7 @@ next_step: "/sf-docs update AGENT.md"
 - If behavior appears to contradict code, update this file first and then `README.md`/`CONTEXT*`.
 - For any API/behavior inference, prefer:
   - `README.md`
-  - `specs/` (especially `SPEC-offline-sync-v2.md`, `architecture-cible-fastapi-clerk-flutter.md`)
+- `shipflow_data/workflow/specs/contentflow_app/` (especially `SPEC-offline-sync-v2.md`, `architecture-cible-fastapi-clerk-flutter.md`)
   - concrete Dart sources in `lib/`
   - `_test` coverage.
 

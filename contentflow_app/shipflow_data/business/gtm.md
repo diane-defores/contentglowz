@@ -23,8 +23,8 @@ evidence:
   - "web_auth/sign-in.html"
   - "web_auth/sign-up.html"
   - "web_auth/sso-callback.html"
-  - "specs/late-integration-finalization.md"
-  - "specs/SPEC-content-pipeline-unification.md"
+  - "shipflow_data/workflow/specs/contentflow_app/late-integration-finalization.md"
+  - "shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md"
 depends_on:
   - "shipflow_data/business/business.md@1.0.0"
   - "shipflow_data/business/branding.md@1.0.0"

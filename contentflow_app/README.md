@@ -268,7 +268,7 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   FastAPI + Clerk integration
 - `lib/presentation/screens/`
   Product screens: entry, auth, onboarding, feed, editor, settings, ritual, personas, angles
-- `specs/`
+- `shipflow_data/workflow/specs/contentflow_app/`
   migration, integration, and offline sync specs
 - `build.sh`
   web build helper
@@ -284,4 +284,4 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
 - The app still supports a fixed demo workspace for product walkthroughs.
 - Do not treat demo mode as the source of truth for authenticated users.
 - The legacy Clerk Flutter beta path has been archived to branch `legacy/clerk-flutter-beta-auth`.
-- Offline sync reference: `specs/SPEC-offline-sync-v2.md`
+- Offline sync reference: `shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md`

@@ -19,12 +19,12 @@ evidence:
   - shipflow_data/business/business.md
   - shipflow_data/business/branding.md
   - shipflow_data/technical/guidelines.md
-  - specs/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
-  - specs/SPEC-dual-mode-ai-runtime-all-providers.md
-  - specs/ANALYSIS-drip-integration-with-existing.md
-  - specs/DRIP_IMPLEMENTATION.md
-  - specs/SPEC-strict-byok-llm-app-visible-ai.md
-  - specs/social-listener.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md
+  - shipflow_data/workflow/specs/contentflow_lab/ANALYSIS-drip-integration-with-existing.md
+  - shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md
+  - shipflow_data/workflow/specs/contentflow_lab/social-listener.md
 depends_on:
   - shipflow_data/business/business.md@1.0.0
   - shipflow_data/business/branding.md@1.0.0

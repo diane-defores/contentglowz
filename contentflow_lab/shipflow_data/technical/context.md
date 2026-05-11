@@ -62,7 +62,7 @@ It combines:
 - persistent scheduling/status orchestration in `scheduler/`, `status/`, and `api/services/`
 - support utilities in `utils/`
 - behavioral contracts and test coverage in `tests/`
-- operational specs in `specs/`
+- operational specs in `shipflow_data/workflow/specs/contentflow_lab/`
 
 ## Runtime model
 

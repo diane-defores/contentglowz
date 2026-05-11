@@ -21,8 +21,8 @@ evidence:
   - "lib/providers/providers.dart"
   - "lib/data/services/api_service.dart"
   - "lib/data/services/offline_storage_service.dart"
-  - "specs/architecture-cible-fastapi-clerk-flutter.md"
-  - "specs/SPEC-offline-sync-v2.md"
+  - "shipflow_data/workflow/specs/contentflow_app/architecture-cible-fastapi-clerk-flutter.md"
+  - "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
 depends_on:
   - artifact: "README.md"
     artifact_version: "0.1.0"

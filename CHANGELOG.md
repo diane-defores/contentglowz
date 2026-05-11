@@ -12,8 +12,8 @@ All notable changes to the ContentFlow monorepo are documented here.
 - Added root monorepo task tracking and a site-specific tracker aligned with the ready Astro 6 migration spec.
 - Added a ShipFlow master dashboard entry for ContentFlow.
 - Added Android APK CI setup documentation and a Blacksmith-backed GitHub Actions workflow.
-- Added baseline `docs/technical/` governance for `contentflow_app` and `contentflow_site`.
-- Added baseline `docs/editorial/` governance for the public Astro site.
+- Added baseline `shipflow_data/technical/` governance for `contentflow_app` and `contentflow_site`.
+- Added baseline `shipflow_data/editorial/` governance for the public Astro site.
 
 ### Changed
 - Reprioritized ContentFlow trackers so feedback production checks are no longer treated as the next blocking win after the admin allowlist was configured.
@@ -21,6 +21,7 @@ All notable changes to the ContentFlow monorepo are documented here.
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.
 - Migrated `contentflow_site` tracking to Astro 6 completion and documented the site migration closure.
 - Prioritized Vercel monorepo reconnect verification for the organization repository.
+- Migrated global markdown governance artifacts to `shipflow_data/workflow/**`, updated durable-path pointers, and logged migration inventory/security/closure reports.
 - Fixed ShipFlow frontmatter compliance for active root, app, and site documentation artifacts.
 - Consolidated `contentflow_lab` agent guidance into `AGENT.md` and kept `AGENTS.md` as the compatibility symlink.
 

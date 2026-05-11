@@ -27,7 +27,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using `contentflow_site/specs/SPEC-migrate-astro-v6.md` | ✅ done |
+| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/contentflow_site/SPEC-migrate-astro-v6.md` | ✅ done |
 | 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | ✅ done |
 | 🟠 | Verify post-cleanup Vercel build logs use `npm@11.12.1` after ship | 📋 todo |
 | ✅ | Website auth handoff, resilience messaging, and brand documentation are in place | ✅ done |

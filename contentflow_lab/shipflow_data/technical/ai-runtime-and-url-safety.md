@@ -21,7 +21,7 @@ linked_systems:
   - Firecrawl
   - persona draft jobs
 depends_on:
-  - artifact: "specs/SPEC-migrate-pydantic-ai-major.md"
+  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-migrate-pydantic-ai-major.md"
     artifact_version: "1.0.0"
     required_status: implemented
 supersedes: []

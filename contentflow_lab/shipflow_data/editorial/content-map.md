@@ -16,10 +16,10 @@ docs_impact: yes
 evidence:
   - README.md
   - CLAUDE.md
-  - specs/DRIP_IMPLEMENTATION.md
-  - specs/ANALYSIS-drip-integration-with-existing.md
-  - specs/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
-  - specs/social-listener.md
+  - shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md
+  - shipflow_data/workflow/specs/contentflow_lab/ANALYSIS-drip-integration-with-existing.md
+  - shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
+  - shipflow_data/workflow/specs/contentflow_lab/social-listener.md
   - api/routers/*.py
   - agents/
   - tests/
@@ -50,7 +50,7 @@ Ce document mappe les surfaces de contenu/contrat de `contentflow_lab` utiles au
 - `CLAUDE.md` — conventions de travail et limites opérationnelles.
 - `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`, `shipflow_data/technical/guidelines.md` — contrats décisionnels.
 - `docs` technique manquant (non présent dans ce repo).
-- `specs/*.md` — spécifications d’implémentation et d’évolution.
+- `shipflow_data/workflow/specs/contentflow_lab/*.md` — spécifications d’implémentation et d’évolution.
 - `tests/README.md` — stratégie de validation.
 
 ## 2. Surface API (FastAPI)

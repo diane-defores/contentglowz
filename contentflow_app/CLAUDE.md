@@ -70,7 +70,7 @@ On Linux ARM64 (`aarch64`/`arm64`), do not run Android release builds locally: n
 - `lib/presentation/`: app shell and screen hierarchy
 - `lib/core/`: diagnostics, preferences, localization helpers
 - `lib/providers/`: Riverpod providers/notifiers
-- `specs/`: implementation and migration specs
+- `shipflow_data/workflow/specs/`: implementation and migration specs
 - `web_auth/`: Clerk auth assets injected into web builds
 
 ## State and Error Handling
