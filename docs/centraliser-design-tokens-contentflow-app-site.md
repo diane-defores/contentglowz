@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow"
 created: "2026-05-10"
 created_at: "2026-05-10 08:52:41 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant qu'utilisateur existant de ContentFlow, je veux une interface app et site visuellement coherente, compacte sur mobile et alignee sur les tokens de marque, afin de retrouver un produit professionnel et lisible sur tous les ecrans."
 risk_level: "high"
 security_impact: "none"
@@ -26,13 +27,13 @@ linked_systems:
   - "contentflow_site/src/layouts/Layout.astro"
   - "contentflow_site/src/**"
 depends_on:
-  - artifact: "contentflow_app/BUSINESS.md"
+  - artifact: "contentflow_app/shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/BRANDING.md"
+  - artifact: "contentflow_app/shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_site/BRANDING.md"
+  - artifact: "contentflow_site/shipflow_data/business/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -122,7 +123,7 @@ Etendre `contentflow_theme.json` en source unique semantique et responsive, renf
 - Flutter Material 3, `ThemeData`, `ThemeExtension`, `ColorScheme`, `MediaQuery`.
 - Astro layout global et CSS variables.
 - Node.js pour `tools/generate_app_theme_tokens.mjs`.
-- `contentflow_app/BUSINESS.md@1.0.0`, `contentflow_app/BRANDING.md@1.0.0`, `contentflow_site/BRANDING.md@1.0.0`.
+- `contentflow_app/shipflow_data/business/business.md@1.0.0`, `contentflow_app/shipflow_data/business/branding.md@1.0.0`, `contentflow_site/shipflow_data/business/branding.md@1.0.0`.
 - Fresh external docs: not needed for this spec, because the chantier uses existing local Flutter/Astro patterns and does not depend on new framework APIs, SDK behavior, auth, storage, backend, payment, or deployment contracts.
 
 ## Invariants

@@ -6,6 +6,9 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Changed
+- Redesigned the empty mobile Flow dashboard into a compact swipe-action deck with one CTA per card and hidden zero-count workspace cards.
+
 ### Fixed
 - Coalesced concurrent app access refreshes for the same Clerk session so resume and manual refresh flows share one backend health/bootstrap pass.
 

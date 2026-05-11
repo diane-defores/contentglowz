@@ -178,3 +178,5 @@ find shipflow_data -type f -name "*.md" | sort
 | 2026-05-10 | sf-build | gpt-5.3-codex | migration exécution multi-repos + validation metadata/références | partial (implementation and verify done, close/ship not executed) | /sf-end specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
 | 2026-05-10 | sf-end | gpt-5.3-codex | clôture chantier et vérification finale de cohérence | implemented | /sf-ship specs/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md |
 | 2026-05-10 | sf-ship | gpt-5.3-codex | staging scope, commit et push sur main | implemented | none |
+| 2026-05-10 | sf-docs | gpt-5 | audit des Markdown racine, symlinks et doublons après migration `shipflow_data` | checked (no exact duplicates; residual legacy references and metadata lint gaps found) | corriger les références legacy et frontmatter des 3 artefacts signalés |
+| 2026-05-10 | sf-docs | gpt-5 | correction des références legacy et frontmatter signalés | implemented (metadata lint passed on 80 files) | none |

@@ -12,70 +12,110 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('empty feed shows the activation dashboard and opens setup', (
+  testWidgets('empty mobile feed shows one swipe action and opens setup', (
     tester,
   ) async {
-    await _pumpFeedScreen(
-      tester,
-      items: const [],
-      dripPlans: [_dripPlan('plan-1'), _dripPlan('plan-2')],
-      queuedActions: [_queuedAction('action-1')],
-    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await _pumpFeedScreen(tester, items: const []);
 
     expect(
       find.text('Your content machine is ready to be configured.'),
       findsOneWidget,
     );
-    expect(find.text('Next best actions'), findsOneWidget);
-    expect(find.text('Upcoming content queue'), findsOneWidget);
-    expect(find.text('2 plan(s)'), findsOneWidget);
+    expect(find.text('Next best actions'), findsNothing);
+    expect(find.text('Workspace status'), findsNothing);
+    expect(find.text('Upcoming content queue'), findsNothing);
+    expect(find.text('Pending review'), findsNothing);
 
-    await tester.tap(
-      find.widgetWithText(FilledButton, 'Review creation settings'),
-    );
+    await tester.tap(find.byKey(const Key('flow-action-start-setup')));
     await tester.pumpAndSettle();
 
     expect(find.text('onboarding mode=create projectId='), findsOneWidget);
   });
 
-  testWidgets('empty feed opens onboarding in edit mode when active project exists', (
+  testWidgets(
+    'empty feed opens onboarding in edit mode when active project exists',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await _pumpFeedScreen(
+        tester,
+        items: const [],
+        activeProject: Project(
+          id: 'project-42',
+          name: 'Project 42',
+          url: 'https://example.com',
+          createdAt: DateTime(2026, 4, 21),
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('flow-action-start-setup')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('onboarding mode=edit projectId=project-42'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('upcoming queue card appears only when drip content exists', (
     tester,
   ) async {
-    await _pumpFeedScreen(
-      tester,
-      items: const [],
-      activeProject: Project(
-        id: 'project-42',
-        name: 'Project 42',
-        url: 'https://example.com',
-        createdAt: DateTime(2026, 4, 21),
-      ),
-    );
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
 
-    await tester.tap(
-      find.widgetWithText(FilledButton, 'Review creation settings'),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('onboarding mode=edit projectId=project-42'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('empty feed links to the drip queue', (tester) async {
     await _pumpFeedScreen(
       tester,
       items: const [],
       dripPlans: [_dripPlan('plan-1')],
     );
 
-    await tester.ensureVisible(find.text('Open drip queue'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Open drip queue'));
+    expect(find.text('Upcoming content queue'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('flow-action-later-setup')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('flow-action-later-create')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('flow-action-later-templates')));
+    await tester.pump();
+
+    expect(find.text('Upcoming content queue'), findsOneWidget);
+    expect(find.text('1 plan(s)'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('flow-action-start-drip')));
     await tester.pumpAndSettle();
 
     expect(find.text('drip screen'), findsOneWidget);
+  });
+
+  testWidgets('left swipe postpones the current dashboard action', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await _pumpFeedScreen(tester, items: const []);
+
+    await tester.fling(
+      find.byKey(const Key('flow-action-card-setup')),
+      const Offset(-500, 0),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Your content machine is ready to be configured.'),
+      findsNothing,
+    );
+    expect(find.text('Create your first content'), findsOneWidget);
   });
 
   testWidgets('feed with pending content keeps the swiper UI', (tester) async {
@@ -113,8 +153,11 @@ void main() {
       dripPlans: [_dripPlan('plan-1')],
     );
 
-    expect(find.text('Review creation settings'), findsOneWidget);
-    expect(find.text('Create content'), findsOneWidget);
+    expect(
+      find.text('Your content machine is ready to be configured.'),
+      findsOneWidget,
+    );
+    expect(find.text('Start'), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pumpAndSettle();
@@ -157,6 +200,16 @@ Future<void> _pumpFeedScreen(
         path: '/drip',
         builder: (context, state) =>
             const Scaffold(body: Center(child: Text('drip screen'))),
+      ),
+      GoRoute(
+        path: '/history',
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('history screen'))),
+      ),
+      GoRoute(
+        path: '/uptime',
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: Text('uptime screen'))),
       ),
       GoRoute(
         path: '/editor/:id',
@@ -222,19 +275,4 @@ class _TestUserSettingsNotifier extends UserSettingsNotifier {
 
 DripPlan _dripPlan(String id) {
   return DripPlan(id: id, userId: 'user-1', name: 'Plan $id', status: 'active');
-}
-
-QueuedOfflineAction _queuedAction(String id) {
-  return QueuedOfflineAction(
-    id: id,
-    userScope: 'user-1',
-    resourceType: 'content',
-    actionType: 'create',
-    label: 'Queued action',
-    method: 'POST',
-    path: '/api/content',
-    dedupeKey: 'key-$id',
-    createdAt: DateTime(2026, 4, 21),
-    updatedAt: DateTime(2026, 4, 21),
-  );
 }

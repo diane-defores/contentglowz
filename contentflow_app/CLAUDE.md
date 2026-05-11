@@ -46,6 +46,18 @@ Backend and auth dependencies:
 - `./pm2-web.sh` (build + run production-style web server)
 - `./scripts/validate-clerk-runtime.sh` (auth runtime smoke check)
 
+## ShipFlow Development Mode
+
+- development_mode: hybrid
+- validation_surface: mixed
+- ship_before_preview_test: conditional
+- post_ship_verification: sf-prod
+- deployment_provider: vercel
+- preview_source: Vercel MCP deployment target_url
+- production_url: unknown
+- notes: Local checks cover most Flutter UI and provider logic. Hosted auth/callback or deployment-routing proof should use `sf-ship` then `sf-prod` before browser confirmation.
+- last_reviewed: 2026-05-11
+
 ## ARM64 Android Release Guardrail
 
 On Linux ARM64 (`aarch64`/`arm64`), do not run Android release builds locally: no `flutter build apk --release`, `flutter build appbundle --release`, `./gradlew assembleRelease`, or `./gradlew bundleRelease`. Route APK/AAB release builds to Blacksmith or another Linux x64 CI runner. Local Flutter work is limited to `flutter analyze`, `flutter test`, and `flutter build web --release`.

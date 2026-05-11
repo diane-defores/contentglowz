@@ -13,6 +13,71 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  testWidgets('editing toolbar applies bold formatting to the body selection', (
+    tester,
+  ) async {
+    final item = _contentItem(body: 'Original full body');
+    final api = _EditorFakeApiService(item);
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => const _OpenEditor()),
+        GoRoute(
+          path: '/editor/:id',
+          builder: (context, state) =>
+              EditorScreen(contentId: state.pathParameters['id']!),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDiagnosticsProvider.overrideWithValue(AppDiagnostics()),
+          apiServiceProvider.overrideWithValue(api),
+          appAccessStateProvider.overrideWith(() => _TestAccessNotifier()),
+          publishAccountsStateProvider.overrideWith(
+            (ref) async => const PublishAccountsState(accounts: []),
+          ),
+          contentHistoryProvider.overrideWith(
+            (ref) async => const <ContentItem>[],
+          ),
+          pendingContentProvider.overrideWith(
+            () => _TestPendingContentNotifier([item]),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Edit'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Bold'), findsOneWidget);
+
+    final bodyField = tester.widget<TextField>(find.byType(TextField).last);
+    final controller = bodyField.controller!;
+    controller.value = controller.value.copyWith(
+      selection: TextSelection(
+        baseOffset: 0,
+        extentOffset: controller.text.length,
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Bold'));
+    await tester.pump();
+
+    expect(controller.text, '**Original full body**');
+  });
+
   testWidgets(
     'save and publish saves body before metadata and publishes edited body',
     (tester) async {

@@ -26,7 +26,7 @@
 |-----|------|--------|
 | ✅ | Website auth routes `/sign-in`, `/sign-up`, and `/launch` hand off authenticated users to the Flutter app | ✅ done |
 | ✅ | Marketing copy documents degraded backend mode, cached reads, and local action queue behavior | ✅ done |
-| ✅ | `BRANDING.md` documents the website brand promise, tone, and UX language | ✅ done |
+| ✅ | `shipflow_data/business/branding.md` documents the website brand promise, tone, and UX language | ✅ done |
 
 ---
 

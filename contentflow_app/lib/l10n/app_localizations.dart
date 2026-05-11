@@ -204,6 +204,17 @@ class AppLocalizations {
     'Disconnected {channelName}': '{channelName} déconnecté',
     'Domains': 'Domaines',
     'Edit': 'Modifier',
+    'Bold': 'Gras',
+    'Italic': 'Italique',
+    'Heading': 'Titre',
+    'Bulleted list': 'Liste à puces',
+    'Quote': 'Citation',
+    'Insert link': 'Insérer un lien',
+    'Clear formatting': 'Effacer le formatage',
+    'Delete paragraph': 'Supprimer le paragraphe',
+    'Label (optional)': 'Libellé (optionnel)',
+    'Insert': 'Insérer',
+    'URL is required': 'URL obligatoire',
     'English': 'Anglais',
     'Enter a valid GitHub repository URL to continue.':
         'Entrez une URL de dépôt GitHub valide pour continuer.',
@@ -1430,6 +1441,33 @@ class AppLocalizations {
     'Validate': 'Valider',
     'Validated: {date}': 'Validé : {date}',
     'Validation completed.': 'Validation terminée.',
+    'All caught up': 'Tout est traité',
+    'Check the structures available for articles, newsletters, videos, and shorts.':
+        'Vérifie les structures disponibles pour les articles, newsletters, vidéos et shorts.',
+    'Confirm the project, content types, channels, and rhythm before the first run.':
+        'Confirme le projet, les types de contenus, les canaux et le rythme avant le premier lancement.',
+    'Content formats': 'Formats de contenu',
+    'First draft': 'Premier brouillon',
+    'Generate angles and turn the strongest one into a draft ready for review.':
+        'Génère des angles et transforme le plus solide en brouillon prêt à valider.',
+    'Inspect the local actions waiting for backend sync.':
+        'Inspecte les actions locales en attente de synchronisation backend.',
+    'Later': 'Plus tard',
+    'No dashboard action is waiting in this session.':
+        'Aucune action du dashboard n’attend dans cette session.',
+    'One clear action at a time. Empty workspace metrics stay hidden until there is something useful to inspect.':
+        'Une action claire à la fois. Les métriques vides du workspace restent masquées tant qu’il n’y a rien d’utile à inspecter.',
+    'Open diagnostics': 'Ouvrir les diagnostics',
+    'Open history': 'Ouvrir l’historique',
+    'Open the content already approved or published from this workspace.':
+        'Ouvre les contenus déjà approuvés ou publiés depuis ce workspace.',
+    'Review published history': 'Consulter l’historique publié',
+    'Review the planned queue before the next content items arrive.':
+        'Vérifie la file planifiée avant l’arrivée des prochains contenus.',
+    'Scheduled content': 'Contenu planifié',
+    'Swipe to Publish': 'Swipe to Publish',
+    'Sync queue': 'File de synchronisation',
+    'Workspace setup': 'Configuration du workspace',
     'You are using the demo workspace without a real account.':
         'Vous utilisez le workspace démo sans compte réel.',
     'Your OpenRouter key is ready. Server-managed tools are also available for newsletter generation.':
@@ -1441,8 +1479,11 @@ class AppLocalizations {
     'https://your-site.com': 'https://votre-site.com',
     '{count} actions are waiting to sync.':
         '{count} actions sont en attente de synchronisation.',
+    '{count} item(s)': '{count} élément(s)',
+    '{count} waiting': '{count} en attente',
     '{count} queued actions need manual review.':
         '{count} actions en file nécessitent une revue manuelle.',
+    '{index} of {count}': '{index} sur {count}',
   };
 
   static const Map<String, Map<String, String>> _localizedValues =

@@ -10,6 +10,7 @@ import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import 'editor_formatting.dart';
 import 'platform_preview_sheet.dart';
 
 class EditorScreen extends ConsumerStatefulWidget {
@@ -227,6 +228,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         if (_auditFuture != null) _buildAuditPanel(),
         const SizedBox(height: 12),
         Divider(height: 1, color: theme.colorScheme.outlineVariant),
+        if (_isEditing) _buildToolbar(),
         // Body content
         Expanded(
           child: _isEditing
@@ -299,6 +301,180 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildToolbar() {
+    final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: palette.surface.withValues(alpha: 0.75),
+        border: Border(
+          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _toolbarButton(
+              tooltip: context.tr('Bold'),
+              icon: Icons.format_bold_rounded,
+              onTap: () => _applyFormatting(EditorFormatting.toggleBold),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Italic'),
+              icon: Icons.format_italic_rounded,
+              onTap: () => _applyFormatting(EditorFormatting.toggleItalic),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Heading'),
+              icon: Icons.title_rounded,
+              onTap: () => _applyFormatting(EditorFormatting.toggleHeading),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Bulleted list'),
+              icon: Icons.format_list_bulleted_rounded,
+              onTap: () =>
+                  _applyFormatting(EditorFormatting.toggleBulletedList),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Quote'),
+              icon: Icons.format_quote_rounded,
+              onTap: () => _applyFormatting(EditorFormatting.toggleQuote),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Insert link'),
+              icon: Icons.link_rounded,
+              onTap: _showInsertLinkDialog,
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Clear formatting'),
+              icon: Icons.format_clear_rounded,
+              onTap: () =>
+                  _applyFormatting(EditorFormatting.clearBasicFormatting),
+            ),
+            _toolbarButton(
+              tooltip: context.tr('Delete paragraph'),
+              icon: Icons.backspace_outlined,
+              onTap: () =>
+                  _applyFormatting(EditorFormatting.deleteCurrentParagraph),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toolbarButton({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: IconButton(
+        tooltip: tooltip,
+        visualDensity: VisualDensity.compact,
+        icon: Icon(icon, size: 20),
+        onPressed: onTap,
+      ),
+    );
+  }
+
+  void _applyFormatting(
+    EditorFormattingResult Function(String text, TextSelection selection)
+    formatter,
+  ) {
+    final current = _bodyController.value;
+    final result = formatter(current.text, current.selection);
+    _bodyController.value = TextEditingValue(
+      text: result.text,
+      selection: result.selection,
+      composing: TextRange.empty,
+    );
+    setState(() => _hasChanges = true);
+  }
+
+  Future<void> _showInsertLinkDialog() async {
+    final urlController = TextEditingController();
+    final labelController = TextEditingController();
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.tr('Insert link')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: urlController,
+              autofocus: true,
+              decoration: InputDecoration(hintText: context.tr('URL')),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: labelController,
+              decoration: InputDecoration(
+                hintText: context.tr('Label (optional)'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(context.tr('Insert')),
+          ),
+        ],
+      ),
+    );
+
+    if (accepted != true) {
+      urlController.dispose();
+      labelController.dispose();
+      return;
+    }
+    final url = urlController.text.trim();
+    if (url.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('URL is required')),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+      urlController.dispose();
+      labelController.dispose();
+      return;
+    }
+
+    final current = _bodyController.value;
+    final result = EditorFormatting.insertLink(
+      current.text,
+      current.selection,
+      url: url,
+      label: labelController.text.trim().isEmpty
+          ? null
+          : labelController.text.trim(),
+    );
+    _bodyController.value = TextEditingValue(
+      text: result.text,
+      selection: result.selection,
+      composing: TextRange.empty,
+    );
+    setState(() => _hasChanges = true);
+    urlController.dispose();
+    labelController.dispose();
   }
 
   Widget _buildFormatMetaBar(ContentItem item) {

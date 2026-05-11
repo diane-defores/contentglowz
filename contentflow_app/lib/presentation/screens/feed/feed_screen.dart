@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -423,194 +425,266 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       };
 }
 
-class _FeedEmptyDashboard extends ConsumerWidget {
+class _FeedEmptyDashboard extends ConsumerStatefulWidget {
   const _FeedEmptyDashboard();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_FeedEmptyDashboard> createState() =>
+      _FeedEmptyDashboardState();
+}
+
+class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
+  final Set<String> _dismissedActionIds = <String>{};
+
+  @override
+  Widget build(BuildContext context) {
     final dripPlansAsync = ref.watch(dripPlansProvider);
     final queueAsync = ref.watch(offlineQueueEntriesProvider);
     final historyAsync = ref.watch(contentHistoryProvider);
     final activeProjectId = ref.watch(activeProjectIdProvider);
 
-    final dripCount = dripPlansAsync.value?.length ?? 0;
-    final queuedActions = _countPendingQueueActions(queueAsync.value);
-    final publishedCount = historyAsync.value?.length ?? 0;
-    final colorScheme = Theme.of(context).colorScheme;
+    final dripCount = dripPlansAsync.value?.length;
+    final queuedActions = queueAsync.value == null
+        ? null
+        : _countPendingQueueActions(queueAsync.value);
+    final publishedCount = historyAsync.value?.length;
     final onboardingSetupRoute = _buildOnboardingSetupRoute(activeProjectId);
+    final actions = _buildDashboardActions(
+      context,
+      onboardingSetupRoute: onboardingSetupRoute,
+      dripCount: dripCount,
+      queuedActions: queuedActions,
+      publishedCount: publishedCount,
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final isCompact = width < 640;
         final isNarrow = width < 420;
-        final horizontalPadding = isNarrow ? 16.0 : 20.0;
-        final actionCards = [
-          _ActionCard(
-            compact: isCompact,
-            icon: Icons.tune_rounded,
-            color: AppTheme.approveColor,
-            title: context.tr('Review creation settings'),
-            subtitle: context.tr(
-              'Check your project, content types, and generation frequency before the first run.',
-            ),
-            ctaLabel: context.tr('Open setup'),
-            onTap: () => context.push(onboardingSetupRoute),
-          ),
-          _ActionCard(
-            compact: isCompact,
-            icon: Icons.auto_awesome_rounded,
-            color: AppTheme.warningColor,
-            title: context.tr('Create your first content'),
-            subtitle: context.tr(
-              'Generate angles and turn one of them into a draft ready for review.',
-            ),
-            ctaLabel: context.tr('Create content'),
-            onTap: () => context.push('/angles'),
-          ),
-          _ActionCard(
-            compact: isCompact,
-            icon: Icons.description_outlined,
-            color: AppTheme.infoColor,
-            title: context.tr('Templates'),
-            subtitle: context.tr(
-              'Review the structures available for articles, newsletters, videos, and shorts.',
-            ),
-            ctaLabel: context.tr('Open templates'),
-            onTap: () => context.push('/templates'),
-          ),
-          _ActionCard(
-            compact: isCompact,
-            icon: Icons.water_drop_outlined,
-            color: colorScheme.primary,
-            title: context.tr('Upcoming content queue'),
-            subtitle: context.tr(
-              'Open the drip queue to schedule the next content items that should arrive.',
-            ),
-            ctaLabel: context.tr('Open drip queue'),
-            onTap: () => context.push('/drip'),
-            trailing: _InlineCountBadge(
-              label: context.tr('{count} plan(s)', {'count': dripCount}),
-            ),
-          ),
-        ];
-        final statusCards = [
-          _StatusCard(
-            compact: isCompact,
-            label: context.tr('Pending review'),
-            value: '0',
-            icon: Icons.dynamic_feed_rounded,
-            color: AppTheme.approveColor,
-            helper: context.tr('Nothing is waiting for approval yet.'),
-          ),
-          _StatusCard(
-            compact: isCompact,
-            label: context.tr('Drip plans'),
-            value: '$dripCount',
-            icon: Icons.water_drop_rounded,
-            color: colorScheme.primary,
-            helper: dripCount == 0
-                ? context.tr('No upcoming content is scheduled yet.')
-                : context.tr('Your future content queue is ready to inspect.'),
-          ),
-          _StatusCard(
-            compact: isCompact,
-            label: context.tr('Queued actions'),
-            value: '$queuedActions',
-            icon: Icons.sync_rounded,
-            color: AppTheme.warningColor,
-            helper: queuedActions == 0
-                ? context.tr('No local actions are waiting to sync.')
-                : context.tr('Some local actions are waiting for sync.'),
-          ),
-          _StatusCard(
-            compact: isCompact,
-            label: context.tr('Published content'),
-            value: '$publishedCount',
-            icon: Icons.history_rounded,
-            color: AppTheme.infoColor,
-            helper: publishedCount == 0
-                ? context.tr(
-                    'Your published history will appear here after the first release.',
-                  )
-                : context.tr('You already have published content in history.'),
-          ),
-        ];
 
         return RefreshIndicator(
-          onRefresh: () async {
-            await ref.read(pendingContentProvider.notifier).refresh();
-            ref.invalidate(dripPlansProvider);
-            ref.invalidate(offlineQueueEntriesProvider);
-            ref.invalidate(contentHistoryProvider);
-          },
-          child: ListView(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              isNarrow ? 16 : 20,
-              horizontalPadding,
-              28,
-            ),
-            children: [
-              _HeroCard(
-                compact: isCompact,
-                isNarrow: isNarrow,
-                onPrimaryTap: () => context.push(onboardingSetupRoute),
-                onSecondaryTap: () => context.push('/angles'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                context.tr('Next best actions'),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              if (isCompact)
-                Column(
-                  children: [
-                    for (
-                      var index = 0;
-                      index < actionCards.length;
-                      index++
-                    ) ...[
-                      actionCards[index],
-                      if (index != actionCards.length - 1)
-                        const SizedBox(height: 12),
-                    ],
-                  ],
-                )
-              else
-                Wrap(spacing: 12, runSpacing: 12, children: actionCards),
-              const SizedBox(height: 24),
-              Text(
-                context.tr('Workspace status'),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              if (isCompact)
-                Column(
-                  children: [
-                    for (
-                      var index = 0;
-                      index < statusCards.length;
-                      index++
-                    ) ...[
-                      statusCards[index],
-                      if (index != statusCards.length - 1)
-                        const SizedBox(height: 10),
-                    ],
-                  ],
-                )
-              else
-                Wrap(spacing: 10, runSpacing: 10, children: statusCards),
-            ],
-          ),
+          onRefresh: _refreshDashboard,
+          child: isCompact
+              ? _buildMobileDeck(context, constraints, actions, isNarrow)
+              : _buildDesktopDashboard(context, actions),
         );
       },
     );
+  }
+
+  List<_DashboardAction> _buildDashboardActions(
+    BuildContext context, {
+    required String onboardingSetupRoute,
+    required int? dripCount,
+    required int? queuedActions,
+    required int? publishedCount,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final actions = <_DashboardAction>[
+      _DashboardAction(
+        id: 'setup',
+        icon: Icons.tune_rounded,
+        color: AppTheme.approveColor,
+        eyebrow: context.tr('Workspace setup'),
+        title: context.tr('Your content machine is ready to be configured.'),
+        subtitle: context.tr(
+          'Confirm the project, content types, channels, and rhythm before the first run.',
+        ),
+        primaryLabel: context.tr('Review creation settings'),
+        route: onboardingSetupRoute,
+      ),
+      _DashboardAction(
+        id: 'create',
+        icon: Icons.auto_awesome_rounded,
+        color: AppTheme.warningColor,
+        eyebrow: context.tr('First draft'),
+        title: context.tr('Create your first content'),
+        subtitle: context.tr(
+          'Generate angles and turn the strongest one into a draft ready for review.',
+        ),
+        primaryLabel: context.tr('Create content'),
+        route: '/angles',
+      ),
+      _DashboardAction(
+        id: 'templates',
+        icon: Icons.description_outlined,
+        color: AppTheme.infoColor,
+        eyebrow: context.tr('Content formats'),
+        title: context.tr('Templates'),
+        subtitle: context.tr(
+          'Check the structures available for articles, newsletters, videos, and shorts.',
+        ),
+        primaryLabel: context.tr('Open templates'),
+        route: '/templates',
+      ),
+    ];
+
+    if (dripCount != null && dripCount > 0) {
+      actions.add(
+        _DashboardAction(
+          id: 'drip',
+          icon: Icons.water_drop_outlined,
+          color: colorScheme.primary,
+          eyebrow: context.tr('Scheduled content'),
+          title: context.tr('Upcoming content queue'),
+          subtitle: context.tr(
+            'Review the planned queue before the next content items arrive.',
+          ),
+          primaryLabel: context.tr('Open drip queue'),
+          route: '/drip',
+          metric: context.tr('{count} plan(s)', {'count': dripCount}),
+        ),
+      );
+    }
+
+    if (queuedActions != null && queuedActions > 0) {
+      actions.add(
+        _DashboardAction(
+          id: 'sync',
+          icon: Icons.sync_rounded,
+          color: AppTheme.warningColor,
+          eyebrow: context.tr('Sync queue'),
+          title: context.tr('Queued actions'),
+          subtitle: context.tr(
+            'Inspect the local actions waiting for backend sync.',
+          ),
+          primaryLabel: context.tr('Open diagnostics'),
+          route: '/uptime',
+          metric: context.tr('{count} waiting', {'count': queuedActions}),
+        ),
+      );
+    }
+
+    if (publishedCount != null && publishedCount > 0) {
+      actions.add(
+        _DashboardAction(
+          id: 'history',
+          icon: Icons.history_rounded,
+          color: AppTheme.infoColor,
+          eyebrow: context.tr('Published content'),
+          title: context.tr('Review published history'),
+          subtitle: context.tr(
+            'Open the content already approved or published from this workspace.',
+          ),
+          primaryLabel: context.tr('Open history'),
+          route: '/history',
+          metric: context.tr('{count} item(s)', {'count': publishedCount}),
+        ),
+      );
+    }
+
+    return actions;
+  }
+
+  Widget _buildMobileDeck(
+    BuildContext context,
+    BoxConstraints constraints,
+    List<_DashboardAction> actions,
+    bool isNarrow,
+  ) {
+    final visibleActions = actions
+        .where((action) => !_dismissedActionIds.contains(action.id))
+        .toList();
+    final deckHeight = math.max<double>(
+      constraints.hasBoundedHeight ? constraints.maxHeight - 28 : 540,
+      540.0,
+    );
+
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(
+        isNarrow ? 14 : 18,
+        12,
+        isNarrow ? 14 : 18,
+        16,
+      ),
+      children: [
+        SizedBox(
+          height: deckHeight,
+          child: visibleActions.isEmpty
+              ? _DashboardCompleteState(
+                  onRefresh: () {
+                    setState(_dismissedActionIds.clear);
+                    ref.invalidate(pendingContentProvider);
+                    ref.invalidate(dripPlansProvider);
+                    ref.invalidate(offlineQueueEntriesProvider);
+                    ref.invalidate(contentHistoryProvider);
+                  },
+                  onCreate: () => context.push('/angles'),
+                )
+              : _MobileActionDeck(
+                  action: visibleActions.first,
+                  nextAction: visibleActions.length > 1
+                      ? visibleActions[1]
+                      : null,
+                  positionLabel: context.tr('{index} of {count}', {
+                    'index': actions.indexOf(visibleActions.first) + 1,
+                    'count': actions.length,
+                  }),
+                  onLater: () => _dismissAction(visibleActions.first),
+                  onStart: () => _startAction(visibleActions.first),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopDashboard(
+    BuildContext context,
+    List<_DashboardAction> actions,
+  ) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+      children: [
+        Text(
+          context.tr('Swipe to Publish'),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          context.tr(
+            'One clear action at a time. Empty workspace metrics stay hidden until there is something useful to inspect.',
+          ),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final action in actions)
+              _DesktopDashboardActionCard(
+                action: action,
+                onTap: () => _startAction(action),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _dismissAction(_DashboardAction action) {
+    setState(() => _dismissedActionIds.add(action.id));
+  }
+
+  void _startAction(_DashboardAction action) {
+    if (!mounted) return;
+    context.push(action.route);
+  }
+
+  Future<void> _refreshDashboard() async {
+    setState(_dismissedActionIds.clear);
+    await ref.read(pendingContentProvider.notifier).refresh();
+    ref.invalidate(dripPlansProvider);
+    ref.invalidate(offlineQueueEntriesProvider);
+    ref.invalidate(contentHistoryProvider);
   }
 
   int _countPendingQueueActions(List<QueuedOfflineAction>? entries) {
@@ -635,411 +709,387 @@ class _FeedEmptyDashboard extends ConsumerWidget {
   }
 }
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({
-    required this.onPrimaryTap,
-    required this.onSecondaryTap,
-    required this.compact,
-    required this.isNarrow,
+class _DashboardAction {
+  const _DashboardAction({
+    required this.id,
+    required this.icon,
+    required this.color,
+    required this.eyebrow,
+    required this.title,
+    required this.subtitle,
+    required this.primaryLabel,
+    required this.route,
+    this.metric,
   });
 
-  final VoidCallback onPrimaryTap;
-  final VoidCallback onSecondaryTap;
-  final bool compact;
-  final bool isNarrow;
+  final String id;
+  final IconData icon;
+  final Color color;
+  final String eyebrow;
+  final String title;
+  final String subtitle;
+  final String primaryLabel;
+  final String route;
+  final String? metric;
+}
+
+class _MobileActionDeck extends StatelessWidget {
+  const _MobileActionDeck({
+    required this.action,
+    required this.positionLabel,
+    required this.onLater,
+    required this.onStart,
+    this.nextAction,
+  });
+
+  final _DashboardAction action;
+  final _DashboardAction? nextAction;
+  final String positionLabel;
+  final VoidCallback onLater;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (nextAction != null)
+                Positioned.fill(
+                  top: 18,
+                  left: 12,
+                  right: 12,
+                  child: _DashboardActionCard(
+                    action: nextAction!,
+                    positionLabel: '',
+                    isPreview: true,
+                  ),
+                ),
+              Positioned.fill(
+                child: GestureDetector(
+                  key: Key('flow-action-card-${action.id}'),
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragEnd: (details) {
+                    final velocity = details.primaryVelocity ?? 0;
+                    if (velocity > 250) {
+                      onStart();
+                    } else if (velocity < -250) {
+                      onLater();
+                    }
+                  },
+                  child: _DashboardActionCard(
+                    action: action,
+                    positionLabel: positionLabel,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        _MobileDeckControls(action: action, onLater: onLater, onStart: onStart),
+      ],
+    );
+  }
+}
+
+class _DashboardActionCard extends StatelessWidget {
+  const _DashboardActionCard({
+    required this.action,
+    required this.positionLabel,
+    this.isPreview = false,
+  });
+
+  final _DashboardAction action;
+  final String positionLabel;
+  final bool isPreview;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: EdgeInsets.all(isNarrow ? AppSpacing.md : AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer,
-            colorScheme.surfaceContainerHighest,
+    return Opacity(
+      opacity: isPreview ? 0.42 : 1,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          border: Border.all(
+            color: isPreview
+                ? colorScheme.outlineVariant.withValues(alpha: 0.55)
+                : action.color.withValues(alpha: 0.45),
+            width: isPreview ? 1 : 1.4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: isPreview ? 18 : 30,
+              offset: const Offset(0, 18),
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(AppRadii.card),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.xs,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-            ),
-            child: Wrap(
-              spacing: AppSpacing.xs,
-              crossAxisAlignment: WrapCrossAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  size: 18,
-                  color: AppTheme.approveColor,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: action.color.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                  ),
+                  child: Icon(action.icon, color: action.color, size: 28),
                 ),
+                const Spacer(),
+                if (action.metric != null)
+                  _InlineCountBadge(label: action.metric!)
+                else if (positionLabel.isNotEmpty)
+                  _InlineCountBadge(label: positionLabel),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Text(
+              action.eyebrow,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: action.color,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              action.title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w800,
+                height: 1.08,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              action.subtitle,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.45,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: action.color.withValues(alpha: 0.09),
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      action.primaryLabel,
+                      style: TextStyle(
+                        color: action.color,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_rounded, color: action.color),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MobileDeckControls extends StatelessWidget {
+  const _MobileDeckControls({
+    required this.action,
+    required this.onLater,
+    required this.onStart,
+  });
+
+  final _DashboardAction action;
+  final VoidCallback onLater;
+  final VoidCallback onStart;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            key: Key('flow-action-later-${action.id}'),
+            onPressed: onLater,
+            icon: const Icon(Icons.close_rounded),
+            label: Text(context.tr('Later')),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: FilledButton.icon(
+            key: Key('flow-action-start-${action.id}'),
+            onPressed: onStart,
+            icon: const Icon(Icons.arrow_forward_rounded),
+            label: Text(context.tr('Start')),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DesktopDashboardActionCard extends StatelessWidget {
+  const _DesktopDashboardActionCard({
+    required this.action,
+    required this.onTap,
+  });
+
+  final _DashboardAction action;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 260, maxWidth: 360),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: action.color.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(AppRadii.lg),
+                      ),
+                      child: Icon(action.icon, color: action.color),
+                    ),
+                    const Spacer(),
+                    if (action.metric != null)
+                      _InlineCountBadge(label: action.metric!),
+                  ],
+                ),
+                const SizedBox(height: 14),
                 Text(
-                  context.tr('Nothing to review yet'),
+                  action.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  action.subtitle,
                   style: TextStyle(
-                    color: colorScheme.onSurface,
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  action.primaryLabel,
+                  style: TextStyle(
+                    color: action.color,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: AppSpacing.md + AppSpacing.xs),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardCompleteState extends StatelessWidget {
+  const _DashboardCompleteState({
+    required this.onRefresh,
+    required this.onCreate,
+  });
+
+  final VoidCallback onRefresh;
+  final VoidCallback onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+        ),
+      ),
+      child: Column(
+        children: [
+          const Spacer(),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.approveColor.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
+            ),
+            child: Icon(
+              Icons.check_circle_outline,
+              color: AppTheme.approveColor,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 18),
           Text(
-            context.tr('Your content machine is ready to be configured.'),
+            context.tr('All caught up'),
+            textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               color: colorScheme.onSurface,
-              fontSize: compact ? 26 : null,
             ),
           ),
-          SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: 10),
           Text(
-            context.tr(
-              'No draft is currently waiting in the review queue. Set your creation rules, generate a first draft, or prepare the upcoming queue.',
-            ),
-            style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.5),
+            context.tr('No dashboard action is waiting in this session.'),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.45),
           ),
-          SizedBox(height: AppSpacing.md + AppSpacing.xs),
-          if (compact)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                FilledButton.icon(
-                  onPressed: onPrimaryTap,
-                  icon: const Icon(Icons.tune_rounded),
-                  label: Text(context.tr('Review creation settings')),
+          const Spacer(),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onRefresh,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: Text(context.tr('Refresh')),
                 ),
-                SizedBox(height: AppSpacing.xs),
-                OutlinedButton.icon(
-                  onPressed: onSecondaryTap,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: onCreate,
                   icon: const Icon(Icons.auto_awesome_rounded),
                   label: Text(context.tr('Create content')),
                 ),
-              ],
-            )
-          else
-            Wrap(
-              spacing: AppSpacing.xs,
-              runSpacing: AppSpacing.xs,
-              children: [
-                FilledButton.icon(
-                  onPressed: onPrimaryTap,
-                  icon: const Icon(Icons.tune_rounded),
-                  label: Text(context.tr('Review creation settings')),
-                ),
-                OutlinedButton.icon(
-                  onPressed: onSecondaryTap,
-                  icon: const Icon(Icons.auto_awesome_rounded),
-                  label: Text(context.tr('Create content')),
-                ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _ActionCard extends StatelessWidget {
-  const _ActionCard({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.ctaLabel,
-    required this.onTap,
-    required this.compact,
-    this.trailing,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final String ctaLabel;
-  final VoidCallback onTap;
-  final bool compact;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final child = Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
-          child: compact
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.xs),
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(AppRadii.lg),
-                                ),
-                                child: Icon(icon, color: color),
-                              ),
-                              if (trailing != null) ...[
-                                SizedBox(width: AppSpacing.xs),
-                                trailing!,
-                              ],
-                            ],
-                          ),
-                          SizedBox(height: AppSpacing.xxs + 2),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                              height: 1.45,
-                            ),
-                          ),
-                          SizedBox(height: AppSpacing.xs),
-                          Wrap(
-                            spacing: AppSpacing.xs,
-                            runSpacing: AppSpacing.xs,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.xs,
-                                  vertical: AppSpacing.xxs + 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                                ),
-                                child: Text(
-                                  ctaLabel,
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                color: color.withValues(alpha: 0.85),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: AppSpacing.xs),
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(AppRadii.lg),
-                          ),
-                          child: Icon(icon, color: color),
-                        ),
-                        if (trailing != null)
-                          Flexible(
-                            child: Align(
-                              alignment: Alignment.topRight,
-                              child: trailing!,
-                            ),
-                          ),
-                      ],
-                    ),
-                    SizedBox(height: AppSpacing.xs),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        height: 1.45,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.md),
-                    Text(
-                      ctaLabel,
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-    if (compact) {
-      return SizedBox(width: double.infinity, child: child);
-    }
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 260, maxWidth: 360),
-      child: child,
-    );
-  }
-}
-
-class _StatusCard extends StatelessWidget {
-  const _StatusCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.helper,
-    required this.compact,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final String helper;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final child = Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-        ),
-      ),
-      child: compact
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(icon, color: color, size: 18),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              label,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        helper,
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Container(
-                  constraints: const BoxConstraints(minWidth: 72),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(
-                    value,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: color,
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: color),
-                const SizedBox(height: 12),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  helper,
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-    );
-    if (compact) {
-      return SizedBox(width: double.infinity, child: child);
-    }
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 180, maxWidth: 220),
-      child: child,
     );
   }
 }
