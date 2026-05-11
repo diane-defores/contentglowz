@@ -477,8 +477,9 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         return;
       }
       final requiresOpenRouterKey = requiresOpenRouterCredential(error);
+      final apiError = error is ApiException ? error : null;
       final personaStorageError =
-          error is ApiException && error.code == 'persona_draft_storage_error';
+          apiError?.code == 'persona_draft_storage_error';
 
       showDiagnosticSnackBar(
         context,
@@ -497,7 +498,14 @@ class _PersonaEditorScreenState extends ConsumerState<PersonaEditorScreen> {
         scope: 'persona.prefill',
         error: error,
         stackTrace: stackTrace,
-        contextData: {'projectId': projectId, 'projectRepoUrl': projectRepoUrl},
+        contextData: {
+          'projectId': projectId,
+          'projectRepoUrl': projectRepoUrl,
+          if (apiError?.code != null) 'errorCode': apiError!.code,
+          if (apiError?.kind != null) 'errorKind': apiError!.kind,
+          if (apiError?.provider != null) 'provider': apiError!.provider,
+          if (apiError?.retryable != null) 'retryable': apiError!.retryable,
+        },
       );
       if (requiresOpenRouterKey) {
         context.push('/settings');
