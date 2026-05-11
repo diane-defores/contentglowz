@@ -49,6 +49,8 @@ class ContentCard extends ConsumerWidget {
             if (item.imageUrl != null) _buildImage(context),
             // Content preview
             Expanded(child: _buildBody(context)),
+            // Format-aware review template
+            _buildReviewTemplate(context, typeColor),
             // Footer with channels and timestamp
             _buildFooter(context, typeColor),
           ],
@@ -363,6 +365,182 @@ class ContentCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildReviewTemplate(BuildContext context, Color typeColor) {
+    final template = _templateForType(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: typeColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: typeColor.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: typeColor.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(template.icon, color: typeColor, size: 17),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      template.title,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      template.copy,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final step in template.steps)
+                _reviewTemplateChip(context, step, typeColor),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _reviewTemplateChip(
+    BuildContext context,
+    _ReviewTemplateStep step,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.68),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(step.icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(
+            step.label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _ReviewTemplate _templateForType(BuildContext context) {
+    final channels = item.channels.isEmpty
+        ? context.tr('channel fit')
+        : item.channels.take(2).map((channel) => channel.name).join(' + ');
+    return switch (item.type) {
+      ContentType.blogPost => _ReviewTemplate(
+        icon: Icons.article_outlined,
+        title: context.tr('Article review template'),
+        copy: context.tr(
+          'Check promise, structure, and SEO intent before publish.',
+        ),
+        steps: [
+          _ReviewTemplateStep(
+            Icons.search_rounded,
+            item.seoKeyword ?? context.tr('SEO intent'),
+          ),
+          _ReviewTemplateStep(
+            Icons.format_align_left_rounded,
+            context.tr('Structure'),
+          ),
+          _ReviewTemplateStep(Icons.link_rounded, context.tr('CTA / links')),
+        ],
+      ),
+      ContentType.newsletter => _ReviewTemplate(
+        icon: Icons.mark_email_read_outlined,
+        title: context.tr('Newsletter review template'),
+        copy: context.tr('Validate subject, sections, and reader action.'),
+        steps: [
+          _ReviewTemplateStep(Icons.subject_rounded, context.tr('Subject')),
+          _ReviewTemplateStep(
+            Icons.view_agenda_outlined,
+            context.tr('Sections'),
+          ),
+          _ReviewTemplateStep(Icons.touch_app_outlined, context.tr('CTA')),
+        ],
+      ),
+      ContentType.short || ContentType.reel => _ReviewTemplate(
+        icon: Icons.smart_display_outlined,
+        title: context.tr('Short-form review template'),
+        copy: context.tr('Watch the hook, pacing, and platform fit.'),
+        steps: [
+          _ReviewTemplateStep(Icons.bolt_rounded, context.tr('Hook')),
+          _ReviewTemplateStep(
+            Icons.timer_outlined,
+            item.shortDuration == null
+                ? context.tr('Pacing')
+                : '${item.shortDuration}s',
+          ),
+          _ReviewTemplateStep(
+            Icons.tag_rounded,
+            item.shortPlatform ?? channels,
+          ),
+        ],
+      ),
+      ContentType.videoScript => _ReviewTemplate(
+        icon: Icons.video_camera_front_outlined,
+        title: context.tr('Video script review template'),
+        copy: context.tr('Check opening, beats, and recording clarity.'),
+        steps: [
+          _ReviewTemplateStep(Icons.play_arrow_rounded, context.tr('Opening')),
+          _ReviewTemplateStep(Icons.list_alt_rounded, context.tr('Beats')),
+          _ReviewTemplateStep(Icons.mic_none_rounded, context.tr('Voice')),
+        ],
+      ),
+      ContentType.socialPost => _ReviewTemplate(
+        icon: Icons.forum_outlined,
+        title: context.tr('Social post review template'),
+        copy: context.tr('Check the hook, platform nuance, and reply trigger.'),
+        steps: [
+          _ReviewTemplateStep(Icons.campaign_outlined, context.tr('Hook')),
+          _ReviewTemplateStep(Icons.public_rounded, channels),
+          _ReviewTemplateStep(
+            Icons.question_answer_outlined,
+            context.tr('Reply trigger'),
+          ),
+        ],
+      ),
+    };
+  }
+
   String _truncateBody(String body) {
     // Remove markdown headers for preview
     return body
@@ -393,4 +571,25 @@ class ContentCard extends ConsumerWidget {
       PublishingChannel.youtube => Icons.play_circle_outline,
     };
   }
+}
+
+class _ReviewTemplate {
+  const _ReviewTemplate({
+    required this.icon,
+    required this.title,
+    required this.copy,
+    required this.steps,
+  });
+
+  final IconData icon;
+  final String title;
+  final String copy;
+  final List<_ReviewTemplateStep> steps;
+}
+
+class _ReviewTemplateStep {
+  const _ReviewTemplateStep(this.icon, this.label);
+
+  final IconData icon;
+  final String label;
 }

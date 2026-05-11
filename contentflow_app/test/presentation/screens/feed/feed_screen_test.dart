@@ -25,6 +25,9 @@ void main() {
       find.text('Your content machine is ready to be configured.'),
       findsOneWidget,
     );
+    expect(find.text('Content rules'), findsOneWidget);
+    expect(find.text('Connected context'), findsOneWidget);
+    expect(find.text('Next swipe'), findsOneWidget);
     expect(find.text('Next best actions'), findsNothing);
     expect(find.text('Workspace status'), findsNothing);
     expect(find.text('Upcoming content queue'), findsNothing);
@@ -118,6 +121,30 @@ void main() {
     expect(find.text('Create your first content'), findsOneWidget);
   });
 
+  testWidgets('right swipe gives visual feedback before starting action', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await _pumpFeedScreen(tester, items: const []);
+
+    final card = find.byKey(const Key('flow-action-card-setup'));
+    final gesture = await tester.startGesture(tester.getCenter(card));
+    await gesture.moveBy(const Offset(60, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    await gesture.moveBy(const Offset(100, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+
+    expect(find.text('START'), findsOneWidget);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(find.text('onboarding mode=create projectId='), findsOneWidget);
+  });
+
   testWidgets('feed with pending content keeps the swiper UI', (tester) async {
     await _pumpFeedScreen(
       tester,
@@ -126,14 +153,22 @@ void main() {
           id: 'content-1',
           title: 'Draft title',
           body: 'Draft body',
+          summary: 'A concise draft summary for review.',
           type: ContentType.blogPost,
           status: ContentStatus.pending,
+          channels: const [PublishingChannel.wordpress],
+          metadata: const {
+            'seo_keyword': 'content operations',
+            'seo_signals': {'volume': 1200, 'difficulty': 31},
+          },
           createdAt: DateTime(2026, 4, 21),
         ),
       ],
     );
 
     expect(find.text('Draft title'), findsOneWidget);
+    expect(find.text('Article review template'), findsOneWidget);
+    expect(find.text('content operations'), findsWidgets);
     expect(
       find.text('Your content machine is ready to be configured.'),
       findsNothing,

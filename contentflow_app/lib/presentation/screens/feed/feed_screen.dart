@@ -491,6 +491,28 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
         subtitle: context.tr(
           'Confirm the project, content types, channels, and rhythm before the first run.',
         ),
+        details: [
+          _DashboardActionDetail(
+            icon: Icons.account_tree_outlined,
+            title: context.tr('Content rules'),
+            body: context.tr('Lock the formats, cadence, and review gates.'),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.hub_outlined,
+            title: context.tr('Connected context'),
+            body: context.tr(
+              'Make sure ContentFlow knows what product to use.',
+            ),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.swipe_right_alt_rounded,
+            title: context.tr('Next swipe'),
+            body: context.tr('After setup, drafts can arrive as review cards.'),
+          ),
+        ],
+        footnote: context.tr(
+          'Best first move when the workspace is empty or newly connected.',
+        ),
         primaryLabel: context.tr('Review creation settings'),
         route: onboardingSetupRoute,
       ),
@@ -503,6 +525,26 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
         subtitle: context.tr(
           'Generate angles and turn the strongest one into a draft ready for review.',
         ),
+        details: [
+          _DashboardActionDetail(
+            icon: Icons.lightbulb_outline,
+            title: context.tr('Angle first'),
+            body: context.tr('Start from a clear hook before writing.'),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.auto_fix_high_outlined,
+            title: context.tr('Draft output'),
+            body: context.tr('Create a piece that can enter the review queue.'),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.fact_check_outlined,
+            title: context.tr('Human gate'),
+            body: context.tr('Nothing publishes before you approve it.'),
+          ),
+        ],
+        footnote: context.tr(
+          'Use this when you want momentum more than configuration.',
+        ),
         primaryLabel: context.tr('Create content'),
         route: '/angles',
       ),
@@ -514,6 +556,26 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
         title: context.tr('Templates'),
         subtitle: context.tr(
           'Check the structures available for articles, newsletters, videos, and shorts.',
+        ),
+        details: [
+          _DashboardActionDetail(
+            icon: Icons.article_outlined,
+            title: context.tr('Long form'),
+            body: context.tr('Article and newsletter structures.'),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.play_circle_outline,
+            title: context.tr('Video-ready'),
+            body: context.tr('Scripts, shorts, reels, and hook formats.'),
+          ),
+          _DashboardActionDetail(
+            icon: Icons.dashboard_customize_outlined,
+            title: context.tr('Reusable patterns'),
+            body: context.tr('Pick the shape before generating volume.'),
+          ),
+        ],
+        footnote: context.tr(
+          'Templates keep the output consistent when the queue grows.',
         ),
         primaryLabel: context.tr('Open templates'),
         route: '/templates',
@@ -530,6 +592,26 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
           title: context.tr('Upcoming content queue'),
           subtitle: context.tr(
             'Review the planned queue before the next content items arrive.',
+          ),
+          details: [
+            _DashboardActionDetail(
+              icon: Icons.calendar_month_outlined,
+              title: context.tr('Upcoming slots'),
+              body: context.tr('See what is already planned.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.water_drop_outlined,
+              title: context.tr('Drip rhythm'),
+              body: context.tr('Check cadence before drafts land.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.route_outlined,
+              title: context.tr('Queue control'),
+              body: context.tr('Adjust the flow before review work piles up.'),
+            ),
+          ],
+          footnote: context.tr(
+            'Only shown when upcoming content is actually scheduled.',
           ),
           primaryLabel: context.tr('Open drip queue'),
           route: '/drip',
@@ -549,6 +631,26 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
           subtitle: context.tr(
             'Inspect the local actions waiting for backend sync.',
           ),
+          details: [
+            _DashboardActionDetail(
+              icon: Icons.cloud_sync_outlined,
+              title: context.tr('Pending sync'),
+              body: context.tr('Review actions that still need the backend.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.warning_amber_rounded,
+              title: context.tr('Risk check'),
+              body: context.tr('Spot blocked or repeated actions early.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.refresh_rounded,
+              title: context.tr('Recovery path'),
+              body: context.tr('Retry when the workspace is healthy again.'),
+            ),
+          ],
+          footnote: context.tr(
+            'Only shown when local work is waiting to sync.',
+          ),
           primaryLabel: context.tr('Open diagnostics'),
           route: '/uptime',
           metric: context.tr('{count} waiting', {'count': queuedActions}),
@@ -566,6 +668,26 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
           title: context.tr('Review published history'),
           subtitle: context.tr(
             'Open the content already approved or published from this workspace.',
+          ),
+          details: [
+            _DashboardActionDetail(
+              icon: Icons.history_edu_outlined,
+              title: context.tr('Published trail'),
+              body: context.tr('Inspect what already left the queue.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.repeat_rounded,
+              title: context.tr('Repurpose signal'),
+              body: context.tr('Find pieces that can feed the next batch.'),
+            ),
+            _DashboardActionDetail(
+              icon: Icons.verified_outlined,
+              title: context.tr('Audit context'),
+              body: context.tr('Keep a clear memory of approved output.'),
+            ),
+          ],
+          footnote: context.tr(
+            'Only shown after at least one content item exists in history.',
           ),
           primaryLabel: context.tr('Open history'),
           route: '/history',
@@ -717,6 +839,8 @@ class _DashboardAction {
     required this.eyebrow,
     required this.title,
     required this.subtitle,
+    this.details = const <_DashboardActionDetail>[],
+    this.footnote,
     required this.primaryLabel,
     required this.route,
     this.metric,
@@ -728,12 +852,26 @@ class _DashboardAction {
   final String eyebrow;
   final String title;
   final String subtitle;
+  final List<_DashboardActionDetail> details;
+  final String? footnote;
   final String primaryLabel;
   final String route;
   final String? metric;
 }
 
-class _MobileActionDeck extends StatelessWidget {
+class _DashboardActionDetail {
+  const _DashboardActionDetail({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+}
+
+class _MobileActionDeck extends StatefulWidget {
   const _MobileActionDeck({
     required this.action,
     required this.positionLabel,
@@ -749,39 +887,114 @@ class _MobileActionDeck extends StatelessWidget {
   final VoidCallback onStart;
 
   @override
+  State<_MobileActionDeck> createState() => _MobileActionDeckState();
+}
+
+class _MobileActionDeckState extends State<_MobileActionDeck> {
+  static const double _commitDistance = 96;
+  static const double _commitVelocity = 420;
+  static const Duration _settleDuration = Duration(milliseconds: 180);
+
+  double _dragX = 0;
+  bool _isDragging = false;
+  bool _isCommitting = false;
+
+  @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final progress = (_dragX.abs() / math.max(width * 0.42, 1)).clamp(0.0, 1.0);
+    final rotation = (_dragX / math.max(width, 1) * 0.16).clamp(-0.16, 0.16);
+
     return Column(
       children: [
         Expanded(
           child: Stack(
             alignment: Alignment.center,
             children: [
-              if (nextAction != null)
+              if (widget.nextAction != null)
                 Positioned.fill(
                   top: 18,
                   left: 12,
                   right: 12,
-                  child: _DashboardActionCard(
-                    action: nextAction!,
-                    positionLabel: '',
-                    isPreview: true,
+                  child: AnimatedScale(
+                    duration: _settleDuration,
+                    curve: Curves.easeOutCubic,
+                    scale: 0.96 + (progress * 0.03),
+                    child: _DashboardActionCard(
+                      action: widget.nextAction!,
+                      positionLabel: '',
+                      isPreview: true,
+                    ),
                   ),
                 ),
               Positioned.fill(
                 child: GestureDetector(
-                  key: Key('flow-action-card-${action.id}'),
+                  key: Key('flow-action-card-${widget.action.id}'),
                   behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (_) {
+                    if (_isCommitting) return;
+                    setState(() => _isDragging = true);
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    if (_isCommitting) return;
+                    setState(() => _dragX += details.delta.dx);
+                  },
                   onHorizontalDragEnd: (details) {
+                    if (_isCommitting) return;
                     final velocity = details.primaryVelocity ?? 0;
-                    if (velocity > 250) {
-                      onStart();
-                    } else if (velocity < -250) {
-                      onLater();
+                    if (velocity > _commitVelocity ||
+                        _dragX > _commitDistance) {
+                      _commitSwipe(SwipeDirection.right, width);
+                    } else if (velocity < -_commitVelocity ||
+                        _dragX < -_commitDistance) {
+                      _commitSwipe(SwipeDirection.left, width);
+                    } else {
+                      setState(() {
+                        _dragX = 0;
+                        _isDragging = false;
+                      });
                     }
                   },
-                  child: _DashboardActionCard(
-                    action: action,
-                    positionLabel: positionLabel,
+                  onHorizontalDragCancel: _resetDrag,
+                  child: AnimatedContainer(
+                    duration: _isDragging ? Duration.zero : _settleDuration,
+                    curve: Curves.easeOutCubic,
+                    transform: Matrix4.identity()
+                      ..translateByDouble(_dragX, 0, 0, 1)
+                      ..rotateZ(rotation),
+                    transformAlignment: Alignment.center,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: _DashboardActionCard(
+                            action: widget.action,
+                            positionLabel: widget.positionLabel,
+                          ),
+                        ),
+                        if (_dragX > 8)
+                          Positioned(
+                            top: 22,
+                            right: 22,
+                            child: _SwipeCue(
+                              label: context.tr('START'),
+                              icon: Icons.arrow_forward_rounded,
+                              color: AppTheme.approveColor,
+                              opacity: progress,
+                            ),
+                          ),
+                        if (_dragX < -8)
+                          Positioned(
+                            top: 22,
+                            left: 22,
+                            child: _SwipeCue(
+                              label: context.tr('LATER'),
+                              icon: Icons.close_rounded,
+                              color: AppTheme.rejectColor,
+                              opacity: progress,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -789,8 +1002,83 @@ class _MobileActionDeck extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        _MobileDeckControls(action: action, onLater: onLater, onStart: onStart),
+        _MobileDeckControls(
+          action: widget.action,
+          onLater: widget.onLater,
+          onStart: widget.onStart,
+        ),
       ],
+    );
+  }
+
+  void _resetDrag() {
+    if (_isCommitting) return;
+    setState(() {
+      _dragX = 0;
+      _isDragging = false;
+    });
+  }
+
+  void _commitSwipe(SwipeDirection direction, double width) {
+    setState(() {
+      _isDragging = false;
+      _isCommitting = true;
+      _dragX = direction == SwipeDirection.right ? width * 1.25 : -width * 1.25;
+    });
+
+    Future<void>.delayed(_settleDuration, () {
+      if (!mounted) return;
+      if (direction == SwipeDirection.right) {
+        widget.onStart();
+      } else {
+        widget.onLater();
+      }
+    });
+  }
+}
+
+enum SwipeDirection { left, right }
+
+class _SwipeCue extends StatelessWidget {
+  const _SwipeCue({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.opacity,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: opacity.clamp(0.0, 1.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          border: Border.all(color: color.withValues(alpha: 0.7), width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -852,32 +1140,57 @@ class _DashboardActionCard extends StatelessWidget {
                   _InlineCountBadge(label: positionLabel),
               ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              action.eyebrow,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: action.color,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              action.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w800,
-                height: 1.08,
+            const SizedBox(height: 14),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      action.eyebrow,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: action.color,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      action.title,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                            height: 1.08,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      action.subtitle,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (action.details.isNotEmpty)
+                      _DashboardDetailsPanel(action: action),
+                    if (action.footnote != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        action.footnote!,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              action.subtitle,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.45,
-              ),
-            ),
-            const Spacer(),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -944,6 +1257,94 @@ class _MobileDeckControls extends StatelessWidget {
   }
 }
 
+class _DashboardDetailsPanel extends StatelessWidget {
+  const _DashboardDetailsPanel({required this.action});
+
+  final _DashboardAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        children: [
+          for (var index = 0; index < action.details.length; index++) ...[
+            _DashboardDetailRow(
+              detail: action.details[index],
+              color: action.color,
+            ),
+            if (index != action.details.length - 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardDetailRow extends StatelessWidget {
+  const _DashboardDetailRow({required this.detail, required this.color});
+
+  final _DashboardActionDetail detail;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
+          ),
+          child: Icon(detail.icon, color: color, size: 17),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                detail.title,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                detail.body,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.28,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _DesktopDashboardActionCard extends StatelessWidget {
   const _DesktopDashboardActionCard({
     required this.action,
@@ -999,6 +1400,10 @@ class _DesktopDashboardActionCard extends StatelessWidget {
                     height: 1.45,
                   ),
                 ),
+                if (action.details.isNotEmpty) ...[
+                  SizedBox(height: AppSpacing.md),
+                  _DashboardDetailsPanel(action: action),
+                ],
                 SizedBox(height: AppSpacing.md),
                 Text(
                   action.primaryLabel,

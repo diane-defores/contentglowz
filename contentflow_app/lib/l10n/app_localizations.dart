@@ -1442,31 +1442,115 @@ class AppLocalizations {
     'Validated: {date}': 'Validé : {date}',
     'Validation completed.': 'Validation terminée.',
     'All caught up': 'Tout est traité',
+    'After setup, drafts can arrive as review cards.':
+        'Après la configuration, les brouillons peuvent arriver sous forme de cartes à valider.',
+    'Angle first': 'Angle d’abord',
+    'Article and newsletter structures.':
+        'Structures d’articles et de newsletters.',
+    'Article review template': 'Template de validation article',
+    'Audit context': 'Contexte d’audit',
+    'Beats': 'Temps forts',
+    'Best first move when the workspace is empty or newly connected.':
+        'Meilleur premier geste quand le workspace est vide ou nouvellement connecté.',
     'Check the structures available for articles, newsletters, videos, and shorts.':
         'Vérifie les structures disponibles pour les articles, newsletters, vidéos et shorts.',
+    'Check cadence before drafts land.':
+        'Vérifie la cadence avant l’arrivée des brouillons.',
+    'Check opening, beats, and recording clarity.':
+        'Vérifie l’ouverture, les temps forts et la clarté d’enregistrement.',
+    'Check promise, structure, and SEO intent before publish.':
+        'Vérifie la promesse, la structure et l’intention SEO avant publication.',
+    'Check the hook, platform nuance, and reply trigger.':
+        'Vérifie l’accroche, la nuance plateforme et le déclencheur de réponse.',
     'Confirm the project, content types, channels, and rhythm before the first run.':
         'Confirme le projet, les types de contenus, les canaux et le rythme avant le premier lancement.',
+    'Connected context': 'Contexte connecté',
     'Content formats': 'Formats de contenu',
+    'Content rules': 'Règles de contenu',
+    'Create a piece that can enter the review queue.':
+        'Crée une pièce qui peut entrer dans la file de validation.',
+    'CTA / links': 'CTA / liens',
+    'Draft output': 'Sortie brouillon',
+    'Drip rhythm': 'Rythme drip',
     'First draft': 'Premier brouillon',
+    'Find pieces that can feed the next batch.':
+        'Repère les contenus qui peuvent nourrir le prochain lot.',
     'Generate angles and turn the strongest one into a draft ready for review.':
         'Génère des angles et transforme le plus solide en brouillon prêt à valider.',
+    'Human gate': 'Validation humaine',
+    'Hook': 'Accroche',
     'Inspect the local actions waiting for backend sync.':
         'Inspecte les actions locales en attente de synchronisation backend.',
+    'Inspect what already left the queue.':
+        'Inspecte ce qui est déjà sorti de la file.',
+    'LATER': 'PLUS TARD',
     'Later': 'Plus tard',
+    'Lock the formats, cadence, and review gates.':
+        'Verrouille les formats, la cadence et les étapes de validation.',
+    'Long form': 'Format long',
+    'Make sure ContentFlow knows what product to use.':
+        'Assure-toi que ContentFlow sait quel produit utiliser.',
+    'Newsletter review template': 'Template de validation newsletter',
+    'Next swipe': 'Prochain swipe',
     'No dashboard action is waiting in this session.':
         'Aucune action du dashboard n’attend dans cette session.',
+    'Nothing publishes before you approve it.':
+        'Rien n’est publié avant ton approbation.',
     'One clear action at a time. Empty workspace metrics stay hidden until there is something useful to inspect.':
         'Une action claire à la fois. Les métriques vides du workspace restent masquées tant qu’il n’y a rien d’utile à inspecter.',
     'Open diagnostics': 'Ouvrir les diagnostics',
     'Open history': 'Ouvrir l’historique',
     'Open the content already approved or published from this workspace.':
         'Ouvre les contenus déjà approuvés ou publiés depuis ce workspace.',
+    'Opening': 'Ouverture',
+    'Only shown after at least one content item exists in history.':
+        'Affiché seulement après l’existence d’au moins un contenu dans l’historique.',
+    'Only shown when local work is waiting to sync.':
+        'Affiché seulement quand du travail local attend une synchronisation.',
+    'Only shown when upcoming content is actually scheduled.':
+        'Affiché seulement quand du contenu à venir est réellement planifié.',
+    'Pacing': 'Rythme',
+    'Pick the shape before generating volume.':
+        'Choisis la forme avant de générer du volume.',
+    'Published trail': 'Trace publiée',
+    'Queue control': 'Contrôle de file',
+    'Recovery path': 'Chemin de reprise',
+    'Reply trigger': 'Déclencheur de réponse',
+    'Repurpose signal': 'Signal de réutilisation',
+    'Reusable patterns': 'Patterns réutilisables',
+    'Review actions that still need the backend.':
+        'Passe en revue les actions qui ont encore besoin du backend.',
     'Review published history': 'Consulter l’historique publié',
     'Review the planned queue before the next content items arrive.':
         'Vérifie la file planifiée avant l’arrivée des prochains contenus.',
+    'Risk check': 'Contrôle de risque',
+    'Retry when the workspace is healthy again.':
+        'Réessaie quand le workspace est à nouveau sain.',
     'Scheduled content': 'Contenu planifié',
+    'See what is already planned.': 'Vois ce qui est déjà planifié.',
+    'SEO intent': 'Intention SEO',
+    'Short-form review template': 'Template de validation short',
+    'Social post review template': 'Template de validation social post',
+    'Spot blocked or repeated actions early.':
+        'Repère tôt les actions bloquées ou répétées.',
+    'START': 'COMMENCER',
+    'Start from a clear hook before writing.':
+        'Pars d’une accroche claire avant d’écrire.',
+    'Structure': 'Structure',
+    'Templates keep the output consistent when the queue grows.':
+        'Les templates gardent une sortie cohérente quand la file grandit.',
     'Swipe to Publish': 'Swipe to Publish',
     'Sync queue': 'File de synchronisation',
+    'Upcoming slots': 'Créneaux à venir',
+    'Use this when you want momentum more than configuration.':
+        'Utilise ceci quand tu veux avancer plus vite que configurer.',
+    'Validate subject, sections, and reader action.':
+        'Valide l’objet, les sections et l’action lecteur.',
+    'Video-ready': 'Prêt vidéo',
+    'Video script review template': 'Template de validation script vidéo',
+    'Voice': 'Voix',
+    'Watch the hook, pacing, and platform fit.':
+        'Vérifie l’accroche, le rythme et l’adéquation plateforme.',
     'Workspace setup': 'Configuration du workspace',
     'You are using the demo workspace without a real account.':
         'Vous utilisez le workspace démo sans compte réel.',

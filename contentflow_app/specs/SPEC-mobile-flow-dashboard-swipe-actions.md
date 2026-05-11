@@ -5,8 +5,8 @@ artifact_version: "1.0.0"
 project: "contentflow_app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:28:27 UTC"
-updated: "2026-05-10"
-updated_at: "2026-05-10 22:35:14 UTC"
+updated: "2026-05-11"
+updated_at: "2026-05-11 06:10:00 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -206,6 +206,9 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 - No pending review/status card with value `0` is shown when there are no pending items.
 - Swiping or dragging left on the current mobile action card dismisses it for the current screen session and advances to the next card without navigation.
 - Swiping or dragging right on the current mobile action card navigates to the card's recommended route.
+- Dragging horizontally gives visible motion feedback before release: the current card translates with the pointer, rotates slightly, exposes a direction label, and exits the deck before the action is applied.
+- Dashboard action cards use a filled visual template with icon-led explanation rows, short copywriting, and fixed bottom action controls so the mobile card feels intentionally full rather than sparse.
+- Pending content cards expose a format-aware review template so articles, newsletters, shorts, videos, and social posts show the specific checks the user should validate before swiping.
 - Visible buttons provide the same Later and Start actions.
 - Pending content items still use the existing content review swiper and are not replaced by onboarding cards.
 - No overflow or layout exception occurs on a 320 x 720 test viewport.
@@ -240,6 +243,8 @@ None.
 | 2026-05-10 | sf-ready | GPT-5 Codex | Checked structure, behavior contract, implementation tasks, acceptance criteria, security posture, and open questions. | ready | /sf-start contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 | 2026-05-10 | sf-start | GPT-5 Codex | Implemented the mobile swipe-action deck, filtered dashboard action inventory, localization entries, tests, and changelog note. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 | 2026-05-10 | sf-design | GPT-5 Codex | Orchestrated the dashboard redesign from spec-first gate through local design implementation and checks. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
+| 2026-05-11 | sf-design | GPT-5 Codex | Added live swipe animation feedback with translation, rotation, directional labels, and exit motion before start/later callbacks. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
+| 2026-05-11 | sf-design | GPT-5 Codex | Enriched onboarding action cards with icon-led copy blocks and added format-aware review templates for pending content cards. | implemented | /sf-verify contentflow_app/specs/SPEC-mobile-flow-dashboard-swipe-actions.md |
 
 ## Current Chantier Flow
 

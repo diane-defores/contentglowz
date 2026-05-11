@@ -6,7 +6,7 @@ project: "contentflow_app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:30:12 UTC"
 updated: "2026-05-10"
-updated_at: "2026-05-10 22:51:12 UTC"
+updated_at: "2026-05-11 05:42:40 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -46,7 +46,7 @@ evidence:
   - "lib/presentation/screens/editor/editor_screen.dart currently uses TextEditingController, TextField, and flutter_markdown preview."
   - "pubspec.yaml includes flutter_markdown but no rich text editor package such as Quill, Lexical, Slate, TipTap, ProseMirror, TinyMCE, or CKEditor."
   - "specs/SPEC-content-editing-infrastructure.md plans a child spec for format-aware editor controls after the full-body reliability foundation."
-next_step: "/sf-start content editor multiformat"
+next_step: "/sf-end content editor multiformat"
 ---
 
 # Title
@@ -295,14 +295,15 @@ None. V1 excludes color/highlight controls and targets article, newsletter, and 
 | 2026-05-10 22:34:47 UTC | sf-ready | GPT-5 Codex | Evaluated readiness after resolving open questions, dependency choice, and validation notes | ready | /sf-start content editor multiformat |
 | 2026-05-10 22:34:47 UTC | sf-start | GPT-5 Codex | Implemented universal Markdown-backed editor toolbar, formatting helpers, i18n labels, and targeted tests | implemented | /sf-verify content editor multiformat |
 | 2026-05-10 22:51:12 UTC | sf-verify | GPT-5 Codex | Verified implementation against story, tests, and spec contract; found non-blocking gaps in error observability, French accents, and remote-mode evidence | partial | /sf-start content editor multiformat |
+| 2026-05-11 05:42:40 UTC | sf-verify | GPT-5 Codex | Re-verified after fixes: URL-empty feedback now visible, FR accents corrected, development mode documented, tests passing | verified | /sf-end content editor multiformat |
 
 ## Current Chantier Flow
 
 - sf-spec: done.
 - sf-ready: done.
 - sf-start: implemented.
-- sf-verify: partial.
+- sf-verify: verified.
 - sf-end: not launched.
 - sf-ship: not launched.
 
-Next lifecycle command: `/sf-start content editor multiformat`.
+Next lifecycle command: `/sf-end content editor multiformat`.
