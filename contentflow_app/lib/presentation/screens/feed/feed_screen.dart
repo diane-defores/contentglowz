@@ -435,6 +435,7 @@ class _FeedEmptyDashboard extends ConsumerStatefulWidget {
 
 class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
   final Set<String> _dismissedActionIds = <String>{};
+  int _deckGeneration = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -736,7 +737,9 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
                   onCreate: () => context.push('/angles'),
                 )
               : _MobileActionDeck(
-                  key: ValueKey('flow-action-deck-${visibleActions.first.id}'),
+                  key: ValueKey(
+                    'flow-action-deck-${visibleActions.first.id}-$_deckGeneration',
+                  ),
                   action: visibleActions.first,
                   nextAction: visibleActions.length > 1
                       ? visibleActions[1]
@@ -794,7 +797,10 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
   }
 
   void _dismissAction(_DashboardAction action) {
-    setState(() => _dismissedActionIds.add(action.id));
+    setState(() {
+      _dismissedActionIds.add(action.id);
+      _deckGeneration++;
+    });
   }
 
   void _startAction(_DashboardAction action) {
@@ -803,7 +809,10 @@ class _FeedEmptyDashboardState extends ConsumerState<_FeedEmptyDashboard> {
   }
 
   Future<void> _refreshDashboard() async {
-    setState(_dismissedActionIds.clear);
+    setState(() {
+      _dismissedActionIds.clear();
+      _deckGeneration++;
+    });
     await ref.read(pendingContentProvider.notifier).refresh();
     ref.invalidate(dripPlansProvider);
     ref.invalidate(offlineQueueEntriesProvider);

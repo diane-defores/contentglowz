@@ -36,6 +36,59 @@ class AppConfig {
     defaultValue: 'unknown',
   );
 
+  static const sentryDsn = String.fromEnvironment(
+    'SENTRY_DSN',
+    defaultValue: '',
+  );
+
+  static const sentryEnvironment = String.fromEnvironment(
+    'SENTRY_ENVIRONMENT',
+    defaultValue: buildEnvironment,
+  );
+
+  static const sentryRelease = String.fromEnvironment(
+    'SENTRY_RELEASE',
+    defaultValue: '',
+  );
+
+  static const sentryTracesSampleRateValue = String.fromEnvironment(
+    'SENTRY_TRACES_SAMPLE_RATE',
+    defaultValue: '0.0',
+  );
+
+  static const sentrySendDefaultPii = bool.fromEnvironment(
+    'SENTRY_SEND_DEFAULT_PII',
+    defaultValue: false,
+  );
+
+  static const sentryDebug = bool.fromEnvironment(
+    'SENTRY_DEBUG',
+    defaultValue: false,
+  );
+
+  static String get effectiveSentryEnvironment {
+    final configured = sentryEnvironment.trim();
+    return configured.isEmpty ? 'unknown' : configured;
+  }
+
+  static String get effectiveSentryRelease {
+    final configured = sentryRelease.trim();
+    if (configured.isNotEmpty) {
+      return configured;
+    }
+
+    final commit = buildCommitSha.trim();
+    if (commit.isEmpty || commit == 'unknown') {
+      return '';
+    }
+
+    return 'contentflow_app@$commit';
+  }
+
+  static double get sentryTracesSampleRate {
+    return _parseSampleRate(sentryTracesSampleRateValue, fallback: 0.0);
+  }
+
   static bool get siteUrlPointsToAppHost {
     final configured = Uri.tryParse(siteUrl);
     final app = Uri.tryParse(appWebUrl);
@@ -57,5 +110,13 @@ class AppConfig {
       return canonicalSiteUrl;
     }
     return siteUrl;
+  }
+
+  static double _parseSampleRate(String value, {required double fallback}) {
+    final parsed = double.tryParse(value.trim());
+    if (parsed == null || parsed < 0.0 || parsed > 1.0) {
+      return fallback;
+    }
+    return parsed;
   }
 }

@@ -198,6 +198,12 @@ Required Vercel environment variables:
 - `CLERK_PUBLISHABLE_KEY`
 - `APP_SITE_URL`
 - `APP_WEB_URL`
+- `SENTRY_DSN` (optional)
+- `SENTRY_ENVIRONMENT` (optional)
+- `SENTRY_RELEASE` (optional)
+- `SENTRY_TRACES_SAMPLE_RATE` (optional, defaults to `0.0`)
+- `SENTRY_SEND_DEFAULT_PII` (optional, defaults to `false`)
+- `SENTRY_DEBUG` (optional, defaults to `false`)
 - `FEEDBACK_ADMIN_EMAILS` (optional)
 
 The Vercel project uses:
@@ -206,7 +212,7 @@ The Vercel project uses:
 - [scripts/vercel-install.sh](scripts/vercel-install.sh)
 - [scripts/vercel-build.sh](scripts/vercel-build.sh)
 
-`installCommand` downloads the Flutter SDK in the Vercel build environment and enables web support. `buildCommand` then runs `flutter build web` and injects `API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`, `APP_SITE_URL`, `APP_WEB_URL`, and `FEEDBACK_ADMIN_EMAILS` through `--dart-define`.
+`installCommand` downloads the Flutter SDK in the Vercel build environment and enables web support. `buildCommand` then runs `flutter build web` and injects `API_BASE_URL`, `CLERK_PUBLISHABLE_KEY`, `APP_SITE_URL`, `APP_WEB_URL`, build metadata, and Sentry settings through `--dart-define`.
 
 If Doppler is connected to Vercel, those variables must be exposed to the Vercel build for the target environment. The Clerk publishable key is intentionally compiled into the frontend bundle.
 
@@ -233,6 +239,18 @@ Then open `http://localhost:3050/entry?eruda=1` once to enable Eruda in the brow
   Marketing website URL kept for non-auth links and historical diagnostics
 - `APP_WEB_URL`
   Public app URL used by the dedicated ClerkJS auth routes
+- `SENTRY_DSN` (optional)
+  Public Sentry DSN compiled into Flutter. When empty, Sentry stays disabled.
+- `SENTRY_ENVIRONMENT` (optional)
+  Sentry environment name. Defaults to the build environment.
+- `SENTRY_RELEASE` (optional)
+  Sentry release name. Defaults to `contentflow_app@BUILD_COMMIT_SHA` when omitted and a commit is available.
+- `SENTRY_TRACES_SAMPLE_RATE` (optional)
+  Transaction sample rate from `0.0` to `1.0`. Defaults to `0.0`.
+- `SENTRY_SEND_DEFAULT_PII` (optional)
+  Whether to send default PII to Sentry. Defaults to `false`.
+- `SENTRY_DEBUG` (optional)
+  Enables Sentry SDK debug logging during local troubleshooting. Defaults to `false`.
 - `FEEDBACK_ADMIN_EMAILS` (optional)
   Comma-separated allowlist compiled into the frontend only to show the feedback admin entry point
 - `ZERNIO_API_KEY` / `LATE_API_KEY`

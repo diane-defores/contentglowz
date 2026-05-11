@@ -6,6 +6,7 @@ pydantic>=2.4.0,<3.0
 # FastAPI Server
 fastapi[standard]>=0.128.0,<1.0
 uvicorn[standard]>=0.32.0,<1.0
+sentry-sdk>=2.54.0,<3.0
 
 # STORM is excluded from the default runtime install because knowledge-storm/dspy
 # currently pin older OpenAI/LiteLLM versions that conflict with the LiteLLM

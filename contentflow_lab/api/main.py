@@ -33,6 +33,10 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+from api.observability import capture_exception, init_sentry
+
+init_sentry()
+
 from api.routers import (
     mesh_router,
     research_router,
@@ -387,6 +391,7 @@ app.add_middleware(
 async def global_exception_handler(request, exc):
     """Global exception handler for unhandled errors"""
     import logging
+    capture_exception(exc)
     logging.getLogger("api").exception("Unhandled error on %s %s", request.method, request.url.path)
     return JSONResponse(
         status_code=500,

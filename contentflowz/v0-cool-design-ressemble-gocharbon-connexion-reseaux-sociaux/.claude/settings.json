@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "codebase": {
+      "command": "python3",
+      "args": ["/home/claude/ShipFlow/tools/codebase-mcp/server.py", "/home/claude/ContentFlowz/v0-cool-design-ressemble-gocharbon-connexion-reseaux-sociaux"]
+    }
+  }
+}

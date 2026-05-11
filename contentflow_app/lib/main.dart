@@ -3,8 +3,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/app_config.dart';
 import 'core/app_language.dart';
 import 'core/app_diagnostics.dart';
 import 'core/app_theme_preference.dart';
@@ -22,6 +24,31 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final diagnostics = AppDiagnostics();
 
+  Future<void> appRunner() async {
+    _installGlobalErrorHandlers(diagnostics);
+    _runAppWithDiagnostics(prefs: prefs, diagnostics: diagnostics);
+  }
+
+  if (AppConfig.sentryDsn.isEmpty) {
+    await appRunner();
+    return;
+  }
+
+  await SentryFlutter.init((options) {
+    options.dsn = AppConfig.sentryDsn;
+    options.environment = AppConfig.effectiveSentryEnvironment;
+    options.tracesSampleRate = AppConfig.sentryTracesSampleRate;
+    options.sendDefaultPii = AppConfig.sentrySendDefaultPii;
+    options.debug = AppConfig.sentryDebug;
+
+    final release = AppConfig.effectiveSentryRelease;
+    if (release.isNotEmpty) {
+      options.release = release;
+    }
+  }, appRunner: appRunner);
+}
+
+void _installGlobalErrorHandlers(AppDiagnostics diagnostics) {
   FlutterError.onError = (details) {
     diagnostics.error(
       scope: 'flutter.framework',
@@ -33,6 +60,7 @@ void main() async {
         'context': details.context?.toDescription(),
       },
     );
+    _captureWithSentry(details.exception, details.stack);
     FlutterError.presentError(details);
   };
 
@@ -43,21 +71,29 @@ void main() async {
       error: error,
       stackTrace: stackTrace,
     );
+    _captureWithSentry(error, stackTrace);
     return true;
   };
+}
 
+void _runAppWithDiagnostics({
+  required SharedPreferences prefs,
+  required AppDiagnostics diagnostics,
+}) {
   runZonedGuarded(
     () {
-      runApp(
-        ProviderScope(
-          observers: [AppDiagnosticsObserver(diagnostics)],
-          overrides: [
-            sharedPrefsProvider.overrideWithValue(prefs),
-            appDiagnosticsProvider.overrideWithValue(diagnostics),
-          ],
-          child: const ContentFlowApp(),
-        ),
+      Widget app = ProviderScope(
+        observers: [AppDiagnosticsObserver(diagnostics)],
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          appDiagnosticsProvider.overrideWithValue(diagnostics),
+        ],
+        child: const ContentFlowApp(),
       );
+      if (AppConfig.sentryDsn.isNotEmpty) {
+        app = SentryWidget(child: app);
+      }
+      runApp(app);
     },
     (error, stackTrace) {
       diagnostics.error(
@@ -66,8 +102,17 @@ void main() async {
         error: error,
         stackTrace: stackTrace,
       );
+      _captureWithSentry(error, stackTrace);
     },
   );
+}
+
+void _captureWithSentry(Object error, StackTrace? stackTrace) {
+  if (AppConfig.sentryDsn.isEmpty) {
+    return;
+  }
+
+  unawaited(Sentry.captureException(error, stackTrace: stackTrace));
 }
 
 class ContentFlowApp extends ConsumerWidget {

@@ -124,6 +124,34 @@ void main() {
     expect(find.text('Angle first'), findsOneWidget);
   });
 
+  testWidgets('partial swipe snaps back without leaking animation state', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await _pumpFeedScreen(tester, items: const []);
+
+    final card = find.byKey(const Key('flow-action-card-setup'));
+    final gesture = await tester.startGesture(tester.getCenter(card));
+    await gesture.moveBy(const Offset(-20, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    await gesture.moveBy(const Offset(-48, 0));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.text('LATER'), findsOneWidget);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('flow-action-card-setup')), findsOneWidget);
+    expect(find.text('LATER'), findsNothing);
+    expect(
+      find.text('Your content machine is ready to be configured.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('right swipe gives visual feedback before starting action', (
     tester,
   ) async {
