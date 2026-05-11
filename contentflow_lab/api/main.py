@@ -64,6 +64,7 @@ from api.routers import (
     feedback_router,
     integrations_router,
     settings_integrations_router,
+    assets_router,
 )
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
@@ -440,6 +441,7 @@ app.include_router(drip_router)
 app.include_router(feedback_router)
 app.include_router(integrations_router)
 app.include_router(settings_integrations_router)
+app.include_router(assets_router)
 
 
 # ─────────────────────────────────────────────────

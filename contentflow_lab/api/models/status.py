@@ -275,3 +275,114 @@ class ScheduleJobResponse(BaseModel):
     next_run_at: Optional[str]
     created_at: str
     updated_at: str
+
+
+class ProjectAssetResponse(BaseModel):
+    id: str
+    project_id: str
+    user_id: str
+    source_asset_id: Optional[str] = None
+    content_asset_id: Optional[str] = None
+    media_kind: str
+    source: str
+    mime_type: Optional[str] = None
+    file_name: Optional[str] = None
+    storage_uri: Optional[str] = None
+    storage_descriptor: Dict[str, Any] = Field(default_factory=dict)
+    status: str
+    metadata: Dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+    tombstoned_at: Optional[datetime] = None
+    cleanup_eligible_at: Optional[datetime] = None
+
+
+class ProjectAssetUsageResponse(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    target_type: str
+    target_id: str
+    placement: Optional[str] = None
+    usage_action: str
+    is_primary: bool
+    metadata: Dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: Optional[datetime] = None
+
+
+class ProjectAssetEventResponse(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    event_type: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    placement: Optional[str] = None
+    metadata: Dict[str, Any]
+    created_at: datetime
+
+
+class SelectProjectAssetRequest(BaseModel):
+    target_type: str
+    target_id: str
+    usage_action: str
+    placement: Optional[str] = None
+    is_primary: bool = False
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ProjectAssetEligibilityRequest(BaseModel):
+    usage_action: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+
+
+class ProjectAssetEligibilityResponse(BaseModel):
+    asset_id: str
+    usage_action: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    eligible: bool
+    reason: Optional[str] = None
+
+
+class ProjectAssetPrimaryRequest(BaseModel):
+    target_type: str
+    target_id: str
+    usage_action: str
+    placement: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ClearProjectAssetPrimaryRequest(BaseModel):
+    target_type: str
+    target_id: str
+    placement: Optional[str] = None
+
+
+class ClearProjectAssetPrimaryResponse(BaseModel):
+    cleared_count: int
+
+
+class ProjectAssetCleanupItem(BaseModel):
+    asset_id: str
+    media_kind: str
+    status: str
+    cleanup_eligible_at: Optional[datetime] = None
+    reason: Optional[str] = None
+
+
+class ProjectAssetCleanupReportResponse(BaseModel):
+    cleanup_eligible: List[ProjectAssetCleanupItem]
+    degraded: List[ProjectAssetCleanupItem]
+    missing_storage: List[ProjectAssetCleanupItem]
+    physical_delete_allowed: bool
+
+
+class ProjectAssetListResponse(BaseModel):
+    items: List[ProjectAssetResponse]
+    total: int

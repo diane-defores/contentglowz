@@ -54,6 +54,48 @@ Primary concern of this repo is service reliability:
 - schema and migration safety (`idempotent ensure_*` calls on startup),
 - secure handoff paths for web auth sessions used by the app entry flow.
 
+## Unified Project Asset Library
+
+Project assets are a backend-owned, project-scoped inventory for editor and
+generation workflows. This is not a public DAM, marketplace, arbitrary URL
+importer, or free provider playground.
+
+Current backend routes are under `/api/projects/{project_id}/assets`:
+
+- `GET /` lists owned project assets with supported filters (`media_kind`,
+  `source`, `include_tombstoned`, `limit`, `offset`).
+- `GET /{asset_id}` returns one owned asset with a client-safe
+  `storage_descriptor`; raw `storage_uri` is not returned as client authority.
+- `GET /{asset_id}/usage` returns active usage links.
+- `GET /{asset_id}/events` returns the asset audit/history stream.
+- `POST /{asset_id}/eligibility` checks whether a guided action can use an
+  asset without mutating usage state.
+- `POST /{asset_id}/select` creates a usage link after server-side asset and
+  target ownership validation.
+- `POST /{asset_id}/primary` creates a primary usage link and clears previous
+  primary state for the same target and placement.
+- `POST /clear-primary` clears primary state for a target and placement.
+- `POST /{asset_id}/preview-refresh` returns a refreshed safe descriptor for
+  the asset; it does not sign or upload binaries.
+- `POST /{asset_id}/tombstone` blocks future reuse while preserving history.
+- `POST /{asset_id}/restore` restores a tombstoned asset within the retained
+  metadata window.
+- `GET /cleanup-report` reports tombstones eligible for cleanup, degraded
+  assets, and active assets missing storage metadata. Physical deletion is not
+  enabled by default.
+
+Security and retention rules:
+
+- Every route requires Clerk auth and project ownership.
+- Asset selection validates both the asset and target server-side before
+  mutation; Flutter state is not a permission boundary.
+- `local_only`, degraded, tombstoned, stale, foreign, or provider-temporary
+  assets cannot be selected for publish/render/reference actions.
+- Tombstoned assets keep readable provenance for the 30-day history window and
+  are hidden from default list calls.
+- Storage descriptors redact signed query tokens and provider URLs. Bunny
+  upload/delete/signing remains owned by upload or media-generation features.
+
 ## Project Selection Contract
 
 - Active project selection for a signed-in user is persisted in:

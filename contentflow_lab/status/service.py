@@ -18,6 +18,12 @@ from status.schemas import (
     ContentAssetRecord,
     ContentAssetStatus,
     ContentRecord,
+    ProjectAssetLifecycleStatus,
+    ProjectAssetEventRecord,
+    ProjectAssetMediaKind,
+    ProjectAssetRecord,
+    ProjectAssetSource,
+    ProjectAssetUsageRecord,
     StatusChange,
     WorkDomainRecord,
     VALID_TRANSITIONS,
@@ -33,6 +39,23 @@ class InvalidTransitionError(Exception):
 class ContentNotFoundError(Exception):
     """Raised when a content record is not found."""
     pass
+
+
+class ProjectAssetEligibilityError(Exception):
+    """Raised when an asset cannot be used for a target/action."""
+    pass
+
+
+PROJECT_ASSET_MUTATION_ACTION_TARGETS: Dict[str, set[str]] = {
+    "select_for_content": {"content"},
+    "promote_reference": {"content"},
+    "set_primary": {"content", "video_version"},
+    "select_for_video_version": {"video_version"},
+    "use_in_remotion_render": {"video_version"},
+    "publish_media": {"content", "video_version"},
+}
+PROJECT_ASSET_READ_ACTIONS = {"preview_only", "historical_only"}
+PROJECT_ASSET_SUPPORTED_ACTIONS = set(PROJECT_ASSET_MUTATION_ACTION_TARGETS) | PROJECT_ASSET_READ_ACTIONS
 
 
 class StatusService:
@@ -746,6 +769,541 @@ class StatusService:
         self._conn.commit()
         return self.get_content_asset(content_id, asset_id)
 
+    # ─── Unified Project Asset Library ───────────────
+
+    def list_project_assets(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        media_kind: Optional[str] = None,
+        source: Optional[str] = None,
+        include_tombstoned: bool = False,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[ProjectAssetRecord]:
+        self._normalize_project_assets_from_content_assets(project_id=project_id, user_id=user_id)
+        if media_kind:
+            ProjectAssetMediaKind(media_kind)
+        if source:
+            ProjectAssetSource(source)
+
+        query = "SELECT * FROM project_assets WHERE project_id = ? AND user_id = ?"
+        params: List[Any] = [project_id, user_id]
+        if not include_tombstoned:
+            query += " AND status != ?"
+            params.append(ProjectAssetLifecycleStatus.TOMBSTONED.value)
+        if media_kind:
+            query += " AND media_kind = ?"
+            params.append(media_kind)
+        if source:
+            query += " AND source = ?"
+            params.append(source)
+        query += " ORDER BY updated_at DESC, id DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+
+        rows = self._conn.execute(query, params).fetchall()
+        return [self._row_to_project_asset(row) for row in rows]
+
+    def get_project_asset_detail(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> ProjectAssetRecord:
+        row = self._conn.execute(
+            "SELECT * FROM project_assets WHERE id = ? AND project_id = ? AND user_id = ?",
+            (asset_id, project_id, user_id),
+        ).fetchone()
+        if not row:
+            raise ContentNotFoundError(f"Project asset {asset_id} not found")
+        return self._row_to_project_asset(row)
+
+    def get_project_asset_usage(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> List[ProjectAssetUsageRecord]:
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        rows = self._conn.execute(
+            """
+            SELECT * FROM project_asset_usages
+            WHERE asset_id = ? AND project_id = ? AND user_id = ? AND deleted_at IS NULL
+            ORDER BY updated_at DESC
+            """,
+            (asset_id, project_id, user_id),
+        ).fetchall()
+        return [self._row_to_project_asset_usage(row) for row in rows]
+
+    def get_project_asset_events(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> List[ProjectAssetEventRecord]:
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        rows = self._conn.execute(
+            """
+            SELECT * FROM project_asset_events
+            WHERE asset_id = ? AND project_id = ? AND user_id = ?
+            ORDER BY created_at DESC, id DESC
+            """,
+            (asset_id, project_id, user_id),
+        ).fetchall()
+        return [self._row_to_project_asset_event(row) for row in rows]
+
+    def get_project_asset_eligibility(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        usage_action: str,
+        target_type: Optional[str] = None,
+        target_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        try:
+            asset = self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+            self._ensure_asset_eligible(asset, usage_action, target_type=target_type)
+            if usage_action in PROJECT_ASSET_MUTATION_ACTION_TARGETS:
+                if not target_type or not target_id:
+                    raise ProjectAssetEligibilityError(
+                        f"usage_action '{usage_action}' requires target_type and target_id"
+                    )
+                self._ensure_usage_target_owned(
+                    project_id=project_id,
+                    user_id=user_id,
+                    target_type=target_type,
+                    target_id=target_id,
+                    usage_action=usage_action,
+                )
+            return {
+                "asset_id": asset_id,
+                "usage_action": usage_action,
+                "target_type": target_type,
+                "target_id": target_id,
+                "eligible": True,
+                "reason": None,
+            }
+        except (ContentNotFoundError, ProjectAssetEligibilityError) as exc:
+            return {
+                "asset_id": asset_id,
+                "usage_action": usage_action,
+                "target_type": target_type,
+                "target_id": target_id,
+                "eligible": False,
+                "reason": str(exc),
+            }
+
+    def select_project_asset(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        target_type: str,
+        target_id: str,
+        usage_action: str,
+        placement: Optional[str] = None,
+        is_primary: bool = False,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> ProjectAssetUsageRecord:
+        asset = self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        self._ensure_asset_eligible(asset, usage_action, target_type=target_type)
+        self._ensure_usage_target_owned(
+            project_id=project_id,
+            user_id=user_id,
+            target_type=target_type,
+            target_id=target_id,
+            usage_action=usage_action,
+        )
+        now = datetime.utcnow().isoformat()
+
+        if is_primary:
+            self._conn.execute(
+                """
+                UPDATE project_asset_usages
+                SET is_primary = 0, updated_at = ?
+                WHERE project_id = ? AND target_type = ? AND target_id = ?
+                  AND COALESCE(placement, '') = COALESCE(?, '') AND deleted_at IS NULL
+                """,
+                (now, project_id, target_type, target_id, placement),
+            )
+
+        usage_id = str(uuid.uuid4())
+        self._conn.execute(
+            """
+            INSERT INTO project_asset_usages (
+                id, asset_id, project_id, user_id, target_type, target_id, placement,
+                usage_action, is_primary, metadata, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                usage_id,
+                asset_id,
+                project_id,
+                user_id,
+                target_type,
+                target_id,
+                placement,
+                usage_action,
+                1 if is_primary else 0,
+                json.dumps(metadata or {}),
+                now,
+                now,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="selected",
+            target_type=target_type,
+            target_id=target_id,
+            placement=placement,
+            metadata={
+                "usage_action": usage_action,
+                "usage_id": usage_id,
+                "is_primary": is_primary,
+            },
+        )
+        self._conn.commit()
+        row = self._conn.execute("SELECT * FROM project_asset_usages WHERE id = ?", (usage_id,)).fetchone()
+        return self._row_to_project_asset_usage(row)
+
+    def set_project_asset_primary(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        target_type: str,
+        target_id: str,
+        usage_action: str,
+        placement: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> ProjectAssetUsageRecord:
+        return self.select_project_asset(
+            project_id=project_id,
+            user_id=user_id,
+            asset_id=asset_id,
+            target_type=target_type,
+            target_id=target_id,
+            usage_action=usage_action,
+            placement=placement,
+            is_primary=True,
+            metadata=metadata,
+        )
+
+    def clear_project_asset_primary(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        target_type: str,
+        target_id: str,
+        placement: Optional[str] = None,
+    ) -> int:
+        now = datetime.utcnow().isoformat()
+        rows = self._conn.execute(
+            """
+            SELECT asset_id FROM project_asset_usages
+            WHERE project_id = ? AND user_id = ? AND target_type = ? AND target_id = ?
+              AND COALESCE(placement, '') = COALESCE(?, '') AND is_primary = 1
+              AND deleted_at IS NULL
+            """,
+            (project_id, user_id, target_type, target_id, placement),
+        ).fetchall()
+        cursor = self._conn.execute(
+            """
+            UPDATE project_asset_usages
+            SET is_primary = 0, updated_at = ?
+            WHERE project_id = ? AND user_id = ? AND target_type = ? AND target_id = ?
+              AND COALESCE(placement, '') = COALESCE(?, '') AND is_primary = 1
+              AND deleted_at IS NULL
+            """,
+            (now, project_id, user_id, target_type, target_id, placement),
+        )
+        changed = cursor.rowcount if cursor.rowcount is not None else 0
+        for row in rows:
+            self._record_project_asset_event(
+                asset_id=row["asset_id"],
+                project_id=project_id,
+                user_id=user_id,
+                event_type="primary_cleared",
+                target_type=target_type,
+                target_id=target_id,
+                placement=placement,
+                metadata={"cleared_count": changed},
+            )
+        self._conn.commit()
+        return changed
+
+    def tombstone_project_asset(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> ProjectAssetRecord:
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        now = datetime.utcnow()
+        cleanup_eligible_at = now.replace(microsecond=0).timestamp() + (30 * 24 * 3600)
+        self._conn.execute(
+            """
+            UPDATE project_assets
+            SET status = ?, tombstoned_at = ?, cleanup_eligible_at = ?, updated_at = ?
+            WHERE id = ? AND project_id = ? AND user_id = ?
+            """,
+            (
+                ProjectAssetLifecycleStatus.TOMBSTONED.value,
+                now.isoformat(),
+                datetime.utcfromtimestamp(cleanup_eligible_at).isoformat(),
+                now.isoformat(),
+                asset_id,
+                project_id,
+                user_id,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="tombstoned",
+            metadata={"cleanup_eligible_at": datetime.utcfromtimestamp(cleanup_eligible_at).isoformat()},
+        )
+        self._conn.commit()
+        return self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+
+    def restore_project_asset(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> ProjectAssetRecord:
+        asset = self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        if asset.status != ProjectAssetLifecycleStatus.TOMBSTONED.value:
+            return asset
+        self._conn.execute(
+            """
+            UPDATE project_assets
+            SET status = ?, tombstoned_at = NULL, cleanup_eligible_at = NULL, updated_at = ?
+            WHERE id = ? AND project_id = ? AND user_id = ?
+            """,
+            (
+                ProjectAssetLifecycleStatus.ACTIVE.value,
+                datetime.utcnow().isoformat(),
+                asset_id,
+                project_id,
+                user_id,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="restored",
+        )
+        self._conn.commit()
+        return self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+
+    def _normalize_project_assets_from_content_assets(self, *, project_id: str, user_id: str) -> None:
+        rows = self._conn.execute(
+            """
+            SELECT * FROM content_assets
+            WHERE project_id = ? AND user_id = ? AND deleted_at IS NULL
+            """,
+            (project_id, user_id),
+        ).fetchall()
+        now = datetime.utcnow().isoformat()
+        for row in rows:
+            existing = self._conn.execute(
+                "SELECT id FROM project_assets WHERE content_asset_id = ?",
+                (row["id"],),
+            ).fetchone()
+            if existing:
+                continue
+            media_kind = self._infer_media_kind(row["kind"], row["mime_type"])
+            status = (
+                ProjectAssetLifecycleStatus.LOCAL_ONLY.value
+                if row["status"] == ContentAssetStatus.LOCAL_ONLY.value
+                else ProjectAssetLifecycleStatus.ACTIVE.value
+            )
+            self._conn.execute(
+                """
+                INSERT INTO project_assets (
+                    id, project_id, user_id, source_asset_id, content_asset_id, media_kind, source,
+                    mime_type, file_name, storage_uri, status, metadata, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid.uuid4()),
+                    project_id,
+                    user_id,
+                    row["id"],
+                    row["id"],
+                    media_kind,
+                    ProjectAssetSource.CONTENT_ASSET.value,
+                    row["mime_type"],
+                    row["file_name"],
+                    row["storage_uri"],
+                    status,
+                    row["metadata"] or "{}",
+                    row["created_at"] or now,
+                    now,
+                ),
+            )
+        self._conn.commit()
+
+    def _ensure_asset_eligible(
+        self,
+        asset: ProjectAssetRecord,
+        usage_action: str,
+        *,
+        target_type: Optional[str] = None,
+    ) -> None:
+        if usage_action not in PROJECT_ASSET_SUPPORTED_ACTIONS:
+            raise ProjectAssetEligibilityError(f"Unsupported usage_action '{usage_action}'")
+        if usage_action == "historical_only":
+            return
+        if usage_action == "preview_only":
+            if asset.status == ProjectAssetLifecycleStatus.TOMBSTONED.value:
+                raise ProjectAssetEligibilityError("Tombstoned assets are historical-only")
+            return
+        if asset.status in (
+            ProjectAssetLifecycleStatus.TOMBSTONED.value,
+            ProjectAssetLifecycleStatus.DEGRADED.value,
+            ProjectAssetLifecycleStatus.LOCAL_ONLY.value,
+        ):
+            raise ProjectAssetEligibilityError(f"Asset status '{asset.status}' is not eligible for '{usage_action}'")
+        if usage_action in {"promote_reference", "select_for_content"} and asset.media_kind not in {
+            ProjectAssetMediaKind.IMAGE.value,
+            ProjectAssetMediaKind.THUMBNAIL.value,
+            ProjectAssetMediaKind.VIDEO_COVER.value,
+            ProjectAssetMediaKind.CAPTURE.value,
+        }:
+            raise ProjectAssetEligibilityError(f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}'")
+        if usage_action in {"select_for_video_version", "publish_media"} and asset.media_kind not in {
+            ProjectAssetMediaKind.AUDIO.value,
+            ProjectAssetMediaKind.MUSIC.value,
+            ProjectAssetMediaKind.VIDEO.value,
+            ProjectAssetMediaKind.VIDEO_COVER.value,
+            ProjectAssetMediaKind.BACKGROUND_CONFIG.value,
+            ProjectAssetMediaKind.RENDER_OUTPUT.value,
+        }:
+            raise ProjectAssetEligibilityError(f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}'")
+        if usage_action == "set_primary":
+            if target_type == "content" and asset.media_kind not in {
+                ProjectAssetMediaKind.IMAGE.value,
+                ProjectAssetMediaKind.THUMBNAIL.value,
+                ProjectAssetMediaKind.VIDEO_COVER.value,
+                ProjectAssetMediaKind.CAPTURE.value,
+            }:
+                raise ProjectAssetEligibilityError(
+                    f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}' on '{target_type}'"
+                )
+            if target_type == "video_version" and asset.media_kind not in {
+                ProjectAssetMediaKind.AUDIO.value,
+                ProjectAssetMediaKind.MUSIC.value,
+                ProjectAssetMediaKind.VIDEO.value,
+                ProjectAssetMediaKind.VIDEO_COVER.value,
+                ProjectAssetMediaKind.BACKGROUND_CONFIG.value,
+                ProjectAssetMediaKind.RENDER_OUTPUT.value,
+            }:
+                raise ProjectAssetEligibilityError(
+                    f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}' on '{target_type}'"
+                )
+
+    def _ensure_usage_target_owned(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        target_type: str,
+        target_id: str,
+        usage_action: str,
+    ) -> None:
+        allowed_targets = PROJECT_ASSET_MUTATION_ACTION_TARGETS.get(usage_action)
+        if not allowed_targets:
+            raise ProjectAssetEligibilityError(f"Unsupported usage_action '{usage_action}'")
+        if target_type not in allowed_targets:
+            expected = ", ".join(sorted(allowed_targets))
+            raise ProjectAssetEligibilityError(
+                f"usage_action '{usage_action}' requires target_type in [{expected}]"
+            )
+
+        if target_type == "content":
+            row = self._conn.execute(
+                """
+                SELECT id FROM content_records
+                WHERE id = ? AND project_id = ? AND user_id = ?
+                LIMIT 1
+                """,
+                (target_id, project_id, user_id),
+            ).fetchone()
+            if not row:
+                raise ContentNotFoundError(f"Content target {target_id} not found")
+            return
+
+        if target_type == "video_version":
+            raise ProjectAssetEligibilityError(
+                "video_version target validation is not available until the video asset store ships"
+            )
+
+        raise ProjectAssetEligibilityError(f"Unsupported target_type '{target_type}'")
+
+    def _record_project_asset_event(
+        self,
+        *,
+        asset_id: str,
+        project_id: str,
+        user_id: str,
+        event_type: str,
+        target_type: Optional[str] = None,
+        target_id: Optional[str] = None,
+        placement: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        self._conn.execute(
+            """
+            INSERT INTO project_asset_events (
+                id, asset_id, project_id, user_id, event_type, target_type,
+                target_id, placement, metadata, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                str(uuid.uuid4()),
+                asset_id,
+                project_id,
+                user_id,
+                event_type,
+                target_type,
+                target_id,
+                placement,
+                json.dumps(metadata or {}),
+                datetime.utcnow().isoformat(),
+            ),
+        )
+
+    @staticmethod
+    def _infer_media_kind(kind: Optional[str], mime_type: Optional[str]) -> str:
+        mime = (mime_type or "").lower()
+        kind_value = (kind or "").lower()
+        if mime.startswith("image/"):
+            return ProjectAssetMediaKind.IMAGE.value
+        if mime.startswith("audio/"):
+            return ProjectAssetMediaKind.AUDIO.value
+        if mime.startswith("video/"):
+            return ProjectAssetMediaKind.VIDEO.value
+        if "capture" in kind_value:
+            return ProjectAssetMediaKind.CAPTURE.value
+        return ProjectAssetMediaKind.CAPTURE.value
+
     # ─── Schedule Jobs ────────────────────────────────
 
     def create_schedule_job(self, **kwargs: Any) -> Dict[str, Any]:
@@ -903,6 +1461,57 @@ class StatusService:
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
             deleted_at=datetime.fromisoformat(row["deleted_at"]) if row["deleted_at"] else None,
+        )
+
+    def _row_to_project_asset(self, row: sqlite3.Row) -> ProjectAssetRecord:
+        return ProjectAssetRecord(
+            id=row["id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            source_asset_id=row["source_asset_id"],
+            content_asset_id=row["content_asset_id"],
+            media_kind=row["media_kind"],
+            source=row["source"],
+            mime_type=row["mime_type"],
+            file_name=row["file_name"],
+            storage_uri=row["storage_uri"],
+            status=row["status"],
+            metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+            tombstoned_at=datetime.fromisoformat(row["tombstoned_at"]) if row["tombstoned_at"] else None,
+            cleanup_eligible_at=datetime.fromisoformat(row["cleanup_eligible_at"]) if row["cleanup_eligible_at"] else None,
+        )
+
+    def _row_to_project_asset_usage(self, row: sqlite3.Row) -> ProjectAssetUsageRecord:
+        return ProjectAssetUsageRecord(
+            id=row["id"],
+            asset_id=row["asset_id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            target_type=row["target_type"],
+            target_id=row["target_id"],
+            placement=row["placement"],
+            usage_action=row["usage_action"],
+            is_primary=bool(row["is_primary"]),
+            metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+            deleted_at=datetime.fromisoformat(row["deleted_at"]) if row["deleted_at"] else None,
+        )
+
+    def _row_to_project_asset_event(self, row: sqlite3.Row) -> ProjectAssetEventRecord:
+        return ProjectAssetEventRecord(
+            id=row["id"],
+            asset_id=row["asset_id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            event_type=row["event_type"],
+            target_type=row["target_type"],
+            target_id=row["target_id"],
+            placement=row["placement"],
+            metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+            created_at=datetime.fromisoformat(row["created_at"]),
         )
 
     # ─── Sync Helpers ─────────────────────────────────

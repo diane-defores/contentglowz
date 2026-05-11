@@ -2,6 +2,18 @@
 
 All notable changes to the ContentFlow monorepo are documented here.
 
+## [2026-05-11]
+
+### Added
+- Added a project-scoped asset library backend surface for listing, usage history, events, eligibility checks, primary selection, tombstone/restore, preview refresh, and cleanup reporting.
+- Added Flutter project asset models, API methods, Riverpod state, a reusable picker, and an editor entry point for linking eligible project assets to content placements.
+
+### Fixed
+- Enforced server-side target ownership, media-kind compatibility, safe storage descriptors, and stale active-project guards across asset selection and primary mutations.
+
+### Changed
+- Documented the asset library as a guided project workflow layer, not a public DAM or arbitrary media playground.
+
 ## [Unreleased]
 
 ### Removed

@@ -3,9 +3,12 @@ import 'package:contentflow_app/data/models/app_access_state.dart';
 import 'package:contentflow_app/data/models/app_settings.dart';
 import 'package:contentflow_app/data/models/content_audit.dart';
 import 'package:contentflow_app/data/models/content_item.dart';
+import 'package:contentflow_app/data/models/project.dart';
+import 'package:contentflow_app/data/models/project_asset.dart';
 import 'package:contentflow_app/data/services/api_service.dart';
 import 'package:contentflow_app/l10n/app_localizations.dart';
 import 'package:contentflow_app/presentation/screens/editor/editor_screen.dart';
+import 'package:contentflow_app/presentation/widgets/project_asset_picker.dart';
 import 'package:contentflow_app/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -156,6 +159,117 @@ void main() {
       expect(api.publishedContent, 'Edited full body');
     },
   );
+
+  testWidgets('opens project asset picker from editor app bar', (tester) async {
+    final item = _contentItem(body: 'Original full body');
+    final api = _EditorFakeApiService(item);
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => const _OpenEditor()),
+        GoRoute(
+          path: '/editor/:id',
+          builder: (context, state) =>
+              EditorScreen(contentId: state.pathParameters['id']!),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDiagnosticsProvider.overrideWithValue(AppDiagnostics()),
+          apiServiceProvider.overrideWithValue(api),
+          appAccessStateProvider.overrideWith(() => _TestAccessNotifier()),
+          publishAccountsStateProvider.overrideWith(
+            (ref) async => const PublishAccountsState(accounts: []),
+          ),
+          contentHistoryProvider.overrideWith(
+            (ref) async => const <ContentItem>[],
+          ),
+          pendingContentProvider.overrideWith(
+            () => _TestPendingContentNotifier([item]),
+          ),
+          activeProjectProvider.overrideWith((ref) => _project()),
+          projectAssetLibraryProvider.overrideWith(() => _TestAssetNotifier()),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Project assets'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProjectAssetPicker), findsOneWidget);
+    expect(find.text('cover.png'), findsOneWidget);
+  });
+
+  testWidgets(
+    'project assets button is disabled when no active project is selected',
+    (tester) async {
+      final item = _contentItem(body: 'Original full body');
+      final api = _EditorFakeApiService(item);
+
+      final router = GoRouter(
+        initialLocation: '/',
+        routes: [
+          GoRoute(path: '/', builder: (context, state) => const _OpenEditor()),
+          GoRoute(
+            path: '/editor/:id',
+            builder: (context, state) =>
+                EditorScreen(contentId: state.pathParameters['id']!),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appDiagnosticsProvider.overrideWithValue(AppDiagnostics()),
+            apiServiceProvider.overrideWithValue(api),
+            appAccessStateProvider.overrideWith(() => _TestAccessNotifier()),
+            publishAccountsStateProvider.overrideWith(
+              (ref) async => const PublishAccountsState(accounts: []),
+            ),
+            contentHistoryProvider.overrideWith(
+              (ref) async => const <ContentItem>[],
+            ),
+            pendingContentProvider.overrideWith(
+              () => _TestPendingContentNotifier([item]),
+            ),
+            activeProjectProvider.overrideWith((ref) => null),
+          ],
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open editor'));
+      await tester.pumpAndSettle();
+
+      final button = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip('Project assets'),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(button.onPressed, isNull);
+      expect(find.byType(ProjectAssetPicker), findsNothing);
+    },
+  );
 }
 
 ContentItem _contentItem({required String body}) {
@@ -259,5 +373,39 @@ class _EditorFakeApiService extends ApiService {
     mutatingCalls.add('publishContent');
     publishedContent = content;
     return {'success': true};
+  }
+}
+
+Project _project() {
+  return Project(
+    id: 'project-1',
+    name: 'Project One',
+    url: 'https://example.com',
+    createdAt: DateTime(2026, 5, 2),
+  );
+}
+
+class _TestAssetNotifier extends ProjectAssetLibraryNotifier {
+  @override
+  Future<ProjectAssetLibraryState> build() async {
+    return ProjectAssetLibraryState(
+      projectId: 'project-1',
+      assets: [
+        ProjectAsset(
+          id: 'asset-1',
+          projectId: 'project-1',
+          userId: 'user-1',
+          mediaKind: 'image',
+          source: 'image_robot',
+          status: 'active',
+          metadata: const {},
+          storageDescriptor: const {'provider': 'bunny'},
+          fileName: 'cover.png',
+          createdAt: DateTime.utc(2026, 5, 11, 18),
+          updatedAt: DateTime.utc(2026, 5, 11, 18),
+        ),
+      ],
+      total: 1,
+    );
   }
 }

@@ -144,6 +144,89 @@ class ContentAssetStatus(str, Enum):
     DELETED = "deleted"
 
 
+class ProjectAssetMediaKind(str, Enum):
+    IMAGE = "image"
+    AUDIO = "audio"
+    MUSIC = "music"
+    VIDEO = "video"
+    THUMBNAIL = "thumbnail"
+    VIDEO_COVER = "video_cover"
+    BACKGROUND_CONFIG = "background_config"
+    RENDER_OUTPUT = "render_output"
+    CAPTURE = "capture"
+
+
+class ProjectAssetSource(str, Enum):
+    DEVICE_CAPTURE = "device_capture"
+    IMAGE_ROBOT = "image_robot"
+    MANUAL_UPLOAD = "manual_upload"
+    VISUAL_REFERENCE = "visual_reference"
+    VIDEO_AUDIO_AI = "video_audio_ai"
+    VIDEO_MUSIC_AI = "video_music_ai"
+    REMOTION_BACKGROUND = "remotion_background"
+    REMOTION_RENDER = "remotion_render"
+    REELS_IMPORT = "reels_import"
+    CONTENT_ASSET = "content_asset"
+
+
+class ProjectAssetLifecycleStatus(str, Enum):
+    ACTIVE = "active"
+    LOCAL_ONLY = "local_only"
+    DEGRADED = "degraded"
+    TOMBSTONED = "tombstoned"
+
+
+class ProjectAssetRecord(BaseModel):
+    id: str
+    project_id: str
+    user_id: str
+    source_asset_id: Optional[str] = None
+    content_asset_id: Optional[str] = None
+    media_kind: ProjectAssetMediaKind
+    source: ProjectAssetSource
+    mime_type: Optional[str] = None
+    file_name: Optional[str] = None
+    storage_uri: Optional[str] = None
+    status: ProjectAssetLifecycleStatus = ProjectAssetLifecycleStatus.ACTIVE
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    tombstoned_at: Optional[datetime] = None
+    cleanup_eligible_at: Optional[datetime] = None
+
+    class Config:
+        use_enum_values = True
+
+
+class ProjectAssetUsageRecord(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    target_type: str
+    target_id: str
+    placement: Optional[str] = None
+    usage_action: str
+    is_primary: bool = False
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    deleted_at: Optional[datetime] = None
+
+
+class ProjectAssetEventRecord(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    event_type: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    placement: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class ContentAssetRecord(BaseModel):
     """Metadata for a client or stored asset attached to a content record."""
     id: str = Field(..., description="Unique asset metadata identifier")

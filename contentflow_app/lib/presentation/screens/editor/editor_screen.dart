@@ -10,6 +10,7 @@ import '../../../data/models/content_item.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
+import '../../widgets/project_asset_picker.dart';
 import 'editor_formatting.dart';
 import 'platform_preview_sheet.dart';
 
@@ -96,6 +97,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   PreferredSizeWidget _buildAppBar(ContentItem item) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
     final theme = Theme.of(context);
+    final projectId = ref.watch(activeProjectIdProvider);
+    final canOpenAssetLibrary =
+        projectId != null && projectId.trim().isNotEmpty;
 
     return AppBar(
       leading: IconButton(
@@ -142,6 +146,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             tooltip: context.tr('Platform preview'),
             onPressed: () => _showPlatformPreview(item),
           ),
+        IconButton(
+          icon: const Icon(Icons.perm_media_rounded),
+          tooltip: context.tr('Project assets'),
+          onPressed: canOpenAssetLibrary
+              ? () => _showProjectAssetPicker(item)
+              : null,
+        ),
         // Toggle edit/preview
         IconButton(
           icon: Icon(
@@ -977,6 +988,42 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         body: _bodyController.text,
         channels: item.channels,
         type: item.type,
+      ),
+    );
+  }
+
+  Future<void> _showProjectAssetPicker(ContentItem item) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.9,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: ProjectAssetPicker(
+            targetType: 'content',
+            targetId: item.id,
+            usageAction: 'select_for_content',
+            placement: 'editor_body',
+            onSelected: (usage) {
+              if (!mounted) {
+                return;
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    context.tr('Asset linked: {id}', {'id': usage.assetId}),
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

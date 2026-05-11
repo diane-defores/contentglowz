@@ -26,6 +26,7 @@ import '../data/models/offline_sync.dart';
 import '../data/models/openrouter_credential.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
+import '../data/models/project_asset.dart';
 import '../data/models/ritual.dart';
 import '../data/services/api_service.dart';
 import '../data/services/clerk_auth_service.dart';
@@ -1344,6 +1345,474 @@ final activeProjectProvider = Provider<Project?>((ref) {
 final activeProjectIdProvider = Provider<String?>((ref) {
   return ref.watch(activeProjectProvider.select((project) => project?.id));
 });
+
+class ProjectAssetLibraryState {
+  const ProjectAssetLibraryState({
+    this.projectId,
+    this.assets = const <ProjectAsset>[],
+    this.total = 0,
+    this.mediaKindFilter,
+    this.sourceFilter,
+    this.includeTombstoned = false,
+    this.selectedAssetId,
+    this.assetDetails = const <String, ProjectAsset>{},
+    this.assetUsage = const <String, List<ProjectAssetUsage>>{},
+    this.assetEvents = const <String, List<ProjectAssetEvent>>{},
+    this.lastError,
+    this.isMutating = false,
+  });
+
+  final String? projectId;
+  final List<ProjectAsset> assets;
+  final int total;
+  final String? mediaKindFilter;
+  final String? sourceFilter;
+  final bool includeTombstoned;
+  final String? selectedAssetId;
+  final Map<String, ProjectAsset> assetDetails;
+  final Map<String, List<ProjectAssetUsage>> assetUsage;
+  final Map<String, List<ProjectAssetEvent>> assetEvents;
+  final Object? lastError;
+  final bool isMutating;
+
+  ProjectAsset? get selectedAsset {
+    final id = selectedAssetId;
+    if (id == null || id.isEmpty) {
+      return null;
+    }
+    return assetDetails[id] ??
+        assets.cast<ProjectAsset?>().firstWhere(
+          (entry) => entry?.id == id,
+          orElse: () => null,
+        );
+  }
+
+  ProjectAssetLibraryState copyWith({
+    String? projectId,
+    bool clearProjectId = false,
+    List<ProjectAsset>? assets,
+    int? total,
+    String? mediaKindFilter,
+    bool clearMediaKindFilter = false,
+    String? sourceFilter,
+    bool clearSourceFilter = false,
+    bool? includeTombstoned,
+    String? selectedAssetId,
+    bool clearSelectedAssetId = false,
+    Map<String, ProjectAsset>? assetDetails,
+    Map<String, List<ProjectAssetUsage>>? assetUsage,
+    Map<String, List<ProjectAssetEvent>>? assetEvents,
+    Object? lastError,
+    bool clearLastError = false,
+    bool? isMutating,
+  }) {
+    return ProjectAssetLibraryState(
+      projectId: clearProjectId ? null : (projectId ?? this.projectId),
+      assets: assets ?? this.assets,
+      total: total ?? this.total,
+      mediaKindFilter: clearMediaKindFilter
+          ? null
+          : (mediaKindFilter ?? this.mediaKindFilter),
+      sourceFilter: clearSourceFilter
+          ? null
+          : (sourceFilter ?? this.sourceFilter),
+      includeTombstoned: includeTombstoned ?? this.includeTombstoned,
+      selectedAssetId: clearSelectedAssetId
+          ? null
+          : (selectedAssetId ?? this.selectedAssetId),
+      assetDetails: assetDetails ?? this.assetDetails,
+      assetUsage: assetUsage ?? this.assetUsage,
+      assetEvents: assetEvents ?? this.assetEvents,
+      lastError: clearLastError ? null : (lastError ?? this.lastError),
+      isMutating: isMutating ?? this.isMutating,
+    );
+  }
+
+  factory ProjectAssetLibraryState.empty([String? projectId]) {
+    return ProjectAssetLibraryState(projectId: projectId);
+  }
+}
+
+final projectAssetLibraryProvider =
+    AsyncNotifierProvider<
+      ProjectAssetLibraryNotifier,
+      ProjectAssetLibraryState
+    >(ProjectAssetLibraryNotifier.new);
+
+class ProjectAssetLibraryNotifier
+    extends AsyncNotifier<ProjectAssetLibraryState> {
+  int _contextRevision = 0;
+
+  bool _isFresh(String projectId, int revision) {
+    return revision == _contextRevision &&
+        ref.read(activeProjectIdProvider) == projectId;
+  }
+
+  bool _isActiveProjectState(String projectId) {
+    return ref.read(activeProjectIdProvider) == projectId &&
+        state.asData?.value.projectId == projectId;
+  }
+
+  @override
+  Future<ProjectAssetLibraryState> build() async {
+    final projectId = ref.watch(activeProjectIdProvider);
+    final previous = state.asData?.value;
+    _contextRevision++;
+    final revision = _contextRevision;
+    if (projectId == null || projectId.isEmpty) {
+      return ProjectAssetLibraryState.empty();
+    }
+
+    final mediaKindFilter = previous?.projectId == projectId
+        ? previous?.mediaKindFilter
+        : null;
+    final sourceFilter = previous?.projectId == projectId
+        ? previous?.sourceFilter
+        : null;
+    final includeTombstoned = previous?.projectId == projectId
+        ? previous?.includeTombstoned ?? false
+        : false;
+    try {
+      final response = await ref
+          .read(apiServiceProvider)
+          .listProjectAssets(
+            projectId: projectId,
+            mediaKind: mediaKindFilter,
+            source: sourceFilter,
+            includeTombstoned: includeTombstoned,
+          );
+      if (!_isFresh(projectId, revision)) {
+        return previous ?? ProjectAssetLibraryState.empty(projectId);
+      }
+      return ProjectAssetLibraryState(
+        projectId: projectId,
+        assets: response.items,
+        total: response.total,
+        mediaKindFilter: mediaKindFilter,
+        sourceFilter: sourceFilter,
+        includeTombstoned: includeTombstoned,
+      );
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        return previous ?? ProjectAssetLibraryState.empty(projectId);
+      }
+      return ProjectAssetLibraryState(
+        projectId: projectId,
+        mediaKindFilter: mediaKindFilter,
+        sourceFilter: sourceFilter,
+        includeTombstoned: includeTombstoned,
+        lastError: error,
+      );
+    }
+  }
+
+  void setMediaKindFilter(String? value) {
+    final current = state.asData?.value;
+    if (current == null) {
+      return;
+    }
+    state = AsyncData(
+      current.copyWith(
+        mediaKindFilter: value,
+        clearMediaKindFilter: value == null || value.trim().isEmpty,
+        clearSelectedAssetId: true,
+      ),
+    );
+    ref.invalidateSelf();
+  }
+
+  void setSourceFilter(String? value) {
+    final current = state.asData?.value;
+    if (current == null) {
+      return;
+    }
+    state = AsyncData(
+      current.copyWith(
+        sourceFilter: value,
+        clearSourceFilter: value == null || value.trim().isEmpty,
+        clearSelectedAssetId: true,
+      ),
+    );
+    ref.invalidateSelf();
+  }
+
+  void setIncludeTombstoned(bool value) {
+    final current = state.asData?.value;
+    if (current == null) {
+      return;
+    }
+    state = AsyncData(
+      current.copyWith(includeTombstoned: value, clearSelectedAssetId: true),
+    );
+    ref.invalidateSelf();
+  }
+
+  Future<void> refresh() async {
+    ref.invalidateSelf();
+    await future;
+  }
+
+  Future<void> selectAsset(String? assetId) async {
+    final current = state.asData?.value;
+    if (current == null) {
+      return;
+    }
+    if (assetId == null || assetId.isEmpty) {
+      state = AsyncData(current.copyWith(clearSelectedAssetId: true));
+      return;
+    }
+    state = AsyncData(
+      current.copyWith(selectedAssetId: assetId, clearLastError: true),
+    );
+    await loadSelectedAssetDetail();
+  }
+
+  Future<void> loadSelectedAssetDetail() async {
+    final current = state.asData?.value;
+    if (current == null) {
+      return;
+    }
+    final projectId = current.projectId;
+    final assetId = current.selectedAssetId;
+    if (projectId == null || assetId == null) {
+      return;
+    }
+    final revision = _contextRevision;
+    try {
+      final api = ref.read(apiServiceProvider);
+      final detail = await api.getProjectAssetDetail(
+        projectId: projectId,
+        assetId: assetId,
+      );
+      final usage = await api.getProjectAssetUsage(
+        projectId: projectId,
+        assetId: assetId,
+      );
+      final events = await api.getProjectAssetEvents(
+        projectId: projectId,
+        assetId: assetId,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(
+        fresh.copyWith(
+          assetDetails: {...fresh.assetDetails, assetId: detail},
+          assetUsage: {...fresh.assetUsage, assetId: usage},
+          assetEvents: {...fresh.assetEvents, assetId: events},
+          clearLastError: true,
+        ),
+      );
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        return;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(lastError: error));
+    }
+  }
+
+  Future<ProjectAssetUsage?> selectForTarget({
+    required String assetId,
+    required String targetType,
+    required String targetId,
+    required String usageAction,
+    String? placement,
+    bool isPrimary = false,
+    Map<String, dynamic> metadata = const <String, dynamic>{},
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final usage = await ref
+          .read(apiServiceProvider)
+          .selectProjectAsset(
+            projectId: projectId,
+            assetId: assetId,
+            targetType: targetType,
+            targetId: targetId,
+            usageAction: usageAction,
+            placement: placement,
+            isPrimary: isPrimary,
+            metadata: metadata,
+          );
+      if (!_isFresh(projectId, revision)) {
+        return usage;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      if (!_isActiveProjectState(projectId)) {
+        return usage;
+      }
+      await selectAsset(assetId);
+      return usage;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<ProjectAssetUsage?> setPrimary({
+    required String assetId,
+    required String targetType,
+    required String targetId,
+    required String usageAction,
+    String? placement,
+    Map<String, dynamic> metadata = const <String, dynamic>{},
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final usage = await ref
+          .read(apiServiceProvider)
+          .setProjectAssetPrimary(
+            projectId: projectId,
+            assetId: assetId,
+            targetType: targetType,
+            targetId: targetId,
+            usageAction: usageAction,
+            placement: placement,
+            metadata: metadata,
+          );
+      if (!_isFresh(projectId, revision)) {
+        return usage;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      if (!_isActiveProjectState(projectId)) {
+        return usage;
+      }
+      await selectAsset(assetId);
+      return usage;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<int> clearPrimary({
+    required String targetType,
+    required String targetId,
+    String? placement,
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return 0;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final cleared = await ref
+          .read(apiServiceProvider)
+          .clearProjectAssetPrimary(
+            projectId: projectId,
+            targetType: targetType,
+            targetId: targetId,
+            placement: placement,
+          );
+      if (!_isFresh(projectId, revision)) {
+        return cleared;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      return cleared;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<void> tombstoneAsset(String assetId) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      await ref
+          .read(apiServiceProvider)
+          .tombstoneProjectAsset(projectId: projectId, assetId: assetId);
+      if (!_isFresh(projectId, revision)) {
+        return;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      if (!_isActiveProjectState(projectId)) {
+        return;
+      }
+      await selectAsset(assetId);
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<void> restoreAsset(String assetId) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      await ref
+          .read(apiServiceProvider)
+          .restoreProjectAsset(projectId: projectId, assetId: assetId);
+      if (!_isFresh(projectId, revision)) {
+        return;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      if (!_isActiveProjectState(projectId)) {
+        return;
+      }
+      await selectAsset(assetId);
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+}
 
 class PublishAccountsState {
   const PublishAccountsState({

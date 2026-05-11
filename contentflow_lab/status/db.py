@@ -83,6 +83,57 @@ def _run_migrations(conn: Connection) -> None:
             deleted_at TEXT
         )
         """,
+        """
+        CREATE TABLE IF NOT EXISTS project_assets (
+            id TEXT PRIMARY KEY,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            source_asset_id TEXT,
+            content_asset_id TEXT,
+            media_kind TEXT NOT NULL,
+            source TEXT NOT NULL,
+            mime_type TEXT,
+            file_name TEXT,
+            storage_uri TEXT,
+            status TEXT NOT NULL DEFAULT 'active',
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            tombstoned_at TEXT,
+            cleanup_eligible_at TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS project_asset_usages (
+            id TEXT PRIMARY KEY,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            target_type TEXT NOT NULL,
+            target_id TEXT NOT NULL,
+            placement TEXT,
+            usage_action TEXT NOT NULL,
+            is_primary INTEGER NOT NULL DEFAULT 0,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            deleted_at TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS project_asset_events (
+            id TEXT PRIMARY KEY,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            target_type TEXT,
+            target_id TEXT,
+            placement TEXT,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL
+        )
+        """,
     ]:
         try:
             conn.execute(stmt)
@@ -107,6 +158,16 @@ def _run_migrations(conn: Connection) -> None:
         "CREATE INDEX IF NOT EXISTS idx_assets_project ON content_assets(project_id)",
         "CREATE INDEX IF NOT EXISTS idx_assets_user ON content_assets(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_assets_client ON content_assets(content_id, client_asset_id)",
+        "CREATE INDEX IF NOT EXISTS idx_project_assets_project ON project_assets(project_id)",
+        "CREATE INDEX IF NOT EXISTS idx_project_assets_user ON project_assets(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_project_assets_kind ON project_assets(project_id, media_kind)",
+        "CREATE INDEX IF NOT EXISTS idx_project_assets_source ON project_assets(project_id, source)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_project_assets_content_asset ON project_assets(content_asset_id) WHERE content_asset_id IS NOT NULL",
+        "CREATE INDEX IF NOT EXISTS idx_project_asset_usages_asset ON project_asset_usages(asset_id)",
+        "CREATE INDEX IF NOT EXISTS idx_project_asset_usages_target ON project_asset_usages(project_id, target_type, target_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_project_asset_usages_primary ON project_asset_usages(project_id, target_type, target_id, placement) WHERE is_primary = 1 AND deleted_at IS NULL",
+        "CREATE INDEX IF NOT EXISTS idx_project_asset_events_asset ON project_asset_events(asset_id, created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_project_asset_events_project ON project_asset_events(project_id, created_at)",
     ]:
         conn.execute(stmt)
     conn.commit()

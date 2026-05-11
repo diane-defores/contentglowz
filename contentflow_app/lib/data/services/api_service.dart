@@ -23,6 +23,7 @@ import '../models/offline_sync.dart';
 import '../models/openrouter_credential.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
+import '../models/project_asset.dart';
 import '../models/ritual.dart';
 import 'offline_storage_service.dart';
 
@@ -1751,6 +1752,288 @@ class ApiService {
         data: payload,
       );
       return _asMap(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetListResponse> listProjectAssets({
+    required String projectId,
+    String? mediaKind,
+    String? source,
+    bool includeTombstoned = false,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final queryParameters = _compactMap({
+      'media_kind': normalizeOptionalText(mediaKind),
+      'source': normalizeOptionalText(source),
+      'include_tombstoned': includeTombstoned,
+      'limit': limit,
+      'offset': offset,
+    });
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets',
+        queryParameters: queryParameters,
+      );
+      return ProjectAssetListResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAsset> getProjectAssetDetail({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId',
+      );
+      return ProjectAsset.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<ProjectAssetUsage>> getProjectAssetUsage({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/usage',
+      );
+      final payload = response.data;
+      if (payload is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid project asset usage response from FastAPI.',
+        );
+      }
+      return payload
+          .map((entry) => ProjectAssetUsage.fromJson(_asMap(entry)))
+          .toList();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<ProjectAssetEvent>> getProjectAssetEvents({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/events',
+      );
+      final payload = response.data;
+      if (payload is! List) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid project asset events response from FastAPI.',
+        );
+      }
+      return payload
+          .map((entry) => ProjectAssetEvent.fromJson(_asMap(entry)))
+          .toList();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetEligibility> getProjectAssetEligibility({
+    required String projectId,
+    required String assetId,
+    required String usageAction,
+    String? targetType,
+    String? targetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final resolvedTargetId = targetId == null
+        ? null
+        : _resolveEntityId(targetId, idMappings);
+    final payload = _compactMap({
+      'usage_action': usageAction.trim(),
+      'target_type': normalizeOptionalText(targetType),
+      'target_id': resolvedTargetId,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/eligibility',
+        data: payload,
+      );
+      return ProjectAssetEligibility.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetUsage> selectProjectAsset({
+    required String projectId,
+    required String assetId,
+    required String targetType,
+    required String targetId,
+    required String usageAction,
+    String? placement,
+    bool isPrimary = false,
+    Map<String, dynamic> metadata = const <String, dynamic>{},
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final resolvedTargetId = _resolveEntityId(targetId, idMappings);
+    final payload = _compactMap({
+      'target_type': targetType.trim(),
+      'target_id': resolvedTargetId,
+      'usage_action': usageAction.trim(),
+      'placement': normalizeOptionalText(placement),
+      'is_primary': isPrimary,
+      'metadata': metadata,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/select',
+        data: payload,
+      );
+      return ProjectAssetUsage.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetUsage> setProjectAssetPrimary({
+    required String projectId,
+    required String assetId,
+    required String targetType,
+    required String targetId,
+    required String usageAction,
+    String? placement,
+    Map<String, dynamic> metadata = const <String, dynamic>{},
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final resolvedTargetId = _resolveEntityId(targetId, idMappings);
+    final payload = _compactMap({
+      'target_type': targetType.trim(),
+      'target_id': resolvedTargetId,
+      'usage_action': usageAction.trim(),
+      'placement': normalizeOptionalText(placement),
+      'metadata': metadata,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/primary',
+        data: payload,
+      );
+      return ProjectAssetUsage.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<int> clearProjectAssetPrimary({
+    required String projectId,
+    required String targetType,
+    required String targetId,
+    String? placement,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedTargetId = _resolveEntityId(targetId, idMappings);
+    final payload = _compactMap({
+      'target_type': targetType.trim(),
+      'target_id': resolvedTargetId,
+      'placement': normalizeOptionalText(placement),
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/clear-primary',
+        data: payload,
+      );
+      final data = _asMap(response.data);
+      return (data['cleared_count'] as num?)?.toInt() ?? 0;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAsset> refreshProjectAssetPreview({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/preview-refresh',
+      );
+      return ProjectAsset.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAsset> tombstoneProjectAsset({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/tombstone',
+      );
+      return ProjectAsset.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAsset> restoreProjectAsset({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/restore',
+      );
+      return ProjectAsset.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetCleanupReport> getProjectAssetCleanupReport({
+    required String projectId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets/cleanup-report',
+      );
+      return ProjectAssetCleanupReport.fromJson(_asMap(response.data));
     } on DioException catch (error) {
       throw _mapDioException(error);
     }

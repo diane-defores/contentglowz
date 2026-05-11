@@ -1,0 +1,117 @@
+import 'package:contentflow_app/data/models/project_asset.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('ProjectAsset models', () {
+    test('parses list response and storage descriptor', () {
+      final payload = {
+        'items': [
+          {
+            'id': 'asset-1',
+            'project_id': 'proj-1',
+            'user_id': 'user-1',
+            'media_kind': 'image',
+            'source': 'image_robot',
+            'mime_type': 'image/png',
+            'file_name': 'visual.png',
+            'storage_descriptor': {'provider': 'bunny', 'status': 'ready'},
+            'status': 'active',
+            'metadata': {'prompt': 'sunset'},
+            'created_at': '2026-05-11T18:00:00Z',
+            'updated_at': '2026-05-11T18:10:00Z',
+          },
+        ],
+        'total': 1,
+      };
+
+      final result = ProjectAssetListResponse.fromJson(payload);
+
+      expect(result.total, 1);
+      expect(result.items, hasLength(1));
+      expect(result.items.single.id, 'asset-1');
+      expect(result.items.single.storageDescriptor['provider'], 'bunny');
+      expect(result.items.single.metadata['prompt'], 'sunset');
+    });
+
+    test(
+      'keeps backend-redacted storage descriptors without raw storage uri',
+      () {
+        final asset = ProjectAsset.fromJson({
+          'id': 'asset-1',
+          'project_id': 'proj-1',
+          'user_id': 'user-1',
+          'media_kind': 'audio',
+          'source': 'video_audio_ai',
+          'storage_uri': null,
+          'storage_descriptor': {
+            'state': 'signed_playback',
+            'redacted_uri': 'https://assets.b-cdn.net/path/audio.mp3',
+            'render_safe': true,
+          },
+          'status': 'active',
+          'metadata': {},
+          'created_at': '2026-05-11T18:00:00Z',
+          'updated_at': '2026-05-11T18:10:00Z',
+        });
+
+        expect(asset.storageUri, isNull);
+        expect(asset.storageDescriptor['redacted_uri'], endsWith('/audio.mp3'));
+        expect(asset.storageDescriptor.toString(), isNot(contains('token=')));
+      },
+    );
+
+    test('parses eligibility, usage, events and cleanup report', () {
+      final eligibility = ProjectAssetEligibility.fromJson({
+        'asset_id': 'asset-1',
+        'usage_action': 'select_for_content',
+        'target_type': 'content',
+        'target_id': 'content-1',
+        'eligible': true,
+      });
+      expect(eligibility.eligible, isTrue);
+
+      final usage = ProjectAssetUsage.fromJson({
+        'id': 'usage-1',
+        'asset_id': 'asset-1',
+        'project_id': 'proj-1',
+        'user_id': 'user-1',
+        'target_type': 'content',
+        'target_id': 'content-1',
+        'placement': 'cover',
+        'usage_action': 'set_primary',
+        'is_primary': true,
+        'metadata': {'foo': 'bar'},
+        'created_at': '2026-05-11T18:00:00Z',
+        'updated_at': '2026-05-11T18:10:00Z',
+      });
+      expect(usage.isPrimary, isTrue);
+      expect(usage.placement, 'cover');
+
+      final event = ProjectAssetEvent.fromJson({
+        'id': 'event-1',
+        'asset_id': 'asset-1',
+        'project_id': 'proj-1',
+        'user_id': 'user-1',
+        'event_type': 'selected',
+        'metadata': {'usage_id': 'usage-1'},
+        'created_at': '2026-05-11T18:11:00Z',
+      });
+      expect(event.eventType, 'selected');
+
+      final cleanup = ProjectAssetCleanupReport.fromJson({
+        'cleanup_eligible': [
+          {
+            'asset_id': 'asset-2',
+            'media_kind': 'image',
+            'status': 'tombstoned',
+          },
+        ],
+        'degraded': [],
+        'missing_storage': [],
+        'physical_delete_allowed': false,
+      });
+      expect(cleanup.cleanupEligible.single.assetId, 'asset-2');
+      expect(cleanup.physicalDeleteAllowed, isFalse);
+    });
+  });
+}
