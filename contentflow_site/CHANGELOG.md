@@ -71,7 +71,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Copywriting: ClosingCta section post-FAQ ("Ready to publish 6x more?")
 - Copywriting: "Built by a solo founder. Bootstrapped." trust line in Hero
 - Copywriting: persona, parcours-client, and strategie docs in docs/copywriting/
-- AUDIT_LOG.md for tracking audit history
+- `shipflow_data/workflow/AUDIT_LOG.md` for tracking audit history
 
 ### Changed
 - Design: All heading font-sizes now use `clamp(rem, rem+vw, rem)` for fluid scaling (7 components)

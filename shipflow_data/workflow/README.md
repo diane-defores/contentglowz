@@ -21,6 +21,16 @@ Directory layout:
 - `conversations/` — feature conversation artifacts
 - `archives/` — stable historical artifacts retained for traceability
 - `reports/` — run reports, migration reports, and security preflights
+- `TASKS.md` and `AUDIT_LOG.md` — monorepo-level operational trackers
+
+Subproject-local trackers live with each subproject when they exist:
+
+- `contentflow_app/shipflow_data/workflow/TASKS.md`
+- `contentflow_app/shipflow_data/workflow/AUDIT_LOG.md`
+- `contentflow_lab/shipflow_data/workflow/TASKS.md`
+- `contentflow_lab/shipflow_data/workflow/AUDIT_LOG.md`
+- `contentflow_site/shipflow_data/workflow/TASKS.md`
+- `contentflow_site/shipflow_data/workflow/AUDIT_LOG.md`
 
 Entry rule:
 

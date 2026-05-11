@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "contentflow_app"
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-05-11"
 status: "reviewed"
 source_skill: sf-docs
 scope: content_map
@@ -23,7 +23,7 @@ evidence:
   - "CLAUDE.md"
   - "shipflow_data/workflow/specs/contentflow_app/*.md"
   - "CHANGELOG.md"
-  - "TASKS.md"
+  - "shipflow_data/workflow/TASKS.md"
 depends_on:
   - "shipflow_data/business/business.md@1.0.0"
   - "shipflow_data/business/branding.md@1.0.0"
@@ -104,13 +104,13 @@ Primary shell routes:
 - `shipflow_data/business/branding.md`
 - `shipflow_data/technical/guidelines.md`
 - `CHANGELOG.md`
-- `AUDIT_LOG.md`
+- `shipflow_data/workflow/AUDIT_LOG.md`
 
 ### Execution and technical specs
 - `shipflow_data/workflow/specs/contentflow_app/*.md` (active spec set for current and next implementation phase).
 
 ### Task and verification surface
-- `TASKS.md`
+- `shipflow_data/workflow/TASKS.md`
 
 ## 4) Scripts and runtime tool surface
 
