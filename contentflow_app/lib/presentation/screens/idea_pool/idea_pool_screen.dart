@@ -14,6 +14,7 @@ const _sourceFilters = [
   'all',
   'newsletter_inbox',
   'seo_keywords',
+  'search_console_feedback',
   'competitor_watch',
   'social_listening',
   'manual',
@@ -122,10 +123,9 @@ class IdeaPoolScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) => _IdeaCard(
                         idea: ideas[index],
-                        onDismiss: () =>
-                            notifier.dismissIdea(ideas[index].id),
-                        onDelete: () => _confirmDelete(
-                            context, ref, ideas[index]),
+                        onDismiss: () => notifier.dismissIdea(ideas[index].id),
+                        onDelete: () =>
+                            _confirmDelete(context, ref, ideas[index]),
                         onPrioritize: (score) =>
                             notifier.prioritizeIdea(ideas[index].id, score),
                       ),
@@ -141,16 +141,18 @@ class IdeaPoolScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, Idea idea) async {
+    BuildContext context,
+    WidgetRef ref,
+    Idea idea,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('Delete idea?')),
         content: Text(
-          context.tr(
-            'Remove "{title}"? This cannot be undone.',
-            {'title': idea.title},
-          ),
+          context.tr('Remove "{title}"? This cannot be undone.', {
+            'title': idea.title,
+          }),
         ),
         actions: [
           TextButton(
@@ -196,11 +198,7 @@ class _StatsRow extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: 8),
-          _StatChip(
-            label: 'Raw',
-            value: '$raw',
-            color: AppTheme.warningColor,
-          ),
+          _StatChip(label: 'Raw', value: '$raw', color: AppTheme.warningColor),
           const SizedBox(width: 8),
           _StatChip(
             label: 'Enriched',
@@ -220,8 +218,11 @@ class _StatsRow extends StatelessWidget {
 }
 
 class _StatChip extends StatelessWidget {
-  const _StatChip(
-      {required this.label, required this.value, required this.color});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
   final String label;
   final String value;
   final Color color;
@@ -237,12 +238,19 @@ class _StatChip extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(context.tr(label),
-                style: TextStyle(fontSize: 11, color: color.withAlpha(180))),
+            Text(
+              context.tr(label),
+              style: TextStyle(fontSize: 11, color: color.withAlpha(180)),
+            ),
           ],
         ),
       ),
@@ -287,16 +295,19 @@ class _IdeaCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     idea.title,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(8),
@@ -304,9 +315,10 @@ class _IdeaCard extends StatelessWidget {
                   child: Text(
                     idea.statusLabel,
                     style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ],
@@ -322,31 +334,34 @@ class _IdeaCard extends StatelessWidget {
                   text: idea.sourceLabel,
                   color: sourceColor,
                 ),
+                if (idea.source == 'search_console_feedback')
+                  _MetaChip(
+                    icon: Icons.travel_explore_outlined,
+                    text: context.tr('Google evidence'),
+                    color: AppTheme.infoColor,
+                  ),
                 if (idea.priorityScore != null)
                   _MetaChip(
                     icon: Icons.trending_up,
-                    text: context.tr(
-                      'Score {score}',
-                      {'score': idea.priorityScore!.toStringAsFixed(0)},
-                    ),
+                    text: context.tr('Score {score}', {
+                      'score': idea.priorityScore!.toStringAsFixed(0),
+                    }),
                     color: AppTheme.approveColor,
                   ),
                 if (idea.searchVolume != null)
                   _MetaChip(
                     icon: Icons.search,
-                    text: context.tr(
-                      '{volume} vol',
-                      {'volume': idea.searchVolume},
-                    ),
+                    text: context.tr('{volume} vol', {
+                      'volume': idea.searchVolume,
+                    }),
                     color: AppTheme.infoColor,
                   ),
                 if (idea.keywordDifficulty != null)
                   _MetaChip(
                     icon: Icons.speed,
-                    text: context.tr(
-                      'KD {score}',
-                      {'score': idea.keywordDifficulty!.toStringAsFixed(0)},
-                    ),
+                    text: context.tr('KD {score}', {
+                      'score': idea.keywordDifficulty!.toStringAsFixed(0),
+                    }),
                     color: AppTheme.rejectColor,
                   ),
                 _MetaChip(
@@ -364,8 +379,10 @@ class _IdeaCard extends StatelessWidget {
                 runSpacing: 4,
                 children: idea.tags.take(5).map((tag) {
                   return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.primary.withAlpha(20),
                       borderRadius: BorderRadius.circular(6),
@@ -373,11 +390,17 @@ class _IdeaCard extends StatelessWidget {
                     child: Text(
                       tag,
                       style: TextStyle(
-                          fontSize: 11, color: colorScheme.primary),
+                        fontSize: 11,
+                        color: colorScheme.primary,
+                      ),
                     ),
                   );
                 }).toList(),
               ),
+            ],
+            if (idea.source == 'search_console_feedback') ...[
+              const SizedBox(height: 8),
+              _SearchConsoleEvidence(idea: idea),
             ],
             // Actions
             if (idea.status == 'raw' || idea.status == 'enriched') ...[
@@ -389,8 +412,8 @@ class _IdeaCard extends StatelessWidget {
                       icon: Icons.arrow_upward,
                       label: 'Boost',
                       color: AppTheme.approveColor,
-                      onTap: () => onPrioritize(
-                          (idea.priorityScore ?? 50) + 10),
+                      onTap: () =>
+                          onPrioritize((idea.priorityScore ?? 50) + 10),
                     ),
                   if (idea.status == 'enriched') const SizedBox(width: 8),
                   if (idea.status == 'enriched')
@@ -399,7 +422,8 @@ class _IdeaCard extends StatelessWidget {
                       label: 'Lower',
                       color: AppTheme.warningColor,
                       onTap: () => onPrioritize(
-                          ((idea.priorityScore ?? 50) - 10).clamp(0, 100)),
+                        ((idea.priorityScore ?? 50) - 10).clamp(0, 100),
+                      ),
                     ),
                   const Spacer(),
                   _ActionButton(
@@ -438,6 +462,7 @@ class _IdeaCard extends StatelessWidget {
     return switch (source) {
       'newsletter_inbox' => AppTheme.warningColor,
       'seo_keywords' => AppTheme.infoColor,
+      'search_console_feedback' => AppTheme.infoColor,
       'competitor_watch' => AppTheme.rejectColor,
       'social_listening' => AppTheme.editColor,
       'manual' => colorScheme.primary,
@@ -446,9 +471,59 @@ class _IdeaCard extends StatelessWidget {
   }
 }
 
+class _SearchConsoleEvidence extends StatelessWidget {
+  const _SearchConsoleEvidence({required this.idea});
+
+  final Idea idea;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final raw = idea.rawData;
+    final targetUrl = raw['target_url']?.toString();
+    final targetQuery = raw['target_query']?.toString();
+    final reason = raw['reason']?.toString();
+    final chips = <Widget>[];
+    if (targetQuery != null && targetQuery.isNotEmpty) {
+      chips.add(
+        _MetaChip(
+          icon: Icons.search_rounded,
+          text: targetQuery,
+          color: AppTheme.infoColor,
+        ),
+      );
+    }
+    if (targetUrl != null && targetUrl.isNotEmpty) {
+      chips.add(
+        _MetaChip(
+          icon: Icons.link_rounded,
+          text: targetUrl,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    if (reason != null && reason.isNotEmpty) {
+      chips.add(
+        _MetaChip(
+          icon: Icons.flag_outlined,
+          text: reason.replaceAll('_', ' '),
+          color: AppTheme.warningColor,
+        ),
+      );
+    }
+    if (chips.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Wrap(spacing: 8, runSpacing: 6, children: chips.take(3).toList());
+  }
+}
+
 class _MetaChip extends StatelessWidget {
-  const _MetaChip(
-      {required this.icon, required this.text, required this.color});
+  const _MetaChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
   final IconData icon;
   final String text;
   final Color color;
@@ -496,9 +571,14 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: color),
             const SizedBox(width: 6),
-            Text(context.tr(label),
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w500, color: color)),
+            Text(
+              context.tr(label),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
           ],
         ),
       ),
@@ -518,22 +598,23 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.lightbulb_outline,
-              size: 64, color: colorScheme.outlineVariant),
+          Icon(
+            Icons.lightbulb_outline,
+            size: 64,
+            color: colorScheme.outlineVariant,
+          ),
           const SizedBox(height: 16),
           Text(
             context.tr('No ideas yet'),
-            style:
-                TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
           ),
           const SizedBox(height: 8),
           Text(
             context.tr(
-              'Ideas from newsletters, SEO, competitors\nand social listening will appear here.',
+              'Ideas from newsletters, SEO, Search Console,\ncompetitors and social listening will appear here.',
             ),
             textAlign: TextAlign.center,
-            style:
-                TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
           ),
         ],
       ),

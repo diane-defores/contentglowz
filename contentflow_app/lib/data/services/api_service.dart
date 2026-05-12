@@ -25,6 +25,7 @@ import '../models/persona.dart';
 import '../models/project.dart';
 import '../models/project_asset.dart';
 import '../models/ritual.dart';
+import '../models/search_console.dart';
 import 'offline_storage_service.dart';
 
 enum ApiErrorType { unauthorized, offline, server, invalidResponse, unknown }
@@ -189,6 +190,7 @@ class ApiService {
   static const _affiliationsCacheKey = 'affiliations';
   static const _ideasCacheKey = 'ideas';
   static const _dripPlansCacheKey = 'drip.plans';
+  static const _searchConsoleStatusCacheKey = 'search_console.status';
 
   void updateBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
@@ -1218,7 +1220,9 @@ class ApiService {
         'project_name': DemoSeed.projectName,
         'created_at': now.subtract(createdAgo).toIso8601String(),
         'channels': channels.map((c) => c.name).toList(),
-        if (metadata != null) 'metadata': metadata,
+        ...metadata == null
+            ? const <String, Object?>{}
+            : {'metadata': metadata},
       });
     }
 
@@ -2783,6 +2787,300 @@ class ApiService {
       return true;
     } on DioException {
       return false;
+    }
+  }
+
+  // ─── Search Console ─────────────────────────────────────
+
+  String _searchConsoleStatusKey(String projectId) =>
+      _cacheKeyFor(_searchConsoleStatusCacheKey, {'projectId': projectId});
+
+  String _searchConsoleSummaryKey(String projectId, String period) =>
+      _cacheKeyFor('search_console.summary', {
+        'period': period,
+        'projectId': projectId,
+      });
+
+  Future<SearchConsoleConnectionStatus> fetchSearchConsoleStatus({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return SearchConsoleConnectionStatus.missing(projectId);
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final query = {'projectId': resolvedProjectId};
+    final data = await _getCachedData(
+      '/api/search-console/status',
+      queryParameters: query,
+      cacheKey: _searchConsoleStatusKey(resolvedProjectId),
+    );
+    return SearchConsoleConnectionStatus.fromJson(_asMap(data));
+  }
+
+  Future<SearchConsoleOAuthStart> startSearchConsoleOAuth({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Google Search Console cannot be connected in demo mode.',
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/search-console/oauth/start',
+        queryParameters: {'projectId': resolvedProjectId},
+      );
+      return SearchConsoleOAuthStart.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (mapped.statusCode == 404 || mapped.statusCode == 405) {
+        try {
+          final response = await _dio.get(
+            '/api/search-console/oauth/connect',
+            queryParameters: {'projectId': resolvedProjectId},
+          );
+          return SearchConsoleOAuthStart.fromJson(_asMap(response.data));
+        } on DioException catch (fallbackError) {
+          throw _mapDioException(fallbackError);
+        }
+      }
+      throw mapped;
+    }
+  }
+
+  Future<List<SearchConsoleProperty>> fetchSearchConsoleProperties({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <SearchConsoleProperty>[];
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final query = {'projectId': resolvedProjectId};
+    final data = _asMap(
+      await _getCachedData(
+        '/api/search-console/properties',
+        queryParameters: query,
+        cacheKey: _cacheKeyFor('search_console.properties', query),
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <SearchConsoleProperty>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) =>
+              SearchConsoleProperty.fromJson(Map<String, dynamic>.from(entry)),
+        )
+        .where((entry) => entry.siteUrl.isNotEmpty)
+        .toList();
+  }
+
+  Future<SearchConsoleConnectionStatus> setSearchConsoleProperty({
+    required String projectId,
+    required String propertyUrl,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/search-console/property',
+        data: {'projectId': resolvedProjectId, 'propertyUrl': propertyUrl},
+      );
+      final status = SearchConsoleConnectionStatus.fromJson(
+        _asMap(response.data),
+      );
+      await _writeCachedData(
+        _searchConsoleStatusKey(resolvedProjectId),
+        response.data,
+      );
+      return status;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<SearchConsoleConnectionStatus> validateSearchConsole({
+    required String projectId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/search-console/validate',
+        queryParameters: {'projectId': resolvedProjectId},
+      );
+      final status = SearchConsoleConnectionStatus.fromJson(
+        _asMap(response.data),
+      );
+      await _writeCachedData(
+        _searchConsoleStatusKey(resolvedProjectId),
+        response.data,
+      );
+      return status;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<SearchConsoleConnectionStatus> disconnectSearchConsole({
+    required String projectId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.delete(
+        '/api/search-console/connection',
+        queryParameters: {'projectId': resolvedProjectId},
+      );
+      final status = SearchConsoleConnectionStatus.fromJson(
+        _asMap(response.data),
+      );
+      await _writeCachedData(
+        _searchConsoleStatusKey(resolvedProjectId),
+        response.data,
+      );
+      return status;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<SearchConsoleSummary> fetchSearchConsoleSummary({
+    required String projectId,
+    String period = '30d',
+  }) async {
+    if (allowDemoData) {
+      return SearchConsoleSummary(
+        projectId: projectId,
+        period: period,
+        periodName: period,
+        overview:
+            'Google Search Console is not connected in the demo workspace.',
+        googleSearch: SearchConsoleSourceSection(
+          source: 'search_console',
+          sourceLabel: 'Google Search',
+          period: period,
+          stale: true,
+          summary: 'Connect Google Search Console to populate this section.',
+        ),
+        siteTraffic: SearchConsoleSiteTrafficSection(
+          source: 'private_analytics',
+          sourceLabel: 'Site traffic (private tracker)',
+          period: period,
+          stale: true,
+          message: 'No private analytics data available in demo mode.',
+        ),
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final query = {'projectId': resolvedProjectId, 'period': period};
+    final data = await _getCachedData(
+      '/api/search-console/summary',
+      queryParameters: query,
+      cacheKey: _searchConsoleSummaryKey(resolvedProjectId, period),
+    );
+    return SearchConsoleSummary.fromJson(_asMap(data));
+  }
+
+  Future<SearchConsoleSummary> syncSearchConsole({
+    required String projectId,
+    String period = '30d',
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Search Console sync is unavailable in demo mode.',
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/search-console/sync',
+        queryParameters: {'projectId': resolvedProjectId, 'period': period},
+      );
+      final summary = SearchConsoleSummary.fromJson(_asMap(response.data));
+      await _writeCachedData(
+        _searchConsoleSummaryKey(resolvedProjectId, period),
+        response.data,
+      );
+      return summary;
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<SearchConsoleOpportunity>> fetchSearchConsoleOpportunities({
+    required String projectId,
+    String period = '30d',
+  }) async {
+    if (allowDemoData) {
+      return const <SearchConsoleOpportunity>[];
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final query = {'projectId': resolvedProjectId, 'period': period};
+    final data = _asMap(
+      await _getCachedData(
+        '/api/search-console/opportunities',
+        queryParameters: query,
+        cacheKey: _cacheKeyFor('search_console.opportunities', query),
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <SearchConsoleOpportunity>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) => SearchConsoleOpportunity.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        )
+        .toList();
+  }
+
+  Future<SearchConsoleIngestResponse> ingestSearchConsoleOpportunities({
+    required String projectId,
+    required List<SearchConsoleOpportunity> opportunities,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Adding Search Console opportunities is unavailable in demo mode.',
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/search-console/opportunities/ingest',
+        data: {
+          'projectId': resolvedProjectId,
+          'opportunities': opportunities
+              .map((entry) => entry.toIngestJson())
+              .toList(growable: false),
+        },
+      );
+      return SearchConsoleIngestResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
     }
   }
 

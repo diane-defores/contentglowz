@@ -28,6 +28,7 @@ import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/project_asset.dart';
 import '../data/models/ritual.dart';
+import '../data/models/search_console.dart';
 import '../data/services/api_service.dart';
 import '../data/services/clerk_auth_service.dart';
 import '../data/services/feedback_local_store.dart';
@@ -1871,6 +1872,81 @@ final githubIntegrationStatusProvider = FutureProvider<GithubIntegrationState>((
     return GithubIntegrationState(message: error.message.trim());
   }
 });
+
+final searchConsolePeriodProvider = StateProvider<String>((ref) => '30d');
+
+final searchConsoleConnectionStatusProvider =
+    FutureProvider<SearchConsoleConnectionStatus>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null) {
+        return SearchConsoleConnectionStatus.missing();
+      }
+      if (accessState?.canUseWorkspaceData != true) {
+        return SearchConsoleConnectionStatus.missing(activeProjectId);
+      }
+
+      try {
+        return await ref
+            .watch(apiServiceProvider)
+            .fetchSearchConsoleStatus(projectId: activeProjectId);
+      } on ApiException catch (error) {
+        return SearchConsoleConnectionStatus(
+          projectId: activeProjectId,
+          connected: false,
+          status: 'degraded',
+          validationStatus: 'error',
+          lastSyncMessage: error.message.trim(),
+        );
+      }
+    });
+
+final searchConsolePropertiesProvider =
+    FutureProvider<List<SearchConsoleProperty>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      final status = await ref.watch(
+        searchConsoleConnectionStatusProvider.future,
+      );
+      if (activeProjectId == null ||
+          accessState?.canUseWorkspaceData != true ||
+          !status.connected) {
+        return const <SearchConsoleProperty>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchSearchConsoleProperties(projectId: activeProjectId);
+    });
+
+final searchConsoleSummaryProvider = FutureProvider<SearchConsoleSummary?>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).value;
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  final period = ref.watch(searchConsolePeriodProvider);
+  if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+    return null;
+  }
+  return ref
+      .watch(apiServiceProvider)
+      .fetchSearchConsoleSummary(projectId: activeProjectId, period: period);
+});
+
+final searchConsoleOpportunitiesProvider =
+    FutureProvider<List<SearchConsoleOpportunity>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      final period = ref.watch(searchConsolePeriodProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <SearchConsoleOpportunity>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchSearchConsoleOpportunities(
+            projectId: activeProjectId,
+            period: period,
+          );
+    });
 
 final openRouterCredentialStatusProvider =
     FutureProvider<OpenRouterCredentialStatus>((ref) async {

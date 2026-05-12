@@ -110,6 +110,7 @@ class Idea {
   String get sourceLabel => switch (source) {
     'newsletter_inbox' => 'Newsletter',
     'seo_keywords' => 'SEO',
+    'search_console_feedback' => 'Search Console',
     'competitor_watch' => 'Competitor',
     'social_listening' => 'Social',
     'weekly_ritual' => 'Ritual',

@@ -613,6 +613,11 @@ async def dispatch_pipeline(
     try:
         from status import get_status_service
         svc = get_status_service()
+        search_console_evidence = (
+            request.angle_data.get("search_console_evidence")
+            or request.angle_data.get("gsc_evidence")
+            or request.angle_data.get("evidence")
+        )
         record = svc.create_content(
             title=title,
             content_type=content_type,
@@ -626,6 +631,9 @@ async def dispatch_pipeline(
                 "pipeline_task_id": task_id,
                 "seo_keyword": request.seo_keyword,
                 "seo_signals": request.angle_data.get("seo_signals"),
+                "search_console_evidence": search_console_evidence,
+                "target_url": request.angle_data.get("target_url"),
+                "target_query": request.angle_data.get("target_query"),
                 "source_idea_ids": request.angle_data.get("source_idea_ids", []),
                 "source_idea_source": request.angle_data.get("source"),
             },

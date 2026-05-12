@@ -24,6 +24,7 @@ from .auth_web import router as auth_web_router, webhook_router as webhook_route
 from .feedback import router as feedback_router
 from .integrations import router as integrations_router
 from .settings_integrations import router as settings_integrations_router
+from .search_console import router as search_console_router
 from .assets import router as assets_router
 
 __all__ = [
@@ -53,5 +54,6 @@ __all__ = [
     "feedback_router",
     "integrations_router",
     "settings_integrations_router",
+    "search_console_router",
     "assets_router",
 ]

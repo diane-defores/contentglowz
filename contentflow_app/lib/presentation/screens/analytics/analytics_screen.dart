@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/project_picker_action.dart';
+import 'search_console_panel.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -23,64 +24,94 @@ class AnalyticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('Analytics')),
+        title: Text(context.tr('SEO Stats')),
         actions: [
           const ProjectPickerAction(),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
+              ref.invalidate(searchConsoleConnectionStatusProvider);
+              ref.invalidate(searchConsoleSummaryProvider);
+              ref.invalidate(searchConsoleOpportunitiesProvider);
               ref.invalidate(pendingContentProvider);
               ref.invalidate(contentHistoryProvider);
             },
           ),
         ],
       ),
-      body: allContent.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.insights_outlined,
-                    size: 64,
-                    color: theme.colorScheme.outlineVariant,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    context.tr('No data yet'),
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.tr(
-                      'Analytics will appear as content flows through the pipeline',
-                    ),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(pendingContentProvider);
-                ref.invalidate(contentHistoryProvider);
-              },
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _PipelineFunnel(content: allContent, theme: theme),
-                  const SizedBox(height: 20),
-                  _ContentByType(content: allContent, theme: theme),
-                  const SizedBox(height: 20),
-                  _ChannelDistribution(content: allContent, theme: theme),
-                  const SizedBox(height: 20),
-                  _PublishingTimeline(content: allContent, theme: theme),
-                ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(searchConsoleConnectionStatusProvider);
+          ref.invalidate(searchConsoleSummaryProvider);
+          ref.invalidate(searchConsoleOpportunitiesProvider);
+          ref.invalidate(pendingContentProvider);
+          ref.invalidate(contentHistoryProvider);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SearchConsolePanel(),
+            const SizedBox(height: 24),
+            Text(
+              context.tr('Content pipeline'),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 12),
+            if (allContent.isEmpty)
+              _PipelineEmpty(theme: theme)
+            else ...[
+              _PipelineFunnel(content: allContent, theme: theme),
+              const SizedBox(height: 20),
+              _ContentByType(content: allContent, theme: theme),
+              const SizedBox(height: 20),
+              _ChannelDistribution(content: allContent, theme: theme),
+              const SizedBox(height: 20),
+              _PublishingTimeline(content: allContent, theme: theme),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PipelineEmpty extends StatelessWidget {
+  const _PipelineEmpty({required this.theme});
+
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.paletteOf(context).surface,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: Border.all(color: AppTheme.paletteOf(context).borderSubtle),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.insights_outlined,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              context.tr(
+                'Pipeline analytics will appear as content flows through review and publishing.',
+              ),
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

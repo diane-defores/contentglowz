@@ -64,6 +64,7 @@ from api.routers import (
     feedback_router,
     integrations_router,
     settings_integrations_router,
+    search_console_router,
     assets_router,
 )
 from api.routers.scheduler import router as scheduler_router
@@ -192,6 +193,14 @@ async def lifespan(app: FastAPI):
             print("✅ Project table ensured")
     except Exception as e:
         print(f"⚠ Project table migration failed (non-critical): {e}")
+
+    try:
+        from api.services.search_console_store import search_console_store
+        if search_console_store.db_client:
+            await search_console_store.ensure_tables()
+            print("✅ SearchConsole tables ensured")
+    except Exception as e:
+        print(f"⚠ SearchConsole tables migration failed (non-critical): {e}")
 
     try:
         from status.service import get_status_service
@@ -441,6 +450,7 @@ app.include_router(drip_router)
 app.include_router(feedback_router)
 app.include_router(integrations_router)
 app.include_router(settings_integrations_router)
+app.include_router(search_console_router)
 app.include_router(assets_router)
 
 

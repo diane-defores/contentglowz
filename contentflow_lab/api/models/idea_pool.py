@@ -9,6 +9,7 @@ from enum import Enum
 class IdeaSource(str, Enum):
     NEWSLETTER_INBOX = "newsletter_inbox"
     SEO_KEYWORDS = "seo_keywords"
+    SEARCH_CONSOLE_FEEDBACK = "search_console_feedback"
     WEEKLY_RITUAL = "weekly_ritual"
     COMPETITOR_WATCH = "competitor_watch"
     SOCIAL_LISTENING = "social_listening"
@@ -39,7 +40,7 @@ class IdeaRecord(BaseModel):
 
 
 class CreateIdeaRequest(BaseModel):
-    source: str = Field(..., description="Source: newsletter_inbox, seo_keywords, weekly_ritual, competitor_watch, manual")
+    source: str = Field(..., description="Source: newsletter_inbox, seo_keywords, search_console_feedback, weekly_ritual, competitor_watch, manual")
     title: str = Field(..., description="Idea title or topic")
     raw_data: dict[str, Any] = Field(default_factory=dict, description="Source-specific payload")
     seo_signals: Optional[dict[str, Any]] = Field(None, description="SEO keyword data")

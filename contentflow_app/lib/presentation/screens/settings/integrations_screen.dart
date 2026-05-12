@@ -8,6 +8,7 @@ import '../../../data/models/auth_session.dart';
 import '../../../data/models/content_item.dart';
 import '../../../data/models/email_source.dart';
 import '../../../data/models/openrouter_credential.dart';
+import '../../../data/models/search_console.dart';
 import '../../../data/services/api_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
@@ -44,6 +45,10 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   bool _isSavingEmailSource = false;
   bool _isValidatingEmailSource = false;
   bool _isDeletingEmailSource = false;
+  bool _isConnectingSearchConsole = false;
+  bool _isSavingSearchConsoleProperty = false;
+  bool _isValidatingSearchConsole = false;
+  bool _isDisconnectingSearchConsole = false;
 
   @override
   void initState() {
@@ -78,6 +83,10 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     final authSession = ref.watch(authSessionProvider);
     final backendStatus = ref.watch(backendStatusProvider);
     final githubIntegration = ref.watch(githubIntegrationStatusProvider);
+    final searchConsoleStatus = ref.watch(
+      searchConsoleConnectionStatusProvider,
+    );
+    final searchConsoleProperties = ref.watch(searchConsolePropertiesProvider);
     final emailSourceStatus = ref.watch(emailSourceStatusProvider);
     final aiRuntimeSettings = ref.watch(aiRuntimeSettingsProvider);
     final openRouterCredential = ref.watch(openRouterCredentialStatusProvider);
@@ -145,6 +154,24 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               gap: 0,
               children: [
                 SettingsBlock(child: _buildGithubBody(githubIntegration)),
+              ],
+            ),
+            SizedBox(height: groupGap),
+
+            SettingsGroup(
+              title: 'Google Search Console',
+              caption:
+                  'Connect a project property with Google OAuth. Search data is shown separately from private site traffic.',
+              gap: 0,
+              children: [
+                SettingsBlock(
+                  child: _buildSearchConsoleBody(
+                    searchConsoleStatus,
+                    propertiesState: searchConsoleProperties,
+                    authSession: authSession,
+                    activeProjectId: activeProjectId,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: groupGap),
@@ -1572,6 +1599,529 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     }
   }
 
+  // ----- Google Search Console ------------------------------------------
+
+  Widget _buildSearchConsoleBody(
+    AsyncValue<SearchConsoleConnectionStatus> state, {
+    required AsyncValue<List<SearchConsoleProperty>> propertiesState,
+    required AuthSession authSession,
+    required String? activeProjectId,
+  }) {
+    final theme = Theme.of(context);
+    final canManage =
+        authSession.isAuthenticated &&
+        !authSession.isDemo &&
+        activeProjectId != null;
+    final busy =
+        _isConnectingSearchConsole ||
+        _isSavingSearchConsoleProperty ||
+        _isValidatingSearchConsole ||
+        _isDisconnectingSearchConsole;
+
+    return state.when(
+      data: (status) {
+        final needsPropertyFallback =
+            status.connected &&
+            ((status.propertyUrl == null || status.propertyUrl!.isEmpty) ||
+                status.isDegraded ||
+                status.isInvalid);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SettingsStatusPill(
+              label: _searchConsoleStatusLabel(status),
+              color: _searchConsoleStatusColor(status, theme.colorScheme),
+              icon: _searchConsoleStatusIcon(status),
+            ),
+            if (status.accountEmail != null ||
+                status.propertyLabel != null ||
+                status.lastSyncMessage != null) ...[
+              const SizedBox(height: 10),
+              _SearchConsoleMetaLine(
+                icon: Icons.account_circle_outlined,
+                text:
+                    status.accountEmail ?? context.tr('No Google account yet'),
+              ),
+              const SizedBox(height: 6),
+              _SearchConsoleMetaLine(
+                icon: Icons.travel_explore_outlined,
+                text:
+                    status.propertyLabel ??
+                    context.tr(
+                      'Property is matched automatically from the selected project domain',
+                    ),
+              ),
+              if (status.lastSyncMessage != null &&
+                  status.lastSyncMessage!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                _SearchConsoleMetaLine(
+                  icon: Icons.info_outline,
+                  text: status.lastSyncMessage!,
+                ),
+              ],
+            ],
+            if (needsPropertyFallback && activeProjectId != null) ...[
+              const SizedBox(height: 12),
+              _buildSearchConsolePropertySuggestions(
+                propertiesState,
+                projectId: activeProjectId,
+                selectedPropertyUrl: status.propertyUrl,
+                canManage: canManage && !busy,
+              ),
+            ],
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.icon(
+                  onPressed: canManage && !busy
+                      ? () => _connectSearchConsole(activeProjectId)
+                      : null,
+                  icon: _isConnectingSearchConsole
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.open_in_browser_rounded, size: 18),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.infoColor,
+                    minimumSize: const Size(0, 44),
+                  ),
+                  label: Text(context.tr('Connect Google')),
+                ),
+                OutlinedButton.icon(
+                  onPressed: canManage && status.connected && !busy
+                      ? () => _validateSearchConsole(activeProjectId)
+                      : null,
+                  icon: _isValidatingSearchConsole
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.verified_outlined, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 44),
+                  ),
+                  label: Text(context.tr('Validate')),
+                ),
+                if (status.connected)
+                  OutlinedButton.icon(
+                    onPressed: canManage && !busy
+                        ? () => _disconnectSearchConsole(activeProjectId)
+                        : null,
+                    icon: _isDisconnectingSearchConsole
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.link_off_rounded, size: 18),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.rejectColor,
+                      minimumSize: const Size(0, 44),
+                    ),
+                    label: Text(context.tr('Disconnect')),
+                  ),
+              ],
+            ),
+            if (!canManage) ...[
+              const SizedBox(height: 10),
+              Text(
+                activeProjectId == null
+                    ? context.tr(
+                        'Select a project before connecting Search Console.',
+                      )
+                    : context.tr('Sign in to manage Search Console.'),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+      loading: () => Row(
+        children: [
+          const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            context.tr('Checking Search Console integration...'),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+      error: (error, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.tr('Unable to load Search Console integration state.'),
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          SettingsErrorDiagnostic(
+            details: 'Search Console error: ${(error.toString()).trim()}',
+            linkUrl:
+                '${ref.read(apiBaseUrlProvider)}/api/search-console/status',
+            linkLabel: context.tr('Open Search Console status endpoint'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _searchConsoleStatusLabel(SearchConsoleConnectionStatus status) {
+    if (status.isValid) {
+      return context.tr('Connected and valid');
+    }
+    if (status.isDegraded) {
+      return context.tr('Connected, degraded');
+    }
+    if (status.isInvalid) {
+      return context.tr('Reconnect required');
+    }
+    if (status.connected) {
+      return context.tr('Connected, validation pending');
+    }
+    return context.tr('Not connected');
+  }
+
+  Widget _buildSearchConsolePropertySuggestions(
+    AsyncValue<List<SearchConsoleProperty>> state, {
+    required String projectId,
+    required String? selectedPropertyUrl,
+    required bool canManage,
+  }) {
+    final theme = Theme.of(context);
+    return state.when(
+      data: (properties) {
+        final compatible = properties
+            .where((property) => property.matchesProjectDomain)
+            .toList(growable: false);
+        if (compatible.isEmpty) {
+          return Text(
+            context.tr(
+              'No compatible Search Console property found for this project domain.',
+            ),
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.tr('Compatible properties'),
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: canManage
+                      ? () => ref.invalidate(searchConsolePropertiesProvider)
+                      : null,
+                  tooltip: context.tr('Refresh properties'),
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: compatible.take(8).map((property) {
+                final selected = selectedPropertyUrl == property.siteUrl;
+                return ChoiceChip(
+                  label: Text(property.siteUrl),
+                  selected: selected,
+                  avatar: property.matchesProjectDomain
+                      ? Icon(
+                          Icons.check_circle_outline,
+                          size: 16,
+                          color: AppTheme.approveColor,
+                        )
+                      : null,
+                  onSelected: canManage && !selected
+                      ? (_) => _saveSearchConsoleProperty(
+                          projectId,
+                          property.siteUrl,
+                        )
+                      : null,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+      loading: () => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            context.tr('Loading accessible properties...'),
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+      error: (error, _) => Text(
+        context.tr('Unable to load accessible properties: {error}', {
+          'error': error.toString(),
+        }),
+        style: TextStyle(
+          color: AppTheme.warningColor,
+          fontSize: 12,
+          height: 1.35,
+        ),
+      ),
+    );
+  }
+
+  Color _searchConsoleStatusColor(
+    SearchConsoleConnectionStatus status,
+    ColorScheme colorScheme,
+  ) {
+    if (status.isValid) return AppTheme.approveColor;
+    if (status.isDegraded) return AppTheme.warningColor;
+    if (status.isInvalid) return AppTheme.rejectColor;
+    if (status.connected) return AppTheme.infoColor;
+    return colorScheme.onSurfaceVariant;
+  }
+
+  IconData _searchConsoleStatusIcon(SearchConsoleConnectionStatus status) {
+    if (status.isValid) return Icons.check_circle_outline;
+    if (status.isDegraded) return Icons.warning_amber_rounded;
+    if (status.isInvalid) return Icons.error_outline;
+    if (status.connected) return Icons.link_rounded;
+    return Icons.link_off_rounded;
+  }
+
+  Future<void> _connectSearchConsole(String projectId) async {
+    if (_isConnectingSearchConsole) return;
+    setState(() => _isConnectingSearchConsole = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      final start = await api.startSearchConsoleOAuth(projectId: projectId);
+      final uri = Uri.tryParse(start.authorizeUrl);
+      if (uri == null) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'Invalid Google OAuth URL returned by FastAPI.',
+        );
+      }
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(context.tr('Google Search Console')),
+            content: Text(
+              context.tr(
+                'A browser opened for authorization. Once Google returns, come back here and refresh the status.',
+              ),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.tr('Close')),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ref.invalidate(searchConsoleConnectionStatusProvider);
+                  ref.invalidate(searchConsolePropertiesProvider);
+                },
+                child: Text(context.tr('Refresh')),
+              ),
+            ],
+          ),
+        );
+      } else if (mounted) {
+        showCopyableDiagnosticSnackBar(
+          context,
+          ref,
+          message: context.tr(
+            'Could not open browser for Google Search Console authorization',
+          ),
+          scope: 'settings.search_console.browser_unavailable',
+          contextData: {'authorizeUrl': start.authorizeUrl},
+          backgroundColor: AppTheme.rejectColor.withAlpha(200),
+        );
+      }
+    } on ApiException catch (error, stackTrace) {
+      if (!mounted) return;
+      showDiagnosticSnackBar(
+        context,
+        ref,
+        message: error.message.trim().isEmpty
+            ? context.tr('Google Search Console OAuth is unavailable.')
+            : error.message.trim(),
+        scope: 'settings.search_console.connect',
+        error: error,
+        stackTrace: stackTrace,
+        contextData: {'path': error.path, 'statusCode': error.statusCode},
+      );
+    } finally {
+      if (mounted) setState(() => _isConnectingSearchConsole = false);
+    }
+  }
+
+  Future<void> _saveSearchConsoleProperty(
+    String projectId,
+    String propertyUrl,
+  ) async {
+    if (_isSavingSearchConsoleProperty) return;
+    setState(() => _isSavingSearchConsoleProperty = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.setSearchConsoleProperty(
+        projectId: projectId,
+        propertyUrl: propertyUrl,
+      );
+      ref.invalidate(searchConsoleConnectionStatusProvider);
+      ref.invalidate(searchConsolePropertiesProvider);
+      ref.invalidate(searchConsoleSummaryProvider);
+      ref.invalidate(searchConsoleOpportunitiesProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('Search Console property matched.'))),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: error.message.trim().isEmpty
+            ? context.tr('Failed to save Search Console property.')
+            : error.message.trim(),
+        scope: 'settings.search_console.property',
+        error: error,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingSearchConsoleProperty = false);
+    }
+  }
+
+  Future<void> _validateSearchConsole(String projectId) async {
+    if (_isValidatingSearchConsole) return;
+    setState(() => _isValidatingSearchConsole = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.validateSearchConsole(projectId: projectId);
+      ref.invalidate(searchConsoleConnectionStatusProvider);
+      ref.invalidate(searchConsolePropertiesProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('Search Console validated.'))),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ref.invalidate(searchConsoleConnectionStatusProvider);
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: error.message.trim().isEmpty
+            ? context.tr('Failed to validate Search Console.')
+            : error.message.trim(),
+        scope: 'settings.search_console.validate',
+        error: error,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isValidatingSearchConsole = false);
+    }
+  }
+
+  Future<void> _disconnectSearchConsole(String projectId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('Disconnect Search Console?')),
+        content: Text(
+          context.tr(
+            'This removes the project OAuth connection. Cached SEO snapshots can still be shown as stale until replaced.',
+          ),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.rejectColor,
+            ),
+            child: Text(context.tr('Disconnect')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDisconnectingSearchConsole = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.disconnectSearchConsole(projectId: projectId);
+      ref.invalidate(searchConsoleConnectionStatusProvider);
+      ref.invalidate(searchConsolePropertiesProvider);
+      ref.invalidate(searchConsoleSummaryProvider);
+      ref.invalidate(searchConsoleOpportunitiesProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('Search Console disconnected.'))),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      showCopyableDiagnosticSnackBar(
+        context,
+        ref,
+        message: error.message.trim().isEmpty
+            ? context.tr('Failed to disconnect Search Console.')
+            : error.message.trim(),
+        scope: 'settings.search_console.disconnect',
+        error: error,
+        backgroundColor: AppTheme.rejectColor.withAlpha(200),
+      );
+    } finally {
+      if (mounted) setState(() => _isDisconnectingSearchConsole = false);
+    }
+  }
+
   // ----- Publishing channels --------------------------------------------
 
   List<Widget> _buildChannelRows({
@@ -1974,6 +2524,35 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     if (defaults.length == 1) return defaults.single;
     if (active.length == 1) return active.single;
     return null;
+  }
+}
+
+class _SearchConsoleMetaLine extends StatelessWidget {
+  const _SearchConsoleMetaLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

@@ -45,6 +45,17 @@ This repository hosts the product API used by:
 - CORS and authentication middleware are configured for Flutter/site/dashboard clients.
 - `render.yaml` and `ecosystem.config.cjs` are used for hosted/manual runtime setups.
 
+## Google Search Console OAuth Setup
+
+- Required env vars:
+  - `GOOGLE_OAUTH_CLIENT_ID`
+  - `GOOGLE_OAUTH_CLIENT_SECRET`
+  - `GOOGLE_OAUTH_REDIRECT_URI` (optional override; fallback is router callback URL)
+- Enable Google Search Console API in your Google Cloud project.
+- Configure OAuth consent screen and add the callback:
+  - `/api/search-console/oauth/callback`
+- Search Console tokens are encrypted at rest and never returned by API responses.
+
 ## Recent API Direction
 
 Primary concern of this repo is service reliability:
