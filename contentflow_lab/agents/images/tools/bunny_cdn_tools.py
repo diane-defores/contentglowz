@@ -8,14 +8,33 @@ import time
 import requests
 import hashlib
 import logging
+import ipaddress
+import socket
 from typing import Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
-from crewai.tools import tool
+from urllib.parse import urlparse
+
+try:
+    from crewai.tools import tool
+except ModuleNotFoundError:
+    def tool(_name):
+        def decorator(fn):
+            return fn
+        return decorator
 
 from agents.images.config.image_config import BUNNY_CONFIG
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_REMOTE_IMAGE_TYPES = {
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/avif",
+    "image/gif",
+}
+DEFAULT_REMOTE_IMAGE_LIMIT_BYTES = 25 * 1024 * 1024
 
 
 def _get_storage_api_key() -> str:
@@ -68,6 +87,61 @@ def _get_cdn_url(storage_path: str) -> str:
     return f"{hostname}{storage_path}"
 
 
+def _get_remote_image_limit_bytes() -> int:
+    try:
+        return int(os.getenv("BUNNY_IMAGE_MAX_DOWNLOAD_BYTES", str(DEFAULT_REMOTE_IMAGE_LIMIT_BYTES)))
+    except ValueError:
+        return DEFAULT_REMOTE_IMAGE_LIMIT_BYTES
+
+
+def _validate_public_remote_url(source: str):
+    parsed = urlparse(source)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError("Source URL must be an absolute http(s) URL")
+    try:
+        infos = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror as exc:
+        raise ValueError("Source URL host could not be resolved") from exc
+    for info in infos:
+        address = info[4][0]
+        ip = ipaddress.ip_address(address)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_reserved:
+            raise ValueError("Source URL resolved to a non-public address")
+    return parsed
+
+
+def _download_remote_image(source: str) -> tuple[bytes, str]:
+    parsed = _validate_public_remote_url(source)
+    max_bytes = _get_remote_image_limit_bytes()
+    logger.info(f"Downloading image from {parsed.scheme}://{parsed.netloc}{parsed.path}")
+    response = requests.get(source, timeout=(10, 45), stream=True)
+    response.raise_for_status()
+
+    content_type = response.headers.get("Content-Type", "image/jpeg").split(";")[0].strip().lower()
+    if content_type not in ALLOWED_REMOTE_IMAGE_TYPES:
+        raise ValueError(f"Unsupported remote image content type: {content_type or 'unknown'}")
+
+    content_length = response.headers.get("Content-Length")
+    if content_length:
+        try:
+            if int(content_length) > max_bytes:
+                raise ValueError("Remote image exceeds configured size limit")
+        except ValueError as exc:
+            if "exceeds" in str(exc):
+                raise
+
+    chunks = []
+    total = 0
+    for chunk in response.iter_content(chunk_size=1024 * 64):
+        if not chunk:
+            continue
+        total += len(chunk)
+        if total > max_bytes:
+            raise ValueError("Remote image exceeds configured size limit")
+        chunks.append(chunk)
+    return b"".join(chunks), content_type
+
+
 @tool("upload_to_bunny_storage")
 def upload_to_bunny_storage(
     source: str,
@@ -98,12 +172,7 @@ def upload_to_bunny_storage(
 
         # Get image data
         if source.startswith(("http://", "https://")):
-            # Download from URL
-            logger.info(f"Downloading image from {source}")
-            response = requests.get(source, timeout=30)
-            response.raise_for_status()
-            image_data = response.content
-            content_type = response.headers.get("Content-Type", "image/jpeg")
+            image_data, content_type = _download_remote_image(source)
         else:
             # Read local file
             if not os.path.exists(source):

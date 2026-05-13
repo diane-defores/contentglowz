@@ -8,6 +8,7 @@ import '../../core/app_diagnostics.dart';
 import '../../core/project_onboarding_validation.dart';
 import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
+import '../models/ai_image_generation.dart';
 import '../models/ai_runtime.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
@@ -2038,6 +2039,189 @@ class ApiService {
         '/api/projects/$resolvedProjectId/assets/cleanup-report',
       );
       return ProjectAssetCleanupReport.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageProfileListResponse> listImageProfiles({
+    required String projectId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/images/profiles',
+        queryParameters: {'project_id': resolvedProjectId},
+      );
+      return ImageProfileListResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<GenerateImageFromProfileResult> queueImageGenerationFromProfile({
+    required String projectId,
+    required String profileId,
+    required String titleText,
+    String? subtitleText,
+    String? fileName,
+    String? altText,
+    String? customPrompt,
+    String? styleGuideOverride,
+    String? pathTypeOverride,
+    String? templateIdOverride,
+    List<String> referenceIds = const <String>[],
+    bool useVisualMemory = true,
+    int? seed,
+    String outputFormat = 'jpeg',
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({
+      'project_id': resolvedProjectId,
+      'profile_id': profileId.trim(),
+      'title_text': titleText.trim(),
+      'subtitle_text': normalizeOptionalText(subtitleText),
+      'file_name': normalizeOptionalText(fileName),
+      'alt_text': normalizeOptionalText(altText),
+      'custom_prompt': normalizeOptionalText(customPrompt),
+      'style_guide_override': normalizeOptionalText(styleGuideOverride),
+      'path_type_override': normalizeOptionalText(pathTypeOverride),
+      'template_id_override': normalizeOptionalText(templateIdOverride),
+      'reference_ids': referenceIds,
+      'use_visual_memory': useVisualMemory,
+      'seed': seed,
+      'output_format': outputFormat,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/images/generate-from-profile',
+        data: payload,
+      );
+      return GenerateImageFromProfileResult.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageGenerationListResponse> listImageGenerations({
+    required String projectId,
+    int limit = 30,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/images/generations',
+        queryParameters: {'project_id': resolvedProjectId, 'limit': limit},
+      );
+      return ImageGenerationListResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageGenerationRecord> getImageGeneration({
+    required String generationId,
+  }) async {
+    try {
+      final response = await _dio.get('/api/images/generations/$generationId');
+      return ImageGenerationRecord.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageReferenceListResponse> listImageReferences({
+    required String projectId,
+    bool approvedOnly = false,
+    int limit = 50,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/images/references',
+        queryParameters: {
+          'project_id': resolvedProjectId,
+          'approved_only': approvedOnly,
+          'limit': limit,
+        },
+      );
+      return ImageReferenceListResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageReferenceRecord> createImageReference({
+    required String projectId,
+    required String cdnUrl,
+    String? primaryUrl,
+    String mimeType = 'image/jpeg',
+    int? width,
+    int? height,
+    String? label,
+    String referenceType = 'project_asset',
+    bool approved = true,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({
+      'project_id': resolvedProjectId,
+      'cdn_url': cdnUrl.trim(),
+      'primary_url': normalizeOptionalText(primaryUrl),
+      'mime_type': mimeType,
+      'width': width,
+      'height': height,
+      'label': normalizeOptionalText(label),
+      'reference_type': referenceType,
+      'approved': approved,
+    });
+    try {
+      final response = await _dio.post('/api/images/references', data: payload);
+      return ImageReferenceRecord.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ImageReferenceRecord> updateImageReference({
+    required String projectId,
+    required String referenceId,
+    bool? approved,
+    String? label,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({
+      'approved': approved,
+      'label': normalizeOptionalText(label),
+    });
+    try {
+      final response = await _dio.patch(
+        '/api/images/references/$referenceId',
+        queryParameters: {'project_id': resolvedProjectId},
+        data: payload,
+      );
+      return ImageReferenceRecord.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> deleteImageReference({
+    required String projectId,
+    required String referenceId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      await _dio.delete(
+        '/api/images/references/$referenceId',
+        queryParameters: {'project_id': resolvedProjectId},
+      );
     } on DioException catch (error) {
       throw _mapDioException(error);
     }

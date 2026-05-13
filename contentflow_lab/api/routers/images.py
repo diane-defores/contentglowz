@@ -9,14 +9,17 @@ Exposes the Image Robot Crew functionality via REST API for:
 IMPORTANT: Uses lazy imports for heavy dependencies.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from datetime import datetime
+import asyncio
 import time
 import json
 import re
 import logging
+import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from urllib.parse import urlsplit
 
 from api.models.images import (
     GenerateImagesRequest,
@@ -32,12 +35,26 @@ from api.models.images import (
     ListImageProfilesResponse,
     GenerateImageFromProfileRequest,
     GenerateImageFromProfileResponse,
+    ImageGenerationListResponse,
+    ImageGenerationRecord,
+    ImageReferenceCreateRequest,
+    ImageReferenceListResponse,
+    ImageReferenceRecord,
+    ImageReferenceUpdateRequest,
 )
-from api.dependencies.auth import require_current_user
+from api.dependencies.auth import CurrentUser, require_current_user
+from api.dependencies.ownership import require_owned_project_id
 from api.dependencies import get_image_pipeline
 from api.services.ai_image_generation import generate_openai_image_to_file
+from api.services.flux_image_generation import (
+    DEFAULT_FLUX_MODEL,
+    FluxImageGenerationError,
+    FluxImageGenerator,
+    image_type_dimensions,
+)
+from api.services.image_generation_store import image_generation_store
 from api.services.image_profiles import ImageProfileStore
-from agents.seo.config.project_store import project_store
+from api.services.job_store import job_store
 
 # Type hint only - not loaded at runtime
 if TYPE_CHECKING:
@@ -53,11 +70,6 @@ router = APIRouter(
 )
 
 
-def get_current_user_id() -> str:
-    """Get current user id (placeholder until auth integration)."""
-    return "default-user"
-
-
 def _sanitize_project_id(project_id: str) -> str:
     safe = re.sub(r"[^a-zA-Z0-9_-]+", "-", project_id).strip("-")
     return safe or "unknown-project"
@@ -66,25 +78,13 @@ def _sanitize_project_id(project_id: str) -> str:
 async def _get_project_scoped_data_dir(
     crew: "ImagePipeline",
     project_id: str,
+    current_user: CurrentUser,
 ) -> Path:
     """Resolve and ensure per-project image data directory."""
     if not project_id:
         raise HTTPException(status_code=400, detail="project_id is required")
 
-    # Validate project ownership when DB is configured.
-    try:
-        project = await project_store.get_by_id(project_id)
-    except RuntimeError:
-        project = None
-    except Exception as e:
-        logger.warning(f"Project validation skipped due to lookup error: {e}")
-        project = None
-
-    if project_store.db_client:
-        if not project:
-            raise HTTPException(status_code=404, detail="Project not found")
-        if project.user_id != get_current_user_id():
-            raise HTTPException(status_code=403, detail="Project access denied")
+    await require_owned_project_id(project_id, current_user)
 
     project_dir = Path(crew.data_dir) / "projects" / _sanitize_project_id(project_id)
     project_dir.mkdir(parents=True, exist_ok=True)
@@ -184,6 +184,278 @@ def _build_ai_prompt(
     return " ".join(parts)
 
 
+def _is_durable_bunny_url(value: str) -> bool:
+    parsed = urlsplit(value)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    host = (parsed.netloc or "").lower()
+    return (
+        host.endswith(".b-cdn.net")
+        or host.endswith(".bunnycdn.com")
+        or host == "storage.bunnycdn.com"
+    )
+
+
+def _configured_flux_model() -> str:
+    import os
+
+    return os.getenv("BFL_IMAGE_MODEL") or os.getenv("FLUX_IMAGE_MODEL") or DEFAULT_FLUX_MODEL
+
+
+def _configured_flux_safety_tolerance() -> int:
+    import os
+
+    raw_value = os.getenv("BFL_SAFETY_TOLERANCE") or os.getenv("FLUX_SAFETY_TOLERANCE") or "2"
+    try:
+        return max(0, min(5, int(raw_value)))
+    except ValueError:
+        return 2
+
+
+def _flux_api_key_configured() -> bool:
+    import os
+
+    return bool(os.getenv("BFL_API_KEY") or os.getenv("BLACK_FOREST_LABS_API_KEY"))
+
+
+async def _ensure_image_generation_store() -> None:
+    try:
+        await image_generation_store.ensure_tables()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+def _generation_record(data: Dict[str, Any]) -> ImageGenerationRecord:
+    return ImageGenerationRecord(**data)
+
+
+def _reference_record(data: Dict[str, Any]) -> ImageReferenceRecord:
+    return ImageReferenceRecord(**data)
+
+
+async def _resolve_flux_references(
+    *,
+    request: GenerateImageFromProfileRequest,
+    current_user: CurrentUser,
+) -> list[Dict[str, Any]]:
+    if request.reference_ids:
+        references: list[Dict[str, Any]] = []
+        for reference_id in request.reference_ids[:8]:
+            ref = await image_generation_store.get_reference(
+                reference_id,
+                project_id=request.project_id,
+                user_id=current_user.user_id,
+            )
+            if not ref:
+                raise HTTPException(status_code=404, detail=f"Visual reference not found: {reference_id}")
+            if not ref.get("approved"):
+                raise HTTPException(status_code=403, detail=f"Visual reference is not approved: {reference_id}")
+            references.append(ref)
+        return references
+
+    if not request.use_visual_memory:
+        return []
+
+    return await image_generation_store.list_references(
+        project_id=request.project_id,
+        user_id=current_user.user_id,
+        approved_only=True,
+        limit=8,
+    )
+
+
+async def _update_job_safely(job_id: str, **fields: Any) -> None:
+    try:
+        if job_store.db_client:
+            await job_store.update(job_id, **fields)
+    except Exception as exc:
+        logger.warning(f"Failed to update image generation job {job_id}: {exc}")
+
+
+def _record_generated_project_asset(
+    *,
+    project_id: str,
+    user_id: str,
+    generation_id: str,
+    profile_id: str,
+    image_type: str,
+    model: str,
+    file_name: str,
+    cdn_url: str,
+    primary_url: Optional[str],
+    responsive_urls: Dict[str, str],
+    output_format: str,
+) -> Optional[str]:
+    try:
+        from status.schemas import ProjectAssetMediaKind, ProjectAssetSource
+        from status.service import get_status_service
+
+        media_kind = (
+            ProjectAssetMediaKind.THUMBNAIL.value
+            if image_type == "thumbnail"
+            else ProjectAssetMediaKind.IMAGE.value
+        )
+        mime_format = "jpeg" if output_format == "jpg" else output_format
+        asset = get_status_service().create_project_asset(
+            project_id=project_id,
+            user_id=user_id,
+            media_kind=media_kind,
+            source=ProjectAssetSource.IMAGE_ROBOT.value,
+            mime_type=f"image/{mime_format}",
+            file_name=file_name,
+            storage_uri=cdn_url,
+            source_asset_id=generation_id,
+            metadata={
+                "provider": "flux",
+                "model": model,
+                "generation_id": generation_id,
+                "profile_id": profile_id,
+                "primary_url": primary_url,
+                "responsive_urls": responsive_urls,
+            },
+        )
+        return asset.id
+    except Exception as exc:
+        logger.warning(f"Failed to register generated image as project asset: {exc}")
+        return None
+
+
+async def _run_flux_generation_job(
+    *,
+    crew: "ImagePipeline",
+    generation_id: str,
+    job_id: str,
+    project_id: str,
+    user_id: str,
+    profile_id: str,
+    image_type: str,
+    prompt: str,
+    width: int,
+    height: int,
+    seed: Optional[int],
+    output_format: str,
+    safety_tolerance: int,
+    reference_urls: list[str],
+    file_name: str,
+    alt_text: str,
+    path_type: str,
+) -> None:
+    local_path: Optional[str] = None
+    try:
+        await image_generation_store.mark_running(generation_id, user_id=user_id)
+        await _update_job_safely(job_id, status="running", progress=10, message="Flux generation started")
+        generator = FluxImageGenerator()
+        result = await asyncio.to_thread(
+            generator.generate_to_file,
+            prompt=prompt,
+            width=width,
+            height=height,
+            seed=seed,
+            output_format=output_format,
+            reference_urls=reference_urls,
+            safety_tolerance=safety_tolerance,
+        )
+        local_path = result.local_path
+        await image_generation_store.mark_running(
+            generation_id,
+            user_id=user_id,
+            provider_request_id=result.provider_request_id,
+            provider_cost=result.provider_cost,
+            provider_metadata=result.provider_metadata,
+        )
+        await _update_job_safely(job_id, status="running", progress=70, message="Uploading generated image")
+        upload_result = await asyncio.to_thread(
+            crew.cdn_manager.upload_with_optimizer,
+            source=local_path,
+            file_name=file_name,
+            alt_text=alt_text,
+            path_type=path_type,
+            image_type=_map_optimizer_image_type(image_type),
+        )
+        if not upload_result.get("success"):
+            raise FluxImageGenerationError(
+                "cdn_upload_failed",
+                upload_result.get("error", "Bunny CDN upload failed."),
+                provider_request_id=result.provider_request_id,
+                provider_metadata=result.provider_metadata,
+            )
+
+        responsive_urls = {str(k): v for k, v in upload_result.get("responsive_urls", {}).items()}
+        asset_id = _record_generated_project_asset(
+            project_id=project_id,
+            user_id=user_id,
+            generation_id=generation_id,
+            profile_id=profile_id,
+            image_type=image_type,
+            model=result.model,
+            file_name=file_name,
+            cdn_url=upload_result.get("cdn_url"),
+            primary_url=upload_result.get("primary_url"),
+            responsive_urls=responsive_urls,
+            output_format=result.output_format,
+        )
+        await image_generation_store.mark_completed(
+            generation_id,
+            user_id=user_id,
+            cdn_url=upload_result.get("cdn_url"),
+            primary_url=upload_result.get("primary_url"),
+            responsive_urls=responsive_urls,
+            asset_id=asset_id,
+            provider_request_id=result.provider_request_id,
+            provider_cost=result.provider_cost,
+            provider_metadata=result.provider_metadata,
+        )
+        await _update_job_safely(
+            job_id,
+            status="completed",
+            progress=100,
+            message="Flux image generated",
+            generation_id=generation_id,
+            asset_id=asset_id,
+        )
+    except FluxImageGenerationError as exc:
+        await image_generation_store.mark_failed(
+            generation_id,
+            user_id=user_id,
+            error_code=exc.code,
+            error_message=exc.message,
+            provider_request_id=exc.provider_request_id,
+            provider_metadata=exc.provider_metadata,
+        )
+        await _update_job_safely(
+            job_id,
+            status="failed",
+            progress=100,
+            message=exc.message,
+            generation_id=generation_id,
+            error_code=exc.code,
+        )
+    except Exception as exc:
+        logger.exception("Unexpected Flux image generation job failure")
+        await image_generation_store.mark_failed(
+            generation_id,
+            user_id=user_id,
+            error_code="internal_error",
+            error_message=str(exc),
+        )
+        await _update_job_safely(
+            job_id,
+            status="failed",
+            progress=100,
+            message="Flux image generation failed",
+            generation_id=generation_id,
+            error_code="internal_error",
+        )
+    finally:
+        if local_path:
+            try:
+                path = Path(local_path)
+                if path.exists():
+                    path.unlink()
+            except Exception:
+                pass
+
+
 @router.post(
     "/generate",
     response_model=GenerateImagesResponse,
@@ -212,7 +484,8 @@ def _build_ai_prompt(
 )
 async def generate_images(
     request: GenerateImagesRequest,
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> GenerateImagesResponse:
     """Generate images for an article via Image Robot Crew"""
     start_time = time.time()
@@ -224,6 +497,7 @@ async def generate_images(
             scoped_data_dir = await _get_project_scoped_data_dir(
                 crew=crew,
                 project_id=request.project_id,
+                current_user=current_user,
             )
 
         # Call the Image Robot Crew
@@ -288,6 +562,8 @@ async def generate_images(
             strategy_used=result.strategy.strategy_type
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Image generation failed: {e}")
         raise HTTPException(
@@ -446,7 +722,8 @@ async def get_generation_history(
         default=None,
         description="Optional project id for project-scoped history",
     ),
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> ImageRobotHistoryResponse:
     """Get recent image generation history"""
     try:
@@ -454,6 +731,7 @@ async def get_generation_history(
             scoped_dir = await _get_project_scoped_data_dir(
                 crew=crew,
                 project_id=project_id,
+                current_user=current_user,
             )
             history_file = scoped_dir / "workflow_history.json"
         else:
@@ -477,9 +755,164 @@ async def get_generation_history(
             total_count=len(history)
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get history: {e}")
         return ImageRobotHistoryResponse(items=[], total_count=0)
+
+
+@router.get(
+    "/generations",
+    response_model=ImageGenerationListResponse,
+    summary="List AI image generation records",
+)
+async def list_ai_image_generations(
+    project_id: str = Query(..., description="Project id used to scope AI image history"),
+    limit: int = Query(30, ge=1, le=100),
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ImageGenerationListResponse:
+    await require_owned_project_id(project_id, current_user)
+    await _ensure_image_generation_store()
+    items = await image_generation_store.list_generations(
+        project_id=project_id,
+        user_id=current_user.user_id,
+        limit=limit,
+    )
+    records = [_generation_record(item) for item in items]
+    return ImageGenerationListResponse(items=records, total_count=len(records))
+
+
+@router.get(
+    "/generations/{generation_id}",
+    response_model=ImageGenerationRecord,
+    summary="Get an AI image generation record",
+)
+async def get_ai_image_generation(
+    generation_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ImageGenerationRecord:
+    await _ensure_image_generation_store()
+    generation = await image_generation_store.get_generation(
+        generation_id,
+        user_id=current_user.user_id,
+    )
+    if not generation:
+        raise HTTPException(status_code=404, detail="Image generation not found")
+    await require_owned_project_id(generation["project_id"], current_user)
+    return _generation_record(generation)
+
+
+@router.get(
+    "/references",
+    response_model=ImageReferenceListResponse,
+    summary="List project visual references",
+)
+async def list_visual_references(
+    project_id: str = Query(..., description="Project id used to scope visual references"),
+    approved_only: bool = Query(False),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ImageReferenceListResponse:
+    await require_owned_project_id(project_id, current_user)
+    await _ensure_image_generation_store()
+    items = await image_generation_store.list_references(
+        project_id=project_id,
+        user_id=current_user.user_id,
+        approved_only=approved_only,
+        limit=limit,
+    )
+    records = [_reference_record(item) for item in items]
+    return ImageReferenceListResponse(items=records, total_count=len(records))
+
+
+@router.post(
+    "/references",
+    response_model=ImageReferenceRecord,
+    status_code=201,
+    summary="Register a project visual reference",
+)
+async def create_visual_reference(
+    request: ImageReferenceCreateRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ImageReferenceRecord:
+    await require_owned_project_id(request.project_id, current_user)
+    if not _is_durable_bunny_url(str(request.cdn_url)):
+        raise HTTPException(status_code=400, detail="Visual reference must be a durable Bunny CDN URL")
+    if request.primary_url and not _is_durable_bunny_url(str(request.primary_url)):
+        raise HTTPException(status_code=400, detail="Visual reference preview must be a durable Bunny CDN URL")
+    await _ensure_image_generation_store()
+    reference = await image_generation_store.create_reference(
+        project_id=request.project_id,
+        user_id=current_user.user_id,
+        cdn_url=str(request.cdn_url),
+        primary_url=str(request.primary_url) if request.primary_url else None,
+        mime_type=request.mime_type,
+        width=request.width,
+        height=request.height,
+        label=request.label,
+        reference_type=request.reference_type,
+        approved=request.approved,
+    )
+    return _reference_record(reference)
+
+
+@router.patch(
+    "/references/{reference_id}",
+    response_model=ImageReferenceRecord,
+    summary="Update a project visual reference",
+)
+async def update_visual_reference(
+    reference_id: str,
+    request: ImageReferenceUpdateRequest,
+    project_id: str = Query(..., description="Project id used to scope visual references"),
+    current_user: CurrentUser = Depends(require_current_user),
+) -> ImageReferenceRecord:
+    await require_owned_project_id(project_id, current_user)
+    await _ensure_image_generation_store()
+    existing = await image_generation_store.get_reference(
+        reference_id,
+        project_id=project_id,
+        user_id=current_user.user_id,
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Visual reference not found")
+    updated = await image_generation_store.update_reference(
+        reference_id,
+        project_id=project_id,
+        user_id=current_user.user_id,
+        approved=request.approved,
+        label=request.label,
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Visual reference not found")
+    return _reference_record(updated)
+
+
+@router.delete(
+    "/references/{reference_id}",
+    summary="Delete a project visual reference",
+)
+async def delete_visual_reference(
+    reference_id: str,
+    project_id: str = Query(..., description="Project id used to scope visual references"),
+    current_user: CurrentUser = Depends(require_current_user),
+) -> Dict[str, Any]:
+    await require_owned_project_id(project_id, current_user)
+    await _ensure_image_generation_store()
+    existing = await image_generation_store.get_reference(
+        reference_id,
+        project_id=project_id,
+        user_id=current_user.user_id,
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Visual reference not found")
+    await image_generation_store.delete_reference(
+        reference_id,
+        project_id=project_id,
+        user_id=current_user.user_id,
+    )
+    return {"success": True, "reference_id": reference_id}
 
 
 @router.get(
@@ -501,17 +934,21 @@ async def list_image_profiles(
         ...,
         description="Project id used to scope image profiles",
     ),
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> ListImageProfilesResponse:
     """List available image profiles (system + custom)."""
     try:
         scoped_dir = await _get_project_scoped_data_dir(
             crew=crew,
             project_id=project_id,
+            current_user=current_user,
         )
         store = ImageProfileStore(scoped_dir)
         items = [ImageProfileData(**profile) for profile in store.list_profiles()]
         return ListImageProfilesResponse(items=items, total_count=len(items))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list image profiles: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to list profiles: {str(e)}")
@@ -535,17 +972,21 @@ async def upsert_image_profile(
         ...,
         description="Project id used to scope image profiles",
     ),
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> ImageProfileData:
     """Create or update a custom profile."""
     try:
         scoped_dir = await _get_project_scoped_data_dir(
             crew=crew,
             project_id=project_id,
+            current_user=current_user,
         )
         store = ImageProfileStore(scoped_dir)
         saved = store.save_custom_profile(request.dict())
         return ImageProfileData(**saved)
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -569,13 +1010,15 @@ async def delete_image_profile(
         ...,
         description="Project id used to scope image profiles",
     ),
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> Dict[str, Any]:
     """Delete a custom profile."""
     try:
         scoped_dir = await _get_project_scoped_data_dir(
             crew=crew,
             project_id=project_id,
+            current_user=current_user,
         )
         store = ImageProfileStore(scoped_dir)
         deleted = store.delete_custom_profile(profile_id)
@@ -602,13 +1045,16 @@ async def delete_image_profile(
 )
 async def generate_image_from_profile(
     request: GenerateImageFromProfileRequest,
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    background_tasks: BackgroundTasks,
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> GenerateImageFromProfileResponse:
     """Generate one image from a saved profile."""
     try:
         scoped_dir = await _get_project_scoped_data_dir(
             crew=crew,
             project_id=request.project_id,
+            current_user=current_user,
         )
         store = ImageProfileStore(scoped_dir)
         profile = store.get_profile(request.profile_id)
@@ -618,7 +1064,10 @@ async def generate_image_from_profile(
         resolved_style = request.style_guide_override or profile.get("style_guide", "brand_primary")
         resolved_path = request.path_type_override or profile.get("path_type", "articles")
         resolved_template = request.template_id_override or profile.get("template_id")
-        resolved_provider = request.provider_override or profile.get("image_provider", "robolly")
+        profile_provider = profile.get("image_provider", "robolly")
+        resolved_provider = request.provider_override or profile_provider
+        if resolved_provider == "flux" and profile_provider != "flux":
+            raise HTTPException(status_code=400, detail="Profile does not allow Flux generation")
         image_type = profile.get("image_type", "hero_image")
         prompt_used: Optional[str] = None
         temp_local_path: Optional[str] = None
@@ -692,6 +1141,128 @@ async def generate_image_from_profile(
                 "format": "png",
             }
             source_url = temp_local_path
+        elif resolved_provider == "flux":
+            await _ensure_image_generation_store()
+            prompt_used = _build_ai_prompt(
+                profile=profile,
+                title_text=request.title_text,
+                subtitle_text=request.subtitle_text,
+                custom_prompt=request.custom_prompt,
+            )
+            width, height = image_type_dimensions(image_type)
+            storage_format = "jpg" if request.output_format == "jpeg" else request.output_format
+            resolved_file_name = request.file_name or _build_profile_file_name(
+                profile_id=request.profile_id,
+                title_text=request.title_text,
+                image_format=storage_format,
+            )
+            resolved_file_name = _ensure_extension(resolved_file_name, image_format=storage_format)
+            resolved_alt_text = (
+                request.alt_text
+                or profile.get("default_alt_text")
+                or f"{profile.get('name', 'Image')} - {request.title_text}"
+            )
+            if not _flux_api_key_configured():
+                return GenerateImageFromProfileResponse(
+                    success=False,
+                    profile=ImageProfileData(**profile),
+                    image_type=image_type,
+                    file_name=resolved_file_name,
+                    alt_text=resolved_alt_text,
+                    provider_used=resolved_provider,
+                    prompt_used=prompt_used,
+                    style_guide_used=resolved_style,
+                    path_type_used=resolved_path,
+                    status="failed",
+                    model=_configured_flux_model(),
+                    width=width,
+                    height=height,
+                    seed=request.seed,
+                    error_code="provider_not_configured",
+                    error="BFL_API_KEY is not configured.",
+                )
+
+            references = await _resolve_flux_references(
+                request=request,
+                current_user=current_user,
+            )
+            reference_ids = [str(ref["id"]) for ref in references]
+            reference_urls = [str(ref["cdn_url"]) for ref in references]
+            visual_memory_applied = bool(reference_urls)
+            job_id = f"flux_image_{uuid.uuid4()}"
+            model = _configured_flux_model()
+            generation = await image_generation_store.create_generation(
+                project_id=request.project_id,
+                user_id=current_user.user_id,
+                profile_id=request.profile_id,
+                provider="flux",
+                model=model,
+                job_id=job_id,
+                prompt=prompt_used,
+                width=width,
+                height=height,
+                seed=request.seed,
+                output_format=request.output_format,
+                reference_ids=reference_ids,
+                visual_memory_applied=visual_memory_applied,
+            )
+            try:
+                if job_store.db_client:
+                    await job_store.upsert(
+                        job_id,
+                        "image_generation",
+                        status="queued",
+                        progress=0,
+                        message="Queued Flux image generation",
+                        generation_id=generation["id"],
+                        project_id=request.project_id,
+                        user_id=current_user.user_id,
+                    )
+            except Exception as exc:
+                logger.warning(f"Failed to persist Flux job row: {exc}")
+
+            background_tasks.add_task(
+                _run_flux_generation_job,
+                crew=crew,
+                generation_id=generation["id"],
+                job_id=job_id,
+                project_id=request.project_id,
+                user_id=current_user.user_id,
+                profile_id=request.profile_id,
+                image_type=image_type,
+                prompt=prompt_used,
+                width=width,
+                height=height,
+                seed=request.seed,
+                output_format=request.output_format,
+                safety_tolerance=_configured_flux_safety_tolerance(),
+                reference_urls=reference_urls,
+                file_name=resolved_file_name,
+                alt_text=resolved_alt_text,
+                path_type=resolved_path,
+            )
+            return GenerateImageFromProfileResponse(
+                success=True,
+                profile=ImageProfileData(**profile),
+                image_type=image_type,
+                file_name=resolved_file_name,
+                alt_text=resolved_alt_text,
+                provider_used=resolved_provider,
+                prompt_used=prompt_used,
+                style_guide_used=resolved_style,
+                path_type_used=resolved_path,
+                generation_id=generation["id"],
+                job_id=job_id,
+                status=generation["status"],
+                model=model,
+                width=width,
+                height=height,
+                seed=request.seed,
+                reference_ids=reference_ids,
+                visual_memory_applied=visual_memory_applied,
+                references_used=len(reference_urls),
+                history_persisted=True,
+            )
         else:
             return GenerateImageFromProfileResponse(
                 success=False,
@@ -795,7 +1366,8 @@ async def generate_image_from_profile(
 )
 async def quick_generate_images(
     request: GenerateImagesRequest,
-    crew: "ImagePipeline" = Depends(get_image_pipeline)
+    crew: "ImagePipeline" = Depends(get_image_pipeline),
+    current_user: CurrentUser = Depends(require_current_user),
 ) -> GenerateImagesResponse:
     """Quick image generation (hero only, no responsive)"""
     start_time = time.time()
@@ -807,6 +1379,7 @@ async def quick_generate_images(
             scoped_data_dir = await _get_project_scoped_data_dir(
                 crew=crew,
                 project_id=request.project_id,
+                current_user=current_user,
             )
 
         result = crew.quick_process(
@@ -864,6 +1437,8 @@ async def quick_generate_images(
             strategy_used="minimal"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Quick image generation failed: {e}")
         raise HTTPException(

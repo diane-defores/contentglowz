@@ -107,6 +107,35 @@ Security and retention rules:
 - Storage descriptors redact signed query tokens and provider URLs. Bunny
   upload/delete/signing remains owned by upload or media-generation features.
 
+## Image Robot AI Generation
+
+Image Robot supports guided AI image generation through Black Forest Labs FLUX
+without adding a free-form playground. The entrypoint remains the existing
+profile workflow:
+
+- `POST /api/images/generate-from-profile` accepts `image_provider=flux` via a
+  system or custom profile and queues an async generation.
+- Built-in Flux profiles cover blog hero, article section, social card, and
+  thumbnail placements.
+- `GET /api/images/generations?project_id=...` lists durable AI generation
+  history; `GET /api/images/generations/{id}` returns one record.
+- `GET/POST/PATCH/DELETE /api/images/references` manages approved project visual
+  references. Flux receives only same-project approved references, capped at 8.
+- Successful Flux outputs are downloaded from BFL's temporary signed result URL,
+  uploaded to Bunny CDN, persisted in `ImageGeneration`, and registered as
+  project assets with source `image_robot`.
+
+Required environment:
+
+- `BFL_API_KEY`
+- optional `BFL_IMAGE_MODEL` (default `flux-2-pro`)
+- optional `BFL_API_BASE_URL` (default `https://api.bfl.ai/v1`)
+- optional `BFL_SAFETY_TOLERANCE` (default `2`, server-side only)
+
+The startup lifecycle ensures `ImageGeneration` and `ImageReference` tables when
+Turso is configured. If FLUX or Turso is not configured, the API returns an
+explicit error instead of falling back to Robolly/OpenAI.
+
 ## Project Selection Contract
 
 - Active project selection for a signed-in user is persisted in:

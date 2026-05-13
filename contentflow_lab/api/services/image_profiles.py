@@ -84,6 +84,74 @@ BUILTIN_IMAGE_PROFILES: Dict[str, Dict[str, Any]] = {
         "tags": ["youtube", "social", "og"],
         "is_system": True,
     },
+    "ai-blog-hero": {
+        "profile_id": "ai-blog-hero",
+        "name": "AI Blog Hero",
+        "description": "Guided AI hero visual for article headers.",
+        "image_type": "hero_image",
+        "image_provider": "flux",
+        "style_guide": "brand_primary",
+        "path_type": "articles",
+        "template_id": None,
+        "default_alt_text": "AI-generated featured image",
+        "base_prompt": (
+            "Editorial hero image for a professional content platform. Keep the visual "
+            "brand-consistent, polished, non-generic, and usable above a blog article."
+        ),
+        "tags": ["ai", "blog", "hero", "brand-consistent"],
+        "is_system": True,
+    },
+    "ai-blog-section": {
+        "profile_id": "ai-blog-section",
+        "name": "AI Blog Section",
+        "description": "Guided AI visual for a section inside an article.",
+        "image_type": "section_image",
+        "image_provider": "flux",
+        "style_guide": "brand_primary",
+        "path_type": "articles",
+        "template_id": None,
+        "default_alt_text": "AI-generated section visual",
+        "base_prompt": (
+            "Supportive editorial image for an article section. Maintain the same "
+            "project visual language, characters, color cues, and composition rules."
+        ),
+        "tags": ["ai", "blog", "section", "visual-memory"],
+        "is_system": True,
+    },
+    "ai-social-card": {
+        "profile_id": "ai-social-card",
+        "name": "AI Social Card",
+        "description": "Guided AI visual for social sharing and post previews.",
+        "image_type": "og_card",
+        "image_provider": "flux",
+        "style_guide": "brand_primary",
+        "path_type": "social",
+        "template_id": None,
+        "default_alt_text": "AI-generated social card",
+        "base_prompt": (
+            "Social post visual with clear focal point and strong composition. Avoid "
+            "tiny text, preserve brand style, and leave safe negative space for captions."
+        ),
+        "tags": ["ai", "social", "og", "post"],
+        "is_system": True,
+    },
+    "ai-thumbnail": {
+        "profile_id": "ai-thumbnail",
+        "name": "AI Thumbnail",
+        "description": "Guided AI thumbnail visual for video or platform previews.",
+        "image_type": "thumbnail",
+        "image_provider": "flux",
+        "style_guide": "brand_primary",
+        "path_type": "thumbnails",
+        "template_id": None,
+        "default_alt_text": "AI-generated thumbnail",
+        "base_prompt": (
+            "High-clarity thumbnail visual with one dominant subject, strong contrast, "
+            "and visual continuity with the project brand and recurring characters."
+        ),
+        "tags": ["ai", "thumbnail", "video", "character-consistency"],
+        "is_system": True,
+    },
 }
 
 

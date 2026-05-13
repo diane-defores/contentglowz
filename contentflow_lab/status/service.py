@@ -820,6 +820,66 @@ class StatusService:
             raise ContentNotFoundError(f"Project asset {asset_id} not found")
         return self._row_to_project_asset(row)
 
+    def create_project_asset(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        media_kind: str,
+        source: str,
+        mime_type: Optional[str] = None,
+        file_name: Optional[str] = None,
+        storage_uri: Optional[str] = None,
+        source_asset_id: Optional[str] = None,
+        content_asset_id: Optional[str] = None,
+        status: str = ProjectAssetLifecycleStatus.ACTIVE.value,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> ProjectAssetRecord:
+        ProjectAssetMediaKind(media_kind)
+        ProjectAssetSource(source)
+        ProjectAssetLifecycleStatus(status)
+
+        now = datetime.utcnow().isoformat()
+        asset_id = str(uuid.uuid4())
+        self._conn.execute(
+            """
+            INSERT INTO project_assets (
+                id, project_id, user_id, source_asset_id, content_asset_id,
+                media_kind, source, mime_type, file_name, storage_uri, status,
+                metadata, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                asset_id,
+                project_id,
+                user_id,
+                source_asset_id,
+                content_asset_id,
+                media_kind,
+                source,
+                mime_type,
+                file_name,
+                storage_uri,
+                status,
+                json.dumps(metadata or {}),
+                now,
+                now,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="created",
+            metadata=metadata or {},
+        )
+        self._conn.commit()
+        return self.get_project_asset_detail(
+            project_id=project_id,
+            user_id=user_id,
+            asset_id=asset_id,
+        )
+
     def get_project_asset_usage(
         self,
         *,

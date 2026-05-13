@@ -163,6 +163,14 @@ async def lifespan(app: FastAPI):
         print(f"⚠ Jobs table migration failed (non-critical): {e}")
 
     try:
+        from api.services.image_generation_store import image_generation_store
+        if image_generation_store.db_client:
+            await image_generation_store.ensure_tables()
+            print("✅ ImageGeneration + ImageReference tables ensured")
+    except Exception as e:
+        print(f"⚠ ImageGeneration tables migration failed (non-critical): {e}")
+
+    try:
         from api.services.user_key_store import user_key_store
         if user_key_store.db_client:
             await user_key_store.ensure_table()

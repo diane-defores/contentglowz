@@ -1,7 +1,7 @@
 """Pydantic models for Image Robot API endpoints"""
 
 from pydantic import BaseModel, Field, HttpUrl
-from typing import Optional, List, Dict, Literal
+from typing import Any, Optional, List, Dict, Literal
 from datetime import datetime
 
 
@@ -97,7 +97,7 @@ class ImageProfileData(BaseModel):
         ...,
         description="Generated image type"
     )
-    image_provider: Literal["robolly", "openai"] = Field(
+    image_provider: Literal["robolly", "openai", "flux"] = Field(
         default="robolly",
         description="Image generation provider"
     )
@@ -143,7 +143,7 @@ class CreateImageProfileRequest(BaseModel):
         ...,
         description="Generated image type"
     )
-    image_provider: Literal["robolly", "openai"] = Field(
+    image_provider: Literal["robolly", "openai", "flux"] = Field(
         default="robolly",
         description="Image generation provider"
     )
@@ -238,6 +238,24 @@ class GenerateImageFromProfileRequest(BaseModel):
         max_length=120,
         description="Optional Robolly template ID override"
     )
+    reference_ids: List[str] = Field(
+        default_factory=list,
+        max_length=8,
+        description="Approved project visual reference IDs to guide Flux"
+    )
+    use_visual_memory: bool = Field(
+        default=True,
+        description="Whether Flux may use approved project visual references"
+    )
+    seed: Optional[int] = Field(
+        default=None,
+        ge=0,
+        description="Optional Flux seed for reproducibility"
+    )
+    output_format: Literal["jpeg", "png", "webp"] = Field(
+        default="jpeg",
+        description="Flux output format before Bunny upload"
+    )
 
 
 class GenerateImageFromProfileResponse(BaseModel):
@@ -262,7 +280,104 @@ class GenerateImageFromProfileResponse(BaseModel):
     storage_path: Optional[str] = Field(default=None, description="Path in storage zone")
     generation_time_ms: Optional[int] = Field(default=None, description="Image generation time")
     upload_time_ms: Optional[int] = Field(default=None, description="Upload + optimizer prep time")
+    generation_id: Optional[str] = Field(default=None, description="Durable image generation record ID")
+    job_id: Optional[str] = Field(default=None, description="Async image generation job ID")
+    status: Optional[str] = Field(default=None, description="Async generation status")
+    model: Optional[str] = Field(default=None, description="Provider model used")
+    width: Optional[int] = Field(default=None, description="Requested output width")
+    height: Optional[int] = Field(default=None, description="Requested output height")
+    seed: Optional[int] = Field(default=None, description="Seed used for generation")
+    reference_ids: List[str] = Field(default_factory=list, description="Visual reference IDs applied")
+    visual_memory_applied: bool = Field(default=False, description="Whether project visual memory was used")
+    references_used: int = Field(default=0, description="Number of Flux reference images used")
+    history_persisted: bool = Field(default=False, description="Whether durable generation history was persisted")
+    provider_request_id: Optional[str] = Field(default=None, description="Provider request/task ID")
+    provider_cost: Optional[float] = Field(default=None, description="Provider cost in provider credits if returned")
+    provider_metadata: Dict[str, Any] = Field(default_factory=dict, description="Redacted provider metadata")
+    asset_id: Optional[str] = Field(default=None, description="Project asset ID registered for the completed image")
+    error_code: Optional[str] = Field(default=None, description="Normalized error code if failed")
     error: Optional[str] = Field(default=None, description="Error message if failed")
+
+
+class ImageGenerationRecord(BaseModel):
+    """Durable async AI image generation record."""
+    id: str
+    project_id: str
+    user_id: str
+    profile_id: str
+    provider: str
+    model: str
+    status: str
+    job_id: Optional[str] = None
+    prompt: str
+    prompt_hash: str
+    width: int
+    height: int
+    seed: Optional[int] = None
+    output_format: str
+    cdn_url: Optional[str] = None
+    primary_url: Optional[str] = None
+    responsive_urls: Dict[str, str] = Field(default_factory=dict)
+    reference_ids: List[str] = Field(default_factory=list)
+    visual_memory_applied: bool = False
+    provider_cost: Optional[float] = None
+    provider_request_id: Optional[str] = None
+    error_code: Optional[str] = None
+    error_message: Optional[str] = None
+    asset_id: Optional[str] = None
+    provider_metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: str
+    updated_at: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+
+
+class ImageGenerationListResponse(BaseModel):
+    """Response containing durable AI image generation records."""
+    items: List[ImageGenerationRecord] = Field(default_factory=list)
+    total_count: int = 0
+
+
+class ImageReferenceCreateRequest(BaseModel):
+    """Register an approved Bunny-backed visual reference for a project."""
+    project_id: str = Field(..., min_length=2, max_length=120)
+    cdn_url: HttpUrl = Field(..., description="Durable Bunny/CDN URL for the reference")
+    primary_url: Optional[HttpUrl] = Field(default=None, description="Optional optimized preview URL")
+    mime_type: Literal["image/jpeg", "image/png", "image/webp", "image/avif"] = "image/jpeg"
+    width: Optional[int] = Field(default=None, ge=1)
+    height: Optional[int] = Field(default=None, ge=1)
+    label: Optional[str] = Field(default=None, max_length=160)
+    reference_type: Literal["project_asset", "character", "style", "composition"] = "project_asset"
+    approved: bool = True
+
+
+class ImageReferenceUpdateRequest(BaseModel):
+    """Update a visual reference approval state or label."""
+    approved: Optional[bool] = None
+    label: Optional[str] = Field(default=None, max_length=160)
+
+
+class ImageReferenceRecord(BaseModel):
+    """Durable project visual reference."""
+    id: str
+    project_id: str
+    user_id: str
+    cdn_url: str
+    primary_url: Optional[str] = None
+    mime_type: str
+    width: Optional[int] = None
+    height: Optional[int] = None
+    label: Optional[str] = None
+    reference_type: str
+    approved: bool
+    created_at: str
+    updated_at: str
+
+
+class ImageReferenceListResponse(BaseModel):
+    """Response containing project visual references."""
+    items: List[ImageReferenceRecord] = Field(default_factory=list)
+    total_count: int = 0
 
 
 class VerifyOptimizerRequest(BaseModel):

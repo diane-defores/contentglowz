@@ -2,6 +2,14 @@
 
 All notable changes to the ContentFlow monorepo are documented here.
 
+## [2026-05-13]
+
+### Added
+- Prepared the Flux AI Provider for Image Robot backend foundation with guided Flux profiles, project-scoped visual references, asynchronous generation history, Bunny CDN asset persistence, and Flutter API client models/methods.
+
+### Security
+- Hardened remote image ingestion and Flux output handling with authenticated project ownership, durable Bunny-only returned assets, private-network URL rejection, MIME checks, byte limits, and normalized provider errors.
+
 ## [2026-05-11]
 
 ### Added
