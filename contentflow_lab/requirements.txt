@@ -64,3 +64,4 @@ google-analytics-data>=0.18.0,<1.0
 # Google Indexing API + Search Console (publishing pipeline)
 google-api-python-client>=2.100.0,<3.0
 google-auth>=2.23.0,<3.0
+google-cloud-storage>=2.14.0,<3.0

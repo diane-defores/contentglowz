@@ -1,0 +1,52 @@
+{
+  "composition_id": "ContentFlowTimelineVideo",
+  "timeline_id": "timeline-smoke",
+  "version_id": "version-smoke",
+  "format": {
+    "preset": "vertical_9_16",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_in_frames": 30
+  },
+  "tracks": [
+    {
+      "id": "visual-main",
+      "type": "visual",
+      "order": 0,
+      "muted": false
+    },
+    {
+      "id": "overlay-main",
+      "type": "overlay",
+      "order": 1,
+      "muted": false
+    }
+  ],
+  "clips": [
+    {
+      "id": "background",
+      "track_id": "visual-main",
+      "type": "background",
+      "start_frame": 0,
+      "duration_in_frames": 30,
+      "style": {
+        "background_color": "#0b0e14"
+      }
+    },
+    {
+      "id": "title",
+      "track_id": "overlay-main",
+      "type": "text",
+      "start_frame": 0,
+      "duration_in_frames": 30,
+      "text": "ContentFlow timeline smoke",
+      "style": {
+        "font_size": 64,
+        "color": "#f8fafc",
+        "text_align": "center"
+      }
+    }
+  ],
+  "assets": {}
+}

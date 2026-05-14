@@ -2,6 +2,15 @@
 
 All notable changes to Content Flows are documented here.
 
+## [Unreleased]
+
+### Added
+- Added the canonical video timeline API with Turso/libSQL persistence, immutable versions, render job links, Remotion adapter props, signed artifact playback, and `video_version` project-asset usage auditing.
+- Added GCS-backed render artifact metadata, backend-signed playback URLs, and deterministic expected object keys for worker-restart reconciliation.
+
+### Security
+- Enforced render-safe asset resolution for timeline media clips before version creation, rejecting provider-temporary, local-only, tombstoned, degraded, foreign, missing, or incompatible assets before Remotion receives props.
+
 ## [2026-05-04]
 
 ### Added

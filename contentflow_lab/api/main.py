@@ -66,6 +66,8 @@ from api.routers import (
     settings_integrations_router,
     search_console_router,
     assets_router,
+    reel_renders_router,
+    video_timelines_router,
 )
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
@@ -209,6 +211,15 @@ async def lifespan(app: FastAPI):
             print("✅ SearchConsole tables ensured")
     except Exception as e:
         print(f"⚠ SearchConsole tables migration failed (non-critical): {e}")
+
+    try:
+        from api.services.video_timeline_store import video_timeline_store
+        if video_timeline_store.db_client:
+            await video_timeline_store.ensure_tables()
+            print("✅ Video timeline tables ensured")
+    except Exception as e:
+        print(f"❌ Video timeline tables migration failed: {e}")
+        raise
 
     try:
         from status.service import get_status_service
@@ -460,6 +471,8 @@ app.include_router(integrations_router)
 app.include_router(settings_integrations_router)
 app.include_router(search_console_router)
 app.include_router(assets_router)
+app.include_router(reel_renders_router)
+app.include_router(video_timelines_router)
 
 
 # ─────────────────────────────────────────────────

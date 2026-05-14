@@ -1,0 +1,34 @@
+{
+  "name": "contentflow-remotion-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal Remotion render worker for ContentFlow",
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "start": "tsx server/index.ts",
+    "lint": "eslint . && tsc --noEmit",
+    "test:storage": "tsx --test server/render-storage.test.ts",
+    "test:timeline": "tsx --test remotion/timeline-schema.test.ts",
+    "remotion:studio": "remotion studio"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "7.19.0",
+    "@remotion/bundler": "4.0.458",
+    "@remotion/cli": "4.0.458",
+    "@remotion/renderer": "4.0.458",
+    "dotenv": "^16.5.0",
+    "express": "5.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.458",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.458",
+    "@types/express": "5.0.1",
+    "@types/react": "19.0.0",
+    "eslint": "9.39.4",
+    "tsx": "4.19.3",
+    "typescript": "5.8.2"
+  }
+}

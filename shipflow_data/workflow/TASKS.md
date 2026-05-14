@@ -70,6 +70,9 @@
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |
 | 🟠 | Implement AI asset understanding auto-tagging spec (understanding jobs, tags moderation, global candidate recommendations, attach flow, Flutter picker signals) | ✅ done |
+| 🟠 | Remotion Cloud Run/GCS renderer: local worker storage, backend signed playback URLs, reconciliation guardrails, Docker/runbook, and focused tests | ✅ done |
+| 🟠 | Deploy the private Remotion Cloud Run worker with GCS env/secrets, least-privilege IAM, and no public invoker | 📋 todo |
+| 🟠 | Run and record the production GCS E2E proof: Cloud Run health, preview -> approve -> final, two private GCS MP4s, signed URL refresh, and worker restart reconciliation | 📋 todo |
 | ✅ | Implement Flux AI Provider for Image Robot backend foundation | ✅ done |
 | ✅ | Consolidate Lab agent guidance into `AGENT.md` and keep `AGENTS.md` as a compatibility symlink | ✅ done |
 | 🟡 | Run manual Zernio smoke with a real key, two projects, connected account, forged account refusal, and provider error recovery | 📋 todo |

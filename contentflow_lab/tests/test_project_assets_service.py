@@ -38,6 +38,8 @@ def _create_project_asset(
     mime_type="image/png",
     kind="image",
     status="uploaded",
+    storage_uri="bunny://zone/path",
+    metadata=None,
 ):
     content = content or _create_content(status_service, project_id=project_id, user_id=user_id)
     content_asset = status_service.create_content_asset(
@@ -46,11 +48,56 @@ def _create_project_asset(
         user_id=user_id,
         kind=kind,
         mime_type=mime_type,
-        storage_uri="bunny://zone/path",
+        storage_uri=storage_uri,
         status=status,
+        metadata=metadata,
     )
     assets = status_service.list_project_assets(project_id=project_id, user_id=user_id)
     return next(asset for asset in assets if asset.content_asset_id == content_asset.id)
+
+
+def _create_video_version(status_service, *, project_id="project-1", user_id="user-1", content=None):
+    content = content or _create_content(status_service, project_id=project_id, user_id=user_id)
+    status_service._conn.execute(
+        """
+        INSERT INTO video_timelines (
+            id, user_id, project_id, content_id, format_preset, status,
+            current_version_id, draft_revision, draft_json, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, 'active', ?, 1, ?, ?, ?)
+        """,
+        (
+            "timeline-1",
+            user_id,
+            project_id,
+            content.id,
+            "vertical_9_16",
+            "video-version-1",
+            "{}",
+            "2026-05-14T12:00:00",
+            "2026-05-14T12:00:00",
+        ),
+    )
+    status_service._conn.execute(
+        """
+        INSERT INTO video_timeline_versions (
+            id, timeline_id, user_id, project_id, content_id, format_preset,
+            version_number, timeline_json, renderer_props_json, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
+        """,
+        (
+            "video-version-1",
+            "timeline-1",
+            user_id,
+            project_id,
+            content.id,
+            "vertical_9_16",
+            "{}",
+            "{}",
+            "2026-05-14T12:00:00",
+        ),
+    )
+    status_service._conn.commit()
+    return "video-version-1"
 
 
 def _usage_count(status_service):
@@ -309,8 +356,28 @@ def test_select_project_asset_rejects_wrong_target_type_without_mutation(status_
     assert _usage_count(status_service) == 0
 
 
-def test_select_project_asset_rejects_video_version_until_store_exists(status_service):
-    from status.service import ProjectAssetEligibilityError
+def test_select_project_asset_allows_render_safe_image_for_video_version(status_service):
+    content = _create_content(status_service)
+    version_id = _create_video_version(status_service, content=content)
+    asset = _create_project_asset(status_service, content=content)
+
+    usage = status_service.select_project_asset(
+        project_id="project-1",
+        user_id="user-1",
+        asset_id=asset.id,
+        target_type="video_version",
+        target_id=version_id,
+        usage_action="select_for_video_version",
+        placement="clip-1",
+    )
+
+    assert usage.target_id == version_id
+    assert usage.usage_action == "select_for_video_version"
+    assert _usage_count(status_service) == 1
+
+
+def test_select_project_asset_rejects_missing_video_version_target(status_service):
+    from status.service import ContentNotFoundError
 
     content = _create_content(status_service)
     asset = _create_project_asset(
@@ -320,13 +387,37 @@ def test_select_project_asset_rejects_video_version_until_store_exists(status_se
         kind="audio",
     )
 
-    with pytest.raises(ProjectAssetEligibilityError, match="video_version target validation"):
+    with pytest.raises(ContentNotFoundError, match="Video version target"):
         status_service.select_project_asset(
             project_id="project-1",
             user_id="user-1",
             asset_id=asset.id,
             target_type="video_version",
             target_id="video-version-1",
+            usage_action="select_for_video_version",
+        )
+
+    assert _usage_count(status_service) == 0
+
+
+def test_select_project_asset_rejects_provider_temporary_asset_for_video_version(status_service):
+    from status.service import ProjectAssetEligibilityError
+
+    content = _create_content(status_service)
+    version_id = _create_video_version(status_service, content=content)
+    asset = _create_project_asset(
+        status_service,
+        content=content,
+        storage_uri="https://provider.example.com/tmp.png?token=secret",
+    )
+
+    with pytest.raises(ProjectAssetEligibilityError, match="not render-safe"):
+        status_service.select_project_asset(
+            project_id="project-1",
+            user_id="user-1",
+            asset_id=asset.id,
+            target_type="video_version",
+            target_id=version_id,
             usage_action="select_for_video_version",
         )
 

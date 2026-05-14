@@ -107,6 +107,43 @@ Security and retention rules:
 - Storage descriptors redact signed query tokens and provider URLs. Bunny
   upload/delete/signing remains owned by upload or media-generation features.
 
+## Video Timeline and Remotion Rendering
+
+The canonical video timeline lives in `contentflow_lab`, not in Remotion or
+Flutter. The backend owns validation, immutable versions, asset eligibility,
+preview/final job gates, and signed artifact URLs. Remotion is an internal
+renderer adapter behind `contentflow_remotion_worker`.
+
+Timeline API routes are under `/api/video-timelines`:
+
+- `POST /from-content` creates or loads the active timeline for an owned content item.
+- `GET /{timeline_id}` returns the draft, latest version, and preview/final state.
+- `PATCH /{timeline_id}/draft` saves a mutable draft with optimistic revision checks.
+- `POST /{timeline_id}/versions` validates the draft, resolves render-safe assets,
+  stores immutable renderer props, and records `video_version` asset usages.
+- `POST /{timeline_id}/versions/{version_id}/preview` creates a preview job for the
+  exact current version.
+- `POST /{timeline_id}/versions/{version_id}/preview/{preview_job_id}/approve`
+  approves a completed non-stale preview.
+- `POST /{timeline_id}/versions/{version_id}/render-final` creates a final job only
+  from the approved preview for that version.
+- `GET /{timeline_id}/jobs/{job_id}` refreshes status and returns a short-lived
+  signed artifact URL when completed.
+
+Operational requirements:
+
+- Turso/libSQL schema includes `api/migrations/005_video_timelines.sql`; startup
+  also ensures the tables and indexes idempotently.
+- Required render env vars follow the worker contract:
+  `REMOTION_WORKER_URL`, `REMOTION_WORKER_TOKEN`, `CONTENTFLOW_RENDER_DIR`, and
+  `RENDER_ARTIFACT_SIGNING_KEY`.
+- `BUNNY_CDN_HOSTNAME` is required when timeline assets are stored as `bunny://`
+  URIs. Durable Bunny HTTP URLs are normalized without query strings before being
+  sent to Remotion props.
+- Provider-temporary, local-only, tombstoned, degraded, missing, foreign, or
+  incompatible assets are rejected before version creation.
+- Final render is blocked until the exact version has an approved completed preview.
+
 ## AI Asset Understanding Guardrails
 
 Asset understanding/tagging is asynchronous and suggestion-only. It helps users
@@ -218,3 +255,27 @@ explicit error instead of falling back to Robolly/OpenAI.
 - `scheduler/` — periodic tasks and execution control
 - `scripts/` — utilities for environment/setup flows
 - `tests/` — validation scripts and unit coverage
+
+## Remotion Render Artifacts
+
+`contentflow_lab` remains the authenticated boundary for video preview/final
+renders. Flutter polls backend render jobs and receives `artifact.playback_url`;
+it never calls the Remotion worker, Cloud Run, or GCS directly.
+
+Local mode uses the existing HMAC-protected artifact route backed by
+`CONTENTFLOW_RENDER_DIR`. Production mode uses a private GCS bucket:
+
+- `CONTENTFLOW_RENDER_STORAGE=gcs`
+- `REMOTION_WORKER_URL`
+- `REMOTION_WORKER_TOKEN`
+- `GCS_RENDER_BUCKET`
+- `GCS_RENDER_PREFIX` (default `renders`)
+- `GCS_SIGNED_URL_TTL_SECONDS` (default `3600`)
+
+The backend persists the deterministic expected object key before dispatching a
+render. If worker memory loses a completed job after a restart, the backend can
+reconcile from the expected GCS object; if the object is missing, the job fails
+with `render_artifact_unavailable` and no playback URL is returned.
+
+Signed GCS playback URLs are bearer-like secrets. Do not copy query strings such
+as `X-Goog-Signature` into support tickets, diagnostics, or logs.

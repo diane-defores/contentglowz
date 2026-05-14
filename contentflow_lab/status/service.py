@@ -22,6 +22,7 @@ from api.services.asset_understanding import (
     NoopGeminiCompatibleAdapter,
 )
 from api.services.asset_understanding_normalizer import normalize_understanding_payload
+from api.services.project_asset_storage import build_project_asset_storage_descriptor
 from status.db import get_connection, init_db
 from status.audit import AuditActor, actor_from_string, coerce_actor
 from status.schemas import (
@@ -72,6 +73,17 @@ PROJECT_ASSET_MUTATION_ACTION_TARGETS: Dict[str, set[str]] = {
 }
 PROJECT_ASSET_READ_ACTIONS = {"preview_only", "historical_only"}
 PROJECT_ASSET_SUPPORTED_ACTIONS = set(PROJECT_ASSET_MUTATION_ACTION_TARGETS) | PROJECT_ASSET_READ_ACTIONS
+VIDEO_VERSION_MEDIA_KINDS = {
+    ProjectAssetMediaKind.IMAGE.value,
+    ProjectAssetMediaKind.THUMBNAIL.value,
+    ProjectAssetMediaKind.VIDEO_COVER.value,
+    ProjectAssetMediaKind.CAPTURE.value,
+    ProjectAssetMediaKind.VIDEO.value,
+    ProjectAssetMediaKind.AUDIO.value,
+    ProjectAssetMediaKind.MUSIC.value,
+    ProjectAssetMediaKind.BACKGROUND_CONFIG.value,
+    ProjectAssetMediaKind.RENDER_OUTPUT.value,
+}
 
 
 def _run_async(awaitable):
@@ -945,6 +957,75 @@ class StatusService:
             (asset_id, project_id, user_id),
         ).fetchall()
         return [self._row_to_project_asset_event(row) for row in rows]
+
+    def ensure_video_version_usage_target(
+        self,
+        *,
+        timeline: Dict[str, Any],
+        version: Dict[str, Any],
+    ) -> None:
+        """Mirror a timeline/version target so project asset usage validation can audit it."""
+
+        now = datetime.utcnow().isoformat()
+        timeline_created_at = str(timeline.get("created_at") or now)
+        timeline_updated_at = str(timeline.get("updated_at") or now)
+        version_created_at = str(version.get("created_at") or now)
+        self._conn.execute(
+            """
+            INSERT INTO video_timelines (
+                id, user_id, project_id, content_id, format_preset, status,
+                current_version_id, draft_revision, draft_json, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                current_version_id = excluded.current_version_id,
+                draft_revision = excluded.draft_revision,
+                draft_json = excluded.draft_json,
+                updated_at = excluded.updated_at
+            """,
+            (
+                timeline["id"],
+                timeline["user_id"],
+                timeline["project_id"],
+                timeline["content_id"],
+                timeline["format_preset"],
+                timeline.get("status") or "active",
+                version["id"],
+                int(timeline.get("draft_revision") or 0),
+                json.dumps(timeline.get("draft") or {}, separators=(",", ":"), sort_keys=True),
+                timeline_created_at,
+                timeline_updated_at,
+            ),
+        )
+        self._conn.execute(
+            """
+            INSERT INTO video_timeline_versions (
+                id, timeline_id, user_id, project_id, content_id, format_preset,
+                version_number, timeline_json, renderer_props_json,
+                approved_preview_job_id, preview_approved_at, client_request_id, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                timeline_json = excluded.timeline_json,
+                renderer_props_json = excluded.renderer_props_json,
+                approved_preview_job_id = excluded.approved_preview_job_id,
+                preview_approved_at = excluded.preview_approved_at
+            """,
+            (
+                version["id"],
+                version["timeline_id"],
+                version["user_id"],
+                version["project_id"],
+                version["content_id"],
+                version["format_preset"],
+                int(version.get("version_number") or 0),
+                json.dumps(version.get("timeline") or {}, separators=(",", ":"), sort_keys=True),
+                json.dumps(version.get("renderer_props") or {}, separators=(",", ":"), sort_keys=True),
+                version.get("approved_preview_job_id"),
+                version.get("preview_approved_at"),
+                version.get("client_request_id"),
+                version_created_at,
+            ),
+        )
+        self._conn.commit()
 
     def get_project_asset_eligibility(
         self,
@@ -1979,15 +2060,11 @@ class StatusService:
             ProjectAssetMediaKind.CAPTURE.value,
         }:
             raise ProjectAssetEligibilityError(f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}'")
-        if usage_action in {"select_for_video_version", "publish_media"} and asset.media_kind not in {
-            ProjectAssetMediaKind.AUDIO.value,
-            ProjectAssetMediaKind.MUSIC.value,
-            ProjectAssetMediaKind.VIDEO.value,
-            ProjectAssetMediaKind.VIDEO_COVER.value,
-            ProjectAssetMediaKind.BACKGROUND_CONFIG.value,
-            ProjectAssetMediaKind.RENDER_OUTPUT.value,
-        }:
-            raise ProjectAssetEligibilityError(f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}'")
+        if (
+            usage_action in {"select_for_video_version", "use_in_remotion_render"}
+            or (usage_action == "publish_media" and target_type == "video_version")
+        ):
+            self._ensure_video_version_asset_eligible(asset, usage_action)
         if usage_action == "set_primary":
             if target_type == "content" and asset.media_kind not in {
                 ProjectAssetMediaKind.IMAGE.value,
@@ -1998,17 +2075,32 @@ class StatusService:
                 raise ProjectAssetEligibilityError(
                     f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}' on '{target_type}'"
                 )
-            if target_type == "video_version" and asset.media_kind not in {
-                ProjectAssetMediaKind.AUDIO.value,
-                ProjectAssetMediaKind.MUSIC.value,
-                ProjectAssetMediaKind.VIDEO.value,
-                ProjectAssetMediaKind.VIDEO_COVER.value,
-                ProjectAssetMediaKind.BACKGROUND_CONFIG.value,
-                ProjectAssetMediaKind.RENDER_OUTPUT.value,
-            }:
-                raise ProjectAssetEligibilityError(
-                    f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}' on '{target_type}'"
-                )
+            if target_type == "video_version":
+                self._ensure_video_version_asset_eligible(asset, usage_action)
+
+    def _ensure_video_version_asset_eligible(
+        self,
+        asset: ProjectAssetRecord,
+        usage_action: str,
+    ) -> None:
+        if asset.media_kind not in VIDEO_VERSION_MEDIA_KINDS:
+            raise ProjectAssetEligibilityError(f"Incompatible media_kind '{asset.media_kind}' for '{usage_action}'")
+        if (
+            asset.media_kind == ProjectAssetMediaKind.RENDER_OUTPUT.value
+            and not bool(asset.metadata.get("render_output_safe"))
+        ):
+            raise ProjectAssetEligibilityError("render_output assets require explicit render_output_safe metadata")
+
+        descriptor = build_project_asset_storage_descriptor(
+            storage_uri=asset.storage_uri,
+            status=asset.status,
+            media_kind=asset.media_kind,
+            mime_type=asset.mime_type,
+        )
+        if not descriptor["render_safe"]:
+            raise ProjectAssetEligibilityError("Asset is not render-safe for video rendering")
+        if descriptor["refresh_required"] and descriptor["state"] != "durable_bunny_http":
+            raise ProjectAssetEligibilityError("Asset requires refresh before video rendering")
 
     def _ensure_usage_target_owned(
         self,
@@ -2042,9 +2134,17 @@ class StatusService:
             return
 
         if target_type == "video_version":
-            raise ProjectAssetEligibilityError(
-                "video_version target validation is not available until the video asset store ships"
-            )
+            row = self._conn.execute(
+                """
+                SELECT id FROM video_timeline_versions
+                WHERE id = ? AND project_id = ? AND user_id = ?
+                LIMIT 1
+                """,
+                (target_id, project_id, user_id),
+            ).fetchone()
+            if not row:
+                raise ContentNotFoundError(f"Video version target {target_id} not found")
+            return
 
         raise ProjectAssetEligibilityError(f"Unsupported target_type '{target_type}'")
 

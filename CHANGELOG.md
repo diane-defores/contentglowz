@@ -7,6 +7,8 @@ All notable changes to the ContentFlow monorepo are documented here.
 ### Added
 - Added AI asset understanding auto-tagging and recommendation capabilities across backend and Flutter surfaces: async understanding jobs, normalized suggested/accepted/rejected tag flows, confidence-scored fit reasons, and rights/attribution warnings for third-party/social footage.
 - Added global-library candidate recommendation plus explicit project attach flow so same-user reusable assets can be suggested across projects with `candidate_global_asset` and `requires_project_attachment` semantics.
+- Added the unified ContentFlow video timeline foundation across Flutter, FastAPI, and the Remotion worker, including versioned timeline APIs, render-safe asset resolution, preview/final gates, and a local Remotion MP4 smoke fixture.
+- Added Remotion worker GCS artifact storage support, backend GCS signed playback URL handling, and a Cloud Run deployment runbook for durable video preview/final renders.
 
 ### Changed
 - Extended the project asset workflow with deterministic media inspection guardrails (ffprobe/ffmpeg sampling limits, quota/concurrency bounds, BYOK-first credential resolution, and recoverable status outcomes) without auto-publishing or legal-rights assumptions.
