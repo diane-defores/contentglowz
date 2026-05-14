@@ -25,6 +25,7 @@ from .feedback import router as feedback_router
 from .integrations import router as integrations_router
 from .settings_integrations import router as settings_integrations_router
 from .search_console import router as search_console_router
+from .project_intelligence import router as project_intelligence_router
 from .assets import router as assets_router
 from .reel_renders import router as reel_renders_router
 from .video_timelines import router as video_timelines_router
@@ -57,6 +58,7 @@ __all__ = [
     "integrations_router",
     "settings_integrations_router",
     "search_console_router",
+    "project_intelligence_router",
     "assets_router",
     "reel_renders_router",
     "video_timelines_router",

@@ -40,6 +40,45 @@ The decision should come from:
 - real FastAPI bootstrap data
 - project selection settings persisted in `settings.projectSelectionMode` and `settings.defaultProjectId`
 
+## Project Intelligence (V1)
+
+The app now includes a project-scoped Project Intelligence surface at:
+
+- `/project-intelligence`
+
+Current V1 behavior:
+
+- read project intelligence status, source inventory, extracted facts, recommendations, and provider readiness
+- sync connector-backed evidence into project memory
+- upload text-like source content to backend intelligence ingestion
+- remove a source (which also excludes derived evidence on backend reads/recommendations)
+- convert a recommendation into an Idea Pool item
+
+Scope notes:
+
+- all data is scoped by active project and authenticated user
+- uploads are backend-constrained (text-like files, max 10 files/job, max 10MB/file)
+- offline queue does not support binary/file uploads for this surface
+- provider readiness is advisory metadata only; V1 does not promise automatic fine-tuning/deployment
+
+## Video Timeline V1
+
+The video timeline entry point is `/editor/:id/video` from an existing content item.
+It is online-only in V1 and uses `contentflow_lab` as the only public API; the Flutter
+app never calls the Remotion worker directly.
+
+Current V1 behavior:
+- create or load one active timeline for the content item and format preset
+- edit text and asset clips on canonical frame-based tracks
+- save a new immutable backend version before preview
+- request a server-rendered Remotion MP4 preview for the current clean version
+- approve a completed non-stale preview before requesting a final render
+- refresh jobs to receive fresh signed playback URLs when artifacts are ready
+
+Signed playback URLs are ephemeral response data. The UI must not display or persist
+their query tokens; it should show artifact readiness and refresh job state when a
+URL expires.
+
 ## Multi-Project Behavior
 
 - The app resolves active project through a tri-state selection mode:

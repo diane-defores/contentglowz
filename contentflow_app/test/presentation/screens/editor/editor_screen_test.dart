@@ -270,6 +270,61 @@ void main() {
       expect(find.byType(ProjectAssetPicker), findsNothing);
     },
   );
+
+  testWidgets('video timeline action opens /editor/:id/video', (tester) async {
+    final item = _contentItem(body: 'Original full body');
+    final api = _EditorFakeApiService(item);
+
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(path: '/', builder: (context, state) => const _OpenEditor()),
+        GoRoute(
+          path: '/editor/:id',
+          builder: (context, state) =>
+              EditorScreen(contentId: state.pathParameters['id']!),
+        ),
+        GoRoute(
+          path: '/editor/:id/video',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Video Route')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDiagnosticsProvider.overrideWithValue(AppDiagnostics()),
+          apiServiceProvider.overrideWithValue(api),
+          appAccessStateProvider.overrideWith(() => _TestAccessNotifier()),
+          publishAccountsStateProvider.overrideWith(
+            (ref) async => const PublishAccountsState(accounts: []),
+          ),
+          contentHistoryProvider.overrideWith(
+            (ref) async => const <ContentItem>[],
+          ),
+          pendingContentProvider.overrideWith(
+            () => _TestPendingContentNotifier([item]),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open editor'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Video timeline'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Video Route'), findsOneWidget);
+  });
 }
 
 ContentItem _contentItem({required String body}) {

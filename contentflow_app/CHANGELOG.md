@@ -6,6 +6,9 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Added
+- Added the `/editor/:id/video` timeline workspace with text/asset clip editing, clean-version preview gating, final-render gating, and signed artifact token redaction in the visible UI.
+
 ### Changed
 - Redesigned the empty mobile Flow dashboard into a compact swipe-action deck with one CTA per card and hidden zero-count workspace cards.
 

@@ -56,6 +56,37 @@ This repository hosts the product API used by:
   - `/api/search-console/oauth/callback`
 - Search Console tokens are encrypted at rest and never returned by API responses.
 
+## Project Intelligence Engine (V1)
+
+Project Intelligence is project-scoped memory + recommendation infrastructure under:
+
+- `GET /api/projects/{project_id}/intelligence/status`
+- `POST /api/projects/{project_id}/intelligence/upload`
+- `POST /api/projects/{project_id}/intelligence/sync`
+- `GET /api/projects/{project_id}/intelligence/jobs`
+- `GET /api/projects/{project_id}/intelligence/sources`
+- `DELETE /api/projects/{project_id}/intelligence/sources/{source_id}`
+- `GET /api/projects/{project_id}/intelligence/documents`
+- `GET /api/projects/{project_id}/intelligence/facts`
+- `GET /api/projects/{project_id}/intelligence/recommendations`
+- `GET /api/projects/{project_id}/intelligence/provider-readiness`
+- `POST /api/projects/{project_id}/intelligence/recommendations/{recommendation_id}/idea-pool`
+
+V1 ingestion constraints:
+
+- max `10` files per upload job
+- max `10MB` per file
+- text-like formats only (`text/plain`, `text/markdown`, `text/csv`, `application/json`, `text/html`, markdown-like extensions)
+- one active ingestion/sync job per `userId + projectId`
+
+Operational behavior:
+
+- Deterministic cleaning/chunking/dedupe and fact extraction work without AI credentials.
+- Optional AI synthesis preflight routes through `ai_runtime_service` (no direct provider env reads in the intelligence route/service).
+- Source removal excludes derived evidence from reads and recommendation/Idea Pool actions.
+- Startup ensures intelligence tables via `project_intelligence_store.ensure_tables()` when Turso is configured.
+- Provider readiness is advisory metadata only. V1 does not auto fine-tune/deploy providers.
+
 ## Recent API Direction
 
 Primary concern of this repo is service reliability:

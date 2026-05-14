@@ -67,6 +67,7 @@
 |-----|------|--------|
 | 🟡 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
+| 🟠 | Implement Project Intelligence Engine Data Layer (contentflow_lab) | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |
 | 🟠 | Implement AI asset understanding auto-tagging spec (understanding jobs, tags moderation, global candidate recommendations, attach flow, Flutter picker signals) | ✅ done |

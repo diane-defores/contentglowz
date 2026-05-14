@@ -39,6 +39,8 @@ import 'presentation/screens/uptime/uptime_screen.dart';
 import 'presentation/screens/idea_pool/idea_pool_screen.dart';
 import 'presentation/screens/work_domains/work_domains_screen.dart';
 import 'presentation/screens/drip/drip_screen.dart';
+import 'presentation/screens/editor/video_timeline_screen.dart';
+import 'presentation/screens/project_intelligence/project_intelligence_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final refreshListenable = _AppRouterRefreshListenable(ref);
@@ -74,6 +76,9 @@ RouteSettings? _sentryRouteSettings(RouteSettings? settings) {
 }
 
 String _sanitizeSentryRouteName(String routeName) {
+  if (RegExp(r'^/editor/[^/]+/video$').hasMatch(routeName)) {
+    return '/editor/:id/video';
+  }
   if (routeName.startsWith('/editor/')) {
     return '/editor/:id';
   }
@@ -288,6 +293,12 @@ List<RouteBase> buildAppRoutes() {
               const NoTransitionPage(child: IdeaPoolScreen()),
         ),
         GoRoute(
+          path: '/project-intelligence',
+          name: 'project-intelligence',
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: ProjectIntelligenceScreen()),
+        ),
+        GoRoute(
           path: '/work-domains',
           name: 'work-domains',
           pageBuilder: (context, state) =>
@@ -336,6 +347,13 @@ List<RouteBase> buildAppRoutes() {
       name: 'onboarding',
       pageBuilder: (context, state) =>
           const MaterialPage(child: OnboardingScreen()),
+    ),
+    GoRoute(
+      path: '/editor/:id/video',
+      name: 'editor-video',
+      pageBuilder: (context, state) => MaterialPage(
+        child: VideoTimelineScreen(contentId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/editor/:id',

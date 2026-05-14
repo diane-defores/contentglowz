@@ -153,6 +153,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ? () => _showProjectAssetPicker(item)
               : null,
         ),
+        IconButton(
+          icon: const Icon(Icons.video_settings_rounded),
+          tooltip: 'Video timeline',
+          onPressed: () => context.push('/editor/${item.id}/video'),
+        ),
         // Toggle edit/preview
         IconButton(
           icon: Icon(

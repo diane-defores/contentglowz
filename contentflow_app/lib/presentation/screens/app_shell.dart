@@ -92,6 +92,11 @@ const _sections = [
         path: '/analytics',
       ),
       _NavItem(
+        icon: Icons.psychology_alt_rounded,
+        label: 'Intelligence',
+        path: '/project-intelligence',
+      ),
+      _NavItem(
         icon: Icons.bar_chart_rounded,
         label: 'Perf',
         path: '/performance',

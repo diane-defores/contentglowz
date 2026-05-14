@@ -1612,6 +1612,40 @@ class AppLocalizations {
     'Watch the hook, pacing, and platform fit.':
         'Vérifie l’accroche, le rythme et l’adéquation plateforme.',
     'Workspace setup': 'Configuration du workspace',
+    'Project Intelligence': 'Intelligence Projet',
+    'Intelligence': 'Intelligence',
+    'Source Inventory': 'Inventaire des sources',
+    'Upload Source': 'Importer une source',
+    'Filename': 'Nom de fichier',
+    'Text source': 'Source texte',
+    'Upload': 'Importer',
+    'No intelligence sources yet.':
+        "Aucune source d'intelligence pour le moment.",
+    'No recommendations yet.': 'Aucune recommandation pour le moment.',
+    'No facts extracted yet.': 'Aucun fait extrait pour le moment.',
+    'Select a project to use Project Intelligence.':
+        'Sélectionnez un projet pour utiliser Intelligence Projet.',
+    'Project intelligence source uploaded.':
+        'Source Project Intelligence importée.',
+    'Upload failed.': "Échec de l'import.",
+    'Connector sync completed.': 'Synchronisation connecteurs terminée.',
+    'Connector sync failed.': 'Échec de la synchronisation connecteurs.',
+    'Source removed.': 'Source supprimée.',
+    'Failed to remove source.': 'Impossible de supprimer la source.',
+    'Recommendation added to Idea Pool.':
+        "Recommandation ajoutée à l'Idea Pool.",
+    'Failed to add recommendation to Idea Pool.':
+        "Impossible d'ajouter la recommandation à l'Idea Pool.",
+    'Failed to load sources': 'Impossible de charger les sources',
+    'Failed to load recommendations':
+        'Impossible de charger les recommandations',
+    'Failed to load facts': 'Impossible de charger les faits',
+    'Facts': 'Faits',
+    'Provider readiness': 'Préparation provider',
+    'Remove source': 'Supprimer la source',
+    'Documents': 'Documents',
+    'Confidence': 'Confiance',
+    'Evidence': 'Preuve',
     'You are using the demo workspace without a real account.':
         'Vous utilisez le workspace démo sans compte réel.',
     'Your OpenRouter key is ready. Server-managed tools are also available for newsletter generation.':

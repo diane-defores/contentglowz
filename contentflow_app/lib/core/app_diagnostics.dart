@@ -305,7 +305,24 @@ class AppDiagnostics {
       return '${text.substring(0, 8)}...${text.substring(text.length - 4)}';
     }
 
-    return text.length <= 500 ? text : '${text.substring(0, 497)}...';
+    final redactedText = _redactUrlQueryTokens(text);
+    return redactedText.length <= 500
+        ? redactedText
+        : '${redactedText.substring(0, 497)}...';
+  }
+
+  static String _redactUrlQueryTokens(String text) {
+    return text.replaceAllMapped(RegExp(r'https?:\/\/[^\s"<>}\]]+'), (match) {
+      final raw = match.group(0);
+      if (raw == null || raw.isEmpty) {
+        return raw ?? '';
+      }
+      final queryStart = raw.indexOf('?');
+      if (queryStart < 0) {
+        return raw;
+      }
+      return '${raw.substring(0, queryStart)}?[redacted]';
+    });
   }
 
   String _formatConsoleEntry(AppDiagnosticEntry entry) {

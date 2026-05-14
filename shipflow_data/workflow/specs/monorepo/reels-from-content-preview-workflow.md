@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow"
 created: "2026-05-11"
 created_at: "2026-05-11 09:15:20 UTC"
@@ -25,7 +25,7 @@ linked_systems:
   - active project selection
 depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
-    artifact_version: "0.1.0"
+    artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "contentflow_app/CLAUDE.md"
     artifact_version: "1.1.0"

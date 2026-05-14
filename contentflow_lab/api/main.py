@@ -65,6 +65,7 @@ from api.routers import (
     integrations_router,
     settings_integrations_router,
     search_console_router,
+    project_intelligence_router,
     assets_router,
     reel_renders_router,
     video_timelines_router,
@@ -211,6 +212,14 @@ async def lifespan(app: FastAPI):
             print("✅ SearchConsole tables ensured")
     except Exception as e:
         print(f"⚠ SearchConsole tables migration failed (non-critical): {e}")
+
+    try:
+        from api.services.project_intelligence_store import project_intelligence_store
+        if project_intelligence_store.db_client:
+            await project_intelligence_store.ensure_tables()
+            print("✅ ProjectIntelligence tables ensured")
+    except Exception as e:
+        print(f"⚠ ProjectIntelligence tables migration failed (non-critical): {e}")
 
     try:
         from api.services.video_timeline_store import video_timeline_store
@@ -470,6 +479,7 @@ app.include_router(feedback_router)
 app.include_router(integrations_router)
 app.include_router(settings_integrations_router)
 app.include_router(search_console_router)
+app.include_router(project_intelligence_router)
 app.include_router(assets_router)
 app.include_router(reel_renders_router)
 app.include_router(video_timelines_router)

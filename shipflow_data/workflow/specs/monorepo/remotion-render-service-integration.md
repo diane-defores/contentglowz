@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentflow"
 created: "2026-05-11"
 created_at: "2026-05-11 09:15:20 UTC"
@@ -412,14 +412,16 @@ None blocking for MVP. Deferred decisions are CDN storage, cloud rendering, voic
 | 2026-05-11 09:43:54 | sf-ready | GPT-5 Codex | Evaluated readiness gate for Remotion worker, FastAPI render jobs, signed local artifacts, and local storage. | Not ready: security/availability limits, artifact token contract, final render relationship, and retention policy need concrete decisions. | /sf-spec Remotion render service integration |
 | 2026-05-11 12:41:59 | sf-spec | GPT-5 Codex | Revised spec with user decisions on signed URL TTL, 60-second MVP, 429/backpressure, 30-day local retention, preview-to-final contract, and media scope. | Draft revised for readiness rerun. | /sf-ready remotion-render-service-integration |
 | 2026-05-11 12:48:38 | sf-ready | GPT-5 Codex | Re-evaluated readiness after revised render limits, signed artifact, retention, preview/final, and media scope decisions. | Ready. | /sf-start Remotion render service integration |
+| 2026-05-14 16:10:00 | sf-start | GPT-5 Codex | Implemented Batch 0 foundation: `contentflow_remotion_worker/`, lab render-job API routes/models/services, signed artifact token checks, and focused fake-worker tests. | Partial chantier delivery complete for prerequisite scope; focused backend tests passing. | /sf-verify Remotion render service integration |
+| 2026-05-14 16:45:00 | sf-start | GPT-5 Codex | Lifted worker duration validation for `ContentFlowTimelineVideo` to support timeline renders up to 180 seconds while preserving the 60-second `ReelFromContent` contract. | Timeline worker integration aligned with unified video timeline Batch 3. | /sf-verify Remotion render service integration |
 
 ## Current Chantier Flow
 
 - sf-spec: done
 - sf-ready: ready
-- sf-start: not launched
+- sf-start: launched (Batch 0 foundation implemented)
 - sf-verify: not launched
 - sf-end: not launched
 - sf-ship: not launched
 
-Next command: `/sf-start Remotion render service integration`
+Next command: `/sf-verify Remotion render service integration`

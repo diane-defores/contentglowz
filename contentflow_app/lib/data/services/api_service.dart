@@ -25,8 +25,10 @@ import '../models/openrouter_credential.dart';
 import '../models/persona.dart';
 import '../models/project.dart';
 import '../models/project_asset.dart';
+import '../models/project_intelligence.dart';
 import '../models/ritual.dart';
 import '../models/search_console.dart';
+import '../models/video_timeline.dart';
 import 'offline_storage_service.dart';
 
 enum ApiErrorType { unauthorized, offline, server, invalidResponse, unknown }
@@ -192,6 +194,8 @@ class ApiService {
   static const _ideasCacheKey = 'ideas';
   static const _dripPlansCacheKey = 'drip.plans';
   static const _searchConsoleStatusCacheKey = 'search_console.status';
+  static const _projectIntelligenceStatusCacheKey =
+      'project_intelligence.status';
 
   void updateBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
@@ -1762,6 +1766,160 @@ class ApiService {
     }
   }
 
+  Future<VideoTimelineResponse> createOrLoadVideoTimelineFromContent({
+    required String contentId,
+    String formatPreset = 'vertical_9_16',
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/from-content',
+        data: _compactMap({
+          'content_id': contentId,
+          'format_preset': formatPreset,
+          'client_request_id': clientRequestId,
+        }),
+      );
+      return VideoTimelineResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineResponse> getVideoTimeline(String timelineId) async {
+    try {
+      final response = await _dio.get('/api/video-timelines/$timelineId');
+      return VideoTimelineResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineDraftResponse> saveVideoTimelineDraft({
+    required String timelineId,
+    required int draftRevision,
+    required VideoTimelineDocument timeline,
+    String? baseVersionId,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/api/video-timelines/$timelineId/draft',
+        data: _compactMap({
+          'base_version_id': baseVersionId,
+          'draft_revision': draftRevision,
+          'timeline': timeline.toJson(),
+        }),
+      );
+      return VideoTimelineDraftResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineVersion> createVideoTimelineVersion({
+    required String timelineId,
+    required int draftRevision,
+    required VideoTimelineDocument timeline,
+    String? baseVersionId,
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/$timelineId/versions',
+        data: _compactMap({
+          'base_version_id': baseVersionId,
+          'draft_revision': draftRevision,
+          'timeline': timeline.toJson(),
+          'client_request_id': clientRequestId,
+        }),
+      );
+      return VideoTimelineVersion.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineRenderJob> requestVideoTimelinePreview({
+    required String timelineId,
+    required String versionId,
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/$timelineId/versions/$versionId/preview',
+        data: _compactMap({'client_request_id': clientRequestId}),
+      );
+      return VideoTimelineRenderJob.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineVersion> approveVideoTimelinePreview({
+    required String timelineId,
+    required String versionId,
+    required String previewJobId,
+    bool approved = true,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/$timelineId/versions/$versionId/preview/$previewJobId/approve',
+        data: {'approved': approved},
+      );
+      return VideoTimelineVersion.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineRenderJob> requestVideoTimelineFinalRender({
+    required String timelineId,
+    required String versionId,
+    required String previewJobId,
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/$timelineId/versions/$versionId/render-final',
+        data: _compactMap({
+          'preview_job_id': previewJobId,
+          'client_request_id': clientRequestId,
+        }),
+      );
+      return VideoTimelineRenderJob.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineRenderJob> requestVideoTimelineFinal({
+    required String timelineId,
+    required String versionId,
+    required String previewJobId,
+    String? clientRequestId,
+  }) {
+    return requestVideoTimelineFinalRender(
+      timelineId: timelineId,
+      versionId: versionId,
+      previewJobId: previewJobId,
+      clientRequestId: clientRequestId,
+    );
+  }
+
+  Future<VideoTimelineRenderJob> getVideoTimelineJob({
+    required String timelineId,
+    required String jobId,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/video-timelines/$timelineId/jobs/$jobId',
+      );
+      return VideoTimelineRenderJob.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<ProjectAssetListResponse> listProjectAssets({
     required String projectId,
     String? mediaKind,
@@ -3112,6 +3270,16 @@ class ApiService {
         'projectId': projectId,
       });
 
+  String _projectIntelligenceStatusKey(String projectId) => _cacheKeyFor(
+    _projectIntelligenceStatusCacheKey,
+    {'projectId': projectId},
+  );
+
+  String _projectIntelligenceRecommendationsKey(String projectId) =>
+      _cacheKeyFor('project_intelligence.recommendations', {
+        'projectId': projectId,
+      });
+
   Future<SearchConsoleConnectionStatus> fetchSearchConsoleStatus({
     required String projectId,
   }) async {
@@ -3390,6 +3558,307 @@ class ApiService {
         },
       );
       return SearchConsoleIngestResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  // ─── Project Intelligence ───────────────────────────────
+
+  Future<ProjectIntelligenceStatus> fetchProjectIntelligenceStatus({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return ProjectIntelligenceStatus.empty(projectId);
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = await _getCachedData(
+      '/api/projects/$resolvedProjectId/intelligence/status',
+      cacheKey: _projectIntelligenceStatusKey(resolvedProjectId),
+    );
+    return ProjectIntelligenceStatus.fromJson(_asMap(data));
+  }
+
+  Future<ProjectIntelligenceUploadResult> uploadProjectIntelligenceFiles({
+    required String projectId,
+    required List<ProjectIntelligenceUploadFile> files,
+    bool includeAiSynthesis = false,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Project Intelligence uploads are unavailable in demo mode.',
+      );
+    }
+
+    if (files.isEmpty) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Select at least one file.',
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final formData = FormData.fromMap({
+      'files': files
+          .map(
+            (entry) =>
+                MultipartFile.fromBytes(entry.bytes, filename: entry.fileName),
+          )
+          .toList(growable: false),
+    });
+
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/intelligence/upload',
+        queryParameters: {'includeAiSynthesis': includeAiSynthesis},
+        data: formData,
+      );
+      final result = ProjectIntelligenceUploadResult.fromJson(
+        _asMap(response.data),
+      );
+      return result;
+    } on DioException catch (error) {
+      final mapped = _mapDioException(error);
+      if (mapped.isOffline) {
+        throw ApiException(
+          ApiErrorType.offline,
+          'File uploads are unavailable until FastAPI is back.',
+          statusCode: mapped.statusCode,
+          responseBody: mapped.responseBody,
+          responseHeaders: mapped.responseHeaders,
+          method: mapped.method,
+          path: mapped.path,
+        );
+      }
+      throw mapped;
+    }
+  }
+
+  Future<ProjectIntelligenceUploadResult> syncProjectIntelligence({
+    required String projectId,
+    List<String> connectors = const <String>[],
+    bool includeAiSynthesis = false,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Project Intelligence sync is unavailable in demo mode.',
+      );
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/intelligence/sync',
+        data: {
+          'connectors': connectors,
+          'includeAiSynthesis': includeAiSynthesis,
+        },
+      );
+      return ProjectIntelligenceUploadResult.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<ProjectIntelligenceJob>> fetchProjectIntelligenceJobs({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <ProjectIntelligenceJob>[];
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = _asMap(
+      await _getCachedData(
+        '/api/projects/$resolvedProjectId/intelligence/jobs',
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <ProjectIntelligenceJob>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) =>
+              ProjectIntelligenceJob.fromJson(Map<String, dynamic>.from(entry)),
+        )
+        .toList();
+  }
+
+  Future<List<ProjectIntelligenceSource>> fetchProjectIntelligenceSources({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <ProjectIntelligenceSource>[];
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = _asMap(
+      await _getCachedData(
+        '/api/projects/$resolvedProjectId/intelligence/sources',
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <ProjectIntelligenceSource>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) => ProjectIntelligenceSource.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> removeProjectIntelligenceSource({
+    required String projectId,
+    required String sourceId,
+  }) async {
+    if (allowDemoData) {
+      return;
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      await _dio.delete(
+        '/api/projects/$resolvedProjectId/intelligence/sources/$sourceId',
+      );
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<ProjectIntelligenceDocument>> fetchProjectIntelligenceDocuments({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <ProjectIntelligenceDocument>[];
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = _asMap(
+      await _getCachedData(
+        '/api/projects/$resolvedProjectId/intelligence/documents',
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <ProjectIntelligenceDocument>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) => ProjectIntelligenceDocument.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<ProjectIntelligenceFact>> fetchProjectIntelligenceFacts({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <ProjectIntelligenceFact>[];
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = _asMap(
+      await _getCachedData(
+        '/api/projects/$resolvedProjectId/intelligence/facts',
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <ProjectIntelligenceFact>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) => ProjectIntelligenceFact.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<ProjectIntelligenceRecommendation>>
+  fetchProjectIntelligenceRecommendations({required String projectId}) async {
+    if (allowDemoData) {
+      return const <ProjectIntelligenceRecommendation>[];
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = _asMap(
+      await _getCachedData(
+        '/api/projects/$resolvedProjectId/intelligence/recommendations',
+        cacheKey: _projectIntelligenceRecommendationsKey(resolvedProjectId),
+      ),
+    );
+    final items = data['items'];
+    if (items is! List) {
+      return const <ProjectIntelligenceRecommendation>[];
+    }
+    return items
+        .whereType<Map>()
+        .map(
+          (entry) => ProjectIntelligenceRecommendation.fromJson(
+            Map<String, dynamic>.from(entry),
+          ),
+        )
+        .toList();
+  }
+
+  Future<ProjectIntelligenceProviderReadiness>
+  fetchProjectIntelligenceProviderReadiness({required String projectId}) async {
+    if (allowDemoData) {
+      return const ProjectIntelligenceProviderReadiness(
+        projectId: '',
+        readiness: 'needs_evidence',
+        score: 0,
+        rationale: '',
+        recommendedNextStep: '',
+      );
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final data = await _getCachedData(
+      '/api/projects/$resolvedProjectId/intelligence/provider-readiness',
+      cacheKey: _cacheKeyFor('project_intelligence.readiness', {
+        'projectId': resolvedProjectId,
+      }),
+    );
+    return ProjectIntelligenceProviderReadiness.fromJson(_asMap(data));
+  }
+
+  Future<ProjectIntelligenceIdeaPoolActionResult>
+  addProjectIntelligenceRecommendationToIdeaPool({
+    required String projectId,
+    required String recommendationId,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Idea Pool action is unavailable in demo mode.',
+      );
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/intelligence/recommendations/$recommendationId/idea-pool',
+      );
+      return ProjectIntelligenceIdeaPoolActionResult.fromJson(
+        _asMap(response.data),
+      );
     } on DioException catch (error) {
       throw _mapDioException(error);
     }

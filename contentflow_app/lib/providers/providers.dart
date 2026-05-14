@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -27,6 +29,7 @@ import '../data/models/openrouter_credential.dart';
 import '../data/models/persona.dart';
 import '../data/models/project.dart';
 import '../data/models/project_asset.dart';
+import '../data/models/project_intelligence.dart';
 import '../data/models/ritual.dart';
 import '../data/models/search_console.dart';
 import '../data/services/api_service.dart';
@@ -1359,8 +1362,10 @@ class ProjectAssetLibraryState {
     this.assetDetails = const <String, ProjectAsset>{},
     this.assetUsage = const <String, List<ProjectAssetUsage>>{},
     this.assetEvents = const <String, List<ProjectAssetEvent>>{},
-    this.assetUnderstanding = const <String, AssetUnderstandingStatusResponse>{},
-    this.assetRecommendations = const <String, List<ProjectAssetRecommendationItem>>{},
+    this.assetUnderstanding =
+        const <String, AssetUnderstandingStatusResponse>{},
+    this.assetRecommendations =
+        const <String, List<ProjectAssetRecommendationItem>>{},
     this.lastError,
     this.isMutating = false,
   });
@@ -1614,7 +1619,10 @@ class ProjectAssetLibraryNotifier
           assetDetails: {...fresh.assetDetails, assetId: detail},
           assetUsage: {...fresh.assetUsage, assetId: usage},
           assetEvents: {...fresh.assetEvents, assetId: events},
-          assetUnderstanding: {...fresh.assetUnderstanding, assetId: understanding},
+          assetUnderstanding: {
+            ...fresh.assetUnderstanding,
+            assetId: understanding,
+          },
           clearLastError: true,
         ),
       );
@@ -1638,21 +1646,26 @@ class ProjectAssetLibraryNotifier
     }
     final revision = _contextRevision;
     state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
-    final idempotencyKey = 'app-$assetId-${DateTime.now().millisecondsSinceEpoch}';
+    final idempotencyKey =
+        'app-$assetId-${DateTime.now().millisecondsSinceEpoch}';
     try {
-      final job = await ref.read(apiServiceProvider).queueProjectAssetUnderstanding(
-        projectId: projectId,
-        assetId: assetId,
-        idempotencyKey: idempotencyKey,
-        provider: provider,
-      );
+      final job = await ref
+          .read(apiServiceProvider)
+          .queueProjectAssetUnderstanding(
+            projectId: projectId,
+            assetId: assetId,
+            idempotencyKey: idempotencyKey,
+            provider: provider,
+          );
       if (!_isFresh(projectId, revision)) {
         return job;
       }
-      final status = await ref.read(apiServiceProvider).getProjectAssetUnderstandingStatus(
-        projectId: projectId,
-        assetId: assetId,
-      );
+      final status = await ref
+          .read(apiServiceProvider)
+          .getProjectAssetUnderstandingStatus(
+            projectId: projectId,
+            assetId: assetId,
+          );
       if (!_isFresh(projectId, revision)) {
         return job;
       }
@@ -1684,10 +1697,12 @@ class ProjectAssetLibraryNotifier
     }
     final revision = _contextRevision;
     try {
-      final status = await ref.read(apiServiceProvider).getProjectAssetUnderstandingStatus(
-        projectId: projectId,
-        assetId: assetId,
-      );
+      final status = await ref
+          .read(apiServiceProvider)
+          .getProjectAssetUnderstandingStatus(
+            projectId: projectId,
+            assetId: assetId,
+          );
       if (!_isFresh(projectId, revision)) {
         return status;
       }
@@ -1721,11 +1736,13 @@ class ProjectAssetLibraryNotifier
     final revision = _contextRevision;
     state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
     try {
-      final job = await ref.read(apiServiceProvider).retryProjectAssetUnderstanding(
-        projectId: projectId,
-        assetId: assetId,
-        jobId: jobId,
-      );
+      final job = await ref
+          .read(apiServiceProvider)
+          .retryProjectAssetUnderstanding(
+            projectId: projectId,
+            assetId: assetId,
+            jobId: jobId,
+          );
       if (!_isFresh(projectId, revision)) {
         return job;
       }
@@ -1756,12 +1773,14 @@ class ProjectAssetLibraryNotifier
     final revision = _contextRevision;
     state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
     try {
-      final status = await ref.read(apiServiceProvider).moderateProjectAssetTags(
-        projectId: projectId,
-        assetId: assetId,
-        decisions: decisions,
-        manualTags: manualTags,
-      );
+      final status = await ref
+          .read(apiServiceProvider)
+          .moderateProjectAssetTags(
+            projectId: projectId,
+            assetId: assetId,
+            decisions: decisions,
+            manualTags: manualTags,
+          );
       if (!_isFresh(projectId, revision)) {
         return status;
       }
@@ -1796,12 +1815,14 @@ class ProjectAssetLibraryNotifier
     final revision = _contextRevision;
     state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
     try {
-      final response = await ref.read(apiServiceProvider).recommendProjectAssets(
-        projectId: projectId,
-        desiredTags: desiredTags,
-        limit: limit,
-        includeGlobalCandidates: includeGlobalCandidates,
-      );
+      final response = await ref
+          .read(apiServiceProvider)
+          .recommendProjectAssets(
+            projectId: projectId,
+            desiredTags: desiredTags,
+            limit: limit,
+            includeGlobalCandidates: includeGlobalCandidates,
+          );
       if (!_isFresh(projectId, revision)) {
         return response.items;
       }
@@ -1838,10 +1859,12 @@ class ProjectAssetLibraryNotifier
     final revision = _contextRevision;
     state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
     try {
-      final asset = await ref.read(apiServiceProvider).attachGlobalProjectAsset(
-        projectId: projectId,
-        globalAssetId: globalAssetId,
-      );
+      final asset = await ref
+          .read(apiServiceProvider)
+          .attachGlobalProjectAsset(
+            projectId: projectId,
+            globalAssetId: globalAssetId,
+          );
       if (!_isFresh(projectId, revision)) {
         return asset;
       }
@@ -2196,6 +2219,290 @@ final searchConsoleOpportunitiesProvider =
             period: period,
           );
     });
+
+final projectIntelligenceStatusProvider =
+    FutureProvider<ProjectIntelligenceStatus>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null) {
+        return ProjectIntelligenceStatus.empty();
+      }
+      if (accessState?.canUseWorkspaceData != true) {
+        return ProjectIntelligenceStatus.empty(activeProjectId);
+      }
+      try {
+        return await ref
+            .watch(apiServiceProvider)
+            .fetchProjectIntelligenceStatus(projectId: activeProjectId);
+      } on ApiException catch (error) {
+        return ProjectIntelligenceStatus(
+          projectId: activeProjectId,
+          counts: const <String, int>{},
+          degraded: true,
+          degradedReason: error.message.trim(),
+        );
+      }
+    });
+
+final projectIntelligenceSourcesProvider =
+    FutureProvider<List<ProjectIntelligenceSource>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <ProjectIntelligenceSource>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceSources(projectId: activeProjectId);
+    });
+
+final projectIntelligenceDocumentsProvider =
+    FutureProvider<List<ProjectIntelligenceDocument>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <ProjectIntelligenceDocument>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceDocuments(projectId: activeProjectId);
+    });
+
+final projectIntelligenceFactsProvider =
+    FutureProvider<List<ProjectIntelligenceFact>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <ProjectIntelligenceFact>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceFacts(projectId: activeProjectId);
+    });
+
+final projectIntelligenceRecommendationsProvider =
+    FutureProvider<List<ProjectIntelligenceRecommendation>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <ProjectIntelligenceRecommendation>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceRecommendations(projectId: activeProjectId);
+    });
+
+final projectIntelligenceJobsProvider =
+    FutureProvider<List<ProjectIntelligenceJob>>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return const <ProjectIntelligenceJob>[];
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceJobs(projectId: activeProjectId);
+    });
+
+final projectIntelligenceProviderReadinessProvider =
+    FutureProvider<ProjectIntelligenceProviderReadiness?>((ref) async {
+      final accessState = ref.watch(appAccessStateProvider).value;
+      final activeProjectId = ref.watch(activeProjectIdProvider);
+      if (activeProjectId == null || accessState?.canUseWorkspaceData != true) {
+        return null;
+      }
+      return ref
+          .watch(apiServiceProvider)
+          .fetchProjectIntelligenceProviderReadiness(
+            projectId: activeProjectId,
+          );
+    });
+
+class ProjectIntelligenceControllerState {
+  const ProjectIntelligenceControllerState({
+    this.isUploading = false,
+    this.isSyncing = false,
+    this.isMutating = false,
+    this.lastMessage,
+    this.lastError,
+  });
+
+  final bool isUploading;
+  final bool isSyncing;
+  final bool isMutating;
+  final String? lastMessage;
+  final String? lastError;
+
+  ProjectIntelligenceControllerState copyWith({
+    bool? isUploading,
+    bool? isSyncing,
+    bool? isMutating,
+    String? lastMessage,
+    String? lastError,
+    bool clearMessage = false,
+    bool clearError = false,
+  }) {
+    return ProjectIntelligenceControllerState(
+      isUploading: isUploading ?? this.isUploading,
+      isSyncing: isSyncing ?? this.isSyncing,
+      isMutating: isMutating ?? this.isMutating,
+      lastMessage: clearMessage ? null : (lastMessage ?? this.lastMessage),
+      lastError: clearError ? null : (lastError ?? this.lastError),
+    );
+  }
+}
+
+final projectIntelligenceControllerProvider =
+    StateNotifierProvider<
+      ProjectIntelligenceController,
+      ProjectIntelligenceControllerState
+    >((ref) {
+      return ProjectIntelligenceController(ref);
+    });
+
+class ProjectIntelligenceController
+    extends StateNotifier<ProjectIntelligenceControllerState> {
+  ProjectIntelligenceController(this.ref)
+    : super(const ProjectIntelligenceControllerState());
+
+  final Ref ref;
+
+  Future<void> uploadTextSource({
+    required String fileName,
+    required String text,
+    String mimeType = 'text/markdown',
+    bool includeAiSynthesis = false,
+  }) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null || text.trim().isEmpty) {
+      return;
+    }
+    state = state.copyWith(
+      isUploading: true,
+      clearError: true,
+      clearMessage: true,
+    );
+    try {
+      final result = await ref
+          .read(apiServiceProvider)
+          .uploadProjectIntelligenceFiles(
+            projectId: projectId,
+            includeAiSynthesis: includeAiSynthesis,
+            files: <ProjectIntelligenceUploadFile>[
+              ProjectIntelligenceUploadFile(
+                fileName: fileName.trim().isEmpty
+                    ? 'source.md'
+                    : fileName.trim(),
+                mimeType: mimeType,
+                bytes: Uint8List.fromList(utf8.encode(text)),
+              ),
+            ],
+          );
+      _invalidateReads();
+      state = state.copyWith(
+        isUploading: false,
+        lastMessage: 'accepted:${result.accepted}, failed:${result.failed}',
+      );
+    } on ApiException catch (error) {
+      state = state.copyWith(
+        isUploading: false,
+        lastError: error.message.trim(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> syncConnectors({
+    List<String> connectors = const <String>[],
+    bool includeAiSynthesis = false,
+  }) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null) {
+      return;
+    }
+    state = state.copyWith(
+      isSyncing: true,
+      clearError: true,
+      clearMessage: true,
+    );
+    try {
+      final result = await ref
+          .read(apiServiceProvider)
+          .syncProjectIntelligence(
+            projectId: projectId,
+            connectors: connectors,
+            includeAiSynthesis: includeAiSynthesis,
+          );
+      _invalidateReads();
+      state = state.copyWith(
+        isSyncing: false,
+        lastMessage: 'accepted:${result.accepted}, failed:${result.failed}',
+      );
+    } on ApiException catch (error) {
+      state = state.copyWith(isSyncing: false, lastError: error.message.trim());
+      rethrow;
+    }
+  }
+
+  Future<void> removeSource(String sourceId) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null) {
+      return;
+    }
+    state = state.copyWith(isMutating: true, clearError: true);
+    try {
+      await ref
+          .read(apiServiceProvider)
+          .removeProjectIntelligenceSource(
+            projectId: projectId,
+            sourceId: sourceId,
+          );
+      _invalidateReads();
+      state = state.copyWith(isMutating: false, lastMessage: 'source_removed');
+    } on ApiException catch (error) {
+      state = state.copyWith(
+        isMutating: false,
+        lastError: error.message.trim(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> addRecommendationToIdeaPool(String recommendationId) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null) {
+      return;
+    }
+    state = state.copyWith(isMutating: true, clearError: true);
+    try {
+      final result = await ref
+          .read(apiServiceProvider)
+          .addProjectIntelligenceRecommendationToIdeaPool(
+            projectId: projectId,
+            recommendationId: recommendationId,
+          );
+      _invalidateReads();
+      ref.invalidate(ideasProvider);
+      state = state.copyWith(isMutating: false, lastMessage: result.action);
+    } on ApiException catch (error) {
+      state = state.copyWith(
+        isMutating: false,
+        lastError: error.message.trim(),
+      );
+      rethrow;
+    }
+  }
+
+  void _invalidateReads() {
+    ref.invalidate(projectIntelligenceStatusProvider);
+    ref.invalidate(projectIntelligenceSourcesProvider);
+    ref.invalidate(projectIntelligenceDocumentsProvider);
+    ref.invalidate(projectIntelligenceFactsProvider);
+    ref.invalidate(projectIntelligenceRecommendationsProvider);
+    ref.invalidate(projectIntelligenceJobsProvider);
+    ref.invalidate(projectIntelligenceProviderReadinessProvider);
+  }
+}
 
 final openRouterCredentialStatusProvider =
     FutureProvider<OpenRouterCredentialStatus>((ref) async {

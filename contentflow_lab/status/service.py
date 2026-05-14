@@ -2735,6 +2735,7 @@ class StatusService:
         source: str,
         items: List[Dict[str, Any]],
         project_id: Optional[str] = None,
+        user_id: Optional[str] = None,
     ) -> int:
         """Bulk insert ideas. Returns count created."""
         now = datetime.utcnow().isoformat()
@@ -2746,8 +2747,8 @@ class StatusService:
             self._conn.execute(
                 """INSERT INTO idea_pool
                    (id, source, title, raw_data, seo_signals, trending_signals,
-                    tags, priority_score, status, project_id, created_at, updated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'raw', ?, ?, ?)""",
+                    tags, priority_score, status, project_id, user_id, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'raw', ?, ?, ?, ?)""",
                 (
                     str(uuid.uuid4()),
                     source,
@@ -2758,6 +2759,7 @@ class StatusService:
                     json.dumps(item.get("tags", [])),
                     item.get("priority_score"),
                     project_id,
+                    user_id,
                     now,
                     now,
                 ),
