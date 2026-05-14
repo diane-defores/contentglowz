@@ -1359,6 +1359,8 @@ class ProjectAssetLibraryState {
     this.assetDetails = const <String, ProjectAsset>{},
     this.assetUsage = const <String, List<ProjectAssetUsage>>{},
     this.assetEvents = const <String, List<ProjectAssetEvent>>{},
+    this.assetUnderstanding = const <String, AssetUnderstandingStatusResponse>{},
+    this.assetRecommendations = const <String, List<ProjectAssetRecommendationItem>>{},
     this.lastError,
     this.isMutating = false,
   });
@@ -1373,6 +1375,8 @@ class ProjectAssetLibraryState {
   final Map<String, ProjectAsset> assetDetails;
   final Map<String, List<ProjectAssetUsage>> assetUsage;
   final Map<String, List<ProjectAssetEvent>> assetEvents;
+  final Map<String, AssetUnderstandingStatusResponse> assetUnderstanding;
+  final Map<String, List<ProjectAssetRecommendationItem>> assetRecommendations;
   final Object? lastError;
   final bool isMutating;
 
@@ -1403,6 +1407,8 @@ class ProjectAssetLibraryState {
     Map<String, ProjectAsset>? assetDetails,
     Map<String, List<ProjectAssetUsage>>? assetUsage,
     Map<String, List<ProjectAssetEvent>>? assetEvents,
+    Map<String, AssetUnderstandingStatusResponse>? assetUnderstanding,
+    Map<String, List<ProjectAssetRecommendationItem>>? assetRecommendations,
     Object? lastError,
     bool clearLastError = false,
     bool? isMutating,
@@ -1424,6 +1430,8 @@ class ProjectAssetLibraryState {
       assetDetails: assetDetails ?? this.assetDetails,
       assetUsage: assetUsage ?? this.assetUsage,
       assetEvents: assetEvents ?? this.assetEvents,
+      assetUnderstanding: assetUnderstanding ?? this.assetUnderstanding,
+      assetRecommendations: assetRecommendations ?? this.assetRecommendations,
       lastError: clearLastError ? null : (lastError ?? this.lastError),
       isMutating: isMutating ?? this.isMutating,
     );
@@ -1593,6 +1601,10 @@ class ProjectAssetLibraryNotifier
         projectId: projectId,
         assetId: assetId,
       );
+      final understanding = await api.getProjectAssetUnderstandingStatus(
+        projectId: projectId,
+        assetId: assetId,
+      );
       if (!_isFresh(projectId, revision)) {
         return;
       }
@@ -1602,6 +1614,7 @@ class ProjectAssetLibraryNotifier
           assetDetails: {...fresh.assetDetails, assetId: detail},
           assetUsage: {...fresh.assetUsage, assetId: usage},
           assetEvents: {...fresh.assetEvents, assetId: events},
+          assetUnderstanding: {...fresh.assetUnderstanding, assetId: understanding},
           clearLastError: true,
         ),
       );
@@ -1611,6 +1624,242 @@ class ProjectAssetLibraryNotifier
       }
       final fresh = state.asData?.value ?? current;
       state = AsyncData(fresh.copyWith(lastError: error));
+    }
+  }
+
+  Future<AssetUnderstandingJob?> queueUnderstanding({
+    required String assetId,
+    String provider = 'gemini_compatible',
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    final idempotencyKey = 'app-$assetId-${DateTime.now().millisecondsSinceEpoch}';
+    try {
+      final job = await ref.read(apiServiceProvider).queueProjectAssetUnderstanding(
+        projectId: projectId,
+        assetId: assetId,
+        idempotencyKey: idempotencyKey,
+        provider: provider,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return job;
+      }
+      final status = await ref.read(apiServiceProvider).getProjectAssetUnderstandingStatus(
+        projectId: projectId,
+        assetId: assetId,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return job;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(
+        fresh.copyWith(
+          isMutating: false,
+          assetUnderstanding: {...fresh.assetUnderstanding, assetId: status},
+        ),
+      );
+      return job;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<AssetUnderstandingStatusResponse?> refreshUnderstandingStatus({
+    required String assetId,
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    try {
+      final status = await ref.read(apiServiceProvider).getProjectAssetUnderstandingStatus(
+        projectId: projectId,
+        assetId: assetId,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return status;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(
+        fresh.copyWith(
+          assetUnderstanding: {...fresh.assetUnderstanding, assetId: status},
+          clearLastError: true,
+        ),
+      );
+      return status;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<AssetUnderstandingJob?> retryUnderstanding({
+    required String assetId,
+    required String jobId,
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final job = await ref.read(apiServiceProvider).retryProjectAssetUnderstanding(
+        projectId: projectId,
+        assetId: assetId,
+        jobId: jobId,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return job;
+      }
+      await refreshUnderstandingStatus(assetId: assetId);
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      return job;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<AssetUnderstandingStatusResponse?> moderateTags({
+    required String assetId,
+    List<Map<String, dynamic>> decisions = const <Map<String, dynamic>>[],
+    List<String> manualTags = const <String>[],
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final status = await ref.read(apiServiceProvider).moderateProjectAssetTags(
+        projectId: projectId,
+        assetId: assetId,
+        decisions: decisions,
+        manualTags: manualTags,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return status;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(
+        fresh.copyWith(
+          isMutating: false,
+          assetUnderstanding: {...fresh.assetUnderstanding, assetId: status},
+        ),
+      );
+      return status;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<List<ProjectAssetRecommendationItem>> recommendAssets({
+    List<String> desiredTags = const <String>[],
+    int limit = 10,
+    bool includeGlobalCandidates = true,
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return const <ProjectAssetRecommendationItem>[];
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final response = await ref.read(apiServiceProvider).recommendProjectAssets(
+        projectId: projectId,
+        desiredTags: desiredTags,
+        limit: limit,
+        includeGlobalCandidates: includeGlobalCandidates,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return response.items;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(
+        fresh.copyWith(
+          isMutating: false,
+          assetRecommendations: {
+            ...fresh.assetRecommendations,
+            for (final item in response.items) item.assetId: [item],
+          },
+        ),
+      );
+      return response.items;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
+    }
+  }
+
+  Future<ProjectAsset?> attachGlobalAsset({
+    required String globalAssetId,
+    String? selectForAssetIdAfterAttach,
+  }) async {
+    final current = state.asData?.value;
+    final projectId = current?.projectId;
+    if (current == null || projectId == null) {
+      return null;
+    }
+    final revision = _contextRevision;
+    state = AsyncData(current.copyWith(isMutating: true, clearLastError: true));
+    try {
+      final asset = await ref.read(apiServiceProvider).attachGlobalProjectAsset(
+        projectId: projectId,
+        globalAssetId: globalAssetId,
+      );
+      if (!_isFresh(projectId, revision)) {
+        return asset;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false));
+      await refresh();
+      if (!_isActiveProjectState(projectId)) {
+        return asset;
+      }
+      await selectAsset(selectForAssetIdAfterAttach ?? asset.id);
+      return asset;
+    } catch (error) {
+      if (!_isFresh(projectId, revision)) {
+        rethrow;
+      }
+      final fresh = state.asData?.value ?? current;
+      state = AsyncData(fresh.copyWith(isMutating: false, lastError: error));
+      rethrow;
     }
   }
 

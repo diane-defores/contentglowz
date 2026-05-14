@@ -134,6 +134,86 @@ def _run_migrations(conn: Connection) -> None:
             created_at TEXT NOT NULL
         )
         """,
+        """
+        CREATE TABLE IF NOT EXISTS asset_understanding_jobs (
+            id TEXT PRIMARY KEY,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            media_type TEXT NOT NULL,
+            provider TEXT NOT NULL,
+            credential_source TEXT,
+            status TEXT NOT NULL,
+            idempotency_key TEXT NOT NULL,
+            retry_of_job_id TEXT,
+            error_code TEXT,
+            error_message TEXT,
+            attempts INTEGER NOT NULL DEFAULT 0,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS asset_understanding_results (
+            id TEXT PRIMARY KEY,
+            job_id TEXT NOT NULL,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            provider TEXT NOT NULL,
+            credential_source TEXT,
+            summary TEXT,
+            source_attribution TEXT NOT NULL DEFAULT '{}',
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS asset_understanding_tags (
+            id TEXT PRIMARY KEY,
+            result_id TEXT NOT NULL,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            key TEXT NOT NULL,
+            label TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            source TEXT NOT NULL DEFAULT 'ai_suggestion',
+            accepted_by_user INTEGER NOT NULL DEFAULT 0,
+            rejected_by_user INTEGER NOT NULL DEFAULT 0,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS asset_understanding_segments (
+            id TEXT PRIMARY KEY,
+            result_id TEXT NOT NULL,
+            asset_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            start_seconds REAL NOT NULL,
+            end_seconds REAL NOT NULL,
+            label TEXT NOT NULL,
+            confidence REAL NOT NULL,
+            suggested_placement TEXT,
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS asset_understanding_quota_daily (
+            day_utc TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            credential_source TEXT NOT NULL,
+            media_type TEXT NOT NULL,
+            used_count INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (day_utc, user_id, credential_source, media_type)
+        )
+        """,
     ]:
         try:
             conn.execute(stmt)
@@ -168,6 +248,14 @@ def _run_migrations(conn: Connection) -> None:
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_project_asset_usages_primary ON project_asset_usages(project_id, target_type, target_id, placement) WHERE is_primary = 1 AND deleted_at IS NULL",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_events_asset ON project_asset_events(asset_id, created_at)",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_events_project ON project_asset_events(project_id, created_at)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_asset_understanding_jobs_idempotency ON asset_understanding_jobs(user_id, project_id, asset_id, idempotency_key)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_jobs_status ON asset_understanding_jobs(project_id, user_id, status, updated_at)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_jobs_asset ON asset_understanding_jobs(asset_id, updated_at)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_asset_understanding_results_job ON asset_understanding_results(job_id)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_results_asset ON asset_understanding_results(asset_id, updated_at)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_tags_asset ON asset_understanding_tags(asset_id, confidence)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_tags_project ON asset_understanding_tags(project_id, key, confidence)",
+        "CREATE INDEX IF NOT EXISTS idx_asset_understanding_segments_asset ON asset_understanding_segments(asset_id, start_seconds)",
     ]:
         conn.execute(stmt)
     conn.commit()

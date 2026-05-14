@@ -113,5 +113,54 @@ void main() {
       expect(cleanup.cleanupEligible.single.assetId, 'asset-2');
       expect(cleanup.physicalDeleteAllowed, isFalse);
     });
+
+    test('parses understanding status and recommendation candidate fields', () {
+      final status = AssetUnderstandingStatusResponse.fromJson({
+        'job': {
+          'id': 'job-1',
+          'asset_id': 'asset-1',
+          'project_id': 'proj-1',
+          'user_id': 'user-1',
+          'media_type': 'video',
+          'provider': 'gemini_compatible',
+          'status': 'completed',
+          'idempotency_key': 'idem-1',
+          'attempts': 1,
+          'metadata': {},
+          'created_at': '2026-05-11T18:00:00Z',
+          'updated_at': '2026-05-11T18:10:00Z',
+        },
+        'result': {
+          'asset_id': 'asset-1',
+          'project_id': 'proj-1',
+          'status': 'completed',
+          'tags': [
+            {'key': 'deer', 'label': 'Deer', 'confidence': 0.9},
+          ],
+          'segments': [
+            {
+              'start_seconds': 0,
+              'end_seconds': 2.3,
+              'label': 'jump',
+              'confidence': 0.8,
+            },
+          ],
+        },
+      });
+      expect(status.job?.status, 'completed');
+      expect(status.result?.tags.single.label, 'Deer');
+
+      final recommendation = ProjectAssetRecommendationItem.fromJson({
+        'asset_id': 'asset-global',
+        'score': 0.77,
+        'candidate_type': 'candidate_global_asset',
+        'requires_project_attachment': true,
+        'source_project_id': 'proj-source',
+        'warnings': ['credit_required'],
+      });
+      expect(recommendation.candidateGlobalAsset, isTrue);
+      expect(recommendation.requiresProjectAttachment, isTrue);
+      expect(recommendation.sourceProjectId, 'proj-source');
+    });
   });
 }

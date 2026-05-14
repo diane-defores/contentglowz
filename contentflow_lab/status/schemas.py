@@ -176,6 +176,24 @@ class ProjectAssetLifecycleStatus(str, Enum):
     TOMBSTONED = "tombstoned"
 
 
+class AssetCredentialSource(str, Enum):
+    USER_BYOK = "user_byok"
+    PLATFORM = "platform"
+
+
+class AssetUnderstandingStatus(str, Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    BLOCKED = "blocked"
+    DEGRADED = "degraded"
+    PROVIDER_NOT_CONFIGURED = "provider_not_configured"
+    SKIPPED_LIMIT_EXCEEDED = "skipped_limit_exceeded"
+    QUOTA_EXCEEDED = "quota_exceeded"
+    NEEDS_TRIM = "needs_trim"
+
+
 class ProjectAssetRecord(BaseModel):
     id: str
     project_id: str
@@ -225,6 +243,72 @@ class ProjectAssetEventRecord(BaseModel):
     placement: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AssetSemanticTag(BaseModel):
+    key: str
+    label: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    source: str = "ai_suggestion"
+    accepted_by_user: bool = False
+    rejected_by_user: bool = False
+
+
+class AssetSceneSegment(BaseModel):
+    start_seconds: float = Field(..., ge=0.0)
+    end_seconds: float = Field(..., ge=0.0)
+    label: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    suggested_placement: Optional[str] = None
+
+
+class AssetSourceAttribution(BaseModel):
+    source_platform: Optional[str] = None
+    source_url: Optional[str] = None
+    creator_handle: Optional[str] = None
+    creator_name: Optional[str] = None
+    credit_text: Optional[str] = None
+    rights_status: str = "unknown"
+    credit_required: bool = False
+
+
+class AssetUnderstandingJobRecord(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    media_type: str
+    provider: str
+    credential_source: Optional[str] = None
+    status: AssetUnderstandingStatus
+    idempotency_key: str
+    retry_of_job_id: Optional[str] = None
+    error_code: Optional[str] = None
+    error_message: Optional[str] = None
+    attempts: int = 0
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        use_enum_values = True
+
+
+class AssetUnderstandingResultRecord(BaseModel):
+    id: str
+    job_id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    provider: str
+    credential_source: Optional[str] = None
+    summary: Optional[str] = None
+    source_attribution: AssetSourceAttribution = Field(default_factory=AssetSourceAttribution)
+    tags: List[AssetSemanticTag] = Field(default_factory=list)
+    segments: List[AssetSceneSegment] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class ContentAssetRecord(BaseModel):

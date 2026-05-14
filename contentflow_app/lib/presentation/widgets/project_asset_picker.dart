@@ -49,6 +49,16 @@ class ProjectAssetPicker extends ConsumerWidget {
         final events = selectedId == null
             ? const <ProjectAssetEvent>[]
             : (state.assetEvents[selectedId] ?? const <ProjectAssetEvent>[]);
+        final understanding = selectedId == null
+            ? null
+            : state.assetUnderstanding[selectedId];
+        final selectedRecommendations = selectedId == null
+            ? null
+            : state.assetRecommendations[selectedId];
+        final recommendation = (selectedRecommendations == null ||
+                selectedRecommendations.isEmpty)
+            ? null
+            : selectedRecommendations.first;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -66,6 +76,8 @@ class ProjectAssetPicker extends ConsumerWidget {
               asset: selectedAsset,
               usage: usage,
               events: events,
+              understanding: understanding,
+              recommendation: recommendation,
               isMutating: state.isMutating,
               onSelect: selectedAsset == null
                   ? null
@@ -101,6 +113,18 @@ class ProjectAssetPicker extends ConsumerWidget {
               onRestore: selectedAsset == null
                   ? null
                   : () => controller.restoreAsset(selectedAsset.id),
+              onQueueUnderstanding: selectedAsset == null
+                  ? null
+                  : () => controller.queueUnderstanding(assetId: selectedAsset.id),
+              onRefreshUnderstanding: selectedAsset == null
+                  ? null
+                  : () => controller.refreshUnderstandingStatus(assetId: selectedAsset.id),
+              onAttachGlobal: selectedAsset == null
+                  ? null
+                  : () => controller.attachGlobalAsset(
+                      globalAssetId: selectedAsset.id,
+                      selectForAssetIdAfterAttach: selectedAsset.id,
+                    ),
             );
 
             if (!twoPanels) {
@@ -263,9 +287,15 @@ class _AssetListPane extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      trailing: asset.status == 'tombstoned'
-                          ? const Icon(Icons.archive_rounded, size: 16)
-                          : null,
+                      trailing: Wrap(
+                        spacing: 4,
+                        children: [
+                          if (asset.metadata['candidate_type'] == 'candidate_global_asset')
+                            const Icon(Icons.public_rounded, size: 16),
+                          if (asset.status == 'tombstoned')
+                            const Icon(Icons.archive_rounded, size: 16),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -293,23 +323,33 @@ class _AssetDetailPane extends StatelessWidget {
     required this.asset,
     required this.usage,
     required this.events,
+    required this.understanding,
+    required this.recommendation,
     required this.isMutating,
     this.onSelect,
     this.onSetPrimary,
     required this.onClearPrimary,
     this.onTombstone,
     this.onRestore,
+    this.onQueueUnderstanding,
+    this.onRefreshUnderstanding,
+    this.onAttachGlobal,
   });
 
   final ProjectAsset? asset;
   final List<ProjectAssetUsage> usage;
   final List<ProjectAssetEvent> events;
+  final AssetUnderstandingStatusResponse? understanding;
+  final ProjectAssetRecommendationItem? recommendation;
   final bool isMutating;
   final Future<void> Function()? onSelect;
   final Future<void> Function()? onSetPrimary;
   final Future<void> Function() onClearPrimary;
   final Future<void> Function()? onTombstone;
   final Future<void> Function()? onRestore;
+  final Future<void> Function()? onQueueUnderstanding;
+  final Future<void> Function()? onRefreshUnderstanding;
+  final Future<void> Function()? onAttachGlobal;
 
   @override
   Widget build(BuildContext context) {
@@ -320,6 +360,14 @@ class _AssetDetailPane extends StatelessWidget {
       );
     }
     final isTombstoned = asset!.status == 'tombstoned';
+    final result = understanding?.result;
+    final suggestedTags = result?.tags
+            .where((tag) => !tag.acceptedByUser && !tag.rejectedByUser)
+            .toList() ??
+        const <AssetSemanticTag>[];
+    final acceptedTags =
+        result?.tags.where((tag) => tag.acceptedByUser).toList() ??
+            const <AssetSemanticTag>[];
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -356,9 +404,66 @@ class _AssetDetailPane extends StatelessWidget {
                     : (isTombstoned ? onRestore : onTombstone),
                 child: Text(context.tr(isTombstoned ? 'Restore' : 'Remove')),
               ),
+              OutlinedButton(
+                onPressed: isMutating ? null : onQueueUnderstanding,
+                child: Text(context.tr('Analyze')),
+              ),
+              OutlinedButton(
+                onPressed: isMutating ? null : onRefreshUnderstanding,
+                child: Text(context.tr('Status')),
+              ),
+              if (recommendation?.requiresProjectAttachment == true)
+                FilledButton.tonal(
+                  onPressed: isMutating ? null : onAttachGlobal,
+                  child: Text(context.tr('Attach global')),
+                ),
             ],
           ),
           const SizedBox(height: 10),
+          if (understanding?.job != null)
+            Text(
+              context.tr('Understanding: {status}', {
+                'status': understanding!.job!.status,
+              }),
+            ),
+          if (acceptedTags.isNotEmpty)
+            Text(
+              context.tr(
+                'Accepted tags: {tags}',
+                {'tags': acceptedTags.map((tag) => tag.label).join(', ')},
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (suggestedTags.isNotEmpty)
+            Text(
+              context.tr(
+                'Suggested tags: {tags}',
+                {'tags': suggestedTags.map((tag) => tag.label).join(', ')},
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (recommendation != null && recommendation!.fitReasons.isNotEmpty)
+            Text(
+              context.tr(
+                'Fit: {reason}',
+                {'reason': recommendation!.fitReasons.first.toString()},
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (recommendation != null && recommendation!.warnings.isNotEmpty)
+            Text(
+              context.tr(
+                'Warnings: {warnings}',
+                {'warnings': recommendation!.warnings.join(', ')},
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          if (recommendation?.candidateGlobalAsset == true)
+            Text(context.tr('Global candidate')),
           Text(context.tr('Usage: {count}', {'count': '${usage.length}'})),
           Text(context.tr('Events: {count}', {'count': '${events.length}'})),
         ],

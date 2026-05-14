@@ -2044,6 +2044,133 @@ class ApiService {
     }
   }
 
+  Future<AssetUnderstandingJob> queueProjectAssetUnderstanding({
+    required String projectId,
+    required String assetId,
+    required String idempotencyKey,
+    String provider = 'gemini_compatible',
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final payload = _compactMap({
+      'idempotency_key': idempotencyKey.trim(),
+      'provider': provider.trim(),
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/understanding/queue',
+        data: payload,
+      );
+      return AssetUnderstandingJob.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AssetUnderstandingStatusResponse> getProjectAssetUnderstandingStatus({
+    required String projectId,
+    required String assetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    try {
+      final response = await _dio.get(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/understanding/status',
+      );
+      return AssetUnderstandingStatusResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AssetUnderstandingJob> retryProjectAssetUnderstanding({
+    required String projectId,
+    required String assetId,
+    required String jobId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final payload = _compactMap({'job_id': jobId.trim()});
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/understanding/retry',
+        data: payload,
+      );
+      return AssetUnderstandingJob.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<AssetUnderstandingStatusResponse> moderateProjectAssetTags({
+    required String projectId,
+    required String assetId,
+    List<Map<String, dynamic>> decisions = const <Map<String, dynamic>>[],
+    List<String> manualTags = const <String>[],
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedAssetId = _resolveEntityId(assetId, idMappings);
+    final payload = _compactMap({
+      'decisions': decisions,
+      'manual_tags': manualTags,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/$resolvedAssetId/understanding/tags/moderate',
+        data: payload,
+      );
+      return AssetUnderstandingStatusResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAssetRecommendationResponse> recommendProjectAssets({
+    required String projectId,
+    List<String> desiredTags = const <String>[],
+    int limit = 10,
+    bool includeGlobalCandidates = false,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({
+      'desired_tags': desiredTags,
+      'limit': limit,
+      'include_global_candidates': includeGlobalCandidates,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/recommend',
+        data: payload,
+      );
+      return ProjectAssetRecommendationResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<ProjectAsset> attachGlobalProjectAsset({
+    required String projectId,
+    required String globalAssetId,
+  }) async {
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final payload = _compactMap({'global_asset_id': globalAssetId.trim()});
+    try {
+      final response = await _dio.post(
+        '/api/projects/$resolvedProjectId/assets/attach-global',
+        data: payload,
+      );
+      return ProjectAsset.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<ImageProfileListResponse> listImageProfiles({
     required String projectId,
   }) async {

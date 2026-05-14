@@ -107,6 +107,44 @@ Security and retention rules:
 - Storage descriptors redact signed query tokens and provider URLs. Bunny
   upload/delete/signing remains owned by upload or media-generation features.
 
+## AI Asset Understanding Guardrails
+
+Asset understanding/tagging is asynchronous and suggestion-only. It helps users
+find media; it does not auto-publish, auto-clear rights, or replace editor
+decisions.
+
+Setup and provider rules:
+
+- BYOK is resolved first (user credential store), then optional platform
+  fallback (`GEMINI_API_KEY` / `OPENAI_API_KEY`) when enabled.
+- If no credential is available, jobs return `provider_not_configured` and
+  assets stay usable without AI tags.
+- `ffprobe`/`ffmpeg` should be available on workers for deterministic media
+  inspection (duration/dimensions/audio presence, bounded sampling plans).
+
+Default operational guardrails (env-overridable):
+
+- `ASSET_UNDERSTANDING_MAX_IMAGE_BYTES` (25 MB),
+- `ASSET_UNDERSTANDING_MAX_SOURCE_VIDEO_BYTES` (500 MB),
+- `ASSET_UNDERSTANDING_MAX_SOURCE_VIDEO_SECONDS` (1800s),
+- `ASSET_UNDERSTANDING_MAX_PROVIDER_VIDEO_SECONDS` (90s),
+- `ASSET_UNDERSTANDING_MAX_PROVIDER_FRAMES` (180),
+- `ASSET_UNDERSTANDING_MAX_AUDIO_SECONDS` (120s),
+- `ASSET_UNDERSTANDING_CONCURRENCY_PER_PROJECT` (2),
+- `ASSET_UNDERSTANDING_CONCURRENCY_PER_USER` (4),
+- `ASSET_UNDERSTANDING_DAILY_PLATFORM_QUOTA_IMAGES/VIDEOS` (100/25),
+- `ASSET_UNDERSTANDING_DAILY_BYOK_QUOTA_IMAGES/VIDEOS` (250/50).
+
+Privacy, retention, and attribution:
+
+- Treat software-demo media as potentially sensitive (PII/tokens/customer UI).
+- Keep durable metadata minimal; avoid storing raw OCR dumps, full transcripts,
+  and provider raw payloads as user-facing truth.
+- Preserve attribution for external/social assets (`source_attribution`,
+  creator/url/credit text). Unknown rights must surface warnings.
+- AI tags are suggestions until user acceptance; low-confidence tags should not
+  dominate recommendations.
+
 ## Image Robot AI Generation
 
 Image Robot supports guided AI image generation through Black Forest Labs FLUX

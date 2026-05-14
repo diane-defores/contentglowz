@@ -7,8 +7,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from api.dependencies.auth import CurrentUser, require_current_user
 from api.dependencies.ownership import require_owned_project_id
 from api.models.status import (
+    AttachGlobalProjectAssetRequest,
+    AssetTagModerationRequest,
+    AssetUnderstandingJobResponse,
+    AssetUnderstandingResultResponse,
+    AssetUnderstandingStatusResponse,
     ClearProjectAssetPrimaryRequest,
     ClearProjectAssetPrimaryResponse,
+    ProjectAssetRecommendationRequest,
+    ProjectAssetRecommendationResponse,
     ProjectAssetCleanupReportResponse,
     ProjectAssetEligibilityRequest,
     ProjectAssetEligibilityResponse,
@@ -17,6 +24,8 @@ from api.models.status import (
     ProjectAssetPrimaryRequest,
     ProjectAssetResponse,
     ProjectAssetUsageResponse,
+    QueueAssetUnderstandingRequest,
+    RetryAssetUnderstandingRequest,
     SelectProjectAssetRequest,
 )
 from api.services.project_asset_cleanup import build_project_asset_cleanup_report
@@ -48,6 +57,25 @@ def _usage_to_response(usage) -> ProjectAssetUsageResponse:
 
 def _event_to_response(event) -> ProjectAssetEventResponse:
     return ProjectAssetEventResponse(**event.model_dump())
+
+
+def _understanding_job_to_response(job) -> AssetUnderstandingJobResponse:
+    return AssetUnderstandingJobResponse(**job.model_dump())
+
+
+def _understanding_result_to_response(result) -> AssetUnderstandingResultResponse:
+    return AssetUnderstandingResultResponse(
+        asset_id=result.asset_id,
+        project_id=result.project_id,
+        status="completed",
+        summary=result.summary,
+        tags=result.tags,
+        segments=result.segments,
+        source_attribution=result.source_attribution,
+        credential_source=result.credential_source,
+        provider=result.provider,
+        error_code=None,
+    )
 
 
 @router.get("", response_model=ProjectAssetListResponse)
@@ -112,6 +140,8 @@ async def get_project_asset_detail(
         )
     except ContentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
 
 
 @router.post("/{asset_id}/eligibility", response_model=ProjectAssetEligibilityResponse)
@@ -301,3 +331,130 @@ async def restore_project_asset(
         return _asset_to_response(asset)
     except ContentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/{asset_id}/understanding/queue", response_model=AssetUnderstandingJobResponse, status_code=201)
+async def queue_asset_understanding(
+    project_id: str,
+    asset_id: str,
+    request: QueueAssetUnderstandingRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    try:
+        job = svc.queue_asset_understanding_job(
+            project_id=project_id,
+            user_id=current_user.user_id,
+            asset_id=asset_id,
+            idempotency_key=request.idempotency_key,
+            provider=request.provider,
+        )
+        return _understanding_job_to_response(job)
+    except ContentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.get("/{asset_id}/understanding/status", response_model=AssetUnderstandingStatusResponse)
+async def get_asset_understanding_status(
+    project_id: str,
+    asset_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    try:
+        data = svc.get_latest_asset_understanding_status(
+            project_id=project_id,
+            user_id=current_user.user_id,
+            asset_id=asset_id,
+        )
+    except ContentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return AssetUnderstandingStatusResponse(
+        job=_understanding_job_to_response(data["job"]) if data["job"] else None,
+        result=_understanding_result_to_response(data["result"]) if data["result"] else None,
+    )
+
+
+@router.post("/{asset_id}/understanding/retry", response_model=AssetUnderstandingJobResponse)
+async def retry_asset_understanding(
+    project_id: str,
+    asset_id: str,
+    request: RetryAssetUnderstandingRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    try:
+        job = svc.retry_asset_understanding_job(
+            project_id=project_id,
+            user_id=current_user.user_id,
+            asset_id=asset_id,
+            job_id=request.job_id,
+        )
+        return _understanding_job_to_response(job)
+    except ContentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/{asset_id}/understanding/tags/moderate", response_model=AssetUnderstandingStatusResponse)
+async def moderate_asset_understanding_tags(
+    project_id: str,
+    asset_id: str,
+    request: AssetTagModerationRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    try:
+        data = svc.moderate_asset_understanding_tags(
+            project_id=project_id,
+            user_id=current_user.user_id,
+            asset_id=asset_id,
+            decisions=[item.model_dump() for item in request.decisions],
+            manual_tags=request.manual_tags,
+        )
+    except ContentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return AssetUnderstandingStatusResponse(
+        job=_understanding_job_to_response(data["job"]) if data["job"] else None,
+        result=_understanding_result_to_response(data["result"]) if data["result"] else None,
+    )
+
+
+@router.post("/recommend", response_model=ProjectAssetRecommendationResponse)
+async def recommend_project_assets(
+    project_id: str,
+    request: ProjectAssetRecommendationRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    items = svc.recommend_project_assets_for_brief(
+        project_id=project_id,
+        user_id=current_user.user_id,
+        desired_tags=request.desired_tags,
+        limit=request.limit,
+        include_global_candidates=request.include_global_candidates,
+    )
+    return ProjectAssetRecommendationResponse(items=items)
+
+
+@router.post("/attach-global", response_model=ProjectAssetResponse, status_code=201)
+async def attach_global_project_asset(
+    project_id: str,
+    request: AttachGlobalProjectAssetRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    svc = get_status_service()
+    try:
+        asset = svc.attach_global_project_asset(
+            project_id=project_id,
+            user_id=current_user.user_id,
+            global_asset_id=request.global_asset_id,
+        )
+    except ContentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return _asset_to_response(asset)

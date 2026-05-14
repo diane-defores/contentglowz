@@ -386,3 +386,114 @@ class ProjectAssetCleanupReportResponse(BaseModel):
 class ProjectAssetListResponse(BaseModel):
     items: List[ProjectAssetResponse]
     total: int
+
+
+class AssetSemanticTagResponse(BaseModel):
+    key: str
+    label: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    source: str = "ai_suggestion"
+    accepted_by_user: bool = False
+    rejected_by_user: bool = False
+
+
+class AssetSceneSegmentResponse(BaseModel):
+    start_seconds: float = Field(..., ge=0.0)
+    end_seconds: float = Field(..., ge=0.0)
+    label: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    suggested_placement: Optional[str] = None
+
+
+class AssetSourceAttributionResponse(BaseModel):
+    source_platform: Optional[str] = None
+    source_url: Optional[str] = None
+    creator_handle: Optional[str] = None
+    creator_name: Optional[str] = None
+    credit_text: Optional[str] = None
+    rights_status: str = "unknown"
+    credit_required: bool = False
+
+
+class AssetUnderstandingResultResponse(BaseModel):
+    asset_id: str
+    project_id: str
+    status: str
+    summary: Optional[str] = None
+    tags: List[AssetSemanticTagResponse] = Field(default_factory=list)
+    segments: List[AssetSceneSegmentResponse] = Field(default_factory=list)
+    source_attribution: Optional[AssetSourceAttributionResponse] = None
+    credential_source: Optional[str] = None
+    provider: Optional[str] = None
+    error_code: Optional[str] = None
+
+
+class QueueAssetUnderstandingRequest(BaseModel):
+    idempotency_key: str = Field(..., min_length=3, max_length=128)
+    provider: str = Field(default="gemini_compatible")
+
+
+class RetryAssetUnderstandingRequest(BaseModel):
+    job_id: str = Field(..., min_length=3, max_length=128)
+
+
+class AssetUnderstandingJobResponse(BaseModel):
+    id: str
+    asset_id: str
+    project_id: str
+    user_id: str
+    media_type: str
+    provider: str
+    credential_source: Optional[str] = None
+    status: str
+    idempotency_key: str
+    retry_of_job_id: Optional[str] = None
+    error_code: Optional[str] = None
+    error_message: Optional[str] = None
+    attempts: int
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
+    updated_at: datetime
+
+
+class AssetUnderstandingStatusResponse(BaseModel):
+    job: Optional[AssetUnderstandingJobResponse] = None
+    result: Optional[AssetUnderstandingResultResponse] = None
+
+
+class AssetTagModerationDecisionRequest(BaseModel):
+    action: str = Field(..., pattern="^(accept|reject|edit)$")
+    key: str = Field(..., min_length=1, max_length=64)
+    label: str = Field(..., min_length=1, max_length=128)
+    edited_label: Optional[str] = Field(default=None, max_length=128)
+
+
+class AssetTagModerationRequest(BaseModel):
+    decisions: List[AssetTagModerationDecisionRequest] = Field(default_factory=list)
+    manual_tags: List[str] = Field(default_factory=list)
+
+
+class ProjectAssetRecommendationRequest(BaseModel):
+    desired_tags: List[str] = Field(default_factory=list)
+    limit: int = Field(default=10, ge=1, le=25)
+    include_global_candidates: bool = False
+
+
+class ProjectAssetRecommendationItem(BaseModel):
+    asset_id: str
+    score: float
+    candidate_type: str = "attached_project_asset"
+    source_project_id: Optional[str] = None
+    requires_project_attachment: bool = False
+    fit_reasons: List[Dict[str, Any]] = Field(default_factory=list)
+    suggested_placements: List[str] = Field(default_factory=list)
+    source_attribution: Optional[AssetSourceAttributionResponse] = None
+    warnings: List[str] = Field(default_factory=list)
+
+
+class ProjectAssetRecommendationResponse(BaseModel):
+    items: List[ProjectAssetRecommendationItem] = Field(default_factory=list)
+
+
+class AttachGlobalProjectAssetRequest(BaseModel):
+    global_asset_id: str = Field(..., min_length=3, max_length=128)

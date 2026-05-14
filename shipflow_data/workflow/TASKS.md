@@ -69,6 +69,7 @@
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |
+| 🟠 | Implement AI asset understanding auto-tagging spec (understanding jobs, tags moderation, global candidate recommendations, attach flow, Flutter picker signals) | ✅ done |
 | ✅ | Implement Flux AI Provider for Image Robot backend foundation | ✅ done |
 | ✅ | Consolidate Lab agent guidance into `AGENT.md` and keep `AGENTS.md` as a compatibility symlink | ✅ done |
 | 🟡 | Run manual Zernio smoke with a real key, two projects, connected account, forged account refusal, and provider error recovery | 📋 todo |

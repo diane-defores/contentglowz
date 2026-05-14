@@ -6,6 +6,11 @@ import pytest
 from fastapi import HTTPException
 
 from api.models.status import (
+    AttachGlobalProjectAssetRequest,
+    AssetTagModerationRequest,
+    ProjectAssetRecommendationRequest,
+    QueueAssetUnderstandingRequest,
+    RetryAssetUnderstandingRequest,
     ClearProjectAssetPrimaryRequest,
     ProjectAssetEligibilityRequest,
     ProjectAssetPrimaryRequest,
@@ -241,3 +246,157 @@ async def test_cleanup_report_route(monkeypatch):
 
     assert response.degraded[0].asset_id == "asset-1"
     assert response.physical_delete_allowed is False
+
+
+@pytest.mark.asyncio
+async def test_queue_understanding_route(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    now = datetime.utcnow()
+    fake_job = SimpleNamespace(
+        model_dump=lambda: {
+            "id": "job-1",
+            "asset_id": "asset-1",
+            "project_id": "project-1",
+            "user_id": "user-1",
+            "media_type": "image",
+            "provider": "gemini_compatible",
+            "credential_source": "platform",
+            "status": "queued",
+            "idempotency_key": "idem-1",
+            "retry_of_job_id": None,
+            "error_code": None,
+            "error_message": None,
+            "attempts": 0,
+            "metadata": {},
+            "created_at": now,
+            "updated_at": now,
+        }
+    )
+    fake_service = SimpleNamespace(queue_asset_understanding_job=lambda **_: fake_job)
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+
+    response = await router.queue_asset_understanding(
+        project_id="project-1",
+        asset_id="asset-1",
+        request=QueueAssetUnderstandingRequest(idempotency_key="idem-1"),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+    assert response.id == "job-1"
+
+
+@pytest.mark.asyncio
+async def test_recommend_route(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    captured = {}
+    def _recommend(**kwargs):
+        captured.update(kwargs)
+        return [{"asset_id": "asset-1", "score": 0.9, "fit_reasons": [], "warnings": [], "suggested_placements": []}]
+    fake_service = SimpleNamespace(recommend_project_assets_for_brief=_recommend)
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+
+    response = await router.recommend_project_assets(
+        project_id="project-1",
+        request=ProjectAssetRecommendationRequest(desired_tags=["deer"], include_global_candidates=True),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+    assert response.items[0].asset_id == "asset-1"
+    assert captured["include_global_candidates"] is True
+
+
+@pytest.mark.asyncio
+async def test_retry_understanding_route_404(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    fake_service = SimpleNamespace(
+        retry_asset_understanding_job=lambda **_: (_ for _ in ()).throw(ContentNotFoundError("not found"))
+    )
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+
+    with pytest.raises(HTTPException) as exc:
+        await router.retry_asset_understanding(
+            project_id="project-1",
+            asset_id="asset-1",
+            request=RetryAssetUnderstandingRequest(job_id="job-missing"),
+            current_user=SimpleNamespace(user_id="user-1"),
+        )
+    assert exc.value.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_moderate_tags_route(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    now = datetime.utcnow()
+    fake_job = SimpleNamespace(
+        model_dump=lambda: {
+            "id": "job-1",
+            "asset_id": "asset-1",
+            "project_id": "project-1",
+            "user_id": "user-1",
+            "media_type": "image",
+            "provider": "gemini_compatible",
+            "credential_source": "platform",
+            "status": "completed",
+            "idempotency_key": "idem-1",
+            "retry_of_job_id": None,
+            "error_code": None,
+            "error_message": None,
+            "attempts": 1,
+            "metadata": {},
+            "created_at": now,
+            "updated_at": now,
+        }
+    )
+    fake_result = SimpleNamespace(
+        asset_id="asset-1",
+        project_id="project-1",
+        summary="ok",
+        tags=[],
+        segments=[],
+        source_attribution=None,
+        credential_source="platform",
+        provider="gemini_compatible",
+    )
+    fake_service = SimpleNamespace(
+        moderate_asset_understanding_tags=lambda **_: {"job": fake_job, "result": fake_result}
+    )
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+    response = await router.moderate_asset_understanding_tags(
+        project_id="project-1",
+        asset_id="asset-1",
+        request=AssetTagModerationRequest(
+            decisions=[{"action": "accept", "key": "deer", "label": "Deer"}],
+            manual_tags=["Fast Motion"],
+        ),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+    assert response.job.id == "job-1"
+
+
+@pytest.mark.asyncio
+async def test_attach_global_asset_route(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    fake_service = SimpleNamespace(attach_global_project_asset=lambda **_: _asset(asset_id="asset-attached"))
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+
+    response = await router.attach_global_project_asset(
+        project_id="project-1",
+        request=AttachGlobalProjectAssetRequest(global_asset_id="asset-global"),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+    assert response.id == "asset-attached"
+
+
+@pytest.mark.asyncio
+async def test_attach_global_asset_route_404(monkeypatch):
+    monkeypatch.setattr(router, "require_owned_project_id", AsyncMock(return_value="project-1"))
+    fake_service = SimpleNamespace(
+        attach_global_project_asset=lambda **_: (_ for _ in ()).throw(ContentNotFoundError("not found"))
+    )
+    monkeypatch.setattr(router, "get_status_service", lambda: fake_service)
+
+    with pytest.raises(HTTPException) as exc:
+        await router.attach_global_project_asset(
+            project_id="project-1",
+            request=AttachGlobalProjectAssetRequest(global_asset_id="missing"),
+            current_user=SimpleNamespace(user_id="user-1"),
+        )
+    assert exc.value.status_code == 404

@@ -8,12 +8,28 @@ audit trail, and statistics.
 import json
 import uuid
 import sqlite3
+import asyncio
+import os
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
+from api.services.asset_understanding import (
+    AssetMediaEnvelope,
+    AssetUnderstandingCredentialResolver,
+    AssetUnderstandingError,
+    AssetUnderstandingGuardrails,
+    AssetUnderstandingProviderAdapter,
+    NoopGeminiCompatibleAdapter,
+)
+from api.services.asset_understanding_normalizer import normalize_understanding_payload
 from status.db import get_connection, init_db
 from status.audit import AuditActor, actor_from_string, coerce_actor
 from status.schemas import (
+    AssetSceneSegment,
+    AssetSemanticTag,
+    AssetSourceAttribution,
+    AssetUnderstandingJobRecord,
+    AssetUnderstandingResultRecord,
     ContentLifecycleStatus,
     ContentAssetRecord,
     ContentAssetStatus,
@@ -56,6 +72,20 @@ PROJECT_ASSET_MUTATION_ACTION_TARGETS: Dict[str, set[str]] = {
 }
 PROJECT_ASSET_READ_ACTIONS = {"preview_only", "historical_only"}
 PROJECT_ASSET_SUPPORTED_ACTIONS = set(PROJECT_ASSET_MUTATION_ACTION_TARGETS) | PROJECT_ASSET_READ_ACTIONS
+
+
+def _run_async(awaitable):
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        return asyncio.run(awaitable)
+    if loop.is_running():
+        new_loop = asyncio.new_event_loop()
+        try:
+            return new_loop.run_until_complete(awaitable)
+        finally:
+            new_loop.close()
+    return loop.run_until_complete(awaitable)
 
 
 class StatusService:
@@ -1172,6 +1202,707 @@ class StatusService:
         self._conn.commit()
         return self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
 
+    def queue_asset_understanding_job(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        idempotency_key: str,
+        provider: str = "gemini_compatible",
+    ) -> AssetUnderstandingJobRecord:
+        asset = self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        row = self._conn.execute(
+            """
+            SELECT * FROM asset_understanding_jobs
+            WHERE user_id = ? AND project_id = ? AND asset_id = ? AND idempotency_key = ?
+            LIMIT 1
+            """,
+            (user_id, project_id, asset_id, idempotency_key),
+        ).fetchone()
+        if row:
+            return self._row_to_asset_understanding_job(row)
+
+        guardrails = AssetUnderstandingGuardrails.from_env()
+        media_type = "video" if asset.media_kind in {"video", "video_cover", "render_output"} else "image"
+        resolver = AssetUnderstandingCredentialResolver()
+
+        now = datetime.utcnow().isoformat()
+        job_id = str(uuid.uuid4())
+        status = "queued"
+        credential_source = None
+        error_code = None
+        error_message = None
+        metadata: Dict[str, Any] = {}
+        try:
+            resolved = _run_async(resolver.resolve(user_id=user_id, provider=provider))
+            credential_source = resolved.source
+            used_today = self._quota_used_today(
+                user_id=user_id,
+                credential_source=credential_source,
+                media_type=media_type,
+            )
+            guardrails.validate_quota(
+                media_type=media_type,
+                credential_source=credential_source,
+                used_today=used_today,
+            )
+            self._increment_quota(
+                user_id=user_id,
+                credential_source=credential_source,
+                media_type=media_type,
+            )
+        except AssetUnderstandingError as exc:
+            status = "blocked" if exc.code == "provider_not_configured" else "failed"
+            error_code = exc.code
+            error_message = exc.message
+            metadata = {"retryable": exc.retryable, "details": exc.details}
+
+        self._conn.execute(
+            """
+            INSERT INTO asset_understanding_jobs (
+                id, asset_id, project_id, user_id, media_type, provider, credential_source,
+                status, idempotency_key, retry_of_job_id, error_code, error_message,
+                attempts, metadata, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                job_id,
+                asset_id,
+                project_id,
+                user_id,
+                media_type,
+                provider,
+                credential_source,
+                status,
+                idempotency_key,
+                None,
+                error_code,
+                error_message,
+                0,
+                json.dumps(metadata),
+                now,
+                now,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="understanding_queued",
+            metadata={"job_id": job_id, "status": status, "provider": provider},
+        )
+        self._conn.commit()
+        return self.get_asset_understanding_job(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+
+    def retry_asset_understanding_job(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        job_id: str,
+    ) -> AssetUnderstandingJobRecord:
+        previous = self.get_asset_understanding_job(
+            project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id
+        )
+        max_retries = int(os.getenv("ASSET_UNDERSTANDING_MAX_RETRIES", "2"))
+        if previous.attempts >= max_retries:
+            raise ValueError(f"Retry limit reached for job {job_id}")
+        return self.queue_asset_understanding_job(
+            project_id=project_id,
+            user_id=user_id,
+            asset_id=asset_id,
+            idempotency_key=f"retry:{job_id}:{datetime.utcnow().isoformat()}",
+            provider=previous.provider,
+        )
+
+    def execute_asset_understanding_job(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        job_id: str,
+        adapter: Optional[AssetUnderstandingProviderAdapter] = None,
+    ) -> AssetUnderstandingJobRecord:
+        job = self.get_asset_understanding_job(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+        if job.status in {"completed", "blocked"}:
+            return job
+        if job.status == "failed":
+            max_retries = int(os.getenv("ASSET_UNDERSTANDING_MAX_RETRIES", "2"))
+            if job.attempts >= max_retries:
+                return job
+
+        guardrails = AssetUnderstandingGuardrails.from_env()
+        running_project = self._count_running_jobs(project_id=project_id, user_id=user_id, scope="project", exclude_job_id=job_id)
+        running_user = self._count_running_jobs(project_id=project_id, user_id=user_id, scope="user", exclude_job_id=job_id)
+        if running_project >= guardrails.concurrency_per_project or running_user >= guardrails.concurrency_per_user:
+            return job
+
+        now = datetime.utcnow().isoformat()
+        self._conn.execute(
+            """
+            UPDATE asset_understanding_jobs
+            SET status = ?, attempts = attempts + 1, error_code = NULL, error_message = NULL, updated_at = ?
+            WHERE id = ?
+            """,
+            ("running", now, job_id),
+        )
+        self._conn.commit()
+
+        asset = self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        media = AssetMediaEnvelope(
+            media_type=job.media_type,  # type: ignore[arg-type]
+            size_bytes=asset.metadata.get("byte_size") if isinstance(asset.metadata, dict) else None,
+            duration_seconds=asset.metadata.get("duration_seconds") if isinstance(asset.metadata, dict) else None,
+        )
+        try:
+            guardrails.validate_media(media)
+            provider_adapter = adapter or NoopGeminiCompatibleAdapter()
+            if job.media_type == "video":
+                payload = _run_async(provider_adapter.analyze_video(media=media, prompt_context={"asset_id": asset_id}))
+            else:
+                payload = _run_async(provider_adapter.analyze_image(media=media, prompt_context={"asset_id": asset_id}))
+            self.save_asset_understanding_result(
+                project_id=project_id,
+                user_id=user_id,
+                asset_id=asset_id,
+                job_id=job_id,
+                provider_payload=payload,
+            )
+            return self.get_asset_understanding_job(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+        except Exception as exc:
+            if isinstance(exc, AssetUnderstandingError):
+                error_code = exc.code
+                error_message = exc.message
+                retryable = bool(exc.retryable)
+            else:
+                error_code = "provider_execution_failed"
+                error_message = str(exc)
+                retryable = True
+            attempts_row = self._conn.execute(
+                "SELECT attempts FROM asset_understanding_jobs WHERE id = ?",
+                (job_id,),
+            ).fetchone()
+            attempts = int(attempts_row["attempts"]) if attempts_row else 1
+            max_retries = int(os.getenv("ASSET_UNDERSTANDING_MAX_RETRIES", "2"))
+            backoff_seconds = 2 ** max(0, attempts - 1)
+            next_retry_at = datetime.utcfromtimestamp(datetime.utcnow().timestamp() + backoff_seconds).isoformat()
+            status = "failed"
+            metadata = {"retryable": retryable, "backoff_seconds": backoff_seconds, "next_retry_at": next_retry_at}
+            if attempts >= max_retries:
+                metadata["retry_capped"] = True
+            self._conn.execute(
+                """
+                UPDATE asset_understanding_jobs
+                SET status = ?, error_code = ?, error_message = ?, metadata = ?, updated_at = ?
+                WHERE id = ?
+                """,
+                (status, error_code, error_message, json.dumps(metadata), datetime.utcnow().isoformat(), job_id),
+            )
+            self._conn.commit()
+            return self.get_asset_understanding_job(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+
+    def get_asset_understanding_job(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        job_id: str,
+    ) -> AssetUnderstandingJobRecord:
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        row = self._conn.execute(
+            """
+            SELECT * FROM asset_understanding_jobs
+            WHERE id = ? AND project_id = ? AND user_id = ? AND asset_id = ?
+            LIMIT 1
+            """,
+            (job_id, project_id, user_id, asset_id),
+        ).fetchone()
+        if not row:
+            raise ContentNotFoundError(f"Understanding job {job_id} not found")
+        return self._row_to_asset_understanding_job(row)
+
+    def get_latest_asset_understanding_status(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+    ) -> Dict[str, Any]:
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        row = self._conn.execute(
+            """
+            SELECT * FROM asset_understanding_jobs
+            WHERE project_id = ? AND user_id = ? AND asset_id = ?
+            ORDER BY updated_at DESC, created_at DESC
+            LIMIT 1
+            """,
+            (project_id, user_id, asset_id),
+        ).fetchone()
+        if not row:
+            return {"job": None, "result": None}
+        job = self._row_to_asset_understanding_job(row)
+        result = self.get_asset_understanding_result(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job.id)
+        return {"job": job, "result": result}
+
+    def save_asset_understanding_result(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        job_id: str,
+        provider_payload: Dict[str, Any],
+    ) -> AssetUnderstandingResultRecord:
+        job = self.get_asset_understanding_job(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+        normalized = normalize_understanding_payload(provider_payload)
+        now = datetime.utcnow().isoformat()
+        result_id = str(uuid.uuid4())
+        self._conn.execute(
+            """
+            INSERT INTO asset_understanding_results (
+                id, job_id, asset_id, project_id, user_id, provider, credential_source,
+                summary, source_attribution, metadata, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                result_id,
+                job_id,
+                asset_id,
+                project_id,
+                user_id,
+                job.provider,
+                job.credential_source,
+                normalized.summary,
+                json.dumps(normalized.source_attribution.__dict__),
+                json.dumps({}),
+                now,
+                now,
+            ),
+        )
+        decisions = self._latest_tag_decisions(asset_id=asset_id, project_id=project_id, user_id=user_id)
+        for tag in normalized.tags:
+            decision = decisions.get(self._tag_decision_key(tag.key, tag.label), {})
+            self._conn.execute(
+                """
+                INSERT INTO asset_understanding_tags (
+                    id, result_id, asset_id, project_id, user_id, key, label, confidence, source,
+                    accepted_by_user, rejected_by_user, metadata, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid.uuid4()),
+                    result_id,
+                    asset_id,
+                    project_id,
+                    user_id,
+                    tag.key,
+                    tag.label,
+                    tag.confidence,
+                    tag.source,
+                    1 if bool(decision.get("accepted_by_user", tag.accepted_by_user)) else 0,
+                    1 if bool(decision.get("rejected_by_user", tag.rejected_by_user)) else 0,
+                    "{}",
+                    now,
+                ),
+            )
+        for segment in normalized.segments:
+            self._conn.execute(
+                """
+                INSERT INTO asset_understanding_segments (
+                    id, result_id, asset_id, project_id, user_id, start_seconds, end_seconds, label,
+                    confidence, suggested_placement, metadata, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid.uuid4()),
+                    result_id,
+                    asset_id,
+                    project_id,
+                    user_id,
+                    segment.start_seconds,
+                    segment.end_seconds,
+                    segment.label,
+                    segment.confidence,
+                    segment.suggested_placement,
+                    "{}",
+                    now,
+                ),
+            )
+        self._conn.execute(
+            "UPDATE asset_understanding_jobs SET status = ?, updated_at = ? WHERE id = ?",
+            ("completed", now, job_id),
+        )
+        self._conn.commit()
+        return self.get_asset_understanding_result(project_id=project_id, user_id=user_id, asset_id=asset_id, job_id=job_id)
+
+    def moderate_asset_understanding_tags(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        decisions: List[Dict[str, Any]],
+        manual_tags: List[str],
+    ) -> Dict[str, Any]:
+        data = self.get_latest_asset_understanding_status(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        if not data["job"] or not data["result"]:
+            raise ContentNotFoundError(f"No understanding result found for asset {asset_id}")
+        result = data["result"]
+        now = datetime.utcnow().isoformat()
+        for decision in decisions:
+            action = (decision.get("action") or "").strip().lower()
+            key = str(decision.get("key") or "").strip().lower()
+            label = str(decision.get("label") or "").strip()
+            if not action or not key or not label:
+                continue
+            self._conn.execute(
+                """
+                UPDATE asset_understanding_tags
+                SET accepted_by_user = ?, rejected_by_user = ?
+                WHERE result_id = ? AND lower(key) = ? AND label = ?
+                """,
+                (1 if action == "accept" else 0, 1 if action == "reject" else 0, result.id, key, label),
+            )
+            if action == "edit":
+                edited_label = str(decision.get("edited_label") or "").strip()
+                if edited_label:
+                    self._conn.execute(
+                        """
+                        INSERT INTO asset_understanding_tags (
+                            id, result_id, asset_id, project_id, user_id, key, label, confidence, source,
+                            accepted_by_user, rejected_by_user, metadata, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            str(uuid.uuid4()),
+                            result.id,
+                            asset_id,
+                            project_id,
+                            user_id,
+                            key,
+                            edited_label[:128],
+                            1.0,
+                            "user_manual",
+                            1,
+                            0,
+                            "{}",
+                            now,
+                        ),
+                    )
+        for raw_label in manual_tags:
+            label = raw_label.strip()
+            if not label:
+                continue
+            self._conn.execute(
+                """
+                INSERT INTO asset_understanding_tags (
+                    id, result_id, asset_id, project_id, user_id, key, label, confidence, source,
+                    accepted_by_user, rejected_by_user, metadata, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    str(uuid.uuid4()),
+                    result.id,
+                    asset_id,
+                    project_id,
+                    user_id,
+                    label.lower().replace(" ", "_")[:64],
+                    label[:128],
+                    1.0,
+                    "user_manual",
+                    1,
+                    0,
+                    "{}",
+                    now,
+                ),
+            )
+        self._conn.commit()
+        return self.get_latest_asset_understanding_status(project_id=project_id, user_id=user_id, asset_id=asset_id)
+
+    def get_asset_understanding_result(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        job_id: str,
+    ) -> Optional[AssetUnderstandingResultRecord]:
+        row = self._conn.execute(
+            """
+            SELECT * FROM asset_understanding_results
+            WHERE project_id = ? AND user_id = ? AND asset_id = ? AND job_id = ?
+            LIMIT 1
+            """,
+            (project_id, user_id, asset_id, job_id),
+        ).fetchone()
+        if not row:
+            return None
+        tags = self._conn.execute(
+            "SELECT * FROM asset_understanding_tags WHERE result_id = ? ORDER BY confidence DESC, id ASC",
+            (row["id"],),
+        ).fetchall()
+        segments = self._conn.execute(
+            "SELECT * FROM asset_understanding_segments WHERE result_id = ? ORDER BY start_seconds ASC, id ASC",
+            (row["id"],),
+        ).fetchall()
+        return AssetUnderstandingResultRecord(
+            id=row["id"],
+            job_id=row["job_id"],
+            asset_id=row["asset_id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            provider=row["provider"],
+            credential_source=row["credential_source"],
+            summary=row["summary"],
+            source_attribution=AssetSourceAttribution(**json.loads(row["source_attribution"] or "{}")),
+            tags=[self._row_to_asset_understanding_tag(item) for item in tags],
+            segments=[self._row_to_asset_understanding_segment(item) for item in segments],
+            metadata=json.loads(row["metadata"] or "{}"),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    def recommend_project_assets_for_brief(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        desired_tags: List[str],
+        limit: int = 10,
+        include_global_candidates: bool = False,
+    ) -> List[Dict[str, Any]]:
+        self.list_project_assets(project_id=project_id, user_id=user_id)
+        desired = {item.strip().lower() for item in desired_tags if item.strip()}
+        rows = self._conn.execute(
+            """
+            SELECT t.asset_id, t.key, t.label, t.confidence, r.source_attribution, a.status, a.project_id
+            FROM asset_understanding_tags t
+            JOIN asset_understanding_results r ON r.id = t.result_id
+            JOIN project_assets a ON a.id = t.asset_id
+            WHERE a.project_id = ? AND a.user_id = ? AND a.status = 'active' AND t.rejected_by_user = 0
+            ORDER BY t.confidence DESC
+            """,
+            (project_id, user_id),
+        ).fetchall()
+        if include_global_candidates:
+            rows += self._conn.execute(
+                """
+                SELECT t.asset_id, t.key, t.label, t.confidence, r.source_attribution, a.status, a.project_id
+                FROM asset_understanding_tags t
+                JOIN asset_understanding_results r ON r.id = t.result_id
+                JOIN project_assets a ON a.id = t.asset_id
+                WHERE a.user_id = ?
+                  AND a.project_id != ?
+                  AND a.status = 'active'
+                  AND t.rejected_by_user = 0
+                  AND NOT EXISTS (
+                    SELECT 1 FROM project_assets target
+                    WHERE target.project_id = ?
+                      AND target.user_id = ?
+                      AND target.status != 'tombstoned'
+                      AND (target.id = a.id OR target.source_asset_id = a.id)
+                  )
+                ORDER BY t.confidence DESC
+                """,
+                (user_id, project_id, project_id, user_id),
+            ).fetchall()
+        by_asset: Dict[str, Dict[str, Any]] = {}
+        for row in rows:
+            key = (row["key"] or "").lower()
+            label = (row["label"] or "").lower()
+            score = float(row["confidence"] or 0.0)
+            if desired and key not in desired and label not in desired:
+                continue
+            attribution = json.loads(row["source_attribution"] or "{}")
+            bucket = by_asset.setdefault(
+                row["asset_id"],
+                {
+                    "score": 0.0,
+                    "reasons": [],
+                    "warnings": [],
+                    "placements": set(),
+                    "source_attribution": attribution,
+                    "source_project_id": row["project_id"],
+                    "candidate_type": "attached_project_asset"
+                    if row["project_id"] == project_id
+                    else "candidate_global_asset",
+                    "requires_project_attachment": row["project_id"] != project_id,
+                },
+            )
+            bucket["score"] += score
+            bucket["reasons"].append({"tag": row["label"], "confidence": score, "fit_reason": f"Matches '{row['label']}'"})
+            if attribution.get("rights_status", "unknown") == "unknown" or attribution.get("credit_required"):
+                if "credit_required" not in bucket["warnings"]:
+                    bucket["warnings"].append("credit_required")
+            if key in {"b_roll", "broll", "motion"}:
+                bucket["placements"].add("b_roll")
+            if key in {"illustration", "reference"}:
+                bucket["placements"].add("illustration")
+            if key in {"thumbnail", "thumbnail_candidate"}:
+                bucket["placements"].add("thumbnail_candidate")
+        ranked = sorted(by_asset.items(), key=lambda item: item[1]["score"], reverse=True)[:limit]
+        return [
+            {
+                "asset_id": asset_id,
+                "score": round(payload["score"], 4),
+                "candidate_type": payload["candidate_type"],
+                "source_project_id": payload["source_project_id"],
+                "requires_project_attachment": payload["requires_project_attachment"],
+                "fit_reasons": payload["reasons"],
+                "suggested_placements": sorted(payload["placements"]),
+                "source_attribution": payload["source_attribution"],
+                "warnings": payload["warnings"],
+            }
+            for asset_id, payload in ranked
+        ]
+
+    def attach_global_project_asset(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        global_asset_id: str,
+    ) -> ProjectAssetRecord:
+        source_row = self._conn.execute(
+            """
+            SELECT * FROM project_assets
+            WHERE id = ? AND user_id = ? AND status = 'active'
+            LIMIT 1
+            """,
+            (global_asset_id, user_id),
+        ).fetchone()
+        if not source_row:
+            raise ContentNotFoundError(f"Global asset {global_asset_id} not found")
+        if source_row["project_id"] == project_id:
+            return self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=global_asset_id)
+
+        existing = self._conn.execute(
+            """
+            SELECT * FROM project_assets
+            WHERE project_id = ? AND user_id = ? AND source_asset_id = ? AND status != 'tombstoned'
+            ORDER BY updated_at DESC
+            LIMIT 1
+            """,
+            (project_id, user_id, global_asset_id),
+        ).fetchone()
+        if existing:
+            return self._row_to_project_asset(existing)
+
+        now = datetime.utcnow().isoformat()
+        new_asset_id = str(uuid.uuid4())
+        source_metadata = json.loads(source_row["metadata"] or "{}")
+        source_metadata["global_library_source_asset_id"] = global_asset_id
+        source_metadata["global_library_source_project_id"] = source_row["project_id"]
+        self._conn.execute(
+            """
+            INSERT INTO project_assets (
+                id, project_id, user_id, source_asset_id, content_asset_id,
+                media_kind, source, mime_type, file_name, storage_uri, status,
+                metadata, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                new_asset_id,
+                project_id,
+                user_id,
+                global_asset_id,
+                None,
+                source_row["media_kind"],
+                source_row["source"],
+                source_row["mime_type"],
+                source_row["file_name"],
+                source_row["storage_uri"],
+                ProjectAssetLifecycleStatus.ACTIVE.value,
+                json.dumps(source_metadata),
+                now,
+                now,
+            ),
+        )
+        self._record_project_asset_event(
+            asset_id=new_asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="attached_from_global_library",
+            metadata={"global_asset_id": global_asset_id, "source_project_id": source_row["project_id"]},
+        )
+        self._conn.commit()
+        return self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=new_asset_id)
+
+    def _count_running_jobs(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        scope: str,
+        exclude_job_id: Optional[str] = None,
+    ) -> int:
+        if scope == "project":
+            query = "SELECT COUNT(*) as c FROM asset_understanding_jobs WHERE project_id = ? AND user_id = ? AND status = 'running'"
+            params: List[Any] = [project_id, user_id]
+        else:
+            query = "SELECT COUNT(*) as c FROM asset_understanding_jobs WHERE user_id = ? AND status = 'running'"
+            params = [user_id]
+        if exclude_job_id:
+            query += " AND id != ?"
+            params.append(exclude_job_id)
+        row = self._conn.execute(query, tuple(params)).fetchone()
+        return int(row["c"] if row else 0)
+
+    def _latest_tag_decisions(self, *, project_id: str, user_id: str, asset_id: str) -> Dict[str, Dict[str, bool]]:
+        rows = self._conn.execute(
+            """
+            SELECT key, label, accepted_by_user, rejected_by_user
+            FROM asset_understanding_tags
+            WHERE project_id = ? AND user_id = ? AND asset_id = ?
+            ORDER BY created_at DESC
+            """,
+            (project_id, user_id, asset_id),
+        ).fetchall()
+        decisions: Dict[str, Dict[str, bool]] = {}
+        for row in rows:
+            composite = self._tag_decision_key(row["key"], row["label"])
+            if composite in decisions:
+                continue
+            decisions[composite] = {
+                "accepted_by_user": bool(row["accepted_by_user"]),
+                "rejected_by_user": bool(row["rejected_by_user"]),
+            }
+        return decisions
+
+    @staticmethod
+    def _tag_decision_key(key: str, label: str) -> str:
+        return f"{(key or '').strip().lower()}::{(label or '').strip().lower()}"
+
+    def _quota_used_today(self, *, user_id: str, credential_source: str, media_type: str) -> int:
+        day_utc = datetime.utcnow().date().isoformat()
+        row = self._conn.execute(
+            """
+            SELECT used_count FROM asset_understanding_quota_daily
+            WHERE day_utc = ? AND user_id = ? AND credential_source = ? AND media_type = ?
+            LIMIT 1
+            """,
+            (day_utc, user_id, credential_source, media_type),
+        ).fetchone()
+        return int(row["used_count"]) if row else 0
+
+    def _increment_quota(self, *, user_id: str, credential_source: str, media_type: str) -> None:
+        day_utc = datetime.utcnow().date().isoformat()
+        now = datetime.utcnow().isoformat()
+        self._conn.execute(
+            """
+            INSERT INTO asset_understanding_quota_daily (
+                day_utc, user_id, credential_source, media_type, used_count, updated_at
+            ) VALUES (?, ?, ?, ?, 1, ?)
+            ON CONFLICT(day_utc, user_id, credential_source, media_type)
+            DO UPDATE SET used_count = used_count + 1, updated_at = excluded.updated_at
+            """,
+            (day_utc, user_id, credential_source, media_type, now),
+        )
+
     def _normalize_project_assets_from_content_assets(self, *, project_id: str, user_id: str) -> None:
         rows = self._conn.execute(
             """
@@ -1572,6 +2303,47 @@ class StatusService:
             placement=row["placement"],
             metadata=json.loads(row["metadata"]) if row["metadata"] else {},
             created_at=datetime.fromisoformat(row["created_at"]),
+        )
+
+    def _row_to_asset_understanding_job(self, row: sqlite3.Row) -> AssetUnderstandingJobRecord:
+        return AssetUnderstandingJobRecord(
+            id=row["id"],
+            asset_id=row["asset_id"],
+            project_id=row["project_id"],
+            user_id=row["user_id"],
+            media_type=row["media_type"],
+            provider=row["provider"],
+            credential_source=row["credential_source"],
+            status=row["status"],
+            idempotency_key=row["idempotency_key"],
+            retry_of_job_id=row["retry_of_job_id"],
+            error_code=row["error_code"],
+            error_message=row["error_message"],
+            attempts=row["attempts"],
+            metadata=json.loads(row["metadata"] or "{}"),
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    @staticmethod
+    def _row_to_asset_understanding_tag(row: sqlite3.Row) -> AssetSemanticTag:
+        return AssetSemanticTag(
+            key=row["key"],
+            label=row["label"],
+            confidence=float(row["confidence"]),
+            source=row["source"],
+            accepted_by_user=bool(row["accepted_by_user"]),
+            rejected_by_user=bool(row["rejected_by_user"]),
+        )
+
+    @staticmethod
+    def _row_to_asset_understanding_segment(row: sqlite3.Row) -> AssetSceneSegment:
+        return AssetSceneSegment(
+            start_seconds=float(row["start_seconds"]),
+            end_seconds=float(row["end_seconds"]),
+            label=row["label"],
+            confidence=float(row["confidence"]),
+            suggested_placement=row["suggested_placement"],
         )
 
     # ─── Sync Helpers ─────────────────────────────────
