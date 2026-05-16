@@ -242,8 +242,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       accent: AppTheme.warningColor,
       primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In',
       onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
-      secondaryLabel: 'Create Account',
-      onSecondary: kIsWeb ? _openWebsiteSignUp : () => context.go('/auth'),
+      secondaryLabel: 'Open Interactive Demo',
+      onSecondary: () {
+        ref.read(authSessionProvider.notifier).signInDemo();
+        context.go('/onboarding?intent=entry');
+      },
+      tertiaryLabel: 'Create Account',
+      onTertiary: kIsWeb ? _openWebsiteSignUp : () => context.go('/auth'),
       caption: 'Sign-in and account creation are handled by Clerk.',
       extra: _buildCopyFlowDiagnostics(context, ref, authSession, accessState),
     );
@@ -313,6 +318,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     required VoidCallback? onPrimary,
     String? secondaryLabel,
     VoidCallback? onSecondary,
+    String? tertiaryLabel,
+    VoidCallback? onTertiary,
     String? caption,
     Widget? extra,
   }) {
@@ -419,6 +426,23 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   ),
                 ),
                 child: Text(context.tr(secondaryLabel)),
+              ),
+            ),
+          ],
+          if (tertiaryLabel != null && onTertiary != null) ...[
+            SizedBox(height: AppSpacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: onTertiary,
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.onSurfaceVariant,
+                  padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                  ),
+                ),
+                child: Text(context.tr(tertiaryLabel)),
               ),
             ),
           ],
