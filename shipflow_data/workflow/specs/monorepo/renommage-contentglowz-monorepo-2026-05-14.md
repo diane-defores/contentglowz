@@ -6,7 +6,7 @@ project: "contentglowz"
 created: "2026-05-14"
 created_at: "2026-05-14 22:42:30 UTC"
 updated: "2026-05-15"
-updated_at: "2026-05-16 12:27:23 UTC"
+updated_at: "2026-05-16 12:54:28 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -47,7 +47,7 @@ evidence:
   - "2026-05-15: backend CORS/OpenAPI paths include contentglowz.com domains and GitHub contact URL."
   - "2026-05-15: worker package/composition contract is now contentglowz-remotion-worker and ContentGlowzTimelineVideo."
   - "2026-05-15: residual active old-name occurrences remain in app copy and lab agent docs; many governance/spec/research occurrences are historical or require classification."
-next_step: "/sf-test --retest BUG-2026-05-05-001 on Android device"
+next_step: "/sf-test --retest BUG-2026-05-05-002 on Android device"
 ---
 
 ## Title
@@ -409,17 +409,19 @@ None.
 | 2026-05-16 07:35:49 UTC | sf-build | GPT-5 Codex | Loop agents séquentiel: correction de `contentglowz_lab/AGENTS.md` en symlink, réduction du budget `duration` Flutter via `AppMotion.base`, et relance des validations ciblées. | partial | `/sf-test retests bug gate ContentGlowz` |
 | 2026-05-16 12:18:30 UTC | sf-test | GPT-5 Codex | Retest manuel BUG-2026-05-05-001 préparé puis bloqué par l'absence de l'entrée `Open Interactive Demo` dans le build Android release fourni. | blocked | `/sf-fix BUG-2026-05-05-001 Android demo entry unavailable` |
 | 2026-05-16 12:27:23 UTC | sf-fix | GPT-5 Codex | Correction directe du blocage de retest Android: restauration du CTA `Open Interactive Demo` sur l'écran d'entrée signed-out et validation Flutter ciblée. | fix-attempted | `/sf-test --retest BUG-2026-05-05-001 on Android device` |
+| 2026-05-16 12:53:04 UTC | sf-test | GPT-5 Codex | Retest manuel BUG-2026-05-05-001 validé par l'utilisateur après correction du CTA demo; passage du bug en `fixed-pending-verify`. | pass | `/sf-verify BUG-2026-05-05-001 Android safe area demo onboarding` |
+| 2026-05-16 12:54:28 UTC | sf-verify | GPT-5 Codex | Vérification ciblée BUG-2026-05-05-001: tests Flutter focalisés repassés et retest Android utilisateur accepté comme preuve de fermeture. | verified | `/sf-test --retest BUG-2026-05-05-002 on Android device` |
 
 ## Current Chantier Flow
 
 - sf-spec: done
 - sf-ready: ready
 - sf-start: partial
-- sf-verify: partial
+- sf-verify: partial; BUG-2026-05-05-001 verified
 - sf-build: partial
-- sf-test: blocked
+- sf-test: pass
 - sf-fix: fix-attempted
 - sf-end: not launched
 - sf-ship: not launched
 
-Prochaine commande recommandée : `/sf-test --retest BUG-2026-05-05-001 on Android device`.
+Prochaine commande recommandée : `/sf-test --retest BUG-2026-05-05-002 on Android device`.
