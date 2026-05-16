@@ -155,7 +155,6 @@ class AppLocalizations {
     'Content Clusters': 'Clusters de contenu',
     'Content Engine': 'Moteur de contenu',
     'Content Feed': 'Flux de contenu',
-    'ContentGlowz': 'Flux de contenu',
     'Content Frequency': 'Fréquence de contenu',
     'Content Tools': 'Outils de contenu',
     'Content by Type': 'Contenu par type',
