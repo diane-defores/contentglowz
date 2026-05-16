@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-02"
 created_at: "2026-05-02 06:03:02 UTC"
 updated: "2026-05-02"
@@ -18,13 +18,13 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter feed"
-  - "contentflow_app Flutter editor"
-  - "contentflow_app Riverpod providers"
-  - "contentflow_app ApiService offline cache/queue"
-  - "contentflow_lab FastAPI status router"
-  - "contentflow_lab status service"
-  - "contentflow_lab publish router"
+  - "contentglowz_app Flutter feed"
+  - "contentglowz_app Flutter editor"
+  - "contentglowz_app Riverpod providers"
+  - "contentglowz_app ApiService offline cache/queue"
+  - "contentglowz_lab FastAPI status router"
+  - "contentglowz_lab status service"
+  - "contentglowz_lab publish router"
 depends_on:
   - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
@@ -38,10 +38,10 @@ depends_on:
   - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-infrastructure.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-infrastructure.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -51,8 +51,8 @@ evidence:
   - "lib/providers/providers.dart:1620 publishes item.body through api.publishContent."
   - "lib/data/services/api_service.dart:1198 fetchContentBody already reads /api/status/content/{id}/body."
   - "lib/data/services/api_service.dart:1274 saveContentBody already writes /api/status/content/{id}/body and queues offline save_body."
-  - "../contentflow_lab/api/routers/status.py:366 has GET /body, PUT /body, GET /body/history with require_owned_content_record."
-  - "../contentflow_lab/status/service.py:450 creates content body versions and edit audit entries."
+  - "../contentglowz_lab/api/routers/status.py:366 has GET /body, PUT /body, GET /body/history with require_owned_content_record."
+  - "../contentglowz_lab/status/service.py:450 creates content body versions and edit audit entries."
 next_step: "/sf-verify content editing full body preview"
 ---
 
@@ -137,16 +137,16 @@ Separate preview display data from authoritative body data, add a content detail
   - `lib/presentation/screens/editor/platform_preview_sheet.dart`
   - `lib/data/services/offline_storage_service.dart`
 - Backend files:
-  - `../contentflow_lab/api/routers/status.py`
-  - `../contentflow_lab/api/models/status.py`
-  - `../contentflow_lab/status/service.py`
-  - `../contentflow_lab/api/migrations/004_status_lifecycle.sql`
-  - `../contentflow_lab/api/routers/publish.py`
+  - `../contentglowz_lab/api/routers/status.py`
+  - `../contentglowz_lab/api/models/status.py`
+  - `../contentglowz_lab/status/service.py`
+  - `../contentglowz_lab/api/migrations/004_status_lifecycle.sql`
+  - `../contentglowz_lab/api/routers/publish.py`
 - Test areas:
   - `test/data/`
   - `test/presentation/screens/editor/`
   - `test/presentation/screens/feed/feed_screen_test.dart`
-  - `../contentflow_lab/tests/`
+  - `../contentglowz_lab/tests/`
 - Fresh external docs verdict: `fresh-docs not needed`; the fix is governed by local app/backend contracts and does not require new Flutter, Dio, Riverpod, FastAPI, Clerk, or external publish API semantics.
 
 ## Invariants
@@ -172,7 +172,7 @@ Separate preview display data from authoritative body data, add a content detail
 ## Documentation Coherence
 
 - Update `CHANGELOG.md` after implementation with a short reliability note.
-- Update `shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md` only if queue action schema, cache keys, or offline behavior changes.
+- Update `shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md` only if queue action schema, cache keys, or offline behavior changes.
 - No `shipflow_data/business/product.md` change is required if this only fixes the existing promised behavior.
 - No marketing-site copy change is required.
 - If implementation discovers that publish behavior changes user-visible copy, update `lib/l10n/app_localizations.dart` consistently.
@@ -248,11 +248,11 @@ Separate preview display data from authoritative body data, add a content detail
   - Notes: Card rendering must stay compact and avoid layout regressions.
 
 - [ ] Task 8: Add backend coverage for body versioning and edit history.
-  - File: `../contentflow_lab/tests/test_status_content_body.py`
+  - File: `../contentglowz_lab/tests/test_status_content_body.py`
   - Action: Add tests for `save_content_body`, `get_content_body`, `get_edit_history`, and ownership-guarded router behavior if practical with existing fixtures.
   - User story link: Proves saved creator edits are durable and auditable.
   - Depends on: Existing backend status service.
-  - Validate with: `pytest tests/test_status_content_body.py` from `contentflow_lab`.
+  - Validate with: `pytest tests/test_status_content_body.py` from `contentglowz_lab`.
   - Notes: If router auth fixtures are too heavy, cover `StatusService` first and add router ownership coverage in a follow-up.
 
 - [ ] Task 9: Add Flutter regression tests.
@@ -272,7 +272,7 @@ Separate preview display data from authoritative body data, add a content detail
   - Notes: Reuse existing provider override style from `test/presentation/screens/feed/feed_screen_test.dart`.
 
 - [ ] Task 11: Verify Turso migration requirement.
-  - File: `../contentflow_lab/api/migrations/004_status_lifecycle.sql`
+  - File: `../contentglowz_lab/api/migrations/004_status_lifecycle.sql`
   - Action: Check target schema has `content_bodies`, `content_edits`, and `content_records.current_version`; document whether migration is required.
   - User story link: Ensures full-body versioning exists in the durable environment.
   - Depends on: Backend access/config availability.
@@ -339,7 +339,7 @@ Separate preview display data from authoritative body data, add a content detail
   - `lib/data/services/api_service.dart`
   - `lib/providers/providers.dart`
   - `lib/presentation/screens/editor/editor_screen.dart`
-  - `../contentflow_lab/api/routers/status.py`
+  - `../contentglowz_lab/api/routers/status.py`
 - Implementation order:
   1. Model split.
   2. API/detail load path.
@@ -377,7 +377,7 @@ None for Spec 1. Decision: direct feed publish must pay the cost of resolving fu
 | 2026-05-02 13:58:45 UTC | sf-check | GPT-5 Codex | Reran Flutter checks through the provisioned voiceflowz Flox Flutter env; analyze and targeted Flutter tests passed, while backend Pytest, pip-audit, and Turso CLI remain unavailable | partial | Run backend Pytest and Turso schema verification, then /sf-verify content editing full body preview |
 | 2026-05-02 14:27:54 UTC | sf-check | GPT-5 Codex | Installed project Flox tooling, reran Flutter analyze/tests and backend body tests; dependency audit and Turso schema proof remain blocked by resolver/auth | partial | Resolve dependency audit, authenticate Turso, then /sf-verify content editing full body preview |
 | 2026-05-04 17:43:32 UTC | sf-build | GPT-5 Codex | Continued interrupted verification, fixed editor save/publish ordering, added editor regression coverage, and reran targeted Flutter/backend checks | partial | Resolve dependency audit, authenticate Turso, isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
-| 2026-05-04 18:56:42 UTC | sf-build | GPT-5 Codex | Repaired contentflow_lab Flox Python/Turso environment, verified backend body tests and dependency audit inside Flox, and confirmed Turso CLI availability | partial | Login to Turso and run schema verification, isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
+| 2026-05-04 18:56:42 UTC | sf-build | GPT-5 Codex | Repaired contentglowz_lab Flox Python/Turso environment, verified backend body tests and dependency audit inside Flox, and confirmed Turso CLI availability | partial | Login to Turso and run schema verification, isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
 | 2026-05-04 19:28:13 UTC | sf-build | GPT-5 Codex | Completed Turso schema proof with `TURSO_API_TOKEN`; production `content_records.current_version`, `content_bodies`, and `content_edits` exist | partial | Isolate unrelated dirty files, then rerun /sf-verify content editing full body preview |
 
 ## Current Chantier Flow

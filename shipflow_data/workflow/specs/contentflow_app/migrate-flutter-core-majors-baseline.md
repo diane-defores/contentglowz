@@ -2,7 +2,7 @@
 artifact: execution_log
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-04-27"
 updated: "2026-04-27"
 status: active
@@ -14,7 +14,7 @@ risk_level: "high"
 security_impact: "low"
 docs_impact: "yes"
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-migrate-flutter-core-majors.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-migrate-flutter-core-majors.md"
     artifact_version: "1.1.0"
     required_status: "ready"
 supersedes: []
@@ -52,28 +52,28 @@ Tracked modified files observed:
 - `TASKS.md`
 - `pubspec.lock`
 - `pubspec.yaml`
-- `shipflow_data/workflow/specs/contentflow_app/PRD-lifetime-deal-early-bird-payg.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md`
-- `shipflow_data/workflow/specs/contentflow_app/architecture-cible-fastapi-clerk-flutter.md`
-- `shipflow_data/workflow/specs/contentflow_app/feedback-admin-v1-contentflow.md`
-- `shipflow_data/workflow/specs/contentflow_app/feedback-backend-contract-fastapi.md`
-- `shipflow_data/workflow/specs/contentflow_app/foundation-scrollable-nav-affiliations.md`
-- `shipflow_data/workflow/specs/contentflow_app/late-integration-finalization.md`
-- `shipflow_data/workflow/specs/contentflow_app/spec-no-ui-jump-on-resume.md`
+- `shipflow_data/workflow/specs/contentglowz_app/PRD-lifetime-deal-early-bird-payg.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md`
+- `shipflow_data/workflow/specs/contentglowz_app/architecture-cible-fastapi-clerk-flutter.md`
+- `shipflow_data/workflow/specs/contentglowz_app/feedback-admin-v1-contentflow.md`
+- `shipflow_data/workflow/specs/contentglowz_app/feedback-backend-contract-fastapi.md`
+- `shipflow_data/workflow/specs/contentglowz_app/foundation-scrollable-nav-affiliations.md`
+- `shipflow_data/workflow/specs/contentglowz_app/late-integration-finalization.md`
+- `shipflow_data/workflow/specs/contentglowz_app/spec-no-ui-jump-on-resume.md`
 
 Untracked files/directories observed:
 
 - `.fvmrc`
 - `.github/`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-migrate-flutter-core-majors.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-migrate-flutter-core-majors.md`
 
 Additional files changed by this baseline job:
 
 - `TASKS.md`
 - `/home/claude/shipflow_data/TASKS.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-migrate-flutter-core-majors.md`
-- `shipflow_data/workflow/specs/contentflow_app/migrate-flutter-core-majors-baseline.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-migrate-flutter-core-majors.md`
+- `shipflow_data/workflow/specs/contentglowz_app/migrate-flutter-core-majors-baseline.md`
 
 ## Local Toolchain And SDK
 

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.1"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-05-13"
 created_at: "2026-05-13 07:41:19 UTC"
 updated: "2026-05-14"
@@ -17,37 +17,37 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentflow_lab/api/routers/projects.py
-  - contentflow_lab/api/routers/personas.py
-  - contentflow_lab/api/routers/search_console.py
-  - contentflow_lab/api/routers/idea_pool.py
-  - contentflow_lab/api/services/ai_runtime_service.py
-  - contentflow_lab/api/services/repo_understanding_service.py
-  - contentflow_lab/api/services/search_console_store.py
-  - contentflow_lab/status/service.py
-  - contentflow_app/lib/data/services/api_service.dart
-  - contentflow_app/lib/providers/providers.dart
+  - contentglowz_lab/api/routers/projects.py
+  - contentglowz_lab/api/routers/personas.py
+  - contentglowz_lab/api/routers/search_console.py
+  - contentglowz_lab/api/routers/idea_pool.py
+  - contentglowz_lab/api/services/ai_runtime_service.py
+  - contentglowz_lab/api/services/repo_understanding_service.py
+  - contentglowz_lab/api/services/search_console_store.py
+  - contentglowz_lab/status/service.py
+  - contentglowz_app/lib/data/services/api_service.dart
+  - contentglowz_app/lib/providers/providers.dart
 depends_on:
   - artifact: "docs/explorations/2026-05-12-project-intelligence-engine.md"
     artifact_version: "1.0.0"
     required_status: "unknown"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-google-search-console-intelligence.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-google-search-console-intelligence.md"
     artifact_version: "0.1.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
 evidence:
   - "docs/explorations/2026-05-12-project-intelligence-engine.md concludes that ContentFlow has feature-specific intelligence bricks but no canonical project brain."
-  - "contentflow_lab/api/services/ai_runtime_service.py centralizes BYOK/platform provider resolution for openrouter, exa, and firecrawl."
-  - "contentflow_lab/api/services/repo_understanding_service.py already collects repo/site evidence and synthesizes persona-ready understanding."
-  - "contentflow_lab/api/routers/search_console.py and api/services/search_console_store.py already store project-scoped SEO snapshots and opportunities."
-  - "contentflow_lab/api/routers/idea_pool.py and contentflow_lab/agents/sources/ingest.py already ingest newsletter, SEO, competitor, social, and Search Console ideas."
-  - "contentflow_lab/status/service.py bulk_create_ideas currently has no user_id parameter although authenticated routers pass user_id, so bulk ingestion ownership must be fixed before reuse."
+  - "contentglowz_lab/api/services/ai_runtime_service.py centralizes BYOK/platform provider resolution for openrouter, exa, and firecrawl."
+  - "contentglowz_lab/api/services/repo_understanding_service.py already collects repo/site evidence and synthesizes persona-ready understanding."
+  - "contentglowz_lab/api/routers/search_console.py and api/services/search_console_store.py already store project-scoped SEO snapshots and opportunities."
+  - "contentglowz_lab/api/routers/idea_pool.py and contentglowz_lab/agents/sources/ingest.py already ingest newsletter, SEO, competitor, social, and Search Console ideas."
+  - "contentglowz_lab/status/service.py bulk_create_ideas currently has no user_id parameter although authenticated routers pass user_id, so bulk ingestion ownership must be fixed before reuse."
   - "OpenAI official docs describe vector stores/file search and model optimization/fine-tuning as separate workflows; current model optimization docs also reinforce that fine-tuning is not the default path for arbitrary uploads."
   - "Google Gemini official docs state Gemini Files API uploads are temporary and Gemini API fine-tuning has no current supported model after Gemini 1.5 Flash-001 deprecation, with Vertex AI as the tuning path."
   - "sf-verify 2026-05-14 found the V1 implementation present with backend tests and Flutter analyze passing, but partial because source removal did not exclude duplicate-derived recommendation evidence, active job enforcement was not atomic, connector caps were not globally proven, 10 MB file validation read full payloads first, and Flutter lacked job/document/dedupe/file-upload proof."
@@ -201,19 +201,19 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
 ## Dependencies
 
 - Local backend:
-  - `contentflow_lab/api/routers/projects.py` for project ownership and project-scoped routing patterns.
-  - `contentflow_lab/api/services/user_data_store.py` for user-owned profile/persona/work-domain data patterns.
-  - `contentflow_lab/agents/seo/config/project_store.py` for Project table patterns.
-  - `contentflow_lab/api/services/ai_runtime_service.py` for BYOK/platform runtime preflight.
-  - `contentflow_lab/api/services/repo_understanding_service.py` for existing repo/site evidence collection.
-  - `contentflow_lab/api/routers/search_console.py` and `api/services/search_console_store.py` for SEO snapshots/opportunity evidence.
-  - `contentflow_lab/status/service.py` for Idea Pool CRUD and the bulk ingestion ownership bug that must be fixed.
-  - `contentflow_lab/api/main.py` and `api/routers/__init__.py` for router/startup registration.
+  - `contentglowz_lab/api/routers/projects.py` for project ownership and project-scoped routing patterns.
+  - `contentglowz_lab/api/services/user_data_store.py` for user-owned profile/persona/work-domain data patterns.
+  - `contentglowz_lab/agents/seo/config/project_store.py` for Project table patterns.
+  - `contentglowz_lab/api/services/ai_runtime_service.py` for BYOK/platform runtime preflight.
+  - `contentglowz_lab/api/services/repo_understanding_service.py` for existing repo/site evidence collection.
+  - `contentglowz_lab/api/routers/search_console.py` and `api/services/search_console_store.py` for SEO snapshots/opportunity evidence.
+  - `contentglowz_lab/status/service.py` for Idea Pool CRUD and the bulk ingestion ownership bug that must be fixed.
+  - `contentglowz_lab/api/main.py` and `api/routers/__init__.py` for router/startup registration.
 - Local frontend:
-  - `contentflow_app/lib/data/services/api_service.dart` for API calls, caching, and error mapping.
-  - `contentflow_app/lib/providers/providers.dart` for Riverpod project-scoped providers.
-  - `contentflow_app/lib/router.dart` and `presentation/screens/app_shell.dart` for navigation.
-  - `contentflow_app/lib/l10n/app_localizations.dart` for labels.
+  - `contentglowz_app/lib/data/services/api_service.dart` for API calls, caching, and error mapping.
+  - `contentglowz_app/lib/providers/providers.dart` for Riverpod project-scoped providers.
+  - `contentglowz_app/lib/router.dart` and `presentation/screens/app_shell.dart` for navigation.
+  - `contentglowz_app/lib/l10n/app_localizations.dart` for labels.
 - Python packages already available or acceptable under current constraints:
   - `fastapi[standard]` includes multipart upload support in current requirements.
   - `beautifulsoup4` is already in `requirements.txt` for HTML text extraction.
@@ -261,11 +261,11 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` with Project Intelligence routes, supported file types, limits, startup tables, and provider-synthesis behavior.
-- Update `contentflow_app/README.md` with the new project-scoped decision surface and offline limits for uploads.
+- Update `contentglowz_lab/README.md` with Project Intelligence routes, supported file types, limits, startup tables, and provider-synthesis behavior.
+- Update `contentglowz_app/README.md` with the new project-scoped decision surface and offline limits for uploads.
 - Add or update a short internal docs section explaining "RAG/index first, fine-tuning later" so the product does not over-promise provider training.
 - Update API examples or OpenAPI descriptions for upload, sync, recommendations, and Idea Pool action routes.
-- Add localization strings in `contentflow_app/lib/l10n/app_localizations.dart`.
+- Add localization strings in `contentglowz_app/lib/l10n/app_localizations.dart`.
 - Changelog/task tracking is handled by later lifecycle steps, not this spec.
 
 ## Edge Cases
@@ -289,55 +289,55 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
 ## Implementation Tasks
 
 - [ ] Task 1: Add backend intelligence Pydantic contracts
-  - File: `contentflow_lab/api/models/project_intelligence.py`
+  - File: `contentglowz_lab/api/models/project_intelligence.py`
   - Action: Create request/response models for source inventory, upload result, ingest job, document, chunk summary, fact, duplicate, recommendation, provider readiness, and Idea Pool action responses using project API naming conventions.
   - User story link: Defines the observable contract for importing data and making decisions.
   - Depends on: None.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_models.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_models.py`.
   - Notes: Include aliases for camelCase client payloads where existing models do so.
 
 - [ ] Task 2: Add Turso-backed intelligence store
-  - File: `contentflow_lab/api/services/project_intelligence_store.py`
+  - File: `contentglowz_lab/api/services/project_intelligence_store.py`
   - Action: Implement `ensure_tables`, create/list/update/delete-or-soft-delete methods for `ProjectIntelligenceSource`, `ProjectIntelligenceDocument`, `ProjectIntelligenceChunk`, `ProjectIntelligenceFact`, `ProjectIntelligenceRecommendation`, and `ProjectIntelligenceDuplicate`.
   - User story link: Provides durable project memory with provenance.
   - Depends on: Task 1.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_store.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_store.py`.
   - Notes: Use additive tables with `userId`, `projectId`, `createdAt`, `updatedAt`; add indexes for scope, status, `contentHash`, `canonicalDocumentId`, and recommendation status. Removed source evidence must be excluded by default queries.
 
 - [ ] Task 3: Register startup ensure for intelligence tables
-  - File: `contentflow_lab/api/main.py`
+  - File: `contentglowz_lab/api/main.py`
   - Action: Call `project_intelligence_store.ensure_tables()` in lifespan when Turso is configured, matching Search Console and image generation startup style.
   - User story link: Ensures the feature is available without manual migration steps.
   - Depends on: Task 2.
-  - Validate with: `pytest contentflow_lab/tests/test_bootstrap_routes.py` and a startup import sanity check.
+  - Validate with: `pytest contentglowz_lab/tests/test_bootstrap_routes.py` and a startup import sanity check.
   - Notes: Startup failure should be non-critical but explicit in logs, matching current patterns.
 
 - [ ] Task 4: Implement document cleaning, formatting, chunking, and dedupe utilities
-  - File: `contentflow_lab/api/services/project_intelligence_processor.py`
+  - File: `contentglowz_lab/api/services/project_intelligence_processor.py`
   - Action: Add deterministic parsers for text/markdown, JSON, CSV, and HTML; normalize whitespace; compute raw and normalized hashes; chunk text with stable offsets; compute near-duplicate signatures and similarity.
   - User story link: Delivers the "cleaning, formatting, deduplication" promise.
   - Depends on: Task 1.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_processor.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_processor.py`.
   - Notes: Do not add a vector DB or external parser in V1. Strip scripts/styles from HTML with BeautifulSoup.
 
 - [ ] Task 5: Implement project intelligence orchestration service
-  - File: `contentflow_lab/api/services/project_intelligence_service.py`
+  - File: `contentglowz_lab/api/services/project_intelligence_service.py`
   - Action: Compose store + processor + existing sources; implement upload ingestion, connector sync, fact extraction, deterministic recommendations, optional LLM recommendation polishing through `ai_runtime_service`, and provider readiness report.
   - User story link: Turns raw and connected data into decision-ready memory.
   - Depends on: Tasks 2, 4.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_service.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_service.py`.
   - Notes: Deterministic recommendations should cover at least missing persona evidence, weak source diversity, duplicated ideas, SEO opportunity backlog, stale source data, and high-confidence Idea Pool candidates.
 
 - [ ] Task 6: Add authenticated project intelligence router
-  - File: `contentflow_lab/api/routers/project_intelligence.py`
+  - File: `contentglowz_lab/api/routers/project_intelligence.py`
   - Action: Add routes under `/api/projects/{project_id}/intelligence` for status, upload, connector sync, jobs, sources, source removal, documents, facts, recommendations, provider readiness, and add-to-Idea-Pool action.
   - User story link: Exposes the project intelligence workflow to clients.
   - Depends on: Task 5.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_router.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_router.py`.
   - Notes: Reuse `require_owned_project`; return `404` for foreign project data. Use `UploadFile` for multipart uploads.
 
 - [ ] Task 7: Register the new router
-  - File: `contentflow_lab/api/routers/__init__.py`
+  - File: `contentglowz_lab/api/routers/__init__.py`
   - Action: Export `project_intelligence_router`.
   - User story link: Makes the route available through the FastAPI app.
   - Depends on: Task 6.
@@ -345,31 +345,31 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Follow existing router export ordering.
 
 - [ ] Task 8: Include the router in FastAPI
-  - File: `contentflow_lab/api/main.py`
+  - File: `contentglowz_lab/api/main.py`
   - Action: Import and include `project_intelligence_router`.
   - User story link: Makes the route callable from Flutter.
   - Depends on: Task 7.
-  - Validate with: `pytest contentflow_lab/tests/test_bootstrap_routes.py contentflow_lab/tests/test_project_intelligence_router.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_bootstrap_routes.py contentglowz_lab/tests/test_project_intelligence_router.py`.
   - Notes: Keep health/no-prefix routes unchanged.
 
 - [ ] Task 9: Fix Idea Pool bulk ingestion ownership before using it
-  - File: `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/service.py`
   - Action: Add `user_id: Optional[str] = None` to `bulk_create_ideas`, write `user_id` into `idea_pool`, and preserve backward-compatible callers that omit user_id.
   - User story link: Ensures intelligence recommendations cannot create ownerless or cross-tenant ideas.
   - Depends on: None.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_router.py contentflow_lab/tests/test_search_console_router.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_router.py contentglowz_lab/tests/test_search_console_router.py`.
   - Notes: The current authenticated router passes `user_id` to a method that does not accept it; this is a blocking bug for safe recommendation actions.
 
 - [ ] Task 10: Add backend tests for security, dedupe, and degradation
-  - File: `contentflow_lab/tests/test_project_intelligence_router.py`
+  - File: `contentglowz_lab/tests/test_project_intelligence_router.py`
   - Action: Cover project ownership, unsupported files, oversized files, upload success, connector sync success, duplicate detection, recommendation evidence, provider-unavailable degradation, source removal, escaped HTML/Markdown evidence handling, concurrent job conflict, connector caps, and Idea Pool retry dedupe.
   - User story link: Verifies the happy path and failure behavior.
   - Depends on: Tasks 1-9.
-  - Validate with: `pytest contentflow_lab/tests/test_project_intelligence_router.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_intelligence_router.py`.
   - Notes: Use AsyncMock and in-memory/test libsql patterns already used by neighboring tests.
 
 - [ ] Task 11: Add Flutter data models
-  - File: `contentflow_app/lib/data/models/project_intelligence.dart`
+  - File: `contentglowz_app/lib/data/models/project_intelligence.dart`
   - Action: Create Dart models for status, source, document summary, fact, recommendation, provider readiness, job, upload result, and action result.
   - User story link: Lets the app render the intelligence state accurately.
   - Depends on: Task 1.
@@ -377,7 +377,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Keep null-safe parsing and defensive defaults like existing models.
 
 - [ ] Task 12: Add Flutter API client methods
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add methods for fetch status, upload files, sync connectors, fetch jobs, list sources/facts/recommendations, provider readiness, and add recommendation to Idea Pool.
   - User story link: Connects the UI to backend behavior.
   - Depends on: Tasks 6, 11.
@@ -385,7 +385,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Do not queue file uploads offline. Cache read-only status/recommendation responses when safe.
 
 - [ ] Task 13: Add Riverpod providers/controller
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add project-scoped intelligence providers and a notifier for upload/sync/recommendation actions that invalidates affected providers.
   - User story link: Keeps Project Intelligence tied to the active project.
   - Depends on: Task 12.
@@ -393,7 +393,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Guard on `activeProjectIdProvider` and `appAccessStateProvider` like Search Console providers.
 
 - [ ] Task 14: Add Project Intelligence screen
-  - File: `contentflow_app/lib/presentation/screens/project_intelligence/project_intelligence_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/project_intelligence/project_intelligence_screen.dart`
   - Action: Build a project-scoped screen with upload/sync controls, source inventory, source removal, job state, facts, recommendations, confidence/evidence details, provider readiness, and add-to-Idea-Pool actions.
   - User story link: Gives the user the decision surface.
   - Depends on: Task 13.
@@ -401,7 +401,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Use compact operational UI, not a landing page. Every recommendation should show evidence and confidence, not just generated prose.
 
 - [ ] Task 15: Wire navigation and localization
-  - File: `contentflow_app/lib/router.dart`
+  - File: `contentglowz_app/lib/router.dart`
   - Action: Add a route for Project Intelligence in the authenticated shell.
   - User story link: Makes the feature discoverable for active project work.
   - Depends on: Task 14.
@@ -409,7 +409,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Keep the existing project picker action available.
 
 - [ ] Task 16: Add labels/translations
-  - File: `contentflow_app/lib/l10n/app_localizations.dart`
+  - File: `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action: Add English/French labels for Project Intelligence, upload states, sync, dedupe, evidence, confidence, provider readiness, and Idea Pool action results.
   - User story link: Makes the UI understandable in the current app language setup.
   - Depends on: Task 14.
@@ -417,7 +417,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Avoid promising automatic fine-tuning in UI copy.
 
 - [ ] Task 17: Update backend and app documentation
-  - File: `contentflow_lab/README.md`
+  - File: `contentglowz_lab/README.md`
   - Action: Document routes, supported sources, upload limits, table ensure behavior, and provider readiness semantics.
   - User story link: Keeps implementation and operator expectations aligned.
   - Depends on: Tasks 1-16.
@@ -425,7 +425,7 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - Notes: Add a short statement that provider fine-tuning/deployment is follow-up scope.
 
 - [ ] Task 18: Update app documentation
-  - File: `contentflow_app/README.md`
+  - File: `contentglowz_app/README.md`
   - Action: Document the Project Intelligence screen, project scoping, offline upload limitation, and decision/recommendation workflow.
   - User story link: Keeps product behavior documented for the Flutter client.
   - Depends on: Tasks 11-16.
@@ -434,20 +434,20 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
 
 - [ ] Task 19: Close post-verify data-layer and UI proof gaps
   - Files:
-    - `contentflow_lab/api/services/project_intelligence_store.py`
-    - `contentflow_lab/api/services/project_intelligence_service.py`
-    - `contentflow_lab/api/routers/project_intelligence.py`
-    - `contentflow_lab/api/services/project_intelligence_processor.py`
-    - `contentflow_lab/tests/test_project_intelligence_store.py`
-    - `contentflow_lab/tests/test_project_intelligence_service.py`
-    - `contentflow_lab/tests/test_project_intelligence_router.py`
-    - `contentflow_app/lib/data/models/project_intelligence.dart`
-    - `contentflow_app/lib/data/services/api_service.dart`
-    - `contentflow_app/lib/providers/providers.dart`
-    - `contentflow_app/lib/presentation/screens/project_intelligence/project_intelligence_screen.dart`
-    - `contentflow_app/lib/l10n/app_localizations.dart`
-    - `contentflow_lab/README.md`
-    - `contentflow_app/README.md`
+    - `contentglowz_lab/api/services/project_intelligence_store.py`
+    - `contentglowz_lab/api/services/project_intelligence_service.py`
+    - `contentglowz_lab/api/routers/project_intelligence.py`
+    - `contentglowz_lab/api/services/project_intelligence_processor.py`
+    - `contentglowz_lab/tests/test_project_intelligence_store.py`
+    - `contentglowz_lab/tests/test_project_intelligence_service.py`
+    - `contentglowz_lab/tests/test_project_intelligence_router.py`
+    - `contentglowz_app/lib/data/models/project_intelligence.dart`
+    - `contentglowz_app/lib/data/services/api_service.dart`
+    - `contentglowz_app/lib/providers/providers.dart`
+    - `contentglowz_app/lib/presentation/screens/project_intelligence/project_intelligence_screen.dart`
+    - `contentglowz_app/lib/l10n/app_localizations.dart`
+    - `contentglowz_lab/README.md`
+    - `contentglowz_app/README.md`
   - Action: Repair the four blocking verification gaps and the Flutter proof gap: make active-job creation atomic; hide or soft-delete duplicates and recommendations tied to removed source evidence; enforce bounded upload reads; enforce connector caps globally per sync run; and expose/test job/document/dedupe evidence in the Flutter surface.
   - User story link: Converts the implemented V1 from "present" to decision-safe: a user can trust the memory, understand ingestion outcomes, and avoid stale or duplicated evidence.
   - Depends on: Tasks 1-18.
@@ -542,11 +542,11 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
 ## Execution Notes
 
 - Read first:
-  - `contentflow_lab/api/routers/projects.py`
-  - `contentflow_lab/api/services/ai_runtime_service.py`
-  - `contentflow_lab/api/routers/search_console.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_app/lib/presentation/screens/analytics/search_console_panel.dart`
+  - `contentglowz_lab/api/routers/projects.py`
+  - `contentglowz_lab/api/services/ai_runtime_service.py`
+  - `contentglowz_lab/api/routers/search_console.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_app/lib/presentation/screens/analytics/search_console_panel.dart`
 - Implementation order:
   1. Backend models and store.
   2. Processor and deterministic dedupe.
@@ -576,9 +576,9 @@ Build `Project Intelligence Engine` V1 as a backend-owned, project-scoped data l
   - no trusted HTML/Markdown rendering package for uploaded evidence;
   - no provider-specific SDK beyond existing runtime paths.
 - Commands to validate when implemented:
-  - `pytest contentflow_lab/tests/test_project_intelligence_models.py contentflow_lab/tests/test_project_intelligence_processor.py contentflow_lab/tests/test_project_intelligence_store.py contentflow_lab/tests/test_project_intelligence_service.py contentflow_lab/tests/test_project_intelligence_router.py`
-  - `pytest contentflow_lab/tests/test_ai_runtime_service.py contentflow_lab/tests/test_search_console_router.py contentflow_lab/tests/test_persona_draft_route.py`
-  - `flutter analyze` from `contentflow_app`
+  - `pytest contentglowz_lab/tests/test_project_intelligence_models.py contentglowz_lab/tests/test_project_intelligence_processor.py contentglowz_lab/tests/test_project_intelligence_store.py contentglowz_lab/tests/test_project_intelligence_service.py contentglowz_lab/tests/test_project_intelligence_router.py`
+  - `pytest contentglowz_lab/tests/test_ai_runtime_service.py contentglowz_lab/tests/test_search_console_router.py contentglowz_lab/tests/test_persona_draft_route.py`
+  - `flutter analyze` from `contentglowz_app`
 - Stop conditions / reroute:
   - If production Turso schema cannot be safely changed with additive ensures, reroute to `/sf-ready` or a Turso migration-specific review.
   - If a provider SDK/export is requested during implementation, create a follow-up provider-adapter spec instead of expanding V1.
@@ -608,7 +608,7 @@ None blocking for V1. The following decisions are intentionally locked by this s
 
 ## Current Chantier Flow
 
-- sf-spec: done, draft saved in `shipflow_data/workflow/specs/contentflow_lab/SPEC-project-intelligence-engine-data-layer-2026-05-13.md`.
+- sf-spec: done, draft saved in `shipflow_data/workflow/specs/contentglowz_lab/SPEC-project-intelligence-engine-data-layer-2026-05-13.md`.
 - sf-ready: ready; gate added source removal, untrusted content rendering, concurrent job, and connector cap safeguards.
 - sf-start: implemented; backend + Flutter V1 scope delivered with targeted tests and analyze checks passing.
 - sf-verify: partial; implementation is present and checks pass, but verification found contract gaps in active-job concurrency, removed duplicate evidence exclusion, connector caps, and Flutter proof/UI completeness.

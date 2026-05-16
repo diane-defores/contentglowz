@@ -9,9 +9,9 @@ Directory layout:
 
 - `specs/` — workflow specs and migrated legacy spec-like documents
   - `specs/monorepo/` (legacy root specs and global migration specs)
-  - `specs/contentflow_app/` (application project specs)
-  - `specs/contentflow_lab/` (lab project specs and root `SPEC-*.md`)
-  - `specs/contentflow_site/` (site project specs)
+  - `specs/contentglowz_app/` (application project specs)
+  - `specs/contentglowz_lab/` (lab project specs and root `SPEC-*.md`)
+  - `specs/contentglowz_site/` (site project specs)
 - `bugs/` — bug records and issue traces
 - `research/` — research dossiers and decision notes
 - `explorations/` — exploration notes
@@ -25,15 +25,15 @@ Directory layout:
 
 Subproject-local trackers live with each subproject when they exist:
 
-- `contentflow_app/shipflow_data/workflow/TASKS.md`
-- `contentflow_app/shipflow_data/workflow/AUDIT_LOG.md`
-- `contentflow_lab/shipflow_data/workflow/TASKS.md`
-- `contentflow_lab/shipflow_data/workflow/AUDIT_LOG.md`
-- `contentflow_site/shipflow_data/workflow/TASKS.md`
-- `contentflow_site/shipflow_data/workflow/AUDIT_LOG.md`
+- `contentglowz_app/shipflow_data/workflow/TASKS.md`
+- `contentglowz_app/shipflow_data/workflow/AUDIT_LOG.md`
+- `contentglowz_lab/shipflow_data/workflow/TASKS.md`
+- `contentglowz_lab/shipflow_data/workflow/AUDIT_LOG.md`
+- `contentglowz_site/shipflow_data/workflow/TASKS.md`
+- `contentglowz_site/shipflow_data/workflow/AUDIT_LOG.md`
 
 Entry rule:
 
-- Runtime content and editorial pages under `contentflow_site/src/content/**` remain in
-  `contentflow_site/src/content`.
+- Runtime content and editorial pages under `contentglowz_site/src/content/**` remain in
+  `contentglowz_site/src/content`.
 - `contentflowz/**` is intentionally excluded from this migration.

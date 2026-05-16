@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
+  - "contentglowz_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
   - "contentflowz"
   - "Runway API"
   - "Luma Dream Machine API"
@@ -49,7 +49,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "unknown"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md"
@@ -83,11 +83,11 @@ evidence:
   - "Existing spec evidence: Remotion video editor is content-scoped at /editor/:id/video, guided storyboard, preview gate before final render/publication."
   - "Existing spec evidence: Unified Project Asset Library defines project assets across video, video_cover, render_output, background_config and governed reuse."
   - "Existing spec evidence: Social Placement Format Registry defines vertical_short_video, landscape_video, reel_cover and video_thumbnail placements but explicitly leaves generation of video assets to future workflows."
-  - "Code evidence: contentflow_lab/status/schemas.py already has ProjectAssetMediaKind.VIDEO and ProjectAssetLifecycleStatus; source enum lacks a dedicated AI video generation source."
-  - "Code evidence: contentflow_lab/api/services/project_asset_storage.py marks Bunny-backed video assets render_safe and provider temporary URLs not render_safe."
-  - "Code evidence: contentflow_lab/api/routers/reels.py downloads Instagram reels and uploads video/audio to Bunny, but is not a generation workflow and currently accepts user_id/Bunny credentials in request models."
-  - "Code evidence: contentflow_lab/api/services/image_generation_store.py and flux_image_generation.py provide the closest async provider/store pattern for generated media."
-  - "Code evidence: contentflow_lab/api/services/job_store.py provides a generic Turso-backed job table suitable for job state, but generated video history needs its own durable table."
+  - "Code evidence: contentglowz_lab/status/schemas.py already has ProjectAssetMediaKind.VIDEO and ProjectAssetLifecycleStatus; source enum lacks a dedicated AI video generation source."
+  - "Code evidence: contentglowz_lab/api/services/project_asset_storage.py marks Bunny-backed video assets render_safe and provider temporary URLs not render_safe."
+  - "Code evidence: contentglowz_lab/api/routers/reels.py downloads Instagram reels and uploads video/audio to Bunny, but is not a generation workflow and currently accepts user_id/Bunny credentials in request models."
+  - "Code evidence: contentglowz_lab/api/services/image_generation_store.py and flux_image_generation.py provide the closest async provider/store pattern for generated media."
+  - "Code evidence: contentglowz_lab/api/services/job_store.py provides a generic Turso-backed job table suitable for job state, but generated video history needs its own durable table."
   - "Fresh docs checked 2026-05-13: Runway API supports image-to-video/text-to-video through async task output, model list includes gen4.5/gen4_turbo/veo variants, and pricing is credit-per-second."
   - "Fresh docs checked 2026-05-13: Luma Dream Machine API supports text-to-video, image-to-video, aspect ratio, loop, keyframes, generation polling, callbacks and Ray 2 model options."
   - "Fresh docs checked 2026-05-13: Google Veo 3.1 via Gemini API supports long-running video generation, 8-second 720p/1080p outputs, native audio, image references and polling; Vertex AI docs add region/person-generation approval considerations."
@@ -196,8 +196,8 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
 
 ## Constraints
 
-- `contentflow_lab` owns provider calls, prompt construction, auth, ownership, quota checks, storage, persistence and asset registration.
-- `contentflow_app` calls FastAPI only; it never calls Runway/Luma/Veo or stores provider secrets.
+- `contentglowz_lab` owns provider calls, prompt construction, auth, ownership, quota checks, storage, persistence and asset registration.
+- `contentglowz_app` calls FastAPI only; it never calls Runway/Luma/Veo or stores provider secrets.
 - The feature is online-only and asynchronous.
 - Generated video outputs are durable only after Bunny upload and project asset registration.
 - Provider-temporary URLs are never returned as reusable asset authority.
@@ -218,26 +218,26 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - `shipflow_data/workflow/specs/SPEC-social-placement-format-registry-2026-05-13.md`
   - `shipflow_data/workflow/specs/SPEC-ai-provider-benchmark-cost-quality-telemetry-2026-05-12.md`
   - `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-scene-motion-assistant-2026-05-12.md`
 - Existing backend patterns:
-  - `contentflow_lab/api/services/job_store.py`
-  - `contentflow_lab/api/services/image_generation_store.py`
-  - `contentflow_lab/api/services/flux_image_generation.py`
-  - `contentflow_lab/api/routers/images.py`
-  - `contentflow_lab/api/services/project_asset_storage.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/api/routers/assets.py`
-  - `contentflow_lab/api/dependencies/auth.py`
-  - `contentflow_lab/api/dependencies/ownership.py`
+  - `contentglowz_lab/api/services/job_store.py`
+  - `contentglowz_lab/api/services/image_generation_store.py`
+  - `contentglowz_lab/api/services/flux_image_generation.py`
+  - `contentglowz_lab/api/routers/images.py`
+  - `contentglowz_lab/api/services/project_asset_storage.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/api/routers/assets.py`
+  - `contentglowz_lab/api/dependencies/auth.py`
+  - `contentglowz_lab/api/dependencies/ownership.py`
 - Existing app patterns:
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/data/models/project_asset.dart`
-  - `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/data/models/project_asset.dart`
+  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
   - Future `/editor/:id/video` files from the Remotion video editor spec.
 - External docs:
   - `fresh-docs checked`: Runway API getting started and model docs confirm server-side API usage, image-to-video/text-to-video examples, async task output, data URI/URL input modes, model allowlist and pricing by credits/second: `https://docs.dev.runwayml.com/guides/using-the-api`, `https://docs.dev.runwayml.com/guides/models/`, `https://docs.dev.runwayml.com/guides/pricing`.
@@ -261,20 +261,20 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
 
 ## Links & Consequences
 
-- `contentflow_lab/status/schemas.py`: add `ProjectAssetSource.AI_VIDEO_GENERATION` or equivalent stable source id.
-- `contentflow_lab/status/service.py`: generated video assets must pass existing project asset invariants and support `publish_media`/scene selection eligibility when durable.
-- `contentflow_lab/api/services/project_asset_storage.py`: Bunny-backed video descriptors are already render-safe; provider temporary video URLs remain unsafe.
-- `contentflow_lab/api/services/job_store.py`: can store job status, but not the durable generation history or full provider payload.
-- `contentflow_lab/api/routers/reels.py`: remains import/repurpose only; do not mix Instagram cookie/download behavior with AI video generation.
-- `contentflow_lab/api/main.py` and `api/routers/__init__.py`: need a new router registration.
-- `contentflow_app` editor/video surfaces gain a guided generate action, job polling and candidate attach flow.
+- `contentglowz_lab/status/schemas.py`: add `ProjectAssetSource.AI_VIDEO_GENERATION` or equivalent stable source id.
+- `contentglowz_lab/status/service.py`: generated video assets must pass existing project asset invariants and support `publish_media`/scene selection eligibility when durable.
+- `contentglowz_lab/api/services/project_asset_storage.py`: Bunny-backed video descriptors are already render-safe; provider temporary video URLs remain unsafe.
+- `contentglowz_lab/api/services/job_store.py`: can store job status, but not the durable generation history or full provider payload.
+- `contentglowz_lab/api/routers/reels.py`: remains import/repurpose only; do not mix Instagram cookie/download behavior with AI video generation.
+- `contentglowz_lab/api/main.py` and `api/routers/__init__.py`: need a new router registration.
+- `contentglowz_app` editor/video surfaces gain a guided generate action, job polling and candidate attach flow.
 - Remotion worker receives generated clips only through backend-validated asset descriptors from the video project model.
 - Social placement preflight can later validate these assets for short/landscape placements.
 - Cost/telemetry systems receive generation duration, provider/model, estimated/actual credits and success/failure signals.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` with AI video provider env vars, generation routes, durable Bunny rule, provider-temporary URL prohibition and project asset registration behavior.
+- Update `contentglowz_lab/README.md` with AI video provider env vars, generation routes, durable Bunny rule, provider-temporary URL prohibition and project asset registration behavior.
 - Update project asset docs to include `ai_video_generation` source and clip metadata fields.
 - Update Remotion editor docs/spec notes so generated clips are treated as candidate scene assets, not final renders.
 - Update social placement docs to name this workflow as the generator for `vertical_short_video` and `landscape_video` candidates.
@@ -297,23 +297,23 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
 ## Implementation Tasks
 
 - [ ] Task 1: Add backend AI video models
-  - File: `contentflow_lab/api/models/ai_video.py`
+  - File: `contentglowz_lab/api/models/ai_video.py`
   - Action: Define request/response models for guided video generation, generation records, job status, provider/model registry, placement/scene context, reference asset inputs, failure details and list responses.
   - User story link: Establishes the app/backend contract for guided b-roll generation.
   - Depends on: Existing project asset and image generation model patterns.
-  - Validate with: Pydantic model tests in `contentflow_lab/tests/test_ai_video_models.py`.
+  - Validate with: Pydantic model tests in `contentglowz_lab/tests/test_ai_video_models.py`.
   - Notes: Include only guided fields: intent, format preset, duration, prompt instruction, content id, optional video project/version/scene id, placement id, reference asset ids, set_primary flag.
 
 - [ ] Task 2: Add durable video generation store
-  - File: `contentflow_lab/api/services/video_generation_store.py`
+  - File: `contentglowz_lab/api/services/video_generation_store.py`
   - Action: Create `VideoGeneration` table/store with create, mark running, mark completed, mark failed, list and get methods.
   - User story link: Lets users see async generation history and recover failed jobs.
   - Depends on: Task 1.
-  - Validate with: `contentflow_lab/tests/test_video_generation_store.py`.
+  - Validate with: `contentglowz_lab/tests/test_video_generation_store.py`.
   - Notes: Mirror the `ImageGenerationStore` pattern but store video-specific fields: duration_seconds, aspect_ratio, placement, scene ids, cdn_url, asset_id, provider_task_id, provider_cost, provider_metadata_json.
 
 - [ ] Task 3: Ensure video generation tables on startup
-  - File: `contentflow_lab/api/main.py`
+  - File: `contentglowz_lab/api/main.py`
   - Action: Ensure `video_generation_store.ensure_tables()` runs idempotently when Turso is configured.
   - User story link: Keeps async history durable across deploys.
   - Depends on: Task 2.
@@ -321,15 +321,15 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Follow existing non-critical migration logging style for ImageGeneration.
 
 - [ ] Task 4: Add AI video provider source enum
-  - File: `contentflow_lab/status/schemas.py`
+  - File: `contentglowz_lab/status/schemas.py`
   - Action: Add `AI_VIDEO_GENERATION = "ai_video_generation"` to `ProjectAssetSource`.
   - User story link: Makes generated video clips first-class project assets.
   - Depends on: Task 2.
-  - Validate with: `contentflow_lab/tests/test_project_assets_service.py` plus new generated-video asset test.
+  - Validate with: `contentglowz_lab/tests/test_project_assets_service.py` plus new generated-video asset test.
   - Notes: Source id must be stable; do not overload `remotion_render` or `reels_import`.
 
 - [ ] Task 5: Implement provider registry and prompt policy
-  - File: `contentflow_lab/api/services/ai_video_provider_registry.py`
+  - File: `contentglowz_lab/api/services/ai_video_provider_registry.py`
   - Action: Define allowed providers/models, V1 Runway defaults, disabled Luma/Veo future entries, duration/aspect ratio support, cost estimate metadata, intent allowlist and prompt safety policy.
   - User story link: Prevents free provider playground controls.
   - Depends on: Task 1.
@@ -337,15 +337,15 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: V1 default provider is Runway when `RUNWAYML_API_SECRET` is configured. Luma/Veo entries are explicit future compatibility, not production routes.
 
 - [ ] Task 6: Implement Runway video provider client
-  - File: `contentflow_lab/api/services/runway_video_generation.py`
+  - File: `contentglowz_lab/api/services/runway_video_generation.py`
   - Action: Add server-side Runway client for text-to-video/image-to-video submission, polling, timeout, cancellation-safe errors, output download and sanitized metadata.
   - User story link: Produces the actual generated clip.
   - Depends on: Tasks 1, 5.
-  - Validate with: `contentflow_lab/tests/test_runway_video_generation.py` using mocked HTTP/SDK responses for success, timeout, failed task, moderation, missing output, non-video MIME and oversized download.
+  - Validate with: `contentglowz_lab/tests/test_runway_video_generation.py` using mocked HTTP/SDK responses for success, timeout, failed task, moderation, missing output, non-video MIME and oversized download.
   - Notes: Use official API version header/config, strict timeouts, max download bytes and SSRF-safe public URL validation similar to Flux.
 
 - [ ] Task 7: Add video output Bunny upload helper
-  - File: `contentflow_lab/api/services/ai_video_storage.py`
+  - File: `contentglowz_lab/api/services/ai_video_storage.py`
   - Action: Upload provider output file to Bunny using existing storage/CDN patterns or a small video-specific helper, return durable storage URI and metadata.
   - User story link: Makes provider results durable and reusable.
   - Depends on: Task 6.
@@ -353,7 +353,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Do not return provider temporary URLs as success. If existing Bunny upload code is image-specific, add a video-safe helper rather than mutating image-only assumptions.
 
 - [ ] Task 8: Register generated clip as project asset
-  - File: `contentflow_lab/api/routers/ai_video.py`
+  - File: `contentglowz_lab/api/routers/ai_video.py`
   - Action: Add helper to create `ProjectAssetMediaKind.VIDEO` asset with source `ai_video_generation`, storage URI, MIME, duration/aspect metadata, generation id and provider metadata.
   - User story link: Makes generated clips available in project asset library and Remotion.
   - Depends on: Tasks 2, 4, 7.
@@ -361,15 +361,15 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Record usage links only after asset creation succeeds.
 
 - [ ] Task 9: Add AI video router
-  - File: `contentflow_lab/api/routers/ai_video.py`
+  - File: `contentglowz_lab/api/routers/ai_video.py`
   - Action: Expose authenticated endpoints to create generation job, get job/generation status, list generation history and optionally cancel queued/running jobs if provider supports cancellation.
   - User story link: Lets Flutter start/poll generation from editor flows.
   - Depends on: Tasks 1-8.
-  - Validate with: `contentflow_lab/tests/test_ai_video_router.py`.
+  - Validate with: `contentglowz_lab/tests/test_ai_video_router.py`.
   - Notes: Endpoints should be project/content scoped and must use existing ownership helpers; never accept user-supplied Bunny/provider credentials.
 
 - [ ] Task 10: Register router
-  - File: `contentflow_lab/api/routers/__init__.py`
+  - File: `contentglowz_lab/api/routers/__init__.py`
   - Action: Export `ai_video_router`.
   - User story link: Makes API reachable.
   - Depends on: Task 9.
@@ -377,7 +377,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Keep naming distinct from `reels_router`.
 
 - [ ] Task 11: Include router in FastAPI app
-  - File: `contentflow_lab/api/main.py`
+  - File: `contentglowz_lab/api/main.py`
   - Action: Include `ai_video_router`.
   - User story link: Makes generation endpoints available to the app.
   - Depends on: Task 10.
@@ -385,7 +385,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Place near images/reels/video-related routers for readability.
 
 - [ ] Task 12: Add quota and telemetry hooks
-  - File: `contentflow_lab/api/routers/ai_video.py`
+  - File: `contentglowz_lab/api/routers/ai_video.py`
   - Action: Call quota/cost preflight before provider submission where the quota service is available, and emit provider telemetry after submission/completion/failure.
   - User story link: Protects PAYG and operator cost visibility.
   - Depends on: Tasks 5-9 plus quota/benchmark specs.
@@ -393,15 +393,15 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: If quota/telemetry implementation is not ready, preserve typed hook points and fail closed for managed paid video generation unless the operator explicitly enables a dev mode.
 
 - [ ] Task 13: Add Flutter AI video models
-  - File: `contentflow_app/lib/data/models/ai_video_generation.dart`
+  - File: `contentglowz_app/lib/data/models/ai_video_generation.dart`
   - Action: Add Dart models for generation request, response, status, provider availability, failure details and generated asset metadata.
   - User story link: Lets the editor display jobs and generated candidates.
   - Depends on: Backend model contract.
-  - Validate with: `contentflow_app/test/data/ai_video_generation_test.dart`.
+  - Validate with: `contentglowz_app/test/data/ai_video_generation_test.dart`.
   - Notes: Be tolerant of unknown future provider fields.
 
 - [ ] Task 14: Add Flutter API methods
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add methods to create AI video generation, poll status, list history and attach/set primary generated asset if the backend exposes those flows.
   - User story link: Connects UI to backend generation.
   - Depends on: Task 13.
@@ -409,7 +409,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Resolve local id mappings like existing project asset methods.
 
 - [ ] Task 15: Add AI video provider state
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add a notifier for AI video generation state scoped to active project/content/video context, with stale-response protection.
   - User story link: Supports async progress in the editor.
   - Depends on: Task 14.
@@ -417,7 +417,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Reuse the revision pattern from `ProjectAssetLibraryNotifier`.
 
 - [ ] Task 16: Add editor generation UI hook
-  - File: `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Add guided entry points for eligible content before the full video editor exists, or link to `/editor/:id/video` when available.
   - User story link: Keeps generation in the existing editor workflow.
   - Depends on: Tasks 13-15 and route availability.
@@ -425,7 +425,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Do not create a landing page or global playground.
 
 - [ ] Task 17: Add video editor scene/placement integration
-  - File: `contentflow_app/lib/presentation/screens/editor/video_editor_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart`
   - Action: Add scene-level "generate b-roll" actions, show job progress, preview generated clip, and attach generated project asset to current scene/placement.
   - User story link: Makes generated clips useful in Remotion scene composition.
   - Depends on: Remotion video editor implementation and Tasks 13-15.
@@ -433,7 +433,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: If the video editor file path differs when implemented, update this task path during `/sf-ready` or `/sf-start`.
 
 - [ ] Task 18: Update project asset picker filters
-  - File: `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - File: `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
   - Action: Ensure generated video assets can be filtered/selected for video placements and scene targets.
   - User story link: Lets users reuse generated clips instead of regenerating.
   - Depends on: Task 8 and existing asset library.
@@ -441,23 +441,23 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - Notes: Keep tombstoned/local/degraded behavior unchanged.
 
 - [ ] Task 19: Add backend tests
-  - File: `contentflow_lab/tests/test_ai_video_router.py`
+  - File: `contentglowz_lab/tests/test_ai_video_router.py`
   - Action: Cover auth, ownership, create job, provider unavailable, quota blocked, invalid reference, success with Bunny/project asset, provider failure, stale target, and redaction.
   - User story link: Proves backend behavior end to end without real provider calls.
   - Depends on: Tasks 1-12.
-  - Validate with: `python -m pytest contentflow_lab/tests/test_ai_video_models.py contentflow_lab/tests/test_video_generation_store.py contentflow_lab/tests/test_runway_video_generation.py contentflow_lab/tests/test_ai_video_router.py`.
+  - Validate with: `python -m pytest contentglowz_lab/tests/test_ai_video_models.py contentglowz_lab/tests/test_video_generation_store.py contentglowz_lab/tests/test_runway_video_generation.py contentglowz_lab/tests/test_ai_video_router.py`.
   - Notes: Use mocked provider and Bunny upload.
 
 - [ ] Task 20: Add Flutter tests
-  - File: `contentflow_app/test/data/ai_video_generation_test.dart`
+  - File: `contentglowz_app/test/data/ai_video_generation_test.dart`
   - Action: Add model/provider/widget tests for generation payloads, job status and editor UI states.
   - User story link: Protects guided app behavior.
   - Depends on: Tasks 13-18.
-  - Validate with: `flutter test contentflow_app/test/data/ai_video_generation_test.dart contentflow_app/test/presentation/screens/editor/editor_screen_test.dart`.
+  - Validate with: `flutter test contentglowz_app/test/data/ai_video_generation_test.dart contentglowz_app/test/presentation/screens/editor/editor_screen_test.dart`.
   - Notes: Add video editor-specific widget tests once that screen exists.
 
 - [ ] Task 21: Update docs
-  - File: `contentflow_lab/README.md`
+  - File: `contentglowz_lab/README.md`
   - Action: Document AI video generation routes, Runway env vars, provider registry, Bunny durability, project asset source, quota/telemetry hooks and security constraints.
   - User story link: Keeps future implementation and ops aligned.
   - Depends on: Tasks 1-12.
@@ -519,12 +519,12 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
 ## Execution Notes
 
 - Read first:
-  - `contentflow_lab/api/services/image_generation_store.py`
-  - `contentflow_lab/api/services/flux_image_generation.py`
-  - `contentflow_lab/api/routers/images.py`
-  - `contentflow_lab/api/services/project_asset_storage.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `contentglowz_lab/api/services/image_generation_store.py`
+  - `contentglowz_lab/api/services/flux_image_generation.py`
+  - `contentglowz_lab/api/routers/images.py`
+  - `contentglowz_lab/api/services/project_asset_storage.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
 - Implementation order:
   - Models/store/provider registry.
   - Runway provider client with mocked tests.

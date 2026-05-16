@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-04-25"
 updated: "2026-04-25"
 status: ready
@@ -15,8 +15,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter client"
-  - "contentflow_lab FastAPI projects API"
+  - "contentglowz_app Flutter client"
+  - "contentglowz_lab FastAPI projects API"
   - "Turso/libSQL Project table"
   - "UserSettings.defaultProjectId"
   - "UserSettings.projectSelectionMode"
@@ -33,11 +33,11 @@ depends_on:
     required_status: "active"
 supersedes: []
 evidence:
-  - "contentflow_app/lib/presentation/screens/feed/feed_screen.dart:453 opens /onboarding?intent=entry without project context"
-  - "contentflow_app/lib/presentation/screens/onboarding/onboarding_screen.dart:74 only preloads project data for mode=edit with projectId"
-  - "contentflow_app/lib/providers/providers.dart:1261 falls back to bootstrap default or first project when defaultProjectId is null"
-  - "contentflow_lab/api/models/project.py:166 requires github_url as HttpUrl for project creation"
-  - "contentflow_lab/agents/seo/config/project_store.py:41 defines Project.url as NOT NULL and has no archive columns"
+  - "contentglowz_app/lib/presentation/screens/feed/feed_screen.dart:453 opens /onboarding?intent=entry without project context"
+  - "contentglowz_app/lib/presentation/screens/onboarding/onboarding_screen.dart:74 only preloads project data for mode=edit with projectId"
+  - "contentglowz_app/lib/providers/providers.dart:1261 falls back to bootstrap default or first project when defaultProjectId is null"
+  - "contentglowz_lab/api/models/project.py:166 requires github_url as HttpUrl for project creation"
+  - "contentglowz_lab/agents/seo/config/project_store.py:41 defines Project.url as NOT NULL and has no archive columns"
 next_step: "/sf-start Project flows selection onboarding archive"
 ---
 
@@ -132,20 +132,20 @@ Separate project source configuration from GitHub-only onboarding, make active p
 - Project source URL may be empty, but project name remains required.
 - Generic source URLs must be HTTP(S); arbitrary schemes such as `file:`, `javascript:`, `data:`, or internal-only URLs are rejected. V1 performs syntactic public HTTP(S) validation only because this spec does not trigger server-side fetching. SSRF-safe network validation for private IPs, localhost, link-local ranges, redirects to private networks, DNS rebinding, request timeouts, crawl size limits, and rate limits is mandatory in the later crawl/analysis spec before any server-side fetch is introduced.
 - Existing cached/offline project IDs may be temporary IDs and must keep using current ID reconciliation patterns.
-- Because `contentflow_lab` uses Turso/libSQL, schema changes need migration/ensure-table guardrails and must avoid destructive table rebuilds without backup.
+- Because `contentglowz_lab` uses Turso/libSQL, schema changes need migration/ensure-table guardrails and must avoid destructive table rebuilds without backup.
 
 ## Dependencies
 
 - Flutter:
-  - Riverpod providers in `contentflow_app/lib/providers/providers.dart`.
+  - Riverpod providers in `contentglowz_app/lib/providers/providers.dart`.
   - GoRouter route callers in feed/settings/projects widgets.
-  - Project models and API service in `contentflow_app/lib/data`.
+  - Project models and API service in `contentglowz_app/lib/data`.
 
 - Backend:
-  - FastAPI router `contentflow_lab/api/routers/projects.py`.
-  - Pydantic models `contentflow_lab/api/models/project.py`.
-  - Turso-backed store `contentflow_lab/agents/seo/config/project_store.py`.
-  - Bootstrap route `contentflow_lab/api/routers/me.py`.
+  - FastAPI router `contentglowz_lab/api/routers/projects.py`.
+  - Pydantic models `contentglowz_lab/api/models/project.py`.
+  - Turso-backed store `contentglowz_lab/agents/seo/config/project_store.py`.
+  - Bootstrap route `contentglowz_lab/api/routers/me.py`.
   - User settings store for `defaultProjectId` and `projectSelectionMode`.
 
 - External integrations:
@@ -183,9 +183,9 @@ Separate project source configuration from GitHub-only onboarding, make active p
 
 ## Documentation Coherence
 
-- Update `contentflow_app/CHANGELOG.md` after implementation with source-agnostic project creation, explicit no-project selection, and archive-first project lifecycle.
-- Review `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
-- Review backend docs in `contentflow_lab/README.md` or project API docs if they document `/api/projects` as GitHub-only or hard-delete-only.
+- Update `contentglowz_app/CHANGELOG.md` after implementation with source-agnostic project creation, explicit no-project selection, and archive-first project lifecycle.
+- Review `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
+- Review backend docs in `contentglowz_lab/README.md` or project API docs if they document `/api/projects` as GitHub-only or hard-delete-only.
 - No pricing, public marketing page, or FAQ update is required in this spec because the change is inside authenticated app project management and does not alter packaging or public claims.
 - Future Firecrawl crawl documentation is out of scope; this spec must not document non-GitHub URLs as actively crawled until the crawl pipeline exists.
 
@@ -209,7 +209,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
 ## Implementation Tasks
 
 - [ ] Task 1: Define shared project selection settings contract
-  - File: `contentflow_app/lib/data/models/app_settings.dart`, `contentflow_lab/api/models/user_data.py`, `contentflow_lab/api/routers/me.py`
+  - File: `contentglowz_app/lib/data/models/app_settings.dart`, `contentglowz_lab/api/models/user_data.py`, `contentglowz_lab/api/routers/me.py`
   - Action: Add `projectSelectionMode: "auto" | "selected" | "none"` to app settings parsing/serialization and backend settings/bootstrap handling. `defaultProjectId` is meaningful only when mode is `selected`; mode `none` forces bootstrap `default_project_id: null`; mode `auto` preserves legacy non-archived fallback.
   - User story link: Makes "No project selected" observable and persistent.
   - Depends on: None.
@@ -217,7 +217,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Do not use a sentinel in `defaultProjectId`; mode is the source of truth.
 
 - [ ] Task 2: Make active project provider tri-state aware
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Update `activeProjectProvider`, `activeProjectIdProvider`, `ActiveProjectController.setActiveProject`, and current settings updates so explicit no-selection returns null without falling back to bootstrap default or first project. Keep legacy fallback only when the user has never made a project selection.
   - User story link: Fixes the picker entry that currently appears to do nothing.
   - Depends on: Task 1.
@@ -225,7 +225,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Invalidate all project-scoped providers already listed in `ActiveProjectController`; add any missing project-scoped providers discovered during implementation.
 
 - [ ] Task 3: Update API settings/cache handling for explicit no-selection
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Ensure `updateSettings` writes and caches explicit no-selection without rewriting it through offline ID mapping or bootstrap fallback. Ensure `_syncBootstrapCache` does not restore a project when explicit no-selection is set.
   - User story link: Keeps selection clearing stable across refresh/offline mode.
   - Depends on: Task 1.
@@ -233,7 +233,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Only `defaultProjectId` participates in offline ID mapping; `projectSelectionMode` is a plain enum string.
 
 - [ ] Task 4: Route dashboard setup to the right project mode
-  - File: `contentflow_app/lib/presentation/screens/feed/feed_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
   - Action: Replace hard-coded `/onboarding?intent=entry` with route building that sends active projects to `/onboarding?mode=edit&intent=entry&projectId=<id>` and sends no active project to `/onboarding?mode=create&intent=entry`.
   - User story link: Existing active project opens with real project data instead of blank fields.
   - Depends on: Task 2.
@@ -241,7 +241,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Apply to both action card and hero primary CTA.
 
 - [ ] Task 5: Generalize onboarding project source validation and copy
-  - File: `contentflow_app/lib/core/project_onboarding_validation.dart`
+  - File: `contentglowz_app/lib/core/project_onboarding_validation.dart`
   - Action: Replace GitHub-only validation with optional source URL validation. Empty is valid; GitHub URL is valid; generic public HTTP(S) URL is valid; non-HTTP(S) and malformed non-empty values are invalid. Keep `extractGithubRepositoryName` only for GitHub URLs.
   - User story link: Users can create projects from any source or no source yet.
   - Depends on: None.
@@ -249,7 +249,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Name remains required.
 
 - [ ] Task 6: Update onboarding UI behavior and finish mutation
-  - File: `contentflow_app/lib/presentation/screens/onboarding/onboarding_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/onboarding/onboarding_screen.dart`
   - Action: Use source-neutral labels/copy, make source URL optional, preserve GitHub repo picker as an optional helper, preload active project in edit mode, and call create/update APIs with optional source URL. Ensure workspace setup legacy path also accepts empty/non-GitHub source.
   - User story link: Creation and editing work for GitHub, public website, and no URL.
   - Depends on: Tasks 4 and 5.
@@ -257,7 +257,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Avoid showing "Connect your GitHub repository" as the main requirement when the field is optional.
 
 - [ ] Task 7: Add create-project action and functional no-selection to picker
-  - File: `contentflow_app/lib/presentation/widgets/project_picker_action.dart`
+  - File: `contentglowz_app/lib/presentation/widgets/project_picker_action.dart`
   - Action: Add a menu item for "Create project" linking to `/onboarding?mode=create&intent=project-manage`; make "No project selected" call the updated controller with explicit no-selection; show checkmark only next to no-selection when that mode is active.
   - User story link: Lets users create and clear selection from the always-visible top-right control.
   - Depends on: Task 2.
@@ -265,7 +265,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: If `PopupMenuButton<String?>` cannot distinguish action types cleanly, replace value strings with an internal enum/string command convention.
 
 - [ ] Task 8: Simplify Projects screen active summary and card list
-  - File: `contentflow_app/lib/presentation/screens/projects/projects_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/projects/projects_screen.dart`
   - Action: Replace duplicate active project card with compact active summary showing active project name or "No project selected"; keep all non-archived projects as cards in the list; add create action; rename delete action to archive. Add archived section if archived projects are included by provider.
   - User story link: Project management becomes coherent and avoids duplicate active card confusion.
   - Depends on: Tasks 2 and 11.
@@ -273,7 +273,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Keep edit project link to onboarding edit mode.
 
 - [ ] Task 9: Add null-active guards to project-scoped screens/providers
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Audit providers using `activeProjectIdProvider` and ensure null means no project-scoped data, not accidental global/stale data, for feed, history, personas, affiliations, ideas, content tools, work domains, drip, analytics/performance as applicable.
   - User story link: "No project selected" removes project-linked data from the app.
   - Depends on: Task 2.
@@ -281,7 +281,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Some endpoints may intentionally support global reads; document each intentional exception in code comments or tests.
 
 - [ ] Task 10: Update Flutter project model/API for archive metadata and optional URL
-  - File: `contentflow_app/lib/data/models/project.dart`, `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/models/project.dart`, `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Ensure empty URL and generic source URLs parse/render correctly; write canonical `source_url` while accepting/reading response `url`; map backend archive/delete fields consistently; add `archiveProject` calling `POST /api/projects/{id}/archive` and `unarchiveProject` calling `POST /api/projects/{id}/unarchive`. Keep `deleteProject` only for future hard-delete flow or internal use.
   - User story link: Enables archive-first lifecycle and source-agnostic projects.
   - Depends on: Backend Tasks 11-14.
@@ -289,7 +289,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Avoid showing blank subtitle rows in picker/cards when URL is empty.
 
 - [ ] Task 11: Relax backend project request models for optional source URL
-  - File: `contentflow_lab/api/models/project.py`
+  - File: `contentglowz_lab/api/models/project.py`
   - Action: Change create/onboard/update request models so canonical `source_url` is optional and legacy `github_url` remains accepted as an alias. Accept empty/missing URL. Validate non-empty URLs as syntactically valid HTTP(S), with GitHub recognized as `type = "github"`, non-GitHub HTTP(S) as `type = "website"`, and empty source as `type = "manual"`.
   - User story link: Backend no longer blocks non-GitHub or empty-source project creation.
   - Depends on: None.
@@ -297,7 +297,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Preserve backward compatibility for existing Flutter payloads using `github_url`; do not trigger crawl/fetch/analyze for `website` or `manual` in this spec.
 
 - [ ] Task 12: Update backend project store schema/model for optional URL and archive fields
-  - File: `contentflow_lab/agents/seo/config/project_store.py`
+  - File: `contentglowz_lab/agents/seo/config/project_store.py`
   - Action: Add ensure-table migrations for `archivedAt` and `deletedAt` metadata if missing. Ensure `url` can be stored as empty string for no-source projects. Add store methods `archive`, `unarchive`, and `hard_delete` for reserved explicit deletion. Filter archived/deleted projects in default active queries where appropriate.
   - User story link: Supports archive-first lifecycle and optional source persistence.
   - Depends on: Task 11.
@@ -305,7 +305,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Because SQLite cannot trivially alter NOT NULL away, V1 may keep `url TEXT NOT NULL` and store empty string for no-source.
 
 - [ ] Task 13: Update backend projects router contract
-  - File: `contentflow_lab/api/routers/projects.py`
+  - File: `contentglowz_lab/api/routers/projects.py`
   - Action: Update create/onboard/update logic to use optional canonical `source_url`, legacy `github_url` alias, and source type. Add `POST /api/projects/{id}/archive` and `POST /api/projects/{id}/unarchive`. Keep `DELETE /api/projects/{id}` as hard-delete/internal or future explicit flow, but do not call it from default Flutter UI.
   - User story link: UI actions have authoritative backend behavior.
   - Depends on: Tasks 11 and 12.
@@ -313,7 +313,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Archive/unarchive must require owned, non-deleted projects. Unarchive must not revive hard-deleted projects. Default UI calls archive, not hard delete.
 
 - [ ] Task 14: Update backend bootstrap/default resolution
-  - File: `contentflow_lab/api/routers/me.py`
+  - File: `contentglowz_lab/api/routers/me.py`
   - Action: Read `projectSelectionMode` from user settings. For `none`, return `default_project_id: null` even if projects exist. For `selected`, return the configured `defaultProjectId` only if it points to an owned, non-archived, non-deleted project; otherwise return null. For `auto` or missing legacy mode, use fallback to the first valid non-archived project.
   - User story link: App startup respects "No project selected".
   - Depends on: Tasks 1 and 12.
@@ -321,7 +321,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Keep workspace existence true when projects exist but none is selected.
 
 - [ ] Task 15: Update localization and copy
-  - File: `contentflow_app/lib/l10n/app_localizations.dart`
+  - File: `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action: Add/adjust strings for "Source URL", "Optional", "Public website or GitHub URL", "Archive project", "Archived projects", "No source linked", and no-project states. Remove GitHub-only requirement copy from generic project setup.
   - User story link: User understands the new source-agnostic and archive-first behavior.
   - Depends on: Tasks 6, 7, and 8.
@@ -329,7 +329,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
   - Notes: Keep English primary copy and French translations consistent with existing localization style.
 
 - [ ] Task 16: Add end-to-end regression tests for project flow
-  - File: `contentflow_app/test/presentation/screens/feed/feed_screen_test.dart`, `contentflow_app/test/presentation/screens/projects/projects_screen_test.dart`, `contentflow_app/test/core/project_onboarding_validation_test.dart`, `contentflow_lab/tests/test_projects_create_route.py`, `contentflow_lab/tests/test_bootstrap_routes.py`
+  - File: `contentglowz_app/test/presentation/screens/feed/feed_screen_test.dart`, `contentglowz_app/test/presentation/screens/projects/projects_screen_test.dart`, `contentglowz_app/test/core/project_onboarding_validation_test.dart`, `contentglowz_lab/tests/test_projects_create_route.py`, `contentglowz_lab/tests/test_bootstrap_routes.py`
   - Action: Add focused tests covering the acceptance criteria below.
   - User story link: Prevents regressions in observed broken flows.
   - Depends on: All implementation tasks.
@@ -407,11 +407,11 @@ Separate project source configuration from GitHub-only onboarding, make active p
 ## Execution Notes
 
 - Read first:
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/presentation/screens/onboarding/onboarding_screen.dart`
-  - `contentflow_app/lib/presentation/widgets/project_picker_action.dart`
-  - `contentflow_lab/api/routers/projects.py`
-  - `contentflow_lab/agents/seo/config/project_store.py`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/presentation/screens/onboarding/onboarding_screen.dart`
+  - `contentglowz_app/lib/presentation/widgets/project_picker_action.dart`
+  - `contentglowz_lab/api/routers/projects.py`
+  - `contentglowz_lab/agents/seo/config/project_store.py`
 
 - Recommended implementation order:
   - Establish shared settings/no-selection contract in app model and backend bootstrap.

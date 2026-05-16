@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: ready
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md"
 ---
 # Backend persona autofill + repo understanding + user keys
 
@@ -184,93 +184,93 @@ Tout job persistant IA stocké dans `jobs` doit exposer :
 ## Tâches d’implémentation
 
 - [ ] Tâche 1 : Garantir les tables `CreatorProfile` et `CustomerPersona`
-  - Fichier : `contentflow_lab/api/services/user_data_store.py`
+  - Fichier : `contentglowz_lab/api/services/user_data_store.py`
   - Action : Ajouter `ensure_creator_profile_table()` et `ensure_customer_persona_table()`
   - Notes : schémas strictement alignés avec les méthodes CRUD existantes
 
 - [ ] Tâche 2 : Garantir la table des credentials utilisateur
-  - Fichier : `contentflow_lab/api/services/user_key_store.py`
+  - Fichier : `contentglowz_lab/api/services/user_key_store.py`
   - Action : Créer `UserProviderCredential` et son `ensure_table()`
   - Notes : colonnes `userId`, `provider`, `encryptedSecret`, `maskedSecret`, `createdAt`, `updatedAt`, `lastValidatedAt`, `validationStatus`
 
 - [ ] Tâche 3 : Brancher toutes les garanties de bootstrap
-  - Fichier : `contentflow_lab/api/main.py`
+  - Fichier : `contentglowz_lab/api/main.py`
   - Action : appeler `ensure_user_settings_table()`, `ensure_creator_profile_table()`, `ensure_customer_persona_table()`, `user_key_store.ensure_table()`, `job_store.ensure_table()`
   - Notes : ne pas dépendre d’une migration externe cachée
 
 - [ ] Tâche 4 : Introduire le chiffrement applicatif
-  - Fichier : `contentflow_lab/api/services/crypto.py`
+  - Fichier : `contentglowz_lab/api/services/crypto.py`
   - Action : Ajouter un service Fernet basé sur `USER_SECRETS_MASTER_KEY`
   - Notes : lever une erreur explicite si la variable n’est pas configurée
 
 - [ ] Tâche 5 : Déclarer OpenRouter comme seule intégration user key V1
-  - Fichier : `contentflow_lab/api/models/user_data.py`
+  - Fichier : `contentglowz_lab/api/models/user_data.py`
   - Action : Ne plus étendre le write-path à tout `apiKeys`; créer un modèle dédié `OpenRouterCredentialStatus`
   - Notes : `UserSettings.apiKeys` reste legacy/read-only et ne doit plus piloter le runtime
 
 - [ ] Tâche 6 : Unifier le contrat persona/creator
-  - Fichier : `contentflow_lab/api/models/user_data.py`
+  - Fichier : `contentglowz_lab/api/models/user_data.py`
   - Action : Ajouter les alias `validation_alias/serialization_alias` nécessaires et une méthode de normalisation canonique
   - Notes : tous les services backend doivent travailler en `snake_case`
 
 - [ ] Tâche 7 : Unifier les modèles `psychology`
-  - Fichier : `contentflow_lab/api/models/psychology.py`
+  - Fichier : `contentglowz_lab/api/models/psychology.py`
   - Action : faire dépendre `PersonaRefinementRequest` et `AngleGenerationRequest` de modèles normalisés
   - Notes : compat temporaire acceptée pour l’ancien payload `{"persona": ...}` sur `refine-persona`
 
 - [ ] Tâche 8 : Sécuriser et migrer les jobs `psychology`
-  - Fichier : `contentflow_lab/api/routers/psychology.py`
+  - Fichier : `contentglowz_lab/api/routers/psychology.py`
   - Action : ajouter auth obligatoire, remplacer `_tasks` par `job_store`, stocker `user_id`, uniformiser le format des réponses de job
   - Notes : polling restreint au propriétaire du job
 
 - [ ] Tâche 9 : Exposer les endpoints d’intégration OpenRouter
-  - Fichier : `contentflow_lab/api/routers/settings_integrations.py`
+  - Fichier : `contentglowz_lab/api/routers/settings_integrations.py`
   - Action : ajouter `GET`, `PUT`, `DELETE`, `POST validate` pour OpenRouter
   - Notes : aucune clé en clair dans les réponses
 
 - [ ] Tâche 10 : Créer le service runtime LLM utilisateur
-  - Fichier : `contentflow_lab/api/services/user_llm_service.py`
+  - Fichier : `contentglowz_lab/api/services/user_llm_service.py`
   - Action : résoudre la clé OpenRouter depuis `UserProviderCredential`, construire le client OpenRouter, fournir une erreur métier si absent/invalide
   - Notes : pas de fallback env serveur pour `personas.draft`
 
 - [ ] Tâche 11 : Créer le service `repo_understanding`
-  - Fichier : `contentflow_lab/api/services/repo_understanding_service.py`
+  - Fichier : `contentglowz_lab/api/services/repo_understanding_service.py`
   - Action : résoudre la source, collecter le contenu, extraire `project_summary`, `target_audiences`, `icp_hypotheses`, `personal_story_signals`, `positioning_hypotheses`, `persona_candidates`, `evidence`
   - Notes : support local repo, GitHub connecté, GitHub public, site crawlé Firecrawl
 
 - [ ] Tâche 12 : Définir les modèles draft persona
-  - Fichier : `contentflow_lab/api/models/persona_draft.py`
+  - Fichier : `contentglowz_lab/api/models/persona_draft.py`
   - Action : créer `PersonaDraftRequest`, `PersonaDraftJobResponse`, `PersonaDraftResult`, `RepoUnderstandingResult`, `EvidenceItem`
   - Notes : `persona_draft` toujours non persisté
 
 - [ ] Tâche 13 : Ajouter les routes draft persona
-  - Fichier : `contentflow_lab/api/routers/personas.py`
+  - Fichier : `contentglowz_lab/api/routers/personas.py`
   - Action : ajouter `POST /api/personas/draft` et `GET /api/personas/draft-jobs/{job_id}`
   - Notes : chargement auto du `creator_profile` si non fourni
 
 - [ ] Tâche 14 : Enregistrer les nouveaux routers
-  - Fichier : `contentflow_lab/api/routers/__init__.py`
+  - Fichier : `contentglowz_lab/api/routers/__init__.py`
   - Action : exporter `settings_integrations_router`
   - Notes : garder le pattern centralisé
 
 - [ ] Tâche 15 : Inclure le router dans l’app
-  - Fichier : `contentflow_lab/api/main.py`
+  - Fichier : `contentglowz_lab/api/main.py`
   - Action : `app.include_router(settings_integrations_router)`
 
 - [ ] Tâche 16 : Couvrir la normalisation de contrat
-  - Fichier : `contentflow_lab/tests/test_persona_contracts.py`
+  - Fichier : `contentglowz_lab/tests/test_persona_contracts.py`
   - Action : tester alias input/output et normalisation finale
 
 - [ ] Tâche 17 : Couvrir OpenRouter user keys
-  - Fichier : `contentflow_lab/tests/test_settings_integrations_router.py`
+  - Fichier : `contentglowz_lab/tests/test_settings_integrations_router.py`
   - Action : tester write/read/delete/validate et absence de fuite du secret
 
 - [ ] Tâche 18 : Couvrir les jobs `psychology`
-  - Fichier : `contentflow_lab/tests/test_psychology_auth_jobs.py`
+  - Fichier : `contentglowz_lab/tests/test_psychology_auth_jobs.py`
   - Action : tester auth, persistance job, ownership, migration hors mémoire
 
 - [ ] Tâche 19 : Couvrir le draft persona
-  - Fichier : `contentflow_lab/tests/test_persona_draft_route.py`
+  - Fichier : `contentglowz_lab/tests/test_persona_draft_route.py`
   - Action : tester `project_repo`, `connected_github`, GitHub public, `manual_url` Firecrawl, absence de clé, mode `blank_form`
 
 ## Critères d’acceptation
@@ -292,7 +292,7 @@ Tout job persistant IA stocké dans `jobs` doit exposer :
 
 ## Dépendances
 
-- Ajouter `cryptography>=42,<44` à `contentflow_lab/requirements.txt`
+- Ajouter `cryptography>=42,<44` à `contentglowz_lab/requirements.txt`
 - Ajouter `USER_SECRETS_MASTER_KEY` à la doc d’environnement backend
 - Réutiliser `firecrawl-py` existant pour les sites publics
 - Réutiliser `job_store` existant comme persistance unique de job
@@ -320,21 +320,21 @@ Tout job persistant IA stocké dans `jobs` doit exposer :
 
 ## Fichiers à modifier/créer
 
-- `contentflow_lab/api/main.py`
-- `contentflow_lab/api/routers/__init__.py`
-- `contentflow_lab/api/routers/psychology.py`
-- `contentflow_lab/api/routers/personas.py`
-- `contentflow_lab/api/models/user_data.py`
-- `contentflow_lab/api/models/psychology.py`
-- `contentflow_lab/api/services/user_data_store.py`
-- `contentflow_lab/requirements.txt`
-- `contentflow_lab/api/services/crypto.py`
-- `contentflow_lab/api/services/user_key_store.py`
-- `contentflow_lab/api/routers/settings_integrations.py`
-- `contentflow_lab/api/services/user_llm_service.py`
-- `contentflow_lab/api/services/repo_understanding_service.py`
-- `contentflow_lab/api/models/persona_draft.py`
-- `contentflow_lab/tests/test_persona_contracts.py`
-- `contentflow_lab/tests/test_settings_integrations_router.py`
-- `contentflow_lab/tests/test_persona_draft_route.py`
-- `contentflow_lab/tests/test_psychology_auth_jobs.py`
+- `contentglowz_lab/api/main.py`
+- `contentglowz_lab/api/routers/__init__.py`
+- `contentglowz_lab/api/routers/psychology.py`
+- `contentglowz_lab/api/routers/personas.py`
+- `contentglowz_lab/api/models/user_data.py`
+- `contentglowz_lab/api/models/psychology.py`
+- `contentglowz_lab/api/services/user_data_store.py`
+- `contentglowz_lab/requirements.txt`
+- `contentglowz_lab/api/services/crypto.py`
+- `contentglowz_lab/api/services/user_key_store.py`
+- `contentglowz_lab/api/routers/settings_integrations.py`
+- `contentglowz_lab/api/services/user_llm_service.py`
+- `contentglowz_lab/api/services/repo_understanding_service.py`
+- `contentglowz_lab/api/models/persona_draft.py`
+- `contentglowz_lab/tests/test_persona_contracts.py`
+- `contentglowz_lab/tests/test_settings_integrations_router.py`
+- `contentglowz_lab/tests/test_persona_draft_route.py`
+- `contentglowz_lab/tests/test_psychology_auth_jobs.py`

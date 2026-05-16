@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-08"
 created_at: "2026-05-08 09:22:48 UTC"
 updated: "2026-05-08"
@@ -18,11 +18,11 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter capture UI"
-  - "contentflow_app Android native Kotlin MediaProjection"
-  - "contentflow_app Android foreground capture services"
-  - "contentflow_app local capture metadata store"
-  - "contentflow_app capture/content asset metadata"
+  - "contentglowz_app Flutter capture UI"
+  - "contentglowz_app Android native Kotlin MediaProjection"
+  - "contentglowz_app Android foreground capture services"
+  - "contentglowz_app local capture metadata store"
+  - "contentglowz_app capture/content asset metadata"
   - "Android MediaProjection"
   - "Android MediaCodec/MediaMuxer"
   - "Google ML Kit Text Recognition and Face Detection"
@@ -40,10 +40,10 @@ depends_on:
   - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-android-device-screen-capture.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-device-screen-capture.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "0.1.0"
     required_status: "shipped_pending_manual_qa"
   - artifact: "shipflow_data/workflow/explorations/2026-05-06-screen-text-obfuscation.md"
@@ -56,8 +56,8 @@ supersedes: []
 evidence:
   - "User clarified that the target is arbitrary Android whole-screen capture: messaging apps, browser, and third-party apps, not only ContentFlow screens."
   - "User prioritized visually pleasant public videos over large static masks, accepting best-effort dynamic blur/scramble plus post-production review."
-  - "contentflow_app currently records video through ScreenRecordService using MediaProjection -> VirtualDisplay -> MediaRecorder surface, which does not expose a per-frame edit step."
-  - "contentflow_app currently captures screenshots through ImageReader, which can be extended for privacy screenshot redaction."
+  - "contentglowz_app currently records video through ScreenRecordService using MediaProjection -> VirtualDisplay -> MediaRecorder surface, which does not expose a per-frame edit step."
+  - "contentglowz_app currently captures screenshots through ImageReader, which can be extended for privacy screenshot redaction."
   - "shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md recommends ML Kit Text Recognition v2, ML Kit Face Detection, MediaCodec/MediaMuxer, Media3 Transformer, and avoids FFmpegKit."
   - "Android official docs require user consent per MediaProjection session and foreground service declarations for Android 14+."
   - "Google Play AccessibilityService policy requires prominent disclosure, affirmative consent, and declaration/review if accessibility APIs are used."
@@ -161,16 +161,16 @@ Add an Android-only privacy capture mode that uses a separate native capture pip
 
 Local dependencies and contracts:
 
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`: add privacy controls, disclosure, review gating, and asset review state UI.
-- `contentflow_app/lib/data/services/device_capture_service.dart`: extend platform-channel contract to pass privacy options and parse privacy events/assets.
-- `contentflow_app/lib/data/models/capture_asset.dart`: extend local asset metadata for privacy/redaction status.
-- `contentflow_app/lib/data/services/capture_local_store.dart`: persist new metadata only; no binary data.
-- `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenCaptureChannel.kt`: route normal vs privacy operations and expose typed native errors/events.
-- `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenRecordService.kt`: keep normal recording unchanged; do not overload it with privacy behavior if a separate service keeps lifecycle clearer.
-- New native privacy classes under `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/`.
-- `contentflow_app/android/app/build.gradle.kts`: add Android native dependencies for ML Kit and Media3 if used.
-- `contentflow_app/android/app/src/main/AndroidManifest.xml`: update only if new service metadata is required; do not add AccessibilityService in V1.
-- `contentflow_app/lib/data/services/api_service.dart`: include privacy metadata in capture asset/content metadata payloads without backend schema changes.
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`: add privacy controls, disclosure, review gating, and asset review state UI.
+- `contentglowz_app/lib/data/services/device_capture_service.dart`: extend platform-channel contract to pass privacy options and parse privacy events/assets.
+- `contentglowz_app/lib/data/models/capture_asset.dart`: extend local asset metadata for privacy/redaction status.
+- `contentglowz_app/lib/data/services/capture_local_store.dart`: persist new metadata only; no binary data.
+- `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenCaptureChannel.kt`: route normal vs privacy operations and expose typed native errors/events.
+- `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenRecordService.kt`: keep normal recording unchanged; do not overload it with privacy behavior if a separate service keeps lifecycle clearer.
+- New native privacy classes under `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/`.
+- `contentglowz_app/android/app/build.gradle.kts`: add Android native dependencies for ML Kit and Media3 if used.
+- `contentglowz_app/android/app/src/main/AndroidManifest.xml`: update only if new service metadata is required; do not add AccessibilityService in V1.
+- `contentglowz_app/lib/data/services/api_service.dart`: include privacy metadata in capture asset/content metadata payloads without backend schema changes.
 
 Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 
@@ -213,12 +213,12 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with privacy capture scope, Android-only status, best-effort limitation, post-production review requirement, and no cloud upload behavior.
-- Update `contentflow_app/shipflow_data/technical/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
-- Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/shipflow_data/business/product.md` only if the feature ships publicly and changes product positioning.
+- Update `contentglowz_app/README.md` with privacy capture scope, Android-only status, best-effort limitation, post-production review requirement, and no cloud upload behavior.
+- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
+- Update `contentglowz_app/CHANGELOG.md` after implementation.
+- Update `contentglowz_app/shipflow_data/business/product.md` only if the feature ships publicly and changes product positioning.
 - Do not update `.env.example` in V1 unless implementation introduces a configurable build/runtime flag.
-- Do not update `contentflow_site` marketing copy until QA proves the feature is usable and wording is legally safe.
+- Do not update `contentglowz_site` marketing copy until QA proves the feature is usable and wording is legally safe.
 
 ## Edge Cases
 
@@ -242,7 +242,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 ## Implementation Tasks
 
 - [ ] Task 1: Add privacy capture settings and asset metadata models.
-  - File: `contentflow_app/lib/data/models/capture_asset.dart`
+  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
   - Action: Add enums/fields for `privacyMode`, `redactionStatus`, `textRedactionStyle`, `photoRedactionStyle`, `redactionStrength`, `reviewState`, and optional aggregate stats such as detected text region count; keep backwards-compatible JSON parsing defaults for old assets.
   - User story link: Lets the app distinguish normal captures from best-effort privacy captures and gate share/export.
   - Depends on: None.
@@ -250,7 +250,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Do not store recognized text, frame thumbnails, or clear temp paths.
 
 - [ ] Task 2: Extend the Flutter capture service contract for privacy options.
-  - File: `contentflow_app/lib/data/services/device_capture_service.dart`
+  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
   - Action: Add typed privacy options to screenshot/recording calls or add explicit `takePrivacyScreenshot` and `startPrivacyRecording` methods; parse new native event fields and privacy failure codes.
   - User story link: Lets Flutter request privacy capture without overloading normal capture semantics invisibly.
   - Depends on: Task 1.
@@ -258,7 +258,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Keep normal method behavior compatible for existing tests and callers.
 
 - [ ] Task 3: Add privacy mode controls and disclosure UI.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Add a privacy mode toggle, text redaction style control (`scramble`, `blur`, `pixelate`), photo redaction style control (`off`, `blur`, `pixelate`), strength control (`balanced`, `strong`), and a first-run/session disclosure requiring affirmative acknowledgement before starting privacy capture.
   - User story link: Gives creators control over visual style while making best-effort limits explicit.
   - Depends on: Task 2.
@@ -266,7 +266,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Prefer concise in-context UI and dialogs over long legal blocks; wording must say manual review is required.
 
 - [ ] Task 4: Gate share/export for privacy-marked assets.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: When a privacy asset has `reviewState=needsReview`, require a review acknowledgement before calling `shareAsset`; after acknowledgement, persist `reviewState=reviewed` locally.
   - User story link: Ensures post-production review is part of the user flow before internet upload.
   - Depends on: Tasks 1 and 3.
@@ -274,7 +274,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: This is a product safety gate, not a legal guarantee.
 
 - [ ] Task 5: Persist privacy review state locally.
-  - File: `contentflow_app/lib/data/services/capture_local_store.dart`
+  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
   - Action: Add a method to update an asset's review state/metadata without rewriting binary files, preserving recent capture ordering and content links.
   - User story link: Lets users review once and share later without losing the privacy status.
   - Depends on: Task 1.
@@ -282,7 +282,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Continue storing metadata only in SharedPreferences.
 
 - [ ] Task 6: Add Android dependencies for privacy redaction.
-  - File: `contentflow_app/android/app/build.gradle.kts`
+  - File: `contentglowz_app/android/app/build.gradle.kts`
   - Action: Add ML Kit Text Recognition v2 Latin bundled dependency, ML Kit Face Detection dependency, and Media3 Transformer/effect dependencies if used for post-processing; avoid FFmpegKit.
   - User story link: Provides the native detection/effect foundation.
   - Depends on: None.
@@ -290,7 +290,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: If local `flutter.minSdkVersion` is below dependency requirements, gate privacy mode on Android API support or explicitly bump minSdk in a separate readiness decision.
 
 - [ ] Task 7: Create native privacy option and event data classes.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyCaptureOptions.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyCaptureOptions.kt`
   - Action: Define Kotlin representations for privacy options, redaction styles, strength, review/status metadata, processing stats, and typed error codes from platform-channel arguments.
   - User story link: Keeps platform-channel parsing out of the low-level rendering pipeline.
   - Depends on: Task 2.
@@ -298,7 +298,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Keep option names aligned with Dart enums.
 
 - [ ] Task 8: Route privacy requests through a separate native path.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenCaptureChannel.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenCaptureChannel.kt`
   - Action: Parse privacy options, request MediaProjection exactly like normal capture, and start privacy screenshot/recording classes instead of `ScreenShotService`/`ScreenRecordService` when privacy mode is enabled.
   - User story link: Lets privacy mode use a redaction pipeline without disturbing normal recording.
   - Depends on: Tasks 7 and existing capture consent flow.
@@ -306,7 +306,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Keep Android 14 single-use token behavior intact.
 
 - [ ] Task 9: Implement privacy screenshot redaction.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyScreenshotCapture.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyScreenshotCapture.kt`
   - Action: Capture one frame through ImageReader, run text/face/photo detection on the bitmap, apply selected effects, save only the redacted PNG, and return privacy metadata.
   - User story link: Provides best-effort privacy for still captures.
   - Depends on: Tasks 6-8.
@@ -314,7 +314,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: This is the lowest-risk native redaction path and should be implemented before video.
 
 - [ ] Task 10: Implement frame analysis service.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyFrameAnalyzer.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyFrameAnalyzer.kt`
   - Action: Run ML Kit Text Recognition at a throttled cadence, run face detection when enabled, derive redaction boxes, discard recognized text content immediately, and emit only boxes/stats.
   - User story link: Finds sensitive regions while preserving user privacy and avoiding OCR text persistence.
   - Depends on: Task 6.
@@ -322,7 +322,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Use lower analysis resolution where needed; map boxes back to output coordinates.
 
 - [ ] Task 11: Implement temporal redaction tracking for scroll.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyRedactionTracker.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyRedactionTracker.kt`
   - Action: Persist detected boxes across a configurable frame/time window, expand margins, merge overlapping boxes, and apply conservative behavior during high motion or dropped OCR frames.
   - User story link: Prevents clear-text flashes during scroll while keeping the video visually pleasant.
   - Depends on: Task 10.
@@ -330,7 +330,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: This task is critical for the user's stated scroll concern.
 
 - [ ] Task 12: Implement visual redaction renderer.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyRedactionRenderer.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyRedactionRenderer.kt`
   - Action: Render redaction effects over detected boxes: blur, pixelate, and fake scrambled glyph/line overlays; preserve surrounding UI layout and avoid large full-screen masks by default.
   - User story link: Produces internet-friendly videos where viewers understand the flow but cannot read sensitive text.
   - Depends on: Tasks 10 and 11.
@@ -338,7 +338,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: If full GPU blur is too heavy, V1 may approximate blur/pixelation with downscale/upscale regions or opaque/fake glyph overlays, but the output must be visibly unreadable.
 
 - [ ] Task 13: Implement privacy recording encode pipeline.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/privacy/PrivacyScreenRecordService.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/privacy/PrivacyScreenRecordService.kt`
   - Action: Build a foreground service that captures MediaProjection frames through a processable surface path, applies analyzer/tracker/renderer output, writes final video through MediaCodec input Surface and MediaMuxer MP4, enforces the existing duration cap, and emits progress/stats events.
   - User story link: Delivers dynamic best-effort privacy for whole-screen recordings.
   - Depends on: Tasks 8, 10, 11, and 12.
@@ -346,7 +346,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: This is the highest-risk implementation task. If a temporary clear buffer/file is technically unavoidable, keep it app-private, non-shareable, and deleted/quarantined before asset registration.
 
 - [ ] Task 14: Add privacy metadata to capture/content backend payloads.
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Extend capture metadata helper payloads to include privacy/redaction status and settings when linking or creating content from captures; never include OCR text or local clear paths.
   - User story link: Preserves privacy status when captures become content assets.
   - Depends on: Task 1.
@@ -354,7 +354,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: No backend schema migration expected because metadata JSON already exists.
 
 - [ ] Task 15: Add tests for privacy capture contracts.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`
+  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`
   - Action: Cover backwards-compatible parsing, privacy settings serialization, review state updates, disclosure UI, share gating, and normal capture unaffected behavior.
   - User story link: Prevents regressions in user-visible privacy flow and metadata state.
   - Depends on: Tasks 1-5.
@@ -362,7 +362,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Native frame quality still requires manual/device validation.
 
 - [ ] Task 16: Update docs and changelog.
-  - File: `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Document Android-only privacy mode, best-effort limits, post-production review, local-only processing, dependencies, and no guarantee/no cloud upload behavior.
   - User story link: Aligns user/operator expectations with the feature's real guarantees.
   - Depends on: Tasks 1-15.
@@ -432,10 +432,10 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 
 Read first:
 
-- `contentflow_app/lib/data/services/device_capture_service.dart`
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
-- `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenCaptureChannel.kt`
-- `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenRecordService.kt`
+- `contentglowz_app/lib/data/services/device_capture_service.dart`
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+- `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenCaptureChannel.kt`
+- `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenRecordService.kt`
 - `shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md`
 
 Implementation approach:

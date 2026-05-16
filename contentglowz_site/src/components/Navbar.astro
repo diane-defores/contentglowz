@@ -1,0 +1,195 @@
+---
+import { appEntryUrl, appSignInUrl } from '../config/site';
+---
+
+<a href="#main-content" class="skip-nav">Skip to content</a>
+<nav class="navbar" aria-label="Main navigation">
+  <div class="container">
+    <a href="/" class="logo">
+      <span class="logo-icon">🤖</span>
+      <span class="logo-text">ContentGlowz</span>
+    </a>
+    <div class="nav-links" id="nav-links">
+      <a href="/#features">Features</a>
+      <a href="/#robots">Robots</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#who-its-for">Who It's For</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/blog">Blog</a>
+      <a href={appEntryUrl}>Open App</a>
+      <a href={appSignInUrl} class="mobile-cta">Continue with Google</a>
+    </div>
+    <a href={appSignInUrl} class="cta-button">Continue with Google</a>
+    <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+  </div>
+</nav>
+
+<style>
+  .skip-nav {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 1001;
+    background: var(--color-primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0 0 8px 8px;
+    font-weight: 600;
+    transition: top 0.2s;
+  }
+
+  .skip-nav:focus {
+    top: 0;
+  }
+
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--color-surface-navbar);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: var(--space-4) 0;
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-dark);
+  }
+
+  .logo-icon {
+    font-size: 2rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    transition: color var(--duration-base);
+  }
+
+  .nav-links a:hover {
+    color: var(--color-primary);
+  }
+
+  .cta-button {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: transform var(--duration-base), box-shadow var(--duration-base);
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+  }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hamburger-line {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text-primary);
+    border-radius: 2px;
+    transition: transform var(--duration-base), opacity var(--duration-base);
+  }
+
+  .hamburger[aria-expanded="true"] .hamburger-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburger[aria-expanded="true"] .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger[aria-expanded="true"] .hamburger-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-cta {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: var(--color-surface-card-glass);
+      backdrop-filter: blur(10px);
+      padding: var(--space-6) var(--space-4);
+      gap: var(--space-4);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .nav-links.open {
+      display: flex;
+    }
+
+    .hamburger {
+      display: flex;
+    }
+
+    .cta-button {
+      display: none;
+    }
+
+    .mobile-cta {
+      display: block;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white !important;
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-align: center;
+      margin-top: var(--space-2);
+    }
+  }
+</style>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+
+  hamburger?.addEventListener('click', () => {
+    const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', String(!expanded));
+    navLinks?.classList.toggle('open');
+  });
+</script>

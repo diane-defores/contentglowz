@@ -1,0 +1,282 @@
+---
+import { appSignInUrl, creatorCheckoutUrl, proCheckoutUrl } from '../config/site';
+
+const pricingSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "ContentGlowz",
+  "description": "AI content pipeline — generate, review, and publish multi-format content",
+  "brand": { "@type": "Brand", "name": "ContentGlowz" },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Free",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "1 project, 5 content pieces/month, 1 publishing channel",
+      "availability": "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      "name": "Creator",
+      "price": "19",
+      "priceCurrency": "EUR",
+      "billingIncrement": 1,
+      "description": "3 projects, 50 content pieces/month, all formats and channels, SEO keyword research",
+      "availability": "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      "name": "Pro",
+      "price": "49",
+      "priceCurrency": "EUR",
+      "billingIncrement": 1,
+      "description": "Unlimited projects and content, competitor analysis, SERP tracking, API access",
+      "availability": "https://schema.org/InStock",
+    },
+  ],
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(pricingSchema)} />
+<section id="pricing" class="pricing-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Simple Pricing. Start Free.</h2>
+      <p>No credit card required. Upgrade when your content scales.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="price">
+          <span class="amount">0</span>
+          <span class="currency">&euro;</span>
+        </div>
+        <p class="billing-note">Forever free</p>
+
+        <ul class="features">
+          <li>1 project</li>
+          <li>5 content pieces/month</li>
+          <li>Swipe approval feed</li>
+          <li>1 publishing channel</li>
+          <li>Basic analytics</li>
+          <li>Community support</li>
+        </ul>
+        <a class="cta-btn" href={appSignInUrl}>Get Started</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="popular-badge">Most Popular</div>
+        <h3>Creator</h3>
+        <div class="price">
+          <span class="amount">19</span>
+          <span class="currency">&euro;</span>
+          <span class="period">/mo</span>
+        </div>
+        <p class="billing-note">Everything you need to publish consistently</p>
+
+        <ul class="features">
+          <li>3 projects</li>
+          <li>50 content pieces/month</li>
+          <li>All 6 content formats</li>
+          <li>All publishing channels</li>
+          <li>SEO keyword research</li>
+          <li>Affiliate link management</li>
+          <li>Content scheduling</li>
+          <li>Full analytics</li>
+          <li>Email support</li>
+        </ul>
+        <a class="cta-btn primary" href={creatorCheckoutUrl}>
+          Start 14-Day Trial
+        </a>
+      </div>
+
+      <div class="pricing-card">
+        <h3>Pro</h3>
+        <div class="price">
+          <span class="amount">49</span>
+          <span class="currency">&euro;</span>
+          <span class="period">/mo</span>
+        </div>
+        <p class="billing-note">For serious content creators and agencies</p>
+
+        <ul class="features">
+          <li>Unlimited projects</li>
+          <li>Unlimited content</li>
+          <li>All Creator features</li>
+          <li>Competitor analysis</li>
+          <li>Ranking position tracking</li>
+          <li>Content strategy analysis</li>
+          <li>Custom audience personas</li>
+          <li>Priority support</li>
+          <li>API access</li>
+        </ul>
+        <a class="cta-btn" href={proCheckoutUrl}>
+          Start 14-Day Trial
+        </a>
+      </div>
+    </div>
+
+    <p class="pricing-note">All plans include AI generation costs, updates, and security patches. No hidden fees.</p>
+  </div>
+</section>
+
+<style>
+  .pricing-section {
+    padding: var(--space-24) 0;
+    background: linear-gradient(180deg, var(--color-surface-subtle) 0%, var(--color-surface) 100%);
+  }
+
+  .section-header {
+    margin-bottom: 3rem;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .pricing-card {
+    background: var(--color-surface);
+    padding: var(--space-10);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    transition: transform var(--duration-slow), box-shadow var(--duration-slow);
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-card-lg);
+  }
+
+  .pricing-card.featured {
+    border: 3px solid var(--color-primary);
+    transform: scale(1.05);
+  }
+
+  .popular-badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .pricing-card h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-gray);
+    margin-left: 0.25rem;
+  }
+
+  .amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--color-dark);
+  }
+
+  .period {
+    font-size: 1.25rem;
+    color: var(--color-gray);
+    margin-left: 0.25rem;
+  }
+
+  .billing-note {
+    color: var(--color-gray);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .features li {
+    padding: 0.6rem 0;
+    color: var(--color-dark);
+    border-bottom: 1px solid var(--color-light-gray);
+    font-size: 0.95rem;
+  }
+
+  .features li:last-child {
+    border-bottom: none;
+  }
+
+  .features li::before {
+    content: "\2713  ";
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .cta-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    background: var(--color-light-gray);
+    color: var(--color-dark);
+    transition: all 0.3s ease;
+  }
+
+  .cta-btn:hover {
+    background: var(--color-dark);
+    color: white;
+  }
+
+  .cta-btn.primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+  }
+
+  .cta-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+  }
+
+  .pricing-note {
+    text-align: center;
+    color: var(--color-gray);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-section {
+      padding: var(--space-16) 0;
+    }
+
+    .pricing-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .pricing-card.featured {
+      transform: scale(1);
+    }
+
+    .pricing-card {
+      padding: var(--space-8);
+    }
+  }
+</style>

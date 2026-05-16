@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-04-27"
 updated: "2026-04-27"
 status: ready
@@ -79,7 +79,7 @@ Quand le mainteneur déclenche la migration des dépendances coeur, l'applicatio
 
 # Success Behavior
 
-- Précondition: le travail démarre dans `/home/claude/contentflow/contentflow_app` après lecture du worktree sale; les changements existants non liés ne sont pas revert.
+- Précondition: le travail démarre dans `/home/claude/contentflow/contentglowz_app` après lecture du worktree sale; les changements existants non liés ne sont pas revert.
 - Action: le mainteneur exécute la migration par lots ordonnés: baseline, Riverpod runtime, Riverpod API fixes, annotation/generator, GoRouter, Google Fonts, full validation, docs.
 - Résultat utilisateur/opérateur: l'application démarre avec `ProviderScope`, `ContentFlowApp`, `MaterialApp.router`, thème light/dark, localizations, offline sync bridge et in-app tour overlay.
 - Résultat système: `pubspec.yaml` et `pubspec.lock` résolvent les majors stables compatibles, sans prerelease et sans dependency override permanent.
@@ -109,7 +109,7 @@ Quand le mainteneur déclenche la migration des dépendances coeur, l'applicatio
 
 # Problem
 
-`contentflow_app` dépend de packages coeur qui ont plusieurs majors plus récents que les versions verrouillées:
+`contentglowz_app` dépend de packages coeur qui ont plusieurs majors plus récents que les versions verrouillées:
 
 - `flutter_riverpod` est déclaré/verrouillé en `2.6.1`; pub.dev affiche `3.3.1` stable au 2026-04-27.
 - `riverpod_annotation` est déclaré/verrouillé en `2.6.1`; pub.dev affiche `4.0.2` stable au 2026-04-27.
@@ -278,7 +278,7 @@ Official sources consulted:
   - Action : Record previous package versions and planned file groups for Riverpod runtime, Riverpod API, codegen, GoRouter, Google Fonts and docs.
   - User story link : Lets maintainers reduce risk without global resets.
   - Depends on : Tâche 1
-  - Validate with : `git diff --stat` before first edit and `shipflow_data/workflow/specs/contentflow_app/migrate-flutter-core-majors-baseline.md`
+  - Validate with : `git diff --stat` before first edit and `shipflow_data/workflow/specs/contentglowz_app/migrate-flutter-core-majors-baseline.md`
   - Notes : Previous direct versions are `flutter_riverpod 2.6.1`, `riverpod_annotation 2.6.1`, `riverpod_generator 2.6.5`, `go_router 14.8.1`, `google_fonts 6.3.3`.
 
 - [x] Tâche 3 : Bump Riverpod runtime and choose retry policy
@@ -475,7 +475,7 @@ Official sources consulted:
 
 # Acceptance Criteria
 
-- [x] CA 1 : Given the repo is in `/home/claude/contentflow/contentflow_app`, when the migration starts, then `git status --short` is reviewed and unrelated dirty files are not reverted.
+- [x] CA 1 : Given the repo is in `/home/claude/contentflow/contentglowz_app`, when the migration starts, then `git status --short` is reviewed and unrelated dirty files are not reverted.
 - [x] CA 2 : Given current official docs and `flutter pub outdated`, when selecting package versions, then only stable compatible pub.dev versions are used and prereleases are rejected, except the documented dev transitive `riverpod_analyzer_utils 1.0.0-dev.9` imposed by stable `riverpod_generator 4.0.3`.
 - [x] CA 3 : Given local SDK constraint `^3.11.3`, when selecting GoRouter 17.x, then `flutter --version` and `flutter pub get` prove SDK compatibility.
 - [x] CA 4 : Given Riverpod legacy providers exist, when Riverpod runtime is migrated, then `StateProvider` and `StateNotifierProvider` compile via the correct legacy import or documented minimal adaptation.

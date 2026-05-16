@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.2.0"
-project: contentflow_app
+project: contentglowz_app
 created: "2026-04-25"
 created_at: "2026-04-25 00:00:00 UTC"
 updated: "2026-04-28"
@@ -18,31 +18,31 @@ security_impact: yes
 docs_impact: yes
 user_story: "En tant qu'utilisateur ContentFlow, je veux connecter et choisir les comptes sociaux autorises pour chaque projet, afin de publier un contenu approuve via Zernio sans exposer ni utiliser les comptes d'un autre projet."
 linked_systems:
-  - contentflow_lab/api/routers/publish.py
-  - contentflow_lab/api/services/user_data_store.py
-  - contentflow_lab/api/dependencies/ownership.py
-  - contentflow_lab/api/main.py
-  - contentflow_lab/status/service.py
-  - contentflow_app/lib/data/services/api_service.dart
-  - contentflow_app/lib/data/models/app_settings.dart
-  - contentflow_app/lib/providers/providers.dart
-  - contentflow_app/lib/presentation/screens/settings/integrations_screen.dart
-  - contentflow_app/lib/presentation/screens/feed/feed_screen.dart
+  - contentglowz_lab/api/routers/publish.py
+  - contentglowz_lab/api/services/user_data_store.py
+  - contentglowz_lab/api/dependencies/ownership.py
+  - contentglowz_lab/api/main.py
+  - contentglowz_lab/status/service.py
+  - contentglowz_app/lib/data/services/api_service.dart
+  - contentglowz_app/lib/data/models/app_settings.dart
+  - contentglowz_app/lib/providers/providers.dart
+  - contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart
+  - contentglowz_app/lib/presentation/screens/feed/feed_screen.dart
   - Zernio API
 depends_on:
-  - artifact: "contentflow_app/shipflow_data/business/business.md"
+  - artifact: "contentglowz_app/shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/business/product.md"
+  - artifact: "contentglowz_app/shipflow_data/business/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/technical/architecture.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/CLAUDE.md"
+  - artifact: "contentglowz_app/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "Zernio Quickstart"
@@ -190,11 +190,11 @@ Le flow de connexion utilise un profil Zernio par projet ContentFlow. Le backend
 ## Dependencies
 
 Local:
-- `contentflow_app/shipflow_data/business/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
-- `contentflow_app/shipflow_data/business/product.md` v1.0.0 reviewed: multi-projet et limites produit.
-- `contentflow_app/shipflow_data/technical/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
-- `contentflow_app/shipflow_data/technical/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
-- `contentflow_app/CLAUDE.md` v1.0.0 reviewed: commandes, structure, Turso/libSQL.
+- `contentglowz_app/shipflow_data/business/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
+- `contentglowz_app/shipflow_data/business/product.md` v1.0.0 reviewed: multi-projet et limites produit.
+- `contentglowz_app/shipflow_data/technical/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
+- `contentglowz_app/shipflow_data/technical/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
+- `contentglowz_app/CLAUDE.md` v1.0.0 reviewed: commandes, structure, Turso/libSQL.
 
 External docs freshness:
 - Verdict: `fresh-docs checked`.
@@ -220,7 +220,7 @@ External docs freshness:
 
 Upstream:
 - Clerk auth et `require_current_user`.
-- Ownership helpers dans `contentflow_lab/api/dependencies/ownership.py`.
+- Ownership helpers dans `contentglowz_lab/api/dependencies/ownership.py`.
 - Zernio API pour profiles, accounts, connect, posts, status/retry.
 - Turso/libSQL pour persistance user/project/content metadata.
 
@@ -239,10 +239,10 @@ Consequences transverses:
 
 ## Documentation Coherence
 
-- `contentflow_app/README.md`: ajouter `ZERNIO_API_KEY`, base URL, flow de connexion, plateformes supportees, WordPress/Ghost non supportes par Zernio dans ce chantier, checklist manuelle.
-- `contentflow_app/shipflow_data/technical/architecture.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
-- `contentflow_app/.env.example`: ajouter ou verifier `ZERNIO_API_KEY` si absent.
-- `contentflow_app/CHANGELOG.md`: noter l'integration Zernio project-scoped une fois implementee.
+- `contentglowz_app/README.md`: ajouter `ZERNIO_API_KEY`, base URL, flow de connexion, plateformes supportees, WordPress/Ghost non supportes par Zernio dans ce chantier, checklist manuelle.
+- `contentglowz_app/shipflow_data/technical/architecture.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
+- `contentglowz_app/.env.example`: ajouter ou verifier `ZERNIO_API_KEY` si absent.
+- `contentglowz_app/CHANGELOG.md`: noter l'integration Zernio project-scoped une fois implementee.
 - Support/onboarding: aucune FAQ dediee dans le repo; si une doc support existe plus tard, elle devra reprendre les erreurs `missing_account`, `partial`, `failed`, `forbidden`.
 
 ## Edge Cases
@@ -276,7 +276,7 @@ Endpoint contract:
 ## Implementation Tasks
 
 - [ ] Tache 1 : Definir et persister `ProjectPublishAccount`
-  - Fichier : `contentflow_lab/api/services/user_data_store.py`
+  - Fichier : `contentglowz_lab/api/services/user_data_store.py`
   - Action : Ajouter les fonctions de stockage/lecture du mapping local avec champs `id`, `userId`, `projectId`, `provider`, `platform`, `providerAccountId`, `zernioProfileId`, `displayName`, `username`, `status`, `isDefault`, `createdAt`, `updatedAt`, `lastSyncedAt`.
   - User story link : etablit la liste des comptes autorises par projet.
   - Depends on : None.
@@ -284,7 +284,7 @@ Endpoint contract:
   - Notes : Ajouter une contrainte unique logique sur `userId + projectId + provider + providerAccountId`; un seul default actif par plateforme.
 
 - [ ] Tache 2 : Definir et persister `ProjectPublishProfile` et `PublishConnectSession`
-  - Fichier : `contentflow_lab/api/services/user_data_store.py`
+  - Fichier : `contentglowz_lab/api/services/user_data_store.py`
   - Action : Ajouter `ProjectPublishProfile` pour `userId + projectId + provider -> zernioProfileId` et `PublishConnectSession` pour `state`, `userId`, `projectId`, `provider`, `platform`, `zernioProfileId`, `expiresAt`, `consumedAt`.
   - User story link : garantit que la connexion OAuth rattache un compte au bon projet.
   - Depends on : Tache 1.
@@ -292,7 +292,7 @@ Endpoint contract:
   - Notes : Le `state` est opaque, aleatoire, stocke serveur, usage unique, et expire en 15 minutes maximum.
 
 - [ ] Tache 3 : Ajouter migration ou ensure idempotent du mapping
-  - Fichier : `contentflow_lab/api/main.py` et migration a creer sous `contentflow_lab/api/migrations/`
+  - Fichier : `contentglowz_lab/api/main.py` et migration a creer sous `contentglowz_lab/api/migrations/`
   - Action : Initialiser les tables ou structures persistantes `ProjectPublishAccount`, `ProjectPublishProfile`, `PublishConnectSession` selon les patterns Turso/libSQL existants.
   - User story link : rend le contrat durable et testable hors memoire.
   - Depends on : Taches 1-2.
@@ -300,7 +300,7 @@ Endpoint contract:
   - Notes : Ne pas casser les schemas `UserSettings`, `Project`, ou `content_records`.
 
 - [ ] Tache 4 : Centraliser l'autorisation de compte publish
-  - Fichier : `contentflow_lab/api/dependencies/ownership.py`
+  - Fichier : `contentglowz_lab/api/dependencies/ownership.py`
   - Action : Ajouter ou exposer un helper qui valide `current_user.user_id + project_id + providerAccountId + platform` et retourne le mapping actif.
   - User story link : empeche l'utilisation d'un compte d'un autre projet.
   - Depends on : Taches 1-3.
@@ -308,7 +308,7 @@ Endpoint contract:
   - Notes : Reutiliser `require_owned_project_id()` et `require_owned_content_record()`.
 
 - [ ] Tache 5 : Rendre `/api/publish/accounts` project-scoped
-  - Fichier : `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/api/routers/publish.py`
   - Action : Exiger `project_id`, verifier ownership, retourner uniquement les `ProjectPublishAccount` actifs du projet, enrichis si necessaire par statut provider.
   - User story link : l'UI Settings affiche les comptes reels du projet actif.
   - Depends on : Taches 1-4.
@@ -316,7 +316,7 @@ Endpoint contract:
   - Notes : Si Zernio est indisponible, retourner les mappings locaux avec statut degraded plutot qu'exposer une erreur brute.
 
 - [ ] Tache 6 : Rendre connect/reconnect et callback project-scoped
-  - Fichier : `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/api/routers/publish.py`
   - Action : Adapter `GET /api/publish/connect/{platform}` pour exiger `project_id`, verifier ownership, creer/recuperer `zernioProfileId`, creer `PublishConnectSession`, appeler Zernio `GET /v1/connect/{platform}` avec `profileId`, `redirect_url` et `state`; ajouter `GET /api/publish/connect/callback` qui valide/consomme `state`, reconcilie `GET /v1/accounts`, filtre par `zernioProfileId`/platform, puis cree les mappings locaux.
   - User story link : l'utilisateur connecte un compte au projet actif.
   - Depends on : Taches 1-5.
@@ -324,7 +324,7 @@ Endpoint contract:
   - Notes : Utiliser le flow standard Zernio; headless et selection secondaire custom hors scope. Flutter ne passe jamais `profileId`.
 
 - [ ] Tache 7 : Rendre unlink/disconnect local et project-scoped
-  - Fichier : `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/api/routers/publish.py`
   - Action : Remplacer toute suppression provider-wide par un unlink local sauf preuve de propriete exclusive; verifier `project_id` et mapping avant action.
   - User story link : evite de casser les comptes d'autres projets.
   - Depends on : Taches 1-6.
@@ -332,7 +332,7 @@ Endpoint contract:
   - Notes : Documenter explicitement si une suppression provider devient future scope.
 
 - [ ] Tache 8 : Durcir `POST /api/publish`
-  - Fichier : `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/api/routers/publish.py`
   - Action : Conserver `require_owned_content_record()`, resoudre `project_id`, verifier chaque cible via `ProjectPublishAccount`, appliquer allowlist plateformes, gerer duplicate/concurrent state, puis appeler Zernio `POST /v1/posts` avec `platforms: [{ platform, accountId }]`.
   - User story link : publie uniquement vers les comptes autorises du projet.
   - Depends on : Taches 1-4.
@@ -340,7 +340,7 @@ Endpoint contract:
   - Notes : `publishNow` et `scheduledFor` sont mutuellement controles par le backend; ne pas accepter de payload libre non valide.
 
 - [ ] Tache 9 : Persister les resultats publish detailles
-  - Fichier : `contentflow_lab/status/service.py` et `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/status/service.py` et `contentglowz_lab/api/routers/publish.py`
   - Action : Stocker `providerPostId`, `publishStatus`, `scheduledFor`, `syncedAt`, `platformResults[]`, `platformPostUrl`, erreurs `type/code/param/platform`, et `target_url` principal si publie.
   - User story link : l'utilisateur peut verifier le resultat ou reprendre une erreur.
   - Depends on : Tache 8.
@@ -348,7 +348,7 @@ Endpoint contract:
   - Notes : `partial` ne transitionne pas comme succes complet silencieux.
 
 - [ ] Tache 10 : Rendre status/retry scopes au contenu possede
-  - Fichier : `contentflow_lab/api/routers/publish.py`
+  - Fichier : `contentglowz_lab/api/routers/publish.py`
   - Action : Pour `GET /api/publish/status/{post_id}` et retry si expose, verifier que `post_id` est stocke sur un content record possede par le user/projet avant appel Zernio.
   - User story link : empeche la lecture ou reprise de posts d'un autre projet.
   - Depends on : Taches 8-9.
@@ -356,7 +356,7 @@ Endpoint contract:
   - Notes : Aucun webhook dans ce chantier.
 
 - [ ] Tache 11 : Aligner `ApiService` Flutter sur les contrats project-scoped
-  - Fichier : `contentflow_app/lib/data/services/api_service.dart`
+  - Fichier : `contentglowz_app/lib/data/services/api_service.dart`
   - Action : Ajouter/adapter les methodes accounts/connect/unlink/publish/status avec `projectId`, modeles typed, et mapping `ApiException`.
   - User story link : le client appelle les contrats serveur securises.
   - Depends on : Taches 5-10.
@@ -364,7 +364,7 @@ Endpoint contract:
   - Notes : `scheduleContent()` utilise deja PATCH; ne pas recreer cette correction obsolette.
 
 - [ ] Tache 12 : Adapter les modeles Flutter
-  - Fichier : `contentflow_app/lib/data/models/app_settings.dart`
+  - Fichier : `contentglowz_app/lib/data/models/app_settings.dart`
   - Action : Etendre ou confirmer `PublishAccount`/`ChannelConfig` avec `projectId`, `provider`, `platform`, `accountId`, `displayName`, `username`, `status`, `isDefault`, et resultats publish si necessaire.
   - User story link : represente plusieurs comptes par projet et plateforme.
   - Depends on : Tache 11.
@@ -372,7 +372,7 @@ Endpoint contract:
   - Notes : Ne pas stocker de secret.
 
 - [ ] Tache 13 : Adapter les providers Riverpod au projet actif
-  - Fichier : `contentflow_app/lib/providers/providers.dart`
+  - Fichier : `contentglowz_app/lib/providers/providers.dart`
   - Action : Charger les comptes par `activeProjectProvider`, resoudre les cibles de publish par default ou selection explicite, bloquer `missing_account` et `ambiguous_account`, et gerer `partial/failed/timeout`.
   - User story link : l'approbation utilise le projet actif et rend les erreurs visibles.
   - Depends on : Taches 11-12.
@@ -380,7 +380,7 @@ Endpoint contract:
   - Notes : WordPress/Ghost exclus du publish auto avec message clair.
 
 - [ ] Tache 14 : Finaliser l'UI Settings integrations
-  - Fichier : `contentflow_app/lib/presentation/screens/settings/integrations_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`
   - Action : Afficher loading/error/empty/degraded, comptes reels du projet actif, default par plateforme, connect/reconnect/unlink local, et messages WordPress/Ghost non supportes.
   - User story link : l'utilisateur sait quel compte est disponible pour ce projet.
   - Depends on : Taches 11-13.
@@ -388,7 +388,7 @@ Endpoint contract:
   - Notes : Pas de badge "Connected" hardcode.
 
 - [ ] Tache 15 : Adapter le feedback feed/review
-  - Fichier : `contentflow_app/lib/presentation/screens/feed/feed_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
   - Action : Afficher succes, scheduled, partial, failed, missing account, forbidden, timeout, et action de retry/ouvrir Settings quand applicable.
   - User story link : le resultat publish est observable et recuperable.
   - Depends on : Taches 13-14.
@@ -396,15 +396,15 @@ Endpoint contract:
   - Notes : Ne pas marquer published si `partial`, `failed`, ou `reconciliation_pending`.
 
 - [ ] Tache 16 : Ajouter tests backend de securite et provider
-  - Fichier : `contentflow_lab/tests/integration/test_publish_router.py`
+  - Fichier : `contentglowz_lab/tests/integration/test_publish_router.py`
   - Action : Couvrir auth, ownership, account authorization, accounts project-scoped, connect project-scoped, unlink local, publish success, partial, failed, timeout, duplicate, scheduled, status scoped.
   - User story link : prouve que l'isolation projet tient.
   - Depends on : Taches 1-10.
-  - Validate with : `pytest contentflow_lab/tests/integration/test_publish_router.py`.
+  - Validate with : `pytest contentglowz_lab/tests/integration/test_publish_router.py`.
   - Notes : Mock `httpx.AsyncClient`; verifier explicitement "provider not called" sur `403`.
 
 - [ ] Tache 17 : Ajouter tests Flutter cibles
-  - Fichier : `contentflow_app/test/data/`, `contentflow_app/test/core/`, `contentflow_app/test/presentation/settings/`
+  - Fichier : `contentglowz_app/test/data/`, `contentglowz_app/test/core/`, `contentglowz_app/test/presentation/settings/`
   - Action : Tester parsing accounts, providers par projet actif, approve/publish success/error/partial, Settings states.
   - User story link : prouve que le client ne bypasse pas le contrat backend.
   - Depends on : Taches 11-15.
@@ -412,7 +412,7 @@ Endpoint contract:
   - Notes : Prioriser logique provider avant tests visuels lourds.
 
 - [ ] Tache 18 : Mettre a jour docs et env example
-  - Fichier : `contentflow_app/README.md`, `contentflow_app/.env.example`, `contentflow_app/CHANGELOG.md`
+  - Fichier : `contentglowz_app/README.md`, `contentglowz_app/.env.example`, `contentglowz_app/CHANGELOG.md`
   - Action : Documenter `ZERNIO_API_KEY`, flow profile/account/post, plateformes supportees, WordPress/Ghost exclus, verification manuelle, erreurs attendues.
   - User story link : un operateur peut configurer et verifier l'integration sans historique.
   - Depends on : Taches 1-17.
@@ -439,12 +439,12 @@ Endpoint contract:
 ## Test Strategy
 
 Backend:
-- `pytest contentflow_lab/tests/integration/test_publish_router.py`.
+- `pytest contentglowz_lab/tests/integration/test_publish_router.py`.
 - Mock `httpx.AsyncClient` pour Zernio accounts/connect/posts/status.
 - Verifier explicitement auth required, ownership required, account mapping required, connect state valid/expired/replayed/mismatched, `403 before provider call`, partial, failed, timeout, duplicate, scheduled, status scoped.
 
 Flutter:
-- `flutter test` depuis `contentflow_app`.
+- `flutter test` depuis `contentglowz_app`.
 - Tests modeles pour parsing comptes et resultats publish.
 - Tests providers pour active project, mapping comptes, missing/ambiguous account, partial/failed.
 - Tests UI Settings pour loading/error/empty/degraded et comptes reels.
@@ -471,17 +471,17 @@ Manual:
 ## Execution Notes
 
 Lire d'abord:
-- `contentflow_lab/api/routers/publish.py`
-- `contentflow_lab/api/dependencies/ownership.py`
-- `contentflow_lab/api/services/user_data_store.py`
-- `contentflow_lab/status/service.py`
-- `contentflow_lab/api/main.py`
-- `contentflow_app/lib/data/services/api_service.dart`
-- `contentflow_app/lib/data/models/app_settings.dart`
-- `contentflow_app/lib/providers/providers.dart`
-- `contentflow_app/lib/presentation/screens/settings/integrations_screen.dart`
-- `contentflow_app/lib/presentation/screens/feed/feed_screen.dart`
-- `contentflow_lab/tests/integration/test_publish_router.py`
+- `contentglowz_lab/api/routers/publish.py`
+- `contentglowz_lab/api/dependencies/ownership.py`
+- `contentglowz_lab/api/services/user_data_store.py`
+- `contentglowz_lab/status/service.py`
+- `contentglowz_lab/api/main.py`
+- `contentglowz_app/lib/data/services/api_service.dart`
+- `contentglowz_app/lib/data/models/app_settings.dart`
+- `contentglowz_app/lib/providers/providers.dart`
+- `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`
+- `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
+- `contentglowz_lab/tests/integration/test_publish_router.py`
 
 Approche avant code:
 1. Construire le contrat backend et les tests de securite avant toute UI.
@@ -499,8 +499,8 @@ Packages/patterns:
 - Eviter un store Flutter parallele aux providers existants.
 
 Commandes de validation:
-- `pytest contentflow_lab/tests/integration/test_publish_router.py`
-- `flutter test` dans `contentflow_app`
+- `pytest contentglowz_lab/tests/integration/test_publish_router.py`
+- `flutter test` dans `contentglowz_app`
 - Sanity manuel backend avec `ZERNIO_API_KEY` configuree.
 
 Stop conditions:
@@ -520,7 +520,7 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-04-28 02:25 | continue | GPT-5 | Ajout de la decision cle Zernio partagee + mapping comptes sociaux par user/projet | Spec mise a jour en 1.1.0 | /sf-ready shipflow_data/workflow/specs/contentflow_app/late-integration-finalization.md |
+| 2026-04-28 02:25 | continue | GPT-5 | Ajout de la decision cle Zernio partagee + mapping comptes sociaux par user/projet | Spec mise a jour en 1.1.0 | /sf-ready shipflow_data/workflow/specs/contentglowz_app/late-integration-finalization.md |
 | 2026-04-28 02:32 | sf-ready | GPT-5 | Gate readiness stricte avant implementation | not ready: sections DoR obligatoires, contrats comportementaux, docs freshness et decisions produit manquants | /sf-spec Finaliser l'integration LATE/Zernio |
 | 2026-04-28 06:11 | sf-spec | GPT-5 | Refonte complete de la spec avec faits code, docs Zernio officielles, decisions security et taches ordonnees | reviewed | /sf-ready Finaliser l'integration LATE/Zernio |
 | 2026-04-28 06:20 | sf-ready | GPT-5 | Gate readiness finale apres audit sous-agent et correction OAuth/profile/state | ready | /sf-start Finaliser l'integration LATE/Zernio |

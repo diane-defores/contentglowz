@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
+  - "contentglowz_app"
   - "Google Cloud Run"
   - "Google Cloud Storage"
   - "Artifact Registry"
@@ -34,10 +34,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
     artifact_version: "unknown"
     required_status: "implemented locally; production storage/deploy extension required"
-  - artifact: "contentflow_remotion_worker/README.md"
+  - artifact: "contentglowz_remotion_worker/README.md"
     artifact_version: "unknown"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/README.md"
+  - artifact: "contentglowz_lab/README.md"
     artifact_version: "unknown"
     required_status: "reviewed"
   - artifact: "Remotion Cloud Run official setup/checklist/light-client docs"
@@ -56,9 +56,9 @@ supersedes: []
 evidence:
   - "sf-verify 2026-05-14: local timeline backend, Flutter UI and Remotion worker proof pass, but Cloud Run/GCS or equivalent production render-service proof is missing."
   - "sf-build 2026-05-14: explicitly blocked sf-end/sf-ship because no deployed preview -> approve -> final E2E proof exists."
-  - "contentflow_remotion_worker currently stores artifacts under CONTENTFLOW_RENDER_DIR and keeps worker job state in memory."
-  - "contentflow_lab currently resolves completed artifacts by checking local files via CONTENTFLOW_RENDER_DIR and then returns API-signed local artifact URLs."
-  - "contentflow_remotion_worker already exposes token-protected /renders, /renders/:workerJobId and DELETE endpoints plus /health."
+  - "contentglowz_remotion_worker currently stores artifacts under CONTENTFLOW_RENDER_DIR and keeps worker job state in memory."
+  - "contentglowz_lab currently resolves completed artifacts by checking local files via CONTENTFLOW_RENDER_DIR and then returns API-signed local artifact URLs."
+  - "contentglowz_remotion_worker already exposes token-protected /renders, /renders/:workerJobId and DELETE endpoints plus /health."
   - "Remotion official docs accessed 2026-05-14: @remotion/cloudrun exists but is Alpha and not actively being developed, so this spec should not make it the primary production dependency."
   - "Remotion official Cloud Run checklist accessed 2026-05-14: production needs explicit memory, file-size, permissions, concurrency, instance limit, rate limit, timeout and license review."
   - "Google Cloud Run official docs accessed 2026-05-14: service containers must listen on 0.0.0.0:$PORT, request timeout applies, filesystem writes are in-memory and not persistent."
@@ -87,8 +87,8 @@ Depuis une timeline video ContentFlow valide et versionnee, le backend peut dema
 
 ## Success Behavior
 
-- Given un utilisateur Clerk authentifie possede une version timeline valide, when il demande une preview, then `contentflow_lab` cree un job preview, appelle le worker Cloud Run avec un token serveur, et retourne un statut `queued` ou `in_progress` sans exposer l'URL Cloud Run ni les secrets.
-- Given le worker Cloud Run termine un rendu, when `contentflow_lab` poll le job, then le backend recupere des metadata d'artefact GCS privees, persiste `artifact_path`, taille, mime type, retention et `worker_job_id`, puis retourne une `artifact.playback_url` signee courte.
+- Given un utilisateur Clerk authentifie possede une version timeline valide, when il demande une preview, then `contentglowz_lab` cree un job preview, appelle le worker Cloud Run avec un token serveur, et retourne un statut `queued` ou `in_progress` sans exposer l'URL Cloud Run ni les secrets.
+- Given le worker Cloud Run termine un rendu, when `contentglowz_lab` poll le job, then le backend recupere des metadata d'artefact GCS privees, persiste `artifact_path`, taille, mime type, retention et `worker_job_id`, puis retourne une `artifact.playback_url` signee courte.
 - Given la preview terminee est approuvee pour la version courante, when l'utilisateur demande un final render, then le final job est distinct, reference la meme version et le preview job approuve, et produit un MP4 GCS separe.
 - Given l'URL signee expire, when Flutter rafraichit le job, then le backend regenere une URL signee si le job et l'utilisateur sont toujours autorises.
 - Given le worker Cloud Run redemarre apres avoir termine un rendu, when le backend repoll le job and worker memory no longer knows the job, then the backend checks the deterministic expected GCS object key persisted before dispatch. If that object exists, the backend reconstructs completed artifact metadata from GCS; if it does not exist, the job becomes failed with a sanitized `render_artifact_unavailable` message.
@@ -110,27 +110,27 @@ Depuis une timeline video ContentFlow valide et versionnee, le backend peut dema
 
 ## Problem
 
-The unified video timeline now works locally, including backend asset resolution, Flutter editing, worker tests and an MP4 smoke render. It still cannot ship because production rendering is not durable: the worker stores job state in memory and writes MP4s to local disk, while `contentflow_lab` serves artifacts by reading `CONTENTFLOW_RENDER_DIR`. Google Cloud Run containers can lose local filesystem state when instances stop, so local render storage is not a production artifact boundary.
+The unified video timeline now works locally, including backend asset resolution, Flutter editing, worker tests and an MP4 smoke render. It still cannot ship because production rendering is not durable: the worker stores job state in memory and writes MP4s to local disk, while `contentglowz_lab` serves artifacts by reading `CONTENTFLOW_RENDER_DIR`. Google Cloud Run containers can lose local filesystem state when instances stop, so local render storage is not a production artifact boundary.
 
 There is also a product-boundary decision: Remotion's official Cloud Run package exists, but current official docs mark it Alpha and not actively developed. ContentFlow should keep using mature Remotion renderer APIs inside its own worker container, deploy that worker to Cloud Run, and use GCS as the durable artifact store.
 
 ## Solution
 
-Add a production storage/deployment layer to `contentflow_remotion_worker` and `contentflow_lab`: containerize the worker for Cloud Run, add a GCS-backed artifact store behind the existing local storage helper, return GCS object metadata to the backend, generate short-lived backend-signed playback URLs from `contentflow_lab`, and document/deploy a Cloud Run service with least-privilege service accounts. Keep Flutter unchanged except for consuming the same existing job responses.
+Add a production storage/deployment layer to `contentglowz_remotion_worker` and `contentglowz_lab`: containerize the worker for Cloud Run, add a GCS-backed artifact store behind the existing local storage helper, return GCS object metadata to the backend, generate short-lived backend-signed playback URLs from `contentglowz_lab`, and document/deploy a Cloud Run service with least-privilege service accounts. Keep Flutter unchanged except for consuming the same existing job responses.
 
 ## Scope In
 
-- Add a production-ready worker container definition for `contentflow_remotion_worker`.
+- Add a production-ready worker container definition for `contentglowz_remotion_worker`.
 - Keep Remotion rendering inside the existing Node/Express worker using `@remotion/renderer`, `@remotion/bundler`, `selectComposition()` and `renderMedia()`.
 - Add a storage abstraction in the worker with `local` and `gcs` modes.
 - Add GCS upload support for completed preview/final MP4s, including safe object keys and retention metadata.
-- Return GCS artifact metadata from worker to `contentflow_lab` without returning signed URLs from the worker.
-- Update `contentflow_lab` artifact handling so timeline and reels render jobs can sign GCS playback URLs through backend-owned auth.
+- Return GCS artifact metadata from worker to `contentglowz_lab` without returning signed URLs from the worker.
+- Update `contentglowz_lab` artifact handling so timeline and reels render jobs can sign GCS playback URLs through backend-owned auth.
 - Preserve existing local artifact token route for local development and tests.
 - Add Cloud Run deployment scripts or docs for build, Artifact Registry image, Cloud Run service, env vars, health check and rollout.
 - Use a dedicated Cloud Run service account with minimal GCS object permissions and no broad Editor role.
 - Add an explicit IAM/secrets matrix covering the worker service account, backend service account, deployer identity, Cloud Run invoker and secret storage.
-- Keep Cloud Run service private or effectively server-only; `contentflow_lab` remains the only caller.
+- Keep Cloud Run service private or effectively server-only; `contentglowz_lab` remains the only caller.
 - Add tests for worker GCS key safety, upload metadata, backend GCS signed URL generation, missing object, expired URL refresh and token redaction.
 - Add a deployed E2E checklist: timeline preview, approve, final render, playback URL refresh, worker restart/redeploy resilience.
 - Update README/runbooks/changelog for local vs production render modes.
@@ -150,7 +150,7 @@ Add a production storage/deployment layer to `contentflow_remotion_worker` and `
 
 ## Constraints
 
-- `contentflow_lab` remains the public authenticated API boundary; worker/GCS are internal infrastructure.
+- `contentglowz_lab` remains the public authenticated API boundary; worker/GCS are internal infrastructure.
 - Cloud Run worker must listen on `0.0.0.0:$PORT`; hardcoded `127.0.0.1` or fixed local-only ports are invalid for production.
 - Cloud Run local filesystem is not durable. Production completion requires a GCS object, not a local MP4 path.
 - Worker auth still uses `REMOTION_WORKER_TOKEN` or stronger server-to-server auth. The token must never reach Flutter, web, logs or API responses.
@@ -167,14 +167,14 @@ Add a production storage/deployment layer to `contentflow_remotion_worker` and `
 
 ## Dependencies
 
-- Local worker package: `contentflow_remotion_worker/package.json` with Remotion `4.0.458`, Express `5.1.0`, TypeScript `5.8.2`.
+- Local worker package: `contentglowz_remotion_worker/package.json` with Remotion `4.0.458`, Express `5.1.0`, TypeScript `5.8.2`.
 - Existing worker endpoints: `GET /health`, `POST /renders`, `GET /renders/:workerJobId`, `DELETE /renders/:workerJobId`.
-- Existing backend worker client: `contentflow_lab/api/services/remotion_render_client.py`.
-- Existing backend renderer adapter: `contentflow_lab/api/services/video_renderer_adapter.py`.
-- Existing local artifact token helpers: `contentflow_lab/api/services/render_artifact_tokens.py`.
-- Existing timeline artifact routes: `contentflow_lab/api/routers/video_timelines.py`.
-- Existing reels artifact routes: `contentflow_lab/api/routers/reel_renders.py`.
-- Required new worker dependency: `@google-cloud/storage` pinned in `contentflow_remotion_worker/package.json`.
+- Existing backend worker client: `contentglowz_lab/api/services/remotion_render_client.py`.
+- Existing backend renderer adapter: `contentglowz_lab/api/services/video_renderer_adapter.py`.
+- Existing local artifact token helpers: `contentglowz_lab/api/services/render_artifact_tokens.py`.
+- Existing timeline artifact routes: `contentglowz_lab/api/routers/video_timelines.py`.
+- Existing reels artifact routes: `contentglowz_lab/api/routers/reel_renders.py`.
+- Required new worker dependency: `@google-cloud/storage` pinned in `contentglowz_remotion_worker/package.json`.
 - Required GCP services: Cloud Run service, Artifact Registry image, Cloud Storage bucket, IAM service account.
 - Fresh external docs checked:
   - `fresh-docs checked`: Remotion Cloud Run setup docs at `https://www.remotion.dev/docs/cloudrun/setup`; docs mark Cloud Run support Alpha/not actively developed and describe service/site/render flow.
@@ -187,12 +187,12 @@ Add a production storage/deployment layer to `contentflow_remotion_worker` and `
 
 ## Invariants
 
-- Timeline/version state stays in `contentflow_lab` stores, not in the worker or GCS.
-- Job identity is generated and owned by `contentflow_lab`; worker cannot invent user/project ownership.
+- Timeline/version state stays in `contentglowz_lab` stores, not in the worker or GCS.
+- Job identity is generated and owned by `contentglowz_lab`; worker cannot invent user/project ownership.
 - Worker returns artifact metadata, never user-facing playback authority.
 - Backend signs playback URLs only after verifying user, job, timeline/content and artifact ownership.
 - Backend persisted artifact metadata plus GCS object existence are the completion authority after worker completion. Worker in-memory state is useful for progress only and cannot be the only authority after restart.
-- The expected artifact provider and object key are generated by `contentflow_lab` before dispatch and persisted on the job as `expected_artifact`. Worker completion enriches this into final artifact metadata; backend reconciliation may reconstruct final metadata from `expected_artifact` plus GCS object attributes.
+- The expected artifact provider and object key are generated by `contentglowz_lab` before dispatch and persisted on the job as `expected_artifact`. Worker completion enriches this into final artifact metadata; backend reconciliation may reconstruct final metadata from `expected_artifact` plus GCS object attributes.
 - Local development continues to work without GCS by setting storage mode to `local`.
 - Production mode cannot silently fall back to local disk when GCS env vars are missing.
 - A completed job without a readable GCS object is not completed from the user's perspective.
@@ -201,11 +201,11 @@ Add a production storage/deployment layer to `contentflow_remotion_worker` and `
 
 ## Links & Consequences
 
-- `contentflow_remotion_worker/server/render-storage.ts` must evolve from local filesystem helpers into a pluggable artifact store.
-- `contentflow_remotion_worker/server/index.ts` must initialize Cloud Run-compatible port/health/storage config and report storage mode safely.
-- `contentflow_lab/api/routers/video_timelines.py` and `contentflow_lab/api/routers/reel_renders.py` must stop assuming completed artifacts are local files when artifact metadata indicates GCS.
-- `contentflow_lab/api/models/video_timeline.py` and `contentflow_lab/api/models/reel_render.py` may need artifact model fields for provider/object key while keeping response shape stable for Flutter.
-- `contentflow_app` should not need API contract changes if `artifact.playback_url` remains the response field; app diagnostics redaction remains part of verification.
+- `contentglowz_remotion_worker/server/render-storage.ts` must evolve from local filesystem helpers into a pluggable artifact store.
+- `contentglowz_remotion_worker/server/index.ts` must initialize Cloud Run-compatible port/health/storage config and report storage mode safely.
+- `contentglowz_lab/api/routers/video_timelines.py` and `contentglowz_lab/api/routers/reel_renders.py` must stop assuming completed artifacts are local files when artifact metadata indicates GCS.
+- `contentglowz_lab/api/models/video_timeline.py` and `contentglowz_lab/api/models/reel_render.py` may need artifact model fields for provider/object key while keeping response shape stable for Flutter.
+- `contentglowz_app` should not need API contract changes if `artifact.playback_url` remains the response field; app diagnostics redaction remains part of verification.
 - Existing tests that assert local artifact path safety must remain valid in local mode.
 - Deployment scripts/docs introduce GCP IAM and billing consequences; they must be explicit enough to avoid over-broad service accounts.
 - Observability must distinguish worker unavailable, GCS upload failed, GCS object missing, signed URL failed, Remotion render failed and capacity exhausted.
@@ -215,19 +215,19 @@ Add a production storage/deployment layer to `contentflow_remotion_worker` and `
 | Identity | Runtime owner | Required permissions | Forbidden permissions | Secrets/config source |
 | --- | --- | --- | --- | --- |
 | `contentflow-remotion-worker@PROJECT_ID.iam.gserviceaccount.com` | Cloud Run worker service | Write completed MP4 objects under the configured bucket/prefix; read/delete only its own temporary/render-prefix objects if cleanup is enabled; write structured logs | Project Editor/Owner, broad Storage Admin outside the render bucket, service account key creation, public bucket ACL mutation, direct access to user databases | Cloud Run env/secrets: `REMOTION_WORKER_TOKEN`, `CONTENTFLOW_RENDER_STORAGE=gcs`, `GCS_RENDER_BUCKET`, `GCS_RENDER_PREFIX`, `RENDER_ARTIFACT_RETENTION_DAYS`, optional `REMOTION_SERVE_URL` |
-| `contentflow-lab-api@PROJECT_ID.iam.gserviceaccount.com` | `contentflow_lab` API runtime | Invoke private worker service; read/check render objects; generate signed URLs for render objects via service identity/IAM signing; read runtime secrets needed by backend | Storage object write/delete unless explicitly required by later cleanup spec, Project Editor/Owner, downloaded key-file dependency | Backend env/secrets: `REMOTION_WORKER_URL`, `REMOTION_WORKER_TOKEN`, `GCS_RENDER_BUCKET`, `GCS_RENDER_PREFIX`, `GCS_SIGNED_URL_TTL_SECONDS`, `RENDER_ARTIFACT_SIGNING_KEY` for local mode only |
+| `contentflow-lab-api@PROJECT_ID.iam.gserviceaccount.com` | `contentglowz_lab` API runtime | Invoke private worker service; read/check render objects; generate signed URLs for render objects via service identity/IAM signing; read runtime secrets needed by backend | Storage object write/delete unless explicitly required by later cleanup spec, Project Editor/Owner, downloaded key-file dependency | Backend env/secrets: `REMOTION_WORKER_URL`, `REMOTION_WORKER_TOKEN`, `GCS_RENDER_BUCKET`, `GCS_RENDER_PREFIX`, `GCS_SIGNED_URL_TTL_SECONDS`, `RENDER_ARTIFACT_SIGNING_KEY` for local mode only |
 | `contentflow-deployer@PROJECT_ID.iam.gserviceaccount.com` or human deployer group | CI/operator deploy path | Build/push Artifact Registry images, deploy/update the worker Cloud Run service, set env/secrets, assign the worker service account | Runtime data access beyond deployment needs, broad bucket object read of user artifacts unless explicitly audited | CI secret store or operator auth, not committed files |
-| Cloud Run invoker principal for worker | `contentflow_lab` service identity or authenticated internal caller | `run.invoker` on the worker service only | `allUsers` public invocation, browser/client invocation, broad project invocation grants | IAM binding, not an app secret |
+| Cloud Run invoker principal for worker | `contentglowz_lab` service identity or authenticated internal caller | `run.invoker` on the worker service only | `allUsers` public invocation, browser/client invocation, broad project invocation grants | IAM binding, not an app secret |
 | Secret manager/admin operator | Security/operator only | Create/update worker token and deployment secrets | Reading user artifacts by default, committing secret values | Secret Manager or existing secret platform; values redacted in docs/logs |
 
 Implementation must map these logical identities to actual GCP project ids and names in the deployment runbook. If the project uses a different existing service account, the runbook must state the exact equivalent permissions and why it is not broader than this matrix.
 
 ## Documentation Coherence
 
-- Update `contentflow_remotion_worker/README.md` with production Cloud Run/GCS env vars, Docker build/run, health check, local vs GCS storage modes, and smoke commands.
-- Update `contentflow_lab/README.md` with production render artifact flow, required env vars, GCS signed URL behavior and deployment E2E checklist.
-- Add `contentflow_remotion_worker/DEPLOYMENT.md` or `docs/technical/remotion-cloud-run-gcs.md` if command/runbook length would overload the README.
-- Update `CHANGELOG.md`, `contentflow_lab/CHANGELOG.md` and worker docs/changelog if present.
+- Update `contentglowz_remotion_worker/README.md` with production Cloud Run/GCS env vars, Docker build/run, health check, local vs GCS storage modes, and smoke commands.
+- Update `contentglowz_lab/README.md` with production render artifact flow, required env vars, GCS signed URL behavior and deployment E2E checklist.
+- Add `contentglowz_remotion_worker/DEPLOYMENT.md` or `docs/technical/remotion-cloud-run-gcs.md` if command/runbook length would overload the README.
+- Update `CHANGELOG.md`, `contentglowz_lab/CHANGELOG.md` and worker docs/changelog if present.
 - Record that Remotion official Cloud Run package is Alpha/not actively developed; ContentFlow uses its own Cloud Run worker container.
 - Include a short operator note: signed playback URLs are bearer-like secrets and must not be copied into support tickets with query strings.
 
@@ -258,7 +258,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : If readiness finds a stronger current official recommendation, revise before implementation.
 
 - [x] Tache 1.5 : Codify IAM and reconciliation rules in docs/tests.
-  - Fichier : `contentflow_remotion_worker/DEPLOYMENT.md`
+  - Fichier : `contentglowz_remotion_worker/DEPLOYMENT.md`
   - Action : Encode the IAM/secrets matrix and deterministic worker-restart reconciliation rule from this spec before implementation changes depend on them.
   - User story link : Prevents unsafe production permissions and ambiguous completed-job behavior.
   - Depends on : Tache 1.
@@ -266,7 +266,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : If real GCP identity names differ, map them explicitly without broadening permissions.
 
 - [x] Tache 2 : Add worker production dependencies and env schema.
-  - Fichier : `contentflow_remotion_worker/package.json`
+  - Fichier : `contentglowz_remotion_worker/package.json`
   - Action : Add pinned `@google-cloud/storage`, scripts for production start if needed, and document/validate env vars: `CONTENTFLOW_RENDER_STORAGE=local|gcs`, `GCS_RENDER_BUCKET`, `GCS_RENDER_PREFIX`, `GCS_SIGNED_URL_TTL_SECONDS`, `RENDER_ARTIFACT_RETENTION_DAYS`, `REMOTION_WORKER_TOKEN`, `REMOTION_SERVE_URL`.
   - User story link : Gives the worker a durable production storage mode.
   - Depends on : Tache 1.
@@ -274,7 +274,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Do not use broad dotenv secrets in committed files.
 
 - [x] Tache 3 : Add Cloud Run container files.
-  - Fichier : `contentflow_remotion_worker/Dockerfile`
+  - Fichier : `contentglowz_remotion_worker/Dockerfile`
   - Action : Create a production Dockerfile that installs worker dependencies, builds/checks TypeScript if needed, includes Remotion/Chromium runtime requirements, starts `npm run start`, and listens on Cloud Run's `PORT`.
   - User story link : Makes the renderer deployable outside local development.
   - Depends on : Tache 2.
@@ -282,7 +282,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : If Remotion/Chromium needs system packages, install explicitly and keep image size reasonable.
 
 - [x] Tache 4 : Extract artifact storage interface.
-  - Fichier : `contentflow_remotion_worker/server/render-storage.ts`
+  - Fichier : `contentglowz_remotion_worker/server/render-storage.ts`
   - Action : Refactor local path helpers into an interface that supports local and GCS implementations while preserving existing path safety behavior.
   - User story link : Prevents production from relying on Cloud Run local disk.
   - Depends on : Tache 2.
@@ -290,7 +290,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Keep local mode default for dev/test unless production env explicitly selects GCS.
 
 - [x] Tache 5 : Implement GCS artifact storage.
-  - Fichier : `contentflow_remotion_worker/server/gcs-render-storage.ts`
+  - Fichier : `contentglowz_remotion_worker/server/gcs-render-storage.ts`
   - Action : Upload completed MP4s to a private GCS bucket with safe object keys like `<prefix>/<renderMode>/<jobId>.mp4`, record metadata, and optionally delete temp local files after successful upload.
   - User story link : Makes completed previews/finals durable across worker restarts.
   - Depends on : Tache 4.
@@ -298,7 +298,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Object keys are server-generated only; no client paths.
 
 - [x] Tache 6 : Wire worker storage mode into render completion.
-  - Fichier : `contentflow_remotion_worker/server/index.ts`
+  - Fichier : `contentglowz_remotion_worker/server/index.ts`
   - Action : Use the storage interface when render completes, return artifact metadata including provider `gcs`, bucket/object key or normalized artifact path, size, mime, retention and render mode.
   - User story link : Lets backend poll completed Cloud Run renders without local file access.
   - Depends on : Tache 5.
@@ -306,7 +306,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Health response may expose storage mode but not bucket object secrets.
 
 - [x] Tache 7 : Add worker tests for GCS mode.
-  - Fichier : `contentflow_remotion_worker/server/gcs-render-storage.test.ts`
+  - Fichier : `contentglowz_remotion_worker/server/gcs-render-storage.test.ts`
   - Action : Cover object key safety, metadata shape, upload error handling, retention metadata, invalid bucket/prefix config and no signed URL leakage.
   - User story link : Proves production artifact safety before deployment.
   - Depends on : Tache 5.
@@ -314,7 +314,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Use fakes/mocks; do not require real GCP credentials in normal tests.
 
 - [x] Tache 8 : Add backend artifact provider model.
-  - Fichier : `contentflow_lab/api/services/render_artifacts.py`
+  - Fichier : `contentglowz_lab/api/services/render_artifacts.py`
   - Action : Introduce a shared artifact service that generates deterministic expected artifact descriptors before dispatch, supports local token URLs and GCS signed URLs, and can reconcile completed GCS artifacts from expected object keys.
   - User story link : Keeps Flutter response stable while backend storage changes.
   - Depends on : Tache 6.
@@ -322,7 +322,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : This service should centralize query-token redaction helpers if needed.
 
 - [x] Tache 9 : Update backend worker artifact normalization.
-  - Fichier : `contentflow_lab/api/services/video_renderer_adapter.py`
+  - Fichier : `contentglowz_lab/api/services/video_renderer_adapter.py`
   - Action : Normalize worker GCS metadata into backend artifact JSON without requiring local file existence.
   - User story link : Allows timeline jobs to complete from Cloud Run/GCS artifacts.
   - Depends on : Tache 8.
@@ -330,23 +330,23 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Preserve local worker payload compatibility.
 
 - [x] Tache 10 : Update timeline artifact route/signing.
-  - Fichier : `contentflow_lab/api/routers/video_timelines.py`
+  - Fichier : `contentglowz_lab/api/routers/video_timelines.py`
   - Action : Generate `artifact.playback_url` via shared artifact service; local artifacts use existing HMAC route, GCS artifacts use GCS signed URL after ownership validation.
   - User story link : Lets users play timeline preview/final MP4s from durable storage.
   - Depends on : Tache 8 and Tache 9.
-  - Validate with : `pytest contentflow_lab/tests/test_video_timelines_router.py` plus new GCS signed URL cases.
+  - Validate with : `pytest contentglowz_lab/tests/test_video_timelines_router.py` plus new GCS signed URL cases.
   - Notes : Do not return bucket name/object key unless needed in sanitized operator-only metadata.
 
 - [x] Tache 11 : Update reels artifact route/signing.
-  - Fichier : `contentflow_lab/api/routers/reel_renders.py`
+  - Fichier : `contentglowz_lab/api/routers/reel_renders.py`
   - Action : Use the same shared artifact service for reels render jobs so old and new render paths share production artifact behavior.
   - User story link : Prevents two render storage implementations from diverging.
   - Depends on : Tache 8.
-  - Validate with : `pytest contentflow_lab/tests/test_reel_renders.py`.
+  - Validate with : `pytest contentglowz_lab/tests/test_reel_renders.py`.
   - Notes : Keep existing local artifact endpoint tests.
 
 - [x] Tache 12 : Add backend GCS storage dependency/config.
-  - Fichier : `contentflow_lab/requirements.lock`
+  - Fichier : `contentglowz_lab/requirements.lock`
   - Action : Add or confirm `google-cloud-storage` dependency and env-driven config for signed URL generation, bucket, TTL and credentials through service identity.
   - User story link : Lets backend sign playback URLs without exposing service credentials.
   - Depends on : Tache 8.
@@ -354,7 +354,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : `requirements.txt` and `requirements.lock` now include `google-cloud-storage`; production should still use Cloud Run service identity / ADC over downloaded service account keys.
 
 - [x] Tache 13 : Add deployment scripts/runbook.
-  - Fichier : `contentflow_remotion_worker/DEPLOYMENT.md`
+  - Fichier : `contentglowz_remotion_worker/DEPLOYMENT.md`
   - Action : Document GCP project prerequisites, Artifact Registry image build/push, Cloud Run deploy command, service account roles, env vars, health check, rollback and smoke checks.
   - User story link : Makes deployment repeatable and auditable.
   - Depends on : Tache 3 and Tache 5.
@@ -370,7 +370,7 @@ Implementation must map these logical identities to actual GCP project ids and n
   - Notes : Avoid storing signed URLs with query strings in evidence.
 
 - [x] Tache 15 : Update docs and changelog.
-  - Fichier : `contentflow_lab/README.md`
+  - Fichier : `contentglowz_lab/README.md`
   - Action : Document production render storage mode, GCS signed URL behavior, required env vars and local/prod differences; update worker README and changelogs.
   - User story link : Makes operators understand how MP4 previews/finals work in production.
   - Depends on : Tache 8 through Tache 14.
@@ -389,7 +389,7 @@ Implementation must map these logical identities to actual GCP project ids and n
 
 - [ ] CA 1 : Given production env sets `CONTENTFLOW_RENDER_STORAGE=gcs`, when the worker starts on Cloud Run, then `/health` returns ok without exposing secrets and the service listens on Cloud Run's `PORT`.
 - [ ] CA 2 : Given production env lacks `GCS_RENDER_BUCKET`, when the worker starts in GCS mode, then startup fails closed and no local-disk production fallback occurs.
-- [ ] CA 3 : Given a valid preview job is created by `contentflow_lab`, when the backend calls the Cloud Run worker, then the request uses server-side auth and Flutter never receives the worker URL or token.
+- [ ] CA 3 : Given a valid preview job is created by `contentglowz_lab`, when the backend calls the Cloud Run worker, then the request uses server-side auth and Flutter never receives the worker URL or token.
 - [ ] CA 4 : Given a render completes, when the worker stores the MP4, then a private GCS object exists at a server-generated safe key and local temp files are not the durable source of truth.
 - [ ] CA 5 : Given the backend polls a completed GCS-backed job, when ownership checks pass, then the API returns `artifact.playback_url` as a short-lived signed URL and no bucket/object credentials leak.
 - [ ] CA 6 : Given the signed playback URL expires, when Flutter refreshes job status, then the backend generates a fresh signed URL for the same owned artifact.
@@ -433,24 +433,24 @@ Implementation must map these logical identities to actual GCP project ids and n
 ## Execution Notes
 
 - Read first:
-  - `contentflow_remotion_worker/server/index.ts`
-  - `contentflow_remotion_worker/server/render-storage.ts`
-  - `contentflow_lab/api/services/remotion_render_client.py`
-  - `contentflow_lab/api/services/video_renderer_adapter.py`
-  - `contentflow_lab/api/routers/video_timelines.py`
-  - `contentflow_lab/api/routers/reel_renders.py`
-  - `contentflow_remotion_worker/README.md`
+  - `contentglowz_remotion_worker/server/index.ts`
+  - `contentglowz_remotion_worker/server/render-storage.ts`
+  - `contentglowz_lab/api/services/remotion_render_client.py`
+  - `contentglowz_lab/api/services/video_renderer_adapter.py`
+  - `contentglowz_lab/api/routers/video_timelines.py`
+  - `contentglowz_lab/api/routers/reel_renders.py`
+  - `contentglowz_remotion_worker/README.md`
 - Implementation order: worker storage abstraction -> GCS implementation/tests -> backend artifact service -> router/model updates -> deployment files/docs -> local checks -> deployed E2E.
 - Do not introduce `@remotion/cloudrun` as the main renderer dependency unless readiness explicitly revises this spec; official docs currently warn it is Alpha/not actively developed.
 - Prefer Cloud Run service over Firebase Functions for the renderer because the worker is an HTTP service with browser/FFmpeg runtime, larger memory/timeout needs and explicit container concerns. Firebase Functions 2nd gen may remain a future event wrapper, not the renderer process.
 - Prefer service identity / Application Default Credentials over downloaded service account keys.
 - If Docker is unavailable locally, implementation may still add Dockerfile/runbook and validate with npm/backend tests, but `/sf-verify` remains partial until a real Cloud Run deploy proof exists.
 - Suggested validation commands:
-  - `npm --prefix contentflow_remotion_worker run lint`
-  - `npm --prefix contentflow_remotion_worker run test:storage`
-  - `npm --prefix contentflow_remotion_worker run test:timeline`
-  - `tsx --test contentflow_remotion_worker/server/gcs-render-storage.test.ts`
-  - `python3 -m pytest contentflow_lab/tests/test_video_timelines_router.py contentflow_lab/tests/test_reel_renders.py`
+  - `npm --prefix contentglowz_remotion_worker run lint`
+  - `npm --prefix contentglowz_remotion_worker run test:storage`
+  - `npm --prefix contentglowz_remotion_worker run test:timeline`
+  - `tsx --test contentglowz_remotion_worker/server/gcs-render-storage.test.ts`
+  - `python3 -m pytest contentglowz_lab/tests/test_video_timelines_router.py contentglowz_lab/tests/test_reel_renders.py`
   - `flutter analyze` and targeted timeline tests if app response fields change
   - Cloud Run health and deployed E2E checklist from Tache 14
 - Stop conditions:
@@ -465,7 +465,7 @@ Implementation must map these logical identities to actual GCP project ids and n
 
 None blocking for the spec. Default decisions:
 
-- Production renderer target: custom `contentflow_remotion_worker` deployed as Cloud Run service.
+- Production renderer target: custom `contentglowz_remotion_worker` deployed as Cloud Run service.
 - Durable artifact store: private Google Cloud Storage bucket.
 - Playback authority: backend-generated short-lived GCS signed URLs after ownership checks.
 - Firebase Functions: not the renderer process in V1; may be used later only as a wrapper/event trigger if a separate need appears.

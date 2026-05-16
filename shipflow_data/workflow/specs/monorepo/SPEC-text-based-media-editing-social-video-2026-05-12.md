@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
+  - "contentglowz_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
   - "contentflowz/INSPIRATION.md"
   - "contentflowz/v0-cool-design-ressemble-gocharbon-connexion-reseaux-sociaux"
   - "contentflowz/remotion-template"
@@ -76,11 +76,11 @@ evidence:
   - "contentflowz/INSPIRATION.md explicitly lists Descript as text-based audio/video editing through transcription."
   - "contentflowz/v0-cool-design-ressemble-gocharbon-connexion-reseaux-sociaux/components/studios/video-studio.tsx contains standalone upload, preview, split, timeline and layer UI ideas, but it is not stack-compatible and must stay inspiration-only."
   - "contentflowz/v0-cool-design-ressemble-gocharbon-connexion-reseaux-sociaux/components/studios/audio-studio.tsx contains standalone upload, waveform and playback controls, but no production transcript model."
-  - "contentflow_app/lib/router.dart currently exposes /editor/:id and no /editor/:id/video route; prior specs reserve the video editor entrypoint."
-  - "contentflow_app/lib/presentation/screens/editor/editor_screen.dart is the existing content editor surface with project asset access, markdown editing, save and publish controls."
-  - "contentflow_app/lib/data/services/api_service.dart and contentflow_app/lib/providers/providers.dart already contain typed project asset APIs/providers and stale active-project response guards."
-  - "contentflow_lab/status/schemas.py and status/db.py already define project assets, media kinds, usages and events, but no transcript, caption track or text-edit-plan storage."
-  - "contentflow_lab/status/service.py currently rejects video_version asset target validation until the future video asset store ships."
+  - "contentglowz_app/lib/router.dart currently exposes /editor/:id and no /editor/:id/video route; prior specs reserve the video editor entrypoint."
+  - "contentglowz_app/lib/presentation/screens/editor/editor_screen.dart is the existing content editor surface with project asset access, markdown editing, save and publish controls."
+  - "contentglowz_app/lib/data/services/api_service.dart and contentglowz_app/lib/providers/providers.dart already contain typed project asset APIs/providers and stale active-project response guards."
+  - "contentglowz_lab/status/schemas.py and status/db.py already define project assets, media kinds, usages and events, but no transcript, caption track or text-edit-plan storage."
+  - "contentglowz_lab/status/service.py currently rejects video_version asset target validation until the future video asset store ships."
   - "Repository scan found no production transcript/caption route or model for video/audio editing."
   - "Fresh docs checked 2026-05-12: official Remotion captions docs cover transcribing sources into the Remotion Caption type and using @remotion/captions utilities."
   - "Fresh docs checked 2026-05-12: official Remotion displaying captions docs show loading caption JSON, grouping captions into social-style pages and rendering them with <Sequence>."
@@ -180,8 +180,8 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 
 - Product decision: this is an editor-video extension for effective social content, not an artistic or free-form media studio.
 - Product decision: V1 is guided and preview-gated. Text edits can propose cuts/captions quickly, but final render/publication requires preview validation.
-- `contentflow_app` remains Flutter and talks only to `contentflow_lab`.
-- `contentflow_lab` remains the authenticated API boundary for provider calls, Bunny access, ownership checks, quota preflight, transcript persistence and render orchestration.
+- `contentglowz_app` remains Flutter and talks only to `contentglowz_lab`.
+- `contentglowz_lab` remains the authenticated API boundary for provider calls, Bunny access, ownership checks, quota preflight, transcript persistence and render orchestration.
 - Durable state uses Turso/libSQL-compatible schema patterns; schema changes must use the ContentFlow Turso migration guardrails during implementation.
 - Clerk auth and existing project/content ownership helpers remain mandatory for every route.
 - Provider calls are backend-managed/PAYG unless the readiness decision explicitly chooses a BYOK transcription provider path.
@@ -191,13 +191,13 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 - Video text editing is online-only and must not enter the offline write queue.
 - Existing publishing flow must not publish a video version whose transcript/caption/edit plan is stale or whose preview has not been validated.
 - V1 should remain mobile-usable: compact transcript list, search, sentence groups, action sheet for selected text, and caption preview instead of dense desktop timeline controls.
-- If `contentflow_remotion_worker` has not yet been created by the Remotion specs, implementation must first finish the Remotion worker foundation rather than invent a second worker path.
+- If `contentglowz_remotion_worker` has not yet been created by the Remotion specs, implementation must first finish the Remotion worker foundation rather than invent a second worker path.
 
 ## Dependencies
 
 - Existing stack: Flutter app, FastAPI lab backend, Clerk auth, Turso/libSQL, Bunny Storage/CDN, Remotion worker, project asset library and quota/billing hooks.
 - Local dependency evidence:
-  - `contentflow_app/pubspec.yaml`: Flutter SDK `^3.11.3`, Riverpod `^3.3.1`, GoRouter `^17.2.2`, Dio `^5.9.2`, audioplayers `^6.6.0`.
+  - `contentglowz_app/pubspec.yaml`: Flutter SDK `^3.11.3`, Riverpod `^3.3.1`, GoRouter `^17.2.2`, Dio `^5.9.2`, audioplayers `^6.6.0`.
   - `contentflowz/remotion-template/package.json`: Remotion dependencies `^4.0.0`, React 19, `@remotion/renderer`, `@remotion/bundler`, TypeScript.
 - Required prior specs:
   - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`
@@ -236,7 +236,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 ## Links & Consequences
 
 - Backend data: requires Turso/libSQL schema additions for transcripts, caption tracks, edit plans, edit operations, job state or references to the existing jobs table, and audit events.
-- Backend API: likely add `contentflow_lab/api/routers/videos.py` or extend the router created by the Remotion video spec with transcription and text-edit endpoints.
+- Backend API: likely add `contentglowz_lab/api/routers/videos.py` or extend the router created by the Remotion video spec with transcription and text-edit endpoints.
 - Backend asset library: project asset taxonomy likely needs `transcript`, `caption_track` and `text_edit_plan` or equivalent media-like sources such as `video_transcript_ai` and `caption_track_ai`.
 - Backend quota: managed transcription duration must reserve/consume/release usage before/after provider calls.
 - Backend security: ownership checks must validate project, content, video version, source asset, transcript and edit plan together.
@@ -249,9 +249,9 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` or backend env docs with transcription provider config, provider choice, quota hooks, redaction rules and worker expectations.
-- Update `contentflow_app/README.md` or app docs with video text-editing states, online-only behavior and diagnostics caveats.
-- Update `contentflow_remotion_worker/README.md` when the worker exists: caption JSON contract, edit-plan props, fixture render commands and asset URL rules.
+- Update `contentglowz_lab/README.md` or backend env docs with transcription provider config, provider choice, quota hooks, redaction rules and worker expectations.
+- Update `contentglowz_app/README.md` or app docs with video text-editing states, online-only behavior and diagnostics caveats.
+- Update `contentglowz_remotion_worker/README.md` when the worker exists: caption JSON contract, edit-plan props, fixture render commands and asset URL rules.
 - Update `.env.example` files when provider variables are implemented.
 - Update in-app localization strings for transcript states, caption warnings, stale transcript, quota/provider errors and preview-required messages.
 - Update support docs only after QA with wording that avoids Descript parity, guaranteed accuracy or legal caption compliance claims.
@@ -278,7 +278,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 ## Implementation Tasks
 
 - [ ] Task 1: Define backend transcript, caption and edit-plan models
-  - Fichier : `contentflow_lab/api/models/video_text_editing.py`
+  - Fichier : `contentglowz_lab/api/models/video_text_editing.py`
   - Action : Add Pydantic request/response models for transcription jobs, source descriptors, transcript segments/words, caption tracks/pages, text edit operations, edit plans, stale states, provider metadata, quota metadata and error envelopes.
   - User story link : Gives the app a typed contract for editing media through text.
   - Depends on : Base video project/version concepts from the Remotion video editor spec.
@@ -286,7 +286,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Keep provider raw payloads out of responses.
 
 - [ ] Task 2: Add Turso/libSQL-compatible persistence for transcripts and edit plans
-  - Fichier : `contentflow_lab/status/db.py`
+  - Fichier : `contentglowz_lab/status/db.py`
   - Action : Add schema ensures or migrations for `video_transcripts`, `video_caption_tracks`, `video_text_edit_plans`, `video_text_edit_events` and indexes by user/project/content/video version/source hash.
   - User story link : Makes transcript and text edits durable, versioned and auditable.
   - Depends on : Task 1.
@@ -294,7 +294,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Follow ContentFlow Turso migration guardrails; no destructive migration.
 
 - [ ] Task 3: Add transcript/edit-plan store service
-  - Fichier : `contentflow_lab/api/services/video_text_editing_store.py`
+  - Fichier : `contentglowz_lab/api/services/video_text_editing_store.py`
   - Action : Implement create/list/get/update methods for transcript jobs, transcript records, caption tracks, edit plans, version hashes, stale markers and audit events.
   - User story link : Provides source-of-truth state for text-based media editing.
   - Depends on : Task 2.
@@ -302,7 +302,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Store full transcript text only in scoped records, never in global logs.
 
 - [ ] Task 4: Extend project asset taxonomy for transcript-derived artifacts
-  - Fichier : `contentflow_lab/status/schemas.py`
+  - Fichier : `contentglowz_lab/status/schemas.py`
   - Action : Add or otherwise model transcript/caption/edit-plan media-like sources so caption tracks and transcript derivatives can be discoverable in project asset workflows without being selectable for incompatible media placements.
   - User story link : Keeps caption/text artifacts tied to project assets and future reuse rules.
   - Depends on : Task 2 and Unified Project Asset Library contract.
@@ -310,7 +310,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : If implementation chooses not to put transcripts in `project_assets`, it must provide an equivalent project-scoped inventory and explain why asset library integration is deferred.
 
 - [ ] Task 5: Add transcription provider abstraction
-  - Fichier : `contentflow_lab/api/services/transcription_provider.py`
+  - Fichier : `contentglowz_lab/api/services/transcription_provider.py`
   - Action : Define `TranscriptionProvider` interface, normalized result model, provider error taxonomy, file/source preparation contract, cost/duration metadata and redaction helpers.
   - User story link : Allows backend to transcribe media without locking UI to a vendor response shape.
   - Depends on : Task 1.
@@ -318,7 +318,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Provider choice is an open question before readiness; implement only the selected provider adapter in V1.
 
 - [ ] Task 6: Implement selected managed transcription adapter
-  - Fichier : `contentflow_lab/api/services/managed_transcription_provider.py`
+  - Fichier : `contentglowz_lab/api/services/managed_transcription_provider.py`
   - Action : Implement the selected V1 adapter, likely ElevenLabs STT if the audio-provider consolidation decision holds, or OpenAI STT if readiness selects OpenAI; map provider output into normalized segments/words.
   - User story link : Produces timestamped transcript data for text editing and captions.
   - Depends on : Task 5 and provider decision in Open Questions.
@@ -326,7 +326,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Do not implement both providers in V1 unless explicitly approved; avoid provider sprawl.
 
 - [ ] Task 7: Add transcription orchestration with quota and source preparation
-  - Fichier : `contentflow_lab/api/services/video_text_editing_orchestrator.py`
+  - Fichier : `contentglowz_lab/api/services/video_text_editing_orchestrator.py`
   - Action : Validate ownership/source durability, reserve quota, prepare server-side media access, call provider, persist normalized transcript/caption draft, release/consume quota, and mark stale/degraded states.
   - User story link : Makes transcription async, recoverable and safe for managed provider cost.
   - Depends on : Tasks 3, 5, 6 and quota/billing spec hooks.
@@ -334,7 +334,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Use existing job/state pattern or the video job store from base specs; do not create invisible background work.
 
 - [ ] Task 8: Add video text-editing API routes
-  - Fichier : `contentflow_lab/api/routers/videos.py`
+  - Fichier : `contentglowz_lab/api/routers/videos.py`
   - Action : Add endpoints under the video editor route namespace for start transcription, poll job, list transcripts, get transcript, create/update caption track, create/apply edit plan, mark stale/accepted, and preview readiness checks.
   - User story link : Exposes text-based editing to Flutter in the existing editor workflow.
   - Depends on : Tasks 1, 3 and 7.
@@ -342,7 +342,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : If the base video editor creates a different router path, extend that path rather than creating a parallel public API.
 
 - [ ] Task 9: Add project asset and video-version eligibility for transcript/caption usage
-  - Fichier : `contentflow_lab/status/service.py`
+  - Fichier : `contentglowz_lab/status/service.py`
   - Action : Extend eligibility and target validation once the video version store exists so transcript/caption assets can be linked to owned video versions and blocked from incompatible content/publish actions.
   - User story link : Prevents cross-project reuse and stale captions in renders.
   - Depends on : Task 4 and base video asset store.
@@ -350,7 +350,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Current code explicitly rejects video_version validation; this task replaces that placeholder only after the video store ships.
 
 - [ ] Task 10: Extend Remotion props schema for captions and text edit plans
-  - Fichier : `contentflow_remotion_worker/src/schema/video-props.ts`
+  - Fichier : `contentglowz_remotion_worker/src/schema/video-props.ts`
   - Action : Add schema fields for transcript/caption track descriptors, caption style preset, caption pages/tokens, edit decision list, cut/mute/split ranges, source asset descriptors and version ids.
   - User story link : Lets Remotion render the same text edits that the user validated.
   - Depends on : Base Remotion worker from render/video specs and Task 8.
@@ -358,7 +358,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : If worker path differs at implementation time, modify the actual schema module created by the Remotion specs.
 
 - [ ] Task 11: Render captions and non-destructive text edits in Remotion
-  - Fichier : `contentflow_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - Fichier : `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
   - Action : Render caption pages using `@remotion/captions` compatible data, apply cut/mute/split ranges through Sequenced audio/video descriptors, and preserve scene layout/format presets.
   - User story link : Makes preview/final video reflect text edits and captions.
   - Depends on : Task 10.
@@ -366,7 +366,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Do not fetch raw URLs from props that were not backend-resolved.
 
 - [ ] Task 12: Add Flutter data models for transcript and text editing
-  - Fichier : `contentflow_app/lib/data/models/video_text_editing.dart`
+  - Fichier : `contentglowz_app/lib/data/models/video_text_editing.dart`
   - Action : Add Dart models for transcript job, transcript, segment, word token, caption track, caption page, edit operation, edit plan, stale state and API errors.
   - User story link : Gives the editor a typed client contract.
   - Depends on : Task 1.
@@ -374,7 +374,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Do not store signed URLs or full provider payloads in durable app state.
 
 - [ ] Task 13: Add ApiService methods for video text editing
-  - Fichier : `contentflow_app/lib/data/services/api_service.dart`
+  - Fichier : `contentglowz_app/lib/data/services/api_service.dart`
   - Action : Add methods for transcription job creation/polling, transcript fetch, caption track save, edit-plan save/apply, preview readiness and stale handling.
   - User story link : Connects Flutter UI to backend text-editing flows.
   - Depends on : Task 8 and Task 12.
@@ -382,7 +382,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Keep online-only behavior; do not queue transcription/edit-plan apply offline unless a later spec says so.
 
 - [ ] Task 14: Add Riverpod controller for transcript/caption/edit state
-  - Fichier : `contentflow_app/lib/providers/video_text_editing_provider.dart`
+  - Fichier : `contentglowz_app/lib/providers/video_text_editing_provider.dart`
   - Action : Add provider/notifier for current video text state, selected text range, transcript polling, caption draft, edit plan draft, apply/save mutations, stale response rejection and active project/content resets.
   - User story link : Manages the editor workflow without leaking stale async data across projects.
   - Depends on : Task 13.
@@ -390,7 +390,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Mirror existing active-project stale guards from `ProjectAssetLibraryNotifier`.
 
 - [ ] Task 15: Add editor-linked text/captions UI
-  - Fichier : `contentflow_app/lib/presentation/screens/editor/video_text_editor_panel.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/editor/video_text_editor_panel.dart`
   - Action : Build a compact panel for transcript status, transcribe action, transcript search, sentence/word selection, guided action sheet, caption page editor, hook/CTA markers, stale warnings and preview-required state.
   - User story link : Lets users edit social videos through text inside the video editor.
   - Depends on : Task 14.
@@ -398,7 +398,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Keep controls guided and dense; avoid a desktop timeline clone.
 
 - [ ] Task 16: Integrate text/captions panel into the video editor route
-  - Fichier : `contentflow_app/lib/presentation/screens/editor/video_editor_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart`
   - Action : Add a Text/Captions tab or section inside the existing/future video editor, wire preview/final gating to transcript/edit-plan freshness, and keep `/editor/:id/video` as the only entrypoint.
   - User story link : Ensures this is an editor extension, not a separate studio.
   - Depends on : Task 15 and base video editor UI.
@@ -406,12 +406,12 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : If `video_editor_screen.dart` does not exist yet, implement this in the actual file created by the Remotion video editor spec.
 
 - [ ] Task 17: Add docs and diagnostics redaction updates
-  - Fichier : `contentflow_lab/README.md`
+  - Fichier : `contentglowz_lab/README.md`
   - Action : Document transcription provider env vars, quota hooks, Bunny media access, transcript retention/redaction, Remotion caption props and manual QA checklist.
   - User story link : Makes implementation operable and supportable.
   - Depends on : Provider and API implementation tasks.
   - Validate with : docs review plus `rg` for stale claims such as Descript clone, guaranteed captions, standalone studio or public transcript access.
-  - Notes : Also update `contentflow_app/README.md`, `contentflow_remotion_worker/README.md`, `.env.example` and changelog when those files exist in implementation scope.
+  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_remotion_worker/README.md`, `.env.example` and changelog when those files exist in implementation scope.
 
 ## Acceptance Criteria
 
@@ -468,11 +468,11 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
   - `shipflow_data/workflow/specs/SPEC-unified-project-asset-library-2026-05-11.md`
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/status/db.py`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/status/db.py`
 - Implementation order: base video/version availability, backend models/schema/store, provider adapter and orchestrator, routes, asset eligibility, Remotion props/rendering, Flutter models/services/providers/UI, docs.
 - Provider rule for V1: implement one managed transcription provider only after readiness decision. Prefer reusing the existing managed audio provider if product wants fewer services; choose OpenAI only if its transcription/diarization tradeoffs are explicitly desired.
 - Caption rule: store raw transcript and display captions separately so manual caption corrections do not falsify provider provenance.
@@ -481,7 +481,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 - Validation commands expected after implementation:
   - `python3 -m pytest tests/test_video_text_editing_models.py tests/test_video_text_editing_store.py tests/test_video_text_editing_router.py`
   - `flutter test test/data/video_text_editing_test.dart test/providers/video_text_editing_provider_test.dart test/presentation/video_text_editor_panel_test.dart`
-  - worker build/render smoke command from `contentflow_remotion_worker/README.md`
+  - worker build/render smoke command from `contentglowz_remotion_worker/README.md`
 - Stop and reroute if the user asks for standalone studio, arbitrary media upload, Descript parity, destructive editing, voice overdub/cloning, legal caption compliance, translation/subtitle localization, or auto-publication without preview validation.
 - Fresh external docs verdict: `fresh-docs checked` for Remotion captions/audio/rendering, ElevenLabs STT and OpenAI STT on 2026-05-12.
 

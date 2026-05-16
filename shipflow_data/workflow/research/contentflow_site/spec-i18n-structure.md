@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_site"
+project: "contentglowz_site"
 created: "2026-04-27"
 updated: "2026-04-27"
 status: ready
@@ -58,7 +58,7 @@ Ready. Spec implementable without blocking gaps.
 
 Baseline observed on 2026-04-27:
 
-- Project path: `/home/claude/contentflow/contentflow_site`
+- Project path: `/home/claude/contentflow/contentglowz_site`
 - Framework: Astro `^5.17.1`
 - Sitemap integration: `@astrojs/sitemap@^3.7.2`
 - Current site URL: `https://contentflow.winflowz.com`
@@ -104,10 +104,10 @@ Si une étape échoue:
 - Si une traduction de contenu Markdown manque, la route française de ce contenu ne doit pas être générée.
 - Si deux documents partagent le même `translationKey` dans une même locale, le build doit échouer via un script de validation ou un check explicite.
 - Si une page française existe mais sans frontmatter SEO localisé (`title`, `description`), la page doit être bloquée par validation ou marquée draft.
-- Aucune erreur ne doit modifier les URLs de connexion, exposer des secrets, ni casser les redirections vers `contentflow_app`.
+- Aucune erreur ne doit modifier les URLs de connexion, exposer des secrets, ni casser les redirections vers `contentglowz_app`.
 
 ## Problem
-`contentflow_site` est aujourd'hui un site Astro statique sans structure i18n. Les pages et composants contiennent des liens absolus internes (`/blog`, `/#features`, etc.), le layout force `html lang="en"`, et les collections Markdown n'ont pas de champ de locale. Cela rend impossible un `sf-audit-translate sync` fiable sur le site: il n'existe pas de surface claire où ajouter les traductions ni de contrat SEO pour publier les variantes.
+`contentglowz_site` est aujourd'hui un site Astro statique sans structure i18n. Les pages et composants contiennent des liens absolus internes (`/blog`, `/#features`, etc.), le layout force `html lang="en"`, et les collections Markdown n'ont pas de champ de locale. Cela rend impossible un `sf-audit-translate sync` fiable sur le site: il n'existe pas de surface claire où ajouter les traductions ni de contrat SEO pour publier les variantes.
 
 ## Solution
 Ajouter une fondation i18n progressive, alignée avec Astro 6 et les Content Layer collections, sans migrer tout le contenu dans la même tâche. La stratégie retenue est:

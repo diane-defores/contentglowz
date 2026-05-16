@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-02"
 created_at: "2026-05-02 06:03:02 UTC"
 updated: "2026-05-02"
@@ -18,13 +18,13 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter feed"
-  - "contentflow_app Flutter editor"
-  - "contentflow_app offline sync"
-  - "contentflow_lab FastAPI status router"
-  - "contentflow_lab Turso/libSQL status storage"
-  - "contentflow_lab generation agents"
-  - "contentflow_lab publish router"
+  - "contentglowz_app Flutter feed"
+  - "contentglowz_app Flutter editor"
+  - "contentglowz_app offline sync"
+  - "contentglowz_lab FastAPI status router"
+  - "contentglowz_lab Turso/libSQL status storage"
+  - "contentglowz_lab generation agents"
+  - "contentglowz_lab publish router"
 depends_on:
   - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
@@ -38,10 +38,10 @@ depends_on:
   - artifact: "shipflow_data/technical/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -51,8 +51,8 @@ evidence:
   - "lib/data/models/content_item.dart: ContentItem currently maps content_preview into body when body is missing."
   - "lib/data/services/api_service.dart: fetchContentBody/saveContentBody/fetchContentAuditTrail/updateContent/transitionContent already exist."
   - "lib/providers/providers.dart: PendingContentNotifier.approve currently publishes item.body."
-  - "../contentflow_lab/api/routers/status.py: exposes /api/status/content/{id}/body and /body/history with ownership checks."
-  - "../contentflow_lab/status/service.py: persists content body versions and content edit audit entries."
+  - "../contentglowz_lab/api/routers/status.py: exposes /api/status/content/{id}/body and /body/history with ownership checks."
+  - "../contentglowz_lab/status/service.py: persists content body versions and content edit audit entries."
 next_step: "/sf-ready content editing infrastructure"
 ---
 
@@ -116,7 +116,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 
 ## Constraints
 
-- Follow `contentflow_app` architecture: UI in `lib/presentation`, data models/services in `lib/data`, app state in `lib/providers`.
+- Follow `contentglowz_app` architecture: UI in `lib/presentation`, data models/services in `lib/data`, app state in `lib/providers`.
 - Use existing `ApiService`, Riverpod providers, and offline storage patterns instead of ad-hoc HTTP calls from widgets.
 - Keep Clerk/FastAPI ownership boundaries intact; never trust client-side `content_id` alone.
 - Keep publish operations online-only unless a future spec defines a safe server-side scheduling contract.
@@ -131,14 +131,14 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
   - `lib/providers/providers.dart`
   - `lib/presentation/screens/feed/feed_screen.dart`
   - `lib/presentation/screens/editor/editor_screen.dart`
-  - `../contentflow_lab/api/routers/status.py`
-  - `../contentflow_lab/status/service.py`
-  - `../contentflow_lab/api/migrations/004_status_lifecycle.sql`
+  - `../contentglowz_lab/api/routers/status.py`
+  - `../contentglowz_lab/status/service.py`
+  - `../contentglowz_lab/api/migrations/004_status_lifecycle.sql`
 - Existing specs:
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md`
-  - `shipflow_data/workflow/specs/contentflow_app/late-integration-finalization.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/late-integration-finalization.md`
 - Fresh external docs verdict: `fresh-docs not needed` for this umbrella because decisions are governed by existing local Flutter/FastAPI/Turso contracts and no external API behavior is being changed.
 
 ## Invariants
@@ -164,8 +164,8 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 
 - Update `CHANGELOG.md` when child specs ship user-visible behavior.
 - Update `shipflow_data/business/product.md` only if the public product promise changes beyond reliable editing.
-- Update `shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md` only if queue payloads, cache keys, or offline support semantics change.
-- Update `shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md` only if format metadata contracts change.
+- Update `shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md` only if queue payloads, cache keys, or offline support semantics change.
+- Update `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md` only if format metadata contracts change.
 - No marketing-site copy change is required for Spec 1; later format-aware editing may require a site/product copy alignment pass.
 
 ## Edge Cases
@@ -182,7 +182,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 ## Implementation Tasks
 
 - [ ] Task 1: Ready and implement Spec 1, full body vs preview reliability.
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md`
   - Action: Run `/sf-ready`, then `/sf-start` only after readiness passes.
   - User story link: Prevents accidental preview editing or preview publishing.
   - Depends on: This umbrella spec.
@@ -190,7 +190,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
   - Notes: This is the mandatory foundation before format-aware UI.
 
 - [ ] Task 2: Create child spec for format-aware editor controls.
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editor-multiformat.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editor-multiformat.md`
   - Action: Specify article/newsletter/social/short/reel/video-script editor surfaces, metadata editing, and platform previews.
   - User story link: Lets each creator add their own voice in the format they will actually publish.
   - Depends on: Spec 1 shipped or verified.
@@ -198,7 +198,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
   - Notes: Do not add rich text dependencies until this spec proves need and scope.
 
 - [ ] Task 3: Create child spec for creator regeneration and version review.
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-content-regeneration-loop.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-regeneration-loop.md`
   - Action: Specify instruction-based regeneration, diff/version review, audit trail, and no-overwrite behavior.
   - User story link: Gives creators a controlled way to ask the AI for changes without losing their own edits.
   - Depends on: Spec 1 shipped; format metadata decisions known enough to avoid conflicting body formats.
@@ -206,7 +206,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
   - Notes: Must preserve latest human edits and use explicit actor metadata for AI actions.
 
 - [ ] Task 4: Create child spec for publish-after-edit validation.
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-content-publish-after-edit.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-publish-after-edit.md`
   - Action: Specify final preflight, connected account checks, platform constraints, error handling, and final confirmation behavior.
   - User story link: Makes publication reliable after creator edits.
   - Depends on: Spec 1 shipped; may depend on format-aware metadata.
@@ -247,7 +247,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 ## Execution Notes
 
 - Read first:
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md`
   - `lib/data/models/content_item.dart`
   - `lib/data/services/api_service.dart`
   - `lib/providers/providers.dart`

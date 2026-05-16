@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - contentflow_app
-  - contentflow_lab
-  - contentflow_remotion_worker
+  - contentglowz_app
+  - contentglowz_lab
+  - contentglowz_remotion_worker
   - contentflowz/remotion-template
   - editor workflow
   - reels workflow
@@ -35,7 +35,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/reels-from-content-preview-workflow.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "contentflowz/remotion-template/README.md"
@@ -58,10 +58,10 @@ evidence:
   - "contentflowz/remotion-template/server/index.ts exposes a quiz-specific Express render API using /renders and an in-memory queue."
   - "contentflowz/remotion-template/server/render-queue.ts uses selectComposition() and renderMedia(), but currently targets QuizVideo, buffers output, and includes Telegram side effects."
   - "contentflowz/remotion-template/remotion/Root.tsx registers HelloWorld and QuizVideo, not a scene-based ContentFlow video composition."
-  - "contentflow_app/lib/presentation/screens/reels/reels_screen.dart currently contains the Instagram import UI; the ready reels spec introduces create-from-content preview/export."
-  - "contentflow_app/lib/router.dart has /reels and /editor/:id; future editor video routes must be added deliberately and sanitized before broad /editor/* matching."
-  - "contentflow_lab/api/routers/reels.py currently handles Instagram download/cookies; render endpoints are specified as separate additions by the ready Remotion integration spec."
-  - "contentflow_lab/api/services/job_store.py persists job status/data in a generic jobs table suitable for workflow jobs, but scene/project state needs an explicit contract."
+  - "contentglowz_app/lib/presentation/screens/reels/reels_screen.dart currently contains the Instagram import UI; the ready reels spec introduces create-from-content preview/export."
+  - "contentglowz_app/lib/router.dart has /reels and /editor/:id; future editor video routes must be added deliberately and sanitized before broad /editor/* matching."
+  - "contentglowz_lab/api/routers/reels.py currently handles Instagram download/cookies; render endpoints are specified as separate additions by the ready Remotion integration spec."
+  - "contentglowz_lab/api/services/job_store.py persists job status/data in a generic jobs table suitable for workflow jobs, but scene/project state needs an explicit contract."
   - "User decision 2026-05-11: the real video editor V1 should be a guided storyboard, not a free timeline."
   - "User decision 2026-05-11: the main entry point is the content editor."
   - "User decision 2026-05-11: final render/publication requires validating a preview first."
@@ -166,7 +166,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 - This spec depends on `remotion-render-service-integration.md`; do not duplicate or bypass its worker token, artifact signing, local retention, preview/final job separation, capacity and path-safety rules.
 - This spec depends on `reels-from-content-preview-workflow.md`; the simple `/reels` preview/export MVP must remain available and should become one entry point into this richer editor, not be deleted.
 - This spec depends on `SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`; AI visuals provide candidate assets such as `video_cover`, but they do not define video scenes.
-- `contentflow_lab` remains the authenticated public API boundary. Flutter does not call the Remotion worker directly.
+- `contentglowz_lab` remains the authenticated public API boundary. Flutter does not call the Remotion worker directly.
 - Remotion remains responsible for rendering from validated props; ContentFlow remains responsible for auth, ownership, scene persistence, asset validation and job orchestration.
 - All scene and asset references must be server-side identifiers, not arbitrary client-supplied URLs or local paths.
 - Every preview/final job must be tied to a specific immutable video project version.
@@ -182,18 +182,18 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 
 - Ready foundation spec: `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
 - Ready app MVP spec: `shipflow_data/workflow/specs/monorepo/reels-from-content-preview-workflow.md`.
-- Ready visual asset spec: `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready visual asset spec: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Existing app entrypoints:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
 - Existing backend entrypoints:
-  - `contentflow_lab/api/routers/reels.py`
-  - `contentflow_lab/api/services/job_store.py`
-  - `contentflow_lab/api/dependencies/auth.py`
-  - `contentflow_lab/api/dependencies/ownership.py`
+  - `contentglowz_lab/api/routers/reels.py`
+  - `contentglowz_lab/api/services/job_store.py`
+  - `contentglowz_lab/api/dependencies/auth.py`
+  - `contentglowz_lab/api/dependencies/ownership.py`
   - status/content asset APIs used by the AI visuals spec.
 - Existing Remotion prototype files as inspiration only:
   - `contentflowz/remotion-template/server/index.ts`
@@ -233,22 +233,22 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 
 ## Links & Consequences
 
-- `contentflow_app` needs a new video editor surface under the content editor at `/editor/:id/video` rather than a standalone global route by default.
-- `contentflow_app/lib/router.dart` needs route ordering and Sentry sanitizer updates for `/editor/:id/video` before generic `/editor/*` matching.
-- `contentflow_app/lib/presentation/screens/reels/reels_screen.dart` must not lose the import and MVP preview/export tabs introduced by the ready reels spec. It may link an eligible item into `/editor/:id/video`, but it is not the primary entry for the full storyboard editor.
-- `contentflow_app/lib/presentation/screens/editor/editor_screen.dart` may gain a video action next to visual actions once source content is eligible.
-- `contentflow_lab` needs video project models/routes/services separate from Instagram reels routes for readability.
+- `contentglowz_app` needs a new video editor surface under the content editor at `/editor/:id/video` rather than a standalone global route by default.
+- `contentglowz_app/lib/router.dart` needs route ordering and Sentry sanitizer updates for `/editor/:id/video` before generic `/editor/*` matching.
+- `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart` must not lose the import and MVP preview/export tabs introduced by the ready reels spec. It may link an eligible item into `/editor/:id/video`, but it is not the primary entry for the full storyboard editor.
+- `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart` may gain a video action next to visual actions once source content is eligible.
+- `contentglowz_lab` needs video project models/routes/services separate from Instagram reels routes for readability.
 - `JobStore` remains useful for render job state, but scene project state should be modeled deliberately instead of hidden entirely inside transient job metadata.
-- `contentflow_remotion_worker` or the derived worker package needs a scene composition and schema in addition to the MVP content-summary composition.
+- `contentglowz_remotion_worker` or the derived worker package needs a scene composition and schema in addition to the MVP content-summary composition.
 - AI-generated visuals become inputs to video scenes only through validated content assets, not direct provider URLs.
 - Analytics/observability should distinguish draft saves, preview renders, stale previews, final renders and render failures.
 - Performance risk increases because editor interactions may trigger many previews; rate limits and explicit preview actions should prevent render spam.
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with the video editor workflow, route, online-only constraints and dependency on the Remotion worker.
-- Update `contentflow_lab/README.md` or environment docs with video project routes, storage assumptions and render versioning rules.
-- Update `contentflow_remotion_worker/README.md` with scene composition props, sample scene JSON and local render commands.
+- Update `contentglowz_app/README.md` with the video editor workflow, route, online-only constraints and dependency on the Remotion worker.
+- Update `contentglowz_lab/README.md` or environment docs with video project routes, storage assumptions and render versioning rules.
+- Update `contentglowz_remotion_worker/README.md` with scene composition props, sample scene JSON and local render commands.
 - Add changelog entries for video project editing, preview, final render and stale-version behavior.
 - Add support/operator notes explaining that old local preview/final artifacts may expire according to the retention policy defined by the ready render integration spec.
 - Do not duplicate Remotion official documentation in product docs; link to the worker README and keep implementation notes concise.
@@ -285,7 +285,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Stop and return to `/sf-spec` only if implementation requires product changes outside guided storyboard V1.
 
 - [ ] Tache 2: Define backend video project models.
-  - Fichier: `contentflow_lab/api/models/video_projects.py`
+  - Fichier: `contentglowz_lab/api/models/video_projects.py`
   - Action: Add Pydantic models for `VideoProject`, `VideoProjectVersion`, `VideoScene`, `VideoSceneAssetRef`, preview/final status summaries, and save requests.
   - User story link: Gives the editor a durable scene model instead of rendering directly from ad-hoc client props.
   - Depends on: Tache 1.
@@ -293,7 +293,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Do not model this as arbitrary Remotion JSX from the client.
 
 - [ ] Tache 3: Add video project persistence service.
-  - Fichier: `contentflow_lab/api/services/video_project_store.py`
+  - Fichier: `contentglowz_lab/api/services/video_project_store.py`
   - Action: Persist video projects and immutable versions in explicit Turso-backed video project tables; include optimistic concurrency checks and a uniqueness rule for active `(user_id, project_id, content_id, format_preset)`.
   - User story link: Lets creators save and return to editable video drafts.
   - Depends on: Tache 2.
@@ -301,7 +301,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Route table creation/migration through the ContentFlow Turso migration guardrails before coding.
 
 - [ ] Tache 4: Add backend video project routes.
-  - Fichier: `contentflow_lab/api/routers/video_projects.py`
+  - Fichier: `contentglowz_lab/api/routers/video_projects.py`
   - Action: Add authenticated create-from-content, get, save, preview and final render endpoints with ownership checks.
   - User story link: Connects editor/reels UI to durable video workflow operations.
   - Depends on: Taches 2-3.
@@ -309,7 +309,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Keep this separate from Instagram-specific `reels.py` unless implementation discovers a stronger local convention.
 
 - [ ] Tache 5: Implement scene draft generation from content.
-  - Fichier: `contentflow_lab/api/services/video_scene_builder.py`
+  - Fichier: `contentglowz_lab/api/services/video_scene_builder.py`
   - Action: Deterministically convert source content plus available trusted assets into an initial ordered scene draft.
   - User story link: Gives the creator a useful starting video rather than a blank technical form.
   - Depends on: Tache 3.
@@ -317,7 +317,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Do not call an AI planner in V1; AI storyboard planning is future scope.
 
 - [ ] Tache 6: Add scene-to-Remotion props adapter.
-  - Fichier: `contentflow_lab/api/services/remotion_scene_props.py`
+  - Fichier: `contentglowz_lab/api/services/remotion_scene_props.py`
   - Action: Validate a video project version, resolve owned asset references to render-safe descriptors, and produce worker input props for the scene composition.
   - User story link: Keeps Remotion rendering grounded in the saved scene model.
   - Depends on: Taches 3-5 and the ready render service integration.
@@ -325,15 +325,15 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: The client never sends final Remotion props directly.
 
 - [ ] Tache 7: Extend the Remotion worker with a scene composition.
-  - Fichier: `contentflow_remotion_worker/remotion/Root.tsx`
+  - Fichier: `contentglowz_remotion_worker/remotion/Root.tsx`
   - Action: Register a scene-based composition using typed props and schema validation for `vertical_9_16` and `landscape_16_9`.
   - User story link: Lets the worker render the saved ContentFlow scene timeline.
-  - Depends on: Ready `contentflow_remotion_worker` package from the render integration spec.
+  - Depends on: Ready `contentglowz_remotion_worker` package from the render integration spec.
   - Validate with: Worker tests or local sample render using a checked-in sample scene props JSON.
   - Notes: Preserve the existing MVP composition required by the ready reels spec.
 
 - [ ] Tache 8: Add app video editor models and API methods.
-  - Fichier: `contentflow_app/lib/data/models/video_project.dart`
+  - Fichier: `contentglowz_app/lib/data/models/video_project.dart`
   - Action: Define Dart models for video projects, scenes, assets, versions, status and artifact summaries, plus JSON parsing.
   - User story link: Lets Flutter render and update the project state safely.
   - Depends on: Taches 2-4 API contract.
@@ -341,7 +341,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Add `ApiService` methods in the existing service file during implementation if that is still the local pattern.
 
 - [ ] Tache 9: Add video editor state provider.
-  - Fichier: `contentflow_app/lib/providers/providers.dart`
+  - Fichier: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add or route to a focused provider/notifier for loading, editing, saving, polling preview/final jobs and handling stale responses.
   - User story link: Keeps multi-step editor state consistent across saves and renders.
   - Depends on: Tache 8.
@@ -349,7 +349,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Move to a dedicated provider file only if implementation confirms that pattern is acceptable in the repo.
 
 - [ ] Tache 10: Build the editor-linked video workspace UI.
-  - Fichier: `contentflow_app/lib/presentation/screens/editor/video_editor_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart`
   - Action: Add the video editor screen with scene list/storyboard, selected scene controls for text, scene order/add/delete within bounds, image asset, duration, layout, format preset, preview status, final render status and recoverable errors.
   - User story link: Gives the creator the actual workflow to review and adjust scenes before rendering.
   - Depends on: Taches 8-9.
@@ -357,7 +357,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Keep controls bounded to guided storyboard V1; do not add free timeline, audio, captions, music or transitions.
 
 - [ ] Tache 11: Wire entrypoints from editor and reels.
-  - Fichier: `contentflow_app/lib/router.dart`
+  - Fichier: `contentglowz_app/lib/router.dart`
   - Action: Add `/editor/:id/video`, sanitize it before generic `/editor/*` matching, then add launch actions from the editor and optional links from reels.
   - User story link: Integrates the workflow with existing content and reels surfaces.
   - Depends on: Tache 10.
@@ -365,7 +365,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Preserve current route behavior and add specific editor-video sanitizer before generic `/editor/*` matching.
 
 - [ ] Tache 12: Add documentation and operator samples.
-  - Fichier: `contentflow_remotion_worker/README.md`
+  - Fichier: `contentglowz_remotion_worker/README.md`
   - Action: Document scene props, sample render command, editor workflow assumptions and troubleshooting for stale previews/render failures.
   - User story link: Makes future implementation and support repeatable.
   - Depends on: Taches 4, 7 and 10.
@@ -419,7 +419,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 ## Execution Notes
 
 - Read first: `remotion-render-service-integration.md`, `reels-from-content-preview-workflow.md`, and `SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`; they define the lower layers and boundaries.
-- Then read: `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_lab/shipflow_data/technical/guidelines.md`, `contentflow_app/lib/router.dart`, `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`, `contentflow_lab/api/services/job_store.py`, `contentflow_lab/api/dependencies/auth.py`, and `contentflow_lab/api/dependencies/ownership.py`.
+- Then read: `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_lab/shipflow_data/technical/guidelines.md`, `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`, `contentglowz_lab/api/services/job_store.py`, `contentglowz_lab/api/dependencies/auth.py`, and `contentglowz_lab/api/dependencies/ownership.py`.
 - Implement with the readiness-fixed contracts: `/editor/:id/video`, explicit Turso video project tables, deterministic initial storyboard generation, trusted assets only, one active video project per source content and format preset, `vertical_9_16` plus `landscape_16_9`, and inherited render capacity limits.
 - Start backend-first with explicit scene/version contracts, then worker scene props, then Flutter UI. Avoid starting with UI controls that imply timeline freedom.
 - Reuse the existing Remotion worker and render job contracts. Do not create a second public render API from Flutter to Node.
@@ -427,7 +427,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 - Use official Remotion docs already checked for `renderMedia()`, SSR Node and `selectComposition()` assumptions; recheck official docs during implementation if package versions differ from Remotion `^4.0.0` in the prototype/worker.
 - Stop and reroute if implementation requires professional timeline features, audio/subtitle generation, object storage migration, or new binary upload flows; each is a separate spec.
 - Stop and ask the user if implementation needs a product decision beyond the captured V1 storyboard controls, for example square format, visible version history, AI storyboard planning, public publishing, uploaded media, or timeline-like tracks.
-- Suggested validation commands: FastAPI tests for `contentflow_lab`, Flutter tests/analyze for `contentflow_app`, and a worker scene render smoke test for both presets.
+- Suggested validation commands: FastAPI tests for `contentglowz_lab`, Flutter tests/analyze for `contentglowz_app`, and a worker scene render smoke test for both presets.
 
 ## Product Decisions Captured
 

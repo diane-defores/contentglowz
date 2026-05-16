@@ -7,19 +7,19 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const FLUTTER_CHECK_FILES = [
-  'contentflow_app/lib/presentation/theme/app_theme.dart',
-  'contentflow_app/lib/presentation/screens/app_shell.dart',
-  'contentflow_app/lib/presentation/screens/entry/entry_screen.dart',
-  'contentflow_app/lib/presentation/screens/feed/feed_screen.dart',
-  'contentflow_app/lib/presentation/screens/settings/settings_screen.dart',
-  'contentflow_app/lib/presentation/screens/auth/auth_screen.dart',
-  'contentflow_app/lib/presentation/widgets/in_app_tour_overlay.dart',
+  'contentglowz_app/lib/presentation/theme/app_theme.dart',
+  'contentglowz_app/lib/presentation/screens/app_shell.dart',
+  'contentglowz_app/lib/presentation/screens/entry/entry_screen.dart',
+  'contentglowz_app/lib/presentation/screens/feed/feed_screen.dart',
+  'contentglowz_app/lib/presentation/screens/settings/settings_screen.dart',
+  'contentglowz_app/lib/presentation/screens/auth/auth_screen.dart',
+  'contentglowz_app/lib/presentation/widgets/in_app_tour_overlay.dart',
 ];
 
 const SITE_CHECK_ROOTS = [
-  'contentflow_site/src/layouts',
-  'contentflow_site/src/components',
-  'contentflow_site/src/pages',
+  'contentglowz_site/src/layouts',
+  'contentglowz_site/src/components',
+  'contentglowz_site/src/pages',
 ];
 
 const EXCLUDE_PATH_PATTERNS = [
@@ -40,13 +40,13 @@ const LIMITS = {
       duration: 2,
     },
     byFile: {
-      'contentflow_app/lib/presentation/theme/app_theme.dart': 8,
-      'contentflow_app/lib/presentation/screens/app_shell.dart': 21,
-      'contentflow_app/lib/presentation/screens/entry/entry_screen.dart': 32,
-      'contentflow_app/lib/presentation/screens/feed/feed_screen.dart': 25,
-      'contentflow_app/lib/presentation/screens/settings/settings_screen.dart': 18,
-      'contentflow_app/lib/presentation/screens/auth/auth_screen.dart': 10,
-      'contentflow_app/lib/presentation/widgets/in_app_tour_overlay.dart': 14,
+      'contentglowz_app/lib/presentation/theme/app_theme.dart': 8,
+      'contentglowz_app/lib/presentation/screens/app_shell.dart': 21,
+      'contentglowz_app/lib/presentation/screens/entry/entry_screen.dart': 32,
+      'contentglowz_app/lib/presentation/screens/feed/feed_screen.dart': 25,
+      'contentglowz_app/lib/presentation/screens/settings/settings_screen.dart': 18,
+      'contentglowz_app/lib/presentation/screens/auth/auth_screen.dart': 10,
+      'contentglowz_app/lib/presentation/widgets/in_app_tour_overlay.dart': 14,
     },
   },
   site: {
@@ -55,33 +55,33 @@ const LIMITS = {
       rawLayoutValue: 401,
     },
     byFile: {
-      'contentflow_site/src/layouts/BlogPost.astro': 78,
-      'contentflow_site/src/layouts/Layout.astro': 4,
-      'contentflow_site/src/components/ClosingCta.astro': 4,
-      'contentflow_site/src/components/CtaBanner.astro': 3,
-      'contentflow_site/src/components/FAQ.astro': 18,
-      'contentflow_site/src/components/Features.astro': 3,
-      'contentflow_site/src/components/Footer.astro': 23,
-      'contentflow_site/src/components/Hero.astro': 17,
-      'contentflow_site/src/components/Navbar.astro': 21,
-      'contentflow_site/src/components/Pricing.astro': 31,
-      'contentflow_site/src/components/Problem.astro': 16,
-      'contentflow_site/src/components/Robots.astro': 26,
-      'contentflow_site/src/components/Testimonials.astro': 13,
-      'contentflow_site/src/pages/404.astro': 10,
-      'contentflow_site/src/pages/blog/index.astro': 47,
-      'contentflow_site/src/pages/blog/tag/[tag].astro': 28,
-      'contentflow_site/src/pages/design.astro': 18,
-      'contentflow_site/src/pages/launch.astro': 11,
-      'contentflow_site/src/pages/privacy.astro': 10,
-      'contentflow_site/src/pages/sign-in.astro': 10,
-      'contentflow_site/src/pages/sign-up.astro': 10,
+      'contentglowz_site/src/layouts/BlogPost.astro': 78,
+      'contentglowz_site/src/layouts/Layout.astro': 4,
+      'contentglowz_site/src/components/ClosingCta.astro': 4,
+      'contentglowz_site/src/components/CtaBanner.astro': 3,
+      'contentglowz_site/src/components/FAQ.astro': 18,
+      'contentglowz_site/src/components/Features.astro': 3,
+      'contentglowz_site/src/components/Footer.astro': 23,
+      'contentglowz_site/src/components/Hero.astro': 17,
+      'contentglowz_site/src/components/Navbar.astro': 21,
+      'contentglowz_site/src/components/Pricing.astro': 31,
+      'contentglowz_site/src/components/Problem.astro': 16,
+      'contentglowz_site/src/components/Robots.astro': 26,
+      'contentglowz_site/src/components/Testimonials.astro': 13,
+      'contentglowz_site/src/pages/404.astro': 10,
+      'contentglowz_site/src/pages/blog/index.astro': 47,
+      'contentglowz_site/src/pages/blog/tag/[tag].astro': 28,
+      'contentglowz_site/src/pages/design.astro': 18,
+      'contentglowz_site/src/pages/launch.astro': 11,
+      'contentglowz_site/src/pages/privacy.astro': 10,
+      'contentglowz_site/src/pages/sign-in.astro': 10,
+      'contentglowz_site/src/pages/sign-up.astro': 10,
     },
   },
 };
 
 const IGNORE_FLUTTER_FILES = [
-  /contentflow_app\/lib\/presentation\/theme\/app_theme_tokens\.dart$/,
+  /contentglowz_app\/lib\/presentation\/theme\/app_theme_tokens\.dart$/,
 ];
 
 const LITERALS = {

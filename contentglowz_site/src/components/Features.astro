@@ -1,0 +1,114 @@
+---
+---
+
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>From idea to reviewed content, without losing control.</h2>
+      <p>A practical workflow that turns your creator voice into multi-format drafts you can trust</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>Your Voice, Not Generic AI</h3>
+          <div class="feature-icon card-title-icon">🎯</div>
+        </div>
+        <p>A short weekly ritual and persona inputs give the system enough context to propose content that sounds closer to you, not a generic chatbot.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>One Idea, Six Formats</h3>
+          <div class="feature-icon card-title-icon">🔀</div>
+        </div>
+        <p>Start from one idea and prepare the formats you actually need: blog post, newsletter, social post, short video script, or reel.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>Content Built From Search Data</h3>
+          <div class="feature-icon card-title-icon">📊</div>
+        </div>
+        <p>Keyword data and competitor analysis inform article direction, so your drafts target real search demand instead of guesswork.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>Publishing With Clear Limits</h3>
+          <div class="feature-icon card-title-icon">🚀</div>
+        </div>
+        <p>Connect supported social channels when you are ready. ContentGlowz keeps account state, review, scheduling, and publish feedback visible in one workspace.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>Usable During Short Outages</h3>
+          <div class="feature-icon card-title-icon">🛠️</div>
+        </div>
+        <p>When network or API access drops, supported parts of your workspace keep functioning in degraded mode:
+          reads use the latest local cache and supported actions are queued for automatic sync
+          when the backend is reachable again.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header card-title-row">
+          <h3>Review From Your Phone</h3>
+          <div class="feature-icon card-title-icon">📱</div>
+        </div>
+        <p>The app works on Android, iOS, and web. Review and approve content on the train, in line for coffee, or between meetings. 5 minutes a day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features-section {
+    padding: var(--space-24) 0;
+    background: var(--color-surface);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-8);
+  }
+
+  .feature-card {
+    background: var(--color-surface-subtle);
+    padding: var(--space-8);
+    border-radius: var(--radius-lg);
+    transition: background var(--duration-slow), box-shadow var(--duration-slow), transform var(--duration-slow);
+  }
+
+  .feature-card:hover {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-5px);
+  }
+
+  .feature-card h3 {
+    font-size: var(--text-h3);
+    color: var(--color-text-primary);
+  }
+
+  .feature-card p {
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
+  }
+
+  @media (max-width: 768px) {
+    .features-section {
+      padding: var(--space-16) 0;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .feature-card {
+      padding: var(--space-6);
+    }
+  }
+</style>

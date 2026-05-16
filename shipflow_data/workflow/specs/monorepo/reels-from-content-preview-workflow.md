@@ -18,19 +18,19 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - contentflow_app
-  - contentflow_lab
-  - contentflow_remotion_worker
+  - contentglowz_app
+  - contentglowz_lab
+  - contentglowz_remotion_worker
   - Clerk auth
   - active project selection
 depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentflow_app/CLAUDE.md"
+  - artifact: "contentglowz_app/CLAUDE.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/CLAUDE.md"
+  - artifact: "contentglowz_lab/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "pub.dev video_player"
@@ -38,12 +38,12 @@ depends_on:
     required_status: "official"
 supersedes: []
 evidence:
-  - "contentflow_app/lib/presentation/screens/reels/reels_screen.dart"
-  - "contentflow_app/lib/data/services/api_service.dart"
-  - "contentflow_app/lib/providers/providers.dart"
-  - "contentflow_app/lib/data/models/content_item.dart"
-  - "contentflow_app/lib/router.dart"
-  - "contentflow_lab/api/routers/reels.py"
+  - "contentglowz_app/lib/presentation/screens/reels/reels_screen.dart"
+  - "contentglowz_app/lib/data/services/api_service.dart"
+  - "contentglowz_app/lib/providers/providers.dart"
+  - "contentglowz_app/lib/data/models/content_item.dart"
+  - "contentglowz_app/lib/router.dart"
+  - "contentglowz_lab/api/routers/reels.py"
   - "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
   - "https://pub.dev/packages/video_player"
 next_step: "/sf-start Reels from existing content preview workflow"
@@ -141,7 +141,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
 ## Dependencies
 
 - Ready API contract from `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
-- `contentflow_app` dependencies already present: Dio, Riverpod, GoRouter, url_launcher.
+- `contentglowz_app` dependencies already present: Dio, Riverpod, GoRouter, url_launcher.
 - New Flutter dependency: `video_player: ^2.11.1`.
 - API methods to implement:
   - `createReelPreview(contentId, {clientRequestId})` -> `POST /api/reels/render-jobs` with `template_id=content-summary-v1` and `duration_seconds=60`.
@@ -166,18 +166,18 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
 
 ## Links & Consequences
 
-- `contentflow_app/lib/presentation/screens/reels/reels_screen.dart` will become larger unless split into child widgets.
-- `contentflow_app/lib/data/services/api_service.dart` gains render job methods.
-- `contentflow_app/lib/providers/providers.dart` gains state/polling providers or a notifier for the render workflow.
-- `contentflow_app/pubspec.yaml` changes with `video_player`.
-- `contentflow_app/pubspec.lock` changes after `flutter pub get` and must be reviewed.
-- `contentflow_app/lib/l10n/app_localizations.dart` needs new strings.
-- `contentflow_lab` must already expose `/api/reels/render-jobs`; otherwise the app feature stays blocked.
+- `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart` will become larger unless split into child widgets.
+- `contentglowz_app/lib/data/services/api_service.dart` gains render job methods.
+- `contentglowz_app/lib/providers/providers.dart` gains state/polling providers or a notifier for the render workflow.
+- `contentglowz_app/pubspec.yaml` changes with `video_player`.
+- `contentglowz_app/pubspec.lock` changes after `flutter pub get` and must be reviewed.
+- `contentglowz_app/lib/l10n/app_localizations.dart` needs new strings.
+- `contentglowz_lab` must already expose `/api/reels/render-jobs`; otherwise the app feature stays blocked.
 - Web preview depends on the API serving MP4 with a browser-compatible codec and signed URL behavior that does not require bearer headers in the video element.
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with a short note that the Reels create-from-content flow requires the Remotion worker and lab API env vars.
+- Update `contentglowz_app/README.md` with a short note that the Reels create-from-content flow requires the Remotion worker and lab API env vars.
 - Update lab docs through the integration spec, not this app spec.
 - Add changelog entry for the new user-facing `/reels` workflow after implementation.
 - Support docs should say local MP4 links are local/dev artifacts until CDN storage is added.
@@ -205,7 +205,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
 ## Implementation Tasks
 
 - [ ] Tache 1: Add render job models.
-  - Fichier: `contentflow_app/lib/data/models/reel_render.dart`
+  - Fichier: `contentglowz_app/lib/data/models/reel_render.dart`
   - Action: Define `ReelRenderJob`, `ReelRenderArtifact`, and enum parsing for normalized job statuses.
   - User story link: Lets the app reason about preview and final render states.
   - Depends on: Ready API response schema from `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
@@ -213,7 +213,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Keep raw `Map<String, dynamic>` only for forward-compatible metadata.
 
 - [ ] Tache 2: Add render API methods.
-  - Fichier: `contentflow_app/lib/data/services/api_service.dart`
+  - Fichier: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add `createReelPreview`, `fetchReelRenderJob`, `exportReelFinal`, and `cancelReelRender` methods under `/api/reels/render-jobs`, including `429`/`Retry-After` handling.
   - User story link: Connects `/reels` to the lab render API.
   - Depends on: Tache 1.
@@ -221,15 +221,15 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Do not add offline queue handling for these methods.
 
 - [ ] Tache 3: Add `video_player` dependency.
-  - Fichier: `contentflow_app/pubspec.yaml`
+  - Fichier: `contentglowz_app/pubspec.yaml`
   - Action: Add `video_player: ^2.11.1`.
   - User story link: Enables in-app MP4 preview.
   - Depends on: None.
   - Validate with: `flutter pub get`, `flutter analyze`.
-  - Notes: Review the generated `contentflow_app/pubspec.lock` change during implementation.
+  - Notes: Review the generated `contentglowz_app/pubspec.lock` change during implementation.
 
 - [ ] Tache 4: Add render workflow state provider.
-  - Fichier: `contentflow_app/lib/providers/providers.dart`
+  - Fichier: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add a notifier/provider that stores selected content id, current preview job, current final job, retry-after deadline, and polling lifecycle.
   - User story link: Keeps the multi-step preview/export flow consistent.
   - Depends on: Tache 2.
@@ -237,7 +237,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Poll every 2 seconds while non-terminal; stop polling on dispose or project change. If the screen is left and later revisited in the same app session, resume by fetching the current job once; full page reload persistence is out of MVP scope.
 
 - [ ] Tache 5: Add video preview widget.
-  - Fichier: `contentflow_app/lib/presentation/screens/reels/reel_preview_player.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/reels/reel_preview_player.dart`
   - Action: Implement an inline 9:16 preview using `video_player` with `VideoPlayerController.networkUrl`, play/pause, loading, expired-URL refresh, error, and open fallback.
   - User story link: Satisfies the preview requirement before final export.
   - Depends on: Taches 1 and 3.
@@ -245,7 +245,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Avoid `VideoPlayerController.file`. Redact signed URL query tokens from errors and diagnostics.
 
 - [ ] Tache 6: Refactor Reels screen into tabs.
-  - Fichier: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
   - Action: Replace the single Instagram form with a tabbed screen containing "Create from content" and "Import Instagram"; preserve existing import behavior.
   - User story link: Makes the new feature discoverable at `/reels` without deleting current tooling.
   - Depends on: Taches 1-5.
@@ -253,7 +253,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Split child widgets if the file becomes hard to read.
 
 - [ ] Tache 7: Implement content selector and options UI.
-  - Fichier: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
   - Action: Use `pendingContentProvider`, `contentHistoryProvider`, and `activeProjectIdProvider` to show selectable content cards plus a fixed "60s" render summary.
   - User story link: Lets the user choose what content becomes a reel.
   - Depends on: Tache 6.
@@ -261,7 +261,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Include title, type, status, and short summary; keep cards compact.
 
 - [ ] Tache 8: Implement preview and final export actions.
-  - Fichier: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
   - Action: Wire buttons to provider actions, show progress, render preview player on completion, enable final export only after preview completion, show final MP4 action on completion, and show `Retry-After` countdown for `429`.
   - User story link: Completes the user workflow.
   - Depends on: Taches 4, 5, 7.
@@ -269,7 +269,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Use `showDiagnosticSnackBar` for failures.
 
 - [ ] Tache 9: Add localized strings.
-  - Fichier: `contentflow_app/lib/l10n/app_localizations.dart`
+  - Fichier: `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action: Add EN/FR localized strings for tab labels, empty states, render statuses, preview/export buttons, retry/cancel, queue busy, deletion warning, and video preview errors.
   - User story link: Keeps app copy consistent with current localization approach.
   - Depends on: Taches 6-8.
@@ -277,7 +277,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Keep English keys compatible with `context.tr` usage.
 
 - [ ] Tache 10: Add Flutter tests.
-  - Fichier: `contentflow_app/test/reels_from_content_test.dart`
+  - Fichier: `contentglowz_app/test/reels_from_content_test.dart`
   - Action: Cover no content, content selection, preview loading, preview completed, preview failed, `429` retry-after, stale poll ignored, signed URL redaction, final export enabled, and project-change reset.
   - User story link: Protects the main user flow.
   - Depends on: Taches 1-9.
@@ -285,7 +285,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - Notes: Mock API/provider responses; do not require real Remotion.
 
 - [ ] Tache 11: Update app docs.
-  - Fichier: `contentflow_app/README.md`
+  - Fichier: `contentglowz_app/README.md`
   - Action: Add local prerequisites for the Reels render workflow and point to the lab/worker setup docs.
   - User story link: Makes the feature reproducible locally.
   - Depends on: Taches 1-10 and integration spec docs.
@@ -324,7 +324,7 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
   - `flutter pub get`
   - `flutter analyze`
   - `flutter test test/reels_from_content_test.dart`
-  - Optional web smoke: `./build.sh --serve` in `contentflow_app`
+  - Optional web smoke: `./build.sh --serve` in `contentglowz_app`
 
 ## Risks
 
@@ -338,10 +338,10 @@ Refactor `/reels` into a two-tab workspace: "Create from content" for ContentFlo
 ## Execution Notes
 
 - Read first:
-  - `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/data/models/content_item.dart`
+  - `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/data/models/content_item.dart`
   - `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`
 - Implement models and API service before UI.
 - Keep render state isolated so it can be reset when project changes.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-05-11"
 status: stale
@@ -15,11 +15,11 @@ security_impact: "no"
 docs_impact: "yes"
 user_story: "Legacy workflow visualization task checklist preserved as workflow reference under canonical specs storage."
 linked_systems:
-  - contentflow_lab
+  - contentglowz_lab
 evidence: []
 depends_on: []
 supersedes: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/SPEC-workflow-visualization.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/SPEC-workflow-visualization.md"
 ---
 
 # TASK: Workflow Visualization & Process Costing

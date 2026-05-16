@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_app
+project: contentglowz_app
 created: "2026-04-25"
 updated: "2026-05-10"
 status: ready
@@ -25,7 +25,7 @@ evidence:
   - "Production diagnostics on 2026-05-10 showed duplicate app_access.resolve, /health, and /api/bootstrap calls during Clerk session restore."
   - "User report: Google/Clerk login can emit two authentication codes because a page refresh or redundant auth/access cycle occurs between attempts."
   - "Hosted user retest on 2026-05-10: Clerk/Google auth completed without issue and did not request any authentication code."
-next_step: "/sf-verify shipflow_data/workflow/specs/contentflow_app/spec-no-ui-jump-on-resume.md"
+next_step: "/sf-verify shipflow_data/workflow/specs/contentglowz_app/spec-no-ui-jump-on-resume.md"
 ---
 # Stabiliser La Reprise Mobile/Web Sans Mouvement UI
 
@@ -55,7 +55,7 @@ La resolution d'acces continue de tourner au resume pour garder la fiabilite (re
 - Nouvelle logique metier onboarding/projets.
 
 ## Constraints
-- Respecter les conventions locales-first de `contentflow_app` (degraded mode et cache restent actifs).
+- Respecter les conventions locales-first de `contentglowz_app` (degraded mode et cache restent actifs).
 - Conserver la compatibilite GoRouter existante (`/entry`, `/onboarding`, shell routes, editor route).
 - Ne pas introduire de regressions sur les transitions legitimes: signedOut -> `/entry`, ready sur `/entry` -> `/feed`.
 - Le comportement doit rester coherent sur Flutter mobile et Flutter web.

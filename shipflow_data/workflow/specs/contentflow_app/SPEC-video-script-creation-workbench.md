@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.2.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:48:42 UTC"
 updated: "2026-05-11"
@@ -18,16 +18,16 @@ risk_level: medium
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter /reels workbench"
-  - "contentflow_app Flutter Angles"
-  - "contentflow_app Flutter Editor"
-  - "contentflow_app Flutter Feed cards"
-  - "contentflow_app ContentItem model"
-  - "contentflow_lab dispatch-pipeline"
-  - "contentflow_lab PipelineDispatchRequest"
-  - "contentflow_lab ShortContentCrew"
-  - "contentflow_lab status/content body versioning"
-  - "contentflow_lab AI runtime preflight"
+  - "contentglowz_app Flutter /reels workbench"
+  - "contentglowz_app Flutter Angles"
+  - "contentglowz_app Flutter Editor"
+  - "contentglowz_app Flutter Feed cards"
+  - "contentglowz_app ContentItem model"
+  - "contentglowz_lab dispatch-pipeline"
+  - "contentglowz_lab PipelineDispatchRequest"
+  - "contentglowz_lab ShortContentCrew"
+  - "contentglowz_lab status/content body versioning"
+  - "contentglowz_lab AI runtime preflight"
 depends_on:
   - artifact: "shipflow_data/business/product.md"
     artifact_version: "1.0.0"
@@ -38,19 +38,19 @@ depends_on:
   - artifact: "shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editor-multiformat.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editor-multiformat.md"
     artifact_version: "0.1.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -60,11 +60,11 @@ evidence:
   - "User confirmed on 2026-05-11 that V1 adds a true backend `video_script` target format instead of mapping it to `article`."
   - "User confirmed on 2026-05-11 that generation creates a content record directly as `in_progress`, then moves to review only after the body is persisted."
   - "User added on 2026-05-11 that the workbench needs a button to switch to landscape / long format."
-  - "contentflow_lab/api/routers/psychology.py currently supports async `dispatch-pipeline` for article, newsletter, short, and social_post."
-  - "contentflow_app/lib/data/services/api_service.dart currently maps angle `video_script` to backend `article`, which this spec must correct."
-  - "contentflow_lab/agents/short/short_crew.py already generates hook, script, duration_seconds, on_screen_text, hashtags, cta, visual_notes, and thumbnail_concept."
-  - "contentflow_app/lib/presentation/screens/reels/reels_screen.dart is currently a repurposing/download surface, not a script workbench."
-  - "contentflow_app/lib/data/services/api_service.dart and contentflow_app/lib/providers/providers.dart already enforce full-body loading before editor/publish paths."
+  - "contentglowz_lab/api/routers/psychology.py currently supports async `dispatch-pipeline` for article, newsletter, short, and social_post."
+  - "contentglowz_app/lib/data/services/api_service.dart currently maps angle `video_script` to backend `article`, which this spec must correct."
+  - "contentglowz_lab/agents/short/short_crew.py already generates hook, script, duration_seconds, on_screen_text, hashtags, cta, visual_notes, and thumbnail_concept."
+  - "contentglowz_app/lib/presentation/screens/reels/reels_screen.dart is currently a repurposing/download surface, not a script workbench."
+  - "contentglowz_app/lib/data/services/api_service.dart and contentglowz_app/lib/providers/providers.dart already enforce full-body loading before editor/publish paths."
 next_step: "/sf-ready Video Script Creation Workbench"
 ---
 
@@ -169,37 +169,37 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 ## Dependencies
 
 - App files:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/presentation/screens/app_shell.dart`
-  - `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
-  - `contentflow_app/lib/presentation/screens/angles/angles_screen.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentflow_app/lib/presentation/screens/feed/content_card.dart`
-  - `contentflow_app/lib/data/models/content_item.dart`
-  - `contentflow_app/lib/data/models/ritual.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/l10n/app_localizations.dart`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/presentation/screens/app_shell.dart`
+  - `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
+  - `contentglowz_app/lib/presentation/screens/angles/angles_screen.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/presentation/screens/feed/content_card.dart`
+  - `contentglowz_app/lib/data/models/content_item.dart`
+  - `contentglowz_app/lib/data/models/ritual.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/l10n/app_localizations.dart`
 - Backend files:
-  - `contentflow_lab/api/routers/psychology.py`
-  - `contentflow_lab/api/models/psychology.py`
-  - `contentflow_lab/agents/short/short_crew.py`
-  - `contentflow_lab/agents/short/prompts/short_form_writer.yaml`
-  - `contentflow_lab/api/services/template_defaults.py`
-  - `contentflow_lab/status/service.py`
+  - `contentglowz_lab/api/routers/psychology.py`
+  - `contentglowz_lab/api/models/psychology.py`
+  - `contentglowz_lab/agents/short/short_crew.py`
+  - `contentglowz_lab/agents/short/prompts/short_form_writer.yaml`
+  - `contentglowz_lab/api/services/template_defaults.py`
+  - `contentglowz_lab/status/service.py`
 - Existing specs:
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-content-editor-multiformat.md`
-  - `shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md`
-  - `shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editor-multiformat.md`
+  - `shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md`
+  - `shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md`
 - Test areas:
-  - `contentflow_app/test/data/content_item_test.dart`
-  - `contentflow_app/test/presentation/screens/editor/editor_screen_test.dart`
-  - new app tests under `contentflow_app/test/presentation/screens/reels/`
+  - `contentglowz_app/test/data/content_item_test.dart`
+  - `contentglowz_app/test/presentation/screens/editor/editor_screen_test.dart`
+  - new app tests under `contentglowz_app/test/presentation/screens/reels/`
   - new or existing app service tests for `ApiService.dispatchPipeline`
-  - `contentflow_lab/tests/test_dispatch_pipeline_runtime.py`
-  - `contentflow_lab/tests/test_ai_runtime_service.py`
+  - `contentglowz_lab/tests/test_dispatch_pipeline_runtime.py`
+  - `contentglowz_lab/tests/test_ai_runtime_service.py`
   - new backend tests for `target_format=short` and `target_format=video_script`
 
 ## Invariants
@@ -233,11 +233,11 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` if app feature docs list creator tools or content formats.
-- Update `contentflow_app/CHANGELOG.md` after implementation ships.
-- Update `contentflow_app/shipflow_data/business/product.md` because product positioning expands from content review/prep to explicit video script preparation.
-- Update `contentflow_app/shipflow_data/technical/context-function-tree.md` because the file exists and this feature changes route/provider behavior.
-- Update `contentflow_site` marketing copy only after the workbench is implemented and verified; do not claim real video generation.
+- Update `contentglowz_app/README.md` if app feature docs list creator tools or content formats.
+- Update `contentglowz_app/CHANGELOG.md` after implementation ships.
+- Update `contentglowz_app/shipflow_data/business/product.md` because product positioning expands from content review/prep to explicit video script preparation.
+- Update `contentglowz_app/shipflow_data/technical/context-function-tree.md` because the file exists and this feature changes route/provider behavior.
+- Update `contentglowz_site` marketing copy only after the workbench is implemented and verified; do not claim real video generation.
 - Update localization strings for all new workbench labels, validation messages, progress states, landscape / long-format button, and no-video copy.
 
 ## Edge Cases
@@ -264,7 +264,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 ## Implementation Tasks
 
 - [ ] Task 1: Update Reels navigation and screen contract.
-  - File: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
   - Action: Make script creation the primary `/reels` surface, move the current Instagram URL download UI into a secondary "Repurpose existing reel" section, and add a visible mode button for vertical short versus landscape / long format.
   - User story link: Gives creators one obvious place to create scripts and an explicit button for long landscape scripts without promising rendered video.
   - Depends on: None.
@@ -272,7 +272,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Keep the existing `downloadReel` call only inside the secondary import panel.
 
 - [ ] Task 2: Define app-side script request and metadata helpers.
-  - File: `contentflow_app/lib/data/models/content_item.dart`
+  - File: `contentglowz_app/lib/data/models/content_item.dart`
   - Action: Add or refine typed helpers for `script_mode`, `orientation`, `platform`, `duration_seconds`, `hook`, `on_screen_text`, `visual_notes`, `cta`, `hashtags`, and `thumbnail_concept`; parse absent optional fields safely for both `short` and `video_script`.
   - User story link: Keeps generated script packages recognizable in review and editor surfaces.
   - Depends on: Task 1.
@@ -280,7 +280,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: The saved body remains authoritative; metadata is for display, filtering, and diagnostics.
 
 - [ ] Task 3: Extend app service dispatch payload for script modes.
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add a script generation method or extend `dispatchPipeline` so selected angle and blank-topic requests can send `target_format=short` or `target_format=video_script` plus `script_mode`, `platform`, `orientation`, `duration_seconds`, topic, tone, audience, CTA intent, filming style, visual constraints, creator voice, and project id.
   - User story link: Connects both vertical and landscape script modes to real backend generation.
   - Depends on: Task 2.
@@ -288,7 +288,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Remove the current `video_script -> article` mapping for script creation paths.
 
 - [ ] Task 4: Add backend request fields and validation.
-  - File: `contentflow_lab/api/models/psychology.py`
+  - File: `contentglowz_lab/api/models/psychology.py`
   - Action: Extend `PipelineDispatchRequest` with typed optional fields for script mode, platform, orientation, duration, topic, CTA intent, filming style, and visual constraints; document accepted target formats as `article`, `newsletter`, `short`, `video_script`, and `social_post`.
   - User story link: Makes the API contract explicit enough for app and backend to agree on vertical versus landscape scripts.
   - Depends on: Task 3.
@@ -296,7 +296,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Keep backward compatibility for existing article/newsletter/social calls.
 
 - [ ] Task 5: Implement backend `video_script` dispatch.
-  - File: `contentflow_lab/api/routers/psychology.py`
+  - File: `contentglowz_lab/api/routers/psychology.py`
   - Action: Add `video_script` to `_FORMAT_MAP`, `_PIPELINE_ACTOR_MAP`, `_DISPATCH_ROUTE_BY_FORMAT`, provider requirements, validation, content record metadata, and `_run_pipeline_task`; route `video_script` to script-package generation, save body before `pending_review`, and leave failed records non-reviewable.
   - User story link: Prevents landscape long scripts from falling into the article pipeline.
   - Depends on: Task 4.
@@ -304,7 +304,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Validate project/user scope and reject invalid request fields before creating the content record.
 
 - [ ] Task 6: Normalize script packages and readable body formatting.
-  - File: `contentflow_lab/agents/short/short_crew.py`
+  - File: `contentglowz_lab/agents/short/short_crew.py`
   - Action: Normalize both vertical and landscape script outputs into a predictable dict, add exact `general_video` landscape-long constraints, format a Markdown-compatible body, and preserve raw text safely when JSON parsing fails.
   - User story link: Ensures creators receive a filmable script body even when model output shape varies.
   - Depends on: Task 5.
@@ -312,7 +312,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Avoid logging full prompts or generated scripts in exception paths.
 
 - [ ] Task 7: Add Reels draft handoff state.
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add a Riverpod state holder for pending Reels draft input containing source angle fields, initial script mode, active project id, and creator voice snapshot reference; expose clear and consume semantics so stale angle context cannot leak into a later blank-topic request.
   - User story link: Lets a creator start from a validated angle and arrive in the script workbench with the correct context.
   - Depends on: Tasks 1 and 3.
@@ -320,7 +320,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Keep the draft local to app state; do not persist it as content until backend dispatch starts.
 
 - [ ] Task 8: Integrate Angles with the Reels workbench.
-  - File: `contentflow_app/lib/presentation/screens/angles/angles_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/angles/angles_screen.dart`
   - Action: Replace direct `video_script` article dispatch behavior with a "Create video script" path that writes the selected angle into the Reels draft provider and navigates to `/reels`; use vertical mode for `short`/`reel` and landscape long mode for `video_script`.
   - User story link: Lets users turn validated ideas into scripts quickly without generating articles by mistake.
   - Depends on: Task 7.
@@ -328,7 +328,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Preserve existing article, newsletter, and social dispatch behavior.
 
 - [ ] Task 9: Show script progress and completed review entry.
-  - File: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`
   - Action: Show submit loading, running job state, backend error state, completed state, and a clear action to refresh/open the review item after `pending_review`; polling must use `getPipelineStatus` and must not re-submit generation.
   - User story link: Makes async creation observable and recoverable.
   - Depends on: Tasks 3 and 5.
@@ -336,7 +336,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: The completed preview is a persisted script summary, not a pre-save accept step.
 
 - [ ] Task 10: Improve script cards and editor metadata display.
-  - File: `contentflow_app/lib/presentation/screens/feed/content_card.dart`
+  - File: `contentglowz_app/lib/presentation/screens/feed/content_card.dart`
   - Action: Show compact script metadata on review cards: script mode, platform, duration, hook or first line, and a safe hashtag summary without overflowing compact/mobile layouts.
   - User story link: Makes generated script packages recognizable in the review queue.
   - Depends on: Task 2.
@@ -344,7 +344,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Do not display long `on_screen_text` arrays directly on cards.
 
 - [ ] Task 11: Preserve editor and publish behavior for scripts.
-  - File: `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Ensure the universal editor opens script bodies from `contentDetailProvider`, displays script metadata chips, saves full body versions, and does not expose unsupported video rendering or video publishing actions.
   - User story link: Keeps creator review/control before any future filming or publishing step.
   - Depends on: Tasks 2 and 10.
@@ -352,7 +352,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
   - Notes: Teleprompter, scene timeline, and video asset controls stay out of scope.
 
 - [ ] Task 12: Add localization and docs updates.
-  - File: `contentflow_app/lib/l10n/app_localizations.dart`
+  - File: `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action: Add EN/FR labels for script workbench, mode button, landscape / long format, validation messages, running/completed/error states, no-video copy, and secondary import/repurpose labels.
   - User story link: Makes the script flow understandable and honest in the product language.
   - Depends on: UI copy from Tasks 1, 9, 10, and 11.
@@ -404,7 +404,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 
 ## Execution Notes
 
-- Read first: `contentflow_app/lib/presentation/screens/reels/reels_screen.dart`, `contentflow_app/lib/data/services/api_service.dart`, `contentflow_lab/api/routers/psychology.py`, `contentflow_lab/api/models/psychology.py`, and `contentflow_lab/agents/short/short_crew.py`.
+- Read first: `contentglowz_app/lib/presentation/screens/reels/reels_screen.dart`, `contentglowz_app/lib/data/services/api_service.dart`, `contentglowz_lab/api/routers/psychology.py`, `contentglowz_lab/api/models/psychology.py`, and `contentglowz_lab/agents/short/short_crew.py`.
 - Implement foundations before UI polish: backend request contract, backend format routing/validation, package normalization/body formatting, app service payload, then `/reels` workbench state.
 - Use existing Flutter/Riverpod/Dio/FastAPI/status-service patterns; avoid new packages.
 - Do not touch binary upload, CDN storage, Instagram cookies, FFmpeg, native capture code, LATE publishing, or video asset tables for script creation.
@@ -412,7 +412,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 - Backend must validate unsupported target formats, platform values, orientation values, and duration before creating a content record.
 - Backend must run AI runtime preflight before content record creation so missing BYOK/platform entitlement does not leave partial records.
 - Stop and reroute to a new spec if the work requires MP4 rendering, transcription of third-party reels, social video upload, teleprompter mode, account-level AI quotas, or a dedicated document editor model.
-- Validation commands: targeted `flutter test` under `contentflow_app` and focused `pytest` tests under `contentflow_lab`.
+- Validation commands: targeted `flutter test` under `contentglowz_app` and focused `pytest` tests under `contentglowz_lab`.
 - Turso migration expected: no, because the intended implementation uses existing content records, body versions, status transitions, and metadata JSON. Re-evaluate only if metadata cannot fit the existing status model.
 - Fresh external docs verdict: `fresh-docs not needed`; local code and existing specs define the relevant Flutter/FastAPI/CrewAI integration behavior for this change.
 

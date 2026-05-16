@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_app
+project: contentglowz_app
 created: "2026-04-25"
 updated: "2026-04-27"
 status: ready
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_app/feedback-backend-contract-fastapi.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_app/feedback-backend-contract-fastapi.md"
 ---
 # Feedback Backend Contract for ContentFlow
 

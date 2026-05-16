@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: ready
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
 ---
 # Title
 Strict BYOK LLM For App-Visible AI Actions
@@ -27,11 +27,11 @@ Strict BYOK LLM For App-Visible AI Actions
 Ready for implementation
 
 ## Problem
-The product decision is now locked: every LLM-backed action visible in `contentflow_app` must run with the requesting user's OpenRouter key, not an operator-managed key from Doppler or process environment.
+The product decision is now locked: every LLM-backed action visible in `contentglowz_app` must run with the requesting user's OpenRouter key, not an operator-managed key from Doppler or process environment.
 
 The current system does not satisfy that requirement:
 
-- `POST /api/personas/draft` already uses `UserProviderCredential` through `contentflow_lab/api/services/user_llm_service.py`, but the rest of the visible AI flows do not.
+- `POST /api/personas/draft` already uses `UserProviderCredential` through `contentglowz_lab/api/services/user_llm_service.py`, but the rest of the visible AI flows do not.
 - `api/routers/psychology.py` launches `ritual`, `angles`, and `dispatch-pipeline` work without resolving a user-scoped LLM at all.
 - `api/routers/newsletter.py` and `api/routers/research.py` still depend on server-managed agent construction or config patterns.
 - `api/dependencies.py` caches singleton LLM-bound agents, which is incompatible with per-user keys.
@@ -50,7 +50,7 @@ Extend the existing OpenRouter user-key foundation into a strict request-scoped 
 Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, GitHub OAuth, Turso, encryption secrets). Align the minimal app/backend contracts required so the visible flows still work end-to-end once BYOK is enforced.
 
 ## Scope In
-- `contentflow_app` visible LLM actions:
+- `contentglowz_app` visible LLM actions:
   - Persona prefill from repo (`/api/personas/draft`) as regression coverage
   - Ritual narrative synthesis
   - Angle generation
@@ -74,7 +74,7 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 - Removing secrets from Doppler or deleting env vars from deployment config
   - This spec removes runtime dependence for app-visible LLM flows; infra cleanup is a follow-up
 - BYOK for non-LLM services: `Exa`, `Firecrawl`, `SendGrid`, `Bunny`, IMAP/Composio, GitHub OAuth
-- Changing demo-mode behavior in `contentflow_app`
+- Changing demo-mode behavior in `contentglowz_app`
 - Making `/api/mesh/analyze` require OpenRouter
   - The currently exposed mesh analyze path is repo-analysis logic, not an active LLM path
 
@@ -94,10 +94,10 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 - `dispatch-pipeline` must own the single canonical content record for a pipeline run.
 
 ## Dependencies
-- `contentflow_lab/api/services/user_key_store.py`
-- `contentflow_lab/api/services/user_llm_service.py`
-- `contentflow_lab/api/services/job_store.py`
-- `contentflow_lab/api/routers/settings_integrations.py`
+- `contentglowz_lab/api/services/user_key_store.py`
+- `contentglowz_lab/api/services/user_llm_service.py`
+- `contentglowz_lab/api/services/job_store.py`
+- `contentglowz_lab/api/routers/settings_integrations.py`
 - `CrewAI` request-scoped `LLM(model=..., base_url=..., api_key=...)`
 - OpenRouter via OpenAI-compatible endpoint
 - Server-managed tools still used inside app-visible workflows:
@@ -117,17 +117,17 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 - `/api/mesh/analyze` remains callable without OpenRouter because the currently exposed analyze path is not LLM-backed.
 
 ## Links & Consequences
-- `contentflow_lab/api/services/user_llm_service.py` becomes the single backend entrypoint for building:
+- `contentglowz_lab/api/services/user_llm_service.py` becomes the single backend entrypoint for building:
   - OpenAI/OpenRouter SDK clients
   - `CrewAI` `LLM` instances
   - standardized runtime errors for missing/invalid credentials
-- `contentflow_lab/api/dependencies.py` and `contentflow_lab/api/dependencies/agents.py` cannot keep request-agnostic singleton LLM agents for app-visible research flows. Those caches must be removed or bypassed for BYOK routes.
-- `contentflow_lab/api/models/psychology.py` must be aligned to current Flutter payloads, or the BYOK migration will still leave visible screens broken even if LLM resolution is correct.
-- `contentflow_app/lib/data/services/api_service.dart` must absorb polling for `ritual` and `angles`, because backend already models them as async jobs and the screens currently expect final data.
-- `contentflow_lab/api/routers/newsletter.py` must move off in-memory `_jobs` and onto `job_store` with `user_id`, or BYOK will still leave an owner-scope hole in a visible screen.
-- `contentflow_lab/api/routers/research.py` must accept the app's current conceptual inputs (`target_url`, `competitors`, `keywords`) instead of relying on a backend-only keyword contract.
-- `contentflow_lab/agents/seo/seo_crew.py`, `agents/newsletter/newsletter_crew.py`, `agents/short/short_crew.py`, and `agents/social/social_crew.py` currently perform nested status/content bookkeeping. Once `dispatch-pipeline` becomes the single outer orchestrator, those nested writes must be disabled in pipeline mode.
-- `contentflow_app/lib/presentation/screens/settings/settings_screen.dart` must stop describing OpenRouter as a persona-draft-only requirement.
+- `contentglowz_lab/api/dependencies.py` and `contentglowz_lab/api/dependencies/agents.py` cannot keep request-agnostic singleton LLM agents for app-visible research flows. Those caches must be removed or bypassed for BYOK routes.
+- `contentglowz_lab/api/models/psychology.py` must be aligned to current Flutter payloads, or the BYOK migration will still leave visible screens broken even if LLM resolution is correct.
+- `contentglowz_app/lib/data/services/api_service.dart` must absorb polling for `ritual` and `angles`, because backend already models them as async jobs and the screens currently expect final data.
+- `contentglowz_lab/api/routers/newsletter.py` must move off in-memory `_jobs` and onto `job_store` with `user_id`, or BYOK will still leave an owner-scope hole in a visible screen.
+- `contentglowz_lab/api/routers/research.py` must accept the app's current conceptual inputs (`target_url`, `competitors`, `keywords`) instead of relying on a backend-only keyword contract.
+- `contentglowz_lab/agents/seo/seo_crew.py`, `agents/newsletter/newsletter_crew.py`, `agents/short/short_crew.py`, and `agents/social/social_crew.py` currently perform nested status/content bookkeeping. Once `dispatch-pipeline` becomes the single outer orchestrator, those nested writes must be disabled in pipeline mode.
+- `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart` must stop describing OpenRouter as a persona-draft-only requirement.
 
 ## Edge Cases
 - User has no OpenRouter credential stored.
@@ -143,112 +143,112 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 
 ## Implementation Tasks
 - [ ] Task 1: Expand the user-scoped LLM runtime service
-  - File: `contentflow_lab/api/services/user_llm_service.py`
+  - File: `contentglowz_lab/api/services/user_llm_service.py`
   - Action: Introduce typed errors for missing/invalid OpenRouter state and add explicit builders for OpenRouter SDK clients plus `CrewAI` `LLM` instances using request-scoped `api_key` and `base_url`
   - Depends on: none
   - Validate with: backend unit tests that construct runtime objects without reading env fallback
   - Notes: Centralize the model map here; initial defaults are `openai/gpt-4o-mini` for psychology/research/pipeline generation and `anthropic/claude-3.5-sonnet` for newsletter writing
 
 - [ ] Task 2: Normalize the psychology request contracts to match current Flutter usage
-  - File: `contentflow_lab/api/models/psychology.py`
+  - File: `contentglowz_lab/api/models/psychology.py`
   - Action: Replace `NarrativeSynthesisRequest.entry_ids` with `entries` input support, make `AngleGenerationRequest` compatible with current app payloads, and keep legacy aliases only where they do not reintroduce ambiguity
   - Depends on: Task 1
   - Validate with: router tests covering app-shaped payloads for ritual and angles
   - Notes: `refine-persona` may be normalized in the same file even though no current Flutter screen calls it
 
 - [ ] Task 3: Enforce BYOK at psychology route entry and thread runtime into background tasks
-  - File: `contentflow_lab/api/routers/psychology.py`
+  - File: `contentglowz_lab/api/routers/psychology.py`
   - Action: Resolve user OpenRouter access before queuing LLM-backed jobs, map missing/invalid credentials to `409`, pass `user_id` through background execution, and keep owner-scoped polling unchanged
   - Depends on: Tasks 1-2
   - Validate with: `tests/test_psychology_auth_jobs.py`
   - Notes: `dispatch-pipeline` must reject before creating a content record when the user key is missing/invalid
 
 - [ ] Task 4: Refactor psychology agents to accept explicit LLM injection
-  - File: `contentflow_lab/agents/psychology/creator_psychologist.py`
+  - File: `contentglowz_lab/agents/psychology/creator_psychologist.py`
   - Action: Update the psychology agent constructors/runners to accept an injected `llm` object instead of relying on CrewAI default resolution
   - Depends on: Task 1
   - Validate with: targeted router tests that patch the injected runtime
   - Notes: Apply the same pattern in `agents/psychology/audience_analyst.py` and `agents/psychology/angle_strategist.py`
 
 - [ ] Task 5: Hide psychology async polling behind the Flutter API service
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Make `synthesizeNarrative()`, `refinePersona()`, and `generateAngles()` submit jobs and poll their status until completion so screens can keep consuming final domain objects
   - Depends on: Tasks 2-3
   - Validate with: manual app smoke on Ritual and Angles plus one unit-tested helper if a shared polling/error helper is introduced
   - Notes: Follow the existing persona-draft polling pattern instead of duplicating ad hoc logic per screen
 
 - [ ] Task 6: Standardize missing-key UX in the app and update OpenRouter copy
-  - File: `contentflow_app/lib/presentation/screens/settings/settings_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`
   - Action: Update helper text and delete-warning copy to describe OpenRouter as the app-wide AI key, not a persona-only key, and add consistent missing/invalid-key handling in the visible AI screens
   - Depends on: Task 5
   - Validate with: manual checks in `Settings`, `Personas`, `Ritual`, `Angles`, `Newsletter`, and `Research`
   - Notes: Reuse a shared helper if introduced; keep the CTA destination as `Settings > OpenRouter`
 
 - [ ] Task 7: Remove implicit env-based LLM resolution from short/social/newsletter/article crews
-  - File: `contentflow_lab/agents/short/short_crew.py`
+  - File: `contentglowz_lab/agents/short/short_crew.py`
   - Action: Allow explicit `llm` injection and disable internal status/content creation when invoked from `dispatch-pipeline`
   - Depends on: Task 1
   - Validate with: pipeline router tests for `short` generation
   - Notes: Mirror the same changes in `agents/social/social_crew.py`, `agents/newsletter/newsletter_agent.py`, `agents/newsletter/newsletter_crew.py`, `agents/seo/research_analyst.py`, `agents/seo/content_strategist.py`, `agents/seo/copywriter.py`, `agents/seo/on_page_technical_seo.py`, `agents/seo/marketing_strategist.py`, `agents/seo/editor.py`, and `agents/seo/seo_crew.py`
 
 - [ ] Task 8: Repair the article pipeline foundation while moving it to BYOK
-  - File: `contentflow_lab/agents/seo/seo_crew.py`
+  - File: `contentglowz_lab/agents/seo/seo_crew.py`
   - Action: Fix the technical SEO import/reference drift, accept injected request-scoped LLM runtime, and ensure inner SEO crew execution does not create a second status/content record when called from `dispatch-pipeline`
   - Depends on: Task 7
   - Validate with: dispatch-pipeline tests for `article`
   - Notes: Use `agents/seo/on_page_technical_seo.py` instead of the missing `technical_seo.py` module
 
 - [ ] Task 9: Migrate newsletter generation to BYOK plus persisted owner-scoped jobs
-  - File: `contentflow_lab/api/routers/newsletter.py`
+  - File: `contentglowz_lab/api/routers/newsletter.py`
   - Action: Replace in-memory `_jobs` with `job_store`, store `user_id`, resolve the user OpenRouter runtime for generation, and preserve a stable async contract for the app
   - Depends on: Tasks 1 and 7
   - Validate with: new `tests/test_newsletter_router.py`
   - Notes: Add compatibility endpoints or align the contract so both generation and polling paths match the app without silent fallback
 
 - [ ] Task 10: Make newsletter config readiness user-aware without converting non-LLM dependencies to BYOK
-  - File: `contentflow_lab/agents/newsletter/config/newsletter_config.py`
+  - File: `contentglowz_lab/agents/newsletter/config/newsletter_config.py`
   - Action: Stop treating `OPENROUTER_API_KEY` env presence as newsletter LLM readiness for authenticated app usage, and expose separate server-managed vs user-managed readiness signals through `api/routers/newsletter.py`
   - Depends on: Task 9
   - Validate with: newsletter config route tests and manual screen check
   - Notes: Preserve a top-level boolean that the current Flutter screen can still read as `configured`
 
 - [ ] Task 11: Replace cached singleton research agents with request-scoped BYOK construction
-  - File: `contentflow_lab/api/routers/research.py`
+  - File: `contentglowz_lab/api/routers/research.py`
   - Action: Stop depending on a process-wide cached research agent, resolve the user's OpenRouter runtime per request, and build the agent with explicit `llm`
   - Depends on: Task 1
   - Validate with: new `tests/test_research_router.py`
   - Notes: Update `api/dependencies.py` and `api/dependencies/agents.py` only as needed so no app-visible research path can reuse another user's LLM-bound singleton
 
 - [ ] Task 12: Align the research API contract with the current app screen
-  - File: `contentflow_lab/api/models/research.py`
+  - File: `contentglowz_lab/api/models/research.py`
   - Action: Extend the request model to accept `target_url`, `competitors`, and `keywords` from Flutter and normalize them into the agent's actual inputs
   - Depends on: Task 11
   - Validate with: research router tests using the exact app payload shape
   - Notes: Keep the backend deterministic; it should not silently invent a keyword strategy from URLs alone
 
 - [ ] Task 13: Remove unsafe legacy fallback from the Angles screen content-generation path
-  - File: `contentflow_app/lib/presentation/screens/angles/angles_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/angles/angles_screen.dart`
   - Action: Stop falling back to `createContentFromAngle()` for OpenRouter-required or backend-capable pipeline errors; surface the real failure instead
   - Depends on: Tasks 3, 5, and 8
   - Validate with: manual angle-to-content generation checks for `article`, `newsletter`, `short`, and `social_post`
   - Notes: A legacy create-only fallback is acceptable only for explicit demo/mock behavior, not production error masking
 
 - [ ] Task 14: Add regression coverage proving there is no env fallback on app-visible routes
-  - File: `contentflow_lab/tests/test_psychology_auth_jobs.py`
+  - File: `contentglowz_lab/tests/test_psychology_auth_jobs.py`
   - Action: Extend tests so app-visible routes fail with `409` when the user credential is missing even if dummy global env vars exist in the test process
   - Depends on: Tasks 3, 9, and 11
   - Validate with: pytest
   - Notes: Cover psychology, newsletter, and research; keep existing persona-draft regression in `tests/test_persona_draft_route.py`
 
 - [ ] Task 15: Add a small Flutter test surface for BYOK error detection
-  - File: `contentflow_app/test/core/byok_guard_test.dart`
+  - File: `contentglowz_app/test/core/byok_guard_test.dart`
   - Action: Add unit coverage for the shared OpenRouter-required error detection/helper used by visible AI screens
   - Depends on: Task 6
   - Validate with: `flutter test test/core/byok_guard_test.dart`
   - Notes: If no shared helper is introduced, replace this with the smallest realistic unit test covering the chosen error-mapping abstraction
 
 - [ ] Task 16: Make the Research screen explicit about keyword requirements
-  - File: `contentflow_app/lib/presentation/screens/research/research_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/research/research_screen.dart`
   - Action: Require at least one keyword before submission, remove the misleading “optional” copy, and keep the same OpenRouter-missing UX used by the other visible AI screens
   - Depends on: Tasks 6 and 12
   - Validate with: manual research-screen submission with and without keywords
@@ -258,8 +258,8 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 - [ ] CA 1: Given an authenticated user with no stored OpenRouter credential, when they trigger `Ritual`, `Generate Angles`, `Generate Content`, `Newsletter`, or `Research`, then the backend returns `409` before any LLM work starts and the app points them to `Settings > OpenRouter`.
 - [ ] CA 2: Given an authenticated user with a credential marked `invalid`, when they trigger the same visible LLM flows, then the backend returns `409` and no job/content record is created.
 - [ ] CA 3: Given an authenticated user with a stored credential marked `unknown`, when they trigger a visible LLM flow, then the flow is allowed to run.
-- [ ] CA 4: Given a valid user OpenRouter credential, when the user runs `Ritual`, then `contentflow_app` receives a final `NarrativeSynthesisResult` after internal polling and the backend job remains owner-scoped.
-- [ ] CA 5: Given a valid user OpenRouter credential, when the user runs `Generate Angles`, then `contentflow_app` receives final angle data after internal polling and no global LLM env var is needed.
+- [ ] CA 4: Given a valid user OpenRouter credential, when the user runs `Ritual`, then `contentglowz_app` receives a final `NarrativeSynthesisResult` after internal polling and the backend job remains owner-scoped.
+- [ ] CA 5: Given a valid user OpenRouter credential, when the user runs `Generate Angles`, then `contentglowz_app` receives final angle data after internal polling and no global LLM env var is needed.
 - [ ] CA 6: Given a valid user OpenRouter credential, when the user dispatches an angle to `article`, `newsletter`, `short`, or `social_post`, then exactly one canonical `ContentRecord` is created for that dispatch task.
 - [ ] CA 7: Given a valid user OpenRouter credential, when the user runs `Newsletter`, then the async job is persisted in `job_store`, scoped to `user_id`, and does not expose raw secrets.
 - [ ] CA 8: Given missing server-managed newsletter dependencies but a valid user OpenRouter credential, when the user checks newsletter readiness, then the response distinguishes LLM readiness from server-tool readiness and the screen can still explain what is missing.
@@ -297,11 +297,11 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
 
 ## Execution Notes
 - Read first:
-  - `contentflow_lab/api/services/user_llm_service.py`
-  - `contentflow_lab/api/routers/psychology.py`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_lab/agents/newsletter/newsletter_crew.py`
-  - `contentflow_lab/agents/seo/seo_crew.py`
+  - `contentglowz_lab/api/services/user_llm_service.py`
+  - `contentglowz_lab/api/routers/psychology.py`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_lab/agents/newsletter/newsletter_crew.py`
+  - `contentglowz_lab/agents/seo/seo_crew.py`
 - Implementation order:
   1. backend runtime service
   2. psychology contracts and route gating
@@ -311,8 +311,8 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
   6. research route migration
   7. app UX polish and tests
 - Validation commands:
-  - `cd /home/claude/contentflow/contentflow_lab && pytest tests/test_psychology_auth_jobs.py tests/test_persona_draft_route.py tests/test_settings_integrations_router.py tests/test_newsletter_router.py tests/test_research_router.py`
-  - `cd /home/claude/contentflow/contentflow_app && flutter test test/core/byok_guard_test.dart`
+  - `cd /home/claude/contentflow/contentglowz_lab && pytest tests/test_psychology_auth_jobs.py tests/test_persona_draft_route.py tests/test_settings_integrations_router.py tests/test_newsletter_router.py tests/test_research_router.py`
+  - `cd /home/claude/contentflow/contentglowz_app && flutter test test/core/byok_guard_test.dart`
 - Stop conditions:
   - If explicit request-scoped `CrewAI` LLM injection still triggers env-based auth, stop and re-evaluate the agent integration pattern before touching more routes
   - If pipeline article generation still fails after the import fix, isolate article-pipeline repair as a prerequisite patch before completing the BYOK rollout

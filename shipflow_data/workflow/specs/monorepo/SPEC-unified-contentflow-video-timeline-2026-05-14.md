@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
+  - "contentglowz_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
   - "project asset library"
   - "Turso/libSQL"
   - "JobStore"
@@ -37,10 +37,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-unified-project-asset-library-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentflow_app/CLAUDE.md"
+  - artifact: "contentglowz_app/CLAUDE.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/CLAUDE.md"
+  - artifact: "contentglowz_lab/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "Remotion renderMedia official docs"
@@ -70,13 +70,13 @@ evidence:
   - "User answer 2026-05-14: do not use Remotion Timeline or Editor Starter as the product UI; build the Flutter timeline ourselves."
   - "User answer 2026-05-14: V1 supports vertical_9_16 and landscape_16_9, 30fps, max 3 minutes."
   - "Spec decision 2026-05-14: V1 preview truth is a server-rendered Remotion MP4 for the current immutable timeline version; in-app interactive preview is future enhancement, not the source of truth."
-  - "contentflow_app/lib/router.dart has /editor/:id but no /editor/:id/video route; route sanitization must handle the specific video route before generic /editor/* matching."
-  - "contentflow_app/lib/presentation/screens/editor/editor_screen.dart can open the project asset picker but has no video timeline."
-  - "contentflow_app/lib/presentation/widgets/project_asset_picker.dart already supports allowedMediaKinds and target/action context for project asset selection."
-  - "contentflow_lab/status/service.py already names select_for_video_version and use_in_remotion_render actions, but video_version ownership validation currently raises until the video asset store ships."
-  - "contentflow_lab/status/service.py video_version eligibility currently omits still-image/capture use cases that a video timeline needs."
-  - "contentflow_lab/api/services/project_asset_storage.py distinguishes render-safe Bunny descriptors from temporary provider descriptors."
-  - "contentflow_lab/api/services/job_store.py can store preview/final render jobs, but must not become the source of truth for timeline state."
+  - "contentglowz_app/lib/router.dart has /editor/:id but no /editor/:id/video route; route sanitization must handle the specific video route before generic /editor/* matching."
+  - "contentglowz_app/lib/presentation/screens/editor/editor_screen.dart can open the project asset picker but has no video timeline."
+  - "contentglowz_app/lib/presentation/widgets/project_asset_picker.dart already supports allowedMediaKinds and target/action context for project asset selection."
+  - "contentglowz_lab/status/service.py already names select_for_video_version and use_in_remotion_render actions, but video_version ownership validation currently raises until the video asset store ships."
+  - "contentglowz_lab/status/service.py video_version eligibility currently omits still-image/capture use cases that a video timeline needs."
+  - "contentglowz_lab/api/services/project_asset_storage.py distinguishes render-safe Bunny descriptors from temporary provider descriptors."
+  - "contentglowz_lab/api/services/job_store.py can store preview/final render jobs, but must not become the source of truth for timeline state."
   - "Fresh-docs checked 2026-05-14: Remotion renderMedia official docs support programmatic rendering with JSON inputProps, output locations, progress callbacks and codec options."
   - "Fresh-docs checked 2026-05-14: Remotion SSR Node official docs define server-side rendering as a Node workflow."
   - "Fresh-docs checked 2026-05-14: Remotion selectComposition official docs confirm composition selection and inputProps usage."
@@ -174,15 +174,15 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 ## Constraints
 
 - ContentFlow timeline data is canonical. Remotion props, storyboard views and preview artifacts are derived outputs.
-- Flutter never calls the Remotion worker directly; `contentflow_lab` remains the authenticated public API boundary.
+- Flutter never calls the Remotion worker directly; `contentglowz_lab` remains the authenticated public API boundary.
 - Client requests pass ids and guided mutations, not trusted storage descriptors, file paths or arbitrary URLs.
 - Every timeline, version, usage and render job is scoped to `user_id`, `project_id` and `content_id`.
 - Durable timeline data requires a Turso/libSQL migration and idempotent ensure logic in the same implementation change.
 - Render jobs can use existing `JobStore`, but `JobStore` must not store the editable timeline as its primary source of truth.
-- `video_version` ownership validation in `contentflow_lab/status/service.py` must be implemented before any asset can be selected for timeline render.
+- `video_version` ownership validation in `contentglowz_lab/status/service.py` must be implemented before any asset can be selected for timeline render.
 - Asset eligibility for video versions must allow the actual V1 clip needs: at minimum `image`, `thumbnail`, `video_cover`, `capture`, `video`, `audio`, `music`, `background_config` and controlled `render_output` references where safe.
 - Provider-temporary or local-only assets may appear for preview/history only if clearly marked, but cannot enter server-side Remotion renders until made durable/render-safe.
-- The Remotion worker/render-service foundation from `remotion-render-service-integration.md` is an implementation prerequisite for any preview/final render batch. If `contentflow_remotion_worker/` or equivalent worker endpoints are absent at start time, `sf-start` must execute that prerequisite chantier first or stop before coding preview/final behavior.
+- The Remotion worker/render-service foundation from `remotion-render-service-integration.md` is an implementation prerequisite for any preview/final render batch. If `contentglowz_remotion_worker/` or equivalent worker endpoints are absent at start time, `sf-start` must execute that prerequisite chantier first or stop before coding preview/final behavior.
 - Timeline saves use optimistic concurrency. A stale client cannot overwrite newer edits.
 - A final render requires a completed preview job for the exact immutable version and format preset.
 - Preview and final jobs are separate and cannot overwrite each other.
@@ -195,25 +195,25 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 
 ## Dependencies
 
-- `contentflow_app`: Flutter, Dart 3.11+, Riverpod, GoRouter, Dio and existing editor/project asset patterns.
-- `contentflow_lab`: FastAPI, Clerk auth, Turso/libSQL, existing project ownership helpers, project asset library APIs and `JobStore`.
-- `contentflow_remotion_worker`: Node/TypeScript/React/Remotion render service foundation from `remotion-render-service-integration.md`.
+- `contentglowz_app`: Flutter, Dart 3.11+, Riverpod, GoRouter, Dio and existing editor/project asset patterns.
+- `contentglowz_lab`: FastAPI, Clerk auth, Turso/libSQL, existing project ownership helpers, project asset library APIs and `JobStore`.
+- `contentglowz_remotion_worker`: Node/TypeScript/React/Remotion render service foundation from `remotion-render-service-integration.md`.
 - Existing app files to read first:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
-  - `contentflow_app/lib/data/models/project_asset.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `contentglowz_app/lib/data/models/project_asset.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
 - Existing backend files to read first:
-  - `contentflow_lab/api/routers/assets.py`
-  - `contentflow_lab/api/models/status.py`
-  - `contentflow_lab/api/services/project_asset_storage.py`
-  - `contentflow_lab/api/services/job_store.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/api/main.py`
-  - `contentflow_lab/api/routers/__init__.py`
+  - `contentglowz_lab/api/routers/assets.py`
+  - `contentglowz_lab/api/models/status.py`
+  - `contentglowz_lab/api/services/project_asset_storage.py`
+  - `contentglowz_lab/api/services/job_store.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/api/main.py`
+  - `contentglowz_lab/api/routers/__init__.py`
 - Expected new backend API family:
   - `POST /api/video-timelines/from-content`
   - `GET /api/video-timelines/{timeline_id}`
@@ -234,7 +234,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 
 ## API Contract
 
-All new endpoints are Clerk-authenticated through existing `contentflow_lab` auth dependencies and return only resources owned by the current user/project. New video timeline endpoints use typed JSON responses. Error responses for this API family should use this envelope in `HTTPException.detail` unless an existing shared exception handler forces a different shape:
+All new endpoints are Clerk-authenticated through existing `contentglowz_lab` auth dependencies and return only resources owned by the current user/project. New video timeline endpoints use typed JSON responses. Error responses for this API family should use this envelope in `HTTPException.detail` unless an existing shared exception handler forces a different shape:
 
 ```json
 {
@@ -448,7 +448,7 @@ Validation rejects unknown fields that would affect render behavior, unknown cli
 
 ## Renderer Contract
 
-`contentflow_lab` converts immutable `VideoTimelineVersionResponse.timeline` into `ContentFlowTimelineProps`. Remotion receives only this derived object, never the mutable draft and never client-supplied URLs.
+`contentglowz_lab` converts immutable `VideoTimelineVersionResponse.timeline` into `ContentFlowTimelineProps`. Remotion receives only this derived object, never the mutable draft and never client-supplied URLs.
 
 ```json
 {
@@ -503,29 +503,29 @@ Renderer adapter invariants:
 
 ## Links & Consequences
 
-- `contentflow_app/lib/router.dart` gains a specific `/editor/:id/video` route and Sentry route sanitizer before broad `/editor/*` matching.
-- `contentflow_app/lib/presentation/screens/editor/editor_screen.dart` gains a video entry action from an existing content item.
-- `contentflow_app/lib/presentation/screens/editor/video_timeline_screen.dart` or equivalent is created as the primary workspace.
-- `contentflow_app/lib/presentation/widgets/project_asset_picker.dart` is reused for timeline clip asset selection rather than duplicating picker logic.
-- `contentflow_app/lib/data/models/project_asset.dart` may need role/eligibility fields surfaced if backend adds video-version metadata not currently modeled.
-- `contentflow_app/lib/data/services/api_service.dart` gains typed video timeline methods.
-- `contentflow_app/lib/providers/` gains a timeline provider/notifier; implementation should follow existing Riverpod patterns and avoid hiding a large feature in unrelated providers if local conventions allow a separate file.
-- `contentflow_lab/api/models/video_timeline.py` or equivalent is created for request/response schemas.
-- `contentflow_lab/api/services/video_timeline_store.py` or equivalent owns Turso persistence and optimistic concurrency.
-- `contentflow_lab/api/services/video_renderer_adapter.py` and a Remotion implementation own conversion from ContentFlow timeline to renderer calls.
-- `contentflow_lab/api/routers/video_timelines.py` exposes the authenticated API and is registered in the FastAPI app/router registry.
-- `contentflow_lab/status/service.py` must stop rejecting `target_type=video_version` once the video version store exists and must enforce ownership/eligibility.
-- `contentflow_lab/status/schemas.py` and `api/models/status.py` may need enum/eligibility updates for still-image clips and controlled render outputs.
-- `contentflow_lab/api/migrations/005_video_timelines.sql` or next available migration adds the required timeline tables and indexes.
-- `contentflow_remotion_worker` gains a composition that consumes normalized timeline props, not storyboard-only or quiz-specific props.
+- `contentglowz_app/lib/router.dart` gains a specific `/editor/:id/video` route and Sentry route sanitizer before broad `/editor/*` matching.
+- `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart` gains a video entry action from an existing content item.
+- `contentglowz_app/lib/presentation/screens/editor/video_timeline_screen.dart` or equivalent is created as the primary workspace.
+- `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart` is reused for timeline clip asset selection rather than duplicating picker logic.
+- `contentglowz_app/lib/data/models/project_asset.dart` may need role/eligibility fields surfaced if backend adds video-version metadata not currently modeled.
+- `contentglowz_app/lib/data/services/api_service.dart` gains typed video timeline methods.
+- `contentglowz_app/lib/providers/` gains a timeline provider/notifier; implementation should follow existing Riverpod patterns and avoid hiding a large feature in unrelated providers if local conventions allow a separate file.
+- `contentglowz_lab/api/models/video_timeline.py` or equivalent is created for request/response schemas.
+- `contentglowz_lab/api/services/video_timeline_store.py` or equivalent owns Turso persistence and optimistic concurrency.
+- `contentglowz_lab/api/services/video_renderer_adapter.py` and a Remotion implementation own conversion from ContentFlow timeline to renderer calls.
+- `contentglowz_lab/api/routers/video_timelines.py` exposes the authenticated API and is registered in the FastAPI app/router registry.
+- `contentglowz_lab/status/service.py` must stop rejecting `target_type=video_version` once the video version store exists and must enforce ownership/eligibility.
+- `contentglowz_lab/status/schemas.py` and `api/models/status.py` may need enum/eligibility updates for still-image clips and controlled render outputs.
+- `contentglowz_lab/api/migrations/005_video_timelines.sql` or next available migration adds the required timeline tables and indexes.
+- `contentglowz_remotion_worker` gains a composition that consumes normalized timeline props, not storyboard-only or quiz-specific props.
 - Existing specs for audio/music, B-roll, motion assistant and text-based editing should attach to the same timeline model later instead of creating separate state.
 - Product analytics/observability should distinguish timeline created, version saved, asset selected, preview requested, preview completed, preview stale, final requested and final completed.
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` or app docs with the `/editor/:id/video` workflow, online-only render limitation and preview/final gate.
-- Update `contentflow_lab/README.md` or `ENVIRONMENT_SETUP.md` with timeline API routes, Turso migration requirements, worker dependency and environment variables inherited from the render service.
-- Update `contentflow_remotion_worker/README.md` with timeline props schema, sample input props and local render commands.
+- Update `contentglowz_app/README.md` or app docs with the `/editor/:id/video` workflow, online-only render limitation and preview/final gate.
+- Update `contentglowz_lab/README.md` or `ENVIRONMENT_SETUP.md` with timeline API routes, Turso migration requirements, worker dependency and environment variables inherited from the render service.
+- Update `contentglowz_remotion_worker/README.md` with timeline props schema, sample input props and local render commands.
 - Add a changelog entry for the new video timeline domain, route and API family.
 - Mark `SPEC-remotion-video-editor-workflow-2026-05-11.md` as superseded or linked to this spec during docs cleanup after readiness.
 - Update operator/support notes to explain that video editing is online-only in V1, final render requires a non-stale preview and render artifacts may expire according to the render-service retention policy.
@@ -559,7 +559,7 @@ Renderer adapter invariants:
 Parallel implementation is blocked until Batch 1 locks the backend API/data contract with tests. After Batch 1 passes, Batch 2 Flutter work and Batch 3 worker composition work may run in parallel because their write sets are disjoint, but integration remains sequential.
 
 - Batch 0: Renderer foundation prerequisite
-  - Scope: verify or implement `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md` until `contentflow_remotion_worker/` or an equivalent local worker contract exists with preview/final render job support.
+  - Scope: verify or implement `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md` until `contentglowz_remotion_worker/` or an equivalent local worker contract exists with preview/final render job support.
   - Owned files: the files owned by the render-service integration spec, not this timeline spec.
   - Blocks: any implementation of preview/final endpoints that calls a real worker.
   - Acceptance: local worker API or fake-compatible adapter contract is available; render-service tests pass; worker artifact/signing/retention/capacity rules are documented.
@@ -568,28 +568,28 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 - Batch 1: Backend timeline contract and persistence
   - Scope: timeline models, migration/ensure, store, asset `video_version` validation, renderer adapter interface, props conversion fixtures, API router and backend tests.
-  - Owned files: `contentflow_lab/api/models/video_timeline.py`, `contentflow_lab/api/services/video_timeline_store.py`, `contentflow_lab/api/services/video_renderer_adapter.py`, `contentflow_lab/api/services/remotion_timeline_props.py`, `contentflow_lab/api/routers/video_timelines.py`, `contentflow_lab/api/main.py`, `contentflow_lab/api/routers/__init__.py`, `contentflow_lab/api/migrations/005_video_timelines.sql` or next, `contentflow_lab/status/service.py`, `contentflow_lab/status/schemas.py`, `contentflow_lab/api/models/status.py`, and focused backend tests.
+  - Owned files: `contentglowz_lab/api/models/video_timeline.py`, `contentglowz_lab/api/services/video_timeline_store.py`, `contentglowz_lab/api/services/video_renderer_adapter.py`, `contentglowz_lab/api/services/remotion_timeline_props.py`, `contentglowz_lab/api/routers/video_timelines.py`, `contentglowz_lab/api/main.py`, `contentglowz_lab/api/routers/__init__.py`, `contentglowz_lab/api/migrations/005_video_timelines.sql` or next, `contentglowz_lab/status/service.py`, `contentglowz_lab/status/schemas.py`, `contentglowz_lab/api/models/status.py`, and focused backend tests.
   - Acceptance: backend tests prove create/load, draft save, immutable version save, conflict handling, validation rejection, asset eligibility, preview/final gating through a fake renderer adapter and render capacity errors.
   - Shippability: internal only unless Flutter route remains hidden/unlinked.
   - Stop condition: if Turso migration/ensure pattern cannot be matched safely or asset validation cannot prove ownership, stop and reroute to readiness correction.
 
 - Batch 2: Flutter editor route and state
   - Scope: Dart timeline models, API methods, Riverpod provider, `/editor/:id/video` route, editor entry action, V1 timeline screen and widget/provider tests.
-  - Owned files: `contentflow_app/lib/data/models/video_timeline.dart`, `contentflow_app/lib/data/services/api_service.dart`, `contentflow_app/lib/providers/video_timeline_provider.dart`, `contentflow_app/lib/providers/providers.dart` only for export/wiring if needed, `contentflow_app/lib/router.dart`, `contentflow_app/lib/presentation/screens/editor/video_timeline_screen.dart`, `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`, `contentflow_app/lib/presentation/widgets/project_asset_picker.dart` if video-specific invocation support is needed, and focused Flutter tests.
+  - Owned files: `contentglowz_app/lib/data/models/video_timeline.dart`, `contentglowz_app/lib/data/services/api_service.dart`, `contentglowz_app/lib/providers/video_timeline_provider.dart`, `contentglowz_app/lib/providers/providers.dart` only for export/wiring if needed, `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/editor/video_timeline_screen.dart`, `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`, `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart` if video-specific invocation support is needed, and focused Flutter tests.
   - Acceptance: route resolves, Sentry sanitizer preserves `/editor/:id/video`, screen loads backend state, asset picker uses `targetType=video_version`, stale preview disables final render, and API diagnostics redact signed artifact URLs.
   - Shippability: user-visible behind existing auth/project context once Batch 1 is live; final render actions remain disabled if Batch 3/worker is unavailable.
   - Stop condition: if backend Batch 1 response shapes change, stop and update Dart models/API before UI expansion.
 
 - Batch 3: Remotion worker timeline composition
   - Scope: Remotion composition for `ContentFlowTimelineProps`, fixture props, vertical/landscape rendering, audio clipping, text/image/video layer rendering and worker tests/sample render.
-  - Owned files: `contentflow_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
+  - Owned files: `contentglowz_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
   - Acceptance: sample render or worker tests handle text-only, image+text, video clip, audio/music, vertical and landscape fixtures without importing Remotion Timeline/Editor Starter UI.
   - Shippability: required before preview/final render can be considered complete.
   - Stop condition: if worker directory remains absent after Batch 0, do not invent a partial worker inside Flutter or backend; return to Batch 0.
 
 - Batch 4: Documentation, verification and release gate
   - Scope: app/backend/worker docs, changelog, operator notes, spec trace, verification and bounded ship preparation.
-  - Owned files: `contentflow_app/README.md`, `contentflow_lab/README.md`, `contentflow_lab/ENVIRONMENT_SETUP.md` if present, `contentflow_remotion_worker/README.md`, `CHANGELOG.md` files where local convention requires them and this spec history.
+  - Owned files: `contentglowz_app/README.md`, `contentglowz_lab/README.md`, `contentglowz_lab/ENVIRONMENT_SETUP.md` if present, `contentglowz_remotion_worker/README.md`, `CHANGELOG.md` files where local convention requires them and this spec history.
   - Acceptance: docs explain online-only video editing, timeline route, render worker dependency, Turso migration, preview/final gate, retention/capacity rules and Remotion license release gate.
   - Shippability: required before merge/ship.
   - Stop condition: if manual/browser/render proof is incomplete, do not ship user-visible route without explicit risk acceptance.
@@ -605,15 +605,15 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: This task may be documentation-only unless `/sf-ready` requires an explicit status edit.
 
 - [ ] Tache 2: Define backend timeline schemas.
-  - Fichier: `contentflow_lab/api/models/video_timeline.py`
+  - Fichier: `contentglowz_lab/api/models/video_timeline.py`
   - Action: Add Pydantic models for format presets, tracks, clips, clip roles, timeline draft, immutable version, preview/final job responses, validation errors and renderer props DTOs.
   - User story link: Establishes the ContentFlow-owned canonical timeline model.
   - Depends on: Tache 1.
-  - Validate with: `pytest contentflow_lab/tests/test_video_timeline_models.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_video_timeline_models.py`.
   - Notes: Include schema versioning and 30fps frame conversion helpers or explicit DTO fields.
 
 - [ ] Tache 3: Add Turso/libSQL persistence.
-  - Fichier: `contentflow_lab/api/migrations/005_video_timelines.sql`
+  - Fichier: `contentglowz_lab/api/migrations/005_video_timelines.sql`
   - Action: Create tables and indexes for `video_timelines`, `video_timeline_versions`, and timeline-to-render-job links if not represented on the version row.
   - User story link: Persists one active timeline and immutable versions.
   - Depends on: Tache 2.
@@ -621,23 +621,23 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: If migration numbering has advanced, use the next available number. Include idempotent startup ensure logic in the same change.
 
 - [ ] Tache 4: Implement timeline store and concurrency.
-  - Fichier: `contentflow_lab/api/services/video_timeline_store.py`
+  - Fichier: `contentglowz_lab/api/services/video_timeline_store.py`
   - Action: Add create/load by content, save draft/version, optimistic concurrency checks, version lookup, stale preview marking and ownership-scoped queries.
   - User story link: Makes timeline saves reliable and prevents stale overwrites.
   - Depends on: Tache 3.
-  - Validate with: `pytest contentflow_lab/tests/test_video_timeline_store.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_video_timeline_store.py`.
   - Notes: Store timeline JSON as validated JSON plus indexed owner/project/content/format/version metadata.
 
 - [ ] Tache 5: Implement video version asset validation.
-  - Fichier: `contentflow_lab/status/service.py`
+  - Fichier: `contentglowz_lab/status/service.py`
   - Action: Replace the current `video_version target validation is not available` path with ownership checks against the new video timeline/version store and expand eligibility for V1 clip media kinds.
   - User story link: Lets clips use existing project assets safely.
   - Depends on: Tache 4.
-  - Validate with: `pytest contentflow_lab/tests/test_project_assets_service.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_project_assets_service.py`.
   - Notes: Allow still-image clip use cases while keeping local-only/provider-temporary assets out of server renders.
 
 - [ ] Tache 6: Add renderer adapter contract.
-  - Fichier: `contentflow_lab/api/services/video_renderer_adapter.py`
+  - Fichier: `contentglowz_lab/api/services/video_renderer_adapter.py`
   - Action: Define an internal interface for preview/final render requests, status normalization and artifact metadata independent from Remotion.
   - User story link: Keeps Remotion replaceable behind a stable product boundary.
   - Depends on: Tache 2.
@@ -645,7 +645,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: The interface should accept immutable timeline version ids or validated props, never mutable drafts.
 
 - [ ] Tache 7: Add Remotion timeline props conversion.
-  - Fichier: `contentflow_lab/api/services/remotion_timeline_props.py`
+  - Fichier: `contentglowz_lab/api/services/remotion_timeline_props.py`
   - Action: Convert validated ContentFlow timeline versions and render-safe asset descriptors into Remotion `inputProps`.
   - User story link: Produces renderable previews/finals from the canonical timeline.
   - Depends on: Tache 5 and Tache 6.
@@ -653,15 +653,15 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Enforce 30fps, 180s, format dimensions and no arbitrary URLs.
 
 - [ ] Tache 8: Add video timeline API router.
-  - Fichier: `contentflow_lab/api/routers/video_timelines.py`
+  - Fichier: `contentglowz_lab/api/routers/video_timelines.py`
   - Action: Implement create/load, save/version, validate, preview, approve preview, final render and job polling endpoints with Clerk auth and project/content ownership.
   - User story link: Exposes the video timeline workflow to Flutter.
   - Depends on: Tache 4, Tache 6 and Tache 7.
-  - Validate with: `pytest contentflow_lab/tests/test_video_timelines_router.py`.
-  - Notes: Register the router in `contentflow_lab/api/main.py` and/or `contentflow_lab/api/routers/__init__.py` following existing patterns.
+  - Validate with: `pytest contentglowz_lab/tests/test_video_timelines_router.py`.
+  - Notes: Register the router in `contentglowz_lab/api/main.py` and/or `contentglowz_lab/api/routers/__init__.py` following existing patterns.
 
 - [ ] Tache 9: Extend Remotion worker for timeline props.
-  - Fichier: `contentflow_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`
+  - Fichier: `contentglowz_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`
   - Action: Add a composition that renders normalized timeline tracks/clips for both V1 format presets.
   - User story link: Turns timeline props into MP4 output.
   - Depends on: Tache 7.
@@ -669,7 +669,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Do not import Remotion Timeline/Editor Starter UI. This is render composition code only.
 
 - [ ] Tache 10: Add Flutter timeline data models.
-  - Fichier: `contentflow_app/lib/data/models/video_timeline.dart`
+  - Fichier: `contentglowz_app/lib/data/models/video_timeline.dart`
   - Action: Add Dart models for timeline, version, tracks, clips, validation errors, preview/final job state and format presets.
   - User story link: Lets Flutter represent the canonical timeline contract.
   - Depends on: Tache 2 and Tache 8.
@@ -677,7 +677,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Match API JSON exactly and include stale/preview status fields.
 
 - [ ] Tache 11: Add Flutter API methods.
-  - Fichier: `contentflow_app/lib/data/services/api_service.dart`
+  - Fichier: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add typed methods for all video timeline endpoints and redacted diagnostics for signed artifact URLs.
   - User story link: Connects the editor UI to backend timeline operations.
   - Depends on: Tache 10.
@@ -685,7 +685,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Render/timeline writes are online-only and must not enter the offline queue.
 
 - [ ] Tache 12: Add Flutter timeline provider/notifier.
-  - Fichier: `contentflow_app/lib/providers/video_timeline_provider.dart`
+  - Fichier: `contentglowz_app/lib/providers/video_timeline_provider.dart`
   - Action: Manage load/save/dirty/conflict/preview/final polling state with active project/content guards.
   - User story link: Keeps UI state coherent during editing and polling.
   - Depends on: Tache 11.
@@ -693,7 +693,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: If repo conventions require central exports in `providers.dart`, add only the export/wiring there.
 
 - [ ] Tache 13: Add `/editor/:id/video` route and editor entry.
-  - Fichier: `contentflow_app/lib/router.dart`
+  - Fichier: `contentglowz_app/lib/router.dart`
   - Action: Register the video editor route and sanitize it as `/editor/:id/video` before generic editor routes.
   - User story link: Provides the agreed V1 entry point.
   - Depends on: Tache 12.
@@ -701,7 +701,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Preserve existing `/editor/:id` behavior.
 
 - [ ] Tache 14: Add primary video timeline screen.
-  - Fichier: `contentflow_app/lib/presentation/screens/editor/video_timeline_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/editor/video_timeline_screen.dart`
   - Action: Build the V1 timeline workspace with tracks, clip blocks, inspector, asset selection, save state, preview player and final render action.
   - User story link: Gives users the single timeline editing surface.
   - Depends on: Tache 12 and Tache 13.
@@ -709,7 +709,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Keep UI focused and utilitarian. Use existing design patterns and avoid nested card-heavy layout.
 
 - [ ] Tache 15: Integrate asset picker for timeline clips.
-  - Fichier: `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - Fichier: `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
   - Action: Ensure the picker can be invoked for timeline clip roles with `targetType=video_version`, allowed media kinds and placement metadata.
   - User story link: Lets users place existing assets on the timeline.
   - Depends on: Tache 5, Tache 12 and Tache 14.
@@ -717,7 +717,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Reuse the existing picker; do not create a second asset library.
 
 - [ ] Tache 16: Add editor screen entry action.
-  - Fichier: `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - Fichier: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Add a video action that opens `/editor/:id/video` for the current content and preserves project context.
   - User story link: Starts the V1 workflow from existing content.
   - Depends on: Tache 13 and Tache 14.
@@ -725,15 +725,15 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Do not remove the existing asset picker action.
 
 - [ ] Tache 17: Add backend integration tests.
-  - Fichier: `contentflow_lab/tests/test_video_timelines_router.py`
+  - Fichier: `contentglowz_lab/tests/test_video_timelines_router.py`
   - Action: Cover create/load, save, conflict, preview, stale preview block, final render gate, ownership failures and worker failures.
   - User story link: Proves the core workflow is secure and correct.
   - Depends on: Tache 8.
-  - Validate with: `pytest contentflow_lab/tests/test_video_timelines_router.py`.
+  - Validate with: `pytest contentglowz_lab/tests/test_video_timelines_router.py`.
   - Notes: Use fake renderer adapter and fake auth/ownership patterns consistent with existing tests.
 
 - [ ] Tache 18: Add docs and changelog updates.
-  - Fichier: `contentflow_lab/README.md`
+  - Fichier: `contentglowz_lab/README.md`
   - Action: Document timeline API, migration, worker dependency and local validation commands; add matching app/worker docs where those README files exist.
   - User story link: Makes the workflow operable after implementation.
   - Depends on: Tache 8, Tache 9 and Tache 14.
@@ -787,7 +787,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 ## Execution Notes
 
-- Start by reading `contentflow_app/CLAUDE.md`, `contentflow_lab/CLAUDE.md`, this spec, the renderer boundary exploration report, `remotion-render-service-integration.md` and `SPEC-unified-project-asset-library-2026-05-11.md`.
+- Start by reading `contentglowz_app/CLAUDE.md`, `contentglowz_lab/CLAUDE.md`, this spec, the renderer boundary exploration report, `remotion-render-service-integration.md` and `SPEC-unified-project-asset-library-2026-05-11.md`.
 - Execute Batch 0 before any real preview/final render work if the render-service integration is not already implemented locally. The timeline backend can use a fake renderer adapter for tests, but user-visible preview/final success requires the render-service foundation.
 - Implement backend foundations before Flutter UI: schemas, migration, store, asset validation, adapter and router. The UI depends on stable API contracts.
 - Do not run parallel implementation until Batch 1 passes. After Batch 1, Flutter Batch 2 and worker Batch 3 may run in parallel only if their write ownership stays disjoint.
@@ -797,9 +797,9 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 - Enforce render capacity and props-size limits before dispatching a worker job. Do not rely on Flutter button disablement as the anti-abuse boundary.
 - Treat signed artifact URLs as ephemeral response data. Do not store them in durable timeline/version rows, do not include query tokens in logs, and add tests for diagnostics redaction where Flutter touches `artifact.playback_url`.
 - Validation commands expected after implementation:
-  - `pytest contentflow_lab/tests/test_video_timeline_models.py contentflow_lab/tests/test_video_timeline_store.py contentflow_lab/tests/test_video_timelines_router.py contentflow_lab/tests/test_project_assets_service.py`
+  - `pytest contentglowz_lab/tests/test_video_timeline_models.py contentglowz_lab/tests/test_video_timeline_store.py contentglowz_lab/tests/test_video_timelines_router.py contentglowz_lab/tests/test_project_assets_service.py`
   - `flutter test test/data/video_timeline_test.dart test/providers/video_timeline_provider_test.dart test/presentation/screens/editor/video_timeline_screen_test.dart test/presentation/screens/editor/editor_screen_test.dart`
-  - Worker package tests or a sample render command from `contentflow_remotion_worker` once the worker exists locally.
+  - Worker package tests or a sample render command from `contentglowz_remotion_worker` once the worker exists locally.
 - Turso migration required: yes. This feature adds durable timeline/version storage that cannot safely live only in `JobStore`.
 - Stop and reroute to `/sf-explore` or user decision if implementation discovers that Remotion licensing, deployment constraints or worker maturity make V1 production use unacceptable.
 

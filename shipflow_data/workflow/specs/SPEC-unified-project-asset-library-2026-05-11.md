@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
-  - "contentflow_remotion_worker"
+  - "contentglowz_lab"
+  - "contentglowz_app"
+  - "contentglowz_remotion_worker"
   - "content_assets"
   - "Image Robot"
   - "AI visual references"
@@ -36,7 +36,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
@@ -48,13 +48,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "Bunny Storage API"
@@ -69,11 +69,11 @@ evidence:
   - "User decision 2026-05-11: the app should guide users through content formats instead of offering free playgrounds."
   - "Spec evidence: SPEC-project-visual-asset-library-2026-05-11 is ready but focuses on visual/image assets."
   - "Spec evidence: SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11 adds audio, music and animated background assets to video versions."
-  - "Code evidence: contentflow_lab/status/db.py creates content_assets with content_id, project_id, user_id, source, kind, mime_type, duration, storage_uri, status, metadata and deleted_at."
-  - "Code evidence: contentflow_lab/status/service.py currently lists and mutates content-scoped assets but has no unified project asset inventory across media kinds."
-  - "Code evidence: contentflow_lab/api/routers/status.py exposes /api/status/content/{content_id}/assets with owned-content checks."
-  - "Code evidence: contentflow_app/lib/data/services/api_service.dart attaches local capture metadata but has no typed cross-media asset-library client."
-  - "Code evidence: contentflow_app/lib/providers/providers.dart centralizes app state and active project scoping with Riverpod."
+  - "Code evidence: contentglowz_lab/status/db.py creates content_assets with content_id, project_id, user_id, source, kind, mime_type, duration, storage_uri, status, metadata and deleted_at."
+  - "Code evidence: contentglowz_lab/status/service.py currently lists and mutates content-scoped assets but has no unified project asset inventory across media kinds."
+  - "Code evidence: contentglowz_lab/api/routers/status.py exposes /api/status/content/{content_id}/assets with owned-content checks."
+  - "Code evidence: contentglowz_app/lib/data/services/api_service.dart attaches local capture metadata but has no typed cross-media asset-library client."
+  - "Code evidence: contentglowz_app/lib/providers/providers.dart centralizes app state and active project scoping with Riverpod."
   - "Fresh docs checked 2026-05-11: Bunny Storage API official docs define server-side storage-zone API behavior and AccessKey authentication; this spec uses server-owned Bunny URLs only."
 next_step: "/sf-start Unified Project Asset Library workflow integrations"
 ---
@@ -160,7 +160,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
 
 ## Constraints
 
-- `contentflow_lab` is the source of truth for asset metadata, ownership checks, usage links, tombstones and eligibility.
+- `contentglowz_lab` is the source of truth for asset metadata, ownership checks, usage links, tombstones and eligibility.
 - Every library operation is project-scoped and Clerk-authenticated.
 - Existing project ownership remains the V1 permission model unless a separate roles spec is ready before implementation.
 - `content_assets` compatibility must be preserved; existing capture metadata and content-scoped routes cannot break.
@@ -177,25 +177,25 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
 
 - Ready visual asset picker foundation: `shipflow_data/workflow/specs/SPEC-project-visual-asset-library-2026-05-11.md`.
 - Ready visual upload/reference foundation: `shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md`.
-- Ready editor AI visuals UI: `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready editor AI visuals UI: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Ready Flux/Image Robot provider foundation: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
 - Ready video editor audio/music/backgrounds: `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`.
 - Ready Remotion video editor workflow: `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`.
-- Existing local capture contract: `shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md`.
+- Existing local capture contract: `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`.
 - Existing backend files:
-  - `contentflow_lab/status/db.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/api/models/status.py`
-  - `contentflow_lab/api/routers/status.py`
-  - `contentflow_lab/api/dependencies/auth.py`
-  - `contentflow_lab/api/dependencies/ownership.py`
+  - `contentglowz_lab/status/db.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/api/models/status.py`
+  - `contentglowz_lab/api/routers/status.py`
+  - `contentglowz_lab/api/dependencies/auth.py`
+  - `contentglowz_lab/api/dependencies/ownership.py`
 - Existing Flutter files:
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/data/models/capture_asset.dart`
-  - `contentflow_app/lib/data/models/capture_content_link.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/data/models/capture_asset.dart`
+  - `contentglowz_app/lib/data/models/capture_content_link.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
 - External docs:
   - `fresh-docs checked`: Bunny Storage API official docs at `https://docs.bunny.net/api-reference/storage`.
   - `fresh-docs checked`: Bunny Storage HTTP API official docs at `https://docs.bunny.net/storage/http`.
@@ -219,20 +219,20 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
 
 ## Links & Consequences
 
-- `contentflow_lab/status/db.py`: needs project asset library tables or companion indexes beyond content-scoped `content_assets`.
-- `contentflow_lab/status/schemas.py`: needs typed project asset, usage, source, media kind, eligibility and tombstone models.
-- `contentflow_lab/status/service.py`: needs project-level asset queries and mutations that preserve existing content asset behavior.
-- `contentflow_lab/api/models/status.py`: needs request/response models for list/search/detail/usage/selection/tombstone/restore actions.
-- `contentflow_lab/api/routers/status.py`: current content-scoped routes should remain; unified library routes may live in a dedicated router if status router becomes too broad.
-- `contentflow_app/lib/data/services/api_service.dart`: needs typed API calls and diagnostics redaction for signed/storage URLs.
-- `contentflow_app/lib/providers/providers.dart`: needs scoped Riverpod controller for project asset query state, active filters, selection and stale-response rejection.
+- `contentglowz_lab/status/db.py`: needs project asset library tables or companion indexes beyond content-scoped `content_assets`.
+- `contentglowz_lab/status/schemas.py`: needs typed project asset, usage, source, media kind, eligibility and tombstone models.
+- `contentglowz_lab/status/service.py`: needs project-level asset queries and mutations that preserve existing content asset behavior.
+- `contentglowz_lab/api/models/status.py`: needs request/response models for list/search/detail/usage/selection/tombstone/restore actions.
+- `contentglowz_lab/api/routers/status.py`: current content-scoped routes should remain; unified library routes may live in a dedicated router if status router becomes too broad.
+- `contentglowz_app/lib/data/services/api_service.dart`: needs typed API calls and diagnostics redaction for signed/storage URLs.
+- `contentglowz_app/lib/providers/providers.dart`: needs scoped Riverpod controller for project asset query state, active filters, selection and stale-response rejection.
 - Editor AI visuals, video editor audio/music/backgrounds and Remotion render specs should call this shared library contract for picking/reuse instead of inventing parallel pickers.
 - Documentation must avoid promising a standalone public media library, full DAM, legal rights guarantee, or cross-project brand library.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` or API docs with unified asset endpoints, media kinds, sources, eligibility states, tombstone/history semantics and security model.
-- Update `contentflow_app/README.md` after UI implementation with picker entry points and offline limitations.
+- Update `contentglowz_lab/README.md` or API docs with unified asset endpoints, media kinds, sources, eligibility states, tombstone/history semantics and security model.
+- Update `contentglowz_app/README.md` after UI implementation with picker entry points and offline limitations.
 - Update Image Robot docs to say generated/selected assets enter the unified project library.
 - Update Remotion/video editor docs to say selected audio/music/background/video cover assets are referenced through the project asset library.
 - Update local capture docs to explain local-only captures may appear as limited historical/picker metadata but are not server-publishable until uploaded.
@@ -262,7 +262,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
 ## Implementation Tasks
 
 - [ ] Task 1: Define unified asset domain schemas
-  - Fichier : `contentflow_lab/status/schemas.py`
+  - Fichier : `contentglowz_lab/status/schemas.py`
   - Action : Add typed models/enums for project asset media kind, source, storage descriptor, preview descriptor, usage target, placement, eligibility, tombstone state, history window and degraded state.
   - User story link : Establishes one contract for finding and reusing all project assets.
   - Depends on : Existing `ContentAssetRecord` compatibility.
@@ -270,7 +270,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Do not replace `ContentAssetRecord`; build a project asset model that can reference or wrap existing records.
 
 - [ ] Task 2: Add unified asset persistence and indexes
-  - Fichier : `contentflow_lab/status/db.py`
+  - Fichier : `contentglowz_lab/status/db.py`
   - Action : Add idempotent Turso/libSQL tables or companion columns for `project_assets`, `project_asset_usages`, `project_asset_events`, storage descriptors, tombstones, primary uniqueness and cleanup eligibility.
   - User story link : Makes cross-media library queries fast, durable and auditable.
   - Depends on : Task 1.
@@ -278,7 +278,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Keep migration-safe startup behavior; no destructive schema changes.
 
 - [ ] Task 3: Backfill/normalize existing content assets
-  - Fichier : `contentflow_lab/status/service.py`
+  - Fichier : `contentglowz_lab/status/service.py`
   - Action : Add service logic to normalize existing `content_assets` rows into project asset records or virtual rows for library listing without breaking current content-scoped routes.
   - User story link : Makes current captures and attached assets visible in the new library.
   - Depends on : Tasks 1-2.
@@ -286,7 +286,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Existing rows remain source-compatible; no broad rewrite required in V1.
 
 - [ ] Task 4: Implement project asset query service
-  - Fichier : `contentflow_lab/status/service.py`
+  - Fichier : `contentglowz_lab/status/service.py`
   - Action : Add `list_project_assets`, `search_project_assets`, `get_project_asset_detail`, `get_project_asset_usage`, `get_project_asset_events` and deterministic pagination/filter handling.
   - User story link : Lets creators retrieve the right assets across workflows.
   - Depends on : Tasks 1-3.
@@ -294,7 +294,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Ownership filtering must happen before search/filter logic.
 
 - [ ] Task 5: Implement asset eligibility and usage mutation service
-  - Fichier : `contentflow_lab/status/service.py`
+  - Fichier : `contentglowz_lab/status/service.py`
   - Action : Add server-side actions for select, set primary, clear candidate, promote reference through existing visual reference flow, select for video version, tombstone, restore within 30 days and mark cleanup eligible.
   - User story link : Lets workflows safely reuse assets without duplicating rules.
   - Depends on : Task 4.
@@ -302,7 +302,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : If video project storage is not implemented yet, define the method boundary and stop at integration stubs until the video spec supplies actual persistence.
 
 - [ ] Task 6: Add API models for unified asset operations
-  - Fichier : `contentflow_lab/api/models/status.py`
+  - Fichier : `contentglowz_lab/api/models/status.py`
   - Action : Add request/response models for asset list filters, detail, usage, eligibility result, select request, primary request, tombstone request, restore request and preview URL refresh.
   - User story link : Gives Flutter a typed API contract for the asset library.
   - Depends on : Tasks 1 and 5.
@@ -310,15 +310,15 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Responses must not expose raw provider payloads, Bunny AccessKey, signed token internals or local file paths.
 
 - [ ] Task 7: Expose authenticated project asset routes
-  - Fichier : `contentflow_lab/api/routers/assets.py`
+  - Fichier : `contentglowz_lab/api/routers/assets.py`
   - Action : Add `/api/projects/{project_id}/assets` routes for list/search/detail/usage/eligibility/select/primary/tombstone/restore/preview-refresh, with Clerk auth and project ownership checks.
   - User story link : Provides the shared backend boundary consumed by editor and video workflows.
   - Depends on : Tasks 4-6.
   - Validate with : router tests for 401, 403/404, invalid filters, foreign asset, successful selection, conflict and tombstone.
-  - Notes : Register the router in `contentflow_lab/api/routers/__init__.py` and `contentflow_lab/api/main.py`.
+  - Notes : Register the router in `contentglowz_lab/api/routers/__init__.py` and `contentglowz_lab/api/main.py`.
 
 - [ ] Task 8: Add storage descriptor verification helpers
-  - Fichier : `contentflow_lab/api/services/project_asset_storage.py`
+  - Fichier : `contentglowz_lab/api/services/project_asset_storage.py`
   - Action : Add helpers to classify durable Bunny URLs, signed playback/preview URLs, provider-temporary URLs, local-only files, missing objects and render-safe descriptors.
   - User story link : Prevents unsafe assets from being reused in publish/render.
   - Depends on : Tasks 1 and 5.
@@ -326,7 +326,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : This service should not upload binaries; upload remains in upload/reference specs.
 
 - [ ] Task 9: Connect image generation and visual references to unified library
-  - Fichier : `contentflow_lab/api/routers/images.py`
+  - Fichier : `contentglowz_lab/api/routers/images.py`
   - Action : Ensure generated image results and promoted visual references upsert or link unified project asset records with generation id, provider, profile, prompt summary/hash, storage descriptor and reference eligibility.
   - User story link : Makes image assets reusable outside the original generation session.
   - Depends on : Tasks 4-8 and Image Robot implementation.
@@ -334,7 +334,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Do not return provider temporary URLs as library storage.
 
 - [ ] Task 10: Connect video/audio/media generation to unified library
-  - Fichier : `contentflow_lab/api/routers/videos.py`
+  - Fichier : `contentglowz_lab/api/routers/videos.py`
   - Action : Ensure generated narration, music beds, video covers, Remotion backgrounds and render artifacts create or reference unified project asset records and usage links.
   - User story link : Makes video editor media discoverable and reusable through the same project library.
   - Depends on : Tasks 4-8 and video/audio spec implementation.
@@ -342,7 +342,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : If `videos.py` does not exist yet, apply this to the router/service introduced by the video specs.
 
 - [ ] Task 11: Add Flutter unified asset models
-  - Fichier : `contentflow_app/lib/data/models/project_asset.dart`
+  - Fichier : `contentglowz_app/lib/data/models/project_asset.dart`
   - Action : Add typed Dart models for project asset, media kind, source, storage/preview descriptor, usage entry, eligibility, tombstone, filters and paginated responses.
   - User story link : Lets Flutter consume the library safely across editor surfaces.
   - Depends on : Task 6.
@@ -350,7 +350,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Keep models independent from `CaptureAsset`; bridge local captures through response mapping.
 
 - [ ] Task 12: Add Flutter API service methods
-  - Fichier : `contentflow_app/lib/data/services/api_service.dart`
+  - Fichier : `contentglowz_app/lib/data/services/api_service.dart`
   - Action : Add typed methods for listing/searching assets, loading detail/usage, selecting for target, setting primary, tombstoning/restoring and refreshing preview URLs.
   - User story link : Gives app workflows one client boundary for asset reuse.
   - Depends on : Tasks 7 and 11.
@@ -358,7 +358,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Do not add ad hoc Dio calls from widgets.
 
 - [ ] Task 13: Add Riverpod asset library controller
-  - Fichier : `contentflow_app/lib/providers/providers.dart`
+  - Fichier : `contentglowz_app/lib/providers/providers.dart`
   - Action : Add scoped state for active project asset filters, query results, detail, usage, mutations, stale response rejection and cache invalidation after selection/tombstone.
   - User story link : Keeps asset UI coherent when projects and workflows change.
   - Depends on : Task 12.
@@ -366,7 +366,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Split into a dedicated provider file during implementation if local patterns make that cleaner.
 
 - [ ] Task 14: Add reusable picker/detail UI components
-  - Fichier : `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - Fichier : `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
   - Action : Build reusable list/filter/detail/usage/action components for editor-linked and video-linked pickers, with compact responsive layouts and media-specific previews.
   - User story link : Lets users find and reuse assets without a free playground.
   - Depends on : Task 13.
@@ -374,7 +374,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : V1 may expose these components from existing editor/video surfaces, not as a global nav item unless a later product decision changes navigation.
 
 - [ ] Task 15: Integrate picker into existing workflows
-  - Fichier : `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
   - Action : Add entry points or replace per-feature pickers so editor visuals and future video editor panels use the shared asset picker for eligible asset selection.
   - User story link : Makes the library useful inside the guided content workflow.
   - Depends on : Task 14 and relevant editor/video specs.
@@ -382,7 +382,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : If video editor UI exists in a different file by implementation time, integrate there too.
 
 - [ ] Task 16: Add cleanup/history support
-  - Fichier : `contentflow_lab/api/services/project_asset_cleanup.py`
+  - Fichier : `contentglowz_lab/api/services/project_asset_cleanup.py`
   - Action : Add a backend service or scheduled cleanup boundary that marks assets eligible after 30-day tombstone history and reports orphan storage/metadata states without physical deletion by default.
   - User story link : Honors the user-approved 30-day history behavior.
   - Depends on : Tasks 2 and 5.
@@ -390,7 +390,7 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - Notes : Physical Bunny deletion requires explicit retention policy approval or a future spec.
 
 - [ ] Task 17: Update docs and changelog
-  - Fichier : `contentflow_lab/README.md`
+  - Fichier : `contentglowz_lab/README.md`
   - Action : Document project asset APIs, media kinds, sources, eligibility, storage descriptors, tombstone/history, cleanup and security; update app README/changelog where UI ships.
   - User story link : Keeps operators and future implementation agents aligned.
   - Depends on : Backend and Flutter tasks.
@@ -445,19 +445,19 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
   - `shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md`
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
-  - `contentflow_lab/status/db.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/api/routers/status.py`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
+  - `contentglowz_lab/status/db.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/api/routers/status.py`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
 - Implementation order: backend schemas, migrations, normalization, query service, mutation/eligibility service, routes, Flutter models/API, providers, picker UI, workflow integration, cleanup/docs.
 - Treat this as a shared domain layer. Do not reimplement provider generation, upload, Remotion rendering or audio generation here.
 - Stop and reroute if product scope changes to cross-project brand libraries, team roles, public DAM navigation, arbitrary URL import, physical deletion policy or legal rights registry.
 - Stop and reroute if server-side validation cannot prove same project/user ownership for both asset and target.
 - Fresh docs verdict: `fresh-docs checked` for Bunny Storage API behavior. Most of this spec is local metadata and workflow policy; re-check official provider docs during implementation only when coding provider/storage side effects outside the local contract.
 - Suggested validation commands after implementation:
-  - `python3 -m pytest contentflow_lab/tests/test_project_assets*.py contentflow_lab/tests/test_status*asset*.py`
+  - `python3 -m pytest contentglowz_lab/tests/test_project_assets*.py contentglowz_lab/tests/test_status*asset*.py`
   - `flutter test test/data/project_asset_test.dart test/providers/project_asset_provider_test.dart test/presentation/project_asset_picker_test.dart`
   - `flutter analyze` when Flutter UI changes.
 

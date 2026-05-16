@@ -23,9 +23,9 @@ next_review: "2026-06-11"
 next_step: "/sf-market-study contentflow"
 target_projects:
   - contentflow
-  - contentflow_app
-  - contentflow_lab
-  - contentflow_site
+  - contentglowz_app
+  - contentglowz_lab
+  - contentglowz_site
 reference_categories:
   - direct_competitor
   - indirect_competitor
@@ -33,9 +33,9 @@ reference_categories:
   - workflow_inspiration
 source_policy: "Track public sources only; do not copy private positioning, paid assets, credentials, or non-public customer data."
 aliases:
-  - contentflow_app
-  - contentflow_lab
-  - contentflow_site
+  - contentglowz_app
+  - contentglowz_lab
+  - contentglowz_site
 ignored_aliases:
   - contentflowz
 ---
@@ -44,7 +44,7 @@ ignored_aliases:
 
 ## Lecture projet
 
-ContentFlow est le projet canonique. `contentflow_app`, `contentflow_lab` et `contentflow_site` sont traités comme surfaces ou sous-parties de ContentFlow. `contentflowz` est à ignorer comme projet canonique.
+ContentFlow est le projet canonique. `contentglowz_app`, `contentglowz_lab` et `contentglowz_site` sont traités comme surfaces ou sous-parties de ContentFlow. `contentflowz` est à ignorer comme projet canonique.
 
 ContentFlow est le projet le plus concerné par cette veille: génération, recyclage, pilotage, enrichissement et distribution de contenu. Les liens ci-dessous sont principalement des concurrents indirects, des briques produit ou des inspirations de workflow.
 
@@ -75,7 +75,7 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 
 ## Notes de dispatch
 
-- `contentflow_app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
-- `contentflow_lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
-- `contentflow_site`: site marketing et preuve produit.
+- `contentglowz_app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
+- `contentglowz_lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
+- `contentglowz_site`: site marketing et preuve produit.
 - `contentflowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.

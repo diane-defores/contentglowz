@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: ready
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/social-listener.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/social-listener.md"
 ---
 # SPEC : Social Listener — Veille sociale multi-plateforme pour l'Idea Pool
 

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: reviewed
@@ -26,11 +26,11 @@ evidence:
   - "api/routers/drip.py expose les routes /api/drip/*"
   - "api/services/drip_service.py implemente execute_drip_tick et preflight_plan"
   - "tests/test_drip_index_proof.py couvre le mode index-proof"
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/DRIP_IMPLEMENTATION.md"
 ---
 # Drip — Progressive Publishing (Implementation Notes)
 
-This document describes the **real implementation** of Content Drip in `contentflow_lab` (FastAPI + scheduler) and the expected **SSG-side contracts** to make it “Google-index-proof”.
+This document describes the **real implementation** of Content Drip in `contentglowz_lab` (FastAPI + scheduler) and the expected **SSG-side contracts** to make it “Google-index-proof”.
 
 ## Status rationale
 

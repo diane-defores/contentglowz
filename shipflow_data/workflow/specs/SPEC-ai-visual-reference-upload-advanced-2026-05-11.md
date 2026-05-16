@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
+  - "contentglowz_app"
+  - "contentglowz_lab"
   - "api/status/content assets"
   - "api/images references"
   - "Image Robot"
@@ -31,16 +31,16 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -49,11 +49,11 @@ evidence:
   - "User brief 2026-05-11: future chantier must cover user-facing binary upload for project references, validation, Bunny storage, Turso/content_assets/image references metadata, replacement/deletion, and Image Robot usage."
   - "Spec evidence: SPEC-flux-ai-provider-image-robot-2026-05-11 requires controlled project reference images and durable Bunny assets, and explicitly excludes arbitrary playground upload."
   - "Spec evidence: SPEC-editor-linked-ai-visuals-ui-2026-05-11 explicitly leaves local file upload for arbitrary reference images out of V1 and routes binary upload to a separate storage/upload spec."
-  - "Code evidence: contentflow_lab/status/db.py and api/migrations/004_status_lifecycle.sql already create content_assets with storage_uri, source, kind, status, metadata, and ownership fields."
-  - "Code evidence: contentflow_lab/api/routers/status.py exposes authenticated /api/status/content/{content_id}/assets endpoints with require_owned_content_record."
-  - "Code evidence: contentflow_lab/status/service.py supports list/create/update/tombstone content assets but does not yet validate Bunny-backed image_robot uploads or primary/reference semantics."
-  - "Code evidence: contentflow_lab/agents/images/tools/bunny_cdn_tools.py supports upload, delete, list, and CDN URL derivation but currently accepts local path or URL sources without the hardened binary upload boundary needed here."
-  - "Code evidence: contentflow_app/lib/data/services/api_service.dart currently attaches local capture metadata only; it does not upload binary visual references."
+  - "Code evidence: contentglowz_lab/status/db.py and api/migrations/004_status_lifecycle.sql already create content_assets with storage_uri, source, kind, status, metadata, and ownership fields."
+  - "Code evidence: contentglowz_lab/api/routers/status.py exposes authenticated /api/status/content/{content_id}/assets endpoints with require_owned_content_record."
+  - "Code evidence: contentglowz_lab/status/service.py supports list/create/update/tombstone content assets but does not yet validate Bunny-backed image_robot uploads or primary/reference semantics."
+  - "Code evidence: contentglowz_lab/agents/images/tools/bunny_cdn_tools.py supports upload, delete, list, and CDN URL derivation but currently accepts local path or URL sources without the hardened binary upload boundary needed here."
+  - "Code evidence: contentglowz_app/lib/data/services/api_service.dart currently attaches local capture metadata only; it does not upload binary visual references."
   - "User decision 2026-05-11: an uploaded image starts as a project asset, not as an approved reference or free playground output."
   - "User decision 2026-05-11: V1 has no human approval step; backend validation remains mandatory."
   - "User decision 2026-05-11: image-to-image/reference use should support brand style, character consistency, and composition guidance."
@@ -150,8 +150,8 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 
 ## Constraints
 
-- Backend remains `contentflow_lab` FastAPI with Clerk auth and Turso/libSQL persistence.
-- Flutter remains `contentflow_app` with `ApiService` and Riverpod; widgets must not make ad-hoc upload HTTP clients outside the service layer.
+- Backend remains `contentglowz_lab` FastAPI with Clerk auth and Turso/libSQL persistence.
+- Flutter remains `contentglowz_app` with `ApiService` and Riverpod; widgets must not make ad-hoc upload HTTP clients outside the service layer.
 - Bunny Storage/CDN is the durable binary storage system; no alternate storage provider is introduced.
 - Bunny Storage API keys stay server-side only.
 - V1 upload transport is backend-proxied multipart streaming with bounded request bodies and deterministic server-generated storage paths.
@@ -167,21 +167,21 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 ## Dependencies
 
 - Existing backend status asset contract:
-  - `contentflow_lab/api/routers/status.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/status/db.py`
-  - `contentflow_lab/api/models/status.py`
-  - `contentflow_lab/api/migrations/004_status_lifecycle.sql`
+  - `contentglowz_lab/api/routers/status.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/status/db.py`
+  - `contentglowz_lab/api/models/status.py`
+  - `contentglowz_lab/api/migrations/004_status_lifecycle.sql`
 - Existing Bunny storage tools:
-  - `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`
-  - `contentflow_lab/agents/images/cdn_manager.py`
+  - `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`
+  - `contentglowz_lab/agents/images/cdn_manager.py`
 - Existing Flutter API/provider patterns:
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
 - Ready/active specs:
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`
 - External docs, `fresh-docs checked` by parent on 2026-05-11:
   - Black Forest Labs FLUX.2 overview: `https://docs.bfl.ai/flux_2/flux2_overview`
   - BFL FLUX.2 Pro API: `https://docs.bfl.ml/api-reference/models/generate-or-edit-an-image-with-flux2-%5Bpro%5D`
@@ -210,23 +210,23 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 
 ## Links & Consequences
 
-- `contentflow_lab/api/routers/status.py`: existing asset endpoints need hardening or a dedicated reference-safe attach path so uploaded reference assets cannot be forged through generic metadata.
-- `contentflow_lab/status/service.py`: current asset CRUD supports metadata, update, and tombstone but lacks primary/reference/version/eligibility semantics.
-- `contentflow_lab/status/db.py` and `api/migrations/004_status_lifecycle.sql`: schema must add upload/reference tables or columns idempotently for Turso.
-- `contentflow_lab/api/models/status.py`: content asset request/response models may need fields or stricter models for uploaded image references and eligibility state.
-- `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`: current helper accepts URL or local path; this chantier needs a safer bytes/file-object upload path and SSRF-resistant constraints.
-- `contentflow_lab/agents/images/cdn_manager.py`: optimizer upload patterns should be reused where they make sense, but upload validation must happen before CDN manager storage.
-- `contentflow_app/lib/data/services/api_service.dart`: add typed binary upload/reference methods and error mapping; do not leak raw upload internals to widgets.
-- `contentflow_app/lib/providers/providers.dart`: add focused state for upload progress, reference list, and selection without mixing it into unrelated content providers if feature complexity grows.
+- `contentglowz_lab/api/routers/status.py`: existing asset endpoints need hardening or a dedicated reference-safe attach path so uploaded reference assets cannot be forged through generic metadata.
+- `contentglowz_lab/status/service.py`: current asset CRUD supports metadata, update, and tombstone but lacks primary/reference/version/eligibility semantics.
+- `contentglowz_lab/status/db.py` and `api/migrations/004_status_lifecycle.sql`: schema must add upload/reference tables or columns idempotently for Turso.
+- `contentglowz_lab/api/models/status.py`: content asset request/response models may need fields or stricter models for uploaded image references and eligibility state.
+- `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`: current helper accepts URL or local path; this chantier needs a safer bytes/file-object upload path and SSRF-resistant constraints.
+- `contentglowz_lab/agents/images/cdn_manager.py`: optimizer upload patterns should be reused where they make sense, but upload validation must happen before CDN manager storage.
+- `contentglowz_app/lib/data/services/api_service.dart`: add typed binary upload/reference methods and error mapping; do not leak raw upload internals to widgets.
+- `contentglowz_app/lib/providers/providers.dart`: add focused state for upload progress, reference list, and selection without mixing it into unrelated content providers if feature complexity grows.
 - Image Robot/Flux: reference resolution must select only eligible project references and enforce provider reference limits.
 - Operations: orphan Bunny object cleanup, failed upload recovery, cache purge, and audit logs become required operational concerns.
 - Documentation/support: user-facing wording must explain that references guide consistency after backend validation; it must not promise exact identity replication.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab` setup docs with Bunny upload variables, storage zone/hostname expectations, upload size limits, and cleanup operations.
+- Update `contentglowz_lab` setup docs with Bunny upload variables, storage zone/hostname expectations, upload size limits, and cleanup operations.
 - Update backend API docs or README with proxied upload attempt/finalization, reference lifecycle, eligibility statuses, replacement, deletion, and Image Robot reference usage.
-- Update `contentflow_app/README.md` with online-only upload behavior and the difference between local capture metadata and durable uploaded references.
+- Update `contentglowz_app/README.md` with online-only upload behavior and the difference between local capture metadata and durable uploaded references.
 - Update changelogs for both app and backend after implementation.
 - Add support/operator notes for failed upload cleanup, Bunny delete/purge failures, and reference eligibility troubleshooting.
 - Add localization strings for upload progress, validation errors, eligibility states, replacement confirmation, and deletion/tombstone outcomes.
@@ -258,7 +258,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 ## Implementation Tasks
 
 - [ ] Task 1: Define upload/reference schema and lifecycle states
-  - File: `contentflow_lab/api/migrations/004_status_lifecycle.sql`
+  - File: `contentglowz_lab/api/migrations/004_status_lifecycle.sql`
   - Action: Add idempotent Turso schema for upload attempts, project visual assets/references, and reference versions, or add equivalent tables with clear links to `content_assets`. Include project/user ownership, Bunny storage path, CDN URL, MIME, byte size, dimensions, hash, eligibility status, active version, deleted_at, history_expires_at, and cleanup/error fields.
   - User story link: Creates durable, auditable project references for Image Robot.
   - Depends on: none.
@@ -266,7 +266,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Do not overload `content_assets.metadata` as the only source of truth for eligibility/versioning.
 
 - [ ] Task 2: Add backend models for upload attempts and references
-  - File: `contentflow_lab/api/models/status.py`
+  - File: `contentglowz_lab/api/models/status.py`
   - Action: Add Pydantic request/response models for proxied upload attempt, uploaded project asset/reference, eligibility state, replacement, deletion, content placement links, and normalized upload errors.
   - User story link: Gives Flutter a typed contract for upload, eligibility, and placement states.
   - Depends on: Task 1.
@@ -274,7 +274,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Keep existing local capture models backward compatible.
 
 - [ ] Task 3: Extend status service with reference persistence
-  - File: `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/service.py`
   - Action: Add service methods for create upload attempt, finalize proxied upload metadata, list project assets/references, mark/select eligible references, create replacement version, tombstone/delete, link to content/placements, and lookup eligible references for Image Robot by project/user.
   - User story link: Enforces lifecycle transitions server-side instead of trusting Flutter metadata.
   - Depends on: Tasks 1 and 2.
@@ -282,7 +282,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Preserve `create_content_asset` behavior for `device_capture`.
 
 - [ ] Task 4: Harden Bunny binary upload utilities
-  - File: `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`
+  - File: `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`
   - Action: Add a safe upload function for backend-validated bytes or bounded file streams, with V1 MIME allowlist, 10 MiB max byte enforcement, SHA256 checksum support where practical, deterministic storage paths, content type, timeout, and no arbitrary remote URL fetching for user uploads.
   - User story link: Stores user-provided references durably without turning upload into SSRF or unbounded resource usage.
   - Depends on: Task 2.
@@ -290,7 +290,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Existing URL/local path helper can remain for legacy agent flows but must not be the user-upload boundary.
 
 - [ ] Task 5: Add CDN/optimizer metadata handling for references
-  - File: `contentflow_lab/agents/images/cdn_manager.py`
+  - File: `contentglowz_lab/agents/images/cdn_manager.py`
   - Action: Reuse or add a method that returns stable CDN URL, storage path, optimizer/responsive metadata, byte size, content type, and propagation status for uploaded references.
   - User story link: Provides durable reference URLs to Image Robot and app previews.
   - Depends on: Task 4.
@@ -298,7 +298,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Propagation failure should not automatically make a reference asset eligible.
 
 - [ ] Task 6: Add authenticated upload/reference API routes
-  - File: `contentflow_lab/api/routers/status.py`
+  - File: `contentglowz_lab/api/routers/status.py`
   - Action: Add project-scoped endpoints for proxied multipart upload, list assets/references, mark/select eligible references, replace active file, delete/tombstone reference assets, and optionally attach assets to content placements.
   - User story link: Exposes the controlled user-facing reference workflow.
   - Depends on: Tasks 2, 3, 4, and 5.
@@ -306,7 +306,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: If routes are placed under an image router during implementation, keep status/content asset interactions explicit and documented.
 
 - [ ] Task 7: Harden content asset linkage for uploaded references
-  - File: `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/service.py`
   - Action: Add server-side validation so `content_assets` with reference/image_robot sources must link to an owned validated reference asset or generation record; add placement/reference metadata only through backend-controlled fields.
   - User story link: Prevents arbitrary user-provided `storage_uri` from becoming a trusted Image Robot or publishable asset.
   - Depends on: Tasks 3 and 6.
@@ -314,7 +314,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Generic local capture metadata remains allowed as `source=device_capture`, `status=local_only`.
 
 - [ ] Task 8: Integrate eligible references with Image Robot resolution
-  - File: `contentflow_lab/api/routers/status.py`
+  - File: `contentglowz_lab/api/routers/status.py`
   - Action: Expose or delegate a backend function that Image Robot/Flux can call to resolve eligible references by project/user, selected reference IDs, active version, Bunny URL, dimensions, reference role (`brand_style`, `character_consistency`, `composition`, or `general_reference`), and provider eligibility.
   - User story link: Ensures uploaded references actually guide future image generation.
   - Depends on: Tasks 3 and 6.
@@ -322,7 +322,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: If Image Robot implementation owns this in an images router/service, keep this status service as the source of reference metadata.
 
 - [ ] Task 9: Add Flutter API methods for upload/reference lifecycle
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add typed methods for proxied multipart upload, list project assets/references, replace, delete, attach to content/placements, promote/select references, and reference selection. Add normalized error mapping for validation, auth, storage, quota/rate, and stale state.
   - User story link: Lets creators manage references from the app without direct storage credentials.
   - Depends on: Task 6.
@@ -330,7 +330,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Do not log binary payloads, signed URLs, or storage secrets.
 
 - [ ] Task 10: Add Riverpod state for reference upload and selection
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add focused providers/notifiers for project asset/reference list, upload progress, eligibility states, selected references for generation, and stale project-change cancellation.
   - User story link: Gives UI workflows reliable state for uploads and Image Robot selection.
   - Depends on: Task 9.
@@ -338,7 +338,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Move to a dedicated provider file only if implementation size justifies it and matches repo patterns.
 
 - [ ] Task 11: Add operator cleanup and audit hooks
-  - File: `contentflow_lab/status/db.py`
+  - File: `contentglowz_lab/status/db.py`
   - Action: Add helper accessors or scheduled-query support for orphan upload attempts, Bunny objects needing cleanup, failed delete/purge states, and reference audit events.
   - User story link: Keeps storage and audit state recoverable after partial failures.
   - Depends on: Tasks 1 and 3.
@@ -346,7 +346,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - Notes: Actual scheduling may be a separate implementation detail if no scheduler pattern exists.
 
 - [ ] Task 12: Document advanced visual reference upload
-  - File: `contentflow_lab/README.md`
+  - File: `contentglowz_lab/README.md`
   - Action: Document Bunny config, upload limits, lifecycle states, eligibility rules, 30-day history/cleanup behavior, and Image Robot reference eligibility.
   - User story link: Makes the high-risk storage behavior operable after shipping.
   - Depends on: Tasks 1-11.
@@ -399,11 +399,11 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 
 - Read first:
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
-  - `contentflow_lab/api/routers/status.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`
-  - `contentflow_app/lib/data/services/api_service.dart`
+  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `contentglowz_lab/api/routers/status.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`
+  - `contentglowz_app/lib/data/services/api_service.dart`
 - Start backend-first: schema/models/service/routes, then Bunny hardening, then Image Robot resolution, then Flutter API/providers.
 - Keep upload secrets server-side. Flutter may receive upload status and progress data, but not Bunny `AccessKey` or storage-zone write credentials.
 - Use backend-proxied bounded multipart upload for V1. Do not implement direct-to-Bunny upload in this chantier.

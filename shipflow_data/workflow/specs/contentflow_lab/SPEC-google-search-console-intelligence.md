@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-05-11"
 created_at: "2026-05-11 14:04:51 UTC"
 updated: "2026-05-11"
@@ -17,35 +17,35 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentflow_lab/api/services/gsc_client.py
-  - contentflow_lab/api/routers/drip.py
-  - contentflow_lab/api/routers/settings_integrations.py
-  - contentflow_lab/api/routers/integrations.py
-  - contentflow_lab/api/routers/analytics.py
-  - contentflow_lab/api/routers/idea_pool.py
-  - contentflow_lab/api/routers/psychology.py
-  - contentflow_lab/api/services/user_key_store.py
-  - contentflow_lab/api/services/user_data_store.py
-  - contentflow_lab/api/services/analytics_store.py
-  - contentflow_lab/agents/sources/ingest.py
-  - contentflow_app/lib/presentation/screens/settings/integrations_screen.dart
-  - contentflow_app/lib/presentation/screens/analytics/analytics_screen.dart
-  - contentflow_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart
-  - contentflow_app/lib/presentation/screens/seo/seo_screen.dart
+  - contentglowz_lab/api/services/gsc_client.py
+  - contentglowz_lab/api/routers/drip.py
+  - contentglowz_lab/api/routers/settings_integrations.py
+  - contentglowz_lab/api/routers/integrations.py
+  - contentglowz_lab/api/routers/analytics.py
+  - contentglowz_lab/api/routers/idea_pool.py
+  - contentglowz_lab/api/routers/psychology.py
+  - contentglowz_lab/api/services/user_key_store.py
+  - contentglowz_lab/api/services/user_data_store.py
+  - contentglowz_lab/api/services/analytics_store.py
+  - contentglowz_lab/agents/sources/ingest.py
+  - contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart
+  - contentglowz_app/lib/presentation/screens/analytics/analytics_screen.dart
+  - contentglowz_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart
+  - contentglowz_app/lib/presentation/screens/seo/seo_screen.dart
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-progressive-content-release.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-progressive-content-release.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/DRIP_IMPLEMENTATION.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
 evidence:
   - "Existing backend only exposes GSC submission/indexation under Drip; no general Search Console insights UI exists."
-  - "contentflow_lab/api/services/gsc_client.py supports service-account based Indexing API and URL Inspection API only through environment credentials."
-  - "contentflow_app/lib/presentation/screens/drip/drip_wizard_sheet.dart exposes a narrow Drip GSC toggle but no Search Console connection or insight dashboard."
-  - "contentflow_lab/api/routers/idea_pool.py and agents/sources/ingest.py already support ingestion of SEO, competitor, social, newsletter, and SERP feedback ideas."
-  - "contentflow_lab/api/routers/psychology.py dispatches selected ideas/angles into content generation and marks source ideas as used."
+  - "contentglowz_lab/api/services/gsc_client.py supports service-account based Indexing API and URL Inspection API only through environment credentials."
+  - "contentglowz_app/lib/presentation/screens/drip/drip_wizard_sheet.dart exposes a narrow Drip GSC toggle but no Search Console connection or insight dashboard."
+  - "contentglowz_lab/api/routers/idea_pool.py and agents/sources/ingest.py already support ingestion of SEO, competitor, social, newsletter, and SERP feedback ideas."
+  - "contentglowz_lab/api/routers/psychology.py dispatches selected ideas/angles into content generation and marks source ideas as used."
   - "Google Search Analytics API supports page/query/country/device performance metrics; URL Inspection API supports indexed URL status but not live URL testing; both require authorization and quotas."
   - "User clarified 2026-05-11 that OAuth and a real SEO stats screen are expected, and that the SEO stats screen can replace the current analytics surface."
   - "User clarified 2026-05-11 that the interface must show principal traffic metrics: top visited pages, site visits/pageviews, organic clicks, today, last 7 days, recent months, and last 6 months."
@@ -190,14 +190,14 @@ Build a project-scoped Search Console Intelligence module:
 ## Dependencies
 
 - Local code:
-  - `contentflow_lab/api/services/gsc_client.py` for existing Google client patterns.
-  - `contentflow_lab/api/routers/drip.py` for existing GSC endpoints and publish-time behavior.
-  - `contentflow_lab/api/routers/integrations.py` for existing OAuth state/callback patterns from GitHub.
-  - `contentflow_lab/api/services/user_key_store.py` for encrypted credential storage.
-  - `contentflow_lab/api/services/user_data_store.py` for project-scoped integration metadata.
-  - `contentflow_lab/api/routers/analytics.py` and `contentflow_app/lib/presentation/screens/analytics/analytics_screen.dart` for current analytics UX.
-  - `contentflow_lab/api/routers/idea_pool.py` and `contentflow_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart` for idea ingestion and review.
-  - `contentflow_lab/api/routers/psychology.py` for content generation from idea/angle metadata.
+  - `contentglowz_lab/api/services/gsc_client.py` for existing Google client patterns.
+  - `contentglowz_lab/api/routers/drip.py` for existing GSC endpoints and publish-time behavior.
+  - `contentglowz_lab/api/routers/integrations.py` for existing OAuth state/callback patterns from GitHub.
+  - `contentglowz_lab/api/services/user_key_store.py` for encrypted credential storage.
+  - `contentglowz_lab/api/services/user_data_store.py` for project-scoped integration metadata.
+  - `contentglowz_lab/api/routers/analytics.py` and `contentglowz_app/lib/presentation/screens/analytics/analytics_screen.dart` for current analytics UX.
+  - `contentglowz_lab/api/routers/idea_pool.py` and `contentglowz_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart` for idea ingestion and review.
+  - `contentglowz_lab/api/routers/psychology.py` for content generation from idea/angle metadata.
 - Python packages:
   - `google-api-python-client>=2.100.0,<3.0`
   - `google-auth>=2.23.0,<3.0`
@@ -240,9 +240,9 @@ Build a project-scoped Search Console Intelligence module:
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/.env.example` with OAuth client settings: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, and optional operator fallback only if implemented.
-- Update `contentflow_lab/README.md` with Search Console setup: create Google OAuth client, configure consent screen, enable Search Console API, set redirect URI, and understand verification requirements.
-- Update `contentflow_app` in-app strings/l10n for:
+- Update `contentglowz_lab/.env.example` with OAuth client settings: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, and optional operator fallback only if implemented.
+- Update `contentglowz_lab/README.md` with Search Console setup: create Google OAuth client, configure consent screen, enable Search Console API, set redirect URI, and understand verification requirements.
+- Update `contentglowz_app` in-app strings/l10n for:
   - Google Search Console OAuth connection
   - SEO Stats screen replacing the analytics-first experience
   - traffic periods: Today, Last 7 days, Last 30 days, Last 90 days, Last 6 months
@@ -283,7 +283,7 @@ Build a project-scoped Search Console Intelligence module:
 ## Implementation Tasks
 
 - [ ] Tache 1 : Add Search Console models
-  - Fichier : `contentflow_lab/api/models/search_console.py`
+  - Fichier : `contentglowz_lab/api/models/search_console.py`
   - Action : Create Pydantic models for connection status, config upsert/delete, validation response, sync request/result, summary, traffic overview periods, metric rows with `source`/`source_label`, URL inspection rows, opportunity records, and idea-ingest request.
   - User story link : Enables typed contracts for connection, diagnosis, and editorial opportunities.
   - Depends on : None
@@ -291,7 +291,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Use snake_case JSON in backend; Flutter can map as needed.
 
 - [ ] Tache 2 : Add project-scoped Search Console storage
-  - Fichier : `contentflow_lab/api/services/search_console_store.py`
+  - Fichier : `contentglowz_lab/api/services/search_console_store.py`
   - Action : Create store methods for `GoogleOAuthState`, `SearchConsoleConnection`, `SearchConsoleProjectProperty`, `SearchConsoleSnapshot`, and optional `SearchConsoleInspectionResult` using Turso/libSQL async client.
   - User story link : Persists connection status and cached insight state.
   - Depends on : Tache 1
@@ -299,7 +299,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Store encrypted OAuth tokens via `UserProviderCredential` provider `google_search_console_oauth`; store only property URL, project ID, status, scopes, selected account metadata, and timestamps in project config.
 
 - [ ] Tache 3 : Ensure Search Console tables at startup
-  - Fichier : `contentflow_lab/api/main.py`
+  - Fichier : `contentglowz_lab/api/main.py`
   - Action : Call `search_console_store.ensure_tables()` when Turso is configured, following existing `user_key_store`, `analytics_store`, and `feedback_store` patterns.
   - User story link : Makes the feature durable in production.
   - Depends on : Tache 2
@@ -307,7 +307,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Do not edit legacy local SQLite paths.
 
 - [ ] Tache 4 : Implement credential-aware Search Console service
-  - Fichier : `contentflow_lab/api/services/search_console_service.py`
+  - Fichier : `contentglowz_lab/api/services/search_console_service.py`
   - Action : Build Google API clients from the authenticated user's encrypted OAuth refresh/access tokens, refresh expired access tokens, list accessible properties, query Search Analytics, inspect selected URLs, validate property access, normalize `sc-domain:` and URL-prefix properties, and return structured errors.
   - User story link : Pulls the real search data behind the natural-language dashboard.
   - Depends on : Tache 1, Tache 2
@@ -316,8 +316,8 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 4b : Add separate site-traffic context aggregation
   - Fichiers :
-    - `contentflow_lab/api/services/search_console_service.py`
-    - `contentflow_lab/api/services/analytics_store.py`
+    - `contentglowz_lab/api/services/search_console_service.py`
+    - `contentglowz_lab/api/services/analytics_store.py`
   - Action : Return Search Console metrics and first-party analytics context in separate response objects for Today, Last 7 days, Last 30 days/current month, Last 90 days, and Last 6 months; every metric row must include source provenance; never aggregate them into one traffic total; return top visited pages and top organic landing pages separately.
   - User story link : Gives users the principal metrics they expect before deeper SEO interpretation.
   - Depends on : Tache 4
@@ -325,7 +325,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Do not label pageviews as unique people. Do not mix first-party analytics rows into Search Console evidence. If unique visitor/session tracking is added, use privacy-safe anonymous/session identifiers and update this spec before implementation.
 
 - [ ] Tache 5 : Add Search Console OAuth and API router
-  - Fichier : `contentflow_lab/api/routers/search_console.py`
+  - Fichier : `contentglowz_lab/api/routers/search_console.py`
   - Action : Expose authenticated endpoints:
     - `GET /api/search-console/status?projectId=...`
     - `POST /api/search-console/oauth/start`
@@ -343,7 +343,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Use project ownership checks before any credential lookup or Google API call. OAuth callback state must bind user, optional project, redirect intent, expiry, and one-time use.
 
 - [ ] Tache 6 : Register Search Console router
-  - Fichier : `contentflow_lab/api/main.py`
+  - Fichier : `contentglowz_lab/api/main.py`
   - Action : Import and include the new router.
   - User story link : Makes the feature reachable by the Flutter app.
   - Depends on : Tache 5
@@ -351,7 +351,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Keep route prefix `/api/search-console`.
 
 - [ ] Tache 7 : Implement insight and opportunity scoring
-  - Fichier : `contentflow_lab/agents/sources/search_console_feedback.py`
+  - Fichier : `contentglowz_lab/agents/sources/search_console_feedback.py`
   - Action : Convert Search Analytics and URL Inspection rows into natural-language summary bullets and structured opportunities with reason, evidence, confidence, priority score, suggested action, target URL/query, and optional content record link.
   - User story link : Translates raw GSC data into "what should I do next?"
   - Depends on : Tache 4
@@ -359,7 +359,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Baseline copy must be deterministic and locale-ready. LLM polish can be a later optional enhancement.
 
 - [ ] Tache 8 : Link opportunities to local content records
-  - Fichier : `contentflow_lab/agents/sources/search_console_feedback.py`
+  - Fichier : `contentglowz_lab/agents/sources/search_console_feedback.py`
   - Action : Match GSC page URLs to `ContentRecord.target_url`, `content_path`, or normalized path. Include match confidence and never block if no match exists.
   - User story link : Allows ContentFlow to decide whether to refresh existing content or create new content.
   - Depends on : Tache 7
@@ -367,7 +367,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Use owned project scope in all status service reads.
 
 - [ ] Tache 9 : Ingest selected opportunities into Idea Pool
-  - Fichier : `contentflow_lab/api/routers/search_console.py`
+  - Fichier : `contentglowz_lab/api/routers/search_console.py`
   - Action : Implement `/opportunities/ingest` so selected opportunities create deduped `IdeaRecord` rows with source `search_console_feedback`, `raw_data`, `seo_signals`, `tags`, `priority_score`, `project_id`, and `user_id`.
   - User story link : Bridges Search Console insight to the existing content engine.
   - Depends on : Tache 7, Tache 8
@@ -375,7 +375,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : User action is required; no automatic generation.
 
 - [ ] Tache 10 : Add Idea Pool source support
-  - Fichier : `contentflow_lab/api/models/idea_pool.py`
+  - Fichier : `contentglowz_lab/api/models/idea_pool.py`
   - Action : Add `SEARCH_CONSOLE_FEEDBACK = "search_console_feedback"` to `IdeaSource`.
   - User story link : Makes GSC-derived ideas first-class.
   - Depends on : Tache 9
@@ -383,7 +383,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Current requests accept string sources, but enum and docs should still be aligned.
 
 - [ ] Tache 11 : Preserve Search Console evidence in pipeline metadata
-  - Fichier : `contentflow_lab/api/routers/psychology.py`
+  - Fichier : `contentglowz_lab/api/routers/psychology.py`
   - Action : Ensure `dispatch_pipeline` keeps `search_console_evidence`, `seo_signals`, `source_idea_ids`, and target URL/query from GSC ideas when creating `ContentRecord.metadata`.
   - User story link : Keeps downstream content decisions explainable.
   - Depends on : Tache 9
@@ -392,8 +392,8 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 12 : Add Flutter data models and API client methods
   - Fichiers :
-    - `contentflow_app/lib/data/models/search_console.dart`
-    - `contentflow_app/lib/data/services/api_service.dart`
+    - `contentglowz_app/lib/data/models/search_console.dart`
+    - `contentglowz_app/lib/data/services/api_service.dart`
   - Action : Add models and API calls for status, OAuth start/callback completion handoff, automatic property binding state, fallback property confirmation, disconnect, validate, sync, summary, opportunities, and ingest.
   - User story link : Lets the app render and act on Search Console state.
   - Depends on : Tache 5
@@ -401,7 +401,7 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Keep offline/degraded read patterns consistent with existing API service behavior.
 
 - [ ] Tache 13 : Add GSC connection UI in Integrations
-  - Fichier : `contentflow_app/lib/presentation/screens/settings/integrations_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`
   - Action : Add a Google Search Console settings group with "Connect Google" OAuth action, connected account/status display, automatically matched property display, fallback compatible-property choices when needed, disconnect/validate actions, and setup/verification guidance.
   - User story link : Gives users an interface to connect GSC.
   - Depends on : Tache 12
@@ -409,15 +409,15 @@ Build a project-scoped Search Console Intelligence module:
   - Notes : Launch OAuth in the platform browser/default browser, not an embedded WebView.
 
 - [ ] Tache 14 : Replace analytics-first screen with SEO Stats
-  - Fichier : `contentflow_app/lib/presentation/screens/analytics/analytics_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/analytics/analytics_screen.dart`
   - Action : Make Search Console SEO Stats the first viewport: connection state, sync action, global period selector/cards for Today, Last 7 days, Last 30 days/current month, Last 90 days, Last 6 months, a default natural-language overview, a "Google Search" section with organic clicks, impressions, CTR, average position, top organic landing pages/queries, opportunities, and degraded-state messages, plus a "Site traffic" section with first-party visits/pageviews and most visited site pages when available. Use source labels or tooltips on cards; do not add a mandatory source filter as the primary UX.
   - User story link : Gives users the language-level explanation they asked for.
   - Depends on : Tache 12
   - Validate with : Flutter widget tests and manual mobile/desktop check.
-  - Notes : If this makes `AnalyticsScreen` too large, extract widgets to `contentflow_app/lib/presentation/screens/analytics/search_console_panel.dart`.
+  - Notes : If this makes `AnalyticsScreen` too large, extract widgets to `contentglowz_app/lib/presentation/screens/analytics/search_console_panel.dart`.
 
 - [ ] Tache 15 : Add opportunity ingestion actions in Flutter
-  - Fichier : `contentflow_app/lib/presentation/screens/analytics/search_console_panel.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/analytics/search_console_panel.dart`
   - Action : Add selectable opportunities and "Add to Idea Pool" action with success/error snackbar and Idea Pool invalidation.
   - User story link : Turns insight into content queue decisions.
   - Depends on : Tache 14
@@ -426,9 +426,9 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 16 : Update Idea Pool UI labels and filters
   - Fichiers :
-    - `contentflow_app/lib/data/models/idea.dart`
-    - `contentflow_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart`
-    - `contentflow_app/lib/l10n/app_localizations.dart`
+    - `contentglowz_app/lib/data/models/idea.dart`
+    - `contentglowz_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart`
+    - `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action : Add source label/filter/color for `search_console_feedback` and display GSC evidence chips when present.
   - User story link : Makes GSC-derived ideas legible during review.
   - Depends on : Tache 9
@@ -437,9 +437,9 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 17 : Add backend tests
   - Fichiers :
-    - `contentflow_lab/tests/test_search_console_service.py`
-    - `contentflow_lab/tests/test_search_console_router.py`
-    - `contentflow_lab/tests/test_search_console_feedback.py`
+    - `contentglowz_lab/tests/test_search_console_service.py`
+    - `contentglowz_lab/tests/test_search_console_router.py`
+    - `contentglowz_lab/tests/test_search_console_feedback.py`
   - Action : Cover OAuth start/callback state validation, token refresh/revocation, property validation, ownership, quota degradation, snapshot caching, opportunity scoring, dedupe, idea ingestion, and token redaction.
   - User story link : Proves the critical contracts are safe and testable.
   - Depends on : Tache 1 through Tache 11
@@ -448,8 +448,8 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 18 : Add Flutter tests
   - Fichiers :
-    - `contentflow_app/test/presentation/settings/search_console_integration_test.dart`
-    - `contentflow_app/test/presentation/analytics/search_console_panel_test.dart`
+    - `contentglowz_app/test/presentation/settings/search_console_integration_test.dart`
+    - `contentglowz_app/test/presentation/analytics/search_console_panel_test.dart`
   - Action : Cover OAuth connection states, property selection, validation messages, summary/degraded states, SEO Stats replacing analytics-first layout, and opportunity ingestion action.
   - User story link : Proves the user-facing interface works.
   - Depends on : Tache 12 through Tache 16
@@ -458,10 +458,10 @@ Build a project-scoped Search Console Intelligence module:
 
 - [ ] Tache 19 : Update docs and environment examples
   - Fichiers :
-    - `contentflow_lab/README.md`
-    - `contentflow_lab/.env.example`
-    - `contentflow_lab/CHANGELOG.md`
-    - `contentflow_app/lib/l10n/app_localizations.dart`
+    - `contentglowz_lab/README.md`
+    - `contentglowz_lab/.env.example`
+    - `contentglowz_lab/CHANGELOG.md`
+    - `contentglowz_app/lib/l10n/app_localizations.dart`
   - Action : Document OAuth setup, consent screen requirements, callback URL, limitations, GSC data interpretation, quota/degraded states, and no ranking guarantee.
   - User story link : Reduces setup confusion and product overpromising.
   - Depends on : Tache 13, Tache 14
@@ -546,15 +546,15 @@ Build a project-scoped Search Console Intelligence module:
 
 Read these first before implementation:
 
-- `contentflow_lab/api/services/gsc_client.py`
-- `contentflow_lab/api/routers/settings_integrations.py`
-- `contentflow_lab/api/routers/integrations.py`
-- `contentflow_lab/api/services/user_key_store.py`
-- `contentflow_lab/api/routers/idea_pool.py`
-- `contentflow_lab/api/routers/psychology.py`
-- `contentflow_app/lib/presentation/screens/settings/integrations_screen.dart`
-- `contentflow_app/lib/presentation/screens/analytics/analytics_screen.dart`
-- `contentflow_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart`
+- `contentglowz_lab/api/services/gsc_client.py`
+- `contentglowz_lab/api/routers/settings_integrations.py`
+- `contentglowz_lab/api/routers/integrations.py`
+- `contentglowz_lab/api/services/user_key_store.py`
+- `contentglowz_lab/api/routers/idea_pool.py`
+- `contentglowz_lab/api/routers/psychology.py`
+- `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`
+- `contentglowz_app/lib/presentation/screens/analytics/analytics_screen.dart`
+- `contentglowz_app/lib/presentation/screens/idea_pool/idea_pool_screen.dart`
 
 Implementation approach:
 
@@ -605,8 +605,8 @@ Deferred non-MVP decisions:
 | 2026-05-11 15:09:21 UTC | sf-start | GPT-5 Codex | Parent review: removed premature changelog entry, added camelCase request validation support, and fixed OAuth state fallback consumption. | partial | /sf-start Google Search Console intelligence continue |
 | 2026-05-11 16:12:19 UTC | sf-start | GPT-5 Codex | Continued implementation: added Flutter Search Console models/API/providers, Integrations OAuth/property UI, SEO Stats first viewport with Google Search and private analytics sections, opportunity selection/Idea Pool ingest UI, Idea Pool source labels/evidence chips/l10n, spec-aligned OAuth/disconnect aliases, and focused backend/Flutter tests. | partial | /sf-start Google Search Console intelligence continue |
 | 2026-05-11 16:24:34 UTC | sf-start | GPT-5 Codex | Hardened local implementation: property list endpoint/UI from accessible Google properties, property selection now requires connected OAuth access, URL Inspection runs as bounded sync sample with degraded fallback, SEO Stats displays inspection metrics/issues, refresh-token revocation and quota-degradation tests added. | implemented | /sf-ship Google Search Console intelligence |
-| 2026-05-11 16:44:27 UTC | sf-verify | GPT-5 Codex | Verified the spec against the local backend and Flutter implementation; fixed disconnect stale-snapshot preservation and disabled sync when the connection/property is not usable; local checks pass. Hosted OAuth/callback proof remains pending because `contentflow_app` is `hybrid`. | partial | /sf-ship Google Search Console intelligence |
-| 2026-05-12 17:25:15 UTC | sf-ship | GPT-5 Codex | Quick ship for Google Search Console Intelligence: committed backend OAuth/search-console module, Flutter SEO Stats UI, auto project-domain property binding, source-aware metrics, Idea Pool bridge, docs/env updates, and targeted tests. | shipped | /sf-prod contentflow_app |
+| 2026-05-11 16:44:27 UTC | sf-verify | GPT-5 Codex | Verified the spec against the local backend and Flutter implementation; fixed disconnect stale-snapshot preservation and disabled sync when the connection/property is not usable; local checks pass. Hosted OAuth/callback proof remains pending because `contentglowz_app` is `hybrid`. | partial | /sf-ship Google Search Console intelligence |
+| 2026-05-12 17:25:15 UTC | sf-ship | GPT-5 Codex | Quick ship for Google Search Console Intelligence: committed backend OAuth/search-console module, Flutter SEO Stats UI, auto project-domain property binding, source-aware metrics, Idea Pool bridge, docs/env updates, and targeted tests. | shipped | /sf-prod contentglowz_app |
 
 ## Current Chantier Flow
 
@@ -617,4 +617,4 @@ Deferred non-MVP decisions:
 - sf-end: not launched
 - sf-ship: quick shipped; hosted OAuth proof pending
 
-Next lifecycle step: `/sf-prod contentflow_app`, then `/sf-auth-debug Google Search Console OAuth callback` for hosted OAuth/callback proof before final verification.
+Next lifecycle step: `/sf-prod contentglowz_app`, then `/sf-auth-debug Google Search Console OAuth callback` for hosted OAuth/callback proof before final verification.

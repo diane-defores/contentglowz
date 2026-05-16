@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_app"
   - "content_assets"
   - "Image Robot"
   - "Flux image generation"
@@ -31,10 +31,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
   - artifact: "Bunny Storage API"
@@ -51,12 +51,12 @@ evidence:
   - "User decision 2026-05-11: local-only captures may appear in the picker/library with limited eligibility."
   - "User decision 2026-05-11: eligible generated/imported assets can be promoted directly as references."
   - "User decision 2026-05-11: removing an asset prevents future reuse without breaking existing content usage."
-  - "Code evidence: contentflow_lab/status/db.py already creates content_assets with content_id, project_id, user_id, storage_uri, status, metadata, and deleted_at."
-  - "Code evidence: contentflow_lab/status/service.py already lists, creates, updates, and tombstones non-deleted content assets by content_id."
-  - "Code evidence: contentflow_lab/api/routers/status.py exposes authenticated /api/status/content/{content_id}/assets routes after require_owned_content_record."
-  - "Code evidence: contentflow_app/lib/data/services/api_service.dart already posts device capture metadata to /api/status/content/{id}/assets."
-  - "Code evidence: contentflow_app/lib/router.dart has no asset-library route and currently sanitizes every /editor/* route as /editor/:id."
-  - "Code evidence: contentflow_app/lib/providers/providers.dart scopes pending content and project data through activeProjectIdProvider."
+  - "Code evidence: contentglowz_lab/status/db.py already creates content_assets with content_id, project_id, user_id, storage_uri, status, metadata, and deleted_at."
+  - "Code evidence: contentglowz_lab/status/service.py already lists, creates, updates, and tombstones non-deleted content assets by content_id."
+  - "Code evidence: contentglowz_lab/api/routers/status.py exposes authenticated /api/status/content/{content_id}/assets routes after require_owned_content_record."
+  - "Code evidence: contentglowz_app/lib/data/services/api_service.dart already posts device capture metadata to /api/status/content/{id}/assets."
+  - "Code evidence: contentglowz_app/lib/router.dart has no asset-library route and currently sanitizes every /editor/* route as /editor/:id."
+  - "Code evidence: contentglowz_app/lib/providers/providers.dart scopes pending content and project data through activeProjectIdProvider."
 next_step: "/sf-start Project Visual Asset Picker Library"
 ---
 
@@ -142,7 +142,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
 
 ## Constraints
 
-- `contentflow_lab` is the source of truth for asset metadata, ownership checks, tombstones, and selection mutations.
+- `contentglowz_lab` is the source of truth for asset metadata, ownership checks, tombstones, and selection mutations.
 - The library is always scoped by `project_id`; every endpoint must require or derive one owned project.
 - Existing Clerk/FastAPI authentication and ownership helpers must remain the security boundary.
 - Existing `content_assets` behavior for local capture must remain backward compatible.
@@ -157,18 +157,18 @@ Create a backend-owned project asset picker API and metadata model that normaliz
 ## Dependencies
 
 - Existing backend status asset contract:
-  - `contentflow_lab/status/db.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/api/models/status.py`
-  - `contentflow_lab/api/routers/status.py`
+  - `contentglowz_lab/status/db.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/api/models/status.py`
+  - `contentglowz_lab/api/routers/status.py`
 - Existing Flutter integration points:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
 - Upstream generation/reference contract: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
-- Upstream editor-linked visual workflow: `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
-- Existing local capture asset contract: `shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md`.
+- Upstream editor-linked visual workflow: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Existing local capture asset contract: `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`.
 - Bunny CDN/storage for durable binaries and public/proxied URLs.
 - Turso/libSQL for durable metadata and indexes.
 - Fresh external docs verdict: `fresh-docs checked`. Bunny Storage API official docs were checked on 2026-05-11 for server-side Storage API behavior and AccessKey-based HTTP upload/storage-zone semantics. BFL FLUX.2 official docs were checked on 2026-05-11 for generated/reference image metadata assumptions, including API multi-reference support. Implementation must re-check official docs only if it codes Bunny API calls, upload/delete/retention behavior, or FLUX.2 provider request construction beyond metadata linking.
@@ -188,12 +188,12 @@ Create a backend-owned project asset picker API and metadata model that normaliz
 
 ## Links & Consequences
 
-- `contentflow_lab/status/db.py`: `content_assets` likely needs project-level indexes and metadata fields or companion tables for library inventory, usage, reference promotion, labels, alt text, placement state, primary uniqueness, and tombstones.
-- `contentflow_lab/status/service.py`: needs project-scoped asset list/search/detail methods in addition to current content-scoped CRUD.
-- `contentflow_lab/api/routers/status.py`: current `/api/status/content/{content_id}/assets` routes are content-scoped; library endpoints should either live under a new router such as `/api/assets` or a project route while preserving existing status routes.
-- `contentflow_app/lib/data/services/api_service.dart`: needs typed library methods instead of ad hoc Dio calls.
-- `contentflow_app/lib/providers/providers.dart`: needs a bounded provider/controller for library query state and mutations, scoped by active project and optional content selection context.
-- `contentflow_app/lib/router.dart`: no standalone library route is required for V1; only update routing or Sentry sanitization if the editor implementation introduces a nested editor route while preserving `/editor/*` sanitization.
+- `contentglowz_lab/status/db.py`: `content_assets` likely needs project-level indexes and metadata fields or companion tables for library inventory, usage, reference promotion, labels, alt text, placement state, primary uniqueness, and tombstones.
+- `contentglowz_lab/status/service.py`: needs project-scoped asset list/search/detail methods in addition to current content-scoped CRUD.
+- `contentglowz_lab/api/routers/status.py`: current `/api/status/content/{content_id}/assets` routes are content-scoped; library endpoints should either live under a new router such as `/api/assets` or a project route while preserving existing status routes.
+- `contentglowz_app/lib/data/services/api_service.dart`: needs typed library methods instead of ad hoc Dio calls.
+- `contentglowz_app/lib/providers/providers.dart`: needs a bounded provider/controller for library query state and mutations, scoped by active project and optional content selection context.
+- `contentglowz_app/lib/router.dart`: no standalone library route is required for V1; only update routing or Sentry sanitization if the editor implementation introduces a nested editor route while preserving `/editor/*` sanitization.
 - Publishing must keep validating media URLs against owned content assets or generation records; this library cannot make raw URLs trustworthy.
 - Docs must distinguish "project asset picker" from "standalone media library", "editor AI visuals", and "free playground".
 
@@ -228,7 +228,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
 ## Implementation Tasks
 
 - [ ] Task 1: Define the project asset library data contract
-  - File: `contentflow_lab/status/schemas.py`
+  - File: `contentglowz_lab/status/schemas.py`
   - Action: Add or extend typed records/enums for library source, kind, visibility, tombstone state, reference state, placement usage, primary state, selection eligibility, and normalized metadata.
   - User story link: Makes project assets searchable and governable through one backend contract.
   - Depends on: none.
@@ -236,7 +236,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Preserve existing `ContentAssetRecord` compatibility for local capture. V1 search metadata includes prompt summary/hash, alt text, labels, content title, generated profile id, tags, dimensions, placement, and source when present; missing optional fields must not block listing.
 
 - [ ] Task 2: Add Turso/libSQL metadata and indexes for project-level inventory
-  - File: `contentflow_lab/status/db.py`
+  - File: `contentglowz_lab/status/db.py`
   - Action: Add idempotent migration/ensure logic for project-level asset library fields or companion tables, including indexes for project, user, source, kind, status, deleted_at, reference state, generation id, content usage, placement, and updated_at.
   - User story link: Enables fast project-scoped list/search/filter without scanning content records.
   - Depends on: Task 1.
@@ -244,7 +244,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: If unique primary per placement is stored in metadata today, formalize it with a DB-level or service-level invariant.
 
 - [ ] Task 3: Implement project-scoped asset service methods
-  - File: `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/service.py`
   - Action: Add methods for `list_project_assets`, `search_project_assets`, `get_project_asset_detail`, `get_asset_usage`, `select_asset_for_content`, `set_primary_asset_for_placement`, `tombstone_project_asset`, and `promote_asset_reference`.
   - User story link: Makes backend the owner of library behavior and not just a content asset append store.
   - Depends on: Tasks 1 and 2.
@@ -252,7 +252,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Service methods must reject cross-project content/asset combinations before mutation. Direct reference promotion creates or updates a project-scoped visual reference record that records `source_asset_id`; it must not rely only on marking the asset row as reference-eligible.
 
 - [ ] Task 4: Add backend API models for library requests and responses
-  - File: `contentflow_lab/api/models/status.py`
+  - File: `contentglowz_lab/api/models/status.py`
   - Action: Add request/response models for list filters, search, asset detail, usage entries, selection request, primary update, tombstone request, and reference promotion response.
   - User story link: Gives Flutter and future clients a typed API instead of overloading raw metadata maps.
   - Depends on: Task 1.
@@ -260,7 +260,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Avoid exposing provider secrets, signed URL internals, or raw prompt payloads.
 
 - [ ] Task 5: Expose authenticated project asset library endpoints
-  - File: `contentflow_lab/api/routers/status.py`
+  - File: `contentglowz_lab/api/routers/status.py`
   - Action: Add or delegate project asset routes for list/search/detail/usage/select/primary/tombstone/promote-reference while preserving `/api/status/content/{content_id}/assets`.
   - User story link: Lets users browse and act on project assets from the approved editor-linked picker.
   - Depends on: Tasks 2, 3, and 4.
@@ -268,7 +268,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: If route ownership grows too large, create a dedicated router in implementation, but this spec anchors the existing status router as the current asset API owner.
 
 - [ ] Task 6: Connect Image Robot/Flux generation records to library inventory
-  - File: `contentflow_lab/api/routers/status.py`
+  - File: `contentglowz_lab/api/routers/status.py`
   - Action: Ensure generated assets from Image Robot/Flux can be surfaced as project library assets with generation id, provider, model, profile id, reference ids, prompt summary/hash, dimensions, Bunny storage URI, and content usage when attached.
   - User story link: Makes generated assets reusable beyond the original editor session.
   - Depends on: Task 5 and the Flux provider backend implementation.
@@ -276,7 +276,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Do not return provider temporary URLs or make generation history the only inventory source.
 
 - [ ] Task 7: Harden tombstone and retention behavior
-  - File: `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/service.py`
   - Action: Implement tombstone modes that distinguish hide-from-library, block-future-reuse, preserve-existing-usage, and force-remove-candidate links where explicitly allowed.
   - User story link: Lets users clean the library without breaking content invisibly.
   - Depends on: Task 3.
@@ -284,7 +284,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Physical Bunny deletion remains out of scope unless a retention policy spec authorizes it.
 
 - [ ] Task 8: Add Flutter models and API methods
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add typed methods for project asset list/search/detail/usage/select/primary/tombstone/promote-reference and parse typed response models.
   - User story link: Provides client access to backend-owned asset library behavior.
   - Depends on: Task 5.
@@ -292,7 +292,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Keep signed URLs and provider details out of diagnostics.
 
 - [ ] Task 9: Add Riverpod library state controller
-  - File: `contentflow_app/lib/providers/providers.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`
   - Action: Add a scoped provider/controller for active project asset queries, filters, selected asset detail, mutations, and invalidation of content detail/history after selection.
   - User story link: Keeps the library responsive while preserving active project boundaries.
   - Depends on: Task 8.
@@ -300,20 +300,20 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - Notes: Move to a dedicated provider file during implementation only if the repo pattern supports that split.
 
 - [ ] Task 10: Add editor-linked picker UI surface
-  - File: `contentflow_app/lib/presentation/screens/editor/widgets/project_asset_picker.dart`
+  - File: `contentglowz_app/lib/presentation/screens/editor/widgets/project_asset_picker.dart`
   - Action: Add the picker/list/detail/selection/tombstone/reference-promotion UI as an editor-linked surface that consumes Task 9 state and opens only from an owned content editor context.
   - User story link: Gives creators access to project assets without creating a standalone media library or free playground.
   - Depends on: Task 9.
   - Validate with: widget tests for empty state, local-only limited eligibility, filter/search, detail usage, select, promote reference, tombstone, and stale mutation refresh.
-  - Notes: Do not add a global navigation entry or project-detail media browser. Update `contentflow_app/lib/router.dart` only if the editor integration creates a new editor subroute that needs sanitization.
+  - Notes: Do not add a global navigation entry or project-detail media browser. Update `contentglowz_app/lib/router.dart` only if the editor integration creates a new editor subroute that needs sanitization.
 
 - [ ] Task 11: Add documentation and changelog updates
-  - File: `contentflow_lab/README.md`
+  - File: `contentglowz_lab/README.md`
   - Action: Document API behavior, security model, filters, tombstone semantics, reference promotion, Bunny/storage assumptions, and local-only limitations; update app changelog/readme where implementation lands.
   - User story link: Keeps operators and future implementers aligned on what the picker/library is and is not.
   - Depends on: Tasks 5, 8, and 10.
   - Validate with: docs review against endpoint tests and UX behavior.
-  - Notes: Also update `contentflow_app/CHANGELOG.md` and `contentflow_app/README.md` if the UI surface ships in the same chantier. User-facing copy introduced by the picker must be localized through the app localization system and use natural accented French where French strings are added.
+  - Notes: Also update `contentglowz_app/CHANGELOG.md` and `contentglowz_app/README.md` if the UI surface ships in the same chantier. User-facing copy introduced by the picker must be localized through the app localization system and use natural accented French where French strings are added.
 
 ## Acceptance Criteria
 
@@ -353,7 +353,7 @@ Create a backend-owned project asset picker API and metadata model that normaliz
 
 ## Execution Notes
 
-- Read first: `contentflow_lab/status/db.py`, `contentflow_lab/status/service.py`, `contentflow_lab/api/routers/status.py`, `contentflow_app/lib/data/services/api_service.dart`, and `contentflow_app/lib/providers/providers.dart`.
+- Read first: `contentglowz_lab/status/db.py`, `contentglowz_lab/status/service.py`, `contentglowz_lab/api/routers/status.py`, `contentglowz_app/lib/data/services/api_service.dart`, and `contentglowz_app/lib/providers/providers.dart`.
 - Treat `content_assets` as the compatibility base, not necessarily the final complete asset-library schema.
 - Implement backend foundations before Flutter UI: schema, service, models, routes, tests, then typed client and providers.
 - Stop and reroute if server-side validation cannot prove same user/project/content/generation/storage ownership for selection.

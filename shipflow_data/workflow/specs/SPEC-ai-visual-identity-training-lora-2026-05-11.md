@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_app"
   - "api/images"
   - "Image Robot"
   - "Project visual memory"
@@ -33,22 +33,22 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
 evidence:
   - "User request 2026-05-11: create future chantier spec for fine-tuning / LoRA visual identity training."
   - "Product context: current ready specs promise guided visual consistency via project references, not perfect identity."
-  - "Code evidence: contentflow_lab/api/routers/images.py currently has Image Robot routes for profiles, generation, upload, history, and project-scoped data, but no training workflow or model registry."
-  - "Code evidence: contentflow_lab/api/services/ai_image_generation.py currently supports OpenAI image generation only as a local-file provider helper."
-  - "Code evidence: contentflow_lab/agents/images uses Bunny CDN upload/optimizer flows and Robolly-oriented deterministic Image Robot components."
+  - "Code evidence: contentglowz_lab/api/routers/images.py currently has Image Robot routes for profiles, generation, upload, history, and project-scoped data, but no training workflow or model registry."
+  - "Code evidence: contentglowz_lab/api/services/ai_image_generation.py currently supports OpenAI image generation only as a local-file provider helper."
+  - "Code evidence: contentglowz_lab/agents/images uses Bunny CDN upload/optimizer flows and Robolly-oriented deterministic Image Robot components."
   - "External docs checked by parent 2026-05-11: BFL FLUX.2 [klein] Training, BFL FLUX.2 Style Training, and official BFL FLUX.2 inference repo."
   - "User decision 2026-05-11: keep this spec as future research/non-blocking for the current Image Robot feature."
   - "User decision 2026-05-11: do not make product copy promise guaranteed identity."
@@ -152,18 +152,18 @@ Define a future controlled workflow for project-specific visual identity trainin
 ## Dependencies
 
 - Ready baseline backend spec: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
-- Ready editor UI spec: `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready editor UI spec: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Existing backend entrypoints:
-  - `contentflow_lab/api/routers/images.py`
-  - `contentflow_lab/api/services/ai_image_generation.py`
-  - `contentflow_lab/agents/images/**`
+  - `contentglowz_lab/api/routers/images.py`
+  - `contentglowz_lab/api/services/ai_image_generation.py`
+  - `contentglowz_lab/agents/images/**`
 - Expected future backend modules:
-  - `contentflow_lab/api/models/image_training.py`
-  - `contentflow_lab/api/routers/image_training.py`
-  - `contentflow_lab/api/services/image_training_store.py`
-  - `contentflow_lab/api/services/visual_identity_registry.py`
-  - `contentflow_lab/api/services/flux_training_provider.py`
-  - `contentflow_lab/api/services/visual_identity_evaluation.py`
+  - `contentglowz_lab/api/models/image_training.py`
+  - `contentglowz_lab/api/routers/image_training.py`
+  - `contentglowz_lab/api/services/image_training_store.py`
+  - `contentglowz_lab/api/services/visual_identity_registry.py`
+  - `contentglowz_lab/api/services/flux_training_provider.py`
+  - `contentglowz_lab/api/services/visual_identity_evaluation.py`
 - Existing storage/auth/data systems: Clerk, Bunny CDN, Turso/libSQL, Image Robot jobs/history once implemented by the Flux provider spec.
 - Fresh external docs: `fresh-docs checked`. The parent run and this `sf-ready` pass checked these official sources on 2026-05-11; no local BFL SDK/package version is currently pinned in this spec:
   - BFL FLUX.2 [klein] Training: `https://docs.bfl.ai/flux_2/flux2_klein_training`
@@ -183,10 +183,10 @@ Define a future controlled workflow for project-specific visual identity trainin
 
 ## Links & Consequences
 
-- `contentflow_lab/api/routers/images.py`: future generation routes need compatibility checks for `visual_identity_mode`, active artifact id, fallback reason, and registry lookup.
-- `contentflow_lab/api/services/ai_image_generation.py`: current OpenAI helper is not a training provider abstraction; training needs separate provider services and normalized contracts.
-- `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`: source images and evaluation outputs must use safe ingestion and avoid arbitrary/private URL fetches.
-- `contentflow_app` visual UI: future training controls should be behind a project settings or visual identity management surface, not inside the basic generation prompt flow.
+- `contentglowz_lab/api/routers/images.py`: future generation routes need compatibility checks for `visual_identity_mode`, active artifact id, fallback reason, and registry lookup.
+- `contentglowz_lab/api/services/ai_image_generation.py`: current OpenAI helper is not a training provider abstraction; training needs separate provider services and normalized contracts.
+- `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`: source images and evaluation outputs must use safe ingestion and avoid arbitrary/private URL fetches.
+- `contentglowz_app` visual UI: future training controls should be behind a project settings or visual identity management surface, not inside the basic generation prompt flow.
 - Turso/libSQL: training introduces new durable tables with sensitive metadata and audit requirements.
 - Legal/support/docs: consent withdrawal, deletion, copyright/style complaints, and model limitation explanations become support workflows.
 - Analytics/ops: training job latency, failure rate, evaluation pass rate, cost per project, activation rate, fallback rate, and deletion SLA become operational metrics.
@@ -219,77 +219,77 @@ Define a future controlled workflow for project-specific visual identity trainin
 ## Implementation Tasks
 
 - [ ] Task 1: Add provider/legal/product readiness gate
-  - Files: `contentflow_lab/api/models/image_training.py`, `contentflow_lab/api/services/flux_training_provider.py`, `contentflow_lab/README.md`.
+  - Files: `contentglowz_lab/api/models/image_training.py`, `contentglowz_lab/api/services/flux_training_provider.py`, `contentglowz_lab/README.md`.
   - Action: Represent provider training terms, dataset requirements, retention/deletion capabilities, likeness policy flags, copyright/style policy flags, price model, supported inference activation contract, and a `training_enabled=false` default config. The gate must block real provider submission unless an admin records current official-doc review, legal/product approval, budget cap, retention policy, and disclosure text.
   - User story link: Prevents shipping training before its obligations are explicitly recorded.
   - Depends on: none.
   - Validate with: model/config tests that provider submission remains disabled when any gate field is missing, stale, expired, or inconsistent.
 
 - [ ] Task 2: Define training data and registry models
-  - File: `contentflow_lab/api/models/image_training.py`
+  - File: `contentglowz_lab/api/models/image_training.py`
   - Action: Add typed models for dataset assets, dataset versions, consent records, rights records, training jobs, evaluation reports, registry artifacts, activation state, deletion state, and normalized provider errors.
   - User story link: Makes training auditable and project-scoped.
   - Depends on: Task 1.
   - Validate with: model validation tests for consent, retention, rights, artifact states, and invalid transitions.
 
 - [ ] Task 3: Add durable training store
-  - File: `contentflow_lab/api/services/image_training_store.py`
+  - File: `contentglowz_lab/api/services/image_training_store.py`
   - Action: Create Turso/libSQL-backed storage for datasets, dataset assets, consent/rights metadata, training jobs, evaluation reports, registry artifacts, audit events, and deletion requests.
   - User story link: Ensures training decisions and opt-out state survive process restarts.
   - Depends on: Task 2.
   - Validate with: store tests for project isolation, state transitions, deletion disablement, and audit append behavior.
 
 - [ ] Task 4: Add dataset intake and review API
-  - File: `contentflow_lab/api/routers/image_training.py`
+  - File: `contentglowz_lab/api/routers/image_training.py`
   - Action: Add authenticated admin-only endpoints to create dataset drafts, add/remove existing Bunny-backed project assets, capture consent/rights metadata, request review, approve/reject dataset versions, and list audit history.
   - User story link: Lets project owners prepare training data without arbitrary ungoverned upload.
   - Depends on: Tasks 2 and 3.
   - Validate with: API tests for ownership, missing consent, cross-project assets, review-required states, and deletion/withdrawal.
 
 - [ ] Task 5: Implement training provider adapter
-  - File: `contentflow_lab/api/services/flux_training_provider.py`
+  - File: `contentglowz_lab/api/services/flux_training_provider.py`
   - Action: Implement a provider abstraction for BFL FLUX.2 training or selected equivalent, including dataset manifest preparation, signed upload handling if required, training submission, polling, provider error normalization, cost metadata, artifact id capture, and timeout behavior.
   - User story link: Connects governed datasets to provider-managed training without leaking provider details.
   - Depends on: Tasks 1, 2, and 3.
   - Validate with: mocked provider tests for success, validation failure, rate limit, cost limit, timeout, provider retention metadata, and missing credentials.
 
 - [ ] Task 6: Build evaluation pipeline
-  - File: `contentflow_lab/api/services/visual_identity_evaluation.py`
+  - File: `contentglowz_lab/api/services/visual_identity_evaluation.py`
   - Action: Generate or score a fixed evaluation set comparing guided-reference baseline versus trained artifact for consistency, prompt adherence, safety, likeness/copyright risk, artifact quality, and placement fit. Thresholds must be configuration values recorded in the evaluation report; if thresholds are absent, activation is blocked.
   - User story link: Activates only artifacts that measurably improve the project within acceptable risk.
   - Depends on: Task 5.
   - Validate with: deterministic fixture tests, threshold tests, failed-evaluation quarantine, and report serialization tests.
 
 - [ ] Task 7: Add project visual identity registry
-  - File: `contentflow_lab/api/services/visual_identity_registry.py`
+  - File: `contentglowz_lab/api/services/visual_identity_registry.py`
   - Action: Register trained artifacts, enforce lifecycle transitions, expose active/staged/disabled status, handle activation/deactivation, and record deletion/opt-out state. Support multiple registry artifacts per project but allow at most one active artifact per generation profile unless a later spec defines composition rules.
   - User story link: Lets Image Robot choose a trained identity only when safe and active.
   - Depends on: Tasks 3 and 6.
   - Validate with: registry state machine tests and cross-project isolation tests.
 
 - [ ] Task 8: Integrate trained identity into generation
-  - File: `contentflow_lab/api/routers/images.py`
+  - File: `contentglowz_lab/api/routers/images.py`
   - Action: Extend generation request/response metadata to support `visual_identity_mode`, active artifact lookup, provider compatibility checks, fallback reason, and audit logging while preserving guided-reference behavior.
   - User story link: Makes trained identity available during generation without changing the product promise to a guarantee.
   - Depends on: Task 7 and the ready Flux provider implementation.
   - Validate with: API tests for active artifact use, disabled fallback, incompatible provider fallback, and metadata persistence.
 
 - [ ] Task 9: Add opt-out and deletion workflow
-  - File: `contentflow_lab/api/routers/image_training.py`
+  - File: `contentglowz_lab/api/routers/image_training.py`
   - Action: Add endpoints and service actions for consent withdrawal, artifact disablement, provider deletion request, dataset retention deletion, audit logging, and user-visible deletion status.
   - User story link: Gives owners and depicted subjects a path to stop future use.
   - Depends on: Tasks 3, 5, and 7.
   - Validate with: tests for immediate disablement, provider deletion failure, partial deletion status, and future generation block.
 
 - [ ] Task 10: Specify and implement app management UI later
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-ai-visual-identity-training-management-ui-2026-05-11.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-ai-visual-identity-training-management-ui-2026-05-11.md`
   - Action: Create a separate UI spec for project visual identity training management after backend gates exist; until that spec is ready, expose no public self-serve UI and keep admin-only operations backend/API driven.
   - User story link: Keeps training management separate from basic editor-linked generation and avoids accidental public exposure.
   - Depends on: Tasks 1 through 9.
   - Validate with: created UI spec or explicit handoff note stating that no app route, menu item, or editor prompt exposes training.
 
 - [ ] Task 11: Document operations, support, and product limits
-  - Files: `contentflow_lab/README.md`, `contentflow_app/README.md`, `contentflow_lab/.env.example`, support/legal docs selected during implementation.
+  - Files: `contentglowz_lab/README.md`, `contentglowz_app/README.md`, `contentglowz_lab/.env.example`, support/legal docs selected during implementation.
   - Action: Document setup, provider credentials, cost controls, data retention, deletion/opt-out, consent language, rights requirements, disclosure of provider deletion limitations, and careful product claims.
   - User story link: Prevents users and operators from misunderstanding trained visual identity as guaranteed or unconstrained.
   - Depends on: Tasks 1 through 9.
@@ -334,7 +334,7 @@ Define a future controlled workflow for project-specific visual identity trainin
 
 ## Execution Notes
 
-- Read first: `contentflow_lab/api/routers/images.py`, `contentflow_lab/api/services/ai_image_generation.py`, `contentflow_lab/agents/images/**`, `contentflow_lab/shipflow_data/technical/guidelines.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
+- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/**`, `contentglowz_lab/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
 - Start with data contracts and disabled-by-default gates before provider calls. The first implementation milestone should prove that unauthorized users, non-admin users, missing consent, missing rights, missing retention, missing budget, missing provider-doc review, and `training_enabled=false` all block submission.
 - Prefer provider-managed FLUX.2/BFL training adapter boundaries over self-hosted GPU infrastructure. Do not add local GPU orchestration, custom model hosting, marketplace export, or broad UI exposure in this chantier.
 - Reuse existing FastAPI router/service/model patterns, Clerk auth dependencies, Bunny-backed project asset references, and Turso/libSQL storage patterns. Avoid ad-hoc string state machines; encode lifecycle states as typed values and validate transitions.

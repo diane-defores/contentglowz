@@ -14,12 +14,13 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | ✅ | Consolidate ContentFlow surfaces into the canonical monorepo | ✅ done |
-| ✅ | Move GitHub source of truth to `diane-defores/contentflow` with Vercel roots for site and app | ✅ done |
+| ✅ | Move GitHub source of truth to `diane-defores/contentglowz` with Vercel roots for site and app | ✅ done |
 | ✅ | Create root and site task tracking from existing subproject state | ✅ done |
 | ✅ | Bring active ShipFlow documentation metadata and governance layers back into lint compliance for app/site/root docs | ✅ done |
-| ✅ | Retirer les artefacts Flutter web `contentflow_app/build` du suivi Git et laisser Vercel reconstruire `build/web` | ✅ done |
+| ✅ | Retirer les artefacts Flutter web `contentglowz_app/build` du suivi Git et laisser Vercel reconstruire `build/web` | ✅ done |
+| 🟠 | Exécuter la consolidation finale du renommage `ContentGlowz/contentglowz` (restes actifs + classification) via `specs/monorepo/renommage-contentglowz-monorepo-2026-05-14.md` | 🔄 in progress |
 | 🟠 | Keep root tracker, subproject trackers, and ShipFlow master dashboard aligned after each shipped task | 🔄 in progress |
-| ✅ | Reconnect `contentflow_site` and `contentflow_app` Vercel Git integrations to `diane-defores/contentflow`, then verify the current or next `main` SHA deploys both projects | ✅ done |
+| ✅ | Reconnect `contentglowz_site` and `contentglowz_app` Vercel Git integrations to `diane-defores/contentglowz`, then verify the current or next `main` SHA deploys both projects | ✅ done |
 
 ---
 
@@ -27,7 +28,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentflow_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/contentflow_site/SPEC-migrate-astro-v6.md` | ✅ done |
+| 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/contentglowz_site/SPEC-migrate-astro-v6.md` | ✅ done |
 | 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | ✅ done |
 | 🟠 | Verify post-cleanup Vercel build logs use `npm@11.12.1` after ship | 📋 todo |
 | ✅ | Website auth handoff, resilience messaging, and brand documentation are in place | ✅ done |
@@ -67,7 +68,7 @@
 |-----|------|--------|
 | 🟡 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
-| 🟠 | Implement Project Intelligence Engine Data Layer (contentflow_lab) | 🔄 in progress |
+| 🟠 | Implement Project Intelligence Engine Data Layer (contentglowz_lab) | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |
 | 🟠 | Implement AI asset understanding auto-tagging spec (understanding jobs, tags moderation, global candidate recommendations, attach flow, Flutter picker signals) | ✅ done |
@@ -98,7 +99,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Implémenter un vrai mode dark côté `contentflow_site` (selector + classes/data-theme + mapping des surfaces/texte) ; aujourd’hui les design tokens dark existent dans `contentflow_theme.json` mais ne sont pas activés dans `Layout.astro` | 📋 todo |
+| 🔴 | Implémenter un vrai mode dark côté `contentglowz_site` (selector + classes/data-theme + mapping des surfaces/texte) ; aujourd’hui les design tokens dark existent dans `contentglowz_theme.json` mais ne sont pas activés dans `Layout.astro` | 📋 todo |
 | 🔴 | Éliminer les valeurs littérales restantes hors design tokens (scan courant: Flutter 128, Site 401) en migrant d’abord les écrans App Shell/Auth/Feed/Settings + Layout/Hero/Pricing/Navbar | 🔄 in progress |
 | 🟠 | Rationaliser les design tokens orphelins ou non consommés (`--button-*`, `--space-mobile-*`, `--breakpoint-tablet/desktop`, etc.) pour réduire la dérive | 📋 todo |
 | 🟠 | Corriger la cohérence d’échelle typo/spacing (ratios instables) et figer une règle modulaire unique (Utopia/base ratio) | 📋 todo |

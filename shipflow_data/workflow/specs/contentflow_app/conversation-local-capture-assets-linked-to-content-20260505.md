@@ -2,7 +2,7 @@
 artifact: execution_log
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-05"
 updated: "2026-05-05"
 status: draft
@@ -14,17 +14,17 @@ risk_level: medium
 security_impact: unknown
 docs_impact: yes
 linked_systems:
-  - "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
-  - "contentflow_app Flutter capture flow"
-  - "contentflow_lab FastAPI status router"
+  - "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
+  - "contentglowz_app Flutter capture flow"
+  - "contentglowz_lab FastAPI status router"
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: active
 supersedes: []
 evidence:
   - "Conversation capture header records captured_at 2026-05-05 18:50:19 UTC."
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_app/conversation-local-capture-assets-linked-to-content-20260505.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_app/conversation-local-capture-assets-linked-to-content-20260505.md"
 ---
 
 # Conversation - local capture assets linked to content
@@ -143,14 +143,14 @@ next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_app/conversa
   └ Search channelToPlatform|_resolvePublishAccount|ApproveSeverity in
            api_service.dart
 
-• Ran tail -80 contentflow_app/lib/data/services/api_service.dart
+• Ran tail -80 contentglowz_app/lib/data/services/api_service.dart
   └       );
           return {'queued': true};
     … +77 lines (ctrl + t to view transcript)
       }
     }
 
-• Edited contentflow_app/lib/data/services/api_service.dart (+41 -0)
+• Edited contentglowz_app/lib/data/services/api_service.dart (+41 -0)
     4419  }
     4420 +
     4421 +String _captureDraftTitle(CaptureAsset asset) {
@@ -206,7 +206,7 @@ next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_app/conversa
   contenu” / “lier à un contenu”. Je garde le flux existant capture/
   partage/suppression intact.
 
-• Edited contentflow_app/lib/presentation/screens/capture/
+• Edited contentglowz_app/lib/presentation/screens/capture/
 capture_screen.dart (+236 -4)
       2
       3 +import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -554,12 +554,12 @@ capture_screen.dart (+236 -4)
   liens locaux.
 
 • Edited 2 files (+54 -18)
-  └ contentflow_app/test/data/capture_local_store_test.dart (+25 -0)
-     1  import 'package:contentflow_app/data/models/capture_asset.dart
+  └ contentglowz_app/test/data/capture_local_store_test.dart (+25 -0)
+     1  import 'package:contentglowz_app/data/models/capture_asset.dart
         ';
-     2 +import 'package:contentflow_app/data/models/capture_content_li
+     2 +import 'package:contentglowz_app/data/models/capture_content_li
         nk.dart';
-     3  import 'package:contentflow_app/data/services/capture_local_st
+     3  import 'package:contentglowz_app/data/services/capture_local_st
         ore.dart';
        ⋮
     34    });
@@ -591,11 +591,11 @@ capture_screen.dart (+236 -4)
     58 +  });
     59  }
 
-  └ contentflow_app/test/presentation/screens/capture/
+  └ contentglowz_app/test/presentation/screens/capture/
 capture_screen_test.dart (+29 -18)
-      7  import 'package:contentflow_app/presentation/screens/capture/
+      7  import 'package:contentglowz_app/presentation/screens/capture/
          capture_screen.dart';
-      8 +import 'package:contentflow_app/providers/providers.dart';
+      8 +import 'package:contentglowz_app/providers/providers.dart';
       9  import 'package:flutter/material.dart';
      10 +import 'package:flutter_riverpod/flutter_riverpod.dart';
      11  import 'package:flutter_test/flutter_test.dart';
@@ -677,7 +677,7 @@ capture_screen_test.dart (+29 -18)
   └ Read README.md, CHANGELOG.md, shipflow_data/technical/guidelines.md
 
 • Edited 4 files (+9 -3)
-  └ contentflow_app/CHANGELOG.md (+2 -1)
+  └ contentglowz_app/CHANGELOG.md (+2 -1)
     10  - Added Android-first local device capture with MediaProjectio
         n screenshots, foreground-service screen recording, optional m
         icrophone audio, local capture history, preview, discard, and
@@ -696,7 +696,7 @@ capture_screen_test.dart (+29 -18)
         lay; backend capture asset records store metadata only.
     17
 
-  └ contentflow_app/shipflow_data/technical/guidelines.md (+2 -1)
+  └ contentglowz_app/shipflow_data/technical/guidelines.md (+2 -1)
     90  - Persist only metadata and local file paths in SharedPreferen
         ces; never store binary capture data there.
     91 -- Keep backend upload, sync, retention, and storage-cost behav
@@ -710,7 +710,7 @@ capture_screen_test.dart (+29 -18)
         storage spec is ready.
     93
 
-  └ contentflow_app/README.md (+4 -1)
+  └ contentglowz_app/README.md (+4 -1)
     116  - local captures can be previewed, discarded, or shared/expor
          ted by the user
     117 +- local captures can be linked to a content draft or attached
@@ -736,7 +736,7 @@ capture_screen_test.dart (+29 -18)
          when FastAPI is reachable.
     128
 
-  └ contentflow_lab/CHANGELOG.md (+1 -0)
+  └ contentglowz_lab/CHANGELOG.md (+1 -0)
     7  ### Added
     8 +- Added a `content_assets` metadata contract for local-only cap
        ture assets linked to authenticated content records, with futur
@@ -746,7 +746,7 @@ capture_screen_test.dart (+29 -18)
        tion and development installs can use pinned dependency resolut
        ions.
 
-• Edited contentflow_app/lib/presentation/screens/capture/
+• Edited contentglowz_app/lib/presentation/screens/capture/
 capture_screen.dart (+9 -8)
      10  import '../../../data/models/content_item.dart';
      11 +import '../../../data/services/api_service.dart';
@@ -839,7 +839,7 @@ presentation/screens/capture/capture_screen_test.dart
   └ Resolving dependencies...
     Downloading packages...
     … +37 lines (ctrl + t to view transcript)
-    Analyzing contentflow_app...
+    Analyzing contentglowz_app...
     No issues found! (ran in 6.4s)
 
 ──────────────────────────────────────────────────────────────────────
@@ -850,11 +850,11 @@ presentation/screens/capture/capture_screen_test.dart
   à py_compile pour ce tour et je le note comme limite.
 
 • Ran git status --short
-  └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/shipflow_data/technical/guidelines.md
+  └  M contentglowz_app/CHANGELOG.md
+     M contentglowz_app/shipflow_data/technical/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
-    ?? contentflow_app/test/presentation/screens/onboarding/
+    ?? contentglowz_app/test/presentation/screens/onboarding/
 
 ──────────────────────────────────────────────────────────────────────
 
@@ -862,7 +862,7 @@ presentation/screens/capture/capture_screen_test.dart
   vérification statique passée, preuve backend limitée par absence de
   pytest, et shipping bloqué par fichiers sales non liés.
 
-• Edited shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-
+• Edited shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-
 content.md (+21 -10)
       9  updated_at: "2026-05-05 00:00:00 UTC"
      10 -status: ready
@@ -889,23 +889,23 @@ content.md (+21 -10)
     125
     126 -- [ ] Task 1: Add backend asset schema and service methods.
     126 +- [x] Task 1: Add backend asset schema and service methods.
-    127    - Files: `contentflow_lab/api/migrations/004_status_lifecyc
-         le.sql`, `contentflow_lab/status/db.py`, `contentflow_lab/sta
-         tus/schemas.py`, `contentflow_lab/status/service.py`
+    127    - Files: `contentglowz_lab/api/migrations/004_status_lifecyc
+         le.sql`, `contentglowz_lab/status/db.py`, `contentglowz_lab/sta
+         tus/schemas.py`, `contentglowz_lab/status/service.py`
         ⋮
     129
     130 -- [ ] Task 2: Add FastAPI request/response models and status
          router endpoints.
     130 +- [x] Task 2: Add FastAPI request/response models and status
          router endpoints.
-    131    - Files: `contentflow_lab/api/models/status.py`, `contentfl
+    131    - Files: `contentglowz_lab/api/models/status.py`, `contentfl
          ow_lab/api/routers/status.py`
         ⋮
     133
     134 -- [ ] Task 3: Add Flutter local link model/store methods.
     134 +- [x] Task 3: Add Flutter local link model/store methods.
-    135    - Files: `contentflow_app/lib/data/models/capture_content_l
-         ink.dart`, `contentflow_app/lib/data/services/capture_local_s
+    135    - Files: `contentglowz_app/lib/data/models/capture_content_l
+         ink.dart`, `contentglowz_app/lib/data/services/capture_local_s
          tore.dart`
         ⋮
     137
@@ -913,20 +913,20 @@ content.md (+21 -10)
          apture and attach metadata.
     138 +- [x] Task 4: Add Flutter API methods for create draft from c
          apture and attach metadata.
-    139    - Files: `contentflow_app/lib/data/services/api_service.dar
+    139    - Files: `contentglowz_app/lib/data/services/api_service.dar
          t`
         ⋮
     141
     142 -- [ ] Task 5: Add capture UI attachment flow.
     142 +- [x] Task 5: Add capture UI attachment flow.
-    143    - Files: `contentflow_app/lib/presentation/screens/capture/
+    143    - Files: `contentglowz_app/lib/presentation/screens/capture/
          capture_screen.dart`
         ⋮
     145
     146 -- [ ] Task 6: Update docs and changelog.
     146 +- [x] Task 6: Update docs and changelog.
-    147    - Files: `contentflow_app/README.md`, `contentflow_app/CHAN
-         GELOG.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_lab/
+    147    - Files: `contentglowz_app/README.md`, `contentglowz_app/CHAN
+         GELOG.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_lab/
          CHANGELOG.md`
         ⋮
     163  | 2026-05-05 | sf-build | GPT-5 | Created full-stack local ca
@@ -982,7 +982,7 @@ f
   ensure est incluse côté code, mais la preuve Turso prod reste à
   faire dans un environnement outillé.
 
-• Edited shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-
+• Edited shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-
 content.md (+1 -0)
     176  - Blocked: backend pytest could not run because `pytest` is n
          ot installed in this shell.
@@ -1010,13 +1010,13 @@ content.md (+1 -0)
 
   Fichiers clés :
 
-  - contentflow_app/lib/presentation/screens/capture/
+  - contentglowz_app/lib/presentation/screens/capture/
     capture_screen.dart
-  - contentflow_app/lib/data/models/capture_content_link.dart
-  - contentflow_app/lib/data/services/api_service.dart
-  - contentflow_lab/api/migrations/004_status_lifecycle.sql
-  - contentflow_lab/api/routers/status.py
-  - shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-
+  - contentglowz_app/lib/data/models/capture_content_link.dart
+  - contentglowz_app/lib/data/services/api_service.dart
+  - contentglowz_lab/api/migrations/004_status_lifecycle.sql
+  - contentglowz_lab/api/routers/status.py
+  - shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-
     content.md
 
   Vérifications :
@@ -1034,7 +1034,7 @@ content.md (+1 -0)
 
   ## Chantier
 
-  shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md
+  shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md
 
   Flux: sf-spec ✅ -> sf-ready ✅ -> sf-start ✅ -> sf-verify ⚠️  -> sf
 -
@@ -1067,11 +1067,11 @@ Something went wrong? Hit `/feedback` to report the issue.
   └ Read project-development-mode.md
 
 • Ran git status --short
-  └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/shipflow_data/technical/guidelines.md
+  └  M contentglowz_app/CHANGELOG.md
+     M contentglowz_app/shipflow_data/technical/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
-    ?? contentflow_app/test/presentation/screens/onboarding/
+    ?? contentglowz_app/test/presentation/screens/onboarding/
 
 • Ran git log --oneline -5
   └ 5f4704e chore: configure apk ci and trigger vercel redeploy
@@ -1091,10 +1091,10 @@ Something went wrong? Hit `/feedback` to report the issue.
   gate secrets/bugs bloque.
 
 • Ran git status --short --untracked-files=all
-  └  M contentflow_app/CHANGELOG.md
-     M contentflow_app/shipflow_data/technical/guidelines.md
+  └  M contentglowz_app/CHANGELOG.md
+     M contentglowz_app/shipflow_data/technical/guidelines.md
     … +24 lines (ctrl + t to view transcript)
-    ?? contentflow_app/test/presentation/screens/onboarding/
+    ?? contentglowz_app/test/presentation/screens/onboarding/
     onboarding_back_test.dart
 
 • Ran git status --short --untracked-files=all | rg -i "(^.. .*\.env|
@@ -1102,27 +1102,27 @@ Something went wrong? Hit `/feedback` to report the issue.
   │ \.jks$|keystore)"
   └ (no output)
 
-• Ran find shipflow_data/workflow/bugs/contentflow_app -maxdepth 1 -type f -name '*.md'
+• Ran find shipflow_data/workflow/bugs/contentglowz_app -maxdepth 1 -type f -name '*.md'
   │ -print 2>/dev/null | sort
-  └ shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-001.md
-    shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
+  └ shipflow_data/workflow/bugs/contentglowz_app/BUG-2026-05-05-001.md
+    shipflow_data/workflow/bugs/contentglowz_app/BUG-2026-05-05-002.md
 
 • Ran rg -n "ShipFlow Development Mode|development_mode|
   │ validation_surface|ship_before_preview_test|
   │ post_ship_verification|deployment_provider" CLAUDE.md
   │ … +2 lines
-  └ contentflow_site/CLAUDE.md:44:## ShipFlow Development Mode
-    contentflow_site/CLAUDE.md:46:- development_mode: hybrid
+  └ contentglowz_site/CLAUDE.md:44:## ShipFlow Development Mode
+    contentglowz_site/CLAUDE.md:46:- development_mode: hybrid
     … +9 lines (ctrl + t to view transcript)
-    contentflow_lab/CLAUDE.md:89:- post_ship_verification: none
-    contentflow_lab/CLAUDE.md:90:- deployment_provider: other
+    contentglowz_lab/CLAUDE.md:89:- post_ship_verification: none
+    contentglowz_lab/CLAUDE.md:90:- deployment_provider: other
 
 • Explored
   └ Read BUG-2026-05-05-002.md, BUG-2026-05-05-001.md
 
 • Ran git diff --stat
-  └  contentflow_app/CHANGELOG.md                       |   3 +-
-     contentflow_app/shipflow_data/technical/guidelines.md                      |   3 +-
+  └  contentglowz_app/CHANGELOG.md                       |   3 +-
+     contentglowz_app/shipflow_data/technical/guidelines.md                      |   3 +-
     … +19 lines (ctrl + t to view transcript)
     ++++++++
      19 files changed, 1093 insertions(+), 96 deletions(-)
@@ -1196,7 +1196,7 @@ presentation/screens/onboarding/onboarding_back_test.dart
   └ Resolving dependencies...
     Downloading packages...
     … +37 lines (ctrl + t to view transcript)
-    Analyzing contentflow_app...
+    Analyzing contentglowz_app...
     No issues found! (ran in 3.4s)
 
 • Waited for background terminal
@@ -1236,11 +1236,11 @@ bin/python -m pip install pytest
     Successfully installed iniconfig-2.3.0 pluggy-1.6.0 pytest-9.0.3
 
 • Ran git diff --name-only
-  └ contentflow_app/CHANGELOG.md
-    contentflow_app/shipflow_data/technical/guidelines.md
+  └ contentglowz_app/CHANGELOG.md
+    contentglowz_app/shipflow_data/technical/guidelines.md
     … +15 lines (ctrl + t to view transcript)
-    contentflow_lab/status/schemas.py
-    contentflow_lab/status/service.py
+    contentglowz_lab/status/schemas.py
+    contentglowz_lab/status/service.py
 
 • Ran /tmp/contentflow-pytest-venv/bin/python -m pytest tests/
   │ test_status_content_body.py -q
@@ -1360,7 +1360,7 @@ python -m pip install 'pydantic>=2,<3'
   ciblé. Je mets la spec à jour avec cette preuve, puis je stage tout
   le dirty state comme demandé.
 
-• Edited shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-
+• Edited shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-
 content.md (+6 -5)
       9  updated_at: "2026-05-05 00:00:00 UTC"
      10 -status: implemented_pending_manual_qa
@@ -1414,7 +1414,7 @@ f
     180 +- Shipped in quick mode with full dirty scope at user request
          .
 
-• Edited shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-
+• Edited shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-
 content.md (+1 -1)
     177  - Passed: `/tmp/contentflow-pytest-venv/bin/python -m pytest
          tests/test_status_content_body.py -q`.
@@ -1446,7 +1446,7 @@ content.md (+1 -1)
   └ [main cf4a393] Ship capture asset content linking
      25 files changed, 1718 insertions(+), 96 deletions(-)
     … +8 lines (ctrl + t to view transcript)
-     create mode 100644 contentflow_app/test/presentation/screens/
+     create mode 100644 contentglowz_app/test/presentation/screens/
     onboarding/onboarding_back_test.dart
 
 ──────────────────────────────────────────────────────────────────────
@@ -1455,7 +1455,7 @@ content.md (+1 -1)
   l’upstream manque, je le configurerai sur origin/main.
 
 • Ran git push
-  └ To github.com:diane-defores/contentflow.git
+  └ To github.com:diane-defores/contentglowz.git
        5f4704e..cf4a393  main -> main
 
 • Ran git status --short
@@ -1486,7 +1486,7 @@ content.md (+1 -1)
 
   ## Chantier
 
-  shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md
+  shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md
 
   Flux: sf-spec ✅ -> sf-ready ✅ -> sf-start ✅ -> sf-verify ⚠️  -> sf
 -
@@ -1496,14 +1496,14 @@ content.md (+1 -1)
 ─ Worked for 5m 45s ──────────────────────────────────────────────────
 
 
-› $tmux-capture-conversation enregistre ca a coté de contentflow_app/
-  shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md
+› $tmux-capture-conversation enregistre ca a coté de contentglowz_app/
+  shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md
 
 
 • J’utilise tmux-capture-conversation. Comme tu as explicitement donné
   la destination à côté de la spec, je vais capturer le panneau tmux
   courant et écrire le transcript dans le même dossier
-  shipflow_data/workflow/specs/contentflow_app/, avec un nom lié au chantier.
+  shipflow_data/workflow/specs/contentglowz_app/, avec un nom lié au chantier.
 
 • Explored
   └ Read canonical-paths.md

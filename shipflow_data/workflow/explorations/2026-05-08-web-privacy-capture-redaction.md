@@ -6,7 +6,7 @@ status: draft
 ---
 
 ## Contexte synthétique
-Spec ciblée: `shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md`.
+Spec ciblée: `shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md`.
 - Statut: en cours (Draft), mode best-effort, redaction V1 Android-only avec OCR ML Kit texte + visages + blur/pixelate/scramble.
 - Exigences explicitement vues: pipeline n’offre pas l’anonymisation parfaite; ajout d’un écran de disclosure et relecture manuelle.
 - But de cette exploration: vérifier la faisabilité **web/browser** pour un mode équivalent.

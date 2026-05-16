@@ -102,7 +102,7 @@ sions-Policy/display-capture
 
 ────────────────────────────────────────────────────────────────────────────
 
-• Je lis aussi l’hébergement de l’app : contentflow_app/vercel.json n’ajoute
+• Je lis aussi l’hébergement de l’app : contentglowz_app/vercel.json n’ajoute
   pas encore de headers de sécurité/permissions, contrairement au site
   marketing. Ça veut dire que rien ne bloque explicitement display-capture
   aujourd’hui côté app, mais il faudra l’acter au moment de coder pour
@@ -135,19 +135,19 @@ sions-Policy/display-capture
   La base réutilisable la plus proche est le feedback audio :
 
   - dépendance record déjà présente, mais pour l’audio uniquement :
-    contentflow_app/pubspec.yaml:56
-  - enregistrement audio dans FeedbackScreen : contentflow_app/lib/
+    contentglowz_app/pubspec.yaml:56
+  - enregistrement audio dans FeedbackScreen : contentglowz_app/lib/
     presentation/screens/feedback/feedback_screen.dart:23
-  - upload signé + création d’entrée backend : contentflow_app/lib/data/
+  - upload signé + création d’entrée backend : contentglowz_app/lib/data/
     services/feedback_service.dart:70
   - backend FastAPI avec URL d’upload, limite taille, MIME checks :
-    contentflow_lab/api/routers/feedback.py:138
+    contentglowz_lab/api/routers/feedback.py:138
 
-  Côté hébergement, contentflow_app/vercel.json n’a pas encore de headers
+  Côté hébergement, contentglowz_app/vercel.json n’a pas encore de headers
   Permissions-Policy, donc rien ne bloque explicitement la capture écran,
-  mais il faudra le gérer : contentflow_app/vercel.json:1. Côté Android
+  mais il faudra le gérer : contentglowz_app/vercel.json:1. Côté Android
   natif, le manifest ne déclare que RECORD_AUDIO, pas les permissions/
-  services MediaProjection : contentflow_app/android/app/src/main/
+  services MediaProjection : contentglowz_app/android/app/src/main/
   AndroidManifest.xml:1.
 
   Faisabilité par plateforme
@@ -330,7 +330,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Explored
   └ Read canonical-paths.md
-    List contentflow_site
+    List contentglowz_site
     List content
     Search *.md in content
 
@@ -347,7 +347,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Le dry-run du script propose un titre générique et une destination trop
   haute dans le monorepo. Vu ta demande, la destination cohérente est plutôt
-  dans contentflow_site/docs/conversations/, comme source de travail pour un
+  dans contentglowz_site/docs/conversations/, comme source de travail pour un
   futur article du site, pas directement dans src/content/blog sans
   rédaction/frontmatter.
 
@@ -360,7 +360,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 • Questions 1/1 answered
   • Je propose de capturer le panneau tmux courant avec le titre «
     Conversation feature capture écran et vidéo » vers `/home/ubuntu/
-    contentflow/contentflow_site/docs/conversations/conversation-feature-
+    contentflow/contentglowz_site/docs/conversations/conversation-feature-
     capture-ecran-video-20260504.md`. Est-ce bon ?
     answer: Oui (Recommended)
 
@@ -380,7 +380,7 @@ Something went wrong? Hit `/feedback` to report the issue.
   ## Paramètres Validés
 
   - Titre : Conversation feature capture écran et vidéo
-  - Destination : /home/ubuntu/contentflow/contentflow_site/docs/
+  - Destination : /home/ubuntu/contentflow/contentglowz_site/docs/
     conversations/conversation-feature-capture-ecran-video-20260504.md
   - Cible tmux : panneau courant
   - Usage : source interne pour rédaction web, pas contenu publié
@@ -394,7 +394,7 @@ Something went wrong? Hit `/feedback` to report the issue.
   "$SHIPFLOW_ROOT/skills/tmux-capture-conversation/scripts/
 capture_tmux_conversation.sh" \
     --title "Conversation feature capture écran et vidéo" \
-    --destination "/home/ubuntu/contentflow/contentflow_site/docs/
+    --destination "/home/ubuntu/contentflow/contentglowz_site/docs/
 conversations/conversation-feature-capture-ecran-video-20260504.md" \
     --yes
 
@@ -402,7 +402,7 @@ conversations/conversation-feature-capture-ecran-video-20260504.md" \
 
   Après capture :
 
-  - confirmer que le fichier Markdown existe dans contentflow_site/docs/
+  - confirmer que le fichier Markdown existe dans contentglowz_site/docs/
     conversations/
   - vérifier que le transcript contient bien les échanges sur screenshot,
     vidéo, full-screen device capture, Android Flutter et consentement
@@ -422,7 +422,7 @@ conversations/conversation-feature-capture-ecran-video-20260504.md" \
 › Implement the plan.
 
 
-• Je vais exécuter la capture validée vers contentflow_site/docs/
+• Je vais exécuter la capture validée vers contentglowz_site/docs/
   conversations/, puis vérifier que le Markdown a bien été créé et qu’il
   contient la conversation attendue.
 

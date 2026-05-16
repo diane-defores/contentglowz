@@ -15,24 +15,24 @@ security_impact: yes
 docs_impact: yes
 user_story: "En tant qu'utilisateur connecte de ContentFlow, je veux connecter une boite email IMAP et choisir le dossier lu afin que ContentFlow transforme automatiquement les nouveaux emails utiles en idees pour mon projet."
 linked_systems:
-  - contentflow_app
-  - contentflow_lab
+  - contentglowz_app
+  - contentglowz_lab
   - Gmail IMAP
   - UserProviderCredential
   - UserSettings.robotSettings
   - Idea Pool
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md"
     artifact_version: "unknown"
     required_status: ready
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-newsletter-receiving.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-newsletter-receiving.md"
     artifact_version: "unknown"
     required_status: draft
 supersedes: []
 evidence:
-  - "contentflow_lab/agents/newsletter/tools/imap_tools.py already implements IMAPNewsletterReader with env-backed credentials."
-  - "contentflow_lab/agents/sources/ingest.py ingests newsletters into source=passthrough newsletter_inbox but currently uses global env IMAP config."
-  - "contentflow_app/lib/presentation/screens/settings/integrations_screen.dart has no email integration UI."
+  - "contentglowz_lab/agents/newsletter/tools/imap_tools.py already implements IMAPNewsletterReader with env-backed credentials."
+  - "contentglowz_lab/agents/sources/ingest.py ingests newsletters into source=passthrough newsletter_inbox but currently uses global env IMAP config."
+  - "contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart has no email integration UI."
 next_step: "/sf-ship shipflow_data/workflow/specs/monorepo/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md"
 ---
 
@@ -140,11 +140,11 @@ Uses the authenticated user's configured IMAP settings by default. This remains 
 ## Validation Commands
 
 ```bash
-cd contentflow_lab && pytest tests/test_newsletter_router.py tests/test_settings_integrations_router.py
+cd contentglowz_lab && pytest tests/test_newsletter_router.py tests/test_settings_integrations_router.py
 ```
 
 ```bash
-cd contentflow_app && flutter test
+cd contentglowz_app && flutter test
 ```
 
 ## Current Chantier Flow

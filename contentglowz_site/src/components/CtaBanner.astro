@@ -1,0 +1,66 @@
+---
+---
+
+<aside class="cta-banner">
+  <div class="cta-banner-content">
+    <p class="cta-banner-text">
+      <strong>Stop losing ideas in scattered tools.</strong> ContentGlowz turns them into reviewed articles, social posts, and newsletters with you in control.
+    </p>
+    <a href="/#pricing" class="cta-banner-btn">Start Free</a>
+  </div>
+</aside>
+
+<style>
+  .cta-banner {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: var(--radius-md);
+    padding: var(--space-8) var(--space-10);
+    margin: var(--space-12) 0;
+  }
+
+  .cta-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+  }
+
+  .cta-banner-text {
+    color: white;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    flex: 1;
+  }
+
+  .cta-banner-text strong {
+    color: white;
+  }
+
+  .cta-banner-btn {
+    background: var(--color-surface);
+    color: var(--color-primary);
+    padding: var(--space-3) var(--space-8);
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: var(--text-base);
+    white-space: nowrap;
+    transition: transform var(--duration-base), box-shadow var(--duration-base);
+  }
+
+  .cta-banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+
+  @media (max-width: 600px) {
+    .cta-banner-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .cta-banner-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>

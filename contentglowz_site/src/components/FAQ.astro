@@ -1,0 +1,161 @@
+---
+const faqData = [
+  { question: "Does the AI really sound like me?", answer: "ContentGlowz uses weekly rituals, audience personas, and positioning inputs to draft closer to your voice. You still review and edit before anything goes out." },
+  { question: "What content formats are supported?", answer: "Blog articles, newsletters, social posts, short-form video scripts, reels, and YouTube video scripts are modeled in the workspace. You choose the formats that fit each idea." },
+  { question: "Where can I publish from ContentGlowz?", answer: "Supported social channels can be connected from Settings. External publishing depends on connected accounts and the current backend-supported channel flow; unsupported channels stay visible as blocked or manual paths." },
+  { question: "Do I review every piece of content?", answer: "Yes. ContentGlowz is human-led: AI drafts, you approve, skip, edit, schedule, or publish through supported connected flows." },
+  { question: "How does SEO work?", answer: "ContentGlowz uses DataForSEO for keyword data, competitor analysis, and SERP tracking. Articles can target keywords with real search volume, while rankings still depend on quality, site authority, and execution." },
+  { question: "What about affiliate links?", answer: "Register your affiliate programs with keywords. ContentGlowz can surface relevant matches when the topic fits, and you control which programs are active." },
+  { question: "Are API costs included?", answer: "Yes. All AI generation costs (LLM, search, analysis) are included in your plan. No surprise bills. The pricing is what you see." },
+  { question: "Can I use it on mobile?", answer: "The Flutter app works on Android, iOS, and web. Review and approve content from anywhere. The swipe interface was designed mobile-first." },
+  { question: "What happens if the backend is down?", answer: "The app enters a degraded mode: you can still access your workspace and continue reviewing cached content; most supported create/update actions are kept in a local queue and synced automatically when the API is back." },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqData.map(({ question, answer }) => ({
+    "@type": "Question",
+    "name": question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": answer,
+    },
+  })),
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+<section id="faq" class="faq-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Frequently Asked Questions</h2>
+      <p>Everything you need to know about ContentGlowz</p>
+    </div>
+
+    <div class="faq-grid">
+      {faqData.map(({ question, answer }, i) => (
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls={`faq-answer-${i}`}>
+            <span>{question}</span>
+            <span class="icon" aria-hidden="true">+</span>
+          </button>
+          <div class="faq-answer" id={`faq-answer-${i}`} role="region" aria-labelledby={`faq-q-${i}`}>
+            <p>{answer}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-section {
+    padding: 6rem 0;
+    background: var(--color-light-gray);
+  }
+
+  .container {
+    max-width: 900px;
+  }
+
+  .faq-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .faq-item:hover {
+    box-shadow: var(--shadow-card);
+  }
+
+  .faq-question {
+    width: 100%;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .faq-question:hover {
+    color: var(--color-primary);
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    transition: transform 0.3s ease;
+  }
+
+  .faq-item.active .icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+
+  .faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .faq-answer p {
+    color: var(--color-gray);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .faq-section {
+      padding: var(--space-16) 0;
+    }
+
+    .faq-question {
+      font-size: 1rem;
+      padding: 1.25rem 1rem;
+    }
+
+    .faq-item.active .faq-answer {
+      padding: 0 1rem 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  const faqItems = document.querySelectorAll('.faq-item');
+
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+
+    question?.addEventListener('click', () => {
+      const isActive = item.classList.contains('active');
+
+      // Close all items
+      faqItems.forEach(i => {
+        i.classList.remove('active');
+        i.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+
+      // Open clicked item if it wasn't active
+      if (!isActive) {
+        item.classList.add('active');
+        question.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

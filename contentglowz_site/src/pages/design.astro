@@ -1,0 +1,452 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+---
+
+<Layout
+  title="Design Playground — ContentGlowz"
+  description="ContentGlowz design token playground. Visual reference for colors, typography, spacing, radius, shadows, and motion."
+  noindex={true}
+>
+  <Navbar />
+  <main class="playground">
+    <div class="container">
+      <header class="pg-header">
+        <h1>Design Playground</h1>
+        <p>Live token reference for the ContentGlowz design system. All values sourced from <code>Layout.astro :root</code>.</p>
+      </header>
+
+      <!-- COLORS -->
+      <section class="pg-section">
+        <h2>Color Tokens</h2>
+
+        <h3 class="pg-group-label">Brand</h3>
+        <div class="swatch-row">
+          <div class="swatch" style="background:var(--color-primary)"><span>--color-primary</span><span>#3b82f6</span></div>
+          <div class="swatch" style="background:var(--color-primary-dark)"><span>--color-primary-dark</span><span>#2563eb</span></div>
+          <div class="swatch" style="background:var(--color-secondary)"><span>--color-secondary</span><span>#8b5cf6</span></div>
+          <div class="swatch" style="background:var(--color-accent)"><span>--color-accent</span><span>#06b6d4</span></div>
+        </div>
+
+        <h3 class="pg-group-label">Neutral</h3>
+        <div class="swatch-row">
+          <div class="swatch dark" style="background:var(--color-dark)"><span>--color-dark</span><span>#0f172a</span></div>
+          <div class="swatch dark" style="background:var(--color-gray)"><span>--color-gray</span><span>#64748b</span></div>
+          <div class="swatch light" style="background:var(--color-light-gray)"><span>--color-light-gray</span><span>#f1f5f9</span></div>
+          <div class="swatch light" style="background:var(--color-light-blue)"><span>--color-light-blue</span><span>#dbeafe</span></div>
+          <div class="swatch light bordered" style="background:var(--color-white)"><span>--color-white</span><span>#ffffff</span></div>
+        </div>
+
+        <h3 class="pg-group-label">Support</h3>
+        <div class="swatch-row">
+          <div class="swatch dark" style="background:var(--color-badge-bg); color:var(--color-badge-text)"><span>--color-badge-bg</span><span>#fef3c7</span></div>
+          <div class="swatch dark" style="background:var(--color-code-text); color:#0f172a"><span>--color-code-text</span><span>#e2e8f0</span></div>
+        </div>
+
+        <h3 class="pg-group-label">Gradient preview</h3>
+        <div class="gradient-strip"></div>
+      </section>
+
+      <!-- TYPOGRAPHY -->
+      <section class="pg-section">
+        <h2>Typography Scale</h2>
+        <p class="pg-meta">Font: <strong>Inter</strong> · Ratio: <strong>1.25</strong> · Base: <strong>1rem / 16px</strong></p>
+
+        <div class="type-scale">
+          <div class="type-row">
+            <span class="type-label">--text-h1 <em>fluid</em></span>
+            <span class="type-sample" style="font-size:var(--text-h1); font-weight:900; line-height:var(--leading-tight)">Heading 1</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-h2 <em>fluid</em></span>
+            <span class="type-sample" style="font-size:var(--text-h2); font-weight:700; line-height:var(--leading-tight)">Heading 2</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-h3 · 1.5rem</span>
+            <span class="type-sample" style="font-size:var(--text-h3); font-weight:700">Heading 3</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-lg · 1.25rem</span>
+            <span class="type-sample" style="font-size:var(--text-lg)">Lead / section subtitle</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-base · 1rem</span>
+            <span class="type-sample" style="font-size:var(--text-base)">Body text — readable and comfortable at this size.</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-sm · 0.875rem</span>
+            <span class="type-sample" style="font-size:var(--text-sm)">Meta, small body, captions</span>
+          </div>
+          <div class="type-row">
+            <span class="type-label">--text-xs · 0.75rem</span>
+            <span class="type-sample" style="font-size:var(--text-xs); text-transform:uppercase; letter-spacing:var(--tracking-wider); font-weight:700">LABEL / BADGE</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SPACING -->
+      <section class="pg-section">
+        <h2>Spacing Scale</h2>
+        <p class="pg-meta">Base: <strong>4px</strong> · Unit: <strong>0.25rem = 1</strong></p>
+        <div class="space-grid">
+          {[
+            ['--space-1',  '0.25rem', '4px'],
+            ['--space-2',  '0.5rem',  '8px'],
+            ['--space-3',  '0.75rem', '12px'],
+            ['--space-4',  '1rem',    '16px'],
+            ['--space-5',  '1.25rem', '20px'],
+            ['--space-6',  '1.5rem',  '24px'],
+            ['--space-8',  '2rem',    '32px'],
+            ['--space-10', '2.5rem',  '40px'],
+            ['--space-12', '3rem',    '48px'],
+            ['--space-16', '4rem',    '64px'],
+            ['--space-20', '5rem',    '80px'],
+            ['--space-24', '6rem',    '96px'],
+          ].map(([token, rem, px]) => (
+            <div class="space-row">
+              <div class="space-bar" style={`width:${rem}; max-width:100%`}></div>
+              <code>{token}</code>
+              <span>{rem} · {px}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- RADIUS -->
+      <section class="pg-section">
+        <h2>Border Radius</h2>
+        <div class="radius-row">
+          <div class="radius-chip" style="border-radius:var(--radius-sm)"><span>sm</span><em>8px</em></div>
+          <div class="radius-chip" style="border-radius:var(--radius-md)"><span>md</span><em>12px</em></div>
+          <div class="radius-chip" style="border-radius:var(--radius-lg)"><span>lg</span><em>16px</em></div>
+          <div class="radius-chip" style="border-radius:var(--radius-xl)"><span>xl</span><em>20px</em></div>
+          <div class="radius-chip" style="border-radius:var(--radius-2xl)"><span>2xl</span><em>28px</em></div>
+          <div class="radius-chip" style="border-radius:var(--radius-pill)"><span>pill</span><em>9999px</em></div>
+        </div>
+      </section>
+
+      <!-- SHADOWS -->
+      <section class="pg-section">
+        <h2>Shadows / Elevation</h2>
+        <div class="shadow-row">
+          <div class="shadow-chip" style="box-shadow:var(--shadow-sm)"><span>shadow-sm</span></div>
+          <div class="shadow-chip" style="box-shadow:var(--shadow-card)"><span>shadow-card</span></div>
+          <div class="shadow-chip" style="box-shadow:var(--shadow-card-hover)"><span>shadow-card-hover</span></div>
+          <div class="shadow-chip" style="box-shadow:var(--shadow-card-lg)"><span>shadow-card-lg</span></div>
+          <div class="shadow-chip primary-shadow" style="box-shadow:var(--shadow-primary)"><span>shadow-primary</span></div>
+          <div class="shadow-chip primary-shadow" style="box-shadow:var(--shadow-primary-hover)"><span>shadow-primary-hover</span></div>
+        </div>
+      </section>
+
+      <!-- MOTION -->
+      <section class="pg-section">
+        <h2>Motion</h2>
+        <div class="motion-grid">
+          <div class="motion-card">
+            <div class="motion-demo" data-duration="instant">Hover me</div>
+            <code>--duration-instant · 0.12s</code>
+          </div>
+          <div class="motion-card">
+            <div class="motion-demo" data-duration="fast">Hover me</div>
+            <code>--duration-fast · 0.15s</code>
+          </div>
+          <div class="motion-card">
+            <div class="motion-demo" data-duration="base">Hover me</div>
+            <code>--duration-base · 0.2s</code>
+          </div>
+          <div class="motion-card">
+            <div class="motion-demo" data-duration="slow">Hover me</div>
+            <code>--duration-slow · 0.3s</code>
+          </div>
+        </div>
+
+        <h3 class="pg-group-label">Easing</h3>
+        <div class="ease-row">
+          <div class="ease-demo ease-standard">ease-standard</div>
+          <div class="ease-demo ease-out">ease-out</div>
+          <div class="ease-demo ease-spring">ease-spring</div>
+        </div>
+      </section>
+
+      <!-- BUTTONS -->
+      <section class="pg-section">
+        <h2>Button System</h2>
+        <div class="btn-row">
+          <a href="#" class="btn-primary">Primary button</a>
+          <a href="#" class="btn-secondary">Secondary button</a>
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .playground {
+    padding: 8rem 0 var(--space-24);
+    background: var(--color-surface-subtle);
+    min-height: 100vh;
+  }
+
+  .pg-header {
+    margin-bottom: var(--space-16);
+    padding-bottom: var(--space-8);
+    border-bottom: 2px solid var(--color-surface-tint);
+  }
+
+  .pg-header h1 {
+    font-size: var(--text-h1);
+    font-weight: 900;
+    margin-bottom: var(--space-3);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .pg-header p {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+
+  .pg-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: var(--space-10);
+    margin-bottom: var(--space-8);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .pg-section > h2 {
+    font-size: var(--text-h3);
+    margin-bottom: var(--space-6);
+    color: var(--color-text-primary);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-surface-subtle);
+  }
+
+  .pg-meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-6);
+  }
+
+  .pg-group-label {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    color: var(--color-text-muted);
+    margin: var(--space-6) 0 var(--space-3);
+  }
+
+  /* Swatches */
+  .swatch-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .swatch {
+    width: 160px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-2) var(--space-3);
+    color: white;
+    font-size: var(--text-xs);
+    gap: 2px;
+  }
+
+  .swatch.light { color: var(--color-text-primary); }
+  .swatch.bordered { border: 1px solid var(--color-light-gray); }
+
+  .gradient-strip {
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+    margin-top: var(--space-3);
+  }
+
+  /* Typography */
+  .type-scale { display: flex; flex-direction: column; gap: var(--space-4); }
+
+  .type-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-surface-subtle);
+  }
+
+  .type-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-family: monospace;
+  }
+
+  .type-label em {
+    display: block;
+    font-style: normal;
+    color: var(--color-primary);
+  }
+
+  /* Spacing */
+  .space-grid { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  .space-row {
+    display: grid;
+    grid-template-columns: 200px 120px 1fr;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .space-bar {
+    height: 16px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    border-radius: var(--radius-pill);
+    min-width: 4px;
+  }
+
+  .space-row code {
+    font-size: var(--text-xs);
+    color: var(--color-primary);
+    background: var(--color-surface-tint);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+  }
+
+  .space-row span {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* Radius */
+  .radius-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .radius-chip {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    color: white;
+  }
+
+  .radius-chip span { font-size: var(--text-xs); font-weight: 700; }
+  .radius-chip em { font-size: var(--text-xs); opacity: 0.8; font-style: normal; }
+
+  /* Shadows */
+  .shadow-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+
+  .shadow-chip {
+    width: 140px;
+    height: 80px;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-2);
+  }
+
+  .shadow-chip.primary-shadow { color: var(--color-primary); }
+
+  /* Motion */
+  .motion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .motion-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .motion-demo {
+    width: 100%;
+    padding: var(--space-4);
+    background: var(--color-surface-subtle);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: var(--text-sm);
+    cursor: default;
+    transition: background var(--duration-base), transform var(--duration-base);
+  }
+
+  .motion-demo[data-duration="instant"] { transition-duration: var(--duration-instant); }
+  .motion-demo[data-duration="fast"]    { transition-duration: var(--duration-fast); }
+  .motion-demo[data-duration="base"]    { transition-duration: var(--duration-base); }
+  .motion-demo[data-duration="slow"]    { transition-duration: var(--duration-slow); }
+
+  .motion-demo:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-4px);
+  }
+
+  .motion-card code {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  /* Ease demos */
+  .ease-row {
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .ease-demo {
+    flex: 1;
+    min-width: 120px;
+    height: 56px;
+    background: var(--color-surface-subtle);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    transition: background 0.5s, transform 0.5s;
+    cursor: default;
+  }
+
+  .ease-demo.ease-standard { transition-timing-function: var(--ease-standard); }
+  .ease-demo.ease-out      { transition-timing-function: var(--ease-out); }
+  .ease-demo.ease-spring   { transition-timing-function: var(--ease-spring); }
+
+  .ease-demo:hover {
+    background: var(--color-secondary);
+    color: white;
+    transform: scale(1.04);
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+</style>

@@ -6,7 +6,7 @@ Project: contentflow
 Command run:
 
 ```bash
-rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentflowz/**' -g '!node_modules/**' -g '!contentflow_site/node_modules/**'
+rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentflowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'
 ```
 
 ## Scope Reviewed

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:30:12 UTC"
 updated: "2026-05-10"
@@ -18,23 +18,23 @@ risk_level: medium
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter editor"
-  - "contentflow_app Markdown preview"
-  - "contentflow_app Riverpod content detail state"
-  - "contentflow_app ApiService content body save/versioning"
-  - "contentflow_lab status body versioning"
-  - "contentflow_lab publish router"
+  - "contentglowz_app Flutter editor"
+  - "contentglowz_app Markdown preview"
+  - "contentglowz_app Riverpod content detail state"
+  - "contentglowz_app ApiService content body save/versioning"
+  - "contentglowz_lab status body versioning"
+  - "contentglowz_lab publish router"
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-infrastructure.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-infrastructure.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-full-body-preview.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-full-body-preview.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-content-pipeline-unification.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/architecture.md"
@@ -45,7 +45,7 @@ evidence:
   - "User chose option 1 on 2026-05-10: use a universal rich text editor, not format-specialized editors."
   - "lib/presentation/screens/editor/editor_screen.dart currently uses TextEditingController, TextField, and flutter_markdown preview."
   - "pubspec.yaml includes flutter_markdown but no rich text editor package such as Quill, Lexical, Slate, TipTap, ProseMirror, TinyMCE, or CKEditor."
-  - "shipflow_data/workflow/specs/contentflow_app/SPEC-content-editing-infrastructure.md plans a child spec for format-aware editor controls after the full-body reliability foundation."
+  - "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-editing-infrastructure.md plans a child spec for format-aware editor controls after the full-body reliability foundation."
 next_step: "/sf-end content editor multiformat"
 ---
 
@@ -138,8 +138,8 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
   - `test/data/content_item_test.dart`
   - New focused tests for formatting transforms if helpers are extracted.
 - Backend contracts:
-  - `../contentflow_lab/api/routers/status.py`
-  - `../contentflow_lab/status/service.py`
+  - `../contentglowz_lab/api/routers/status.py`
+  - `../contentglowz_lab/status/service.py`
 - Fresh external docs verdict: `fresh-docs not needed` for V1 because it uses existing local Flutter `TextField`, `TextEditingController`, and `flutter_markdown` contracts and does not add a new framework, SDK, service, or package. A later dependency-based editor must run a fresh docs/license/platform check in a separate readiness pass.
 
 ## Invariants
@@ -163,7 +163,7 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
 ## Documentation Coherence
 
 - Update `CHANGELOG.md` after the feature ships.
-- Update `contentflow_app/README.md` only if user-facing editing behavior is documented there.
+- Update `contentglowz_app/README.md` only if user-facing editing behavior is documented there.
 - Update localization strings for toolbar labels and dialogs.
 - No marketing-site copy change is required until the feature is actually implemented and verified.
 
@@ -276,7 +276,7 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
 - V1 implementation approach: use a Markdown-backed toolbar on the existing `TextField`, `TextEditingController`, and `flutter_markdown` preview.
 - Do not implement arbitrary colors in V1.
 - Read first: `lib/presentation/screens/editor/editor_screen.dart`, `lib/presentation/screens/editor/platform_preview_sheet.dart`, `lib/providers/providers.dart`, `lib/data/services/api_service.dart`, and `test/presentation/screens/editor/editor_screen_test.dart`.
-- Suggested validation commands: `flutter test test/presentation/screens/editor/editor_screen_test.dart` and `flutter test test/data/content_item_test.dart` from `contentflow_app`.
+- Suggested validation commands: `flutter test test/presentation/screens/editor/editor_screen_test.dart` and `flutter test test/data/content_item_test.dart` from `contentglowz_app`.
 - Stop conditions: if the existing text controller cannot support stable selection transforms, if `flutter_markdown` cannot render an offered toolbar feature, if a new package becomes necessary, or if storage format changes become necessary.
 - Keep helper functions pure and heavily tested before wiring UI buttons.
 - If implementation later needs a new package, stop and create a follow-up spec or readiness note with official docs, license, platform support, and migration/storage implications.

@@ -1,0 +1,284 @@
+# Changelog
+
+All notable changes to ContentGlowz are documented here.
+
+## [Unreleased]
+
+### Added
+- Added the canonical video timeline API with Turso/libSQL persistence, immutable versions, render job links, Remotion adapter props, signed artifact playback, and `video_version` project-asset usage auditing.
+- Added GCS-backed render artifact metadata, backend-signed playback URLs, and deterministic expected object keys for worker-restart reconciliation.
+
+### Security
+- Enforced render-safe asset resolution for timeline media clips before version creation, rejecting provider-temporary, local-only, tombstoned, degraded, foreign, missing, or incompatible assets before Remotion receives props.
+
+## [2026-05-04]
+
+### Added
+- Added a `content_assets` metadata contract for local-only capture assets linked to authenticated content records, with future-ready nullable storage URI fields and no media upload requirement.
+- Added `requirements.lock` / `requirements-dev.lock` so production and development installs can use pinned dependency resolutions.
+- Added a centralized PydanticAI runtime adapter and routed repo-understanding synthesis through it with explicit request-scoped OpenRouter credentials.
+- Added shared URL safety validation for LLM-callable Exa/Firecrawl URL-fetching tools.
+- Added optional integration guidance for Reels/STORM so incompatible packages stay isolated from the core API runtime.
+- Added technical docs for the PydanticAI adapter, URL safety gate, and local pytest/live API validation policy.
+
+### Changed
+- Upgraded `pydantic-ai` to the supported v1 line (`>=1.56.0,<2.0`) to clear CVE-2026-25580 without relaxing the LiteLLM security floor.
+- Updated Render and setup docs/scripts to install from lockfiles and align runtime setup on Python 3.12.
+- Moved `pytest-httpx` into the development lock path and made live API pytest files skip explicitly when no local/API test server is reachable.
+
+### Fixed
+- Ensured public-site repo understanding uses normalized safe URLs before Firecrawl map/scrape calls.
+- Fixed pytest marker configuration so checked-in markers are recognized during full local test runs.
+
+## [2026-04-26]
+
+### Fixed
+- Hardened persona draft GitHub repository understanding to use GitHub's README API endpoint and return actionable repository-access errors instead of the generic "Could not load GitHub repository content."
+
+## [2026-04-25]
+
+### Added
+- Added project selection mode persistence (`auto` / `selected` / `none`) in user settings and bootstrap/default-project resolution paths.
+- Added explicit project archive lifecycle endpoints (`POST /api/projects/{id}/archive`, `POST /api/projects/{id}/unarchive`) and project response flags for archived/deleted state.
+
+### Changed
+- Canonicalized project source payloads to `source_url` while keeping legacy `github_url` compatibility in request parsing.
+- Expanded project creation/onboarding flow to accept manual projects and generic website URLs (not GitHub-only), with project type inferred from source.
+- Updated project deletion/default-selection behavior to clear selected project state via `projectSelectionMode=none` when the selected project is archived/deleted.
+
+## [2026-04-22]
+
+### Added
+- Added user-managed OpenRouter credential support with encrypted storage, validation endpoints, and per-user runtime resolution for AI-backed persona generation.
+- Added persona draft jobs, repo understanding services, and supporting Pydantic models/tests for non-persisted persona suggestions sourced from repositories and public URLs.
+
+### Changed
+- Normalized persona contracts across FastAPI models, routers, and services so snake_case becomes the canonical internal shape while legacy camelCase payloads remain accepted.
+- Extended startup database bootstrapping to ensure creator profile, customer persona, job, and user credential tables are created automatically.
+
+### Fixed
+- Secured psychology job endpoints with authenticated ownership checks and replaced in-memory task tracking with persisted `job_store` records.
+- Documented the new `USER_SECRETS_MASTER_KEY` requirement in environment setup and example configuration.
+
+## [2026-04-21]
+
+### Added
+- Added GitHub integration endpoints for project and source discovery: listing accessible repositories and browsing repository folder trees so the frontend can build non-typed pickers.
+- Added repository metadata storage (`git_remote_url`) and project onboarding/patch support so selected repositories are persisted and surfaced during Flutter project screens.
+- Added repository folder utilities on content projects to expose `content_directories` and selected source paths for Drip/source setup workflows.
+
+### Changed
+- Made `api/routers/projects.py` imports for optional SEO/scheduler services resilient when AI-only dependencies are unavailable, returning `503` with actionable messages instead of crashing startup.
+
+### Fixed
+- Added a safe test-mode fallback for Zernio publish key lookup to keep publish-related tests stable when external credentials are absent in local/dev environments.
+
+## [2026-04-20]
+
+### Added
+- **Direct project create endpoint** — `POST /api/projects` now creates a project record directly from a GitHub URL, which matches the Flutter workspace management flow without forcing the full onboarding wizard.
+- **Bootstrap selection tests** — added targeted coverage for `/api/bootstrap` selection rules and default-project response mapping.
+- **Status lifecycle migration** — added `api/migrations/004_status_lifecycle.sql` to bootstrap lifecycle tables (content records, changes, bodies/edits, templates, drip plans, schedule jobs) in Turso/libsql.
+- **Structured audit actors** — added `status/audit.py` to canonicalize `actor_type/id/label/metadata` across lifecycle transitions and edits.
+- **Render deployment blueprint** — added `render.yaml` with Turso-first persistence env vars for the FastAPI backend.
+- **Drip scheduling windows** — added optional cadence fields `publish_time_start` and `publish_time_end` to support random publication slots within a daily range.
+
+### Changed
+- **Current project resolution now comes from `UserSettings.defaultProjectId`** — `/api/me`, `/api/bootstrap`, and project response mapping now treat the last-opened project stored in settings as the source of truth.
+- **Project response `is_default` is derived from user settings** instead of relying on the legacy `Project.isDefault` database flag.
+- **Project update now supports repository URL edits** through `PATCH /api/projects/{id}` with `github_url`.
+- **Status storage is Turso-first** — `status/db.py` now uses the maintained `libsql` driver (via `utils/libsql_sync.py`) instead of persisting lifecycle data to a local SQLite file.
+- **Audit fields persisted for transitions/edits** — lifecycle events now record structured actor fields (type/id/label/metadata) alongside legacy `changed_by` in `status_changes` and `content_edits`.
+- **Drip schedule calculation now assigns a random minute within each plan’s configured time window**, while keeping legacy `publish_time` as a fallback for backward compatibility.
+
+### Fixed
+- **Onboarding loop after adding first project** — `POST /api/projects` now marks the project onboarding status as `completed` and sets `defaultProjectId` when missing, so `/api/bootstrap` no longer reports an empty workspace on next launch.
+
+### Removed
+- **Legacy local status sync module** — removed `status/sync.py` after migrating lifecycle persistence to Turso/libsql.
+
+## [2026-04-13]
+
+### Added
+- **Website auth handoff endpoints** — `POST /api/auth/web/handoff` and `POST /api/auth/web/exchange` provide a short-lived site-to-app session bridge for Flutter web.
+- **Signed Clerk webhook endpoint** — `POST /api/webhooks/clerk` verifies Svix signatures and provisions minimal product settings for Clerk users.
+
+### Changed
+- **Authenticated user context now carries the validated bearer token** so the backend can mint secure web handoffs without introducing a second token source.
+- **CORS allowlist updated for the website auth flow** so the marketing site can call the API during login handoff.
+
+## [2026-04-12]
+
+### Added
+- **`utils/libsql_async.py`** — async compatibility wrapper around the maintained `libsql` driver so existing repository stores can keep using `await db_client.execute(...)` against Turso without the deprecated websocket client
+
+### Changed
+- **Production API publish path finalized on `api.winflowz.com`** — PM2 now starts the backend through `doppler run`, Caddy proxies the public hostname to `localhost:3000`, and the service is reachable from the Flutter app and Vercel builds with a stable root URL
+- **Flox environment includes `cmake`** — build prerequisite captured in `.flox/env/manifest.toml` and lockfile so native Python dependencies can be installed reproducibly on fresh environments
+- **Turso store modules now import `utils.libsql_async.create_client`** — `user_data_store`, `job_store`, `analytics_store`, `project_store`, and `content_config` no longer depend on `libsql-client`
+- **Python dependency switched from `libsql-client` to `libsql`** — repository now targets the maintained Turso/libSQL driver instead of the deprecated client
+
+### Fixed
+- **`/health` now reports `database: operational` in production** — production Turso connectivity was restored after replacing the deprecated client path and wiring the backend to the correct Doppler-injected credentials
+- **`ContentStrategistAgent` tool wiring** — removed the invalid `crewai.tools.Tool` wrapper usage and passed decorated tool methods directly so the strategist agent imports and boots correctly again
+- **Internal linking maintenance imports** — removed invalid global initializers from `maintenance_tracker.py` that referenced undefined classes and broke agent loading at startup
+
+### Added (continued)
+- **`agents/seo/schemas/pipeline_outputs.py`** — 6 Pydantic BaseModel schemas for SEO pipeline stage outputs: `ResearchOutput`, `StrategyOutput`, `WritingOutput`, `TechnicalOutput`, `MarketingOutput`, `EditingOutput`. All fields are flat (`str`, `list[str]`, `int`, `float`) to maximise LLM JSON parsing reliability
+
+### Changed (continued)
+- **Branding/defaults aligned from `ContentGlowzz` to `ContentGlowz`** — updated project paths, domains, Doppler project names, Bunny/IMAP defaults, memory IDs, repo links, and operational docs/examples across the backend and documentation
+- **SEO pipeline tasks now use `output_pydantic=`** — all 6 tasks in `seo_crew.py` have a typed schema attached; agents must emit valid JSON matching the schema instead of free-form text
+- **`results["structured"]`** added to `generate_content()` return value — callers get typed model instances (e.g. `results["structured"]["editing"].publication_ready`) alongside the existing `results["outputs"]` string dict (API shape preserved)
+- **`_raw()` helper** prefers `task.output.pydantic.model_dump_json()` over raw LLM text when Pydantic parsing succeeds; graceful fallback to raw string when it doesn't
+
+## [2026-04-08]
+
+### Removed
+- **4 hollow SEO tools deleted** — `ContentWriter`, `MetadataGenerator`, `ToneAdapter` from `writing_tools.py` and `TopicClusterBuilder` from `strategy_tools.py`. These returned hardcoded dicts/templates instead of real output, degrading agent quality by anchoring LLM reasoning to fake data (-370 lines)
+
+### Changed
+- **`KeywordIntegrator` wired to DataForSEO** — replaced hollow `_suggest_variations` (string permutations) with `_get_keyword_data` calling `DataForSEOClient.keyword_overview` for real search volume, keyword difficulty, and related keywords. Graceful fallback when credentials unavailable
+- **`CopywriterAgent.tools`** reduced from 4 hollow tools to 1 real tool (`integrate_keywords`)
+- **`ContentStrategistAgent.tools`** — removed `TopicClusterBuilder` from tool list
+
+### Added
+- **`agents/shared/tools/firecrawl_tools.py`** — 4 CrewAI `@tool` wrappers: `scrape_url`, `crawl_site`, `map_site`, `search_web` backed by Firecrawl SDK
+- **`agents/shared/tools/exa_tools.py`** — 3 CrewAI `@tool` wrappers: `exa_search`, `exa_find_similar`, `exa_get_contents` backed by Exa SDK (generalizes pattern from newsletter `content_tools.py`)
+- **SEO Research Analyst** now has `exa_search`, `exa_find_similar`, `scrape_url`, `crawl_site` for live web research during competitive analysis
+- **SEO Copywriter** now has `scrape_url` to read competitor articles before writing
+
+### Removed (continued)
+- **Dead CrewAI objects in Scheduler and Images pipelines** — removed 5 unused `from crewai import` statements, 8 unused `Agent()`/`Task()` factory functions (`create_image_strategist`, `create_strategy_task`, `create_image_generator`, `create_generation_task`, `create_image_optimizer`, `create_optimization_task`, `create_cdn_manager`, `create_deployment_task`), 4 `_create_agent()` methods, and 8 `self.agent = ...` assignments that were created and immediately ignored (-631 lines)
+
+### Changed
+- **Renamed `SchedulerCrew` → `SchedulerPipeline`** and **`ImageRobotCrew` → `ImagePipeline`** to reflect their true nature as deterministic Python pipelines, not LLM-orchestrated crews (`scheduler_crew.py`, `image_crew.py`, `agents/images/__init__.py`, `api/dependencies/`, `api/routers/images.py`, example files)
+- **`get_image_robot_crew` → `get_image_pipeline`** in FastAPI dependency injection
+
+## [2026-04-07]
+
+### Security
+- **Clerk JWT auth on 12 unprotected routers** — deployment, drip, templates, images, mesh, research, scheduler, newsletter, internal_linking, preview, reels, runs now require valid bearer token
+- **Shell injection eliminated** — all `subprocess.run(shell=True)` + f-string commands replaced with `shell=False` + list args in publishing_tools.py and tech_audit_tools.py
+- **Global exception handler no longer leaks internals** — `str(exc)` removed from 500 responses, errors logged server-side only
+- **CORS regex tightened** — `*.vercel.app` narrowed to `contentglowz*.vercel.app`
+- **Input sanitization** on test_runner.py user-supplied file paths
+
+### Changed
+- **Dependency pins** — all packages in requirements.txt now have upper-bound constraints (e.g. `>=2.0,<3.0`)
+- **Structured logging** — `logging.basicConfig` with ISO timestamps and configurable `LOG_LEVEL` env var at startup
+- **Rate limiting** — IP-based middleware (120 req/min), returns 429 with `Retry-After` header
+- **Health check** — `/health` now tests database connectivity (libsql/Turso) instead of hardcoded "not_configured"
+
+### Fixed
+- 7 bare `except:` clauses replaced with `except Exception:` in repo_analyzer.py and seo_research_tools.py
+- Drip router now uses authenticated `current_user.user_id` instead of hardcoded `"system"`
+
+## [2026-04-06]
+
+### Added
+- **Content Drip module** — publication progressive de contenu SSG, backend complet
+  - `api/models/drip.py` — 13 enums + 8 modeles Pydantic (cadence, clustering, SSG, GSC configs)
+  - `api/services/drip_service.py` — 17 methodes (CRUD plans, import directory, 3 modes clustering, scheduling fixe/ramp-up, execution tick, plan lifecycle)
+  - `api/routers/drip.py` — 17 endpoints `/api/drip/*` (plans CRUD, import, cluster, schedule, preview, activate/pause/resume/cancel, execute-tick, GSC submit/check)
+  - `api/services/frontmatter.py` — parser/writer YAML frontmatter pour fichiers Markdown
+  - `api/services/rebuild_trigger.py` — trigger rebuild SSG (webhook Vercel/Netlify, GitHub Actions)
+  - `api/services/gsc_client.py` — Google Search Console (Indexing API submit + URL Inspection API check)
+  - `SourceRobot.DRIP` ajoute aux enums existants
+  - Table `drip_plans` dans le schema SQLite
+  - Specs : `SPEC-progressive-content-release.md` + `ANALYSIS-drip-integration-with-existing.md`
+
+## [2026-03-30]
+
+### Added
+- Social Listener — multi-platform social listening for the Idea Pool
+  - `agents/sources/social_listener.py` — collects from Reddit, X, HN, YouTube via Exa AI + HN Algolia API
+  - Ranking by engagement velocity (40%), recency (30%), cross-platform convergence (30%)
+  - Trigram Jaccard deduplication, question detection (prefixes + "?"), convergence bonus (1.5x for 2+ platforms)
+  - `IdeaSource.SOCIAL_LISTENING` added to enum
+  - `POST /api/ideas/ingest/social` endpoint for manual trigger
+  - `ingest_social` job type in scheduler for automated runs
+  - 21 tests (question detection, dedup, convergence, ranking, HN parsing, full flow)
+- Content Quality Scoring — fix broken QualityChecker + textstat integration
+  - `agents/seo/tools/editing_tools.py` — replaced incomplete Flesch formula with textstat: Flesch Reading Ease, Flesch-Kincaid Grade, Gunning Fog, SMOG, Coleman-Liau, reading time
+  - Graceful fallback when textstat is not installed
+  - Language support via `textstat.set_lang()`
+  - 6 tests (structure, simple/complex scoring, textstat metrics, min words, grade)
+- OG Preview service — OpenGraph metadata extraction for link previews
+  - `api/services/og_preview.py` — httpx + BeautifulSoup, fallback to `<title>` and `<meta description>`, relative URL resolution, favicon extraction
+  - `api/routers/preview.py` — `GET /api/preview?url=...` endpoint
+  - Zero new dependencies (httpx + bs4 already in stack)
+  - 5 tests (full OG, fallbacks, relative images, empty HTML, model)
+- `shipflow_data/workflow/specs/contentglowz_lab/social-listener.md` — technical specification for social listener module
+- Feature documentation on ContentGlowz site:
+  - `platform/social-listening.md` — Social Listening feature page
+  - `platform/content-quality-scoring.md` — Content Quality Scoring feature page
+  - `platform/link-previews.md` — Link Previews feature page
+  - Platform index updated with 3 new features
+
+### Changed
+- `requirements.txt` — added `textstat>=0.7.0`
+- `api/models/idea_pool.py` — added `SOCIAL_LISTENING` to `IdeaSource` enum
+- `scheduler/scheduler_service.py` — added `ingest_social` job dispatch + `_run_ingest_social()`
+- `api/routers/idea_pool.py` — added `IngestSocialRequest` model + `/ingest/social` endpoint
+
+## [2026-03-29]
+
+### Added
+- Cookie-free pageview analytics system — replaces PostHog for project sites
+  - `api/services/analytics_store.py` — Turso-backed PageView table with summary, top pages, referrers, and timeseries queries
+  - `api/services/ua_parser.py` — lightweight stdlib-only user-agent parser (device, browser, OS)
+  - `api/routers/analytics.py` — public endpoints (`GET /a/s.js`, `POST /a/collect`) + authenticated query endpoints (`GET /api/analytics/{summary,pages,referrers,timeseries}?projectId=X`)
+  - `api/models/analytics.py` — Pydantic models for collect payload and query responses
+  - `agents/seo/tools/inject_analytics.py` — idempotent script injection into project site layouts (Astro, Next.js, Nuxt)
+  - Tracking script: ~600 bytes, cookie-free, SPA-aware (pushState + popstate), sendBeacon transport
+  - All data EU-hosted, no IP storage, no fingerprinting, GDPR/CCPA compliant without consent banner
+  - Query endpoints scoped by `projectId` via WorkDomain relationship for user isolation
+
+### Changed
+- Privacy page updated — PostHog references replaced with cookie-free analytics documentation
+- Features section — added "Cookie-Free Analytics" card
+
+## [2026-03-10]
+
+### Added
+- PostHog injecté dans `website/src/layouts/Layout.astro` (production uniquement, placeholder `POSTHOG_KEY_CONTENTGLOWZ` à remplacer)
+- Page `/privacy` créée (`website/src/pages/privacy.astro`) avec bouton opt-out PostHog
+
+## [Unreleased]
+
+### Added
+- `website/` blog infrastructure:
+  - `BlogPost.astro` layout — reading time (~200 wpm), auto-ToC from headings (≥3 h2/h3), related articles by tag overlap, full prose styles
+  - `/blog` index page — featured hero card + responsive post grid
+  - `/blog/[...slug]` dynamic route — static generation from content collection
+  - `@astrojs/sitemap` — auto-generates `sitemap-index.xml` on every build
+  - Layout.astro — OG tags, Twitter card, Article schema.org, canonical URL, Organization schema
+- `website/src/content/config.ts` — flexible blog schema: accepts `pubDate`/`publishDate`/`date`, `heroImage`/`image`, `author`/`authors`; `.transform()` normalizes to `date`/`cover`/`byline`
+- `GoogleIntegration` — real service account auth for Google APIs (replaces stubs)
+  - `trigger_google_indexing`: calls Indexing API v3 with 200/day quota guard, 100ms delay, `quota_remaining` in response
+  - `check_indexing_status`: URL Inspection API — returns `coverage_state`, `verdict`, `last_crawled`, `robots_txt_state`
+  - `submit_to_google_search_console`: sitemap submission via Search Console API
+  - Lazy imports for `google.*` so app doesn't fail without these optional deps
+- `google-api-python-client>=2.100.0` + `google-auth>=2.23.0` to requirements.txt
+- `GOOGLE_CREDENTIALS_FILE` + `GOOGLE_SITE_URL` env vars to `.env.example` with full setup instructions
+- `SitemapMonitor` — health check, coverage check, cross-site batch check
+- `check_sitemap_plugin` added to `DependencyAnalyzer` for framework audit
+- `LocalLinkChecker` — validates markdown links from source files pre-deploy (no HTTP required)
+- Multi-directory content support — `ProjectSettings.content_directories[]` with backward-compat migration
+- `RunHistory._RunContext.mark_failed()` — handle early-return failure paths inside context manager
+- Chatbot robot runs tab + robots tab — new API routes, React hooks, DB migration
+- Strategy frontmatter governance (project-scoped):
+  - `POST /api/content/frontmatter-audit` with modes: `audit`, `dry-run`, `autofix`
+  - Canonical normalization checks for `funnelStage`, `seoCluster`, `ctaType`, `contentStatus` (+ legacy aliases)
+  - Grouped autofix commits (single commit per `repo@branch`) via GitHub tree/commit API
+  - JSON/CSV exportable audit report for traceability
+
+### Changed
+- `repo_analyzer` — workspace cache-first, clone only on first run, no hardcoded local paths
+- GitHub OAuth token now forwarded: Clerk → Next.js proxy → Python API for private repo cloning
+- SEO robot run — passes `repo_url` from selected project with improved error messages + copy button on error banner
+- API health check now uses importlib instead of file-existence check
+- Removed redundant `update_sitemap` from publishing pipeline (Astro owns this via `@astrojs/sitemap`)
+- Consolidated RunHistory logging — removed duplicate JSON file logging in `scheduler_crew` + `image_crew`
+- `Grow -> Strategy` now treats registered project repositories (`Content Sources`) as the content container source of truth, with strict `projectId` scoping across funnel/cluster analytics

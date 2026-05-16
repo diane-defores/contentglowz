@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_site"
+project: "contentglowz_site"
 created: "2026-04-27"
 updated: "2026-05-03"
 status: ready
@@ -10,7 +10,7 @@ source_skill: sf-spec
 scope: "migration"
 owner: "Diane"
 confidence: medium
-user_story: "En tant que mainteneuse du site marketing ContentFlow, je veux migrer contentflow_site d'Astro 5 vers Astro 6, afin de garder un build supporté, sécurisé et déployable sans régression SEO ni rupture des pages de contenu."
+user_story: "En tant que mainteneuse du site marketing ContentFlow, je veux migrer contentglowz_site d'Astro 5 vers Astro 6, afin de garder un build supporté, sécurisé et déployable sans régression SEO ni rupture des pages de contenu."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -53,14 +53,14 @@ next_step: "/sf-start Implement Astro v6 migration"
 ---
 
 ## Title
-Migrate contentflow_site from Astro 5 to Astro 6
+Migrate contentglowz_site from Astro 5 to Astro 6
 
 ## Status
 Ready. Spec implementable without blocking gaps.
 
 Baseline observed on 2026-04-27:
 
-- Current working directory: `/home/claude/contentflow/contentflow_site`
+- Current working directory: `/home/claude/contentflow/contentglowz_site`
 - Current package name: `contentflow-landing`
 - Current Astro dependency: `astro@^5.17.1`
 - Current sitemap integration: `@astrojs/sitemap@^3.7.2`
@@ -71,11 +71,11 @@ Baseline observed on 2026-04-27:
 - Current repo state includes pre-existing uncommitted changes in docs and package files. The migration implementation must not revert or overwrite unrelated parallel agent changes.
 
 ## User Story
-En tant que mainteneuse du site marketing ContentFlow, je veux migrer `contentflow_site` d'Astro 5 vers Astro 6, afin de garder un build supporté, sécurisé et déployable sans régression SEO, contenu, sitemap, pages marketing, ni routes de redirection vers l'application.
+En tant que mainteneuse du site marketing ContentFlow, je veux migrer `contentglowz_site` d'Astro 5 vers Astro 6, afin de garder un build supporté, sécurisé et déployable sans régression SEO, contenu, sitemap, pages marketing, ni routes de redirection vers l'application.
 
 Actor: mainteneuse du site marketing ContentFlow.
 
-Trigger: décision de migration majeure Astro 5 -> 6 sur le repo `contentflow_site`.
+Trigger: décision de migration majeure Astro 5 -> 6 sur le repo `contentglowz_site`.
 
 Observable result: le site compile avec Astro 6, génère les mêmes familles de routes publiques, conserve les métadonnées SEO essentielles, conserve les redirections statiques `/sign-in`, `/sign-up`, `/launch`, et publie un artefact statique compatible Vercel.
 
@@ -148,7 +148,7 @@ La migration doit être incrémentale:
 - Documenter rollback et commandes de validation.
 
 ## Scope Out
-- Migration des autres repos `contentflow_app` et `contentflow_lab`.
+- Migration des autres repos `contentglowz_app` et `contentglowz_lab`.
 - Changement de design, copywriting, branding, pricing ou funnel.
 - Ajout d'un adapter SSR Vercel ou passage en server rendering.
 - Refonte du système de contenu au-delà de la compatibilité Astro 6.
@@ -158,8 +158,8 @@ La migration doit être incrémentale:
 - Revert des changements parallèles déjà présents dans le working tree.
 
 ## Constraints
-- Repo autorisé: `/home/claude/contentflow/contentflow_site` uniquement.
-- Fichier de spec autorisé: `/home/claude/contentflow/shipflow_data/workflow/specs/contentflow_site/SPEC-migrate-astro-v6.md`.
+- Repo autorisé: `/home/claude/contentflow/contentglowz_site` uniquement.
+- Fichier de spec autorisé: `/home/claude/contentflow/shipflow_data/workflow/specs/contentglowz_site/SPEC-migrate-astro-v6.md`.
 - Ne jamais annuler ou écraser les changements d'autres agents.
 - Le working tree actuel contient déjà des modifications non liées dans plusieurs fichiers docs et package files; l'implémentation doit inspecter les diffs avant d'éditer un fichier modifié.
 - Node doit rester `>=22 <23`; Astro 6 requiert Node `22.12.0` ou supérieur selon la doc officielle.
@@ -458,7 +458,7 @@ Investigation performed for this spec on 2026-04-27:
 Recommended incremental migration command sequence:
 
 ```bash
-cd /home/claude/contentflow/contentflow_site
+cd /home/claude/contentflow/contentglowz_site
 git status --short
 git diff -- package.json package-lock.json src/content/config.ts src/layouts/BlogPost.astro src/pages src/config/site.ts astro.config.mjs
 node -v
@@ -504,11 +504,11 @@ No user questions were asked by instruction. The implementation should proceed w
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-04-29 | sf-start | gpt-5 | Implemented Astro 6 migration, updated docs, regenerated lockfile, and validated build/preview outputs | implemented | /sf-verify Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-04-29 | sf-start | gpt-5 | Implemented Astro 6 migration, updated docs, regenerated lockfile, and validated build/preview outputs | implemented | /sf-verify Migrate contentglowz_site from Astro 5 to Astro 6 |
 | 2026-04-29 | sf-verify | gpt-5 | Verified Astro 6 migration against spec, docs, dependencies, generated output, bug gate, and quick risk checks | partial | Align root tracker and verify with npm 11 / Vercel preview before final ship |
-| 2026-04-29 | sf-end | gpt-5 | Closed Astro 6 migration session, aligned trackers, and updated changelog | closed | /sf-ship Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-04-29 | sf-end | gpt-5 | Closed Astro 6 migration session, aligned trackers, and updated changelog | closed | /sf-ship Migrate contentglowz_site from Astro 5 to Astro 6 |
 | 2026-04-29 | sf-ship | gpt-5 | Prepared commit and push for the Astro 6 migration closure | shipped | Verify Vercel preview after push |
 | 2026-05-03 | sf-verify | gpt-5 | Re-verified Astro 6 migration post-ship with current docs, dependency checks, Vercel deploy evidence, protected preview fetches, local preview, and handoff browser checks | partial | Fix npm/Vercel engine alignment, repo hygiene, dev-mode docs, and stale architecture note, then rerun sf-verify |
-| 2026-05-03 | sf-start | gpt-5 | Implemented post-verify cleanup: pinned Vercel npm commands, removed tracked venv from Git scope, documented development mode, and fixed stale architecture note | implemented | /sf-verify Migrate contentflow_site from Astro 5 to Astro 6 |
+| 2026-05-03 | sf-start | gpt-5 | Implemented post-verify cleanup: pinned Vercel npm commands, removed tracked venv from Git scope, documented development mode, and fixed stale architecture note | implemented | /sf-verify Migrate contentglowz_site from Astro 5 to Astro 6 |
 | 2026-05-03 | sf-verify | gpt-5 | Re-ran post-cleanup verification: npm 11.12.1 install/build/audit, dependency tree, doc freshness scan, local preview routes, and app handoff checks | partial | /sf-ship post-cleanup changes, then /sf-prod verify Vercel build logs use npm 11.12.1 |
-| 2026-05-03 | sf-ship | gpt-5 | Shipped post-cleanup fixes for npm/Vercel alignment, repo hygiene, dev-mode docs, stale docs, changelog, and trackers | shipped | /sf-prod contentflow_site |
+| 2026-05-03 | sf-ship | gpt-5 | Shipped post-cleanup fixes for npm/Vercel alignment, repo hygiene, dev-mode docs, stale docs, changelog, and trackers | shipped | /sf-prod contentglowz_site |

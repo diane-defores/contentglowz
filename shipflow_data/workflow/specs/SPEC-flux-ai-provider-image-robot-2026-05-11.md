@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_app"
   - "contentflowz/v0-flux-2-playground"
   - "api/images"
   - "agents/images"
@@ -27,10 +27,10 @@ linked_systems:
   - "Clerk"
   - "Turso/libSQL"
 depends_on:
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
   - artifact: "contentflowz/INSPIRATION.md"
@@ -45,7 +45,7 @@ evidence:
   - "User decision 2026-05-11: choose spec 1, Provider Flux pour Image Robot."
   - "User decision 2026-05-11: no free playground and no anonymous generation for now."
   - "User decision 2026-05-11: image AI should serve blog images, thumbnails, and post visuals inside existing guided workflows; video images may come later."
-  - "Audit evidence: contentflow_lab already exposes Image Robot endpoints in api/routers/images.py and agents/images with Robolly/OpenAI/Bunny patterns."
+  - "Audit evidence: contentglowz_lab already exposes Image Robot endpoints in api/routers/images.py and agents/images with Robolly/OpenAI/Bunny patterns."
   - "Audit evidence: contentflowz/v0-flux-2-playground uses FLUX.2 Pro prompt, aspect ratio, reference images, generated history, and image reuse concepts, but depends on Next/Supabase/Vercel Blob/Vercel OAuth."
   - "External docs checked 2026-05-11: Black Forest Labs FLUX.2 Pro API supports generation/editing task submission, input_image through input_image_8, width/height, seed, safety_tolerance and output_format."
   - "User decision 2026-05-11: validate stable flux-2-pro default, guided visual memory if aligned with Flux multi-reference docs, async content-queue execution, no V1 quotas, UI spec later, and product promise 'coherence visuelle guidee'."
@@ -97,12 +97,12 @@ ContentFlow already has Image Robot infrastructure, but it is centered on templa
 
 ## Solution
 
-Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fits the existing profile, project, auth, Bunny CDN, queue, and app contracts. Add controlled project visual references for guided visual consistency across characters, products, brand traits, and recurring motifs. Expose the feature to `contentflow_app` only through guided formats such as blog hero, OG/social card, thumbnail, and post visual.
+Extend `contentglowz_lab` Image Robot with a first-class `flux` provider that fits the existing profile, project, auth, Bunny CDN, queue, and app contracts. Add controlled project visual references for guided visual consistency across characters, products, brand traits, and recurring motifs. Expose the feature to `contentglowz_app` only through guided formats such as blog hero, OG/social card, thumbnail, and post visual.
 
 ## Scope In
 
 - Add `flux` as an allowed image provider in Image Robot profiles.
-- Implement a backend Flux provider service in `contentflow_lab` that calls the configured BFL-compatible API.
+- Implement a backend Flux provider service in `contentglowz_lab` that calls the configured BFL-compatible API.
 - Support text-to-image and reference-guided generation for up to eight approved project reference images.
 - Execute Flux generation asynchronously through the existing backend job/queue pattern so generated assets can feed content distribution and publication queues without requiring the user to wait on the request.
 - Map guided profile formats to explicit dimensions for blog hero, OG/social card, thumbnail, and post visuals.
@@ -127,7 +127,7 @@ Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fit
 
 ## Constraints
 
-- `contentflow_lab` is the source of truth for backend generation; `contentflow_app` consumes FastAPI only.
+- `contentglowz_lab` is the source of truth for backend generation; `contentglowz_app` consumes FastAPI only.
 - Authentication must use existing Clerk/FastAPI dependencies.
 - Project access must use real current user identity, not the current `get_current_user_id()` placeholder in `api/routers/images.py`.
 - Storage remains Bunny CDN.
@@ -141,15 +141,15 @@ Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fit
 
 ## Dependencies
 
-- Existing backend router: `contentflow_lab/api/routers/images.py`.
-- Existing image models: `contentflow_lab/api/models/images.py`.
-- Existing OpenAI image service pattern: `contentflow_lab/api/services/ai_image_generation.py`.
-- Existing image profile store: `contentflow_lab/api/services/image_profiles.py`.
-- Existing Image Robot pipeline: `contentflow_lab/agents/images/**`.
-- Existing Bunny CDN manager: `contentflow_lab/agents/images/cdn_manager.py`.
-- Existing auth dependency: `contentflow_lab/api/dependencies/auth.py`.
-- Existing project store/ownership patterns: `contentflow_lab/agents/seo/config/project_store.py` and ownership helpers where applicable.
-- Existing Flutter API service/provider conventions: `contentflow_app/lib/data/services/api_service.dart` and `contentflow_app/lib/providers/providers.dart`.
+- Existing backend router: `contentglowz_lab/api/routers/images.py`.
+- Existing image models: `contentglowz_lab/api/models/images.py`.
+- Existing OpenAI image service pattern: `contentglowz_lab/api/services/ai_image_generation.py`.
+- Existing image profile store: `contentglowz_lab/api/services/image_profiles.py`.
+- Existing Image Robot pipeline: `contentglowz_lab/agents/images/**`.
+- Existing Bunny CDN manager: `contentglowz_lab/agents/images/cdn_manager.py`.
+- Existing auth dependency: `contentglowz_lab/api/dependencies/auth.py`.
+- Existing project store/ownership patterns: `contentglowz_lab/agents/seo/config/project_store.py` and ownership helpers where applicable.
+- Existing Flutter API service/provider conventions: `contentglowz_app/lib/data/services/api_service.dart` and `contentglowz_app/lib/providers/providers.dart`.
 - Fresh external docs: `fresh-docs checked`. Official Black Forest Labs docs were checked on 2026-05-11:
   - `https://docs.bfl.ai/flux_2/flux2_overview`
   - `https://docs.bfl.ml/api-reference/models/generate-or-edit-an-image-with-flux2-%5Bpro%5D`
@@ -165,19 +165,19 @@ Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fit
 
 ## Links & Consequences
 
-- `contentflow_lab/api/routers/images.py`: needs real current-user ownership checks before project-scoped image features can be trusted.
-- `contentflow_lab/api/models/images.py`: needs provider enum expansion, Flux request metadata, and response fields for history/persistence status.
-- `contentflow_lab/api/services/ai_image_generation.py`: remains the OpenAI provider helper. Flux uses a new `contentflow_lab/api/services/flux_image_generation.py` service and `images.py` routes delegate by provider.
-- `contentflow_lab/api/services/image_profiles.py`: needs built-in Flux profiles for blog hero, social card, thumbnail, and post visual.
-- `contentflow_lab/agents/images/cdn_manager.py`: should remain the durable storage path; no Vercel Blob path is introduced.
-- `contentflow_app/lib/data/services/api_service.dart`: needs typed calls once the backend endpoint contract is ready.
+- `contentglowz_lab/api/routers/images.py`: needs real current-user ownership checks before project-scoped image features can be trusted.
+- `contentglowz_lab/api/models/images.py`: needs provider enum expansion, Flux request metadata, and response fields for history/persistence status.
+- `contentglowz_lab/api/services/ai_image_generation.py`: remains the OpenAI provider helper. Flux uses a new `contentglowz_lab/api/services/flux_image_generation.py` service and `images.py` routes delegate by provider.
+- `contentglowz_lab/api/services/image_profiles.py`: needs built-in Flux profiles for blog hero, social card, thumbnail, and post visual.
+- `contentglowz_lab/agents/images/cdn_manager.py`: should remain the durable storage path; no Vercel Blob path is introduced.
+- `contentglowz_app/lib/data/services/api_service.dart`: needs typed calls once the backend endpoint contract is ready.
 - Turso/libSQL: V1 requires new durable tables for image generation history and project visual memory.
 - Existing job/status systems: Flux generation should reuse or align with the current backend job pattern rather than creating a separate ad hoc polling loop.
 - Docs/support: update backend setup docs with Flux env vars and Image Robot provider behavior.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab` environment/setup documentation with required Flux variables, expected Bunny variables, and failure modes.
+- Update `contentglowz_lab` environment/setup documentation with required Flux variables, expected Bunny variables, and failure modes.
 - Update Image Robot API docs or README to distinguish template providers from AI generative providers.
 - Update app copy only after UI work begins, keeping wording guided by output type rather than model name.
 - Add a short implementation note explaining that consistency V1 uses approved reference images and structured project prompts; fine-tuning is out of scope.
@@ -195,70 +195,70 @@ Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fit
 ## Implementation Tasks
 
 - [x] Task 1: Fix Image Robot project ownership foundation
-  - File: `contentflow_lab/api/routers/images.py`
+  - File: `contentglowz_lab/api/routers/images.py`
   - Action: Replace the `get_current_user_id()` placeholder with the authenticated `CurrentUser` from `require_current_user` in project-scoped endpoints and helpers.
   - User story link: Prevents generated assets and references from crossing project/user boundaries.
   - Depends on: none.
   - Validate with: backend tests for owned, missing, and foreign project IDs.
 
 - [x] Task 2: Define durable image generation and visual memory schema
-  - File: `contentflow_lab/api/models/images.py`
+  - File: `contentglowz_lab/api/models/images.py`
   - Action: Add request/response models for `flux` provider metadata, generation history items, visual memory references, normalized provider errors, and explicit fields: `generation_id`, `history_persisted`, `provider_used`, `model`, `dimensions`, `seed`, `reference_ids`, `visual_memory_applied`, `references_used`, `provider_metadata`, and `error_code`.
   - User story link: Makes Flux outputs traceable and project-scoped.
   - Depends on: Task 1.
   - Validate with: model validation tests for provider, ratios/dimensions, references, and error categories.
 
 - [x] Task 3: Add Turso persistence for image generations and references
-  - File: `contentflow_lab/api/services/image_generation_store.py`
+  - File: `contentglowz_lab/api/services/image_generation_store.py`
   - Action: Create a store with idempotent startup ensure or migration for `ImageGeneration` and `ImageReference` tables. `ImageGeneration` stores `id`, `project_id`, `user_id`, `profile_id`, `provider`, `model`, `status`, `job_id`, `prompt`, `prompt_hash`, `width`, `height`, `seed`, `output_format`, `cdn_url`, `primary_url`, `responsive_urls_json`, `reference_ids_json`, `visual_memory_applied`, `provider_cost`, `provider_request_id`, `error_code`, `error_message`, `created_at`, `updated_at`, `started_at`, and `completed_at`. `ImageReference` stores `id`, `project_id`, `user_id`, `cdn_url`, `primary_url`, `mime_type`, `width`, `height`, `label`, `reference_type`, `approved`, `created_at`, and `updated_at`.
   - User story link: Gives users durable history and project consistency memory.
   - Depends on: Task 2.
   - Validate with: repository/store tests against SQLite/libSQL test DB.
 
 - [x] Task 4: Implement Flux provider service
-  - File: `contentflow_lab/api/services/flux_image_generation.py`
+  - File: `contentglowz_lab/api/services/flux_image_generation.py`
   - Action: Submit Flux generation/edit requests with prompt, dimensions, optional seed, output format, safety tolerance, and up to eight approved Bunny-backed references; poll from the worker with strict timeout; download only from allowed provider result URLs or provider base64 payloads; normalize provider errors.
   - User story link: Adds AI-native image generation without changing the app stack.
   - Depends on: Task 2.
   - Validate with: mocked HTTP tests for success, async polling, safety rejection, rate limit, invalid output, timeout, and missing API key.
 
 - [x] Task 5: Integrate Flux into profile-based generation
-  - File: `contentflow_lab/api/routers/images.py`
+  - File: `contentglowz_lab/api/routers/images.py`
   - Action: Extend `/api/images/generate-from-profile` or add a narrowly compatible endpoint so `image_provider: flux` creates a queued generation, persists initial history, and returns job/generation metadata. Worker completion generates via Flux, uploads via Bunny, persists final history, and exposes the existing response shape plus Flux metadata through status/history endpoints.
   - User story link: Keeps AI images inside the current Image Robot flow.
   - Depends on: Tasks 1, 3, and 4.
   - Validate with: API tests for profile resolution, Bunny upload, persisted history, and backward compatibility with Robolly/OpenAI.
 
 - [x] Task 6: Harden image ingestion into Bunny
-  - File: `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`
+  - File: `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`
   - Action: Add safe ingestion constraints used by Flux output/reference flows: allowlisted source types, MIME allowlist, maximum byte size, request timeout, no arbitrary internal/private URL fetching, and streaming or bounded download behavior.
   - User story link: Prevents provider/reference image handling from becoming an SSRF or resource-exhaustion path.
   - Depends on: Task 4.
   - Validate with: tests for rejected private URLs, unsupported MIME types, oversize responses, and successful local/provider-safe uploads.
 
 - [x] Task 7: Add guided Flux profiles
-  - File: `contentflow_lab/api/services/image_profiles.py`
+  - File: `contentglowz_lab/api/services/image_profiles.py`
   - Action: Add built-in profiles for AI blog hero, AI social card, AI thumbnail, and AI post visual with `image_provider: flux`, guided base prompts, path types, and format defaults.
   - User story link: Prevents the feature from becoming an unguided playground.
   - Depends on: Task 5.
   - Validate with: profile listing tests and generated prompt snapshots.
 
 - [x] Task 8: Add project visual memory endpoints
-  - File: `contentflow_lab/api/routers/images.py`
+  - File: `contentglowz_lab/api/routers/images.py`
   - Action: Add authenticated endpoints to list/add/remove/approve project reference images. References must be durable Bunny assets with DB ownership metadata before they can be sent to Flux.
   - User story link: Enables consistent recurring characters, products, and visual traits per project.
   - Depends on: Tasks 3 and 6.
   - Validate with: ownership tests, MIME/size validation tests, and cross-project rejection tests.
 
 - [x] Task 9: Prepare Flutter API integration contract
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add typed client methods for listing Flux-capable profiles, queueing generation from a profile, reading generation status/history, and selecting visual memory references. Do not add the final screen flow in this spec.
   - User story link: Allows the app to consume the backend without a separate web playground.
   - Depends on: Task 5 and Task 8.
   - Validate with: Dart unit tests for request serialization, response parsing, and error mapping.
 
 - [x] Task 10: Document configuration and operations
-  - File: `contentflow_lab/README.md`, `contentflow_lab/.env.example`
+  - File: `contentglowz_lab/README.md`, `contentglowz_lab/.env.example`
   - Action: Document Flux env vars, Bunny dependency, safety/error behavior, and the V1 consistency model.
   - User story link: Makes the feature operable and debuggable.
   - Depends on: Tasks 4 and 5.
@@ -304,7 +304,7 @@ Extend `contentflow_lab` Image Robot with a first-class `flux` provider that fit
 
 ## Execution Notes
 
-- Read first: `contentflow_lab/api/routers/images.py`, `contentflow_lab/api/models/images.py`, `contentflow_lab/api/dependencies/auth.py`, `contentflow_lab/api/dependencies/ownership.py`, `contentflow_lab/api/services/image_profiles.py`, `contentflow_lab/api/services/ai_image_generation.py`, `contentflow_lab/agents/images/cdn_manager.py`, `contentflow_lab/agents/images/tools/bunny_cdn_tools.py`, and `contentflow_app/lib/data/services/api_service.dart`.
+- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/models/images.py`, `contentglowz_lab/api/dependencies/auth.py`, `contentglowz_lab/api/dependencies/ownership.py`, `contentglowz_lab/api/services/image_profiles.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/cdn_manager.py`, `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`, and `contentglowz_app/lib/data/services/api_service.dart`.
 - Implement in the task order listed above. Do not start Flux provider calls before project ownership and persistence contracts are fixed.
 - Use stable `flux-2-pro` as the default model. Environment override is allowed for operators, but the app-facing flow must not expose model switching in V1.
 - Use asynchronous Image Robot jobs for V1. The request path must not wait for Flux output; workers may poll Flux with a strict timeout and must persist terminal state.

@@ -18,10 +18,10 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_app"
   - "Unified Project Asset Library"
-  - "contentflow_lab/status"
+  - "contentglowz_lab/status"
   - "api/projects/{project_id}/assets"
   - "Content editor"
   - "Capture assets"
@@ -32,10 +32,10 @@ linked_systems:
   - "Global Asset Library"
   - "Provider credentials and BYOK settings"
 depends_on:
-  - artifact: "contentflow_lab/CLAUDE.md"
+  - artifact: "contentglowz_lab/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/CLAUDE.md"
+  - artifact: "contentglowz_app/CLAUDE.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/workflow/specs/SPEC-unified-project-asset-library-2026-05-11.md"
@@ -61,8 +61,8 @@ evidence:
   - "User decision 2026-05-13: V1 needs both a global reusable asset library and project-level asset views/attachments."
   - "User decision 2026-05-13: provider credentials must support both platform/global keys and user BYOK keys, like the rest of the product."
   - "User decision 2026-05-13: implementation should be compatible with Gemini."
-  - "Code evidence: contentflow_lab already exposes project assets through api/routers/assets.py and status.service project_assets records with metadata, events and usages."
-  - "Code evidence: contentflow_app already has ProjectAsset models, ApiService methods, Riverpod state and a reusable ProjectAssetPicker."
+  - "Code evidence: contentglowz_lab already exposes project assets through api/routers/assets.py and status.service project_assets records with metadata, events and usages."
+  - "Code evidence: contentglowz_app already has ProjectAsset models, ApiService methods, Riverpod state and a reusable ProjectAssetPicker."
 next_step: "/sf-ship shipflow_data/workflow/specs/SPEC-ai-asset-understanding-auto-tagging-2026-05-13.md"
 ---
 
@@ -172,19 +172,19 @@ Add an AI asset-understanding layer on top of Project Asset Library. The backend
 
 ## Dependencies
 
-- Existing backend asset router: `contentflow_lab/api/routers/assets.py`.
-- Existing project asset schemas: `contentflow_lab/status/schemas.py` and `contentflow_lab/api/models/status.py`.
-- Existing status service and migrations: `contentflow_lab/status/service.py`, `contentflow_lab/status/db.py`.
+- Existing backend asset router: `contentglowz_lab/api/routers/assets.py`.
+- Existing project asset schemas: `contentglowz_lab/status/schemas.py` and `contentglowz_lab/api/models/status.py`.
+- Existing status service and migrations: `contentglowz_lab/status/service.py`, `contentglowz_lab/status/db.py`.
 - Existing or new provider credential settings service for user BYOK and platform/global provider keys.
 - Existing Flutter asset models/API/provider/picker:
-  - `contentflow_app/lib/data/models/project_asset.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `contentglowz_app/lib/data/models/project_asset.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
 - Existing capture flows:
-  - `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
-  - `contentflow_app/lib/data/models/capture_asset.dart`
-- Media tooling: use proven tools such as `ffprobe`/`ffmpeg` for duration, frame extraction, audio extraction and thumbnail sampling. Reuse `contentflow_lab/agents/reels/audio_extractor.py` patterns where appropriate.
+  - `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+  - `contentglowz_app/lib/data/models/capture_asset.dart`
+- Media tooling: use proven tools such as `ffprobe`/`ffmpeg` for duration, frame extraction, audio extraction and thumbnail sampling. Reuse `contentglowz_lab/agents/reels/audio_extractor.py` patterns where appropriate.
 - Fresh external docs checked:
   - Gemini API video understanding docs, last updated 2026-05-07: supports video inputs, audio+visual processing, timestamps, clipping and FPS customization. `fresh-docs checked`.
   - OpenAI Images/Vision docs, current 2026-05-13: supports image input analysis through vision-capable models. `fresh-docs checked`.
@@ -205,20 +205,20 @@ Add an AI asset-understanding layer on top of Project Asset Library. The backend
 
 ## Links & Consequences
 
-- `contentflow_lab/status/db.py`: needs idempotent tables/indexes for canonical global assets, project asset attachments/usages, understanding jobs, results, tags, segments, quotas and recommendation events.
-- `contentflow_lab/status/service.py`: needs canonical asset upsert/link helpers, asset-understanding create/update/list helpers, quota checks and event recording.
-- `contentflow_lab/api/models/status.py`: needs request/response models for global assets, project attachments, analysis jobs, tags, segments, attribution, credential source, quotas and recommendations.
-- `contentflow_lab/api/routers/assets.py`: needs endpoints under `/api/projects/{project_id}/assets/{asset_id}/understanding` and `/api/projects/{project_id}/assets/recommend`.
-- `contentflow_lab/api/services/*`: needs an analyzer service with provider adapters, credential resolution, guardrail enforcement and deterministic media extraction.
-- `contentflow_app/lib/data/models/project_asset.dart`: needs typed understanding metadata or dedicated models.
-- `contentflow_app/lib/data/services/api_service.dart`: needs typed calls for queue/status/accept-tags/recommendations.
-- `contentflow_app/lib/providers/providers.dart`: needs state methods that avoid stale active-project updates, following the existing asset-library guard pattern.
-- `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`: can show AI tag chips, accepted tags, confidence, fit reasons and credit warnings.
+- `contentglowz_lab/status/db.py`: needs idempotent tables/indexes for canonical global assets, project asset attachments/usages, understanding jobs, results, tags, segments, quotas and recommendation events.
+- `contentglowz_lab/status/service.py`: needs canonical asset upsert/link helpers, asset-understanding create/update/list helpers, quota checks and event recording.
+- `contentglowz_lab/api/models/status.py`: needs request/response models for global assets, project attachments, analysis jobs, tags, segments, attribution, credential source, quotas and recommendations.
+- `contentglowz_lab/api/routers/assets.py`: needs endpoints under `/api/projects/{project_id}/assets/{asset_id}/understanding` and `/api/projects/{project_id}/assets/recommend`.
+- `contentglowz_lab/api/services/*`: needs an analyzer service with provider adapters, credential resolution, guardrail enforcement and deterministic media extraction.
+- `contentglowz_app/lib/data/models/project_asset.dart`: needs typed understanding metadata or dedicated models.
+- `contentglowz_app/lib/data/services/api_service.dart`: needs typed calls for queue/status/accept-tags/recommendations.
+- `contentglowz_app/lib/providers/providers.dart`: needs state methods that avoid stale active-project updates, following the existing asset-library guard pattern.
+- `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`: can show AI tag chips, accepted tags, confidence, fit reasons and credit warnings.
 - Docs: backend README and app support copy must distinguish "AI suggested tags" from user-confirmed tags, explain global-vs-project library behavior, document BYOK/platform credential resolution, quotas and legal rights.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` with asset understanding setup, provider env/BYOK requirements, job behavior, retention and attribution rules.
+- Update `contentglowz_lab/README.md` with asset understanding setup, provider env/BYOK requirements, job behavior, retention and attribution rules.
 - Update app docs or support copy when the picker starts showing AI tags/recommendations.
 - Add operational notes for ffmpeg availability, provider cost/time limits, default guardrail env vars, BYOK/platform credential precedence and quota behavior.
 - Add a short privacy note: software-demo video analysis may contain sensitive screen content; raw frames/OCR should not be stored as durable metadata.
@@ -243,84 +243,84 @@ Add an AI asset-understanding layer on top of Project Asset Library. The backend
 ## Implementation Tasks
 
 - [ ] Task 1: Define asset understanding schemas and metadata contract
-  - File: `contentflow_lab/api/models/status.py`, `contentflow_lab/status/schemas.py`
+  - File: `contentglowz_lab/api/models/status.py`, `contentglowz_lab/status/schemas.py`
   - Action: Add models/enums for `GlobalAsset`, `ProjectAssetAttachment`, `AssetUnderstandingStatus`, `AssetUnderstandingJob`, `AssetUnderstandingResult`, `AssetSemanticTag`, `AssetSceneSegment`, `AssetSourceAttribution`, `AssetCredentialSource`, `AssetUnderstandingQuota`, `AssetRecommendationRequest`, and `AssetRecommendationResponse`.
   - User story link: Gives the system a durable vocabulary for "what is in this asset" and how it can be reused.
   - Depends on: existing Project Asset Library.
   - Validate with: schema/model tests for tags, segments, confidence bounds, attribution and recommendation response shape.
 
 - [ ] Task 2: Add persistence and indexes
-  - File: `contentflow_lab/status/db.py`, `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/status/db.py`, `contentglowz_lab/status/service.py`
   - Action: Add idempotent tables for canonical global assets, project asset attachments/usages, understanding jobs/results/tags/segments, source attribution, quota counters and idempotency keys; index by user/workspace/project/asset/status/tag/placement/confidence.
   - User story link: Makes tags searchable and reusable across future projects/content workflows.
   - Depends on: Task 1.
   - Validate with: migration/ensure tests and status service unit tests.
 
 - [ ] Task 3: Add deterministic media inspection service
-  - File: `contentflow_lab/api/services/asset_media_inspection.py`
+  - File: `contentglowz_lab/api/services/asset_media_inspection.py`
   - Action: Implement bounded ffprobe/ffmpeg-based inspection for images/videos: duration, dimensions, representative frame plan, audio presence, size limits, configured guardrails and safe temp cleanup.
   - User story link: Provides reliable non-AI signals and bounded inputs for video understanding.
   - Depends on: Task 2.
   - Validate with: tests using tiny fixture images/videos or mocked subprocess output.
 
 - [ ] Task 4: Add provider adapter interface and BYOK-compatible analyzer
-  - File: `contentflow_lab/api/services/asset_understanding.py`
+  - File: `contentglowz_lab/api/services/asset_understanding.py`
   - Action: Add provider-neutral analyzer interface, credential-resolution service, and a Gemini-compatible reference adapter for video+image understanding behind user BYOK and platform/global credentials; include OpenAI vision+speech fallback hooks for image/frame/audio workflows without exposing raw provider controls.
   - User story link: Lets the engine understand videos/images while preserving provider flexibility.
   - Depends on: Task 3.
   - Validate with: mocked provider tests for image tags, video timeline, malformed JSON, timeout, provider_not_configured and rate-limit errors.
 
 - [ ] Task 5: Implement async analysis job lifecycle
-  - File: `contentflow_lab/api/routers/assets.py`, `contentflow_lab/status/service.py`, `contentflow_lab/api/services/asset_understanding.py`
+  - File: `contentglowz_lab/api/routers/assets.py`, `contentglowz_lab/status/service.py`, `contentglowz_lab/api/services/asset_understanding.py`
   - Action: Add queue/retry/status endpoints for asset understanding and run background jobs that enforce idempotency, quotas, concurrency, guardrails and credential source before persisting normalized results and asset events.
   - User story link: Allows uploads/captures/social imports to be analyzed without blocking the user.
   - Depends on: Tasks 2-4.
   - Validate with: FastAPI route tests for owned/missing/foreign asset, queued/running/completed/failed states and idempotent re-analysis.
 
 - [ ] Task 6: Normalize AI tags, scene segments and attribution
-  - File: `contentflow_lab/api/services/asset_understanding_normalizer.py`
+  - File: `contentglowz_lab/api/services/asset_understanding_normalizer.py`
   - Action: Convert provider output into allowed tags, placements, confidence scores, scene start/end seconds, fit summaries, `rights_status`, and `credit_required` warnings; reject raw transcripts/frame payloads.
   - User story link: Makes analysis safe and useful for recommendations rather than opaque provider text.
   - Depends on: Task 4.
   - Validate with: unit tests for social attribution, low-confidence downgrade, unsafe/OCR redaction and segment validation.
 
 - [ ] Task 7: Add recommendation endpoint
-  - File: `contentflow_lab/api/routers/assets.py`, `contentflow_lab/api/services/asset_recommendations.py`
+  - File: `contentglowz_lab/api/routers/assets.py`, `contentglowz_lab/api/services/asset_recommendations.py`
   - Action: Add `POST /api/projects/{project_id}/assets/recommend` that accepts a content/video brief, target placement, optional tags and an `include_global_candidates` flag, then ranks owned project assets plus eligible same-user global-library candidates by accepted tags, AI suggestions, segments, media kind, source attribution and eligibility.
   - User story link: Enables "this deer jumping video is a good illustration for the kung-fu video" with reasons and credit warning.
   - Depends on: Tasks 2 and 6.
   - Validate with: tests for ranking, project scoping, tombstoned/degraded filtering, unknown-rights warning and no cross-project leakage.
 
 - [ ] Task 8: Add user tag acceptance/edit/reject APIs
-  - File: `contentflow_lab/api/routers/assets.py`, `contentflow_lab/status/service.py`
+  - File: `contentglowz_lab/api/routers/assets.py`, `contentglowz_lab/status/service.py`
   - Action: Add endpoints to accept suggested tags, add manual tags, reject bad tags, attach global assets to projects, and preserve user tags across re-analysis.
   - User story link: Lets detection quality improve through user control instead of blindly trusting AI.
   - Depends on: Tasks 2 and 6.
   - Validate with: route/service tests proving user tags survive re-analysis and rejected tags stop influencing recommendations.
 
 - [ ] Task 9: Add Flutter models and API methods
-  - File: `contentflow_app/lib/data/models/project_asset.dart`, `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/models/project_asset.dart`, `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Add typed global asset, project attachment, understanding status/result/tag/segment/recommendation/quota models and API methods for queue/status/accept/reject/attach-global/recommend.
   - User story link: Lets the app consume the new backend contract without parsing raw metadata maps.
   - Depends on: Tasks 1, 5, 7 and 8.
   - Validate with: Dart model parsing tests and API payload serialization tests.
 
 - [ ] Task 10: Extend provider state and asset picker UI
-  - File: `contentflow_app/lib/providers/providers.dart`, `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
+  - File: `contentglowz_app/lib/providers/providers.dart`, `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
   - Action: Surface project assets and optional global candidates, suggested tags, accepted tags, understanding status, scene labels, recommendation fit reasons, quota/provider setup states and credit warnings; keep edits project-stale safe.
   - User story link: Makes the understanding visible and usable in current content workflows.
   - Depends on: Task 9.
   - Validate with: provider tests for stale project changes and widget tests for tags/warnings/recommendation display.
 
 - [ ] Task 11: Wire ingestion triggers conservatively
-  - File: `contentflow_lab/status/service.py`, relevant upload/capture/import integration points
+  - File: `contentglowz_lab/status/service.py`, relevant upload/capture/import integration points
   - Action: Upsert canonical global assets, attach them to projects, and trigger or schedule analysis for new eligible assets from manual upload, capture attachment, Image Robot output, render output and social import registration; do not block asset creation when analysis is unavailable.
   - User story link: Ensures assets become useful automatically after they enter the library.
   - Depends on: Tasks 5 and 6.
   - Validate with: integration tests proving asset creation can succeed while analysis queues or degrades separately.
 
 - [ ] Task 12: Document operations, privacy and attribution
-  - File: `contentflow_lab/README.md`, optional app support docs
+  - File: `contentglowz_lab/README.md`, optional app support docs
   - Action: Document provider/BYOK config, ffmpeg requirements, source attribution rules, retention limits, retry behavior, and "AI tags are suggestions" language.
   - User story link: Keeps operators and users from mistaking AI tags for legal clearance or perfect understanding.
   - Depends on: all backend tasks.
@@ -374,15 +374,15 @@ Add an AI asset-understanding layer on top of Project Asset Library. The backend
 ## Execution Notes
 
 - Read first:
-  - `contentflow_lab/api/routers/assets.py`
-  - `contentflow_lab/status/schemas.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/status/db.py`
-  - `contentflow_app/lib/data/models/project_asset.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/presentation/widgets/project_asset_picker.dart`
-  - `contentflow_lab/agents/reels/audio_extractor.py`
+  - `contentglowz_lab/api/routers/assets.py`
+  - `contentglowz_lab/status/schemas.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/status/db.py`
+  - `contentglowz_app/lib/data/models/project_asset.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `contentglowz_lab/agents/reels/audio_extractor.py`
 - Implement backend data contract before provider calls.
 - Implement global asset identity and project attachment semantics before recommendation ranking. A project recommendation must be able to distinguish `attached_project_asset` from `candidate_global_asset`.
 - Implement credential resolution and guardrail enforcement before the Gemini-compatible adapter can call any external provider.
@@ -392,8 +392,8 @@ Add an AI asset-understanding layer on top of Project Asset Library. The backend
 - Do not expose provider model, FPS, clipping or safety controls in the app UI during V1.
 - Stop and reroute if implementation needs a full rights-management system, cross-user/team libraries, social download/scraping, Remotion render integration, or unbounded provider analysis.
 - Suggested validation commands:
-  - `python3 -m pytest contentflow_lab/tests/test_asset_understanding*.py contentflow_lab/tests/test_project_assets*.py`
-  - `python3 -m py_compile contentflow_lab/api/services/asset_understanding.py contentflow_lab/api/services/asset_media_inspection.py`
+  - `python3 -m pytest contentglowz_lab/tests/test_asset_understanding*.py contentglowz_lab/tests/test_project_assets*.py`
+  - `python3 -m py_compile contentglowz_lab/api/services/asset_understanding.py contentglowz_lab/api/services/asset_media_inspection.py`
   - `flutter test test/data/project_asset_test.dart test/providers/project_asset_provider_test.dart test/presentation/project_asset_picker_test.dart`
   - `flutter analyze lib/data/models/project_asset.dart lib/data/services/api_service.dart lib/providers/providers.dart lib/presentation/widgets/project_asset_picker.dart`
 

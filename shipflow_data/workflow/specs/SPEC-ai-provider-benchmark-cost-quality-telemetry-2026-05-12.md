@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_lab"
-  - "contentflow_app"
+  - "contentglowz_lab"
+  - "contentglowz_app"
   - "contentflowz/v0-ai-image-generation-benchmark"
   - "Image Robot"
   - "Flux/BFL"
@@ -44,13 +44,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-text-based-media-editing-social-video-2026-05-12.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/business/project-competitors-and-inspirations.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "contentflowz/v0-ai-image-generation-benchmark"
@@ -76,11 +76,11 @@ evidence:
   - "Prototype evidence: contentflowz/v0-ai-image-generation-benchmark compares model/provider, durationMs, cost, success and history across image generation providers."
   - "Prototype evidence: contentflowz/v0-ai-image-generation-benchmark/app/api/generate-single/route.ts measures request start/end time per model and calculates provider-specific cost, but returns base64 images and uses Next/FAL/Prodia/xAI directly."
   - "Prototype evidence: contentflowz/v0-ai-image-generation-benchmark/lib/pricing.ts hard-codes stale pricing tables; ContentFlow must use versioned provider cost catalogs and actual provider metadata instead."
-  - "Code evidence: contentflow_lab/status/cost_tracker.py already persists DataForSEO-shaped estimated costs by project/job/pipeline/provider but is not a general AI provider telemetry ledger."
-  - "Code evidence: contentflow_lab/api/services/image_generation_store.py stores provider_cost and provider_metadata_json for ImageGeneration, but no benchmark run, quality signal, pricing-table version, or provider recommendation state."
-  - "Code evidence: contentflow_lab/api/services/flux_image_generation.py captures provider_request_id and provider_cost from BFL submit response, and contentflow_lab/api/routers/images.py stores it after generation."
-  - "Code evidence: contentflow_lab/api/services/ai_entitlement_service.py is currently env/allowlist-backed and does not provide PAYG provider choice metrics."
-  - "Code evidence: feedback admin uses an email allowlist pattern in contentflow_lab/api/routers/feedback.py and contentflow_app has a feedback admin screen that can inspire an internal admin-only surface."
+  - "Code evidence: contentglowz_lab/status/cost_tracker.py already persists DataForSEO-shaped estimated costs by project/job/pipeline/provider but is not a general AI provider telemetry ledger."
+  - "Code evidence: contentglowz_lab/api/services/image_generation_store.py stores provider_cost and provider_metadata_json for ImageGeneration, but no benchmark run, quality signal, pricing-table version, or provider recommendation state."
+  - "Code evidence: contentglowz_lab/api/services/flux_image_generation.py captures provider_request_id and provider_cost from BFL submit response, and contentglowz_lab/api/routers/images.py stores it after generation."
+  - "Code evidence: contentglowz_lab/api/services/ai_entitlement_service.py is currently env/allowlist-backed and does not provide PAYG provider choice metrics."
+  - "Code evidence: feedback admin uses an email allowlist pattern in contentglowz_lab/api/routers/feedback.py and contentglowz_app has a feedback admin screen that can inspire an internal admin-only surface."
   - "Fresh docs checked 2026-05-12: BFL pricing docs say FLUX.2 uses megapixel-based pricing and 1 credit equals $0.01 USD."
   - "Fresh docs checked 2026-05-12: BFL FLUX.2 Pro API response includes id, polling_url, nullable cost, input_mp and output_mp fields."
   - "Fresh docs checked 2026-05-12: fal Model API pricing docs say providers can charge by image, megapixel, video second, request or compute second, and expose programmatic pricing/usage APIs."
@@ -190,7 +190,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
 
 - Existing Flux/Image Robot foundation: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
 - Existing PAYG/quota foundation: `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`.
-- Existing BYOK/runtime foundation: `shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md` and `shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md`.
+- Existing BYOK/runtime foundation: `shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md` and `shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md`.
 - Future audio and transcription specs:
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-text-based-media-editing-social-video-2026-05-12.md`
@@ -201,20 +201,20 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - `contentflowz/v0-ai-image-generation-benchmark/app/api/generate-single/route.ts`
   - `contentflowz/v0-ai-image-generation-benchmark/components/benchmark/*`
 - Existing backend files to read first:
-  - `contentflow_lab/status/cost_tracker.py`
-  - `contentflow_lab/api/services/image_generation_store.py`
-  - `contentflow_lab/api/services/flux_image_generation.py`
-  - `contentflow_lab/api/routers/images.py`
-  - `contentflow_lab/api/services/job_store.py`
-  - `contentflow_lab/api/services/ai_entitlement_service.py`
-  - `contentflow_lab/api/services/ai_runtime_service.py`
-  - `contentflow_lab/api/routers/feedback.py`
+  - `contentglowz_lab/status/cost_tracker.py`
+  - `contentglowz_lab/api/services/image_generation_store.py`
+  - `contentglowz_lab/api/services/flux_image_generation.py`
+  - `contentglowz_lab/api/routers/images.py`
+  - `contentglowz_lab/api/services/job_store.py`
+  - `contentglowz_lab/api/services/ai_entitlement_service.py`
+  - `contentglowz_lab/api/services/ai_runtime_service.py`
+  - `contentglowz_lab/api/routers/feedback.py`
 - Existing app files to read first:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/presentation/screens/settings/settings_screen.dart`
-  - `contentflow_app/lib/presentation/screens/feedback/feedback_admin_screen.dart`
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`
+  - `contentglowz_app/lib/presentation/screens/feedback/feedback_admin_screen.dart`
 - Fresh external docs checked:
   - `fresh-docs checked`: BFL pricing docs at `https://docs.bfl.ml/quick_start/pricing`.
   - `fresh-docs checked`: BFL FLUX.2 Pro API docs at `https://docs.bfl.ml/api-reference/models/generate-or-edit-an-image-with-flux2-%5Bpro%5D`.
@@ -239,19 +239,19 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
 
 ## Links & Consequences
 
-- `contentflow_lab/status/cost_tracker.py`: existing `api_cost_log` should remain compatible but is too DataForSEO-shaped for AI provider benchmark evidence. New tables should feed summaries rather than mutate that table into the source of truth.
-- `contentflow_lab/api/services/image_generation_store.py`: `provider_cost` and `provider_metadata_json` should be augmented or mirrored into provider telemetry with pricing source, actual/estimated split and quality outcome.
-- `contentflow_lab/api/services/flux_image_generation.py`: already captures BFL provider_request_id and cost; implementation should add input/output megapixel metadata and latency timing where available.
-- `contentflow_lab/api/routers/images.py`: production Image Robot routes should emit telemetry events when queued, provider started, provider completed, CDN uploaded, failed, selected, promoted or tombstoned.
+- `contentglowz_lab/status/cost_tracker.py`: existing `api_cost_log` should remain compatible but is too DataForSEO-shaped for AI provider benchmark evidence. New tables should feed summaries rather than mutate that table into the source of truth.
+- `contentglowz_lab/api/services/image_generation_store.py`: `provider_cost` and `provider_metadata_json` should be augmented or mirrored into provider telemetry with pricing source, actual/estimated split and quality outcome.
+- `contentglowz_lab/api/services/flux_image_generation.py`: already captures BFL provider_request_id and cost; implementation should add input/output megapixel metadata and latency timing where available.
+- `contentglowz_lab/api/routers/images.py`: production Image Robot routes should emit telemetry events when queued, provider started, provider completed, CDN uploaded, failed, selected, promoted or tombstoned.
 - `SPEC-ai-generation-quotas-billing-2026-05-11.md`: quota/PAYG enforcement can consume telemetry for margin analysis and provider evidence, but must not depend on non-idempotent benchmark runs.
-- `contentflow_app`: admin UI can reuse settings/admin patterns, but must not add benchmark controls to the normal creator editor.
-- `contentflow_site`: no public copy change in V1. If marketing later claims faster/cheaper/better provider choices, it must cite an approved public-safe summary, not raw internal telemetry.
+- `contentglowz_app`: admin UI can reuse settings/admin patterns, but must not add benchmark controls to the normal creator editor.
+- `contentglowz_site`: no public copy change in V1. If marketing later claims faster/cheaper/better provider choices, it must cite an approved public-safe summary, not raw internal telemetry.
 - Ops/support: provider regressions, cost spikes and quality drops become diagnosable without raw provider dashboards or database access.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` or env docs with benchmark provider configuration, cost catalog review process, admin auth requirement and telemetry redaction policy.
-- Update `contentflow_app/README.md` only if an internal admin UI ships, describing admin-only access and no public model picker.
+- Update `contentglowz_lab/README.md` or env docs with benchmark provider configuration, cost catalog review process, admin auth requirement and telemetry redaction policy.
+- Update `contentglowz_app/README.md` only if an internal admin UI ships, describing admin-only access and no public model picker.
 - Update `.env.example` when benchmark provider flags, max run cost, sample retention or admin allowlist variables are introduced.
 - Add an ops playbook for refreshing provider prices, running benchmark suites, reviewing quality, changing provider recommendation state and responding to provider regressions.
 - Add changelog entries when telemetry starts influencing provider selection or PAYG margin alerts.
@@ -277,7 +277,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
 ## Implementation Tasks
 
 - [ ] Task 1: Define provider telemetry and benchmark models
-  - Fichier : `contentflow_lab/api/models/ai_provider_benchmark.py`
+  - Fichier : `contentglowz_lab/api/models/ai_provider_benchmark.py`
   - Action : Add Pydantic models/enums for provider action, provider candidate, benchmark suite, fixture, run, run result, latency breakdown, cost evidence, quality rubric, workflow outcome signal, recommendation state and admin-safe response envelopes.
   - User story link : Gives operators a stable contract for comparing provider cost, speed, reliability and quality.
   - Depends on : Existing Flux and PAYG specs.
@@ -285,7 +285,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Keep actual cost, estimated cost, PAYG units and invoice reconciliation distinct.
 
 - [ ] Task 2: Add Turso/libSQL benchmark and telemetry store
-  - Fichier : `contentflow_lab/api/services/ai_provider_telemetry_store.py`
+  - Fichier : `contentglowz_lab/api/services/ai_provider_telemetry_store.py`
   - Action : Create idempotent schema ensures or migrations for provider_cost_catalogs, provider_telemetry_events, benchmark_suites, benchmark_fixtures, benchmark_runs, benchmark_results, quality_ratings, workflow_outcome_events and provider_recommendations.
   - User story link : Makes benchmark history and provider evidence durable and auditable.
   - Depends on : Task 1.
@@ -293,7 +293,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Follow ContentFlow Turso migration guardrails during implementation.
 
 - [ ] Task 3: Create versioned provider cost catalog service
-  - Fichier : `contentflow_lab/api/services/ai_provider_cost_catalog.py`
+  - Fichier : `contentglowz_lab/api/services/ai_provider_cost_catalog.py`
   - Action : Implement provider/model/action pricing lookup with unit, currency, source URL, effective timestamps, confidence, stale policy, operator override and exact/estimated cost calculation helpers.
   - User story link : Prevents stale hard-coded prototype pricing from driving PAYG/provider choices.
   - Depends on : Task 2.
@@ -301,7 +301,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Do not call live provider pricing APIs in unit tests; use fixtures and cite source metadata.
 
 - [ ] Task 4: Add telemetry recording service
-  - Fichier : `contentflow_lab/api/services/ai_provider_telemetry.py`
+  - Fichier : `contentglowz_lab/api/services/ai_provider_telemetry.py`
   - Action : Implement safe event recording for provider_started, provider_completed, provider_failed, durable_output_ready, quota_blocked, user_kept_candidate, user_promoted_primary, regenerated and tombstoned outcomes.
   - User story link : Feeds scorecards from real workflow evidence without exposing private content.
   - Depends on : Tasks 1-3.
@@ -309,7 +309,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Store prompt_hash by default; full prompts require explicit fixture/sample retention policy.
 
 - [ ] Task 5: Instrument Flux/Image Robot production events
-  - Fichier : `contentflow_lab/api/routers/images.py`
+  - Fichier : `contentglowz_lab/api/routers/images.py`
   - Action : Emit telemetry around queueing, provider start, provider completion, CDN upload, normalized provider failure, generation selection, primary promotion and tombstone/restore when available.
   - User story link : Provides the first real provider decision evidence for image workflows.
   - Depends on : Task 4 and Flux implementation.
@@ -317,7 +317,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Preserve existing Image Robot response contracts.
 
 - [ ] Task 6: Extend Flux provider metadata capture
-  - Fichier : `contentflow_lab/api/services/flux_image_generation.py`
+  - Fichier : `contentglowz_lab/api/services/flux_image_generation.py`
   - Action : Normalize BFL cost, input_mp, output_mp, provider_request_id, model, dimensions and latency checkpoints into admin-safe metadata for telemetry.
   - User story link : Lets operators compare actual BFL cost and speed against other candidates.
   - Depends on : Task 4.
@@ -325,7 +325,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Do not log polling_url or signed output URLs.
 
 - [ ] Task 7: Add benchmark runner
-  - Fichier : `contentflow_lab/api/services/ai_provider_benchmark_runner.py`
+  - Fichier : `contentglowz_lab/api/services/ai_provider_benchmark_runner.py`
   - Action : Implement controlled async benchmark execution for image fixtures, provider candidates, idempotency keys, max-run-cost guardrail, per-provider timeout, partial-result handling and Bunny sample storage when safe.
   - User story link : Enables deliberate provider comparisons without public playground behavior.
   - Depends on : Tasks 2-6.
@@ -333,7 +333,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : V1 may support BFL/Flux first; add only evaluated providers through explicit adapters.
 
 - [ ] Task 8: Add provider adapter interface for benchmark candidates
-  - Fichier : `contentflow_lab/api/services/ai_provider_benchmark_adapters.py`
+  - Fichier : `contentglowz_lab/api/services/ai_provider_benchmark_adapters.py`
   - Action : Define small adapter protocol for image generation benchmark candidates and implement the existing Flux/BFL adapter; leave FAL/OpenRouter/ElevenLabs adapters as explicit future additions unless approved.
   - User story link : Keeps benchmark extensible without porting prototype provider code.
   - Depends on : Task 7.
@@ -341,7 +341,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Do not add provider sprawl in V1; provider candidates must be configured and allowlisted.
 
 - [ ] Task 9: Add admin-only benchmark APIs
-  - Fichier : `contentflow_lab/api/routers/ai_provider_benchmarks.py`
+  - Fichier : `contentglowz_lab/api/routers/ai_provider_benchmarks.py`
   - Action : Add endpoints for admin capability, list suites, start run, get run, list scorecards, submit quality rating, update recommendation and list cost catalog freshness.
   - User story link : Gives operators a controlled way to inspect and act on benchmark evidence.
   - Depends on : Tasks 1-8.
@@ -349,7 +349,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : If no general admin dependency exists, create a narrow allowlist dependency and record that as debt.
 
 - [ ] Task 10: Feed benchmark evidence into PAYG/admin summaries
-  - Fichier : `contentflow_lab/status/cost_tracker.py`
+  - Fichier : `contentglowz_lab/status/cost_tracker.py`
   - Action : Add read-only aggregation helpers or adapters that combine existing cost summaries with AI provider telemetry without making `api_cost_log` the benchmark source of truth.
   - User story link : Makes provider cost evidence useful for PAYG and margin review.
   - Depends on : Tasks 2-4.
@@ -357,15 +357,15 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Preserve DataForSEO cost tracking compatibility.
 
 - [ ] Task 11: Add Flutter admin data models and API methods
-  - Fichier : `contentflow_app/lib/data/models/ai_provider_benchmark.dart`
+  - Fichier : `contentglowz_app/lib/data/models/ai_provider_benchmark.dart`
   - Action : Add Dart models for scorecards, runs, results, quality ratings, recommendations, cost freshness and admin capability; add matching ApiService methods.
   - User story link : Lets the internal admin UI consume the backend safely.
   - Depends on : Task 9.
   - Validate with : Dart parsing tests for scorecard, partial run, redacted sample and non-admin capability.
-  - Notes : Also update `contentflow_app/lib/data/services/api_service.dart`.
+  - Notes : Also update `contentglowz_app/lib/data/services/api_service.dart`.
 
 - [ ] Task 12: Add Riverpod controller for admin provider benchmarks
-  - Fichier : `contentflow_app/lib/providers/ai_provider_benchmark_provider.dart`
+  - Fichier : `contentglowz_app/lib/providers/ai_provider_benchmark_provider.dart`
   - Action : Add provider/notifier for admin capability, scorecard filters, run polling, quality rating submit, recommendation update and stale response handling.
   - User story link : Keeps admin benchmark state isolated from creator workflows.
   - Depends on : Task 11.
@@ -373,7 +373,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Do not add normal creator navigation.
 
 - [ ] Task 13: Add internal admin benchmark screen
-  - Fichier : `contentflow_app/lib/presentation/screens/settings/ai_provider_benchmark_admin_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/settings/ai_provider_benchmark_admin_screen.dart`
   - Action : Build a dense admin screen with provider scorecards, benchmark run history, cost/latency/reliability/quality breakdowns, fixture output review, quality rating controls and recommendation state.
   - User story link : Gives operators a practical decision surface for provider choice.
   - Depends on : Task 12.
@@ -381,7 +381,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Keep UI internal and utilitarian; no public leaderboard treatment.
 
 - [ ] Task 14: Register admin route behind capability
-  - Fichier : `contentflow_app/lib/router.dart`
+  - Fichier : `contentglowz_app/lib/router.dart`
   - Action : Add an internal route for the benchmark admin screen and a settings entry visible only when admin capability is true.
   - User story link : Keeps the benchmark accessible to operators but invisible to normal creators.
   - Depends on : Task 13.
@@ -389,12 +389,12 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - Notes : Reuse the feedback admin access pattern where appropriate.
 
 - [ ] Task 15: Document operations and redaction policy
-  - Fichier : `contentflow_lab/README.md`
+  - Fichier : `contentglowz_lab/README.md`
   - Action : Document benchmark env vars, admin auth, provider cost catalog refresh, max-run-cost guardrails, sample retention, redaction rules and provider recommendation workflow.
   - User story link : Makes benchmark evidence maintainable and safe.
   - Depends on : Backend tasks.
   - Validate with : docs review and `rg` for forbidden claims such as public leaderboard, guaranteed cheapest provider or automatic provider switching.
-  - Notes : Also update `.env.example`, `contentflow_app/README.md` if UI ships, and changelog.
+  - Notes : Also update `.env.example`, `contentglowz_app/README.md` if UI ships, and changelog.
 
 ## Acceptance Criteria
 
@@ -445,10 +445,10 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
 - Read first:
   - `contentflowz/v0-ai-image-generation-benchmark/lib/types.ts`
   - `contentflowz/v0-ai-image-generation-benchmark/app/api/generate-single/route.ts`
-  - `contentflow_lab/status/cost_tracker.py`
-  - `contentflow_lab/api/services/image_generation_store.py`
-  - `contentflow_lab/api/services/flux_image_generation.py`
-  - `contentflow_lab/api/routers/images.py`
+  - `contentglowz_lab/status/cost_tracker.py`
+  - `contentglowz_lab/api/services/image_generation_store.py`
+  - `contentglowz_lab/api/services/flux_image_generation.py`
+  - `contentglowz_lab/api/routers/images.py`
   - `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`
 - Implementation order: backend models, store, cost catalog, telemetry recorder, Flux instrumentation, benchmark runner, admin API, app admin models/provider/UI, docs.
 - Provider policy V1: instrument current Flux/BFL first. Do not add FAL, Prodia, xAI, OpenAI or ElevenLabs adapters in this implementation unless explicitly approved in `/sf-ready` or a follow-up spec.

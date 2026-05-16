@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: ready
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/SPEC-progressive-content-release.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/SPEC-progressive-content-release.md"
 ---
 # Spec: Progressive Content Release (Content Drip)
 

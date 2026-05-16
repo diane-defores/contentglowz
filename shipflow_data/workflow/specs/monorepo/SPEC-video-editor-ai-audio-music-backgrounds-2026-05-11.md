@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
+  - "contentglowz_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
   - "contentflowz/v0-eleven-labs-v3-podcast-generator"
   - "contentflowz/v0-eleven-labs-music-starter"
   - "Remotion video editor workflow"
@@ -37,19 +37,19 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentflow_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentflow_app/shipflow_data/technical/guidelines.md"
+  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "OpenRouter Audio docs"
@@ -76,11 +76,11 @@ evidence:
   - "User decision 2026-05-11: UI remains linked to the editor and may expand if mobile video editing becomes too dense."
   - "User decision 2026-05-11: guided formats are desirable."
   - "User decision 2026-05-11: add an animated-background generator for scene backgrounds."
-  - "Code evidence: contentflow_app/lib/router.dart exposes /editor/:id and existing Remotion spec expects /editor/:id/video."
-  - "Code evidence: contentflow_app/lib/presentation/screens/editor/editor_screen.dart is the current content editor surface."
-  - "Code evidence: contentflow_lab/api/routers/status.py and status/service.py already support content asset metadata with kind, mime_type, duration_ms, storage_uri and metadata."
-  - "Code evidence: contentflow_lab/api/services/job_store.py stores async job state, but current jobs table is not the scene/audio source of truth."
-  - "Code evidence: contentflow_lab/api/services/feedback_storage.py already uploads and plays audio via Bunny Storage with signed tokens, but is feedback-specific and not content-asset-safe."
+  - "Code evidence: contentglowz_app/lib/router.dart exposes /editor/:id and existing Remotion spec expects /editor/:id/video."
+  - "Code evidence: contentglowz_app/lib/presentation/screens/editor/editor_screen.dart is the current content editor surface."
+  - "Code evidence: contentglowz_lab/api/routers/status.py and status/service.py already support content asset metadata with kind, mime_type, duration_ms, storage_uri and metadata."
+  - "Code evidence: contentglowz_lab/api/services/job_store.py stores async job state, but current jobs table is not the scene/audio source of truth."
+  - "Code evidence: contentglowz_lab/api/services/feedback_storage.py already uploads and plays audio via Bunny Storage with signed tokens, but is feedback-specific and not content-asset-safe."
   - "Prototype evidence: contentflowz/v0-eleven-labs-v3-podcast-generator shows script generation and ElevenLabs text-to-dialogue ideas, but the implementation is Next/Supabase and logs unsafe diagnostics."
   - "Prototype evidence: contentflowz/v0-eleven-labs-music-starter shows ElevenLabs music plan/compose ideas, but the implementation is Next route code and not production stack compatible."
   - "Fresh docs checked 2026-05-11: OpenRouter supports audio input/output and a dedicated TTS endpoint, but current docs do not show music composition or text-to-dialogue endpoints equivalent to ElevenLabs Music and Text to Dialogue."
@@ -194,26 +194,26 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 
 - Ready Remotion editor foundation: `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`.
 - Ready render service foundation: `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
-- Ready visual assets UI: `shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready visual assets UI: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Ready quotas/billing foundation: `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`.
-- Ready BYOK foundation: `shipflow_data/workflow/specs/contentflow_lab/SPEC-strict-byok-llm-app-visible-ai.md`.
+- Ready BYOK foundation: `shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md`.
 - Existing app files:
-  - `contentflow_app/lib/router.dart`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentflow_app/lib/data/services/api_service.dart`
-  - `contentflow_app/lib/providers/providers.dart`
-  - `contentflow_app/lib/presentation/screens/feedback/feedback_admin_screen.dart` for existing `audioplayers` usage reference.
+  - `contentglowz_app/lib/router.dart`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_app/lib/data/services/api_service.dart`
+  - `contentglowz_app/lib/providers/providers.dart`
+  - `contentglowz_app/lib/presentation/screens/feedback/feedback_admin_screen.dart` for existing `audioplayers` usage reference.
 - Existing backend files:
-  - `contentflow_lab/api/services/user_llm_service.py`
-  - `contentflow_lab/api/services/pydantic_ai_runtime.py`
-  - `contentflow_lab/api/services/job_store.py`
-  - `contentflow_lab/api/services/feedback_storage.py`
-  - `contentflow_lab/api/routers/status.py`
-  - `contentflow_lab/status/service.py`
-  - `contentflow_lab/api/dependencies/auth.py`
-  - `contentflow_lab/api/dependencies/ownership.py`
-  - `contentflow_lab/api/main.py`
-  - `contentflow_lab/api/routers/__init__.py`
+  - `contentglowz_lab/api/services/user_llm_service.py`
+  - `contentglowz_lab/api/services/pydantic_ai_runtime.py`
+  - `contentglowz_lab/api/services/job_store.py`
+  - `contentglowz_lab/api/services/feedback_storage.py`
+  - `contentglowz_lab/api/routers/status.py`
+  - `contentglowz_lab/status/service.py`
+  - `contentglowz_lab/api/dependencies/auth.py`
+  - `contentglowz_lab/api/dependencies/ownership.py`
+  - `contentglowz_lab/api/main.py`
+  - `contentglowz_lab/api/routers/__init__.py`
 - Inspiration-only prototype files:
   - `contentflowz/v0-eleven-labs-v3-podcast-generator/app/api/generate-script/route.ts`
   - `contentflowz/v0-eleven-labs-v3-podcast-generator/app/api/generate-podcast/route.ts`
@@ -245,19 +245,19 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 ## Links & Consequences
 
 - `SPEC-remotion-video-editor-workflow-2026-05-11.md` said audio/music were future scope; this spec is that future scope and must not be implemented before the base video project model exists.
-- `contentflow_lab` needs a new video/audio API family rather than expanding feedback audio endpoints, because feedback storage is anonymous/support-oriented and not project/content/version-safe.
-- `contentflow_lab/api/services/feedback_storage.py` can inspire Bunny signed upload/playback mechanics, but V1 needs a content/video asset storage service with project ownership, durable public/render URLs and metadata.
-- `contentflow_lab/api/routers/reels.py` should remain focused on Instagram import and MVP reels where possible; richer video editor APIs should live in a separate videos router.
-- `contentflow_app` needs a route/order update for `/editor/:id/video` and possibly nested tabs inside the video editor, not a new app-shell nav item.
-- `contentflow_remotion_worker` must support audio props and procedural background props before preview/final validation can pass.
+- `contentglowz_lab` needs a new video/audio API family rather than expanding feedback audio endpoints, because feedback storage is anonymous/support-oriented and not project/content/version-safe.
+- `contentglowz_lab/api/services/feedback_storage.py` can inspire Bunny signed upload/playback mechanics, but V1 needs a content/video asset storage service with project ownership, durable public/render URLs and metadata.
+- `contentglowz_lab/api/routers/reels.py` should remain focused on Instagram import and MVP reels where possible; richer video editor APIs should live in a separate videos router.
+- `contentglowz_app` needs a route/order update for `/editor/:id/video` and possibly nested tabs inside the video editor, not a new app-shell nav item.
+- `contentglowz_remotion_worker` must support audio props and procedural background props before preview/final validation can pass.
 - Quota/PAYG behavior becomes visible to users when audio/music generation is attempted; app UI must explain managed usage blocks without exposing provider internals.
 - Music generation introduces policy/legal copy obligations separate from generic AI image generation.
 
 ## Documentation Coherence
 
-- Update `contentflow_lab/README.md` or environment docs with `ELEVENLABS_API_KEY`, audio provider config, Bunny audio storage paths, quota behavior and music policy checks.
-- Update `contentflow_app/README.md` with video editor audio prerequisites once UI ships.
-- Update `contentflow_remotion_worker/README.md` with audio track props, music bed props, volume/fade semantics and animated background preset schemas.
+- Update `contentglowz_lab/README.md` or environment docs with `ELEVENLABS_API_KEY`, audio provider config, Bunny audio storage paths, quota behavior and music policy checks.
+- Update `contentglowz_app/README.md` with video editor audio prerequisites once UI ships.
+- Update `contentglowz_remotion_worker/README.md` with audio track props, music bed props, volume/fade semantics and animated background preset schemas.
 - Add changelog entries for AI narration, music, background generation, quota behavior and provider-policy limitations.
 - Add support docs explaining that V1 uses predefined voices, does not clone user voices, and does not guarantee music exclusivity or legal clearance beyond provider terms.
 - Do not promise "podcast publishing" or "music rights guaranteed" in marketing copy for this spec.
@@ -286,7 +286,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 ## Implementation Tasks
 
 - [ ] Task 1: Extend video project schema for audio and backgrounds
-  - Fichier : `contentflow_lab/api/models/videos.py`
+  - Fichier : `contentglowz_lab/api/models/videos.py`
   - Action : Add Pydantic models for `VideoAudioTrack`, `VideoMusicTrack`, `VideoAnimatedBackground`, `VideoMediaJob`, selected/candidate states, volume, fades, duration, placement and stale version metadata.
   - User story link : Lets the editor represent narration, music and backgrounds as part of the video version.
   - Depends on : Base Remotion video editor models from `SPEC-remotion-video-editor-workflow-2026-05-11.md`.
@@ -294,7 +294,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Keep provider-specific metadata under a typed `provider_metadata` field; do not make arbitrary raw JSON the primary contract.
 
 - [ ] Task 2: Add video media persistence tables
-  - Fichier : `contentflow_lab/api/services/video_project_store.py`
+  - Fichier : `contentglowz_lab/api/services/video_project_store.py`
   - Action : Add migration-safe persistence for video audio jobs, generated audio assets, music candidates, background configs and selected media references per immutable video version.
   - User story link : Makes generated media durable and version-safe.
   - Depends on : Task 1.
@@ -302,7 +302,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : `JobStore` may mirror job status, but this store remains the source of truth for media attached to video versions.
 
 - [ ] Task 3: Add a project-safe Bunny media storage service
-  - Fichier : `contentflow_lab/api/services/video_media_storage.py`
+  - Fichier : `contentglowz_lab/api/services/video_media_storage.py`
   - Action : Implement upload/download/playback helpers for audio/music assets using server-managed Bunny env vars, project/content/video path prefixes, MIME allowlist, max bytes, signed playback/render URLs and object existence checks.
   - User story link : Stores generated audio/music as durable assets usable by previews and final renders.
   - Depends on : Task 2.
@@ -310,7 +310,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Reuse ideas from `feedback_storage.py`, but do not reuse feedback paths or anonymous feedback token semantics.
 
 - [ ] Task 4: Implement OpenRouter planning adapter for video audio scripts
-  - Fichier : `contentflow_lab/api/services/video_audio_planner.py`
+  - Fichier : `contentglowz_lab/api/services/video_audio_planner.py`
   - Action : Generate structured narration/dialogue/music prompt plans from source content, storyboard scenes and format presets through `user_llm_service` or `pydantic_ai_runtime`, returning typed script segments and no raw provider secret.
   - User story link : Produces guided scripts without adding a separate podcast playground.
   - Depends on : Task 1 and strict BYOK runtime.
@@ -318,7 +318,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Planning is skipped when the user edits/provides a valid script manually inside the guided editor.
 
 - [ ] Task 5: Implement managed audio provider adapter
-  - Fichier : `contentflow_lab/api/services/elevenlabs_audio_provider.py`
+  - Fichier : `contentglowz_lab/api/services/elevenlabs_audio_provider.py`
   - Action : Add direct ElevenLabs HTTP integration for text-to-speech, text-to-dialogue and music compose, with allowlisted model ids, voice ids, output format, timeouts, chunking/rejection for long dialogue input, and normalized errors.
   - User story link : Renders narration, multi-speaker dialogue and music for video versions.
   - Depends on : Task 3.
@@ -326,7 +326,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Do not add the Node `@elevenlabs/elevenlabs-js` package to the Python backend.
 
 - [ ] Task 6: Add music prompt policy validation
-  - Fichier : `contentflow_lab/api/services/music_policy.py`
+  - Fichier : `contentglowz_lab/api/services/music_policy.py`
   - Action : Reject or sanitize obvious artist names, song titles, label names, publisher names and lyric-like references before music provider calls, returning stable error codes.
   - User story link : Lets users generate music beds without putting the product into avoidable policy risk.
   - Depends on : Task 5.
@@ -334,7 +334,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : This is a product safety filter, not a legal guarantee.
 
 - [ ] Task 7: Add video media job orchestration
-  - Fichier : `contentflow_lab/api/services/video_media_orchestrator.py`
+  - Fichier : `contentglowz_lab/api/services/video_media_orchestrator.py`
   - Action : Coordinate quota preflight/reservation, optional BYOK planning, managed audio/music provider call, Bunny upload, asset persistence, quota reconciliation, refund/release on failure and stale version marking.
   - User story link : Turns guided user actions into reliable asynchronous media assets.
   - Depends on : Tasks 2-6 and quota/billing service from the quotas spec.
@@ -342,15 +342,15 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : If the quota service is not implemented when this starts, stop and implement or explicitly stub behind the quotas spec before calling paid providers.
 
 - [ ] Task 8: Add video media API endpoints
-  - Fichier : `contentflow_lab/api/routers/videos.py`
+  - Fichier : `contentglowz_lab/api/routers/videos.py`
   - Action : Add endpoints for creating audio/music/background jobs, polling status, listing candidates, selecting media for a video version, previewing signed audio, and clearing stale selections.
   - User story link : Exposes guided audio/background workflow to Flutter through the existing API boundary.
   - Depends on : Task 7.
   - Validate with : router tests for auth, ownership, foreign asset rejection, stale version conflicts, policy blocks, quota blocks and successful candidate selection.
-  - Notes : Register the router in `contentflow_lab/api/routers/__init__.py` and `contentflow_lab/api/main.py`.
+  - Notes : Register the router in `contentglowz_lab/api/routers/__init__.py` and `contentglowz_lab/api/main.py`.
 
 - [ ] Task 9: Attach generated media to content/video asset metadata
-  - Fichier : `contentflow_lab/status/service.py`
+  - Fichier : `contentglowz_lab/status/service.py`
   - Action : Extend or add helper methods so server-validated `video_audio_ai` and `video_music_ai` assets can be represented through content asset metadata without accepting arbitrary client-supplied URLs.
   - User story link : Keeps generated media discoverable from content/video workflows and future library views.
   - Depends on : Task 8.
@@ -358,7 +358,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Do not make generic `POST /api/status/content/{id}/assets` trust Flutter for AI media origin.
 
 - [ ] Task 10: Extend Remotion scene props for audio and music
-  - Fichier : `contentflow_remotion_worker/src/schema/video-props.ts`
+  - Fichier : `contentglowz_remotion_worker/src/schema/video-props.ts`
   - Action : Add typed props for narration tracks, music bed, volume, fades, loop/trim policy, asset URL descriptors, duration checks and selected background config.
   - User story link : Lets the worker render the selected media with the current video version.
   - Depends on : Base Remotion worker schema from the render/video specs and Task 8 API contract.
@@ -366,7 +366,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : If the worker path differs at implementation time, apply this to the actual schema module created by the Remotion specs.
 
 - [ ] Task 11: Implement Remotion audio mixing and animated backgrounds
-  - Fichier : `contentflow_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - Fichier : `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
   - Action : Render narration, music bed, fades, loop/trim behavior and allowlisted animated background presets from props.
   - User story link : Makes preview/final videos audibly and visually reflect selected audio/background choices.
   - Depends on : Task 10.
@@ -374,15 +374,15 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : V1 backgrounds should be procedural and bounded; do not fetch arbitrary remote JS/CSS/config.
 
 - [ ] Task 12: Add Flutter models and API methods
-  - Fichier : `contentflow_app/lib/data/models/video_audio.dart`
+  - Fichier : `contentglowz_app/lib/data/models/video_audio.dart`
   - Action : Add typed Dart models for audio formats, scripts, jobs, candidates, music assets, background presets and stale states.
   - User story link : Gives the editor a typed contract for audio/background state.
   - Depends on : Task 8.
   - Validate with : Dart model tests for JSON parsing, unknown status handling, missing optional fields and redacted signed URL display.
-  - Notes : Add matching `ApiService` methods in `contentflow_app/lib/data/services/api_service.dart`.
+  - Notes : Add matching `ApiService` methods in `contentglowz_app/lib/data/services/api_service.dart`.
 
 - [ ] Task 13: Add Riverpod state for video audio/background workflow
-  - Fichier : `contentflow_app/lib/providers/providers.dart`
+  - Fichier : `contentglowz_app/lib/providers/providers.dart`
   - Action : Add providers/notifiers for selected audio format, script plan, active audio job, active music job, candidates, selected assets, background preset/config, polling lifecycle and stale response rejection.
   - User story link : Keeps UI state coherent while jobs run asynchronously.
   - Depends on : Task 12.
@@ -390,7 +390,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Render and provider jobs are online-only; do not queue audio generation offline.
 
 - [ ] Task 14: Add editor-linked audio/background UI
-  - Fichier : `contentflow_app/lib/presentation/screens/editor/video_editor_screen.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart`
   - Action : Add guided tabs or sections inside the video editor for narration, music and animated backgrounds, with compact mobile-friendly controls, candidate preview, select/unselect, stale warnings and quota/BYOK errors.
   - User story link : Lets users enrich the current video without leaving the editor.
   - Depends on : Tasks 12-13 and base `/editor/:id/video` screen.
@@ -398,7 +398,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : If the base video screen is implemented under a different file name, update that file rather than creating a parallel editor.
 
 - [ ] Task 15: Add route and editor entrypoint safeguards
-  - Fichier : `contentflow_app/lib/router.dart`
+  - Fichier : `contentglowz_app/lib/router.dart`
   - Action : Ensure `/editor/:id/video` route and Sentry sanitizer are ordered before generic `/editor/:id`; ensure audio/background UI is reachable only through video editor context.
   - User story link : Keeps this feature attached to the editor workflow.
   - Depends on : Task 14.
@@ -406,7 +406,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Do not add a new AppShell nav item for audio/podcast.
 
 - [ ] Task 16: Add app audio preview playback
-  - Fichier : `contentflow_app/lib/presentation/screens/editor/video_audio_preview.dart`
+  - Fichier : `contentglowz_app/lib/presentation/screens/editor/video_audio_preview.dart`
   - Action : Add a reusable preview widget using existing `audioplayers` dependency to play signed audio preview URLs, with token redaction and refresh on expiry.
   - User story link : Lets users validate generated narration/music before selecting it.
   - Depends on : Task 14.
@@ -414,12 +414,12 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Do not display signed query tokens in UI or diagnostics.
 
 - [ ] Task 17: Update docs and env examples
-  - Fichier : `contentflow_lab/README.md`
+  - Fichier : `contentglowz_lab/README.md`
   - Action : Document audio provider env vars, Bunny audio storage settings, OpenRouter planning split, quota preflight, policy limits, and local worker audio/background requirements.
   - User story link : Makes implementation and ops reproducible.
   - Depends on : Backend tasks.
   - Validate with : docs review plus `rg` for stale claims like standalone podcast studio or guaranteed music rights.
-  - Notes : Also update `contentflow_app/README.md`, `contentflow_remotion_worker/README.md`, `.env.example` and changelog when those files exist in the implementation scope.
+  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_remotion_worker/README.md`, `.env.example` and changelog when those files exist in the implementation scope.
 
 ## Acceptance Criteria
 
@@ -464,9 +464,9 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 - Read first:
   - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`
   - `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`
-  - `contentflow_lab/api/services/user_llm_service.py`
-  - `contentflow_lab/api/services/feedback_storage.py`
-  - `contentflow_app/lib/presentation/screens/editor/editor_screen.dart`
+  - `contentglowz_lab/api/services/user_llm_service.py`
+  - `contentglowz_lab/api/services/feedback_storage.py`
+  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
 - Implementation order: backend models/store, storage/provider adapters, orchestrator/router, Remotion props/rendering, Flutter models/providers/UI, docs.
 - Provider rule: use OpenRouter for structured text/planning when needed; use direct ElevenLabs for V1 multi-speaker audio and music; do not add a third audio/music provider in this chantier.
 - Background rule: V1 animated backgrounds are Remotion procedural templates and trusted still-asset motion, not AI video generation.
@@ -474,7 +474,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 - Validation commands expected after implementation:
   - `python3 -m pytest tests/test_video_audio_models.py tests/test_video_media_orchestrator.py tests/test_video_media_router.py`
   - `flutter test test/data/video_audio_test.dart test/providers/video_audio_provider_test.dart test/presentation/video_editor_audio_test.dart`
-  - worker build/render smoke command from `contentflow_remotion_worker/README.md`
+  - worker build/render smoke command from `contentglowz_remotion_worker/README.md`
 - Fresh external docs verdict: `fresh-docs checked`. Official OpenRouter docs support audio input/output and TTS, but current docs do not provide the complete music plus text-to-dialogue workflow. Official ElevenLabs docs support the direct V1 audio/music provider path, with music terms constraints that must shape validation and copy.
 
 ## Open Questions

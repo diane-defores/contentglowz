@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: reviewed
@@ -18,7 +18,7 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/DRIP_IMPLEMENTATION.md"
 ---
 # Analyse d'integration : Content Drip × Existant ContentFlow Lab
 
@@ -37,7 +37,7 @@ de conception qui ont precede l'implementation.
 
 ## Questions ouvertes (non bloquantes)
 
-- Valider la source de verite finale entre cette analyse et `shipflow_data/workflow/specs/contentflow_lab/DRIP_IMPLEMENTATION.md` pour eviter une double maintenance.
+- Valider la source de verite finale entre cette analyse et `shipflow_data/workflow/specs/contentglowz_lab/DRIP_IMPLEMENTATION.md` pour eviter une double maintenance.
 - Confirmer si les endpoints "analyze/approve/start/status" de la spec initiale doivent etre conserves en alias ou consideres obsoletes face aux endpoints implementes.
 - Decider si ce document doit rester un artefact d'analyse historique ou etre converti en ADR (decision record) succinct.
 

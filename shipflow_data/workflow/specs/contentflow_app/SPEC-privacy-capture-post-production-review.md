@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-08"
 created_at: "2026-05-08 10:08:12 UTC"
 updated: "2026-05-08"
@@ -18,13 +18,13 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter capture UI"
-  - "contentflow_app CaptureAsset metadata"
-  - "contentflow_app CaptureLocalStore"
-  - "contentflow_app DeviceCaptureClient contract"
-  - "contentflow_app capture preview components"
-  - "contentflow_app share/export/content attachment actions"
-  - "contentflow_app ApiService capture metadata payloads"
+  - "contentglowz_app Flutter capture UI"
+  - "contentglowz_app CaptureAsset metadata"
+  - "contentglowz_app CaptureLocalStore"
+  - "contentglowz_app DeviceCaptureClient contract"
+  - "contentglowz_app capture preview components"
+  - "contentglowz_app share/export/content attachment actions"
+  - "contentglowz_app ApiService capture metadata payloads"
   - "Android privacy capture dynamic redaction"
   - "Web privacy capture dynamic redaction"
   - "Windows privacy capture dynamic redaction"
@@ -44,16 +44,16 @@ depends_on:
   - artifact: "shipflow_data/technical/flutter-app-shell-and-capture.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "0.1.0"
     required_status: "shipped_pending_manual_qa"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-web-privacy-capture-dynamic-redaction.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-web-privacy-capture-dynamic-redaction.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-windows-privacy-capture-dynamic-redaction.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-windows-privacy-capture-dynamic-redaction.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "shipflow_data/workflow/explorations/2026-05-06-screen-text-obfuscation.md"
@@ -64,10 +64,10 @@ evidence:
   - "User requested a P1/reflection spec for post-production review after privacy capture, covering redacted preview, zoom/frame sampling, manual correction overlays, no-clear compare policy, acknowledgement, export/share gating, flattened output, local-only metadata, failure states, and no-guarantee copy."
   - "Android, web, and Windows privacy capture specs already require privacy-marked assets with post-production review acknowledgement before share/export."
   - "shipflow_data/workflow/explorations/2026-05-06-screen-text-obfuscation.md warns that post-production alone is not a high-confidentiality boundary, but is accepted as a final safety net and review workflow."
-  - "contentflow_app/lib/data/models/capture_asset.dart currently has no privacy review state, correction revision, or acknowledgement metadata."
-  - "contentflow_app/lib/data/services/capture_local_store.dart persists recent capture metadata and content links in SharedPreferences."
-  - "contentflow_app/lib/presentation/screens/capture/capture_screen.dart currently calls share/create/attach actions directly from capture cards."
-  - "contentflow_app/lib/data/services/api_service.dart currently sends minimal capture asset metadata and does not include privacy review status."
+  - "contentglowz_app/lib/data/models/capture_asset.dart currently has no privacy review state, correction revision, or acknowledgement metadata."
+  - "contentglowz_app/lib/data/services/capture_local_store.dart persists recent capture metadata and content links in SharedPreferences."
+  - "contentglowz_app/lib/presentation/screens/capture/capture_screen.dart currently calls share/create/attach actions directly from capture cards."
+  - "contentglowz_app/lib/data/services/api_service.dart currently sends minimal capture asset metadata and does not include privacy review status."
 next_step: "/sf-ready privacy capture post-production review"
 ---
 
@@ -182,16 +182,16 @@ Add a shared privacy-capture review contract around `CaptureAsset` state, local 
 
 Local dependencies and contracts:
 
-- `contentflow_app/lib/data/models/capture_asset.dart`: add privacy review state, redaction revision, acknowledgement, correction, sampling, and safe aggregate metadata fields.
-- `contentflow_app/lib/data/services/capture_local_store.dart`: persist and update local review metadata without storing binary data, OCR text, frame images, or clear paths.
-- `contentflow_app/lib/data/services/device_capture_service.dart`: expose typed cross-platform review/flatten capability and failure contracts while leaving native implementation to platform specs.
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`: route share/export/create/attach actions through the privacy review gate.
-- `contentflow_app/lib/presentation/screens/capture/capture_asset_preview.dart`, `capture_asset_preview_io.dart`, and `capture_asset_preview_stub.dart`: support redacted-only preview states and avoid clear fallback for privacy assets.
-- New UI file, likely `contentflow_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`: shared review surface for redacted preview, zoom, sampling, manual corrections, compare policy, and acknowledgement.
-- New policy/model files, likely `contentflow_app/lib/data/models/privacy_capture_review.dart` and `contentflow_app/lib/data/services/privacy_capture_review_policy.dart`: centralize gates and copy so future share/export paths cannot bypass review.
-- `contentflow_app/lib/data/services/api_service.dart`: include minimized privacy review metadata when linking captures to content and exclude local-only correction metadata.
-- `contentflow_app/test/data/capture_asset_test.dart`, `capture_local_store_test.dart`, and `test/presentation/screens/capture/capture_screen_test.dart`: extend coverage for privacy review metadata and gates.
-- New review UI/policy tests under `contentflow_app/test/presentation/screens/capture/` or `contentflow_app/test/data/`.
+- `contentglowz_app/lib/data/models/capture_asset.dart`: add privacy review state, redaction revision, acknowledgement, correction, sampling, and safe aggregate metadata fields.
+- `contentglowz_app/lib/data/services/capture_local_store.dart`: persist and update local review metadata without storing binary data, OCR text, frame images, or clear paths.
+- `contentglowz_app/lib/data/services/device_capture_service.dart`: expose typed cross-platform review/flatten capability and failure contracts while leaving native implementation to platform specs.
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`: route share/export/create/attach actions through the privacy review gate.
+- `contentglowz_app/lib/presentation/screens/capture/capture_asset_preview.dart`, `capture_asset_preview_io.dart`, and `capture_asset_preview_stub.dart`: support redacted-only preview states and avoid clear fallback for privacy assets.
+- New UI file, likely `contentglowz_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`: shared review surface for redacted preview, zoom, sampling, manual corrections, compare policy, and acknowledgement.
+- New policy/model files, likely `contentglowz_app/lib/data/models/privacy_capture_review.dart` and `contentglowz_app/lib/data/services/privacy_capture_review_policy.dart`: centralize gates and copy so future share/export paths cannot bypass review.
+- `contentglowz_app/lib/data/services/api_service.dart`: include minimized privacy review metadata when linking captures to content and exclude local-only correction metadata.
+- `contentglowz_app/test/data/capture_asset_test.dart`, `capture_local_store_test.dart`, and `test/presentation/screens/capture/capture_screen_test.dart`: extend coverage for privacy review metadata and gates.
+- New review UI/policy tests under `contentglowz_app/test/presentation/screens/capture/` or `contentglowz_app/test/data/`.
 
 Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local UX/data contract and deliberately avoids platform API or SDK implementation choices. Platform-specific freshness checks remain in the Android, web, and Windows privacy capture specs.
 
@@ -219,10 +219,10 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with the privacy capture review workflow: redacted preview, manual corrections, acknowledgement, share/export gating, and no guarantee.
-- Update `contentflow_app/shipflow_data/technical/guidelines.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
-- Update `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
-- Update `contentflow_app/CHANGELOG.md` after implementation.
+- Update `contentglowz_app/README.md` with the privacy capture review workflow: redacted preview, manual corrections, acknowledgement, share/export gating, and no guarantee.
+- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
+- Update `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
+- Update `contentglowz_app/CHANGELOG.md` after implementation.
 - Update related Android/web/Windows privacy specs only if implementation changes their assumed review state contract.
 - Do not update public marketing copy until platform QA proves the flow is usable and product/legal copy is reviewed.
 
@@ -251,7 +251,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
 ## Implementation Tasks
 
 - [ ] Task 1: Add shared privacy review metadata to capture assets.
-  - File: `contentflow_app/lib/data/models/capture_asset.dart`
+  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
   - Action: Add backwards-compatible enums/fields for privacy mode, redaction revision, review state, review acknowledgement timestamp, reviewed revision, correction state, sampled-frame summary, and safe aggregate review stats.
   - User story link: Lets the app know whether a privacy capture is blocked, under review, corrected, or reviewed.
   - Depends on: None.
@@ -259,7 +259,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Do not add fields for OCR text, clear frame paths, clear thumbnails, or binary data.
 
 - [ ] Task 2: Add local review-state persistence methods.
-  - File: `contentflow_app/lib/data/services/capture_local_store.dart`
+  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
   - Action: Add methods to update review state, reviewed revision, correction draft state, acknowledgement timestamp, and failure reason for an existing asset without rewriting unrelated assets or links.
   - User story link: Keeps review acknowledgement and correction state durable across app restarts.
   - Depends on: Task 1.
@@ -267,7 +267,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Review work metadata is local-only; never persist frame images or OCR text.
 
 - [ ] Task 3: Centralize privacy review policy and copy.
-  - File: `contentflow_app/lib/data/services/privacy_capture_review_policy.dart`
+  - File: `contentglowz_app/lib/data/services/privacy_capture_review_policy.dart`
   - Action: Create a shared policy that answers whether a capture can share/export/download/create-content/attach-content, why it is blocked, what action should open review, and what acknowledgement copy must be shown.
   - User story link: Prevents future actions from bypassing the review gate.
   - Depends on: Task 1.
@@ -275,7 +275,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Include banned guarantee-copy checks in tests or fixtures where practical.
 
 - [ ] Task 4: Define the shared platform review/flatten contract.
-  - File: `contentflow_app/lib/data/services/device_capture_service.dart`
+  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
   - Action: Add typed capability/results/errors for privacy review support, redacted preview availability, frame sampling availability, correction flatten requests, and corrected asset results.
   - User story link: Lets shared Flutter UI request corrections without embedding native platform logic.
   - Depends on: Tasks 1-3.
@@ -283,7 +283,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Do not implement Android/web/Windows native flattening in this chantier; platform specs own it.
 
 - [ ] Task 5: Add review-gated capture actions.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Add review-required card state, Review action, and gate share/export/create-content/attach-content through the shared policy before invoking existing service/API calls.
   - User story link: Ensures a privacy asset cannot leave the app before review acknowledgement.
   - Depends on: Tasks 1-4.
@@ -291,7 +291,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Normal non-privacy captures must keep existing behavior.
 
 - [ ] Task 6: Build the shared privacy review surface.
-  - File: `contentflow_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`
   - Action: Create the review UI for redacted-only preview, screenshot zoom/pan, video playback/scrubbing, sampled-frame list, degraded notices, acknowledgement, and action buttons.
   - User story link: Gives the user a concrete place to inspect the redacted output before sharing.
   - Depends on: Tasks 1-5.
@@ -299,7 +299,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Use redacted media only; no original/reveal affordance.
 
 - [ ] Task 7: Add manual correction overlay UI and state.
-  - File: `contentflow_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`, `contentflow_app/lib/data/models/privacy_capture_review.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/privacy_capture_review_sheet.dart`, `contentglowz_app/lib/data/models/privacy_capture_review.dart`
   - Action: Support add-only redaction rectangles/regions for screenshots and timestamped video ranges, local correction draft state, discard correction, and apply correction requests.
   - User story link: Lets the user fix missed sensitive regions before acknowledging review.
   - Depends on: Tasks 4 and 6.
@@ -307,7 +307,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: The UI stores only local correction instructions until platform flattening returns a redacted output; exports never include editable layers.
 
 - [ ] Task 8: Enforce no-clear preview and compare behavior.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_asset_preview.dart`, `contentflow_app/lib/presentation/screens/capture/capture_asset_preview_io.dart`, `contentflow_app/lib/presentation/screens/capture/capture_asset_preview_stub.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_asset_preview.dart`, `contentglowz_app/lib/presentation/screens/capture/capture_asset_preview_io.dart`, `contentglowz_app/lib/presentation/screens/capture/capture_asset_preview_stub.dart`
   - Action: Make privacy previews explicitly redacted-only, prevent fallback to any clear/original path, and ensure compare labels are redacted draft versus corrected redacted output only.
   - User story link: Prevents accidental clear exposure during review.
   - Depends on: Tasks 1 and 6.
@@ -315,7 +315,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: If redacted preview is unavailable, show a blocked/error preview rather than a clear fallback.
 
 - [ ] Task 9: Minimize backend metadata for reviewed privacy assets.
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Extend `_captureAssetMetadata` to include safe privacy summary fields and review state while excluding local correction drafts, overlay geometry, frame samples, OCR text, temp paths, and local file paths as durable server truth.
   - User story link: Lets content records know an asset was privacy-reviewed without leaking sensitive review data.
   - Depends on: Tasks 1-3.
@@ -323,7 +323,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Offline queued payloads must follow the same minimization rule.
 
 - [ ] Task 10: Add regression tests for gates and metadata.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`
+  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`
   - Action: Cover old asset parsing, privacy review states, stale revision invalidation, local persistence, share/export/content gate blocking, review acknowledgement, and normal capture unchanged behavior.
   - User story link: Makes the review contract enforceable.
   - Depends on: Tasks 1-9.
@@ -331,7 +331,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Add fake capture clients rather than platform-native test dependencies.
 
 - [ ] Task 11: Update docs for privacy review behavior.
-  - File: `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Document review-required flow, no-clear compare policy, local-only metadata, no-guarantee copy, manual correction limits, and platform-specific ownership split.
   - User story link: Aligns implementers and users around what privacy review does and does not guarantee.
   - Depends on: Tasks 1-10.
@@ -404,14 +404,14 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
 
 Read first:
 
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-web-privacy-capture-dynamic-redaction.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-windows-privacy-capture-dynamic-redaction.md`
-- `contentflow_app/lib/data/models/capture_asset.dart`
-- `contentflow_app/lib/data/services/capture_local_store.dart`
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
-- `contentflow_app/lib/data/services/device_capture_service.dart`
-- `contentflow_app/lib/data/services/api_service.dart`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-web-privacy-capture-dynamic-redaction.md`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-windows-privacy-capture-dynamic-redaction.md`
+- `contentglowz_app/lib/data/models/capture_asset.dart`
+- `contentglowz_app/lib/data/services/capture_local_store.dart`
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+- `contentglowz_app/lib/data/services/device_capture_service.dart`
+- `contentglowz_app/lib/data/services/api_service.dart`
 
 Implementation approach:
 

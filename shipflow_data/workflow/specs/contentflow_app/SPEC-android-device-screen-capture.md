@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-04"
 created_at: "2026-05-04 19:29:42 UTC"
 updated: "2026-05-04"
@@ -18,9 +18,9 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter Android"
-  - "contentflow_app Android native Kotlin"
-  - "contentflow_app Riverpod providers"
+  - "contentglowz_app Flutter Android"
+  - "contentglowz_app Android native Kotlin"
+  - "contentglowz_app Riverpod providers"
   - "Android MediaProjection"
 depends_on:
   - artifact: "shipflow_data/business/business.md"
@@ -38,15 +38,15 @@ depends_on:
   - artifact: "CLAUDE.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-offline-sync-v2.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-offline-sync-v2.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
 evidence:
   - "pubspec.yaml already has Flutter/Riverpod/Dio/shared_preferences and the audio-only record package, but no screen capture or MediaProjection dependency."
   - "android/app/src/main/AndroidManifest.xml currently declares only RECORD_AUDIO and no mediaProjection foreground service permissions."
-  - "android/app/src/main/kotlin/com/contentflow/contentflow_app/MainActivity.kt is a minimal FlutterActivity, so native platform-channel capture work is clean-slate."
-  - "lib/data/services/feedback_service.dart and contentflow_lab/api/routers/feedback.py already implement a signed upload/finalize pattern for binary audio feedback; this is a future reference pattern only, not V1 scope."
+  - "android/app/src/main/kotlin/com/contentflow/contentglowz_app/MainActivity.kt is a minimal FlutterActivity, so native platform-channel capture work is clean-slate."
+  - "lib/data/services/feedback_service.dart and contentglowz_lab/api/routers/feedback.py already implement a signed upload/finalize pattern for binary audio feedback; this is a future reference pattern only, not V1 scope."
   - "SPEC-offline-sync-v2 explicitly blocks binary/audio uploads offline, which should apply to capture media uploads too."
   - "Android official MediaProjection docs confirm full display/app-window capture through MediaProjection, VirtualDisplay, MediaRecorder/ImageReader, user consent, and foreground-service requirements."
 next_step: "/sf-verify android device screen capture on real Android device"
@@ -147,14 +147,14 @@ Prefer a custom native implementation for V1 instead of relying blindly on a gen
 
 Local app dependencies and contracts:
 
-- `contentflow_app/pubspec.yaml`: currently has no MediaProjection/screen capture package and may need `permission_handler` only if runtime permission handling is not implemented natively.
+- `contentglowz_app/pubspec.yaml`: currently has no MediaProjection/screen capture package and may need `permission_handler` only if runtime permission handling is not implemented natively.
 - `android/app/src/main/AndroidManifest.xml`: add foreground service permissions/service declaration and possibly `POST_NOTIFICATIONS`.
-- `android/app/src/main/kotlin/com/contentflow/contentflow_app/MainActivity.kt`: add or delegate MethodChannel/EventChannel registration.
-- New native Kotlin classes under `android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/`.
+- `android/app/src/main/kotlin/com/contentflow/contentglowz_app/MainActivity.kt`: add or delegate MethodChannel/EventChannel registration.
+- New native Kotlin classes under `android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/`.
 - New Flutter data/model/provider/UI files under `lib/data/models`, `lib/data/services`, `lib/providers`, and `lib/presentation/screens/capture`.
 - `lib/router.dart` and `lib/presentation/screens/app_shell.dart`: add route/navigation entry if the feature is part of the app shell.
-- `contentflow_lab/api/routers/feedback.py` and `api/services/feedback_storage.py`: future reference pattern for signed upload only; do not call, modify, or overload feedback routes in V1.
-- `contentflow_lab/api/models/feedback.py`: future reference for upload validation style only; no capture backend models are part of V1.
+- `contentglowz_lab/api/routers/feedback.py` and `api/services/feedback_storage.py`: future reference pattern for signed upload only; do not call, modify, or overload feedback routes in V1.
+- `contentglowz_lab/api/models/feedback.py`: future reference for upload validation style only; no capture backend models are part of V1.
 
 Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
 
@@ -193,7 +193,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
 - Update `shipflow_data/business/product.md` if the product promise expands from review/publish preparation into device media capture.
 - Update `shipflow_data/technical/guidelines.md` only if a reusable platform-channel convention is introduced.
 - Update `CHANGELOG.md` after implementation.
-- Update `contentflow_site` marketing copy only after the feature ships and after platform limits are worded honestly.
+- Update `contentglowz_site` marketing copy only after the feature ships and after platform limits are worded honestly.
 
 ## Edge Cases
 
@@ -216,7 +216,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
 ## Implementation Tasks
 
 - [x] Task 1: Decide custom native implementation vs plugin adoption after a short Android spike.
-  - File: `contentflow_app/pubspec.yaml`, `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/MainActivity.kt`
+  - File: `contentglowz_app/pubspec.yaml`, `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/MainActivity.kt`
   - Action: Evaluate whether `flutter_screen_recording` satisfies screenshot, Android 14 consent, foreground service, local output path, lifecycle callbacks, notification, and storage requirements. Default to custom Kotlin if any requirement is not met cleanly.
   - User story link: Ensures the Android capture foundation can actually capture device screen media for creator assets.
   - Depends on: None.
@@ -224,7 +224,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Do not adopt low-confidence/unmaintained packages just to reduce native code.
 
 - [x] Task 2: Add Android manifest permissions and capture service declaration.
-  - File: `contentflow_app/android/app/src/main/AndroidManifest.xml`
+  - File: `contentglowz_app/android/app/src/main/AndroidManifest.xml`
   - Action: Add `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`, optional `POST_NOTIFICATIONS`, keep `RECORD_AUDIO`, and declare a non-exported foreground service with `android:foregroundServiceType="mediaProjection"`.
   - User story link: Makes Android screen recording legal and stable under modern foreground-service rules.
   - Depends on: Task 1.
@@ -232,7 +232,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Avoid legacy external storage permissions unless an explicit gallery export task scopes them.
 
 - [x] Task 3: Implement native MediaProjection consent bridge.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenCaptureChannel.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenCaptureChannel.kt`
   - Action: Register MethodChannel/EventChannel APIs for `isSupported`, `requestScreenshotConsent`, `startRecordingConsent`, `stopRecording`, and status events; use Activity Result APIs or equivalent safe request flow.
   - User story link: Lets Flutter trigger Android's explicit consent prompt and receive reliable state.
   - Depends on: Task 2.
@@ -240,7 +240,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Do not reuse Activity result `Intent` across sessions.
 
 - [x] Task 4: Implement native screenshot capture.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenShotCapture.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenShotCapture.kt`
   - Action: Use MediaProjection + VirtualDisplay + ImageReader to capture one frame, save PNG to app-scoped storage, release all resources, and return file metadata.
   - User story link: Provides the "prendre en photo tout l'ecran" capability.
   - Depends on: Task 3.
@@ -248,7 +248,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Timeout if no frame arrives; never leave projection alive after one-shot capture.
 
 - [x] Task 5: Implement native recording foreground service.
-  - File: `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenRecordService.kt`
+  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenRecordService.kt`
   - Action: Start a foreground service, configure MediaRecorder MP4 output, create VirtualDisplay from MediaProjection, stream status/duration, enforce a 5-minute maximum, stop/finalize file safely, and release resources in `MediaProjection.Callback.onStop()`.
   - User story link: Provides the "enregistrer une video de tout l'ecran" capability.
   - Depends on: Task 3.
@@ -256,7 +256,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Register callbacks before `createVirtualDisplay()`.
 
 - [x] Task 6: Add optional microphone audio toggle, off by default.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`, `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenRecordService.kt`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`, `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenRecordService.kt`
   - Action: Add a disabled-by-default microphone toggle; request runtime mic permission only when enabled; continue video-only if denied.
   - User story link: Lets creators record voiceover while capturing the device screen.
   - Depends on: Task 5.
@@ -264,7 +264,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Internal device audio is out of scope for V1.
 
 - [x] Task 7: Add Flutter capture models and platform service.
-  - File: `contentflow_app/lib/data/models/capture_asset.dart`, `contentflow_app/lib/data/services/device_capture_service.dart`
+  - File: `contentglowz_app/lib/data/models/capture_asset.dart`, `contentglowz_app/lib/data/services/device_capture_service.dart`
   - Action: Define `CaptureAsset`, `CaptureStatus`, `CaptureKind`, `CaptureFailure`, and a typed platform-channel service with unsupported fallbacks for non-Android.
   - User story link: Gives the rest of the app typed capture state instead of widget-local channel calls.
   - Depends on: Tasks 3-5.
@@ -272,7 +272,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Include local path, mime type, duration, width/height, file size, createdAt, microphone-enabled flag, and system-selected capture label metadata. Do not include upload metadata in V1.
 
 - [x] Task 8: Add capture state recovery and local history.
-  - File: `contentflow_app/lib/data/services/capture_local_store.dart`, `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`, `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/ScreenRecordService.kt`
+  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`, `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`, `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/ScreenRecordService.kt`
   - Action: Add native recording-state replay for screen recreation, plus local metadata persistence for recent captures.
   - User story link: Keeps capture status visible and recoverable across UI transitions.
   - Depends on: Task 7.
@@ -280,7 +280,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Store metadata only, not binary bytes, in local preferences. A broader Riverpod capture controller remains optional if capture state is reused outside `/capture`.
 
 - [x] Task 9: Add Android-first Capture screen and navigation.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`, `contentflow_app/lib/router.dart`, `contentflow_app/lib/presentation/screens/app_shell.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`, `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/app_shell.dart`
   - Action: Add `/capture`, controls for screenshot/record/stop, microphone toggle off by default, clear recording status, 5-minute cap display, local preview cards, discard/share/export actions, and unsupported states for web/iOS.
   - User story link: Gives creators one obvious place to capture device media.
   - Depends on: Task 8.
@@ -288,7 +288,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Avoid in-app text that promises hidden/universal capture. Do not show upload actions in V1.
 
 - [x] Task 10: Add share/export integration for local files.
-  - File: `contentflow_app/lib/data/services/device_capture_service.dart`, `contentflow_app/android/app/src/main/kotlin/com/contentflow/contentflow_app/capture/CaptureFileProvider.kt`, `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`, `contentglowz_app/android/app/src/main/kotlin/com/contentflow/contentglowz_app/capture/CaptureFileProvider.kt`, `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Wire local PNG/MP4 share/export from app-scoped storage through a native Android read-only content provider and share intent.
   - User story link: Lets creators reuse captured local assets in their content workflows without backend storage.
   - Depends on: Task 9.
@@ -296,7 +296,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Gallery save is not required unless existing app patterns already support it cleanly.
 
 - [x] Task 11: Add V1 QA and documentation updates.
-  - File: `contentflow_app/README.md`, `contentflow_app/CHANGELOG.md`, `contentflow_app/shipflow_data/business/product.md`
+  - File: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `contentglowz_app/shipflow_data/business/product.md`
   - Action: Document Android capture scope, platform limits, local-only behavior, microphone toggle, 5-minute cap, and changelog entry.
   - User story link: Keeps operator/product claims aligned with real platform behavior.
   - Depends on: Tasks 1-10.
@@ -304,7 +304,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Do not add V1 `.env.example` capture variables; marketing site update should wait until implementation is verified.
 
 - [ ] Deferred follow-up: Specify backend upload and synced capture asset library after V1.
-  - File: `shipflow_data/workflow/specs/contentflow_app/SPEC-android-capture-backend-upload.md`
+  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-android-capture-backend-upload.md`
   - Action: Create a separate spec for signed upload, explicit upload UI, server asset metadata, retention, auth/ownership, size limits, Turso migration, and reuse of feedback upload patterns without overloading feedback routes.
   - User story link: Preserves a future path for reusable cloud assets without expanding local-only V1.
   - Depends on: V1 verification and a product decision to add server storage.
@@ -349,8 +349,8 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - 5-minute cap stop/finalize behavior.
   - microphone permission granted and denied behavior.
 - Validation commands:
-  - `cd contentflow_app && flutter analyze`
-  - `cd contentflow_app && flutter test`
+  - `cd contentglowz_app && flutter analyze`
+  - `cd contentglowz_app && flutter test`
   - Android debug build/smoke on x64 CI or real device environment
 
 ## Risks
@@ -371,7 +371,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Microphone audio: optional toggle, off by default.
   - Internal audio: out of scope until explicitly requested.
   - Backend upload, synced asset library, and Turso migration: out of scope and deferred to `SPEC-android-capture-backend-upload.md` or equivalent future spec.
-- Read first: `android/app/src/main/AndroidManifest.xml`, `android/app/src/main/kotlin/com/contentflow/contentflow_app/MainActivity.kt`, `lib/router.dart`, `lib/presentation/screens/app_shell.dart`, existing provider/service patterns, and feedback upload files only as future-pattern reference.
+- Read first: `android/app/src/main/AndroidManifest.xml`, `android/app/src/main/kotlin/com/contentflow/contentglowz_app/MainActivity.kt`, `lib/router.dart`, `lib/presentation/screens/app_shell.dart`, existing provider/service patterns, and feedback upload files only as future-pattern reference.
 - Stop conditions: do not implement backend upload, ApiService capture upload methods, capture backend routes, capture migrations, automatic upload, internal app audio capture, or web/iOS capture in this chantier.
 - Use `MediaProjectionConfig.createConfigForDefaultDisplay()` on API 34+ if implementation confirms it reliably biases toward whole-display capture; gracefully fallback to system user choice on older APIs or unsupported OEM behavior.
 - Do not run Android release builds locally on Linux ARM64; use permitted local checks and x64 CI/device smoke.

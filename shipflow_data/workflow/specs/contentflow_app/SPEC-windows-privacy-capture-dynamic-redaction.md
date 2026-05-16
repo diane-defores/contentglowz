@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-08"
 created_at: "2026-05-08 09:47:05 UTC"
 updated: "2026-05-08"
@@ -18,10 +18,10 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter capture UI"
-  - "contentflow_app Flutter platform-channel service boundary"
-  - "contentflow_app local capture metadata store"
-  - "contentflow_app capture/content asset metadata"
+  - "contentglowz_app Flutter capture UI"
+  - "contentglowz_app Flutter platform-channel service boundary"
+  - "contentglowz_app local capture metadata store"
+  - "contentglowz_app capture/content asset metadata"
   - "Windows desktop runner"
   - "Windows.Graphics.Capture"
   - "Direct3D/Win2D rendering pipeline"
@@ -45,10 +45,10 @@ depends_on:
   - artifact: "shipflow_data/technical/flutter-app-shell-and-capture.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "0.1.0"
     required_status: "shipped_pending_manual_qa"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "shipflow_data/workflow/explorations/2026-05-08-windows-privacy-capture-redaction.md"
@@ -57,9 +57,9 @@ depends_on:
 supersedes: []
 evidence:
   - "shipflow_data/workflow/explorations/2026-05-08-windows-privacy-capture-redaction.md found Windows.Graphics.Capture feasible for user-selected window/display capture, Win2D/Direct3D feasible for effects, Windows.Media.Ocr feasible for text boxes, and MediaStreamSource/MediaTranscoder feasible for flattened video export."
-  - "contentflow_app currently has Android native capture code but no contentflow_app/windows runner directory, so Windows desktop capture is clean slate relative to platform-native code."
-  - "contentflow_app/lib/data/services/device_capture_service.dart currently reports non-Android platforms unsupported and uses typed MethodChannel/EventChannel parsing at the service/model boundary."
-  - "contentflow_app/shipflow_data/technical/guidelines.md requires typed native platform-channel APIs at the service/model boundary, app-scoped capture storage, metadata-only SharedPreferences persistence, and no durable backend truth based on device-local paths."
+  - "contentglowz_app currently has Android native capture code but no contentglowz_app/windows runner directory, so Windows desktop capture is clean slate relative to platform-native code."
+  - "contentglowz_app/lib/data/services/device_capture_service.dart currently reports non-Android platforms unsupported and uses typed MethodChannel/EventChannel parsing at the service/model boundary."
+  - "contentglowz_app/shipflow_data/technical/guidelines.md requires typed native platform-channel APIs at the service/model boundary, app-scoped capture storage, metadata-only SharedPreferences persistence, and no durable backend truth based on device-local paths."
   - "The Android privacy spec establishes the product pattern for privacy-marked assets, best-effort disclosure, post-production review, and no persistence of recognized text."
 next_step: "/sf-ready windows privacy capture dynamic redaction"
 ---
@@ -70,7 +70,7 @@ Windows Privacy Capture Dynamic Redaction
 
 ## Status
 
-Draft spec for a Windows desktop-only privacy capture mode. The current Flutter app has no `contentflow_app/windows` runner, so Windows native capture is a clean-slate platform addition that must integrate through the existing Dart capture service/model boundary. This chantier does not implement Web, iOS, Linux, or Android parity work. It defines a best-effort privacy capture path for arbitrary Windows windows or monitors, using `Windows.Graphics.Capture`, Direct3D/Win2D redaction effects, `Windows.Media.Ocr`, and a flattened local export through `MediaStreamSource`/`MediaTranscoder` or Media Foundation. The result must require user review before share/export and must never be described as guaranteed anonymization.
+Draft spec for a Windows desktop-only privacy capture mode. The current Flutter app has no `contentglowz_app/windows` runner, so Windows native capture is a clean-slate platform addition that must integrate through the existing Dart capture service/model boundary. This chantier does not implement Web, iOS, Linux, or Android parity work. It defines a best-effort privacy capture path for arbitrary Windows windows or monitors, using `Windows.Graphics.Capture`, Direct3D/Win2D redaction effects, `Windows.Media.Ocr`, and a flattened local export through `MediaStreamSource`/`MediaTranscoder` or Media Foundation. The result must require user review before share/export and must never be described as guaranteed anonymization.
 
 V1 goal: prove and ship a minimal Windows desktop path for one selected window or display, text OCR boxes, blur/pixelate/scramble rendering, flattened redacted screenshot/MP4 export, privacy metadata, temp-file controls, and review-gated share.
 
@@ -124,7 +124,7 @@ Add a Windows desktop privacy capture path behind the existing Flutter capture s
 ## Scope In
 
 - Windows desktop only.
-- Windows runner/platform-channel setup if the Flutter project still lacks `contentflow_app/windows`.
+- Windows runner/platform-channel setup if the Flutter project still lacks `contentglowz_app/windows`.
 - Windows support detection in the Flutter capture service, separate from Android support.
 - Privacy mode controls for Windows capture: text redaction style, visual/photo redaction style, redaction strength, OCR cadence/performance profile, and review state.
 - Best-effort disclosure before privacy capture starts and review acknowledgement before share/export.
@@ -176,16 +176,16 @@ Add a Windows desktop privacy capture path behind the existing Flutter capture s
 
 Local dependencies and contracts:
 
-- `contentflow_app/lib/data/models/capture_asset.dart`: extend metadata with privacy fields in a backwards-compatible way.
-- `contentflow_app/lib/data/services/device_capture_service.dart`: add Windows platform support detection and typed privacy options/events without weakening Android behavior.
-- `contentflow_app/lib/data/services/capture_local_store.dart`: persist review state and privacy metadata only.
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`: add Windows privacy controls, disclosure, status/degraded states, and share/export review gate.
-- `contentflow_app/lib/data/services/api_service.dart`: include privacy metadata when capture assets are linked to backend content, without sending local paths or OCR text.
-- `contentflow_app/windows/`: currently absent; V1 must create or restore the Windows runner before adding native Windows capture code.
-- `contentflow_app/windows/runner/`: prospective Flutter Windows runner files for plugin registration and native method/event channel binding.
-- `contentflow_app/windows/runner/privacy_capture/`: prospective native module for Windows capture, OCR, redaction, encoding, temp cleanup, and event emission.
-- `contentflow_app/pubspec.yaml`: may need Windows desktop plugin or FFI dependencies only if the chosen architecture requires them; prefer native runner integration before adding broad package surface.
-- `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`, and `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`: update after implementation.
+- `contentglowz_app/lib/data/models/capture_asset.dart`: extend metadata with privacy fields in a backwards-compatible way.
+- `contentglowz_app/lib/data/services/device_capture_service.dart`: add Windows platform support detection and typed privacy options/events without weakening Android behavior.
+- `contentglowz_app/lib/data/services/capture_local_store.dart`: persist review state and privacy metadata only.
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`: add Windows privacy controls, disclosure, status/degraded states, and share/export review gate.
+- `contentglowz_app/lib/data/services/api_service.dart`: include privacy metadata when capture assets are linked to backend content, without sending local paths or OCR text.
+- `contentglowz_app/windows/`: currently absent; V1 must create or restore the Windows runner before adding native Windows capture code.
+- `contentglowz_app/windows/runner/`: prospective Flutter Windows runner files for plugin registration and native method/event channel binding.
+- `contentglowz_app/windows/runner/privacy_capture/`: prospective native module for Windows capture, OCR, redaction, encoding, temp cleanup, and event emission.
+- `contentglowz_app/pubspec.yaml`: may need Windows desktop plugin or FFI dependencies only if the chosen architecture requires them; prefer native runner integration before adding broad package surface.
+- `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/CHANGELOG.md`, and `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md`: update after implementation.
 
 Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official Microsoft documentation and the Windows exploration source list.
 
@@ -216,7 +216,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 
 - Product: Windows desktop capture changes Capture from Android-only local capture to cross-platform local capture with platform-specific implementations and expectations.
 - Security: this feature touches highly sensitive screen content; data minimization, temp cleanup, and review-gated sharing are mandatory.
-- Platform architecture: the app currently lacks `contentflow_app/windows`; adding a Windows runner creates a new native surface that must follow Flutter desktop channel conventions.
+- Platform architecture: the app currently lacks `contentglowz_app/windows`; adding a Windows runner creates a new native surface that must follow Flutter desktop channel conventions.
 - Performance: OCR, frame copies, effects, and encoding can overload low-end devices, 4K displays, high frame rates, and multi-monitor setups.
 - UX: Windows capture target selection is mediated by OS UI; users may choose the wrong monitor/window, so target labels and review states matter.
 - Backend: no schema migration should be needed if privacy data remains in existing metadata JSON, but payload tests must prove no local paths or OCR text are sent.
@@ -225,12 +225,12 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with Windows desktop privacy capture scope, best-effort limits, local-only processing, review requirement, and no cloud redaction.
-- Update `contentflow_app/shipflow_data/technical/guidelines.md` with Windows native capture temp-file rules, OCR text discard rules, multi-monitor/DPI validation expectations, and review-gated share behavior.
-- Update `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md` to add Windows runner/native capture ownership, validation commands, and Windows QA requirements.
-- Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/shipflow_data/business/product.md` only if Windows privacy capture ships publicly and changes platform positioning.
-- Do not update `contentflow_site` marketing copy until Windows QA proves the feature usable and wording is legally safe.
+- Update `contentglowz_app/README.md` with Windows desktop privacy capture scope, best-effort limits, local-only processing, review requirement, and no cloud redaction.
+- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with Windows native capture temp-file rules, OCR text discard rules, multi-monitor/DPI validation expectations, and review-gated share behavior.
+- Update `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md` to add Windows runner/native capture ownership, validation commands, and Windows QA requirements.
+- Update `contentglowz_app/CHANGELOG.md` after implementation.
+- Update `contentglowz_app/shipflow_data/business/product.md` only if Windows privacy capture ships publicly and changes platform positioning.
+- Do not update `contentglowz_site` marketing copy until Windows QA proves the feature usable and wording is legally safe.
 
 ## Edge Cases
 
@@ -260,15 +260,15 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 ## Implementation Tasks
 
 - [ ] Task 1: Establish Windows desktop runner and native module boundary if absent.
-  - File: `contentflow_app/windows/`
+  - File: `contentglowz_app/windows/`
   - Action: Create or restore the Flutter Windows desktop runner and reserve a focused native privacy capture module under the runner instead of mixing capture logic into generated boilerplate.
   - User story link: Provides the Windows desktop platform surface required for user-selected native capture.
   - Depends on: None.
   - Validate with: Windows `flutter build windows` or equivalent Windows desktop compile in a supported environment.
-  - Notes: The current repository does not have `contentflow_app/windows`; do not attempt to implement Windows behavior through Android native files.
+  - Notes: The current repository does not have `contentglowz_app/windows`; do not attempt to implement Windows behavior through Android native files.
 
 - [ ] Task 2: Add cross-platform privacy metadata to capture assets.
-  - File: `contentflow_app/lib/data/models/capture_asset.dart`
+  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
   - Action: Add backwards-compatible fields/enums for `privacyMode`, `redactionStatus`, `textRedactionStyle`, `visualRedactionStyle`, `redactionStrength`, `reviewState`, `privacyPlatform`, `processingStats`, and `degradationReason`.
   - User story link: Lets the app distinguish normal assets from best-effort Windows privacy assets and gate share/export.
   - Depends on: None.
@@ -276,7 +276,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Do not store OCR text, OCR transcripts, frame thumbnails, local clear paths, or temp paths.
 
 - [ ] Task 3: Extend local capture store for review state updates.
-  - File: `contentflow_app/lib/data/services/capture_local_store.dart`
+  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
   - Action: Add a metadata-only update path for privacy review state and degradation stats without rewriting binary media or changing recent capture ordering.
   - User story link: Lets a user review once, then share later while preserving privacy status.
   - Depends on: Task 2.
@@ -284,7 +284,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Continue using SharedPreferences for metadata only.
 
 - [ ] Task 4: Extend Flutter capture service support for Windows.
-  - File: `contentflow_app/lib/data/services/device_capture_service.dart`
+  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
   - Action: Add `TargetPlatform.windows` support detection, Windows-specific privacy options, typed native event parsing, and privacy failure codes while preserving Android method compatibility.
   - User story link: Lets Flutter request Windows privacy capture through a typed service boundary.
   - Depends on: Task 2.
@@ -292,7 +292,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Keep Windows and Android platform behavior explicit; do not make generic capture methods silently change semantics.
 
 - [ ] Task 5: Add Windows privacy controls, disclosure, and degraded states.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Add Windows privacy controls for text style, visual style, strength, performance profile, best-effort disclosure, and degraded/failure notices.
   - User story link: Gives creators control while making limits and review obligations visible before capture starts.
   - Depends on: Task 4.
@@ -300,7 +300,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: UI copy must be concise and must not promise complete anonymization.
 
 - [ ] Task 6: Gate share/export and content linking for privacy-marked assets.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Require review acknowledgement before share/export or content linking when `reviewState=needsReview`; persist `reviewState=reviewed` locally after acknowledgement.
   - User story link: Makes manual review part of the privacy workflow before public sharing.
   - Depends on: Tasks 2, 3, and 5.
@@ -308,7 +308,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: This is a product safety gate, not a legal guarantee.
 
 - [ ] Task 7: Add Windows native channel registration.
-  - File: `contentflow_app/windows/runner/flutter_window.cpp`
+  - File: `contentglowz_app/windows/runner/flutter_window.cpp`
   - Action: Register method and event channels matching `contentflow/device_capture` and `contentflow/device_capture_events`, route only Windows-supported calls to the native privacy capture controller, and return typed unsupported errors otherwise.
   - User story link: Connects Flutter controls to Windows native capture without bypassing model/service typing.
   - Depends on: Tasks 1 and 4.
@@ -316,7 +316,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Exact file may differ after runner creation; keep generated boilerplate changes minimal and isolated.
 
 - [ ] Task 8: Define Windows native options, events, and error types.
-  - File: `contentflow_app/windows/runner/privacy_capture/privacy_capture_types.h`
+  - File: `contentglowz_app/windows/runner/privacy_capture/privacy_capture_types.h`
   - Action: Define native representations for privacy options, redaction styles, strength, capture target metadata, processing stats, review metadata, degradation notices, and stable error codes.
   - User story link: Keeps channel parsing out of OCR/render/encode internals.
   - Depends on: Task 7.
@@ -324,7 +324,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Keep option names aligned with Dart enums and Android privacy metadata where applicable.
 
 - [ ] Task 9: Implement Windows support and picker controller.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_privacy_capture_controller.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_privacy_capture_controller.cpp`
   - Action: Check `GraphicsCaptureSession.IsSupported()`, invoke `GraphicsCapturePicker`, handle user cancellation, create `GraphicsCaptureItem`, and expose selected target metadata.
   - User story link: Ensures the user explicitly chooses the window or display to redact.
   - Depends on: Tasks 7 and 8.
@@ -332,7 +332,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Do not add silent capture or UI Automation in V1.
 
 - [ ] Task 10: Implement Direct3D frame pool and lifecycle management.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_capture_frame_source.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_capture_frame_source.cpp`
   - Action: Create the Direct3D device, `Direct3D11CaptureFramePool`, `GraphicsCaptureSession`, frame acquisition loop, target closed handling, resize handling, device-loss recovery, and timestamp propagation.
   - User story link: Provides the local frame stream that will be redacted before export.
   - Depends on: Task 9.
@@ -340,7 +340,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Normalize capture frame size and content size separately to avoid undefined regions.
 
 - [ ] Task 11: Implement OCR analyzer with coordinate normalization.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_ocr_analyzer.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_ocr_analyzer.cpp`
   - Action: Use `Windows.Media.Ocr.OcrEngine`, check languages and max dimensions, run OCR at a throttled cadence, derive line/word boxes, discard recognized text immediately, and map boxes into output coordinates.
   - User story link: Finds likely sensitive text without storing its content.
   - Depends on: Task 10.
@@ -348,7 +348,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Downscale analysis images only with explicit scale mapping back to output space.
 
 - [ ] Task 12: Implement temporal redaction tracker.
-  - File: `contentflow_app/windows/runner/privacy_capture/redaction_tracker.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/redaction_tracker.cpp`
   - Action: Persist boxes across a short frame/time window, merge overlaps, expand margins, handle fast scroll, and mark degraded confidence when OCR cadence drops.
   - User story link: Reduces clear-text flashes while keeping video understandable.
   - Depends on: Task 11.
@@ -356,7 +356,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: This is critical for screen recordings and scrolling browser/messaging flows.
 
 - [ ] Task 13: Implement Win2D/Direct3D redaction renderer.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_redaction_renderer.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_redaction_renderer.cpp`
   - Action: Apply blur, pixelate, and scramble effects to active regions using Win2D/Direct3D built-in effects or a custom effect where needed; preserve UI layout and avoid full-screen masks by default.
   - User story link: Produces visually usable videos while covering readable sensitive regions.
   - Depends on: Tasks 10, 11, and 12.
@@ -364,7 +364,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: If custom Win2D effects are too complex for V1, use simpler shader/downscale/upscale or fake glyph overlays that still make text unreadable.
 
 - [ ] Task 14: Implement privacy screenshot export.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_privacy_screenshot.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_privacy_screenshot.cpp`
   - Action: Capture a frame, analyze/redact it, write only the flattened redacted PNG to app-scoped storage, return privacy metadata, and release clear surfaces.
   - User story link: Provides the lowest-risk Windows privacy capture path.
   - Depends on: Tasks 10-13.
@@ -372,7 +372,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Register the asset only after redaction and write succeed.
 
 - [ ] Task 15: Implement privacy recording encode pipeline.
-  - File: `contentflow_app/windows/runner/privacy_capture/windows_privacy_recorder.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/windows_privacy_recorder.cpp`
   - Action: Feed redacted Direct3D frames to `MediaStreamSource`/`MediaTranscoder` or Media Foundation, encode an MP4, track progress/stats, and finalize or fail atomically.
   - User story link: Delivers dynamic best-effort privacy for Windows desktop recordings.
   - Depends on: Tasks 10-13.
@@ -380,7 +380,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Use Media Foundation instead of MediaTranscoder only if it reduces runner integration risk or improves reliability; document the decision in implementation notes.
 
 - [ ] Task 16: Enforce temp clear file and crash cleanup rules.
-  - File: `contentflow_app/windows/runner/privacy_capture/privacy_temp_store.cpp`
+  - File: `contentglowz_app/windows/runner/privacy_capture/privacy_temp_store.cpp`
   - Action: Centralize temp paths, app-private storage, delete-on-success/failure, startup cleanup of stale privacy temp files, quarantine behavior, and diagnostics that do not reveal clear paths in user-facing UI.
   - User story link: Prevents failed privacy processing from leaking clear intermediates.
   - Depends on: Tasks 14 and 15.
@@ -388,7 +388,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: Prefer no clear temp files. This task exists to control unavoidable intermediates and partial outputs.
 
 - [ ] Task 17: Add privacy metadata to backend capture/content payloads.
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Include privacy status/settings/review state and aggregate stats when linking captures to content; exclude OCR text, clear file paths, temp paths, and local paths as durable server truth.
   - User story link: Preserves privacy context when a redacted capture becomes content.
   - Depends on: Task 2.
@@ -396,7 +396,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
   - Notes: No backend schema migration expected if metadata JSON is sufficient.
 
 - [ ] Task 18: Add tests and documentation updates.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Cover parsing, support gating, disclosure, review gating, normal capture unchanged behavior, and document Windows-only V1 limits, temp rules, best-effort language, and manual QA.
   - User story link: Prevents regression and aligns operator expectations with actual privacy guarantees.
   - Depends on: Tasks 1-17.
@@ -477,11 +477,11 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 
 Read first:
 
-- `contentflow_app/lib/data/services/device_capture_service.dart`
-- `contentflow_app/lib/data/models/capture_asset.dart`
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
-- `contentflow_app/lib/data/services/capture_local_store.dart`
-- `contentflow_app/shipflow_data/technical/guidelines.md`
+- `contentglowz_app/lib/data/services/device_capture_service.dart`
+- `contentglowz_app/lib/data/models/capture_asset.dart`
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+- `contentglowz_app/lib/data/services/capture_local_store.dart`
+- `contentglowz_app/shipflow_data/technical/guidelines.md`
 - `shipflow_data/workflow/explorations/2026-05-08-windows-privacy-capture-redaction.md`
 
 Implementation approach:

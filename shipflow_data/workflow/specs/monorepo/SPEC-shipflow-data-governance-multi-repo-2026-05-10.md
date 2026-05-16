@@ -15,9 +15,9 @@ security_impact: none
 docs_impact: yes
 user_story: "En tant qu'équipe ShipFlow, nous voulons un emplacement canonique unique `shipflow_data/**` pour la gouvernance docs sur les 3 repos afin d'éviter drift, doublons et incohérences de migration."
 linked_systems:
-  - contentflow_app
-  - contentflow_site
-  - contentflow_lab
+  - contentglowz_app
+  - contentglowz_site
+  - contentglowz_lab
 depends_on: []
 supersedes: []
 evidence:
@@ -29,7 +29,7 @@ next_step: "/sf-start shipflow_data/workflow/specs/monorepo/SPEC-shipflow-data-g
 
 ## Objectif
 
-Aligner `contentflow_app`, `contentflow_site` et `contentflow_lab` sur la doctrine ShipFlow qui impose un emplacement canonique dans `shipflow_data/**` pour les artefacts de gouvernance, sans duplication de source de vérité.
+Aligner `contentglowz_app`, `contentglowz_site` et `contentglowz_lab` sur la doctrine ShipFlow qui impose un emplacement canonique dans `shipflow_data/**` pour les artefacts de gouvernance, sans duplication de source de vérité.
 
 ## Scope In
 
@@ -59,19 +59,19 @@ Aligner `contentflow_app`, `contentflow_site` et `contentflow_lab` sur la doctri
 
 ## État initial par repo (résumé)
 
-### `contentflow_app`
+### `contentglowz_app`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` présent; `docs/editorial` absent.
 - `AGENTS.md` absent.
 
-### `contentflow_site`
+### `contentglowz_site`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` et `docs/editorial` présents.
 - `AGENTS.md` absent.
 
-### `contentflow_lab`
+### `contentglowz_lab`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` présent; beaucoup de `.md` legacy hors frontmatter.
@@ -133,7 +133,7 @@ find shipflow_data -type f -name "*.md" | sort
 
 ## Minimal Behavior Contract
 
-- Trigger: migration de gouvernance demandée sur `contentflow_app`, `contentflow_site`, `contentflow_lab`.
+- Trigger: migration de gouvernance demandée sur `contentglowz_app`, `contentglowz_site`, `contentglowz_lab`.
 - Input: artefacts legacy en racine et sous `docs/technical/**`.
 - Output: artefacts canoniques déplacés vers `shipflow_data/**`, références mises à jour, compatibilité `AGENT.md`/`AGENTS.md` préservée.
 - Failure behavior: si un repo ne peut pas être migré proprement, il est marqué `blocked` sans contaminer les deux autres.

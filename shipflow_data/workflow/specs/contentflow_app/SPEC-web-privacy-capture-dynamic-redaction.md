@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow_app"
+project: "contentglowz_app"
 created: "2026-05-08"
 created_at: "2026-05-08 09:45:40 UTC"
 updated: "2026-05-08"
@@ -18,10 +18,10 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentflow_app Flutter capture UI"
-  - "contentflow_app web capture support"
-  - "contentflow_app local capture metadata store"
-  - "contentflow_app capture/content asset metadata"
+  - "contentglowz_app Flutter capture UI"
+  - "contentglowz_app web capture support"
+  - "contentglowz_app local capture metadata store"
+  - "contentglowz_app capture/content asset metadata"
   - "Browser Screen Capture API"
   - "Browser frame processing APIs"
   - "Canvas and OffscreenCanvas"
@@ -45,16 +45,16 @@ depends_on:
   - artifact: "shipflow_data/workflow/explorations/2026-05-08-web-privacy-capture-redaction.md"
     artifact_version: "unknown"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md"
+  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md"
     artifact_version: "0.1.0"
     required_status: "draft"
 supersedes: []
 evidence:
   - "shipflow_data/workflow/explorations/2026-05-08-web-privacy-capture-redaction.md concludes browser V1 is feasible but limited by browser API variability and real-time performance."
   - "The exploration recommends getDisplayMedia capture, frame processing, TextDetector when available, OCR WASM fallback, blur/pixelate/scramble, local-only processing, and review before share/export."
-  - "contentflow_app/lib/data/services/device_capture_service.dart currently returns unsupported on web through kIsWeb, so web privacy capture needs a browser-specific client path rather than the existing Android MethodChannel path."
-  - "contentflow_app/lib/presentation/screens/capture/capture_screen.dart already owns capture actions, recording state, recent assets, share actions, and unsupported-platform UI."
-  - "shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md establishes product invariants reused here: best-effort only, no guarantee, flattened redacted output, no OCR text persistence, and review acknowledgement before sharing."
+  - "contentglowz_app/lib/data/services/device_capture_service.dart currently returns unsupported on web through kIsWeb, so web privacy capture needs a browser-specific client path rather than the existing Android MethodChannel path."
+  - "contentglowz_app/lib/presentation/screens/capture/capture_screen.dart already owns capture actions, recording state, recent assets, share actions, and unsupported-platform UI."
+  - "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md establishes product invariants reused here: best-effort only, no guarantee, flattened redacted output, no OCR text persistence, and review acknowledgement before sharing."
 next_step: "/sf-ready web privacy capture dynamic redaction"
 ---
 
@@ -164,15 +164,15 @@ Add a browser-specific privacy capture client and UI path that uses `navigator.m
 
 Local dependencies and contracts:
 
-- `contentflow_app/lib/data/services/device_capture_service.dart`: currently blocks web through `_isWebRuntime`; add or route to a web-specific capture client contract in implementation.
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`: add browser privacy controls, disclosure, recording/progress/error states, review gate, and browser-supported UI.
-- `contentflow_app/lib/data/models/capture_asset.dart`: extend metadata for privacy mode, review state, detection/export engine, redaction settings, and aggregate stats.
-- `contentflow_app/lib/data/services/capture_local_store.dart`: persist review state and privacy metadata without storing clear media or OCR text.
-- `contentflow_app/lib/data/services/api_service.dart`: include privacy metadata in capture/content payloads without backend media upload or OCR text.
-- `contentflow_app/lib/presentation/screens/capture/capture_asset_preview.dart` and platform variants: preview privacy-marked web assets without clear-source fallback.
-- New web/browser capture implementation file(s), likely under `contentflow_app/lib/data/services/` or `contentflow_app/lib/data/services/web/`, using conditional imports so non-web builds are not affected.
+- `contentglowz_app/lib/data/services/device_capture_service.dart`: currently blocks web through `_isWebRuntime`; add or route to a web-specific capture client contract in implementation.
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`: add browser privacy controls, disclosure, recording/progress/error states, review gate, and browser-supported UI.
+- `contentglowz_app/lib/data/models/capture_asset.dart`: extend metadata for privacy mode, review state, detection/export engine, redaction settings, and aggregate stats.
+- `contentglowz_app/lib/data/services/capture_local_store.dart`: persist review state and privacy metadata without storing clear media or OCR text.
+- `contentglowz_app/lib/data/services/api_service.dart`: include privacy metadata in capture/content payloads without backend media upload or OCR text.
+- `contentglowz_app/lib/presentation/screens/capture/capture_asset_preview.dart` and platform variants: preview privacy-marked web assets without clear-source fallback.
+- New web/browser capture implementation file(s), likely under `contentglowz_app/lib/data/services/` or `contentglowz_app/lib/data/services/web/`, using conditional imports so non-web builds are not affected.
 - New browser worker or helper module(s), if implementation needs off-main-thread frame analysis or OCR.
-- `contentflow_app/web/`: only update if required for worker asset loading, CSP, WASM packaging, or browser runtime assets.
+- `contentglowz_app/web/`: only update if required for worker asset loading, CSP, WASM packaging, or browser runtime assets.
 
 Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08. No new broad research was required for this spec; official/source URLs were carried forward from `shipflow_data/workflow/explorations/2026-05-08-web-privacy-capture-redaction.md`.
 
@@ -218,11 +218,11 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 
 ## Documentation Coherence
 
-- Update `contentflow_app/README.md` with browser privacy capture scope, best-effort limits, browser support caveats, local-only processing, and review-before-share behavior.
-- Update `contentflow_app/shipflow_data/technical/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
-- Update `contentflow_app/CHANGELOG.md` after implementation.
-- Update `contentflow_app/shipflow_data/business/product.md` only if the feature ships publicly and changes supported-platform positioning.
-- Do not update `contentflow_site` marketing copy until manual browser QA proves the feature is usable and wording is legally safe.
+- Update `contentglowz_app/README.md` with browser privacy capture scope, best-effort limits, browser support caveats, local-only processing, and review-before-share behavior.
+- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
+- Update `contentglowz_app/CHANGELOG.md` after implementation.
+- Update `contentglowz_app/shipflow_data/business/product.md` only if the feature ships publicly and changes supported-platform positioning.
+- Do not update `contentglowz_site` marketing copy until manual browser QA proves the feature is usable and wording is legally safe.
 - Do not update `.env.example` unless OCR fallback or worker packaging introduces a configurable runtime flag.
 
 ## Edge Cases
@@ -246,7 +246,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 ## Implementation Tasks
 
 - [ ] Task 1: Add web privacy capture metadata to the capture asset model.
-  - File: `contentflow_app/lib/data/models/capture_asset.dart`
+  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
   - Action: Add backwards-compatible fields/enums for `privacyMode`, `redactionStatus`, `textRedactionStyle`, `photoRedactionStyle`, `redactionStrength`, `reviewState`, `detectionEngine`, `exportEngine`, and aggregate stats.
   - User story link: Lets the app distinguish normal captures from browser privacy captures and gate export/share.
   - Depends on: None.
@@ -254,7 +254,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Do not add fields for OCR text, clear frame paths, or clear blob references.
 
 - [ ] Task 2: Extend local capture storage for privacy review state.
-  - File: `contentflow_app/lib/data/services/capture_local_store.dart`
+  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
   - Action: Add or extend methods to update asset privacy metadata and `reviewState` without rewriting media bytes or breaking recent asset ordering/content links.
   - User story link: Lets review acknowledgement persist across a session without weakening privacy metadata.
   - Depends on: Task 1.
@@ -262,7 +262,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Keep storage metadata-only.
 
 - [ ] Task 3: Define a browser-capable capture client contract.
-  - File: `contentflow_app/lib/data/services/device_capture_service.dart`
+  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
   - Action: Route web runtime to a browser capture client or add an interface extension for privacy options while preserving Android MethodChannel behavior.
   - User story link: Makes web privacy capture possible without misusing Android-only platform channel assumptions.
   - Depends on: Task 1.
@@ -270,7 +270,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Normal Android `takeScreenshot`, `startRecording`, `stopRecording`, and `shareAsset` behavior must remain compatible.
 
 - [ ] Task 4: Implement browser support detection and capability reporting.
-  - File: `contentflow_app/lib/data/services/web/browser_capture_capabilities.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_capture_capabilities.dart`
   - Action: Detect `getDisplayMedia`, frame processing primitives, Canvas/OffscreenCanvas, MediaRecorder, WebCodecs, TextDetector, worker support, and OCR fallback availability; expose clear reason codes.
   - User story link: Prevents users from starting privacy capture in browsers that cannot safely complete it.
   - Depends on: Task 3.
@@ -278,7 +278,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Capability detection must be runtime-based, not user-agent-only.
 
 - [ ] Task 5: Add browser privacy controls and disclosure to Capture.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Show web privacy mode controls, text/photo style selectors, strength setting, best-effort disclosure, and unsupported capability messages in the existing capture flow.
   - User story link: Gives creators explicit control while making limits visible before capture.
   - Depends on: Tasks 3 and 4.
@@ -286,7 +286,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Wording must say best-effort, non exhaustive, and manual review required.
 
 - [ ] Task 6: Gate web share/export/content attachment by review state.
-  - File: `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Require review acknowledgement before browser share/download/export or content attachment for `reviewState=needsReview`; persist `reviewState=reviewed`.
   - User story link: Ensures the user reviews the flattened result before public use.
   - Depends on: Tasks 1, 2, and 5.
@@ -294,7 +294,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: This is a safety gate, not a guarantee of complete anonymization.
 
 - [ ] Task 7: Create the browser privacy capture service.
-  - File: `contentflow_app/lib/data/services/web/browser_privacy_capture_service.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_privacy_capture_service.dart`
   - Action: Start `getDisplayMedia()` from user gestures, manage track lifecycle, emit recording/progress/failed/completed events, and return privacy-marked assets only after redacted export finalizes.
   - User story link: Provides the web-specific capture lifecycle.
   - Depends on: Tasks 3-5.
@@ -302,7 +302,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Do not attempt to preselect a source or persist capture permission.
 
 - [ ] Task 8: Build the frame processing pipeline.
-  - File: `contentflow_app/lib/data/services/web/browser_frame_processor.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_frame_processor.dart`
   - Action: Convert captured frames into processable frames using the best available API path, schedule analysis cadence, handle frame dropping, and send redacted frames to the renderer/exporter.
   - User story link: Ensures redaction happens before output becomes shareable.
   - Depends on: Tasks 4 and 7.
@@ -310,7 +310,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Prefer worker/off-main-thread processing where feasible; stop if processing cannot keep output coherent.
 
 - [ ] Task 9: Implement text detection with conditional TextDetector and OCR WASM fallback.
-  - File: `contentflow_app/lib/data/services/web/browser_text_detector.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_text_detector.dart`
   - Action: Use `TextDetector` when available; otherwise use a local WASM OCR fallback with throttled cadence; output geometry/stats only and discard recognized text.
   - User story link: Finds likely sensitive text regions without persisting their contents.
   - Depends on: Tasks 4 and 8.
@@ -318,7 +318,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: If neither detector path is viable, block text privacy capture.
 
 - [ ] Task 10: Implement temporal redaction tracking.
-  - File: `contentflow_app/lib/data/services/web/browser_redaction_tracker.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_redaction_tracker.dart`
   - Action: Persist boxes across nearby frames, expand margins, merge overlapping boxes, expire stale boxes, and apply conservative behavior during scroll or dropped analysis.
   - User story link: Prevents readable text flashes during dynamic browser capture.
   - Depends on: Task 9.
@@ -326,7 +326,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: This is required for fast scrolling and transitions.
 
 - [ ] Task 11: Implement Canvas/OffscreenCanvas redaction rendering.
-  - File: `contentflow_app/lib/data/services/web/browser_redaction_renderer.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_redaction_renderer.dart`
   - Action: Apply blur, pixelate, and scramble overlays to detected boxes on redacted frames using Canvas/OffscreenCanvas; preserve surrounding UI layout.
   - User story link: Produces visually understandable but unreadable privacy output.
   - Depends on: Tasks 8-10.
@@ -334,7 +334,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Pixelation should use reduced-resolution redraw with smoothing disabled; scramble should cover real pixels with fake glyphs/lines.
 
 - [ ] Task 12: Implement flattened redacted export paths.
-  - File: `contentflow_app/lib/data/services/web/browser_redacted_exporter.dart`
+  - File: `contentglowz_app/lib/data/services/web/browser_redacted_exporter.dart`
   - Action: Export redacted frames using WebCodecs when viable or a redacted Canvas stream with MediaRecorder fallback; register only finalized redacted assets with accurate MIME/extension metadata.
   - User story link: Ensures share/export receives a flattened redacted media file, not clear source plus overlays.
   - Depends on: Tasks 8 and 11.
@@ -342,7 +342,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: Do not claim MP4 if the actual browser output is WebM.
 
 - [ ] Task 13: Include privacy metadata in capture/content payloads.
-  - File: `contentflow_app/lib/data/services/api_service.dart`
+  - File: `contentglowz_app/lib/data/services/api_service.dart`
   - Action: Include privacy status/settings/review state/engine metadata when creating or attaching content from captures; exclude OCR text, clear frames, and local clear paths.
   - User story link: Preserves privacy context when a capture becomes content.
   - Depends on: Task 1.
@@ -350,7 +350,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: No backend schema change expected.
 
 - [ ] Task 14: Update tests, docs, and browser QA notes.
-  - File: `contentflow_app/test/data/capture_asset_test.dart`, `contentflow_app/test/data/capture_local_store_test.dart`, `contentflow_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentflow_app/README.md`, `contentflow_app/shipflow_data/technical/guidelines.md`, `contentflow_app/CHANGELOG.md`
+  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Cover privacy metadata parsing, review-state persistence, disclosure UI, share/export gating, normal Android unaffected behavior, and document web-only best-effort browser limits.
   - User story link: Keeps the shipped feature honest, testable, and aligned with product guarantees.
   - Depends on: Tasks 1-13.
@@ -423,10 +423,10 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 Read first:
 
 - `shipflow_data/workflow/explorations/2026-05-08-web-privacy-capture-redaction.md`
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-android-privacy-capture-dynamic-redaction.md`
-- `contentflow_app/lib/data/services/device_capture_service.dart`
-- `contentflow_app/lib/presentation/screens/capture/capture_screen.dart`
-- `contentflow_app/lib/data/models/capture_asset.dart`
+- `shipflow_data/workflow/specs/contentglowz_app/SPEC-android-privacy-capture-dynamic-redaction.md`
+- `contentglowz_app/lib/data/services/device_capture_service.dart`
+- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+- `contentglowz_app/lib/data/models/capture_asset.dart`
 
 Implementation approach:
 

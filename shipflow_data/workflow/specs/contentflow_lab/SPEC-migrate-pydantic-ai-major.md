@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow_lab
+project: contentglowz_lab
 created: "2026-04-27"
 updated: "2026-05-04"
 status: reviewed
@@ -22,7 +22,7 @@ linked_systems:
   - Exa
   - Firecrawl
   - pytest
-  - contentflow_app
+  - contentglowz_app
   - Turso/libSQL
   - dependency management
   - external URL fetching surface
@@ -171,19 +171,19 @@ Rollback solution: because no DB schema change is needed, rollback is dependency
 # Scope Out
 - Rewriting CrewAI agents to PydanticAI wholesale.
 - Removing `pydantic-ai` as the default answer to current non-usage.
-- Changing public API request/response models for `contentflow_app`.
+- Changing public API request/response models for `contentglowz_app`.
 - Changing provider mode semantics, entitlement policy, user key encryption, or Turso schemas.
 - Removing CrewAI, LiteLLM, OpenAI SDK, Exa, Firecrawl, or provider integrations unrelated to the dependency risk.
 - Adding new AI features, new routes, new UI, or new provider support.
-- Touching `/home/claude/contentflow/contentflow_lab_deploy`, PM2, or live services.
+- Touching `/home/claude/contentflow/contentglowz_lab_deploy`, PM2, or live services.
 - Applying production migrations or deployment commands.
 - Solving unrelated dependency changes already present in the workspace.
 
 # Constraints
-- Work only in `/home/claude/contentflow/contentflow_lab` and the requested spec file.
+- Work only in `/home/claude/contentflow/contentglowz_lab` and the requested spec file.
 - Do not revert or overwrite parallel-agent changes; current observed dirty files include `requirements.txt` and untracked `requirements-dev.txt`.
 - No destructive git commands.
-- Keep backend reliability compatible with authenticated flows consumed by `contentflow_app`.
+- Keep backend reliability compatible with authenticated flows consumed by `contentglowz_app`.
 - Keep lazy imports for heavy agent dependencies so FastAPI health/startup remains fast.
 - Do not introduce DB schema changes unless implementation discovers a concrete need; expected Turso migration requirement is `no`.
 - Keep Pydantic v2 compatibility: current environment reports `pydantic==2.12.5`.
@@ -234,7 +234,7 @@ Upstream:
 
 Downstream:
 
-- `contentflow_app` depends on stable error semantics and AI route contracts.
+- `contentglowz_app` depends on stable error semantics and AI route contracts.
 - FastAPI startup/health check depends on lazy imports and avoiding heavy ML dependency import at module load.
 - Research, newsletter, psychology, persona, mesh, and internal-linking flows depend on current provider resolution and agent patterns.
 - Exa/Firecrawl tools are LLM-callable and therefore security-sensitive.
@@ -446,7 +446,7 @@ Install/check commands:
 Manual verification:
 
 - Review `git diff` to ensure unrelated dependency-file changes from other agents were not overwritten.
-- Confirm no changes under `/home/claude/contentflow/contentflow_lab_deploy`.
+- Confirm no changes under `/home/claude/contentflow/contentglowz_lab_deploy`.
 - Confirm no DB migration files were added.
 
 # Risks
