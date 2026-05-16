@@ -633,90 +633,94 @@ class _BottomNav extends StatelessWidget {
         maxChildSize: 0.94,
         builder: (sheetContext, scrollController) => SafeArea(
           top: false,
-          child: ListView(
+          child: Scrollbar(
             controller: scrollController,
-            padding: EdgeInsets.fromLTRB(
-              16,
-              12,
-              16,
-              16 + MediaQuery.viewInsetsOf(sheetContext).bottom,
-            ),
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+            thumbVisibility: true,
+            child: ListView(
+              controller: scrollController,
+              padding: EdgeInsets.fromLTRB(
+                12,
+                10,
+                12,
+                12 + MediaQuery.viewInsetsOf(sheetContext).bottom,
               ),
-              for (final section in sections) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      context.tr(section.label).toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.outlineVariant,
-                        letterSpacing: 1.0,
-                      ),
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: section.items.map((item) {
-                    final isSelected = item.path == selectedPath;
-                    final color = isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant;
-                    final bgColor = isSelected
-                        ? colorScheme.primary.withValues(alpha: 0.12)
-                        : colorScheme.surface.withValues(alpha: 0);
-                    return Material(
-                      color: bgColor,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          onNavigate(item.path);
-                        },
-                        child: SizedBox(
-                          width: 80,
-                          height: 64,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(item.icon, color: color, size: 22),
-                              const SizedBox(height: 4),
-                              Text(
-                                context.tr(item.label),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: color,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
+                for (final section in sections) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(6, 10, 6, 4),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        context.tr(section.label).toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.outlineVariant,
+                          letterSpacing: 1.0,
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
+                    ),
+                  ),
+                  Wrap(
+                    spacing: 2,
+                    runSpacing: 2,
+                    children: section.items.map((item) {
+                      final isSelected = item.path == selectedPath;
+                      final color = isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant;
+                      final bgColor = isSelected
+                          ? colorScheme.primary.withValues(alpha: 0.12)
+                          : colorScheme.surface.withValues(alpha: 0);
+                      return Material(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            onNavigate(item.path);
+                          },
+                          child: SizedBox(
+                            width: 76,
+                            height: 60,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(item.icon, color: color, size: 22),
+                                const SizedBox(height: 3),
+                                Text(
+                                  context.tr(item.label),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: color,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
