@@ -36,3 +36,29 @@
 - Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-001.md
 - Evidence pointer: `flox activate -- flutter test test/presentation/screens/entry/entry_screen_test.dart test/navigation/resume_no_jump_test.dart test/presentation/screens/onboarding/onboarding_back_test.dart` -> passed.
 - Follow-up: none
+
+## 2026-05-16 - BUG-2026-05-05-002 Android back navigation demo retest
+
+- Scope: BUG-2026-05-05-002
+- Environment: local Android device/build
+- Tester: user
+- Source: sf-test
+- Status: pass
+- Confidence: medium
+- Result summary: User reported all requested onboarding back-navigation checks passed.
+- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
+- Evidence pointer: chat reply `all pass` on 2026-05-16 after retest instructions.
+- Follow-up: /sf-verify BUG-2026-05-05-002 Android back navigation demo
+
+## 2026-05-16 - BUG-2026-05-05-002 Android back navigation demo verification
+
+- Scope: BUG-2026-05-05-002
+- Environment: local Flutter + user Android retest evidence
+- Tester: Codex + user evidence
+- Source: sf-verify
+- Status: pass
+- Confidence: high
+- Result summary: Closure criteria verified; focused Flutter onboarding back test passed and the user Android retest passed.
+- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
+- Evidence pointer: `flox activate -- flutter test test/presentation/screens/onboarding/onboarding_back_test.dart` -> passed.
+- Follow-up: /sf-spec Android back history outside onboarding
