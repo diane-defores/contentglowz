@@ -141,6 +141,14 @@ final _allItems = _sections.expand((s) => s.items).toList();
 /// Breakpoint: above this width we show side rail instead of bottom nav.
 const _desktopBreakpoint = 800.0;
 
+@visibleForTesting
+bool shouldConfirmShellExit({
+  required bool routeIsFirst,
+  required bool routerCanPop,
+}) {
+  return routeIsFirst && !routerCanPop;
+}
+
 class AppShell extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -221,10 +229,15 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _wrapWithExitConfirmation(BuildContext context, Widget child) {
     final routeIsFirst = ModalRoute.of(context)?.isFirst ?? true;
+    final routerCanPop = GoRouter.of(context).canPop();
+    final shouldConfirmExit = shouldConfirmShellExit(
+      routeIsFirst: routeIsFirst,
+      routerCanPop: routerCanPop,
+    );
     return PopScope<void>(
-      canPop: !routeIsFirst,
+      canPop: !shouldConfirmExit,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
+        if (didPop || !shouldConfirmExit) return;
         unawaited(confirmAndExitApp(context));
       },
       child: child,
@@ -628,9 +641,9 @@ class _BottomNav extends StatelessWidget {
       ),
       builder: (ctx) => DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.72,
-        minChildSize: 0.35,
-        maxChildSize: 0.94,
+        initialChildSize: 0.48,
+        minChildSize: 0.30,
+        maxChildSize: 0.50,
         builder: (sheetContext, scrollController) => SafeArea(
           top: false,
           child: Scrollbar(

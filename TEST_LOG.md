@@ -62,3 +62,16 @@
 - Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
 - Evidence pointer: `flox activate -- flutter test test/presentation/screens/onboarding/onboarding_back_test.dart` -> passed.
 - Follow-up: /sf-spec Android back history outside onboarding
+
+## 2026-05-17 - BUG-2026-05-10-001 Personas draft SQL insert fails on Hrana None parse
+
+- Scope: BUG-2026-05-10-001
+- Environment: prod
+- Tester: user
+- Source: sf-test
+- Status: blocked
+- Confidence: medium
+- Result summary: Re-test blocked: runtime diagnostics show Clerk config missing (`hasClerkKey=false`, `sessionState=signedOut`, no Bearer token), so backend/auth flow could not be exercised.
+- Bug pointer: BUG-2026-05-10-001 -> shipflow_data/workflow/bugs/contentflow_lab/BUG-2026-05-10-001.md
+- Evidence pointer: user diagnostics payload (build commit 438b10c9db15d2ad9a16d4288a595ba01468002c, generated 2026-05-17T10:57:04.026131Z).
+- Follow-up: /sf-fix BUG-2026-05-10-001

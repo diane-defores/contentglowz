@@ -5,15 +5,14 @@ artifact_version: "0.1.0"
 project: "contentglowz_app"
 created: "2026-05-16"
 created_at: "2026-05-16 14:15:47 UTC"
-updated: "2026-05-16"
-updated_at: "2026-05-16 14:15:47 UTC"
-status: draft
+updated: "2026-05-17"
+updated_at: "2026-05-17 13:40:14 UTC"
+status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
 user_story: "En tant qu'utilisateur Android de ContentGlowz, je veux que le bouton système Back remonte l'historique de navigation interne avant de proposer de fermer l'app, afin d'éviter des sorties prématurées quand j'explore des actions hors onboarding."
-risk_level: "medium"
 security_impact: "none"
 docs_impact: "yes"
 linked_systems:
@@ -36,7 +35,7 @@ evidence:
   - "Code inspection 2026-05-16: AppShell wraps shell routes in PopScope and calls confirmAndExitApp when ModalRoute.of(context)?.isFirst is true."
   - "Code inspection 2026-05-16: many action/detail routes use context.push(), while tab/rail navigation uses context.go()."
   - "Code inspection 2026-05-16: onboarding already has a separate page-level Back contract and must not regress."
-next_step: "/sf-ready Android back history outside onboarding"
+next_step: "/sf-test Android back history outside onboarding on Android device"
 ---
 
 # Title
@@ -45,7 +44,7 @@ Android back history outside onboarding
 
 ## Status
 
-Draft spec light créée le 2026-05-16 pour clarifier le comportement Android Back hors onboarding avant implémentation.
+Spec prête pour implémentation, créée le 2026-05-16 pour clarifier le comportement Android Back hors onboarding.
 
 Cette spec ne réouvre pas `BUG-2026-05-05-002`. Ce bug est clôturable sur son contrat initial: Back dans le wizard onboarding revient à l'étape précédente puis demande confirmation avant fermeture. Le besoin ici est plus large: définir quand Back doit remonter une pile de navigation interne dans le shell ContentGlowz, et quand il doit proposer de fermer l'app.
 
@@ -229,14 +228,17 @@ None. La décision produit retenue pour cette spec light est: Back remonte les r
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
 | 2026-05-16 14:15:47 UTC | sf-spec | GPT-5 Codex | Création de la spec light pour clarifier le comportement Android Back hors onboarding après la fermeture des bugs Android onboarding. | draft | `/sf-ready Android back history outside onboarding` |
+| 2026-05-17 10:49:32 UTC | sf-ready | GPT-5 Codex | Vérification de la spec Android back history outside onboarding (alignment user story/contrat/tests/sécurité/contrats de trace). | ready | `/sf-start Android back history outside onboarding` |
+| 2026-05-17 13:39:05 UTC | sf-start | GPT-5 Codex | Implémentation du back shell Android: confirmation de sortie seulement sans historique `canPop`, plus tests navigation ciblés et non-régression onboarding. | implemented | `/sf-verify Android back history outside onboarding` |
+| 2026-05-17 13:40:14 UTC | sf-verify | GPT-5 Codex | Vérification locale du fix Android Back: revue du diff ciblé, tests navigation/onboarding, tests resume/no-jump et analyse Flutter. | partial | `/sf-test Android back history outside onboarding on Android device` |
 
 ## Current Chantier Flow
 
 - sf-spec: draft
-- sf-ready: not launched
-- sf-start: not launched
-- sf-verify: not launched
+- sf-ready: ready
+- sf-start: implemented
+- sf-verify: partial
 - sf-end: not launched
 - sf-ship: not launched
 
-Prochaine commande recommandée : `/sf-ready Android back history outside onboarding`.
+Prochaine commande recommandée : `/sf-test Android back history outside onboarding on Android device`.

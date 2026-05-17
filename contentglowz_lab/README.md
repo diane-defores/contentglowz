@@ -44,6 +44,21 @@ This repository hosts the product API used by:
 - Sentry is initialized at API import time when `SENTRY_DSN` is set. `SENTRY_SEND_DEFAULT_PII` defaults to `false`, `SENTRY_TRACES_SAMPLE_RATE` defaults to `0.0`, and `/health` exposes only redacted Sentry status (`configured`, environment, release, dist).
 - CORS and authentication middleware are configured for Flutter/site/dashboard clients.
 - `render.yaml` and `ecosystem.config.cjs` are used for hosted/manual runtime setups.
+- Production PM2 currently serves FastAPI on local port `3002`; Caddy should expose it as `https://api.contentglowz.com` and may keep `https://api.winflowz.com` as a temporary alias during DNS/client migration.
+
+### Production API domain migration
+
+When moving the public API from the temporary `api.winflowz.com` host to `api.contentglowz.com`:
+
+1. Point DNS for `api.contentglowz.com` to the same server currently serving the Lab API.
+2. In Doppler for the production Lab runtime, keep Clerk validation aligned with the active Clerk production instance:
+   - `CLERK_JWT_ISSUER`
+   - `CLERK_JWKS_URL`
+   - optional aliases only if used: `CLERK_ISSUER`, `CLERK_AUDIENCE`, `CLERK_JWT_AUDIENCE`
+3. Run the Caddy setup script from the server checkout, keeping the legacy API alias until all clients are rebuilt:
+   - `sudo PRIMARY_DOMAIN=api.contentglowz.com ALIAS_DOMAINS=api.winflowz.com UPSTREAM=localhost:3002 ./scripts/setup_caddy_api_winflowz.sh`
+4. Rebuild/redeploy clients with `API_BASE_URL=https://api.contentglowz.com`.
+5. Verify `curl -i https://api.contentglowz.com/health` returns the FastAPI health JSON, not a Vercel `DEPLOYMENT_NOT_FOUND` response.
 
 ## Google Search Console OAuth Setup
 

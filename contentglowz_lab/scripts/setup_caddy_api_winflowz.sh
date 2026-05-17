@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-DOMAIN="${DOMAIN:-api.contentglowz.com}"
-UPSTREAM="${UPSTREAM:-localhost:3000}"
+PRIMARY_DOMAIN="${PRIMARY_DOMAIN:-${DOMAIN:-api.contentglowz.com}}"
+ALIAS_DOMAINS="${ALIAS_DOMAINS:-api.winflowz.com}"
+UPSTREAM="${UPSTREAM:-localhost:3002}"
 CADDYFILE="${CADDYFILE:-/etc/caddy/Caddyfile}"
 LOG_DIR="${LOG_DIR:-/var/log/contentglowz}"
 TIMESTAMP="$(date '+%Y%m%d-%H%M%S')"
 LOG_FILE="$LOG_DIR/caddy-setup-$TIMESTAMP.log"
-TMP_CADDYFILE="/tmp/Caddyfile.${DOMAIN}.${TIMESTAMP}"
+TMP_CADDYFILE="/tmp/Caddyfile.${PRIMARY_DOMAIN}.${TIMESTAMP}"
 
 mkdir -p "$LOG_DIR"
 touch "$LOG_FILE"
@@ -33,7 +34,12 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
   exit 1
 fi
 
-log "Starting Caddy setup for $DOMAIN -> $UPSTREAM"
+DOMAINS="$PRIMARY_DOMAIN"
+if [[ -n "$ALIAS_DOMAINS" ]]; then
+  DOMAINS="$DOMAINS, $ALIAS_DOMAINS"
+fi
+
+log "Starting Caddy setup for $DOMAINS -> $UPSTREAM"
 log "Logs: $LOG_FILE"
 
 if ! command -v caddy >/dev/null 2>&1; then
@@ -56,7 +62,7 @@ if [[ -f "$CADDYFILE" ]]; then
 fi
 
 cat > "$TMP_CADDYFILE" <<EOF
-${DOMAIN} {
+${DOMAINS} {
     reverse_proxy ${UPSTREAM}
     encode gzip
 }
@@ -78,10 +84,10 @@ log "Waiting briefly for Caddy to apply config"
 sleep 3
 
 log "Testing HTTP endpoint"
-run curl -I --max-time 15 "http://${DOMAIN}/health"
+run curl -I --max-time 15 "http://${PRIMARY_DOMAIN}/health"
 
 log "Testing HTTPS endpoint"
-if curl -I --max-time 20 "https://${DOMAIN}/health" 2>&1 | tee -a "$LOG_FILE"; then
+if curl -I --max-time 20 "https://${PRIMARY_DOMAIN}/health" 2>&1 | tee -a "$LOG_FILE"; then
   log "HTTPS check succeeded"
 else
   log "HTTPS check failed; collecting diagnostics"
@@ -90,4 +96,7 @@ else
 fi
 
 log "Completed successfully"
-log "Public API base URL: https://${DOMAIN}"
+log "Public API base URL: https://${PRIMARY_DOMAIN}"
+if [[ -n "$ALIAS_DOMAINS" ]]; then
+  log "Temporary API alias domains: $ALIAS_DOMAINS"
+fi
