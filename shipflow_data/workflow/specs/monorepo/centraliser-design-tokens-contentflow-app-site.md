@@ -333,6 +333,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 | 2026-05-24 10:58 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Pricing.astro` vers variables/tokens existants | partial | Quick ship du lot site ou continuer sur `BlogPost`/`Footer` |
 | 2026-05-24 11:02 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Footer.astro` vers variables/tokens existants | partial | Quick ship du lot site ou continuer sur `BlogPost` |
 | 2026-05-24 11:23 UTC | sf-ship | GPT-5 Codex | Quick ship du lot site design tokens (`Hero`, `Navbar`, `Pricing`, `Footer`) | shipped | Reprendre `BlogPost.astro` ou pages blog/tag par lot dedie |
+| 2026-05-24 11:26 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `BlogPost.astro` vers variables/tokens existants | partial | Quick ship du lot `BlogPost` ou continuer sur pages blog/tag |
 
 ## Current Chantier Flow
 
@@ -344,4 +345,5 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - sf-ship: implemented (scope present on `origin/main` via `9942f10`).
 - sf-build: partial continuation (2026-05-24 cleanup slice after initial ship).
 - sf-ship: shipped (2026-05-24 site component cleanup slice).
-- Prochaine commande: `/continue BlogPost.astro design-token cleanup`.
+- continue: partial (2026-05-24 `BlogPost.astro` cleanup slice).
+- Prochaine commande: quick ship du lot `BlogPost.astro` ou `/continue blog/tag pages design-token cleanup`.
