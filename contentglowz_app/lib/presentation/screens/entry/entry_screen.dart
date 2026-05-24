@@ -262,7 +262,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   ) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: EdgeInsets.only(top: AppSpacing.md),
       child: Align(
         alignment: Alignment.centerLeft,
         child: OutlinedButton.icon(
@@ -327,7 +327,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     final palette = AppTheme.paletteOf(context);
     final compact = MediaQuery.sizeOf(context).width < 600;
     return Container(
-      padding: EdgeInsets.all(compact ? AppSpacing.lg : 28),
+      padding: EdgeInsets.all(compact ? AppSpacing.lg : AppSpacing.xl),
       decoration: BoxDecoration(
         color: palette.elevatedSurface,
         borderRadius: BorderRadius.circular(
@@ -376,19 +376,21 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           SizedBox(height: compact ? AppSpacing.md : AppSpacing.lg),
           Text(
             context.tr(title),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: compact ? 23 : 28,
-              fontWeight: FontWeight.bold,
-              height: 1.15,
-            ),
+            style:
+                (compact
+                        ? theme.textTheme.titleLarge
+                        : theme.textTheme.headlineMedium)
+                    ?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      height: 1.15,
+                    ),
           ),
           SizedBox(height: compact ? AppSpacing.md : AppSpacing.xl),
           Text(
             context.tr(description),
-            style: TextStyle(
+            style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 15,
               height: 1.5,
             ),
           ),
@@ -399,7 +401,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               onPressed: onPrimary,
               style: FilledButton.styleFrom(
                 backgroundColor: accent,
-                padding: EdgeInsets.symmetric(vertical: compact ? 15 : 16),
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
@@ -420,7 +422,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                       alpha: 0.9,
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.lg),
                   ),
@@ -437,7 +439,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 onPressed: onTertiary,
                 style: TextButton.styleFrom(
                   foregroundColor: theme.colorScheme.onSurfaceVariant,
-                  padding: EdgeInsets.symmetric(vertical: compact ? 13 : 14),
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.lg),
                   ),
@@ -450,11 +452,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             SizedBox(height: AppSpacing.xs),
             Text(
               context.tr(caption),
-              style: TextStyle(
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant.withValues(
                   alpha: 0.8,
                 ),
-                fontSize: 12,
                 height: 1.5,
               ),
             ),

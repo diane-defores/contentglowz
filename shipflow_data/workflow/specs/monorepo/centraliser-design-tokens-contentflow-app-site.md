@@ -324,6 +324,10 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 | 2026-05-10 19:09 UTC | sf-verify | GPT-5 Codex | Verification post-implementation app+site avec checks Flutter/Astro et scan literals | verified | `/sf-end Centraliser les design tokens ContentFlow app/site` |
 | 2026-05-10 19:09 UTC | sf-end | GPT-5 Codex | Cloture chantier et alignement trace lifecycle | implemented | `/sf-ship Centraliser les design tokens ContentFlow app/site` |
 | 2026-05-10 19:09 UTC | sf-ship | GPT-5 Codex | Ship du scope chantier sur `main` (commit `9942f10` detecte sur `origin/main`) | implemented | none |
+| 2026-05-23 22:02 UTC | continue | GPT-5 Codex | Reprise bornee de l'audit literals: migration de `AuthScreen` vers les tokens/theme existants | partial | Continuer par un autre ecran critique ou basculer vers le runtime IA dual-mode |
+| 2026-05-24 08:13 UTC | sf-build | GPT-5 Codex + subagent `gpt-5.3-codex-spark` | Execution deleguee sequentielle: migration partielle de `EntryScreen` vers les text themes/tokens existants | partial | Continuer les literals restants par lots bornes; ne pas shipper tant que les fichiers dirty hors scope ne sont pas exclus ou nettoyes |
+| 2026-05-24 08:51 UTC | continue | GPT-5 Codex | Reprise finale du lot courant: suppression des literals evidents restants dans `EntryScreen`, validation et preparation `all-dirty` | partial | Quick ship all-dirty demande par l'operateur |
+| 2026-05-24 08:51 UTC | sf-ship | GPT-5 Codex | Quick ship all-dirty avec checks locaux Flutter/design-token/diff | shipped | none |
 
 ## Current Chantier Flow
 
@@ -333,5 +337,5 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - sf-verify: verified (2026-05-10 19:09 UTC, checks passes and behavior contract covered on changed surfaces).
 - sf-end: implemented.
 - sf-ship: implemented (scope present on `origin/main` via `9942f10`).
-- sf-build: implemented.
+- sf-build: partial continuation (2026-05-24 cleanup slice after initial ship).
 - Prochaine commande: none.

@@ -79,3 +79,14 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 - `contentglowz_lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
 - `contentglowz_site`: site marketing et preuve produit.
 - `contentflowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.
+
+
+TeachTools offers an AI toolkit for K-12 teachers to quickly generate worksheets, quizzes, lesson plans, and more. It includes 23 focused generators with simple forms and built-in grade levels and standards, producing print-ready PDFs with answer keys and Google Docs exports. The platform is FERPA-compliant by design, collects no student data, and encrypts all content with AES-256, so you can use it without district approval. Start free with 3 generations per month, or upgrade for unlimited use or a school plan.
+rperpulse?utm_campaign=issue&utm_medium=email&utm_source=newsletter%2Fissue_mailer
+
+https://appsumo.com/products/subscribr/
+https://appsumo.com/products/acumbamail
+https://appsumo.com/products/reelify-ai
+https://betalist.com/startups/oyloctabase
+https://betalist.com/startups/map-your-video
+https://appsumo.com/products/topical-map-ai/

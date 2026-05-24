@@ -49,12 +49,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: AppSpacing.card(context),
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: AppSpacing.card(context),
               decoration: BoxDecoration(
                 color: palette.elevatedSurface,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadii.card),
                 border: Border.all(color: palette.borderSubtle),
               ),
               child: hasClerkKey
@@ -75,24 +75,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       children: [
         Text(
           context.tr('Clerk is not configured'),
-          style: TextStyle(
+          style: theme.textTheme.headlineSmall?.copyWith(
             color: theme.colorScheme.onSurface,
-            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
             'Set `CLERK_PUBLISHABLE_KEY` with `--dart-define` to enable the production ClerkJS sign-in flow on the app domain.',
           ),
-          style: TextStyle(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 15,
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.lg),
         _buildRuntimeDiagnostics(
           hasClerkKey: false,
           authSession: authSession,
@@ -118,31 +116,29 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       children: [
         Text(
           context.tr('Use the web sign-in flow'),
-          style: TextStyle(
+          style: theme.textTheme.headlineSmall?.copyWith(
             color: theme.colorScheme.onSurface,
-            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
             'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
           ),
-          style: TextStyle(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 15,
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         if (_error != null && _error!.isNotEmpty) ...[
           _buildRuntimeDiagnostics(
             hasClerkKey: true,
             authSession: authSession,
             error: _error,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
         ],
         SizedBox(
           width: double.infinity,
@@ -164,9 +160,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           context.tr(
             'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
           ),
-          style: TextStyle(
+          style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 12,
             height: 1.4,
           ),
         ),
@@ -190,24 +185,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       children: [
         Text(
           context.tr('Sign in with Google'),
-          style: TextStyle(
+          style: theme.textTheme.headlineSmall?.copyWith(
             color: theme.colorScheme.onSurface,
-            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
             'ContentGlowz web authentication now uses the official Clerk JavaScript SDK directly on the app domain. The old site handoff and the Flutter beta SDK are no longer the primary path.',
           ),
-          style: TextStyle(
+          style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
-            fontSize: 15,
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
