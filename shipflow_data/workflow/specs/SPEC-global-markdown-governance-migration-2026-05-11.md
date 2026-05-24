@@ -31,13 +31,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_site/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_site/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:
@@ -137,9 +137,9 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 
 - ShipFlow metadata linter: `/home/claude/shipflow/tools/shipflow_metadata_lint.py`.
 - Existing canonical contracts:
-  - `contentglowz_app/shipflow_data/**`
-  - `contentglowz_lab/shipflow_data/**`
-  - `contentglowz_site/shipflow_data/**`
+  - `shipflow_data/{business,editorial,technical,workflow}/contentglowz_app/**`
+  - `shipflow_data/{business,editorial,technical,workflow}/contentglowz_lab/**`
+  - `shipflow_data/{business,editorial,technical,workflow}/contentglowz_site/**`
 - Existing runtime schema:
   - `contentglowz_site/src/content.config.ts`
 - Prior migration spec:
@@ -167,7 +167,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - `contentglowz_app/bugs/**` and `contentglowz_lab/bugs/**`: bug records move to `shipflow_data/workflow/bugs/<project>/`.
 - `shipflow_data/workflow/explorations/**` and `research/**`: research-like artifacts move to `shipflow_data/workflow/research/` or `shipflow_data/workflow/explorations/`.
 - `shipflow_data/workflow/qa/**`: QA matrices move to `shipflow_data/workflow/qa/`.
-- `contentglowz_site/docs/copywriting/**`: editorial governance contracts move to `contentglowz_site/shipflow_data/editorial/`; non-contract working drafts move to `shipflow_data/workflow/research/contentglowz_site/editorial/` with `status: draft` or `status: stale`.
+- `contentglowz_site/docs/copywriting/**`: editorial governance contracts move to `shipflow_data/editorial/contentglowz_site/`; non-contract working drafts move to `shipflow_data/workflow/research/contentglowz_site/editorial/` with `status: draft` or `status: stale`.
 - `contentflowz/**`: no consequence in this chantier; it must remain untouched and omitted from migration reports except for one statement that it was intentionally excluded by operator decision.
 - `README.md`, `CHANGELOG.md`, `TASKS.md`, `AUDIT_LOG.md`, `TEST_LOG.md`: update links and wording but do not turn trackers into canonical contracts.
 - Downstream ShipFlow skills must be pointed to the new workflow paths after migration; otherwise they will keep creating specs in legacy `shipflow_data/workflow/specs/contentglowz_app/`.
@@ -245,7 +245,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Notes: Web and Windows exploration files currently use runtime-style frontmatter and need ShipFlow metadata.
 
 - [x] Task 7: Classify and migrate `contentglowz_lab` root legacy docs
-  - File: `contentglowz_lab/shipflow_data/**` and `shipflow_data/workflow/**`
+  - File: `shipflow_data/{business,editorial,technical,workflow}/contentglowz_lab/**` and `shipflow_data/workflow/**`
   - Action: Move durable lab notes such as `CONTENT_GUIDELINES.md`, `CONTENT_INVENTORY.md`, `COST-MODEL.md`, `ENVIRONMENT_SETUP.md`, `TOOLS.md`, `AGENT_MEMORY_RESEARCH.md`, `BACKLINK_CHECKER.md`, and `CONCURRENT.md` into the appropriate canonical family or archive after security preflight.
   - User story link : Eliminates the largest remaining root Markdown cluster.
   - Depends on: Task 2 and Task 3.
@@ -273,7 +273,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Action: Run metadata lint on canonical artifacts, verify Astro runtime content was not converted to ShipFlow schema, and verify `contentflowz/**` has no diff.
   - User story link : Proves the migration is coherent without breaking runtime content.
   - Depends on: Task 9.
-  - Validate with: `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data contentglowz_app/shipflow_data contentglowz_lab/shipflow_data contentglowz_site/shipflow_data`
+  - Validate with: `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data`
   - Notes: Use `--all-markdown` only as an audit signal, not as a hard gate for runtime content, trackers, or excluded `contentflowz/**`.
 
 - [x] Task 11: Produce closure report
@@ -309,7 +309,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - Security checks:
   - `rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentflowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'`
 - Metadata checks:
-  - `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data contentglowz_app/shipflow_data contentglowz_lab/shipflow_data contentglowz_site/shipflow_data`
+  - `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data`
   - Optional audit only: `/home/claude/shipflow/tools/shipflow_metadata_lint.py --all-markdown <classified paths>`
 - Reference checks:
   - `rg -n "shipflow_data/workflow/specs/contentglowz_lab/SPEC-|docs/technical|docs/editorial|docs/explorations|docs/qa|^research/|^specs/" . -g '*.md' -g '!contentglowz_site/src/content/**' -g '!contentflowz/**'`
@@ -336,9 +336,9 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - `shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md`
   - `shipflow_data/workflow/specs/contentglowz_app/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md`
   - `contentglowz_site/src/content.config.ts`
-  - `contentglowz_app/shipflow_data/technical/guidelines.md`
-  - `contentglowz_lab/shipflow_data/technical/guidelines.md`
-  - `contentglowz_site/shipflow_data/technical/guidelines.md`
+  - `shipflow_data/technical/contentglowz_app/guidelines.md`
+  - `shipflow_data/technical/contentglowz_lab/guidelines.md`
+  - `shipflow_data/technical/contentglowz_site/guidelines.md`
 - Implement by batches, not all at once: inventory, workflow directories, security preflight, specs, bugs, research/QA, lab legacy docs, pointers, references, validation, closure report.
 - Prefer `git mv` during implementation to preserve history.
 - Do not use `--all-markdown` as a success gate until runtime content and trackers are excluded from the hard gate.

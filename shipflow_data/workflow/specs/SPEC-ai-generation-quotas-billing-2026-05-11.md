@@ -38,13 +38,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_site/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_site/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -171,7 +171,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 - Existing Riverpod provider wiring: `contentglowz_app/lib/providers/providers.dart`.
 - Existing app AI runtime/BYOK copy: `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`.
 - Existing marketing pricing copy: `contentglowz_site/src/components/Pricing.astro`.
-- Project language guidelines: `contentglowz_lab/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, and `contentglowz_site/shipflow_data/technical/guidelines.md`.
+- Project language guidelines: `shipflow_data/technical/contentglowz_lab/guidelines.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, and `shipflow_data/technical/contentglowz_site/guidelines.md`.
 - External docs freshness: `fresh-docs checked` for BFL FLUX.2 Pro on 2026-05-11. Official BFL API docs show the submit response includes nullable `cost`, `input_mp`, and `output_mp` fields. Bunny pricing, Remotion rendering pricing, and checkout provider docs are `fresh-docs not needed` for this chantier because exact provider price tables, render hosting pricing, and payment collection are out of scope; if a later implementation task adds hard-coded prices, checkout, invoices, taxes, or Remotion-specific billing, that work must run a new freshness check first.
 
 ## Invariants

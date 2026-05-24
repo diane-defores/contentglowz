@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "contentflow"
 created: "2026-05-11"
 created_at: "2026-05-11 13:15:23 UTC"
-updated: "2026-05-13"
-updated_at: "2026-05-13 07:46:41 UTC"
-status: closed
+updated: "2026-05-24"
+updated_at: "2026-05-24 00:00:00 UTC"
+status: reviewed
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
@@ -27,10 +27,10 @@ linked_systems:
   - "Clerk"
   - "Turso/libSQL"
 depends_on:
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
   - artifact: "contentflowz/INSPIRATION.md"

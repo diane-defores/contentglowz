@@ -36,10 +36,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -334,7 +334,7 @@ Define a future controlled workflow for project-specific visual identity trainin
 
 ## Execution Notes
 
-- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/**`, `contentglowz_lab/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
+- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/**`, `shipflow_data/technical/contentglowz_lab/guidelines.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
 - Start with data contracts and disabled-by-default gates before provider calls. The first implementation milestone should prove that unauthorized users, non-admin users, missing consent, missing rights, missing retention, missing budget, missing provider-doc review, and `training_enabled=false` all block submission.
 - Prefer provider-managed FLUX.2/BFL training adapter boundaries over self-hosted GPU infrastructure. Do not add local GPU orchestration, custom model hosting, marketplace export, or broad UI exposure in this chantier.
 - Reuse existing FastAPI router/service/model patterns, Clerk auth dependencies, Bunny-backed project asset references, and Turso/libSQL storage patterns. Avoid ad-hoc string state machines; encode lifecycle states as typed values and validate transitions.

@@ -696,7 +696,7 @@ capture_screen_test.dart (+29 -18)
         lay; backend capture asset records store metadata only.
     17
 
-  └ contentglowz_app/shipflow_data/technical/guidelines.md (+2 -1)
+  └ shipflow_data/technical/contentglowz_app/guidelines.md (+2 -1)
     90  - Persist only metadata and local file paths in SharedPreferen
         ces; never store binary capture data there.
     91 -- Keep backend upload, sync, retention, and storage-cost behav
@@ -851,7 +851,7 @@ presentation/screens/capture/capture_screen_test.dart
 
 • Ran git status --short
   └  M contentglowz_app/CHANGELOG.md
-     M contentglowz_app/shipflow_data/technical/guidelines.md
+     M shipflow_data/technical/contentglowz_app/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
     ?? contentglowz_app/test/presentation/screens/onboarding/
@@ -926,7 +926,7 @@ content.md (+21 -10)
     146 -- [ ] Task 6: Update docs and changelog.
     146 +- [x] Task 6: Update docs and changelog.
     147    - Files: `contentglowz_app/README.md`, `contentglowz_app/CHAN
-         GELOG.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_lab/
+         GELOG.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_lab/
          CHANGELOG.md`
         ⋮
     163  | 2026-05-05 | sf-build | GPT-5 | Created full-stack local ca
@@ -1068,7 +1068,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git status --short
   └  M contentglowz_app/CHANGELOG.md
-     M contentglowz_app/shipflow_data/technical/guidelines.md
+     M shipflow_data/technical/contentglowz_app/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
     ?? contentglowz_app/test/presentation/screens/onboarding/
@@ -1092,7 +1092,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git status --short --untracked-files=all
   └  M contentglowz_app/CHANGELOG.md
-     M contentglowz_app/shipflow_data/technical/guidelines.md
+     M shipflow_data/technical/contentglowz_app/guidelines.md
     … +24 lines (ctrl + t to view transcript)
     ?? contentglowz_app/test/presentation/screens/onboarding/
     onboarding_back_test.dart
@@ -1122,7 +1122,7 @@ Something went wrong? Hit `/feedback` to report the issue.
 
 • Ran git diff --stat
   └  contentglowz_app/CHANGELOG.md                       |   3 +-
-     contentglowz_app/shipflow_data/technical/guidelines.md                      |   3 +-
+     shipflow_data/technical/contentglowz_app/guidelines.md                      |   3 +-
     … +19 lines (ctrl + t to view transcript)
     ++++++++
      19 files changed, 1093 insertions(+), 96 deletions(-)
@@ -1237,7 +1237,7 @@ bin/python -m pip install pytest
 
 • Ran git diff --name-only
   └ contentglowz_app/CHANGELOG.md
-    contentglowz_app/shipflow_data/technical/guidelines.md
+    shipflow_data/technical/contentglowz_app/guidelines.md
     … +15 lines (ctrl + t to view transcript)
     contentglowz_lab/status/schemas.py
     contentglowz_lab/status/service.py

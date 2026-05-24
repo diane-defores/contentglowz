@@ -220,8 +220,8 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
 ## Documentation Coherence
 
 - Update `contentglowz_app/README.md` with the privacy capture review workflow: redacted preview, manual corrections, acknowledgement, share/export gating, and no guarantee.
-- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
-- Update `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
+- Update `shipflow_data/technical/contentglowz_app/guidelines.md` with no-clear compare policy, local-only review metadata rules, and banned guarantee copy.
+- Update `shipflow_data/technical/contentglowz_app/flutter-app-shell-and-capture.md` with the shared privacy review gate and platform-specific ownership split.
 - Update `contentglowz_app/CHANGELOG.md` after implementation.
 - Update related Android/web/Windows privacy specs only if implementation changes their assumed review state contract.
 - Do not update public marketing copy until platform QA proves the flow is usable and product/legal copy is reviewed.
@@ -331,7 +331,7 @@ Fresh external docs verdict: `fresh-docs not needed`. This spec defines a local 
   - Notes: Add fake capture clients rather than platform-native test dependencies.
 
 - [ ] Task 11: Update docs for privacy review behavior.
-  - File: `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/shipflow_data/technical/flutter-app-shell-and-capture.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `contentglowz_app/README.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, `shipflow_data/technical/contentglowz_app/flutter-app-shell-and-capture.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Document review-required flow, no-clear compare policy, local-only metadata, no-guarantee copy, manual correction limits, and platform-specific ownership split.
   - User story link: Aligns implementers and users around what privacy review does and does not guarantee.
   - Depends on: Tasks 1-10.

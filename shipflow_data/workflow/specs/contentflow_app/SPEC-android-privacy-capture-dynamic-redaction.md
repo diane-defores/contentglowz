@@ -49,7 +49,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/explorations/2026-05-06-screen-text-obfuscation.md"
     artifact_version: "1.0.0"
     required_status: "draft"
-  - artifact: "../shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md"
+  - artifact: "shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md"
     artifact_version: "unknown"
     required_status: "reviewed"
 supersedes: []
@@ -214,9 +214,9 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 ## Documentation Coherence
 
 - Update `contentglowz_app/README.md` with privacy capture scope, Android-only status, best-effort limitation, post-production review requirement, and no cloud upload behavior.
-- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
+- Update `shipflow_data/technical/contentglowz_app/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
 - Update `contentglowz_app/CHANGELOG.md` after implementation.
-- Update `contentglowz_app/shipflow_data/business/product.md` only if the feature ships publicly and changes product positioning.
+- Update `shipflow_data/business/contentglowz_app/product.md` only if the feature ships publicly and changes product positioning.
 - Do not update `.env.example` in V1 unless implementation introduces a configurable build/runtime flag.
 - Do not update `contentglowz_site` marketing copy until QA proves the feature is usable and wording is legally safe.
 
@@ -362,7 +362,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
   - Notes: Native frame quality still requires manual/device validation.
 
 - [ ] Task 16: Update docs and changelog.
-  - File: `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `contentglowz_app/README.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Document Android-only privacy mode, best-effort limits, post-production review, local-only processing, dependencies, and no guarantee/no cloud upload behavior.
   - User story link: Aligns user/operator expectations with the feature's real guarantees.
   - Depends on: Tasks 1-15.

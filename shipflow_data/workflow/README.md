@@ -25,12 +25,12 @@ Directory layout:
 
 Subproject-local trackers live with each subproject when they exist:
 
-- `contentglowz_app/shipflow_data/workflow/TASKS.md`
-- `contentglowz_app/shipflow_data/workflow/AUDIT_LOG.md`
-- `contentglowz_lab/shipflow_data/workflow/TASKS.md`
-- `contentglowz_lab/shipflow_data/workflow/AUDIT_LOG.md`
-- `contentglowz_site/shipflow_data/workflow/TASKS.md`
-- `contentglowz_site/shipflow_data/workflow/AUDIT_LOG.md`
+- `shipflow_data/workflow/contentglowz_app/TASKS.md`
+- `shipflow_data/workflow/contentglowz_app/AUDIT_LOG.md`
+- `shipflow_data/workflow/contentglowz_lab/TASKS.md`
+- `shipflow_data/workflow/contentglowz_lab/AUDIT_LOG.md`
+- `shipflow_data/workflow/contentglowz_site/TASKS.md`
+- `shipflow_data/workflow/contentglowz_site/AUDIT_LOG.md`
 
 Entry rule:
 

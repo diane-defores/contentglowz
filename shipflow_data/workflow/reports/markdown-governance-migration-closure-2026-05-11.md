@@ -43,7 +43,7 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
 
 - ` /home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data/workflow/specs shipflow_data/workflow/bugs shipflow_data/workflow/research shipflow_data/workflow/qa shipflow_data/workflow/explorations shipflow_data/workflow/reports`
   - Result: **passed** (`54 file(s) checked`).
-- ` /home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data contentglowz_app/shipflow_data contentglowz_lab/shipflow_data contentglowz_site/shipflow_data`
+- ` /home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data`
   - Result: **passed** (`97 file(s) checked`).
 
 ### Git hygiene
@@ -57,7 +57,7 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
     - `shipflow_data/workflow/reports/markdown-governance-inventory-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-security-review-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-migration-closure-2026-05-11.md` added,
-    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `contentglowz_app/AGENT.md`, `contentglowz_app/CLAUDE.md`, `contentglowz_site/shipflow_data/editorial/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
+    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `contentglowz_app/AGENT.md`, `contentglowz_app/CLAUDE.md`, `shipflow_data/editorial/contentglowz_site/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
 
 ## Security and classification decisions
 

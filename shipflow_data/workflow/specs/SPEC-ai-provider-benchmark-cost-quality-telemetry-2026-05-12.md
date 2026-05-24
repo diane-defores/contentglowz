@@ -50,7 +50,7 @@ depends_on:
   - artifact: "shipflow_data/business/project-competitors-and-inspirations.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "contentflowz/v0-ai-image-generation-benchmark"

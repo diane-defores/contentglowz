@@ -184,7 +184,7 @@ Separate project source configuration from GitHub-only onboarding, make active p
 ## Documentation Coherence
 
 - Update `contentglowz_app/CHANGELOG.md` after implementation with source-agnostic project creation, explicit no-project selection, and archive-first project lifecycle.
-- Review `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
+- Review `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_app/README.md`, and settings/onboarding support copy for GitHub-only project language. Update any text that says projects must be GitHub repositories.
 - Review backend docs in `contentglowz_lab/README.md` or project API docs if they document `/api/projects` as GitHub-only or hard-delete-only.
 - No pricing, public marketing page, or FAQ update is required in this spec because the change is inside authenticated app project management and does not alter packaging or public claims.
 - Future Firecrawl crawl documentation is out of scope; this spec must not document non-GitHub URLs as actively crawled until the crawl pipeline exists.

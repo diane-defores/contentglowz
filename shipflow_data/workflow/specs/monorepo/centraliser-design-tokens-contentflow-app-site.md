@@ -27,13 +27,13 @@ linked_systems:
   - "contentglowz_site/src/layouts/Layout.astro"
   - "contentglowz_site/src/**"
 depends_on:
-  - artifact: "contentglowz_app/shipflow_data/business/business.md"
+  - artifact: "shipflow_data/business/contentglowz_app/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_app/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_site/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_site/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -123,7 +123,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - Flutter Material 3, `ThemeData`, `ThemeExtension`, `ColorScheme`, `MediaQuery`.
 - Astro layout global et CSS variables.
 - Node.js pour `tools/generate_app_theme_tokens.mjs`.
-- `contentglowz_app/shipflow_data/business/business.md@1.0.0`, `contentglowz_app/shipflow_data/business/branding.md@1.0.0`, `contentglowz_site/shipflow_data/business/branding.md@1.0.0`.
+- `shipflow_data/business/contentglowz_app/business.md@1.0.0`, `shipflow_data/business/contentglowz_app/branding.md@1.0.0`, `shipflow_data/business/contentglowz_site/branding.md@1.0.0`.
 - Fresh external docs: not needed for this spec, because the chantier uses existing local Flutter/Astro patterns and does not depend on new framework APIs, SDK behavior, auth, storage, backend, payment, or deployment contracts.
 
 ## Invariants

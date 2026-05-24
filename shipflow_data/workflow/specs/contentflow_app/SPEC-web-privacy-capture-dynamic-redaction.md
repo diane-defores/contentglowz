@@ -219,9 +219,9 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 ## Documentation Coherence
 
 - Update `contentglowz_app/README.md` with browser privacy capture scope, best-effort limits, browser support caveats, local-only processing, and review-before-share behavior.
-- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
+- Update `shipflow_data/technical/contentglowz_app/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
 - Update `contentglowz_app/CHANGELOG.md` after implementation.
-- Update `contentglowz_app/shipflow_data/business/product.md` only if the feature ships publicly and changes supported-platform positioning.
+- Update `shipflow_data/business/contentglowz_app/product.md` only if the feature ships publicly and changes supported-platform positioning.
 - Do not update `contentglowz_site` marketing copy until manual browser QA proves the feature is usable and wording is legally safe.
 - Do not update `.env.example` unless OCR fallback or worker packaging introduces a configurable runtime flag.
 
@@ -350,7 +350,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
   - Notes: No backend schema change expected.
 
 - [ ] Task 14: Update tests, docs, and browser QA notes.
-  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`, `contentglowz_app/README.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Cover privacy metadata parsing, review-state persistence, disclosure UI, share/export gating, normal Android unaffected behavior, and document web-only best-effort browser limits.
   - User story link: Keeps the shipped feature honest, testable, and aligned with product guarantees.
   - Depends on: Tasks 1-13.

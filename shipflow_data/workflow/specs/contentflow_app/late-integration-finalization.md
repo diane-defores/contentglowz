@@ -30,16 +30,16 @@ linked_systems:
   - contentglowz_app/lib/presentation/screens/feed/feed_screen.dart
   - Zernio API
 depends_on:
-  - artifact: "contentglowz_app/shipflow_data/business/business.md"
+  - artifact: "shipflow_data/business/contentglowz_app/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/business/product.md"
+  - artifact: "shipflow_data/business/contentglowz_app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/architecture.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/architecture.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "contentglowz_app/CLAUDE.md"
@@ -190,10 +190,10 @@ Le flow de connexion utilise un profil Zernio par projet ContentFlow. Le backend
 ## Dependencies
 
 Local:
-- `contentglowz_app/shipflow_data/business/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
-- `contentglowz_app/shipflow_data/business/product.md` v1.0.0 reviewed: multi-projet et limites produit.
-- `contentglowz_app/shipflow_data/technical/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
-- `contentglowz_app/shipflow_data/technical/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
+- `shipflow_data/business/contentglowz_app/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
+- `shipflow_data/business/contentglowz_app/product.md` v1.0.0 reviewed: multi-projet et limites produit.
+- `shipflow_data/technical/contentglowz_app/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
+- `shipflow_data/technical/contentglowz_app/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
 - `contentglowz_app/CLAUDE.md` v1.0.0 reviewed: commandes, structure, Turso/libSQL.
 
 External docs freshness:
@@ -240,7 +240,7 @@ Consequences transverses:
 ## Documentation Coherence
 
 - `contentglowz_app/README.md`: ajouter `ZERNIO_API_KEY`, base URL, flow de connexion, plateformes supportees, WordPress/Ghost non supportes par Zernio dans ce chantier, checklist manuelle.
-- `contentglowz_app/shipflow_data/technical/architecture.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
+- `shipflow_data/technical/contentglowz_app/architecture.md`: mettre a jour si un nouveau modele/table `ProjectPublishAccount` devient un contrat durable.
 - `contentglowz_app/.env.example`: ajouter ou verifier `ZERNIO_API_KEY` si absent.
 - `contentglowz_app/CHANGELOG.md`: noter l'integration Zernio project-scoped une fois implementee.
 - Support/onboarding: aucune FAQ dediee dans le repo; si une doc support existe plus tard, elle devra reprendre les erreurs `missing_account`, `partial`, `failed`, `forbidden`.

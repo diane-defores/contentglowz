@@ -27,10 +27,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-android-device-screen-capture.md"
     artifact_version: "1.0.0"
     required_status: active
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_lab/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -145,7 +145,7 @@ Statuses:
   - Validate with: widget tests and manual Android follow-up.
 
 - [x] Task 6: Update docs and changelog.
-  - Files: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_lab/CHANGELOG.md`
+  - Files: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_lab/CHANGELOG.md`
   - Validate with: docs review.
 
 ## Acceptance Criteria

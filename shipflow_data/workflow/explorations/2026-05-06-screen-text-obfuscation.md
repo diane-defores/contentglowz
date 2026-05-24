@@ -54,7 +54,7 @@ For confidentiality, all text visible in whole-device screen recordings should b
 - [Android AccessibilityService API reference](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService.html) - Accessed 2026-05-06 - Used to evaluate whether ContentFlow could observe third-party app text nodes and draw accessibility overlays.
 - [Google Play AccessibilityService policy](https://support.google.com/googleplay/android-developer/answer/10964491) - Accessed 2026-05-06 - Used to evaluate consent, disclosure, declaration, and policy constraints if ContentFlow uses accessibility APIs.
 - [Google RCS for Business documentation](https://developers.google.com/business-communications/rcs-business-messaging) - Accessed 2026-05-06 - Used to check whether Google messaging APIs are about business agent messaging, not modifying the Google Messages client UI.
-- [Android privacy redaction technology research](../../shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md) - Created 2026-05-07 - Used to select ML Kit Text Recognition, MediaProjection, MediaCodec/MediaMuxer, Media3 Transformer, and optional AccessibilityService as the likely implementation stack.
+- [Android privacy redaction technology research](../research/contentflow_other/android-privacy-screen-redaction-technologies.md) - Created 2026-05-07 - Used to select ML Kit Text Recognition, MediaProjection, MediaCodec/MediaMuxer, Media3 Transformer, and optional AccessibilityService as the likely implementation stack.
 
 ## Problem Framing
 

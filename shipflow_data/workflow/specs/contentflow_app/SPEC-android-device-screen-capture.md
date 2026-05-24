@@ -296,7 +296,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Gallery save is not required unless existing app patterns already support it cleanly.
 
 - [x] Task 11: Add V1 QA and documentation updates.
-  - File: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `contentglowz_app/shipflow_data/business/product.md`
+  - File: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `shipflow_data/business/contentglowz_app/product.md`
   - Action: Document Android capture scope, platform limits, local-only behavior, microphone toggle, 5-minute cap, and changelog entry.
   - User story link: Keeps operator/product claims aligned with real platform behavior.
   - Depends on: Tasks 1-10.

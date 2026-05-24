@@ -1,17 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentglowz"
 created: "2026-05-14"
 created_at: "2026-05-14 22:42:30 UTC"
-updated: "2026-05-15"
-updated_at: "2026-05-16 13:57:23 UTC"
+updated: "2026-05-24"
+updated_at: "2026-05-24 00:00:00 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "migration"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant que propriétaire du produit, je veux que tout le monorepo, les surfaces publiques, les environnements et les pipelines utilisent ContentGlowz/contentglowz au lieu de l'ancien nom, afin que la marque, le domaine et le dépôt GitHub soient cohérents avant les prochains déploiements."
 risk_level: "high"
 security_impact: "yes"
@@ -25,13 +26,13 @@ linked_systems:
   - "Clerk, Sentry, Doppler, Turso, Bunny, GCS, Google OAuth/Search Console environment configuration"
   - "ShipFlow governance docs and specs"
 depends_on:
-  - artifact: "contentglowz_app/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_app/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_lab/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_lab/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_site/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_site/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/workflow/README.md"
@@ -287,11 +288,11 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Notes : Ne pas changer à nouveau le composition ID sans mettre à jour backend, fixtures et tests ensemble.
 
 - [ ] Tâche 11 : Classifier et migrer les docs de gouvernance actives
-  - Fichier : `shipflow_data/business/**`, `shipflow_data/workflow/README.md`, `contentglowz_app/shipflow_data/**`, `contentglowz_lab/shipflow_data/**`, `contentglowz_site/shipflow_data/**`
+  - Fichier : `shipflow_data/business/**`, `shipflow_data/editorial/**`, `shipflow_data/technical/**`, `shipflow_data/workflow/**`
   - Action : Migrer les documents qui décrivent l'état courant; laisser les specs/research/bugs historiques si leur ancien nom est une preuve ou un contexte passé.
   - User story link : les agents futurs lisent ContentGlowz comme source de vérité.
   - Depends on : Tâches 2-10.
-  - Validate with : `rg -n -i "contentflow|content flow" shipflow_data contentglowz_app/shipflow_data contentglowz_lab/shipflow_data contentglowz_site/shipflow_data`.
+  - Validate with : `rg -n -i "contentflow|content flow" shipflow_data`.
   - Notes : Ne pas réécrire toute l'histoire ShipFlow; la classification doit apparaître dans le rapport de vérification.
 
 - [ ] Tâche 12 : Mettre à jour les tests, fixtures et snapshots de noms restants

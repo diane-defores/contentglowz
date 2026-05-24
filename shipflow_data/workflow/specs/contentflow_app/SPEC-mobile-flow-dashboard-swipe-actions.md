@@ -25,13 +25,13 @@ linked_systems:
   - "contentHistoryProvider"
   - "GoRouter app routes"
 depends_on:
-  - artifact: "contentglowz_app/shipflow_data/business/product.md"
+  - artifact: "shipflow_data/business/contentglowz_app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/business/contentglowz_app/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "contentglowz_app/shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []

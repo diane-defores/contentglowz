@@ -188,7 +188,7 @@ Local files and contracts:
 - `contentglowz_app/test/data/capture_asset_test.dart`: model serialization tests.
 - `contentglowz_app/test/data/capture_local_store_test.dart`: local metadata persistence tests.
 - `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`: Capture UI and event-flow tests.
-- `contentglowz_app/README.md`, `contentglowz_app/shipflow_data/technical/guidelines.md`, and `contentglowz_app/CHANGELOG.md`: docs to align after implementation.
+- `contentglowz_app/README.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, and `contentglowz_app/CHANGELOG.md`: docs to align after implementation.
 
 Source specs and explorations:
 
@@ -325,7 +325,7 @@ Copy constraints:
 
 ## Documentation Coherence
 
-- Update `contentglowz_app/shipflow_data/technical/guidelines.md` with this shared privacy metadata, backend-safe payload, OCR non-persistence, temp-file/quarantine, and review gate contract.
+- Update `shipflow_data/technical/contentglowz_app/guidelines.md` with this shared privacy metadata, backend-safe payload, OCR non-persistence, temp-file/quarantine, and review gate contract.
 - Update `contentglowz_app/README.md` with a product-facing explanation of cross-platform privacy capture status, best-effort limitation, local-first processing, and manual review requirement.
 - Update `contentglowz_app/CHANGELOG.md` after implementation lands.
 - Update platform specs or implementation notes to reference this spec as the shared contract before platform-specific implementation starts.
@@ -424,7 +424,7 @@ Copy constraints:
   - Notes: Include negative fixtures containing `ocrText`, `recognizedText`, `clearPath`, `tempPath`, `objectUrl`, and raw `boxes` keys and assert they are dropped or rejected.
 
 - [ ] Task 10: Update documentation after implementation.
-  - File: `contentglowz_app/shipflow_data/technical/guidelines.md`, `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `shipflow_data/technical/contentglowz_app/guidelines.md`, `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`
   - Action: Document the shared contract, data minimization rules, temp-file/quarantine behavior, review gate, and supported platform status.
   - User story link: Aligns implementers and operators with the feature's real guarantees.
   - Depends on: Tasks 1-9.

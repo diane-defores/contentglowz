@@ -235,8 +235,8 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 
 - Update `contentglowz_app/README.md` if app feature docs list creator tools or content formats.
 - Update `contentglowz_app/CHANGELOG.md` after implementation ships.
-- Update `contentglowz_app/shipflow_data/business/product.md` because product positioning expands from content review/prep to explicit video script preparation.
-- Update `contentglowz_app/shipflow_data/technical/context-function-tree.md` because the file exists and this feature changes route/provider behavior.
+- Update `shipflow_data/business/contentglowz_app/product.md` because product positioning expands from content review/prep to explicit video script preparation.
+- Update `shipflow_data/technical/contentglowz_app/context-function-tree.md` because the file exists and this feature changes route/provider behavior.
 - Update `contentglowz_site` marketing copy only after the workbench is implemented and verified; do not claim real video generation.
 - Update localization strings for all new workbench labels, validation messages, progress states, landscape / long-format button, and no-video copy.
 
