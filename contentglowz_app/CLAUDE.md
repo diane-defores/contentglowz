@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: contentglowz_app
 created: "2026-04-26"
-updated: "2026-05-04"
+updated: "2026-05-24"
 status: reviewed
 source_skill: sf-docs
 scope: technical
@@ -13,7 +13,8 @@ confidence: medium
 risk_level: medium
 security_impact: none
 docs_impact: yes
-evidence: []
+evidence:
+  - "Operator decision 2026-05-24: testable Flutter UI regressions must be covered by widget tests and web smoke before manual handoff."
 depends_on: []
 supersedes: none
 linked_systems: []
@@ -55,8 +56,18 @@ Backend and auth dependencies:
 - deployment_provider: vercel
 - preview_source: Vercel MCP deployment target_url
 - production_url: unknown
-- notes: Local checks cover most Flutter UI and provider logic. Hosted auth/callback or deployment-routing proof should use `sf-ship` then `sf-prod` before browser confirmation.
-- last_reviewed: 2026-05-11
+- notes: Local checks cover most Flutter UI and provider logic. Pure Flutter surfaces are considered shared for QA across the deployed web app and any platform build: onboarding UI, app shell/navigation, workspace/content CRUD, dialogs, form validation, filters/search, empty/error states, and provider-driven screen behavior must be covered by targeted widget tests first, then can be smoke-tested on the Vercel Flutter web app before asking Diane to validate a slower build or hosted release flow. Hosted auth/callback, deployment routing, FastAPI/Turso state, Clerk runtime, and production-like data proof should use `sf-ship` then `sf-prod` before authoritative browser confirmation. Manual QA should not be used as the first line of detection for testable Flutter widget regressions.
+- last_reviewed: 2026-05-24
+
+### Pre-manual QA Gate
+
+Before asking Diane to validate a hosted release flow or slower platform build, run the strongest local gate that matches the changed surface:
+
+- Always run `flutter analyze` and the targeted `flutter test ...` covering the changed workflow.
+- For any screen or flow change in a shared Flutter surface, add or extend widget tests for the actual user path, including open/close dialogs, cancel, no-op save, real save, destructive cancel/confirm, search/filter, persistence/reload, and empty/error states when relevant.
+- Run the relevant screen test file, or full `flutter test`, before handing off broad UI, onboarding, shell/navigation, workspace/content CRUD, review flow, scheduling, diagnostics, provider, or offline-sync UI changes.
+- Use the Vercel Flutter web app as the fast manual smoke surface for shared Flutter UI when the behavior does not depend on hosted auth/callbacks, backend/deployment state, or production-like data.
+- Ask Diane for manual QA as final confirmation after automated and web-smoke coverage have reduced widget-regression risk, or for integration edges that cannot be proven locally.
 
 ## ARM64 Android Release Guardrail
 

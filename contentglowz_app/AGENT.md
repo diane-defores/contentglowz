@@ -1,11 +1,11 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 draft: false
 project: contentglowz_app
 created: "2026-04-26"
-updated: "2026-05-04"
+updated: "2026-05-24"
 status: reviewed
 source_skill: sf-docs
 scope: technical
@@ -22,6 +22,7 @@ evidence:
   - "lib/providers/providers.dart"
   - "lib/data/services/api_service.dart"
   - "lib/data/services/offline_storage_service.dart"
+  - "Operator decision 2026-05-24: testable Flutter UI regressions must be covered by widget tests and web smoke before manual handoff."
 depends_on: []
 supersedes: []
 linked_systems:
@@ -85,6 +86,13 @@ next_step: "/sf-docs update AGENT.md"
 - Server-assisted build+serve: `./pm2-web.sh`
 - Clerk runtime smoke check: `./scripts/validate-clerk-runtime.sh`
 - Vercel paths: `scripts/vercel-install.sh`, `scripts/vercel-build.sh`, `vercel.json`
+
+## Pre-manual QA gate
+- Treat pure Flutter UI surfaces as shared across the deployed web app and any platform build: onboarding UI, app shell/navigation, workspace/content CRUD, dialogs, form validation, filters/search, empty/error states, and provider-driven screen behavior must be covered by targeted widget tests before manual QA handoff.
+- For dialog and form changes, include the actual user path in tests: open/close, cancel, no-op save, real save, destructive cancel/confirm, validation errors, and persistence/reload when relevant.
+- Use the Vercel Flutter web app as the fast manual smoke surface for shared Flutter UI before asking Diane to validate a slower build or hosted release flow, unless the behavior depends on hosted auth/callbacks or backend/deployment state.
+- Manual QA should confirm already-covered behavior and platform/integration edges; it must not be the first line of detection for testable Flutter widget regressions.
+- Hosted-only behavior still follows the hybrid development mode: auth/callbacks, deployment routing, FastAPI/Turso state, Clerk runtime, and production-like data require `sf-ship` then `sf-prod` before authoritative browser confirmation.
 
 ## Invariant checks before edits
 - Auth/session flow remains Clerk-first for web.

@@ -1,7 +1,7 @@
 ---
 artifact: code_docs_map
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: contentglowz_lab
 created: "2026-05-04"
 updated: "2026-05-10"
@@ -16,6 +16,8 @@ docs_impact: yes
 linked_systems:
   - api/services/
   - agents/shared/tools/
+  - agents/
+  - shipflow_data/technical/platforms/crewai.md
   - tests/
 depends_on:
   - artifact: "shipflow_data/technical/ai-runtime-and-url-safety.md"
@@ -24,6 +26,7 @@ depends_on:
 supersedes: []
 evidence:
   - "Created during PydanticAI runtime adapter verification."
+  - "CrewAI usage note added for backend agent orchestration, tools, structured outputs, and dependency migration risk."
 next_review: "2026-06-04"
 next_step: "/sf-docs technical audit contentglowz_lab"
 ---
@@ -35,6 +38,8 @@ Use this map before editing backend runtime, provider, or LLM-callable external-
 | Code path | Primary doc | Coverage | Reader trigger |
 | --- | --- | --- | --- |
 | `api/services/pydantic_ai_runtime.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | PydanticAI adapter and request-scoped OpenRouter rules | Any direct PydanticAI, OpenRouter, output schema, or credential-resolution change |
+| `api/services/user_llm_service.py` | `shipflow_data/technical/platforms/crewai.md` | Request-scoped CrewAI `LLM` construction through user OpenRouter credentials | Any CrewAI LLM, OpenRouter route, model, credential-resolution, or fallback behavior change |
+| `agents/**/*.py` with `crewai`, `Agent`, `Task`, `Crew`, `Process`, or `kickoff` | `shipflow_data/technical/platforms/crewai.md` | CrewAI agent orchestration, tools, structured outputs, memory/tracing assumptions, and migration risk | Any CrewAI agent, crew, task, tool, process, structured output, memory, tracing, or dependency behavior change |
 | `api/services/repo_understanding_service.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Repo/site collection and structured persona understanding synthesis | Any persona draft, repository collection, public-site crawl, or synthesis change |
 | `api/services/url_safety.py` | `shipflow_data/technical/ai-runtime-and-url-safety.md` | Public HTTP URL validation and SSRF guardrails | Any URL parsing, DNS resolution, allowed scheme, or private-network policy change |
 | `api/services/email_source_service.py` | `shipflow_data/technical/architecture.md` | Per-user IMAP metadata, encrypted app-password lookup, validation state, and managed 6-hour ingestion job setup | Any email-source credential, folder, schedule, or validation contract change |

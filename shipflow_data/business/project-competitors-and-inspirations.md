@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "contentflow"
 created: "2026-05-11"
-updated: "2026-05-11"
+updated: "2026-05-24"
 status: reviewed
 source_skill: sf-veille
 scope: "project-competitors-and-inspirations"
@@ -16,6 +16,7 @@ docs_impact: yes
 evidence:
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
   - "ContentFlow scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
+  - "User-pasted Savvio description on 2026-05-24."
 depends_on: []
 supersedes:
   - "concurrent.md"
@@ -59,6 +60,7 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 | [Browser7](https://betalist.com/startups/browser7) | Inspiration architecture | 8/10 | Scraping JS, proxy, captcha: utile pour enrichissement de sources, audits concurrents ou collecte contrôlée. À traiter avec prudence légale. |
 | [Spec27](https://betalist.com/startups/spec27) | Inspiration validation agent | 8/10 | Très bon modèle pour tester les pipelines IA ContentFlow avec specs, fixtures et critères de non-régression. |
 | [Web-Analytics.ai](https://web-analytics.ai/) | Inspiration reporting | 8/10 | Résumés hebdomadaires en langage clair + alertes: très bon format pour rapports clients ou pilotage interne. |
+| Savvio (URL non fournie) | Inspiration produit | 8/10 | Transforme vidéo, article ou document en notes claires, carte visuelle d'idées et plan d'action étape par étape: très pertinent pour la boîte à idées, l'ingestion de sources longues et le suivi d'exécution. |
 | [BundleUp](https://betalist.com/startups/bundleup) | Inspiration architecture | 7/10 | API unifiée pour intégrations: intéressant si ContentFlow agrège CMS, réseaux sociaux, analytics et outils de publication. |
 | [Clamp](https://betalist.com/startups/clamp) | Inspiration analytics | 7/10 | Analytics privacy-first + MCP: bon modèle pour faire remonter des signaux d'usage aux agents sans dashboard lourd. |
 | [DataForSEO Live vs Standard](https://dataforseo.com/help-center/live-vs-standard-method/amp) | Inspiration API | 6/10 | Utile pour cadrer coûts/latence entre requêtes live et batch, mais article ancien: vérifier docs actuelles avant décision. |

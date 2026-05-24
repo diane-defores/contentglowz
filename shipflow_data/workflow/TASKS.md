@@ -90,6 +90,8 @@
 | 🟡 | App Offline V3: uploads, deletes, and backend-first flows with explicit reconciliation strategy | 📋 todo |
 | 🟢 | Re-audit site SEO, accessibility, and copy after the Astro 6 preview deploy | 💤 deferred |
 
+🟡 [contentglowz] task: Explorer le pattern Savvio source longue -> notes, carte d'idées et plan d'action pour la boîte à idées | status: todo | area: idea-pool-source-synthesis | source: description utilisateur 2026-05-24
+
 ---
 
 ## Audit Findings
