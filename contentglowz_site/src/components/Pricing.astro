@@ -129,14 +129,14 @@ const pricingSchema = {
   }
 
   .section-header {
-    margin-bottom: 3rem;
+    margin-bottom: var(--space-12);
   }
 
   .pricing-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
   }
 
   .pricing-card {
@@ -149,7 +149,7 @@ const pricingSchema = {
   }
 
   .pricing-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(calc(var(--space-2) * -1));
     box-shadow: var(--shadow-card-lg);
   }
 
@@ -160,64 +160,64 @@ const pricingSchema = {
 
   .popular-badge {
     position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
+    inset-block-start: calc(var(--space-4) * -1);
+    inset-inline-start: 50%;
+    translate: -50% 0;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-sm);
     font-weight: 600;
   }
 
   .pricing-card h3 {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
+    font-size: var(--text-h3);
+    margin-bottom: var(--space-6);
     color: var(--color-dark);
   }
 
   .price {
     display: flex;
     align-items: baseline;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-2);
   }
 
   .currency {
-    font-size: 1.5rem;
+    font-size: var(--text-h3);
     font-weight: 600;
     color: var(--color-gray);
-    margin-left: 0.25rem;
+    margin-left: var(--space-1);
   }
 
   .amount {
-    font-size: 3.5rem;
+    font-size: var(--text-h1);
     font-weight: 900;
     color: var(--color-dark);
   }
 
   .period {
-    font-size: 1.25rem;
+    font-size: var(--text-lg);
     color: var(--color-gray);
-    margin-left: 0.25rem;
+    margin-left: var(--space-1);
   }
 
   .billing-note {
     color: var(--color-gray);
-    font-size: 0.9rem;
-    margin-bottom: 2rem;
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-8);
   }
 
   .features {
     list-style: none;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-8);
   }
 
   .features li {
-    padding: 0.6rem 0;
+    padding: var(--space-2) 0;
     color: var(--color-dark);
     border-bottom: 1px solid var(--color-light-gray);
-    font-size: 0.95rem;
+    font-size: var(--text-base);
   }
 
   .features li:last-child {
@@ -231,14 +231,14 @@ const pricingSchema = {
   }
 
   .cta-btn {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 10px;
+    inline-size: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: var(--text-base);
     background: var(--color-light-gray);
     color: var(--color-dark);
-    transition: all 0.3s ease;
+    transition: background var(--duration-slow) var(--ease-standard), color var(--duration-slow) var(--ease-standard), transform var(--duration-slow) var(--ease-standard), box-shadow var(--duration-slow) var(--ease-standard);
   }
 
   .cta-btn:hover {
@@ -252,14 +252,14 @@ const pricingSchema = {
   }
 
   .cta-btn.primary:hover {
-    transform: translateY(-2px);
+    transform: translateY(calc(var(--space-1) * -0.5));
     box-shadow: var(--shadow-primary);
   }
 
   .pricing-note {
     text-align: center;
     color: var(--color-gray);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
   }
 
   @media (max-width: 768px) {

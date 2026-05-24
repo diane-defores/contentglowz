@@ -31,19 +31,19 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 <style>
   .skip-nav {
     position: absolute;
-    top: -100%;
-    left: 1rem;
+    inset-block-start: -100%;
+    inset-inline-start: var(--space-4);
     z-index: 1001;
     background: var(--color-primary);
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0 0 8px 8px;
+    padding: var(--space-3) var(--space-6);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     font-weight: 600;
-    transition: top 0.2s;
+    transition: inset-block-start var(--duration-base);
   }
 
   .skip-nav:focus {
-    top: 0;
+    inset-block-start: 0;
   }
 
   .navbar {
@@ -67,19 +67,19 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   .logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.5rem;
+    gap: var(--space-2);
+    font-size: var(--text-h3);
     font-weight: 800;
     color: var(--color-dark);
   }
 
   .logo-icon {
-    font-size: 2rem;
+    font-size: var(--text-h2);
   }
 
   .nav-links {
     display: flex;
-    gap: 2rem;
+    gap: var(--space-8);
     align-items: center;
   }
 
@@ -103,32 +103,32 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .cta-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(calc(var(--space-1) * -0.5));
     box-shadow: var(--shadow-primary);
   }
 
   .hamburger {
     display: none;
     flex-direction: column;
-    gap: 5px;
-    padding: 8px;
-    min-width: 44px;
-    min-height: 44px;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    min-width: calc(var(--space-10) + var(--space-1));
+    min-height: calc(var(--space-10) + var(--space-1));
     align-items: center;
     justify-content: center;
   }
 
   .hamburger-line {
     display: block;
-    width: 24px;
-    height: 2px;
+    width: var(--space-6);
+    height: calc(var(--space-1) * 0.5);
     background: var(--color-text-primary);
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     transition: transform var(--duration-base), opacity var(--duration-base);
   }
 
   .hamburger[aria-expanded="true"] .hamburger-line:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+    transform: translateY(calc(var(--space-2) - var(--space-1) * 0.25)) rotate(45deg);
   }
 
   .hamburger[aria-expanded="true"] .hamburger-line:nth-child(2) {
@@ -136,7 +136,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .hamburger[aria-expanded="true"] .hamburger-line:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(calc((var(--space-2) - var(--space-1) * 0.25) * -1)) rotate(-45deg);
   }
 
   .mobile-cta {
@@ -147,9 +147,8 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     .nav-links {
       display: none;
       position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
+      inset-block-start: 100%;
+      inset-inline: 0;
       flex-direction: column;
       background: var(--color-surface-card-glass);
       backdrop-filter: blur(10px);

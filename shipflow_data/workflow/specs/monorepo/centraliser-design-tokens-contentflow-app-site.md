@@ -328,6 +328,11 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 | 2026-05-24 08:13 UTC | sf-build | GPT-5 Codex + subagent `gpt-5.3-codex-spark` | Execution deleguee sequentielle: migration partielle de `EntryScreen` vers les text themes/tokens existants | partial | Continuer les literals restants par lots bornes; ne pas shipper tant que les fichiers dirty hors scope ne sont pas exclus ou nettoyes |
 | 2026-05-24 08:51 UTC | continue | GPT-5 Codex | Reprise finale du lot courant: suppression des literals evidents restants dans `EntryScreen`, validation et preparation `all-dirty` | partial | Quick ship all-dirty demande par l'operateur |
 | 2026-05-24 08:51 UTC | sf-ship | GPT-5 Codex | Quick ship all-dirty avec checks locaux Flutter/design-token/diff | shipped | none |
+| 2026-05-24 10:44 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Hero.astro` vers variables/tokens existants | partial | Continuer le bloc site par `Navbar` ou `Pricing`, puis ship si demande |
+| 2026-05-24 10:52 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Navbar.astro` vers variables/tokens existants | partial | Continuer le bloc site par `Pricing` ou quick ship du lot site |
+| 2026-05-24 10:58 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Pricing.astro` vers variables/tokens existants | partial | Quick ship du lot site ou continuer sur `BlogPost`/`Footer` |
+| 2026-05-24 11:02 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `Footer.astro` vers variables/tokens existants | partial | Quick ship du lot site ou continuer sur `BlogPost` |
+| 2026-05-24 11:23 UTC | sf-ship | GPT-5 Codex | Quick ship du lot site design tokens (`Hero`, `Navbar`, `Pricing`, `Footer`) | shipped | Reprendre `BlogPost.astro` ou pages blog/tag par lot dedie |
 
 ## Current Chantier Flow
 
@@ -338,4 +343,5 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - sf-end: implemented.
 - sf-ship: implemented (scope present on `origin/main` via `9942f10`).
 - sf-build: partial continuation (2026-05-24 cleanup slice after initial ship).
-- Prochaine commande: none.
+- sf-ship: shipped (2026-05-24 site component cleanup slice).
+- Prochaine commande: `/continue BlogPost.astro design-token cleanup`.

@@ -48,7 +48,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 <style>
   .hero {
     position: relative;
-    padding: 10rem 0 var(--space-24);
+    padding: calc(var(--space-20) * 2) 0 var(--space-24);
     overflow: hidden;
   }
 
@@ -65,7 +65,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .hero-content {
-    max-width: 900px;
+    max-width: calc(var(--container-max-width) - var(--space-24) - var(--space-12));
     margin: 0 auto;
     text-align: center;
   }
@@ -84,10 +84,12 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     background-clip: text;
     display: inline-block;
     position: relative;
-    height: 1.2em;
+    height: calc(var(--text-h1) * var(--leading-tight));
   }
 
   .rotating-words {
+    --hero-word-cycle: calc(var(--duration-slow) * 40);
+
     display: inline-block;
     vertical-align: top;
   }
@@ -95,19 +97,19 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   .word {
     position: absolute;
     opacity: 0;
-    animation: rotateWord 12s linear infinite;
+    animation: rotateWord var(--hero-word-cycle) linear infinite;
   }
 
-  .word:nth-child(1) { animation-delay: 0s; }
-  .word:nth-child(2) { animation-delay: 3s; }
-  .word:nth-child(3) { animation-delay: 6s; }
-  .word:nth-child(4) { animation-delay: 9s; }
+  .word:nth-child(1) { animation-delay: var(--space-0); }
+  .word:nth-child(2) { animation-delay: calc(var(--hero-word-cycle) * 0.25); }
+  .word:nth-child(3) { animation-delay: calc(var(--hero-word-cycle) * 0.5); }
+  .word:nth-child(4) { animation-delay: calc(var(--hero-word-cycle) * 0.75); }
 
   @keyframes rotateWord {
-    0% { opacity: 0; transform: translateY(20px); }
+    0% { opacity: 0; transform: translateY(var(--space-5)); }
     2% { opacity: 1; transform: translateY(0); }
     23% { opacity: 1; transform: translateY(0); }
-    25% { opacity: 0; transform: translateY(-20px); }
+    25% { opacity: 0; transform: translateY(calc(var(--space-5) * -1)); }
     100% { opacity: 0; }
   }
 
@@ -134,7 +136,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     padding: var(--space-6) var(--space-12);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
-    max-width: 500px;
+    max-width: calc(var(--container-max-width) / 2.4);
     margin: 0 auto;
   }
 
@@ -145,7 +147,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .stat-number {
-    font-size: 2rem;
+    font-size: var(--text-h2);
     font-weight: 900;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
@@ -161,9 +163,9 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .stat-divider {
-    width: 1px;
-    height: 40px;
-    background: var(--color-surface-subtle);
+    align-self: stretch;
+    min-height: var(--space-10);
+    border-left: thin solid var(--color-surface-subtle);
   }
 
   .hero-trust {
@@ -187,18 +189,18 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     }
 
     .btn-primary, .btn-secondary {
-      width: 100%;
+      inline-size: 100%;
       text-align: center;
     }
 
     .hero-stats {
       gap: var(--space-3);
       padding: var(--space-4) var(--space-5);
-      max-width: 100%;
+      max-inline-size: 100%;
     }
 
     .stat-number {
-      font-size: 1.5rem;
+      font-size: var(--text-h3);
     }
   }
 </style>
