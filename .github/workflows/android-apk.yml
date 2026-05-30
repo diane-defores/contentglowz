@@ -2,6 +2,9 @@ name: Android APK
 
 on:
   push:
+    paths:
+      - "contentglowz_app/**"
+      - ".github/workflows/android-apk.yml"
   workflow_dispatch:
 
 concurrency:

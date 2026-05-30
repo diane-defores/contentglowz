@@ -51,25 +51,25 @@ const faqSchema = {
 
 <style>
   .faq-section {
-    padding: 6rem 0;
-    background: var(--color-light-gray);
+    padding: var(--space-24) 0;
+    background: var(--color-surface-subtle);
   }
 
   .container {
-    max-width: 900px;
+    max-width: calc(var(--space-20) * 11.25);
   }
 
   .faq-grid {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-4);
   }
 
   .faq-item {
-    background: white;
-    border-radius: 12px;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: box-shadow var(--duration-slow) var(--ease-standard);
   }
 
   .faq-item:hover {
@@ -78,16 +78,16 @@ const faqSchema = {
 
   .faq-question {
     width: 100%;
-    padding: 1.5rem;
+    padding: var(--space-6);
     display: flex;
     justify-content: space-between;
     align-items: center;
     text-align: left;
-    font-size: 1.1rem;
+    font-size: var(--text-base);
     font-weight: 600;
-    color: var(--color-dark);
+    color: var(--color-text-primary);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color var(--duration-slow) var(--ease-standard);
   }
 
   .faq-question:hover {
@@ -95,9 +95,9 @@ const faqSchema = {
   }
 
   .icon {
-    font-size: 1.5rem;
+    font-size: var(--text-h3);
     font-weight: 300;
-    transition: transform 0.3s ease;
+    transition: transform var(--duration-slow) var(--ease-standard);
   }
 
   .faq-item.active .icon {
@@ -105,19 +105,19 @@ const faqSchema = {
   }
 
   .faq-answer {
-    max-height: 0;
+    max-height: var(--space-0);
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition: max-height var(--duration-slow) var(--ease-standard), padding var(--duration-slow) var(--ease-standard);
   }
 
   .faq-item.active .faq-answer {
-    max-height: 500px;
-    padding: 0 1.5rem 1.5rem;
+    max-height: calc(var(--space-20) * 6.25);
+    padding: var(--space-0) var(--space-6) var(--space-6);
   }
 
   .faq-answer p {
-    color: var(--color-gray);
-    line-height: 1.7;
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
   }
 
   @media (max-width: 768px) {
@@ -126,12 +126,12 @@ const faqSchema = {
     }
 
     .faq-question {
-      font-size: 1rem;
-      padding: 1.25rem 1rem;
+      font-size: var(--text-base);
+      padding: var(--space-5) var(--space-4);
     }
 
     .faq-item.active .faq-answer {
-      padding: 0 1rem 1.25rem;
+      padding: var(--space-0) var(--space-4) var(--space-5);
     }
   }
 </style>

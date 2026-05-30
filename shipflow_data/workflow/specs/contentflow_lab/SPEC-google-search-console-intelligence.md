@@ -576,7 +576,7 @@ Packages:
 Stop conditions / reroute:
 
 - If Google OAuth verification or consent-screen requirements block public rollout, keep the feature behind an internal/tester gate and create a release-readiness follow-up before shipping publicly.
-- If Turso schema changes require a migration policy beyond idempotent ensure-table methods, route through `contentflow-turso-migrations`.
+- If Turso schema changes require a migration policy beyond idempotent ensure-table methods, route through `contentglowz-turso-migrations`.
 - If Drip GSC behavior must be merged with this feature immediately, update this spec before coding.
 - If live Google validation is required in CI, stop; tests must mock Google APIs.
 

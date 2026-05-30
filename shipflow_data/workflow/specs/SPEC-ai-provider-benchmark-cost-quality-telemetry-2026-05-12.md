@@ -290,7 +290,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
   - User story link : Makes benchmark history and provider evidence durable and auditable.
   - Depends on : Task 1.
   - Validate with : store tests for empty DB startup, upgraded DB, run/result persistence, recommendation history, tenant/admin filters and no destructive migrations.
-  - Notes : Follow ContentFlow Turso migration guardrails during implementation.
+  - Notes : Follow ContentGlowz Turso migration guardrails during implementation.
 
 - [ ] Task 3: Create versioned provider cost catalog service
   - Fichier : `contentglowz_lab/api/services/ai_provider_cost_catalog.py`

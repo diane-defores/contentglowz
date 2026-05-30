@@ -335,6 +335,9 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 | 2026-05-24 11:23 UTC | sf-ship | GPT-5 Codex | Quick ship du lot site design tokens (`Hero`, `Navbar`, `Pricing`, `Footer`) | shipped | Reprendre `BlogPost.astro` ou pages blog/tag par lot dedie |
 | 2026-05-24 11:26 UTC | continue | GPT-5 Codex | Reprise site bornee: migration de literals `BlogPost.astro` vers variables/tokens existants | partial | Quick ship du lot `BlogPost` ou continuer sur pages blog/tag |
 | 2026-05-24 14:04 UTC | continue | GPT-5 Codex + subagents | Execution parallele: migration tokens des listings blog/tag et de `design.astro`, puis integration locale | partial | Quick ship du lot site pages ou continuer sur pages auth/launch/privacy/404 |
+| 2026-05-24 23:16 UTC | continue | GPT-5 Codex | Reprise site bornee: migration tokens des pages auth redirect, launch, privacy et 404 | partial | Quick ship du lot site pages ou continuer sur pages restantes hors allowlist |
+| 2026-05-24 23:17 UTC | continue | GPT-5 Codex | Reprise site bornee: migration tokens des composants `Problem` et `FAQ` | partial | Quick ship du lot site pages/composants ou continuer sur `Robots`/layout globals |
+| 2026-05-24 23:18 UTC | continue | GPT-5 Codex | Reprise site bornee: migration partielle de `Robots` et des boutons/focus globaux `Layout.astro` | partial | Quick ship du lot site pages/composants ou audit ciblé des 38 findings site restants |
 
 ## Current Chantier Flow
 
@@ -348,4 +351,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - sf-ship: shipped (2026-05-24 site component cleanup slice).
 - continue: partial (2026-05-24 `BlogPost.astro` cleanup slice).
 - continue: partial (2026-05-24 subagent cleanup for blog/tag listings and design page).
-- Prochaine commande: quick ship du lot site pages ou `/continue auth/launch/privacy/404 design-token cleanup`.
+- continue: partial (2026-05-24 auth redirect/launch/privacy/404 cleanup slice).
+- continue: partial (2026-05-24 Problem/FAQ cleanup slice).
+- continue: partial (2026-05-24 Robots/Layout globals cleanup slice).
+- Prochaine commande: quick ship du lot site pages/composants ou audit ciblé des 38 findings site restants.

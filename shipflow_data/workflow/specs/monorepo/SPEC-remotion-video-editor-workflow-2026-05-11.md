@@ -298,7 +298,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - User story link: Lets creators save and return to editable video drafts.
   - Depends on: Tache 2.
   - Validate with: Service tests for create, load, save new version, stale write conflict, project ownership filter and version immutability.
-  - Notes: Route table creation/migration through the ContentFlow Turso migration guardrails before coding.
+  - Notes: Route table creation/migration through the ContentGlowz Turso migration guardrails before coding.
 
 - [ ] Tache 4: Add backend video project routes.
   - Fichier: `contentglowz_lab/api/routers/video_projects.py`

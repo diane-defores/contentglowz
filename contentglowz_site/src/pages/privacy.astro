@@ -70,45 +70,45 @@ import Footer from '../components/Footer.astro';
 
 <style>
   .privacy-main {
-    max-width: 800px;
+    max-width: calc(var(--space-20) * 10);
     margin: 0 auto;
-    padding: 8rem 2rem 4rem;
+    padding: calc(var(--space-16) * 2) var(--space-8) var(--space-16);
   }
 
   .privacy-main h1 {
-    font-size: clamp(2rem, 1.2rem + 3.33vw, 2.5rem);
+    font-size: var(--text-h1);
     font-weight: 800;
-    margin-bottom: 0.5rem;
-    color: var(--color-dark);
+    margin-bottom: var(--space-2);
+    color: var(--color-text-primary);
   }
 
   .last-updated {
-    color: var(--color-gray);
-    margin-bottom: 3rem;
-    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-12);
+    font-size: var(--text-sm);
   }
 
   .privacy-content {
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: var(--space-10);
   }
 
   .privacy-content h2 {
-    font-size: 1.4rem;
+    font-size: var(--text-h3);
     font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--color-dark);
+    margin-bottom: var(--space-4);
+    color: var(--color-text-primary);
   }
 
   .privacy-content p {
-    color: var(--color-gray);
-    line-height: 1.7;
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
   }
 
   .privacy-content ul {
-    color: var(--color-gray);
-    line-height: 2;
-    padding-left: 1.5rem;
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
+    padding-left: var(--space-6);
   }
 </style>

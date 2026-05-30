@@ -182,7 +182,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 - Product decision: V1 is guided and preview-gated. Text edits can propose cuts/captions quickly, but final render/publication requires preview validation.
 - `contentglowz_app` remains Flutter and talks only to `contentglowz_lab`.
 - `contentglowz_lab` remains the authenticated API boundary for provider calls, Bunny access, ownership checks, quota preflight, transcript persistence and render orchestration.
-- Durable state uses Turso/libSQL-compatible schema patterns; schema changes must use the ContentFlow Turso migration guardrails during implementation.
+- Durable state uses Turso/libSQL-compatible schema patterns; schema changes must use the ContentGlowz Turso migration guardrails during implementation.
 - Clerk auth and existing project/content ownership helpers remain mandatory for every route.
 - Provider calls are backend-managed/PAYG unless the readiness decision explicitly chooses a BYOK transcription provider path.
 - Client requests pass server ids, selected ranges and guided actions, not trusted final Remotion props, arbitrary URLs or provider model ids.
@@ -291,7 +291,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - User story link : Makes transcript and text edits durable, versioned and auditable.
   - Depends on : Task 1.
   - Validate with : migration/startup tests using empty DB and upgraded DB fixtures.
-  - Notes : Follow ContentFlow Turso migration guardrails; no destructive migration.
+  - Notes : Follow ContentGlowz Turso migration guardrails; no destructive migration.
 
 - [ ] Task 3: Add transcript/edit-plan store service
   - Fichier : `contentglowz_lab/api/services/video_text_editing_store.py`

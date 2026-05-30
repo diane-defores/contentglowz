@@ -22,36 +22,36 @@ import Footer from '../components/Footer.astro';
     justify-content: center;
     min-height: 60vh;
     text-align: center;
-    padding: 8rem 2rem 4rem;
+    padding: calc(var(--space-16) * 2) var(--space-8) var(--space-16);
   }
 
   .not-found h1 {
-    font-size: 6rem;
+    font-size: calc(var(--text-h1) * 1.7);
     font-weight: 900;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 
   .not-found p {
-    font-size: 1.25rem;
-    color: var(--color-gray);
-    margin-bottom: 2rem;
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-8);
   }
 
   .back-home {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
+    color: var(--color-text-on-dark);
+    padding: var(--button-padding-y) var(--space-8);
+    border-radius: var(--button-radius);
     font-weight: 600;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform var(--duration-base), box-shadow var(--duration-base);
   }
 
   .back-home:hover {
-    transform: translateY(-2px);
+    transform: translateY(calc(var(--space-1) * -0.5));
     box-shadow: var(--shadow-primary);
   }
 </style>

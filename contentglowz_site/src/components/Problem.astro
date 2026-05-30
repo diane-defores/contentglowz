@@ -27,65 +27,65 @@
 
 <style>
   .problem-section {
-    padding: 5rem 0 3rem;
-    background: var(--color-light-gray);
+    padding: var(--space-20) 0 var(--space-12);
+    background: var(--color-surface-subtle);
   }
 
   .problem-content {
-    max-width: 700px;
+    max-width: calc(var(--space-20) * 8.75);
     margin: 0 auto;
     text-align: center;
   }
 
   .problem-label {
-    font-size: 1rem;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--color-secondary);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 1rem;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: var(--space-4);
   }
 
   .problem-title {
-    font-size: clamp(1.8rem, 1.1rem + 2.92vw, 2.5rem);
+    font-size: var(--text-h2);
     font-weight: 900;
-    line-height: 1.2;
-    margin-bottom: 2.5rem;
-    color: var(--color-dark);
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-10);
+    color: var(--color-text-primary);
   }
 
   .problem-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    margin-bottom: 2.5rem;
+    gap: var(--space-5);
+    margin-bottom: var(--space-10);
     text-align: left;
   }
 
   .problem-item {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    background: white;
-    padding: 1.25rem 1.5rem;
-    border-radius: 12px;
+    gap: var(--space-4);
+    background: var(--color-surface);
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
   }
 
   .problem-icon {
-    font-size: 1.5rem;
+    font-size: var(--text-h3);
     flex-shrink: 0;
-    line-height: 1.6;
+    line-height: var(--leading-relaxed);
   }
 
   .problem-item p {
-    color: var(--color-gray);
-    font-size: 1.05rem;
-    line-height: 1.6;
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
   }
 
   .problem-transition {
-    font-size: 1.3rem;
+    font-size: var(--text-lg);
     font-weight: 700;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
@@ -99,7 +99,7 @@
     }
 
     .problem-item {
-      padding: 1rem;
+      padding: var(--space-4);
     }
   }
 </style>

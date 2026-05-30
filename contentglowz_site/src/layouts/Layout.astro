@@ -349,7 +349,7 @@ const themeCssVars = `
   /* --- Button system --- */
   .btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    color: white;
+    color: var(--color-text-on-dark);
     padding: var(--space-4) var(--space-10);
     border-radius: var(--radius-md);
     font-weight: 600;
@@ -360,7 +360,7 @@ const themeCssVars = `
   }
 
   .btn-primary:hover {
-    transform: translateY(-3px);
+    transform: translateY(calc(var(--space-1) * -0.75));
     box-shadow: var(--shadow-primary-hover);
   }
 
@@ -371,20 +371,20 @@ const themeCssVars = `
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
-    border: 2px solid var(--color-primary);
+    border: calc(var(--space-1) / 2) solid var(--color-primary);
     transition: background var(--duration-base), color var(--duration-base);
     display: inline-block;
   }
 
   .btn-secondary:hover {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-dark);
   }
 
   /* --- Focus — WCAG 2.4.11 --- */
   :focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: calc(var(--space-1) / 2) solid var(--color-primary);
+    outline-offset: calc(var(--space-1) / 2);
   }
 
   /* --- Reduced motion --- */

@@ -123,6 +123,7 @@ Note infra:
 | P2 | Social Listener v2 — TikTok, Instagram, Bluesky | Needs ScrapeCreators API key |
 | P2 | Readability endpoint — `POST /api/content/{id}/readability` | Score existing content from calendar |
 | P3 | OG Preview caching — avoid refetching same URLs | Simple dict or store-based cache |
+| P3 | Columns.ai integration — générer des illustrations éditoriales pour les contenus | Intégration future via l'accès produit disponible; prévoir specs API, droits d'usage, stockage asset library et insertion dans le workflow contenu |
 | P3 | Unsplash API integration — stock photos for content | Nice-to-have complement to AI images |
 
 ---
