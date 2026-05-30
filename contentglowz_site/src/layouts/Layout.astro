@@ -76,6 +76,7 @@ const {
 } = themeTokens;
 const themeCssVars = `
   :root {
+    color-scheme: light;
     --color-primary: ${colors.primary};
     --color-primary-dark: ${colors.primaryDark};
     --color-secondary: ${colors.secondary};
@@ -90,21 +91,25 @@ const themeCssVars = `
     --color-light-gray: ${colors.lightGray};
     --color-light-blue: ${colors.lightBlue};
     --color-white: ${colors.white};
+    --color-canvas: ${surfaces.light.canvas};
+    --color-surface-elevated: ${surfaces.light.elevatedSurface};
+    --color-input-fill: ${surfaces.light.inputFill};
     --color-text-primary: var(--color-dark);
     --color-text-muted: var(--color-gray);
     --color-text-code: ${colors.codeText};
     --color-surface: ${surfaces.light.surface};
     --color-surface-subtle: ${surfaces.light.mutedSurface};
     --color-surface-tint: ${surfaces.light.surfaceTint};
-    --color-surface-navbar: rgba(255, 255, 255, 0.95);
-    --color-surface-card-glass: rgba(255, 255, 255, 0.96);
+    --color-surface-navbar: color-mix(in srgb, var(--color-surface-elevated) 95%, transparent);
+    --color-surface-card-glass: color-mix(in srgb, var(--color-surface-elevated) 96%, transparent);
     --color-border-subtle: ${surfaces.light.borderSubtle};
     --color-border-light: ${surfaces.light.borderLight};
     --color-border-dark-subtle: ${surfaces.dark.borderSubtle};
-    --color-overlay-dark: rgba(255, 255, 255, 0.1);
-    --color-text-on-dark: rgba(255, 255, 255, 1);
-    --color-text-on-dark-muted: rgba(255, 255, 255, 0.7);
-    --color-text-on-dark-faint: rgba(255, 255, 255, 0.6);
+    --color-overlay-dark: color-mix(in srgb, var(--color-white) 10%, transparent);
+    --color-text-on-dark: var(--color-white);
+    --color-text-on-dark-muted: color-mix(in srgb, var(--color-white) 70%, transparent);
+    --color-text-on-dark-faint: color-mix(in srgb, var(--color-white) 60%, transparent);
+    --color-focus-ring: ${themeTokens.focus.ring};
     --color-code-text: ${colors.codeText};
     --color-badge-bg: ${colors.badgeBg};
     --color-badge-text: ${colors.badgeText};
@@ -186,6 +191,42 @@ const themeCssVars = `
     --mobile-density-scale: ${spacing.densityScale?.mobile};
     --desktop-density-scale: ${spacing.densityScale?.desktop};
   }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-canvas: ${surfaces.dark.canvas};
+    --color-surface: ${surfaces.dark.surface};
+    --color-surface-elevated: ${surfaces.dark.elevatedSurface};
+    --color-surface-subtle: ${surfaces.dark.mutedSurface};
+    --color-input-fill: ${surfaces.dark.inputFill};
+    --color-surface-tint: ${surfaces.dark.surfaceTint};
+    --color-text-primary: color-mix(in srgb, var(--color-white) 97%, var(--color-surface));
+    --color-text-muted: color-mix(in srgb, var(--color-white) 78%, var(--color-surface));
+    --color-surface-navbar: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+    --color-surface-card-glass: color-mix(in srgb, var(--color-surface-elevated) 94%, transparent);
+    --color-border-subtle: ${surfaces.dark.borderSubtle};
+    --color-border-light: ${surfaces.dark.borderLight};
+    --color-focus-ring: ${themeTokens.focus.ringStrong};
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-canvas: ${surfaces.dark.canvas};
+      --color-surface: ${surfaces.dark.surface};
+      --color-surface-elevated: ${surfaces.dark.elevatedSurface};
+      --color-surface-subtle: ${surfaces.dark.mutedSurface};
+      --color-input-fill: ${surfaces.dark.inputFill};
+      --color-surface-tint: ${surfaces.dark.surfaceTint};
+      --color-text-primary: color-mix(in srgb, var(--color-white) 97%, var(--color-surface));
+      --color-text-muted: color-mix(in srgb, var(--color-white) 78%, var(--color-surface));
+      --color-surface-navbar: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+      --color-surface-card-glass: color-mix(in srgb, var(--color-surface-elevated) 94%, transparent);
+      --color-border-subtle: ${surfaces.dark.borderSubtle};
+      --color-border-light: ${surfaces.dark.borderLight};
+      --color-focus-ring: ${themeTokens.focus.ringStrong};
+    }
+  }
 `;
 ---
 
@@ -223,7 +264,8 @@ const themeCssVars = `
     <!-- Favicon & theme -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="theme-color" content={colors.primary} />
+    <meta name="theme-color" content={surfaces.light.canvas} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={surfaces.dark.canvas} media="(prefers-color-scheme: dark)" />
     <style is:global set:html={themeCssVars}></style>
 
     <!-- Fonts -->
@@ -265,7 +307,7 @@ const themeCssVars = `
     font-size: var(--text-base);
     color: var(--color-text-primary);
     line-height: var(--leading-normal);
-    background-color: var(--color-surface);
+    background-color: var(--color-canvas);
     overflow-x: hidden;
   }
 
@@ -365,7 +407,7 @@ const themeCssVars = `
   }
 
   .btn-secondary {
-    background: var(--color-surface);
+    background: var(--color-surface-elevated);
     color: var(--color-primary);
     padding: var(--space-4) var(--space-10);
     border-radius: var(--radius-md);
@@ -383,7 +425,7 @@ const themeCssVars = `
 
   /* --- Focus — WCAG 2.4.11 --- */
   :focus-visible {
-    outline: calc(var(--space-1) / 2) solid var(--color-primary);
+    outline: calc(var(--space-1) / 2) solid var(--color-focus-ring);
     outline-offset: calc(var(--space-1) / 2);
   }
 

@@ -164,7 +164,7 @@ const pricingSchema = {
     inset-inline-start: 50%;
     translate: -50% 0;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    color: white;
+    color: var(--color-text-on-dark);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-pill);
     font-size: var(--text-sm);
@@ -174,7 +174,7 @@ const pricingSchema = {
   .pricing-card h3 {
     font-size: var(--text-h3);
     margin-bottom: var(--space-6);
-    color: var(--color-dark);
+    color: var(--color-text-primary);
   }
 
   .price {
@@ -186,24 +186,24 @@ const pricingSchema = {
   .currency {
     font-size: var(--text-h3);
     font-weight: 600;
-    color: var(--color-gray);
+    color: var(--color-text-muted);
     margin-left: var(--space-1);
   }
 
   .amount {
     font-size: var(--text-h1);
     font-weight: 900;
-    color: var(--color-dark);
+    color: var(--color-text-primary);
   }
 
   .period {
     font-size: var(--text-lg);
-    color: var(--color-gray);
+    color: var(--color-text-muted);
     margin-left: var(--space-1);
   }
 
   .billing-note {
-    color: var(--color-gray);
+    color: var(--color-text-muted);
     font-size: var(--text-sm);
     margin-bottom: var(--space-8);
   }
@@ -215,8 +215,8 @@ const pricingSchema = {
 
   .features li {
     padding: var(--space-2) 0;
-    color: var(--color-dark);
-    border-bottom: 1px solid var(--color-light-gray);
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border-subtle);
     font-size: var(--text-base);
   }
 
@@ -236,19 +236,19 @@ const pricingSchema = {
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
-    background: var(--color-light-gray);
-    color: var(--color-dark);
+    background: var(--color-surface-subtle);
+    color: var(--color-text-primary);
     transition: background var(--duration-slow) var(--ease-standard), color var(--duration-slow) var(--ease-standard), transform var(--duration-slow) var(--ease-standard), box-shadow var(--duration-slow) var(--ease-standard);
   }
 
   .cta-btn:hover {
-    background: var(--color-dark);
-    color: white;
+    background: var(--color-text-primary);
+    color: var(--color-surface);
   }
 
   .cta-btn.primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    color: white;
+    color: var(--color-text-on-dark);
   }
 
   .cta-btn.primary:hover {
@@ -258,7 +258,7 @@ const pricingSchema = {
 
   .pricing-note {
     text-align: center;
-    color: var(--color-gray);
+    color: var(--color-text-muted);
     font-size: var(--text-sm);
   }
 

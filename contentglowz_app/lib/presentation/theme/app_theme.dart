@@ -66,12 +66,14 @@ class AppTheme {
               : AppThemeTokens.lightGray,
           onSurface: isDark ? AppThemeTokens.white : AppThemeTokens.dark,
           onSurfaceVariant: isDark
-              ? const Color(0xB3FFFFFF)
+              ? AppThemeTokens.darkTextMuted
               : AppThemeTokens.gray,
-          outline: isDark ? const Color(0x1AFFFFFF) : const Color(0x14000000),
+          outline: isDark
+              ? AppThemeTokens.darkBorderLight
+              : AppThemeTokens.lightBorderLight,
           outlineVariant: isDark
-              ? const Color(0x1AFFFFFF)
-              : const Color(0x0D000000),
+              ? AppThemeTokens.darkBorderSubtle
+              : AppThemeTokens.lightBorderSubtle,
         );
     final textTheme = GoogleFonts.interTextTheme(
       isDark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
@@ -125,7 +127,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppThemeTokens.onPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),
@@ -160,7 +162,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          foregroundColor: Colors.white,
+          foregroundColor: AppThemeTokens.onPrimary,
           backgroundColor: scheme.primary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.button),
@@ -295,7 +297,7 @@ class AppThemePalette extends ThemeExtension<AppThemePalette> {
       elevatedSurface: AppThemeTokens.darkElevatedSurface,
       mutedSurface: AppThemeTokens.darkMutedSurface,
       inputFill: AppThemeTokens.darkElevatedSurface,
-      borderSubtle: Colors.white.withValues(alpha: 0.1),
+      borderSubtle: AppThemeTokens.darkBorderSubtle,
       heroGradient: const [
         AppThemeTokens.dark,
         AppThemeTokens.darkElevatedSurface,
@@ -311,7 +313,7 @@ class AppThemePalette extends ThemeExtension<AppThemePalette> {
       elevatedSurface: AppThemeTokens.white,
       mutedSurface: AppThemeTokens.lightGray,
       inputFill: AppThemeTokens.lightInputFill,
-      borderSubtle: const Color(0x0D000000),
+      borderSubtle: AppThemeTokens.lightBorderSubtle,
       heroGradient: const [
         AppThemeTokens.white,
         AppThemeTokens.lightGray,
@@ -327,11 +329,11 @@ class AppThemePalette extends ThemeExtension<AppThemePalette> {
       elevatedSurface: AppThemeTokens.white,
       mutedSurface: AppThemeTokens.lightGray,
       inputFill: AppThemeTokens.lightInputFill,
-      borderSubtle: const Color(0x0D000000),
+      borderSubtle: AppThemeTokens.lightBorderSubtle,
       heroGradient: const [
         AppThemeTokens.white,
         AppThemeTokens.lightGray,
-        Color(0xFFEDE9FE),
+        AppThemeTokens.appHeroTint,
       ],
     );
   }

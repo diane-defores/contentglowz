@@ -27,8 +27,12 @@ class AppThemeTokens {
   static const appEdit = Color(0xFF0984E3);
   static const appWarning = Color(0xFFF39C4A);
   static const appError = Color(0xFFE17055);
+  static const appHeroTint = Color(0xFFEDE9FE);
   static const purpleStrong = Color(0xFF7C3AED);
   static const cyanStrong = Color(0xFF0891B2);
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const lightTextMuted = Color.fromRGBO(0, 0, 0, 0.55);
+  static const darkTextMuted = Color.fromRGBO(255, 255, 255, 0.7);
 
   static const spacing0 = 0.0;
   static const spacing1 = 4.0;
@@ -56,6 +60,10 @@ class AppThemeTokens {
   static const darkSurfaceTint = Color(0xFF172554);
   static const lightInputFill = Color(0xFFF8FAFC);
   static const lightMutedSurface = Color(0xFFF1F5F9);
+  static const lightBorderSubtle = Color.fromRGBO(0, 0, 0, 0.05);
+  static const lightBorderLight = Color.fromRGBO(0, 0, 0, 0.08);
+  static const darkBorderSubtle = Color.fromRGBO(255, 255, 255, 0.1);
+  static const darkBorderLight = Color.fromRGBO(255, 255, 255, 0.1);
 
   static const durationInstant = Duration(milliseconds: 120);
   static const durationFast = Duration(milliseconds: 150);

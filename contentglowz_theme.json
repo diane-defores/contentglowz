@@ -22,8 +22,18 @@
     "appEdit": "#0984e3",
     "appWarning": "#f39c4a",
     "appError": "#e17055",
+    "appHeroTint": "#ede9fe",
     "purpleStrong": "#7c3aed",
     "cyanStrong": "#0891b2"
+  },
+  "text": {
+    "light": {
+      "muted": "rgba(0, 0, 0, 0.55)"
+    },
+    "dark": {
+      "muted": "rgba(255, 255, 255, 0.7)"
+    },
+    "onPrimary": "#ffffff"
   },
   "status": {
     "success": "#16a34a",

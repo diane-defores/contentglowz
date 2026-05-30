@@ -5,7 +5,61 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Continue the design-token centralization work, then advance the dual-mode AI runtime implementation.
+**Top priority**: Finish the design-token blocker cluster first, then advance dual-mode AI runtime and bounded production proof tasks.
+
+---
+
+## Priority View — 2026-05-30
+
+Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, and delay risk.
+
+### 🔴 P0 — Critical (Do First)
+
+| Task | Status | Impact | Effort | Why now |
+|------|--------|--------|--------|---------|
+| Éliminer les valeurs littérales restantes hors design tokens (Flutter 128, Site 401) | ✅ done | High | High | 2026-05-30: scan anti-literals passed under thresholds (Flutter 68/128, Site 38/401) after Flutter theme-source and shared site cleanup. |
+| Implémenter un vrai mode dark côté `contentglowz_site` | ✅ done | High | Medium | 2026-05-30: semantic dark variables, selector/media strategy, theme-color, and shared component token usage implemented. |
+
+### 🟠 P1 — High Priority
+
+| Task | Status | Impact | Effort | Why next |
+|------|--------|--------|--------|----------|
+| Implement the dual-mode AI runtime all-providers spec | 🔄 in progress | High | High | Core Lab platform dependency for BYOK/platform AI behavior across providers. |
+| Deploy the private Remotion Cloud Run worker with GCS env/secrets and least-privilege IAM | 📋 todo | High | Medium | Unblocks production video rendering validation. |
+| Run and record the production GCS E2E proof | 📋 todo | High | Medium | Required proof before trusting preview/final video workflow in production. |
+| Finish remaining feedback production checks | 📋 todo | Medium | Low | High-ROI production hardening; mostly config and manual proof. |
+| Finish Android APK CI setup and first installed APK verification | 📋 todo | High | Medium | Unblocks repeatable Android distribution proof. |
+| Verify post-cleanup Vercel build logs use `npm@11.12.1` | 📋 todo | Medium | Low | Quick post-ship deploy confidence check for the Astro 6 cleanup. |
+
+### 🟡 P2 — Medium Priority
+
+| Task | Status | Impact | Effort | Notes |
+|------|--------|--------|--------|-------|
+| Implement Project Intelligence Engine Data Layer | 🔄 in progress | High | High | Important foundation, but less urgent than current design/runtime blockers. |
+| Implement Google Search Console intelligence spec | 🔄 in progress | Medium | High | Valuable growth feature; depends on stable project intelligence/runtime paths. |
+| Implement Unified Project Asset Library remaining media integrations | 🔄 in progress | Medium | High | Continue after production render/runtime foundations are safer. |
+| Run readiness gates for Android, Web, and Windows privacy capture specs | 📋 todo | Medium | Medium | Necessary before privacy-capture implementation, but not the immediate product blocker. |
+| Finish the secondary i18n pass on partially translated screens | 🔄 in progress | Medium | Medium | Product polish; should not outrank blocker and proof work. |
+| Add account section in Settings for Clerk/account/provider management | 📋 todo | Medium | Medium | Useful user trust feature after auth/runtime foundations. |
+| Add guided tour for "publish fast" first-run mode | 📋 todo | Medium | Medium | Activation improvement after core flows are stable. |
+| Modernize deprecated Pydantic v1 validators and FastAPI `regex=` query parameters | 📋 todo | Medium | Medium | Maintenance risk; schedule before the next backend dependency upgrade. |
+| DataForSEO account needs credits before DFS-backed flows can run without 402 responses | 📋 todo | Medium | Low | External billing prerequisite; operator action. |
+| Explore Savvio long-source pattern for idea-pool synthesis | 📋 todo | Medium | Medium | Discovery work, not yet a blocker. |
+
+### 🟢 P3 — Low Priority / Deferred
+
+| Task | Status | Impact | Effort | Notes |
+|------|--------|--------|--------|-------|
+| App Offline V3: uploads, deletes, and backend-first flows | 📋 todo | Medium | High | Valuable, but Offline V2 is already shipped. |
+| Re-audit site SEO, accessibility, and copy after Astro 6 preview deploy | 💤 deferred | Medium | Medium | Wait until preview/deploy proof is complete. |
+| Keep iOS and Linux privacy capture exploration-only | 💤 deferred | Low | High | Revisit only with product demand. |
+| Passer vers un format DTCG puis générer automatiquement Flutter/Astro | 📋 todo | Medium | High | Good future architecture, after literal-token cleanup lands. |
+
+### Notes
+
+- Priority last updated: 2026-05-30
+- Immediate start recommendation: move to dual-mode AI runtime, then continue opportunistic design-token cleanup as non-blocking maintenance.
+- High-ROI bounded-effort opportunities: Vercel npm log verification, feedback production checks, DataForSEO credits.
 
 ---
 
@@ -66,7 +120,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🟡 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
+| 🟠 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
 | 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
 | 🟠 | Implement Project Intelligence Engine Data Layer (contentglowz_lab) | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
@@ -101,8 +155,8 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Implémenter un vrai mode dark côté `contentglowz_site` (selector + classes/data-theme + mapping des surfaces/texte) ; aujourd’hui les design tokens dark existent dans `contentglowz_theme.json` mais ne sont pas activés dans `Layout.astro` | 📋 todo |
-| 🔴 | Éliminer les valeurs littérales restantes hors design tokens (scan courant: Flutter 128, Site 401) en migrant d’abord les écrans App Shell/Auth/Feed/Settings + Layout/Hero/Pricing/Navbar | 🔄 in progress |
+| ✅ | Implémenter un vrai mode dark côté `contentglowz_site` (selector + classes/data-theme + mapping des surfaces/texte) ; aujourd’hui les design tokens dark existent dans `contentglowz_theme.json` mais ne sont pas activés dans `Layout.astro` | ✅ done |
+| ✅ | Éliminer les valeurs littérales restantes hors design tokens (scan courant: Flutter 68/128, Site 38/401) en migrant d’abord les écrans App Shell/Auth/Feed/Settings + Layout/Hero/Pricing/Navbar | ✅ done |
 | 🟠 | Rationaliser les design tokens orphelins ou non consommés (`--button-*`, `--space-mobile-*`, `--breakpoint-tablet/desktop`, etc.) pour réduire la dérive | 📋 todo |
 | 🟠 | Corriger la cohérence d’échelle typo/spacing (ratios instables) et figer une règle modulaire unique (Utopia/base ratio) | 📋 todo |
 | 🟡 | Passer vers un format DTCG (`tokens.json` avec `$value/$type`) puis générer automatiquement Flutter/Astro depuis cette source unique | 📋 todo |

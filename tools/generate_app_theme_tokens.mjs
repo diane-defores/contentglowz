@@ -10,7 +10,7 @@ const outputPath = resolve(
 );
 
 const theme = JSON.parse(readFileSync(themePath, 'utf8'));
-const { colors, surfaces, typography, spacing, radius, shadow, motion, breakpoints } =
+const { colors, text, surfaces, typography, spacing, radius, shadow, motion, breakpoints } =
   theme;
 
 function requireSection(value, path) {
@@ -82,6 +82,22 @@ function parseDuration(value) {
 }
 
 function dartColor(hex) {
+  if (typeof hex !== 'string') {
+    throw new Error(`Expected color token string, got ${hex}`);
+  }
+  const rgba = hex
+    .trim()
+    .match(/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0|1|0?\.\d+)\s*\)$/i);
+  if (rgba) {
+    const [, r, g, b, opacity] = rgba;
+    for (const channel of [r, g, b]) {
+      const value = Number(channel);
+      if (value < 0 || value > 255) {
+        throw new Error(`Expected rgba channel 0-255, got ${hex}`);
+      }
+    }
+    return `Color.fromRGBO(${Number(r)}, ${Number(g)}, ${Number(b)}, ${Number(opacity)})`;
+  }
   const clean = hex.replace('#', '').toUpperCase();
   if (!/^[0-9A-F]{6}$/.test(clean)) {
     throw new Error(`Expected 6-digit hex color, got ${hex}`);
@@ -90,6 +106,7 @@ function dartColor(hex) {
 }
 
 requireSection(colors, 'colors');
+requireSection(text, 'text');
 requireSection(surfaces, 'surfaces');
 requireSection(typography, 'typography');
 requireSection(spacing, 'spacing');
@@ -98,10 +115,13 @@ requireSection(shadow, 'shadow');
 requireSection(motion, 'motion');
 requireSection(breakpoints, 'breakpoints');
 
-ensureKeys(colors, 'colors', ['primary', 'primaryDark', 'secondary', 'accent', 'dark', 'gray', 'lightGray', 'lightBlue', 'white', 'codeText', 'badgeBg', 'badgeText', 'success', 'warning', 'orange', 'green', 'error', 'appPrimary', 'appSecondary', 'appEdit', 'appWarning', 'appError', 'purpleStrong', 'cyanStrong']);
+ensureKeys(colors, 'colors', ['primary', 'primaryDark', 'secondary', 'accent', 'dark', 'gray', 'lightGray', 'lightBlue', 'white', 'codeText', 'badgeBg', 'badgeText', 'success', 'warning', 'orange', 'green', 'error', 'appPrimary', 'appSecondary', 'appEdit', 'appWarning', 'appError', 'appHeroTint', 'purpleStrong', 'cyanStrong']);
+ensureKeys(text, 'text', ['light', 'dark', 'onPrimary']);
+ensureKeys(text.light, 'text.light', ['muted']);
+ensureKeys(text.dark, 'text.dark', ['muted']);
 ensureKeys(surfaces, 'surfaces', ['light', 'dark']);
-ensureKeys(surfaces.light, 'surfaces.light', ['surface', 'mutedSurface', 'inputFill', 'elevatedSurface', 'surfaceTint']);
-ensureKeys(surfaces.dark, 'surfaces.dark', ['surface', 'mutedSurface', 'elevatedSurface', 'surfaceTint']);
+ensureKeys(surfaces.light, 'surfaces.light', ['surface', 'mutedSurface', 'inputFill', 'elevatedSurface', 'surfaceTint', 'borderSubtle', 'borderLight']);
+ensureKeys(surfaces.dark, 'surfaces.dark', ['surface', 'mutedSurface', 'elevatedSurface', 'surfaceTint', 'borderSubtle', 'borderLight']);
 ensureKeys(typography, 'typography', ['fontSans', 'textXs', 'textSm', 'textBase', 'textLg']);
 ensureKeys(spacing, 'spacing', ['0', '1', '2', '3', '4', '5', '6']);
 ensureKeys(radius, 'radius', ['sm', 'md', 'lg', 'xl', '2xl']);
@@ -159,8 +179,12 @@ class AppThemeTokens {
   static const appEdit = ${dartColor(colors.appEdit)};
   static const appWarning = ${dartColor(colors.appWarning)};
   static const appError = ${dartColor(colors.appError)};
+  static const appHeroTint = ${dartColor(colors.appHeroTint)};
   static const purpleStrong = ${dartColor(colors.purpleStrong)};
   static const cyanStrong = ${dartColor(colors.cyanStrong)};
+  static const onPrimary = ${dartColor(text.onPrimary)};
+  static const lightTextMuted = ${dartColor(text.light.muted)};
+  static const darkTextMuted = ${dartColor(text.dark.muted)};
 
   static const spacing0 = ${dartDouble(spacingMap[0])};
   static const spacing1 = ${dartDouble(spacingMap[1])};
@@ -188,6 +212,10 @@ class AppThemeTokens {
   static const darkSurfaceTint = ${dartColor(surfaces.dark.surfaceTint)};
   static const lightInputFill = ${dartColor(surfaces.light.inputFill)};
   static const lightMutedSurface = ${dartColor(surfaces.light.mutedSurface)};
+  static const lightBorderSubtle = ${dartColor(surfaces.light.borderSubtle)};
+  static const lightBorderLight = ${dartColor(surfaces.light.borderLight)};
+  static const darkBorderSubtle = ${dartColor(surfaces.dark.borderSubtle)};
+  static const darkBorderLight = ${dartColor(surfaces.dark.borderLight)};
 
   static const durationInstant = Duration(milliseconds: ${parseDuration(motion.instant)});
   static const durationFast = Duration(milliseconds: ${parseDuration(motion.fast)});

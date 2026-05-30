@@ -338,6 +338,10 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 | 2026-05-24 23:16 UTC | continue | GPT-5 Codex | Reprise site bornee: migration tokens des pages auth redirect, launch, privacy et 404 | partial | Quick ship du lot site pages ou continuer sur pages restantes hors allowlist |
 | 2026-05-24 23:17 UTC | continue | GPT-5 Codex | Reprise site bornee: migration tokens des composants `Problem` et `FAQ` | partial | Quick ship du lot site pages/composants ou continuer sur `Robots`/layout globals |
 | 2026-05-24 23:18 UTC | continue | GPT-5 Codex | Reprise site bornee: migration partielle de `Robots` et des boutons/focus globaux `Layout.astro` | partial | Quick ship du lot site pages/composants ou audit ciblé des 38 findings site restants |
+| 2026-05-30 20:35 UTC | sf-build | GPT-5 Codex + worker subagent | Execution P0: dark mode site selector/media strategy, semantic site variables, and Flutter theme-source literal cleanup via generated tokens | partial | Continuer les lots presentation restants; ne pas shipper avant validation du scope dirty |
+| 2026-05-30 20:46 UTC | sf-verify | GPT-5 Codex | Verification du lot P0 design tokens: generateur, Flutter test/analyze, Astro build, scan anti-literals, diff check, screenshots light/dark | verified | Cloturer et shipper le scope borne |
+| 2026-05-30 20:46 UTC | sf-end | GPT-5 Codex | Cloture du lot P0 design tokens avec trackers et changelog alignes | closed | sf-ship scope borne design tokens |
+| 2026-05-30 20:46 UTC | sf-ship | GPT-5 Codex | Ship du scope borne design tokens sur `main` | shipped | sf-prod si validation Vercel preview requise |
 
 ## Current Chantier Flow
 
@@ -354,4 +358,8 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 - continue: partial (2026-05-24 auth redirect/launch/privacy/404 cleanup slice).
 - continue: partial (2026-05-24 Problem/FAQ cleanup slice).
 - continue: partial (2026-05-24 Robots/Layout globals cleanup slice).
-- Prochaine commande: quick ship du lot site pages/composants ou audit ciblé des 38 findings site restants.
+- sf-build: partial (2026-05-30 P0 slice: site dark mode implemented, Flutter theme-source literals removed from `AppTheme`, checks passed).
+- sf-verify: verified (2026-05-30 P0 slice, scan anti-literals passed: Flutter 68/128, Site 38/401).
+- sf-end: closed (2026-05-30 trackers and changelog updated for bounded P0 slice).
+- sf-ship: shipped (2026-05-30 bounded design-token scope).
+- Prochaine commande: sf-prod if matching Vercel preview validation is required.
