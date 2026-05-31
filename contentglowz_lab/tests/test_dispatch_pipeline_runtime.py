@@ -42,6 +42,52 @@ async def test_dispatch_pipeline_article_uses_expected_runtime_matrix(monkeypatc
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("target_format", "required", "optional"),
+    [
+        ("newsletter", ["openrouter", "exa"], []),
+        ("short", ["openrouter"], []),
+        ("social_post", ["openrouter"], []),
+    ],
+)
+async def test_dispatch_pipeline_non_article_formats_use_runtime_matrix(
+    monkeypatch,
+    target_format,
+    required,
+    optional,
+):
+    preflight = AsyncMock(return_value=SimpleNamespace())
+    create_job = AsyncMock()
+    monkeypatch.setattr(psychology_router.ai_runtime_service, "preflight_providers", preflight)
+    monkeypatch.setattr(psychology_router, "_create_job", create_job)
+    monkeypatch.setattr("utils.dedup.check_content_duplicate", lambda **_: None)
+
+    fake_status = types.ModuleType("status")
+    fake_status.get_status_service = lambda: SimpleNamespace(
+        create_content=lambda **kwargs: SimpleNamespace(id=f"{target_format}-content-1"),
+    )
+    monkeypatch.setitem(sys.modules, "status", fake_status)
+
+    response = await psychology_router.dispatch_pipeline(
+        request=PipelineDispatchRequest(
+            angle_data={"title": f"{target_format} angle"},
+            target_format=target_format,
+            project_id="project-1",
+        ),
+        background_tasks=BackgroundTasks(),
+        current_user=SimpleNamespace(user_id="user-1"),
+    )
+
+    assert response.status == "running"
+    assert preflight.await_args.kwargs["route"] == (
+        f"psychology.dispatch_pipeline.{target_format}"
+    )
+    assert preflight.await_args.kwargs["required_providers"] == required
+    assert preflight.await_args.kwargs["optional_providers"] == optional
+    create_job.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_dispatch_pipeline_duplicate_conflict_is_not_runtime_error(monkeypatch):
     monkeypatch.setattr(
         psychology_router.ai_runtime_service,

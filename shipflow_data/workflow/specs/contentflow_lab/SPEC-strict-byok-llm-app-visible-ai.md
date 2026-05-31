@@ -4,8 +4,8 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: contentglowz_lab
 created: "2026-04-25"
-updated: "2026-04-27"
-status: ready
+updated: "2026-05-30"
+status: superseded
 source_skill: sf-docs
 scope: feature
 owner: "Diane"
@@ -18,13 +18,15 @@ linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+next_step: "Superseded by shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
 ---
 # Title
 Strict BYOK LLM For App-Visible AI Actions
 
 ## Status
-Ready for implementation
+Superseded by `shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md`.
+
+The strict-BYOK direction was replaced by the dual-mode runtime contract so ContentGlowz can support both user-managed credentials and operator-paid platform mode behind entitlement gates.
 
 ## Problem
 The product decision is now locked: every LLM-backed action visible in `contentglowz_app` must run with the requesting user's OpenRouter key, not an operator-managed key from Doppler or process environment.

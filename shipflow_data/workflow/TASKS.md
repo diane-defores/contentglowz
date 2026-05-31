@@ -5,7 +5,7 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Finish the design-token blocker cluster first, then advance dual-mode AI runtime and bounded production proof tasks.
+**Top priority**: Ship the Clerk OTP fix and verify one hosted email sign-up, then continue the dual-mode AI runtime implementation.
 
 ---
 
@@ -17,18 +17,17 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 | Task | Status | Impact | Effort | Why now |
 |------|--------|--------|--------|---------|
-| Éliminer les valeurs littérales restantes hors design tokens (Flutter 128, Site 401) | ✅ done | High | High | 2026-05-30: scan anti-literals passed under thresholds (Flutter 68/128, Site 38/401) after Flutter theme-source and shared site cleanup. |
-| Implémenter un vrai mode dark côté `contentglowz_site` | ✅ done | High | Medium | 2026-05-30: semantic dark variables, selector/media strategy, theme-color, and shared component token usage implemented. |
+| Shipper le fix Clerk OTP et vérifier qu'une inscription email hostée n'envoie qu'un seul code | 📋 todo | High | Low | The code fix is implemented locally, but auth trust is only proven after deploy on the hosted `/sign-up` path. This is bounded and should close before resuming larger feature work. |
 
 ### 🟠 P1 — High Priority
 
 | Task | Status | Impact | Effort | Why next |
 |------|--------|--------|--------|----------|
-| Implement the dual-mode AI runtime all-providers spec | 🔄 in progress | High | High | Core Lab platform dependency for BYOK/platform AI behavior across providers. |
+| Implement the dual-mode AI runtime all-providers spec | 🔄 in progress | High | High | 2026-05-30: focused backend and Flutter automated checks pass; implementation tasks are marked complete in the spec, with real-provider manual smoke and final verify/ship still pending. |
 | Deploy the private Remotion Cloud Run worker with GCS env/secrets and least-privilege IAM | 📋 todo | High | Medium | Unblocks production video rendering validation. |
-| Run and record the production GCS E2E proof | 📋 todo | High | Medium | Required proof before trusting preview/final video workflow in production. |
-| Finish remaining feedback production checks | 📋 todo | Medium | Low | High-ROI production hardening; mostly config and manual proof. |
+| Run and record the production GCS E2E proof | 📋 todo | High | Medium | Required proof before trusting preview/final video workflow in production; depends on the private worker deploy. |
 | Finish Android APK CI setup and first installed APK verification | 📋 todo | High | Medium | Unblocks repeatable Android distribution proof. |
+| Finish remaining feedback production checks | 📋 todo | Medium | Low | High-ROI production hardening; mostly config and manual proof. |
 | Verify post-cleanup Vercel build logs use `npm@11.12.1` | 📋 todo | Medium | Low | Quick post-ship deploy confidence check for the Astro 6 cleanup. |
 
 ### 🟡 P2 — Medium Priority
@@ -45,6 +44,8 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | Modernize deprecated Pydantic v1 validators and FastAPI `regex=` query parameters | 📋 todo | Medium | Medium | Maintenance risk; schedule before the next backend dependency upgrade. |
 | DataForSEO account needs credits before DFS-backed flows can run without 402 responses | 📋 todo | Medium | Low | External billing prerequisite; operator action. |
 | Explore Savvio long-source pattern for idea-pool synthesis | 📋 todo | Medium | Medium | Discovery work, not yet a blocker. |
+| Rationaliser les design tokens orphelins ou non consommés | 📋 todo | Medium | Medium | Maintenance after P0 design-token closure; useful, but no longer blocking product work. |
+| Corriger la cohérence d’échelle typo/spacing | 📋 todo | Medium | Medium | Design-system polish; schedule after active auth/runtime blockers. |
 
 ### 🟢 P3 — Low Priority / Deferred
 
@@ -58,8 +59,8 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 ### Notes
 
 - Priority last updated: 2026-05-30
-- Immediate start recommendation: move to dual-mode AI runtime, then continue opportunistic design-token cleanup as non-blocking maintenance.
-- High-ROI bounded-effort opportunities: Vercel npm log verification, feedback production checks, DataForSEO credits.
+- Immediate start recommendation: run `$sf-ship` or equivalent closure for the Clerk OTP fix, then verify one hosted email sign-up.
+- High-ROI bounded-effort opportunities: hosted OTP retest, Vercel npm log verification, feedback production checks, DataForSEO credits.
 
 ---
 
@@ -96,6 +97,8 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | ✅ | Offline Sync V2 shipped with cache, queue, temp ID reconciliation, and explicit sync states | ✅ done |
 | ✅ | Flutter core majors migration verified with analyze, tests, and build runner | ✅ done |
 | ✅ | Light-mode contrast regression reconciled as fixed in tracker | ✅ done |
+| ✅ | Corriger le double envoi d'email OTP Clerk pendant la création de compte email, probablement déclenché par une actualisation/re-mount impromptu de la page sign-up | ✅ done |
+| 🔴 | Shipper le fix Clerk OTP et vérifier sur l'app hostée qu'une inscription email n'envoie qu'un seul code | 📋 todo |
 | 🟠 | Add a simplified guided tour for “publish fast” first-run mode | 📋 todo |
 | 🟠 | Add a real account section in Settings for Clerk/account/provider management | 📋 todo |
 | 🟠 | Finish the secondary i18n pass on partially translated screens | 🔄 in progress |
@@ -121,7 +124,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | Pri | Task | Status |
 |-----|------|--------|
 | 🟠 | Finish remaining feedback production checks: Bunny storage env vars, connected feedback, audio upload, and admin allowlist validation | 📋 todo |
-| 🟠 | Implement the dual-mode AI runtime all-providers spec | 🔄 in progress |
+| 🟠 | Implement the dual-mode AI runtime all-providers spec; automated backend/Flutter checks pass, manual provider smoke remains | 🔄 in progress |
 | 🟠 | Implement Project Intelligence Engine Data Layer (contentglowz_lab) | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |

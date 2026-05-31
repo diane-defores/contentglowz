@@ -7,10 +7,12 @@ All notable changes to ContentGlowz are documented here.
 ### Added
 - Added the canonical video timeline API with Turso/libSQL persistence, immutable versions, render job links, Remotion adapter props, signed artifact playback, and `video_version` project-asset usage auditing.
 - Added GCS-backed render artifact metadata, backend-signed playback URLs, and deterministic expected object keys for worker-restart reconciliation.
+- Added regression coverage for dual-mode AI runtime platform resolution and dispatch-pipeline provider matrices across article, newsletter, short, and social formats.
 
 ### Changed
 - Aligned the production API Caddy setup with `api.contentglowz.com` as the primary host, `api.winflowz.com` as an optional temporary alias, and the PM2 FastAPI upstream on `localhost:3002`.
 - Documented the API domain migration checklist for DNS, Doppler Clerk validation vars, Caddy aliasing, client `API_BASE_URL`, and `/health` verification.
+- Marked the strict-BYOK AI runtime spec as superseded by the dual-mode BYOK/platform runtime spec and refreshed the dual-mode chantier status with automated proof.
 
 ### Security
 - Enforced render-safe asset resolution for timeline media clips before version creation, rejecting provider-temporary, local-only, tombstoned, degraded, foreign, missing, or incompatible assets before Remotion receives props.

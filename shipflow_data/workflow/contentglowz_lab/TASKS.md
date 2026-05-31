@@ -32,7 +32,7 @@
 | P0 | Fix Turso Hrana NULL binding failure during persona draft jobs | Done |
 | P0 | Persona AI draft fallback when project clone is missing | ✅ done |
 | P2 | Feedback Admin v1 — finaliser les vérifications prod restantes | Admin email configuré; restent Bunny/audio et validation admin connectée |
-| P0 | Dual-mode AI runtime (BYOK + platform) all providers — implement ready spec | 🔄 in progress |
+| P0 | Dual-mode AI runtime (BYOK + platform) all providers — implement ready spec | 🔄 in progress — automated backend/Flutter checks pass; manual provider smoke + final verify/ship pending |
 | P2 | Consolidate `AGENTS.md` operational guidance into `AGENT.md` and keep compatibility symlink | ✅ done |
 | P0 | Project flows selection onboarding archive — optional source_url, projectSelectionMode tri-state, archive/unarchive API + bootstrap no-selection | ✅ done |
 | P0 | Persona draft GitHub repository access diagnostics and README collection hardening | ✅ done |

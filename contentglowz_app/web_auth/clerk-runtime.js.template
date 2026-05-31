@@ -10,6 +10,8 @@
   const state = {
     loadPromise: null,
     scriptPromise: null,
+    mountedSignInNode: null,
+    mountedSignUpNode: null,
   };
   const CLERK_UI_SCRIPT_ID = 'contentglowz-clerk-ui';
   const CLERK_JS_SCRIPT_ID = 'contentglowz-clerk-js';
@@ -226,6 +228,13 @@
 
   async function mountSignIn(node, options) {
     const clerk = await load();
+    if (state.mountedSignInNode === node) {
+      return true;
+    }
+    if (state.mountedSignInNode && typeof clerk.unmountSignIn === 'function') {
+      clerk.unmountSignIn(state.mountedSignInNode);
+    }
+
     const redirectUrlComplete = resolveRedirectComplete(
       (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
     );
@@ -242,20 +251,29 @@
       signUpFallbackRedirectUrl: redirectUrlComplete,
       signUpUrl: '/sign-up',
     });
+    state.mountedSignInNode = node;
 
     return true;
   }
 
   async function mountSignUp(node, options) {
     const clerk = await load();
+    if (state.mountedSignUpNode === node) {
+      return true;
+    }
+    if (state.mountedSignUpNode && typeof clerk.unmountSignUp === 'function') {
+      clerk.unmountSignUp(state.mountedSignUpNode);
+    }
+
     const redirectUrlComplete = resolveRedirectComplete(
       (options && options.redirectUrlComplete) || readRedirectCompleteFromLocation(),
     );
     const redirectUrl = buildOAuthCallbackUrl(redirectUrlComplete);
 
+    // Keep Clerk's email verification steps inside the static sign-up page.
+    // Path routing can hit Vercel rewrites and remount the SignUp flow, which may resend the OTP.
     clerk.mountSignUp(node, {
-      path: '/sign-up',
-      routing: 'path',
+      routing: 'hash',
       oauthFlow: 'redirect',
       redirectUrl,
       forceRedirectUrl: redirectUrlComplete,
@@ -264,6 +282,7 @@
       signInFallbackRedirectUrl: redirectUrlComplete,
       signInUrl: '/sign-in',
     });
+    state.mountedSignUpNode = node;
 
     return true;
   }

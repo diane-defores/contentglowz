@@ -4,10 +4,17 @@ All notable changes to the ContentGlowz monorepo are documented here.
 
 ## [2026-05-30]
 
+### Fixed
+- Fixed the Clerk email sign-up OTP flow by keeping SignUp verification steps inside the static auth page hash route and guarding against duplicate Clerk component mounts.
+
+### Added
+- Added regression coverage for the dual-mode AI runtime platform branch and dispatch-pipeline provider matrices.
+
 ### Changed
 - Centralized additional app/site design-token semantics for text, borders, app hero tint, and generated Flutter theme constants.
 - Added real dark-mode support for the Astro site through semantic CSS variables, explicit `data-theme="dark"` support, `prefers-color-scheme: dark`, and matching browser theme colors.
 - Reduced design-token literal debt under the tracked scan thresholds: Flutter 68/128 and Site 38/401.
+- Refreshed the dual-mode AI runtime chantier status and marked the older strict-BYOK spec as superseded.
 
 ## [2026-05-14]
 

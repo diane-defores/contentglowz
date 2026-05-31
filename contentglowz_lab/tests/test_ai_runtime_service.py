@@ -11,6 +11,7 @@ from api.services.ai_runtime_service import (
     AIRuntimeService,
     AIRuntimeServiceError,
     RuntimeResolution,
+    ai_entitlement_service,
     user_key_store,
 )
 from api.services.runtime_provider_context import get_runtime_provider_secret
@@ -114,6 +115,91 @@ async def test_preflight_byok_decryption_failure_is_operator_runtime_error(monke
     assert exc.value.detail["details"] == {
         "reason": "user_credential_decryption_unavailable"
     }
+
+
+@pytest.mark.asyncio
+async def test_preflight_platform_uses_operator_secret_without_user_lookup(monkeypatch):
+    svc = AIRuntimeService()
+    monkeypatch.setattr(svc, "get_effective_mode", AsyncMock(return_value="platform"))
+    monkeypatch.setattr(
+        ai_entitlement_service,
+        "is_platform_entitled",
+        lambda user_id: user_id == "user-1",
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "operator-openrouter-key")
+    get_credential_status = AsyncMock(return_value=None)
+    get_secret = AsyncMock(return_value="user-openrouter-key")
+    monkeypatch.setattr(user_key_store, "get_credential_status", get_credential_status)
+    monkeypatch.setattr(user_key_store, "get_secret", get_secret)
+
+    resolution = await svc.preflight_providers(
+        user_id="user-1",
+        route="psychology.generate_angles",
+        required_providers=["openrouter"],
+    )
+
+    assert resolution.mode == "platform"
+    assert resolution.required_provider_secrets == {
+        "openrouter": "operator-openrouter-key"
+    }
+    get_credential_status.assert_not_awaited()
+    get_secret.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_preflight_platform_missing_operator_secret_does_not_fallback_to_byok(
+    monkeypatch,
+):
+    svc = AIRuntimeService()
+    monkeypatch.setattr(svc, "get_effective_mode", AsyncMock(return_value="platform"))
+    monkeypatch.setattr(ai_entitlement_service, "is_platform_entitled", lambda _: True)
+    monkeypatch.delenv("EXA_API_KEY", raising=False)
+    get_credential_status = AsyncMock(
+        return_value={
+            "provider": "exa",
+            "configured": True,
+            "validation_status": "valid",
+        }
+    )
+    get_secret = AsyncMock(return_value="user-exa-key")
+    monkeypatch.setattr(user_key_store, "get_credential_status", get_credential_status)
+    monkeypatch.setattr(user_key_store, "get_secret", get_secret)
+
+    with pytest.raises(AIRuntimeServiceError) as exc:
+        await svc.preflight_providers(
+            user_id="user-1",
+            route="research.competitor_analysis",
+            required_providers=["exa"],
+        )
+
+    assert exc.value.status_code == 503
+    assert exc.value.detail["code"] == "ai_runtime_operator_provider_missing"
+    assert exc.value.detail["mode"] == "platform"
+    assert exc.value.detail["provider"] == "exa"
+    get_credential_status.assert_not_awaited()
+    get_secret.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_preflight_platform_not_entitled_blocks_before_provider_lookup(monkeypatch):
+    svc = AIRuntimeService()
+    monkeypatch.setattr(svc, "get_effective_mode", AsyncMock(return_value="platform"))
+    monkeypatch.setattr(ai_entitlement_service, "is_platform_entitled", lambda _: False)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "operator-openrouter-key")
+    get_credential_status = AsyncMock(return_value=None)
+    monkeypatch.setattr(user_key_store, "get_credential_status", get_credential_status)
+
+    with pytest.raises(AIRuntimeServiceError) as exc:
+        await svc.preflight_providers(
+            user_id="user-1",
+            route="psychology.generate_angles",
+            required_providers=["openrouter"],
+        )
+
+    assert exc.value.status_code == 403
+    assert exc.value.detail["code"] == "ai_runtime_platform_not_entitled"
+    assert exc.value.detail["mode"] == "platform"
+    get_credential_status.assert_not_awaited()
 
 
 @pytest.mark.asyncio
