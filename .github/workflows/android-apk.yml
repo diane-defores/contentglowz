@@ -80,9 +80,10 @@ jobs:
             --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
 
       - name: Upload APK artifact
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: contentglowz-android-apk
           path: contentglowz_app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
