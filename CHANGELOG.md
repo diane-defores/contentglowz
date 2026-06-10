@@ -2,6 +2,11 @@
 
 All notable changes to the ContentGlowz monorepo are documented here.
 
+## [2026-06-10]
+
+### Changed
+- Updated competitive intelligence and backlog trackers with future inspiration for MCP/ChatGPT Apps distribution, LLM mentions/GEO reporting, Firecrawl PDF/document ingestion, Krotos-style SFX enrichment, Android creator workflows, and inference/model-routing benchmarks.
+
 ## [2026-05-30]
 
 ### Fixed

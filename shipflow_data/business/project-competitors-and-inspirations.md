@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "contentflow"
 created: "2026-05-11"
-updated: "2026-05-24"
+updated: "2026-06-10"
 status: reviewed
 source_skill: sf-veille
 scope: "project-competitors-and-inspirations"
@@ -55,14 +55,16 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 |---|---:|:---:|---|
 | [Conscriba](https://betalist.com/startups/conscriba) | Concurrent / inspiration | 9/10 | Très proche sur la promesse "rendre un site lisible/actionnable par l'IA", conversion tracking et automatisation web. À benchmarker sur proposition de valeur, MCP, métriques et copywriting. |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration produit | 8/10 | Automatisation d'assets de release: utile pour générer captures, visuels sociaux, carrousels ou démos à partir d'un contenu source. |
-| [Igloo](https://betalist.com/startups/igloo-2) | Inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. |
+| [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration produit | 8/10 | Voix émotionnelle/multilingue: bonne brique pour transformer des contenus en audio ou narration vidéo. |
 | [Browser7](https://betalist.com/startups/browser7) | Inspiration architecture | 8/10 | Scraping JS, proxy, captcha: utile pour enrichissement de sources, audits concurrents ou collecte contrôlée. À traiter avec prudence légale. |
 | [Spec27](https://betalist.com/startups/spec27) | Inspiration validation agent | 8/10 | Très bon modèle pour tester les pipelines IA ContentFlow avec specs, fixtures et critères de non-régression. |
 | [Web-Analytics.ai](https://web-analytics.ai/) | Inspiration reporting | 8/10 | Résumés hebdomadaires en langage clair + alertes: très bon format pour rapports clients ou pilotage interne. |
 | Savvio (URL non fournie) | Inspiration produit | 8/10 | Transforme vidéo, article ou document en notes claires, carte visuelle d'idées et plan d'action étape par étape: très pertinent pour la boîte à idées, l'ingestion de sources longues et le suivi d'exécution. |
+| [Firecrawl Fire PDF](https://www.firecrawl.dev/blog/fire-pdf-launch) + [`/parse` endpoint](https://docs.firecrawl.dev/api-reference/endpoint/parse) | Inspiration outillage sources de contenu | 8/10 | Brique potentielle pour ingérer des PDFs, documents locaux ou sources non publiques dans la boîte à idées et les pipelines contenu, avec extraction Markdown/JSON et options de rétention à cadrer. |
 | [BundleUp](https://betalist.com/startups/bundleup) | Inspiration architecture | 7/10 | API unifiée pour intégrations: intéressant si ContentFlow agrège CMS, réseaux sociaux, analytics et outils de publication. |
 | [Clamp](https://betalist.com/startups/clamp) | Inspiration analytics | 7/10 | Analytics privacy-first + MCP: bon modèle pour faire remonter des signaux d'usage aux agents sans dashboard lourd. |
+| [DataForSEO LLM Mentions API](https://dataforseo.com/apis/ai-optimization-api/llm-mentions-api) | Inspiration veille marketing externalisée | 7/10 | Mesure les mentions de marque, domaine, concurrents et mots-clés dans les réponses LLM/AI search: utile pour cadrer une offre de veille marketing externalisée, GEO et visibilité IA dans ContentGlowz. |
 | [DataForSEO Live vs Standard](https://dataforseo.com/help-center/live-vs-standard-method/amp) | Inspiration API | 6/10 | Utile pour cadrer coûts/latence entre requêtes live et batch, mais article ancien: vérifier docs actuelles avant décision. |
 
 ## À garder en second rang

@@ -127,6 +127,12 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | 🟠 | Implement the dual-mode AI runtime all-providers spec; automated backend/Flutter checks pass, manual provider smoke remains | 🔄 in progress |
 | 🟠 | Implement Project Intelligence Engine Data Layer (contentglowz_lab) | 🔄 in progress |
 | 🟠 | Implement Google Search Console intelligence spec | 🔄 in progress |
+| 🟡 | Benchmark `models.dev` as an external AI model registry for BYOK/platform routing, pricing, context limits, output limits, capabilities, cache and fallback strategy | 📋 todo |
+| 🟡 | Benchmark Auriko-style LLM inference gateway patterns for multi-provider routing, OpenAI-compatible API, failover, budget controls, BYOK, analytics, cost/latency/throughput optimization and zero-markup pricing model | 📋 todo |
+| 🟡 | Benchmark Android 17 creator features for reels/shorts publishing patterns, mobile capture, Instagram quality, on-device editing, audio cleanup, tablet editing and APV implications | 📋 todo |
+| 🟡 | Benchmark DataForSEO LLM Mentions API as inspiration for outsourced marketing watch, GEO, AI visibility, brand/concurrent mentions and LLM-search reporting | 📋 todo |
+| 🟡 | Benchmark Firecrawl Fire PDF and `/parse` endpoint as future tooling for PDF/document ingestion and content-source pipelines | 📋 todo |
+| 🟡 | Benchmark Alpic as inspiration for exposing ContentGlowz operations through MCP servers / ChatGPT Apps and agent-facing content workflows | 📋 todo |
 | 🟠 | Implement Unified Project Asset Library spec (backend/client/editor asset picker slice verified; Image/Video/Audio integrations remain future work) | 🔄 in progress |
 | 🟠 | Implement AI asset understanding auto-tagging spec (understanding jobs, tags moderation, global candidate recommendations, attach flow, Flutter picker signals) | ✅ done |
 | 🟠 | Remotion Cloud Run/GCS renderer: local worker storage, backend signed playback URLs, reconciliation guardrails, Docker/runbook, and focused tests | ✅ done |
@@ -145,9 +151,19 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 |-----|------|--------|
 | 🟡 | DataForSEO account needs credits before DFS-backed flows can run without 402 responses | 📋 todo |
 | 🟡 | App Offline V3: uploads, deletes, and backend-first flows with explicit reconciliation strategy | 📋 todo |
+| 🟢 | Explore OpenPostern-style vendor risk scoring, alerts, and next-action UX as light inspiration for future monitoring patterns | 💤 deferred |
+| 🟢 | Explore Krotos-style video SFX enrichment for ContentGlowz videos | 💤 deferred |
 | 🟢 | Re-audit site SEO, accessibility, and copy after the Astro 6 preview deploy | 💤 deferred |
 
 🟡 [contentglowz] task: Explorer le pattern Savvio source longue -> notes, carte d'idées et plan d'action pour la boîte à idées | status: todo | area: idea-pool-source-synthesis | source: description utilisateur 2026-05-24
+🟡 [contentglowz] task: Benchmarker models.dev comme registre externe de modèles IA pour coûts, limites, capacités, BYOK et routing provider | status: todo | area: ai-runtime-model-registry | source: veille utilisateur https://models.dev/ 2026-06-10
+🟡 [contentglowz] task: Benchmarker Auriko comme inspiration gateway inference LLM pour routing multi-provider, failover, BYOK, budget controls et analytics | status: todo | area: ai-runtime-inference-gateway | source: veille utilisateur https://betalist.com/startups/auriko 2026-06-10
+🟡 [contentglowz] task: Benchmarker les fonctions createur Android 17 comme inspiration reels/shorts et publication mobile | status: todo | area: reels-shorts-mobile-workflow | source: Google Blog https://blog.google/products-and-platforms/platforms/android/android-17-creator-features/ 2026-05-12
+🟡 [contentglowz] task: Benchmarker DataForSEO LLM Mentions API comme inspiration de veille marketing externalisée, GEO, visibilité IA et reporting mentions marque/concurrents dans les réponses LLM | status: todo | area: outsourced-marketing-watch-ai-visibility | source: veille utilisateur https://dataforseo.com/apis/ai-optimization-api/llm-mentions-api 2026-06-10
+🟡 [contentglowz] task: Benchmarker Firecrawl Fire PDF et le endpoint /parse comme outillage futur pour ingérer PDFs, documents locaux/non publics et sources longues dans la boîte à idées et les pipelines contenu | status: todo | area: content-source-ingestion | source: veille utilisateur https://www.firecrawl.dev/blog/fire-pdf-launch et https://docs.firecrawl.dev/api-reference/endpoint/parse 2026-06-10
+🟡 [contentglowz] task: Benchmarker Alpic comme inspiration pour exposer ContentGlowz via MCP servers / ChatGPT Apps: création d'idées, ingestion de sources, briefs, calendrier et lancement de pipelines depuis un agent | status: todo | area: mcp-content-operations-interface | source: veille utilisateur https://alpic.ai/ et https://alpic.ai/blog/deploy-chatgpt-apps-on-alpic 2026-06-10
+🟢 [contentglowz] task: Explorer OpenPostern comme inspiration légère pour scoring fournisseur, alertes et prochaines actions dans des patterns de monitoring | status: deferred | area: monitoring-score-alerts-ux | source: veille utilisateur https://betalist.com/startups/openpostern et https://openpostern.com/ 2026-06-10
+🟢 [contentglowz] task: Explorer une intégration video-to-sound inspirée de Krotos pour enrichir les vidéos avec des effets sonores générés ou personnalisés | status: deferred | area: video-audio-sfx | source: veille utilisateur https://krotos.studio/ 2026-06-10
 
 ---
 
