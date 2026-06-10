@@ -61,28 +61,7 @@ final appThemePreferenceProvider =
     });
 
 String _normalizeApiBaseUrl(String? raw) {
-  final fallback = AppConfig.apiBaseUrl;
-  final value = raw?.trim();
-  if (value == null || value.isEmpty) {
-    return fallback;
-  }
-
-  final uri = Uri.tryParse(value);
-  if (uri == null ||
-      !uri.hasScheme ||
-      !(uri.scheme == 'http' || uri.scheme == 'https') ||
-      uri.host.isEmpty) {
-    return fallback;
-  }
-
-  if (uri.path.isNotEmpty && uri.path != '/') {
-    return fallback;
-  }
-
-  return uri
-      .replace(path: '', query: null, fragment: null)
-      .toString()
-      .replaceAll(RegExp(r'/$'), '');
+  return AppConfig.normalizeHttpOrigin(raw, fallback: AppConfig.apiBaseUrl);
 }
 
 class ApiBaseUrlNotifier extends StateNotifier<String> {

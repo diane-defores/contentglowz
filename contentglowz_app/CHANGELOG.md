@@ -15,6 +15,7 @@ The format is based on Keep a Changelog.
 ### Fixed
 - Coalesced concurrent app access refreshes for the same Clerk session so resume and manual refresh flows share one backend health/bootstrap pass.
 - Fixed the Clerk email sign-up OTP flow by switching the embedded SignUp component to hash routing on the static auth page and skipping duplicate mounts on the same node.
+- Fixed production API availability detection when `API_BASE_URL` is injected as a bare host such as `api.contentglowz.com`; the app now normalizes it to an HTTPS origin before health checks.
 - Fixed Android system Back in the app shell so pushed in-app routes pop to their parent before showing the app-exit confirmation dialog.
 
 ## [2026-05-04]

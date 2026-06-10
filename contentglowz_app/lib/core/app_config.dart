@@ -1,9 +1,14 @@
 class AppConfig {
   static const canonicalSiteUrl = 'https://contentglowz.com';
+  static const _defaultApiBaseUrl = 'https://api.contentglowz.com';
 
-  static const apiBaseUrl = String.fromEnvironment(
+  static const _apiBaseUrlRaw = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.contentglowz.com',
+    defaultValue: _defaultApiBaseUrl,
+  );
+  static final apiBaseUrl = normalizeHttpOrigin(
+    _apiBaseUrlRaw,
+    fallback: _defaultApiBaseUrl,
   );
 
   static const clerkPublishableKey = String.fromEnvironment(
@@ -118,6 +123,28 @@ class AppConfig {
       return false;
     }
     return configured.host == app.host;
+  }
+
+  static String normalizeHttpOrigin(String? raw, {required String fallback}) {
+    final value = raw?.trim();
+    if (value == null || value.isEmpty) {
+      return fallback;
+    }
+
+    final withScheme = value.contains('://') ? value : 'https://$value';
+    final uri = Uri.tryParse(withScheme);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !(uri.scheme == 'http' || uri.scheme == 'https') ||
+        uri.host.isEmpty ||
+        (uri.path.isNotEmpty && uri.path != '/')) {
+      return fallback;
+    }
+
+    return uri
+        .replace(path: '', query: null, fragment: null)
+        .toString()
+        .replaceAll(RegExp(r'/$'), '');
   }
 
   static String get effectiveSiteUrl {

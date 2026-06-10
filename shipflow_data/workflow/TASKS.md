@@ -5,7 +5,7 @@
 
 **Stack**: Astro marketing site, Flutter web/mobile app, FastAPI lab backend | **Phase**: Monorepo consolidated, site migrated, production hardening next
 
-**Top priority**: Ship the Clerk OTP fix and verify one hosted email sign-up, then continue the dual-mode AI runtime implementation.
+**Top priority**: Continue the dual-mode AI runtime implementation, then run the remaining bounded production proof tasks.
 
 ---
 
@@ -17,7 +17,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 | Task | Status | Impact | Effort | Why now |
 |------|--------|--------|--------|---------|
-| Shipper le fix Clerk OTP et vérifier qu'une inscription email hostée n'envoie qu'un seul code | 📋 todo | High | Low | The code fix is implemented locally, but auth trust is only proven after deploy on the hosted `/sign-up` path. This is bounded and should close before resuming larger feature work. |
+| Shipper le fix Clerk OTP et vérifier qu'une inscription email hostée n'envoie qu'un seul code | ✅ done | High | Low | 2026-06-10: hosted browser smoke passed and user reported full email OTP sign-up PASS with a single OTP received and accepted. |
 
 ### 🟠 P1 — High Priority
 
@@ -58,9 +58,9 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 ### Notes
 
-- Priority last updated: 2026-05-30
-- Immediate start recommendation: run `$sf-ship` or equivalent closure for the Clerk OTP fix, then verify one hosted email sign-up.
-- High-ROI bounded-effort opportunities: hosted OTP retest, Vercel npm log verification, feedback production checks, DataForSEO credits.
+- Priority last updated: 2026-06-10
+- Immediate start recommendation: resume dual-mode AI runtime verification/ship work, then continue bounded production proof tasks.
+- High-ROI bounded-effort opportunities: Vercel npm log verification, feedback production checks, DataForSEO credits.
 
 ---
 
@@ -98,7 +98,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | ✅ | Flutter core majors migration verified with analyze, tests, and build runner | ✅ done |
 | ✅ | Light-mode contrast regression reconciled as fixed in tracker | ✅ done |
 | ✅ | Corriger le double envoi d'email OTP Clerk pendant la création de compte email, probablement déclenché par une actualisation/re-mount impromptu de la page sign-up | ✅ done |
-| 🔴 | Shipper le fix Clerk OTP et vérifier sur l'app hostée qu'une inscription email n'envoie qu'un seul code | 📋 todo |
+| ✅ | Shipper le fix Clerk OTP et vérifier sur l'app hostée qu'une inscription email n'envoie qu'un seul code | ✅ done |
 | 🟠 | Add a simplified guided tour for “publish fast” first-run mode | 📋 todo |
 | 🟠 | Add a real account section in Settings for Clerk/account/provider management | 📋 todo |
 | 🟠 | Finish the secondary i18n pass on partially translated screens | 🔄 in progress |

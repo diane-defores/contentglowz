@@ -6,6 +6,7 @@ All notable changes to the ContentGlowz monorepo are documented here.
 
 ### Fixed
 - Fixed the Clerk email sign-up OTP flow by keeping SignUp verification steps inside the static auth page hash route and guarding against duplicate Clerk component mounts.
+- Fixed Flutter app API availability detection when production builds receive `API_BASE_URL` as `api.contentglowz.com` without an explicit `https://` scheme.
 
 ### Added
 - Added regression coverage for the dual-mode AI runtime platform branch and dispatch-pipeline provider matrices.

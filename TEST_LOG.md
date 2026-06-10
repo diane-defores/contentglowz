@@ -88,3 +88,16 @@
 - Bug pointer: none
 - Evidence pointer: `test-evidence/auth-otp-signup-2026-06-10/sign-up.png`; Playwright summary observed HTTP 200, final URL `/sign-up`, no console errors, no failed requests, `Ready.` status, and mounted email/password fields. Deployed build `b283b478e698ecdf4dbe868e05415e7977f11d84`, timestamp `2026-06-02T14:46:27Z`.
 - Follow-up: run full hosted OTP account creation with an accessible test inbox; do not log raw OTP.
+
+## 2026-06-10 - Hosted Clerk email OTP sign-up
+
+- Scope: hosted auth `/sign-up`
+- Environment: prod
+- Tester: user
+- Source: sf-test
+- Status: pass
+- Confidence: high
+- Result summary: User reported PASS for the full hosted email sign-up flow: one OTP email received, code accepted, account creation completed, and no redirect loop or Clerk error observed.
+- Bug pointer: none
+- Evidence pointer: user reply `PASS` on 2026-06-10 after OTP test instructions; no raw OTP or private email details stored.
+- Follow-up: /sf-verify hosted Clerk OTP sign-up fix
