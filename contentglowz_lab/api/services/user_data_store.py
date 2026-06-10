@@ -343,7 +343,7 @@ class UserDataStore:
                 displayName TEXT,
                 voice TEXT,
                 positioning TEXT,
-                values TEXT,
+                "values" TEXT,
                 currentChapterId TEXT,
                 createdAt INTEGER NOT NULL,
                 updatedAt INTEGER NOT NULL
@@ -1079,7 +1079,7 @@ class UserDataStore:
         self._ensure_connected()
         query = """
             SELECT id, userId, projectId, displayName, voice, positioning,
-                   values, currentChapterId, createdAt, updatedAt
+                   "values", currentChapterId, createdAt, updatedAt
             FROM CreatorProfile
             WHERE userId = ?
         """
@@ -1112,7 +1112,8 @@ class UserDataStore:
                     params.append(payload[key])
             for key in ("voice", "positioning", "values"):
                 if key in payload:
-                    update_fields.append(f"{key} = ?")
+                    column = '"values"' if key == "values" else key
+                    update_fields.append(f"{column} = ?")
                     params.append(_json_dump(payload[key]))
             params.append(existing["id"])
             await self.db_client.execute(
@@ -1124,7 +1125,7 @@ class UserDataStore:
                 """
                 INSERT INTO CreatorProfile (
                     id, userId, projectId, displayName, voice, positioning,
-                    values, currentChapterId, createdAt, updatedAt
+                    "values", currentChapterId, createdAt, updatedAt
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [

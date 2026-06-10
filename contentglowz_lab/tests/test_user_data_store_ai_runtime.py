@@ -115,6 +115,119 @@ async def test_github_store_operations_require_master_key(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_creator_profile_sql_quotes_values_identifier(monkeypatch):
+    store = UserDataStore()
+    store.db_client = AsyncMock()
+    store.db_client.execute = AsyncMock(
+        side_effect=[
+            SimpleNamespace(rows=[]),
+            SimpleNamespace(rows=[]),
+            SimpleNamespace(
+                rows=[
+                    (
+                        "profile-1",
+                        "user-1",
+                        "project-1",
+                        "Creator",
+                        None,
+                        None,
+                        '["pragmatic"]',
+                        None,
+                        1,
+                        1,
+                    )
+                ]
+            ),
+            SimpleNamespace(
+                rows=[
+                    (
+                        "profile-1",
+                        "user-1",
+                        "project-1",
+                        "Creator",
+                        None,
+                        None,
+                        '["pragmatic"]',
+                        None,
+                        1,
+                        1,
+                    )
+                ]
+            ),
+        ]
+    )
+
+    await store.ensure_creator_profile_table()
+    await store.upsert_creator_profile(
+        "user-1",
+        {
+            "projectId": "project-1",
+            "displayName": "Creator",
+            "values": ["pragmatic"],
+        },
+    )
+
+    sql_statements = [call.args[0] for call in store.db_client.execute.await_args_list]
+    assert '"values" TEXT' in sql_statements[0]
+    assert 'SELECT id, userId, projectId, displayName, voice, positioning,\n                   "values"' in sql_statements[1]
+    assert '"values", currentChapterId' in sql_statements[2]
+
+
+@pytest.mark.asyncio
+async def test_creator_profile_update_quotes_values_identifier():
+    store = UserDataStore()
+    store.db_client = AsyncMock()
+    store.db_client.execute = AsyncMock(
+        side_effect=[
+            SimpleNamespace(
+                rows=[
+                    (
+                        "profile-1",
+                        "user-1",
+                        "project-1",
+                        "Creator",
+                        None,
+                        None,
+                        "[]",
+                        None,
+                        1,
+                        1,
+                    )
+                ]
+            ),
+            SimpleNamespace(rows=[]),
+            SimpleNamespace(
+                rows=[
+                    (
+                        "profile-1",
+                        "user-1",
+                        "project-1",
+                        "Creator",
+                        None,
+                        None,
+                        '["clear"]',
+                        None,
+                        1,
+                        1,
+                    )
+                ]
+            ),
+        ]
+    )
+
+    await store.upsert_creator_profile(
+        "user-1",
+        {
+            "projectId": "project-1",
+            "values": ["clear"],
+        },
+    )
+
+    update_sql = store.db_client.execute.await_args_list[1].args[0]
+    assert 'SET updatedAt = ?, "values" = ? WHERE id = ?' in update_sql
+
+
+@pytest.mark.asyncio
 async def test_rotate_legacy_github_tokens_encrypts_plaintext_rows(monkeypatch):
     monkeypatch.setenv("USER_SECRETS_MASTER_KEY", "unit-test-master-key")
     monkeypatch.setattr(crypto_module, "_crypto", None)

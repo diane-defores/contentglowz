@@ -75,3 +75,16 @@
 - Bug pointer: BUG-2026-05-10-001 -> shipflow_data/workflow/bugs/contentflow_lab/BUG-2026-05-10-001.md
 - Evidence pointer: user diagnostics payload (build commit 438b10c9db15d2ad9a16d4288a595ba01468002c, generated 2026-05-17T10:57:04.026131Z).
 - Follow-up: /sf-fix BUG-2026-05-10-001
+
+## 2026-06-10 - Hosted Clerk sign-up pre-OTP smoke
+
+- Scope: hosted auth `/sign-up`
+- Environment: prod
+- Tester: Codex browser smoke
+- Source: sf-test
+- Status: pass
+- Confidence: high
+- Result summary: `https://app.contentglowz.com/sign-up` returns 200, deployed `clerk-runtime.js` contains the hash-routing OTP fix, Clerk SignUp mounts with email/password fields, and Playwright observed no console or failed-request errors before entering an email.
+- Bug pointer: none
+- Evidence pointer: `test-evidence/auth-otp-signup-2026-06-10/sign-up.png`; Playwright summary observed HTTP 200, final URL `/sign-up`, no console errors, no failed requests, `Ready.` status, and mounted email/password fields. Deployed build `b283b478e698ecdf4dbe868e05415e7977f11d84`, timestamp `2026-06-02T14:46:27Z`.
+- Follow-up: run full hosted OTP account creation with an accessible test inbox; do not log raw OTP.
