@@ -1,7 +1,11 @@
-name: Android APK
+name: ContentGlowz Android Checks and Manual APK
 
 on:
   push:
+    paths:
+      - "contentglowz_app/**"
+      - ".github/workflows/android-apk.yml"
+  pull_request:
     paths:
       - "contentglowz_app/**"
       - ".github/workflows/android-apk.yml"
@@ -28,8 +32,8 @@ env:
   SENTRY_DEBUG: ${{ vars.SENTRY_DEBUG || 'false' }}
 
 jobs:
-  build-apk:
-    name: Build release APK
+  flutter-checks:
+    name: Android checks
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 45
 
@@ -61,6 +65,42 @@ jobs:
         working-directory: ${{ env.APP_DIR }}
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
+      - name: Run tests
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter test
+
+  build-apk:
+    name: Android release APK build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+    needs:
+      - flutter-checks
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: ${{ env.FLUTTER_VERSION_FILE }}
+          cache: true
+
+      - name: Print Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+
       - name: Build APK
         working-directory: ${{ env.APP_DIR }}
         run: |
@@ -80,7 +120,6 @@ jobs:
             --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
 
       - name: Upload APK artifact
-        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: contentglowz-android-apk

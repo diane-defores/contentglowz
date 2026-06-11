@@ -10,4 +10,5 @@
 | 2026-04-27 | dependencies | —    | —      | —    | —   | —   | —         | C-   | —    | C-      | 0/2/2 (10 npm advisories, fix available) |
 | 2026-04-27 | dependencies (fix pass) | — | — | — | — | — | — | B- | — | B- | 0/1/1 (npm advisories 10 -> 1 moderate) |
 | 2026-04-28 | monorepo code audit | B | — | — | — | — | — | — | — | B | 0/1/1 |
+| 2026-06-11 | design-system authority | — | C- | — | — | — | — | — | — | C- | 0/1/2 (authority contract added; baseline site scan: 28 files / 36 candidates) |
 | 2026-05-10 | design tokens | — | C- | — | — | — | — | — | — | C- | 0/2/1 (shared source exists; 223 literal CSS type/spacing/motion values remain) |
