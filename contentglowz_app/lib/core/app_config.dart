@@ -31,6 +31,11 @@ class AppConfig {
     defaultValue: 'unknown',
   );
 
+  static const buildId = String.fromEnvironment(
+    'BUILD_ID',
+    defaultValue: 'unknown',
+  );
+
   static const buildEnvironment = String.fromEnvironment(
     'BUILD_ENVIRONMENT',
     defaultValue: 'unknown',
@@ -39,6 +44,16 @@ class AppConfig {
   static const buildTimestamp = String.fromEnvironment(
     'BUILD_TIMESTAMP',
     defaultValue: 'unknown',
+  );
+
+  static const buildAtParis = String.fromEnvironment(
+    'BUILD_AT_PARIS',
+    defaultValue: 'unknown',
+  );
+
+  static const buildAtUtc = String.fromEnvironment(
+    'BUILD_AT_UTC',
+    defaultValue: buildTimestamp,
   );
 
   static const sentryDsn = String.fromEnvironment(
@@ -164,5 +179,21 @@ class AppConfig {
       return fallback;
     }
     return parsed;
+  }
+
+  static String buildIdentityValue() {
+    final build = buildId.trim();
+    if (build.isNotEmpty && build != 'unknown') {
+      return build;
+    }
+    return buildCommitSha;
+  }
+
+  static List<String> buildIdentityHeader() {
+    return <String>[
+      'commit/build: ${buildIdentityValue()}',
+      'build_at_paris: $buildAtParis',
+      'build_at_utc: $buildAtUtc',
+    ];
   }
 }

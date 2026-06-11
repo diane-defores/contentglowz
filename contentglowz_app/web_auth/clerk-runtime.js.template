@@ -3,8 +3,11 @@
     publishableKey: '__CLERK_PUBLISHABLE_KEY__',
     configuredAppWebUrl: '__APP_WEB_URL__',
     buildCommitSha: '__BUILD_COMMIT_SHA__',
+    buildId: '__BUILD_ID__',
     buildEnvironment: '__BUILD_ENVIRONMENT__',
     buildTimestamp: '__BUILD_TIMESTAMP__',
+    buildAtParis: '__BUILD_AT_PARIS__',
+    buildAtUtc: '__BUILD_AT_UTC__',
   };
 
   const state = {
@@ -320,8 +323,11 @@
   function getDiagnostics() {
     return {
       buildCommitSha: config.buildCommitSha,
+      buildId: config.buildId,
       buildEnvironment: config.buildEnvironment,
       buildTimestamp: config.buildTimestamp,
+      buildAtParis: config.buildAtParis,
+      buildAtUtc: config.buildAtUtc,
       configuredAppWebUrl: config.configuredAppWebUrl,
       configuredAppHost: configuredAppHost(),
       currentOrigin: window.location.origin,

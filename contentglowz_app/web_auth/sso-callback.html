@@ -53,8 +53,12 @@
         function buildDiagnostics() {
           const diagnostics = bridge.getDiagnostics();
           return [
+            `commit/build: ${diagnostics.buildId || diagnostics.buildCommitSha}`,
+            `build_at_paris: ${diagnostics.buildAtParis}`,
+            `build_at_utc: ${diagnostics.buildAtUtc}`,
             'ContentGlowz OAuth callback diagnostics',
             `Build commit: ${diagnostics.buildCommitSha}`,
+            `Build id: ${diagnostics.buildId}`,
             `Build environment: ${diagnostics.buildEnvironment}`,
             `Build timestamp: ${diagnostics.buildTimestamp}`,
             `Configured app URL: ${diagnostics.configuredAppWebUrl}`,
@@ -89,7 +93,11 @@
           const diagnostics = bridge.getDiagnostics();
           metaEl.replaceChildren(
             ...[
+            `commit/build: ${diagnostics.buildId || diagnostics.buildCommitSha}`,
+            `build_at_paris: ${diagnostics.buildAtParis}`,
+            `build_at_utc: ${diagnostics.buildAtUtc}`,
             `Build commit: ${diagnostics.buildCommitSha}`,
+            `Build id: ${diagnostics.buildId}`,
             `Build environment: ${diagnostics.buildEnvironment}`,
             `Build timestamp: ${diagnostics.buildTimestamp}`,
             `Current URL: ${diagnostics.currentUrl}`,

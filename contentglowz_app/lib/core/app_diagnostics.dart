@@ -148,8 +148,10 @@ class AppDiagnostics {
     );
     final sanitizedContext = _sanitizeContext(context);
     final lines = <String>[
+      ...AppConfig.buildIdentityHeader(),
       title,
       'Generated at: ${DateTime.now().toUtc().toIso8601String()}',
+      'Build id: ${AppConfig.buildId}',
       'Build commit: ${AppConfig.buildCommitSha}',
       'Build environment: ${AppConfig.buildEnvironment}',
       'Build timestamp: ${AppConfig.buildTimestamp}',
