@@ -1,8 +1,9 @@
 ---
 title: "Content Transformation Strategy"
 description: "Internal planning document for transforming technical documentation into SEO content."
+locale: "fr"
 draft: true
----
+--- 
 
 # 📝 Stratégie de Transformation Documentation → Contenu Website
 

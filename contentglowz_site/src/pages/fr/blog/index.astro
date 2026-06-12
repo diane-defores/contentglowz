@@ -1,21 +1,20 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navbar from '../../components/Navbar.astro';
-import Footer from '../../components/Footer.astro';
+import Layout from '../../../layouts/Layout.astro';
+import Navbar from '../../../components/Navbar.astro';
+import Footer from '../../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 import {
   filterBlogEntriesByLocale,
   formatBlogDate,
-  getBlogBasePath,
   getBlogIndexAlternates,
   getBlogLabels,
   getBlogPostPath,
-} from '../../data/blogContent';
+} from '../../../data/blogContent';
 
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-const posts = filterBlogEntriesByLocale(allPosts, 'en').sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const labels = getBlogLabels('en');
-const blogMeta = getBlogIndexAlternates('en');
+const posts = filterBlogEntriesByLocale(allPosts, 'fr').sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const labels = getBlogLabels('fr');
+const blogMeta = getBlogIndexAlternates('fr');
 
 const featured = posts.find((p) => p.data.featured);
 const rest = posts.filter((p) => p.id !== featured?.id);
@@ -25,12 +24,11 @@ const rest = posts.filter((p) => p.id !== featured?.id);
   title="Blog — ContentGlowz"
   description={labels.blogDescription}
   ogType="website"
-  locale="en"
+  locale="fr"
   canonicalUrl={blogMeta.canonicalUrl}
   alternateLocales={blogMeta.alternateLocales}
-  xDefaultUrl={blogMeta.xDefaultUrl}
 >
-  <Navbar locale="en" />
+  <Navbar locale="fr" />
 
   <main id="main-content" class="blog-index">
     <div class="blog-header">
@@ -38,11 +36,10 @@ const rest = posts.filter((p) => p.id !== featured?.id);
       <p>{labels.blogDescription}</p>
     </div>
 
-    <!-- Featured post -->
     {featured && (
-      <a href={getBlogPostPath(featured, 'en')} class="featured-card">
+      <a href={getBlogPostPath(featured, 'fr')} class="featured-card">
         {featured.data.cover && (
-          <img src={featured.data.cover} alt={`Featured: ${featured.data.title}`} width="800" height="420" />
+          <img src={featured.data.cover} alt={`À la une : ${featured.data.title}`} width="800" height="420" />
         )}
         <div class="featured-body">
           <div class="featured-eyebrow">
@@ -57,22 +54,21 @@ const rest = posts.filter((p) => p.id !== featured?.id);
             <span>{featured.data.byline}</span>
             <span>·</span>
             <time datetime={featured.data.date.toISOString()}>
-              {formatBlogDate(featured.data.date, 'en', 'long')}
+              {formatBlogDate(featured.data.date, 'fr', 'long')}
             </time>
           </div>
         </div>
       </a>
     )}
 
-    <!-- Post grid -->
     {rest.length > 0 && (
       <section class="posts-section">
         <h2 class="section-title">{labels.allArticles}</h2>
         <div class="posts-grid">
           {rest.map((post) => (
-            <a href={getBlogPostPath(post, 'en')} class="post-card">
+            <a href={getBlogPostPath(post, 'fr')} class="post-card">
               {post.data.cover && (
-                <img src={post.data.cover} alt={`Illustration for ${post.data.title}`} width="400" height="210" />
+                <img src={post.data.cover} alt={`Illustration pour ${post.data.title}`} width="400" height="210" />
               )}
               <div class="post-card-body">
                 {post.data.tags?.slice(0, 2).map((t) => (
@@ -82,7 +78,7 @@ const rest = posts.filter((p) => p.id !== featured?.id);
                 <p>{post.data.description}</p>
                 <div class="post-meta">
                   <time datetime={post.data.date.toISOString()}>
-                    {formatBlogDate(post.data.date, 'en', 'short')}
+                    {formatBlogDate(post.data.date, 'fr', 'short')}
                   </time>
                 </div>
               </div>
@@ -95,19 +91,19 @@ const rest = posts.filter((p) => p.id !== featured?.id);
     {posts.length === 0 && (
       <div class="empty-state">
         <p>{labels.noArticles}</p>
-        <a href="/" class="btn">{labels.backHome}</a>
+        <a href="/fr" class="btn">{labels.backHome}</a>
       </div>
     )}
   </main>
 
-  <Footer locale="en" />
+  <Footer locale="fr" />
 </Layout>
 
 <style>
   .blog-index {
     max-width: var(--container-max-width);
     margin: 0 auto;
-        padding: var(--space-24) var(--space-8) var(--space-20);
+    padding: var(--space-24) var(--space-8) var(--space-20);
   }
 
   .blog-header {
@@ -124,7 +120,6 @@ const rest = posts.filter((p) => p.id !== featured?.id);
     color: var(--color-gray);
   }
 
-  /* Featured card */
   .featured-card {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -151,7 +146,7 @@ const rest = posts.filter((p) => p.id !== featured?.id);
   }
 
   .featured-body {
-        padding: var(--space-10) var(--space-8);
+    padding: var(--space-10) var(--space-8);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -195,7 +190,6 @@ const rest = posts.filter((p) => p.id !== featured?.id);
     color: var(--color-gray);
   }
 
-  /* Tags */
   .tag {
     background: var(--color-light-gray);
     color: var(--color-gray);
@@ -205,7 +199,6 @@ const rest = posts.filter((p) => p.id !== featured?.id);
     font-weight: 500;
   }
 
-  /* Posts grid */
   .section-title {
     font-size: var(--text-base);
     font-weight: 600;
@@ -234,67 +227,57 @@ const rest = posts.filter((p) => p.id !== featured?.id);
   }
 
   .post-card:hover {
-    box-shadow: var(--shadow-card);
-    transform: translateY(calc(var(--space-1) * -0.5));
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(calc(var(--space-1) * -0.75));
   }
 
   .post-card img {
     width: var(--size-full);
-    height: calc(var(--space-20) * 2.5);
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     display: block;
   }
 
   .post-card-body {
-    padding: var(--space-6);
+    padding: var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    flex: 1;
+    gap: var(--space-3);
+    height: 100%;
   }
 
   .post-card-body h3 {
-    font-size: var(--text-base);
+    font-size: var(--text-lg);
     line-height: var(--leading-snug);
-    margin-top: var(--space-1);
   }
 
   .post-card-body p {
-    font-size: var(--text-sm);
     color: var(--color-gray);
-    line-height: var(--leading-copy);
-    flex: 1;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
   }
 
-  /* Empty state */
   .empty-state {
     text-align: center;
-        padding: var(--space-20) var(--space-8);
     color: var(--color-gray);
+    padding: var(--space-12) 0;
   }
 
   .btn {
-    display: inline-block;
-    margin-top: var(--space-5);
-    background: var(--color-primary);
-    color: var(--color-white);
-        padding: var(--button-padding-y) var(--space-8);
-    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--space-4);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: var(--color-text-on-dark);
+    padding: var(--button-padding-y) var(--space-8);
+    border-radius: var(--button-radius);
     font-weight: 600;
   }
 
-  /* Responsive */
-  @media (max-width: 700px) {
+  @media (max-width: 900px) {
     .featured-card {
       grid-template-columns: 1fr;
-    }
-
-    .featured-card img {
-      min-height: calc(var(--space-20) * 2.75);
     }
   }
 </style>

@@ -16,6 +16,7 @@
 | 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using the ready spec | ✅ done |
 | 🟠 | Validate `npm run build` after migration and compare generated content routes, sitemap, `robots.txt`, and auth handoff pages | ✅ done |
 | 🟡 | Update site docs and changelog after the migration ships | ✅ done |
+| 🟠 | Ship bilingual `fr/en` blog routing with locale-aware metadata and locale-filtered indexes, tags, and articles | ✅ done |
 | 🟠 | Verify post-cleanup Vercel build logs use `npm@11.12.1` after ship | 📋 todo |
 
 ---

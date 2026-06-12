@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "contentglowz_site"
 created: "2026-06-12"
 created_at: "2026-06-12 13:10:00 UTC"
 updated: "2026-06-12"
-updated_at: "2026-06-12 13:10:00 UTC"
+updated_at: "2026-06-12 12:39:00 UTC"
 status: ready
 source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
@@ -95,7 +95,8 @@ Le site publie les articles anglais du blog sous `/blog/...` et les articles fra
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
+| 2026-06-12 12:39:00 UTC | 001-sf-build | GPT-5 Codex | Implemented, verified, closed, and shipped bilingual blog routing with locale-aware content filtering, metadata, and shared blog links/CTAs. | shipped | /405-sf-prod contentglowz_site |
 
 ## Current Chantier Flow
 
-100-sf-spec done -> 101-sf-ready ready -> 102-sf-start not launched -> 103-sf-verify not launched -> 104-sf-end not launched -> 005-sf-ship not launched
+100-sf-spec done -> 101-sf-ready ready -> 102-sf-start done -> 103-sf-verify done -> 104-sf-end integrated-via-001 -> 005-sf-ship shipped

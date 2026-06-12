@@ -36,6 +36,10 @@ const localizedCoreRoutes = {
     en: '/privacy',
     fr: '/fr/privacy',
   },
+  blog: {
+    en: '/blog',
+    fr: '/fr/blog',
+  },
 } as const;
 
 const localeLabels = {
@@ -150,7 +154,7 @@ export function getNavbarContent(locale: Locale) {
       { href: `${homeHref}#pricing`, label: labels.pricing },
       { href: `${homeHref}#who-its-for`, label: labels.whoItsFor },
       { href: `${homeHref}#faq`, label: labels.faq },
-      { href: '/blog', label: labels.blog },
+      { href: locale === 'fr' ? '/fr/blog' : '/blog', label: labels.blog },
     ] satisfies NavLink[],
     appLinkLabel: labels.openApp,
     authLinkLabel: labels.continueWithGoogle,
@@ -177,7 +181,7 @@ export function getFooterContent(locale: Locale) {
       },
       {
         heading: labels.resources,
-        links: [{ href: '/blog', label: labels.blog }],
+        links: [{ href: locale === 'fr' ? '/fr/blog' : '/blog', label: labels.blog }],
       },
       {
         heading: labels.legal,

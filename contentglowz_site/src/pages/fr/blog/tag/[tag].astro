@@ -1,20 +1,20 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import Navbar from '../../../components/Navbar.astro';
-import Footer from '../../../components/Footer.astro';
+import Layout from '../../../../layouts/Layout.astro';
+import Navbar from '../../../../components/Navbar.astro';
+import Footer from '../../../../components/Footer.astro';
 import { getCollection } from 'astro:content';
 import {
   filterBlogEntriesByLocale,
   formatBlogDate,
   getBlogBasePath,
-  getBlogPostPath,
   getBlogLabels,
+  getBlogPostPath,
   getTagSlug,
-} from '../../../data/blogContent';
+} from '../../../../data/blogContent';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
-  const localizedPosts = filterBlogEntriesByLocale(posts, 'en');
+  const localizedPosts = filterBlogEntriesByLocale(posts, 'fr');
   const tags = new Map<string, string>();
 
   localizedPosts.forEach((post) => {
@@ -36,57 +36,57 @@ export async function getStaticPaths() {
 }
 
 const { label, posts } = Astro.props;
-const labels = getBlogLabels('en');
+const labels = getBlogLabels('fr');
 ---
 
 <Layout
-  title={`${label} — ContentGlowz Blog`}
+  title={`${label} — Blog ContentGlowz`}
   description={labels.tagDescription(label)}
-  locale="en"
-  canonicalUrl={`/blog/tag/${getTagSlug(label)}`}
+  locale="fr"
+  canonicalUrl={`/fr/blog/tag/${getTagSlug(label)}`}
 >
-  <Navbar locale="en" />
+  <Navbar locale="fr" />
 
   <header class="tag-header">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">{labels.home}</a>
+      <a href="/fr">{labels.home}</a>
       <span>›</span>
-      <a href={getBlogBasePath('en')}>{labels.blogTitle}</a>
+      <a href={getBlogBasePath('fr')}>{labels.blogTitle}</a>
       <span>›</span>
       <span>{label}</span>
     </nav>
   </header>
 
   <main id="main-content" class="tag-main">
-    <h1>{labels.tagTitle}: {label}</h1>
+    <h1>{labels.tagTitle} : {label}</h1>
     <p class="count">{labels.articleCount(posts.length)}</p>
 
     <div class="posts-grid">
       {posts.map((post) => (
-        <a href={getBlogPostPath(post, 'en')} class="post-card">
+        <a href={getBlogPostPath(post, 'fr')} class="post-card">
           {post.data.cover && (
-            <img src={post.data.cover} alt={`Illustration for ${post.data.title}`} width="400" height="210" />
+            <img src={post.data.cover} alt={`Illustration pour ${post.data.title}`} width="400" height="210" />
           )}
           <div class="post-card-body">
             <h2>{post.data.title}</h2>
             <p>{post.data.description}</p>
             <time datetime={post.data.date.toISOString()}>
-              {formatBlogDate(post.data.date, 'en', 'long')}
+              {formatBlogDate(post.data.date, 'fr', 'long')}
             </time>
           </div>
         </a>
       ))}
     </div>
 
-    <a href={getBlogBasePath('en')} class="back-link">← {labels.backToBlog}</a>
+    <a href={getBlogBasePath('fr')} class="back-link">← {labels.backToBlog}</a>
   </main>
 
-  <Footer locale="en" />
+  <Footer locale="fr" />
 </Layout>
 
 <style>
   .tag-header {
-        padding: var(--space-20) var(--space-8) var(--space-6);
+    padding: var(--space-20) var(--space-8) var(--space-6);
     border-bottom: thin solid var(--color-border-light);
   }
 
@@ -105,7 +105,7 @@ const labels = getBlogLabels('en');
   .tag-main {
     max-width: calc(var(--container-max-width) - var(--space-20) * 2.5);
     margin: 0 auto;
-        padding: var(--space-8) var(--space-8) var(--space-16);
+    padding: var(--space-8) var(--space-8) var(--space-16);
   }
 
   .tag-main h1 {
@@ -147,7 +147,7 @@ const labels = getBlogLabels('en');
   }
 
   .post-card-body {
-        padding: var(--space-5) var(--space-5) var(--space-5) var(--space-0);
+    padding: var(--space-5) var(--space-5) var(--space-5) var(--space-0);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);

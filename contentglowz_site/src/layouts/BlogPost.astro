@@ -6,13 +6,32 @@ import CtaBanner from '../components/CtaBanner.astro';
 import { siteUrl } from '../config/site';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import {
+  formatBlogDate,
+  getBlogBasePath,
+  getBlogLabels,
+  getBlogPostPath,
+  getTagSlug,
+} from '../data/blogContent';
+import type { HreflangLink, Locale } from '../data/siteShell';
 
 interface Props {
   post: CollectionEntry<'blog'> | CollectionEntry<'ai-agents'> | CollectionEntry<'platform'> | CollectionEntry<'seo-strategy'> | CollectionEntry<'startup-journey'> | CollectionEntry<'technical-optimization'> | CollectionEntry<'tutorials'>;
   headings?: { depth: number; slug: string; text: string }[];
+  locale?: Locale;
+  canonicalUrl?: string;
+  alternateLocales?: HreflangLink[];
+  xDefaultUrl?: string;
 }
 
-const { post, headings: renderedHeadings = [] } = Astro.props;
+const {
+  post,
+  headings: renderedHeadings = [],
+  locale = 'en',
+  canonicalUrl,
+  alternateLocales = [],
+  xDefaultUrl,
+} = Astro.props;
 const { title, description, date, cover, byline, tags = [], featured } = post.data;
 
 // Reading time: ~200 words/minute
@@ -23,25 +42,40 @@ const headings = renderedHeadings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
 const hasToc = headings.length >= 3;
+const labels = getBlogLabels(locale);
 
 // Collection-aware section name and path
 const collectionId = post.collection;
-const sectionLabels: Record<string, string> = {
-  blog: 'Blog',
-  'ai-agents': 'AI Agents',
-  platform: 'Platform',
-  'seo-strategy': 'SEO Strategy',
-  'startup-journey': 'Startup Journey',
-  'technical-optimization': 'Technical Optimization',
-  tutorials: 'Tutorials',
+const sectionLabels: Record<Locale, Record<string, string>> = {
+  en: {
+    blog: 'Blog',
+    'ai-agents': 'AI Agents',
+    platform: 'Platform',
+    'seo-strategy': 'SEO Strategy',
+    'startup-journey': 'Startup Journey',
+    'technical-optimization': 'Technical Optimization',
+    tutorials: 'Tutorials',
+  },
+  fr: {
+    blog: 'Blog',
+    'ai-agents': 'Agents IA',
+    platform: 'Plateforme',
+    'seo-strategy': 'Stratégie SEO',
+    'startup-journey': 'Parcours startup',
+    'technical-optimization': 'Optimisation technique',
+    tutorials: 'Tutoriels',
+  },
 };
-const sectionLabel = sectionLabels[collectionId] ?? 'Blog';
-const sectionPath = `/${collectionId}`;
+const sectionLabel = sectionLabels[locale][collectionId] ?? 'Blog';
+const sectionPath = collectionId === 'blog' ? getBlogBasePath(locale) : `/${collectionId}`;
 
 // Related posts: same collection, same tags, exclude self
 const allPosts = await getCollection(collectionId as any, ({ data }: any) => !data.draft);
 const related = allPosts
-  .filter((p: any) => p.id !== post.id && p.data.tags?.some((t: string) => tags.includes(t)))
+  .filter((p: any) => {
+    const sameLocale = collectionId !== 'blog' || (p.data.locale ?? 'en') === locale;
+    return sameLocale && p.id !== post.id && p.data.tags?.some((t: string) => tags.includes(t));
+  })
   .sort((a: any, b: any) => {
     const sharedA = a.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
     const sharedB = b.data.tags?.filter((t: string) => tags.includes(t)).length ?? 0;
@@ -49,11 +83,7 @@ const related = allPosts
   })
   .slice(0, 3);
 
-const formattedDate = date.toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const formattedDate = formatBlogDate(date, locale, 'long');
 
 const resolvedSiteUrl = Astro.site?.toString().replace(/\/$/, '') ?? siteUrl;
 
@@ -61,7 +91,7 @@ const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Home", "item": resolvedSiteUrl },
+    { "@type": "ListItem", "position": 1, "name": labels.home, "item": locale === 'fr' ? `${resolvedSiteUrl}/fr` : resolvedSiteUrl },
     { "@type": "ListItem", "position": 2, "name": sectionLabel, "item": `${resolvedSiteUrl}${sectionPath}` },
     { "@type": "ListItem", "position": 3, "name": title, "item": `${resolvedSiteUrl}${sectionPath}/${post.id}` },
   ],
@@ -73,6 +103,10 @@ const breadcrumbSchema = {
   description={description}
   ogImage={cover ?? undefined}
   ogType="article"
+  locale={locale}
+  canonicalUrl={canonicalUrl ?? (collectionId === 'blog' ? getBlogPostPath(post as CollectionEntry<'blog'>, locale) : undefined)}
+  alternateLocales={alternateLocales}
+  xDefaultUrl={xDefaultUrl}
   publishDate={date}
   author={byline}
   tags={tags}
@@ -81,7 +115,7 @@ const breadcrumbSchema = {
   <Navbar />
   <header class="blog-header">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Home</a>
+      <a href={locale === 'fr' ? '/fr' : '/'}>{labels.home}</a>
       <span>›</span>
       <a href={sectionPath}>{sectionLabel}</a>
     </nav>
@@ -100,8 +134,8 @@ const breadcrumbSchema = {
       <div class="article-header">
         {tags.length > 0 && (
           <div class="tags">
-            {tags.slice(0, 4).map((tag) => (
-              <a href={`/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}`} class="tag">
+                {tags.slice(0, 4).map((tag) => (
+              <a href={`${sectionPath}/tag/${getTagSlug(tag)}`} class="tag">
                 {tag}
               </a>
             ))}
@@ -110,11 +144,11 @@ const breadcrumbSchema = {
         <h1>{title}</h1>
         <p class="article-description">{description}</p>
         <div class="article-meta">
-          <span class="author">By {byline}</span>
+          <span class="author">{labels.by} {byline}</span>
           <span class="separator">·</span>
           <time datetime={date.toISOString()}>{formattedDate}</time>
           <span class="separator">·</span>
-          <span class="reading-time">{readingTime} min read</span>
+          <span class="reading-time">{readingTime} {labels.minRead}</span>
         </div>
       </div>
 
@@ -122,7 +156,7 @@ const breadcrumbSchema = {
       <div class="article-body" class:list={[{ 'has-toc': hasToc }]}>
         {hasToc && (
           <aside class="toc">
-            <p class="toc-title">Contents</p>
+            <p class="toc-title">{labels.contents}</p>
             <nav>
               <ol>
                 {headings.map(({ depth, slug, text }) => (
@@ -141,12 +175,12 @@ const breadcrumbSchema = {
     </article>
 
     <!-- Product CTA -->
-    <CtaBanner />
+    <CtaBanner locale={locale} />
 
     <!-- Related posts -->
     {related.length > 0 && (
       <section class="related">
-        <h2>Related articles</h2>
+        <h2>{labels.relatedArticles}</h2>
         <div class="related-grid">
           {related.map((rp) => (
             <a href={`${sectionPath}/${rp.id}`} class="related-card">
@@ -159,7 +193,7 @@ const breadcrumbSchema = {
                 ))}
                 <h3>{rp.data.title}</h3>
                 <p>{rp.data.description}</p>
-                <span class="read-more">Read article →</span>
+                <span class="read-more">{labels.readArticle} →</span>
               </div>
             </a>
           ))}
@@ -169,10 +203,10 @@ const breadcrumbSchema = {
 
     <!-- Back link -->
     <div class="back-link">
-      <a href={sectionPath}>← Back to {sectionLabel}</a>
+      <a href={sectionPath}>← {labels.backToSection} {sectionLabel}</a>
     </div>
   </main>
-  <Footer />
+  <Footer locale={locale} />
 </Layout>
 
 <style>

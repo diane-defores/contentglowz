@@ -1,10 +1,11 @@
 ---
 title: "Newsletter Robot : Lecture d'Emails Gratuite avec IMAP"
 description: "Le Newsletter Robot supporte maintenant la connexion IMAP directe. Analysez vos newsletters concurrentes sans frais supplémentaires."
+locale: "fr"
 pubDate: "2025-02-03"
 author: "ContentGlowz Team"
 tags: ["newsletter", "imap", "automatisation", "nouveauté"]
----
+--- 
 
 # Lecture d'Emails Gratuite : Le Newsletter Robot Passe à IMAP
 

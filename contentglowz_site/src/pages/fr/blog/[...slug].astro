@@ -1,11 +1,11 @@
 ---
 import { getCollection, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
-import { filterBlogEntriesByLocale } from '../../data/blogContent';
+import BlogPost from '../../../layouts/BlogPost.astro';
+import { filterBlogEntriesByLocale } from '../../../data/blogContent';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
-  return filterBlogEntriesByLocale(posts, 'en').map((post) => ({
+  return filterBlogEntriesByLocale(posts, 'fr').map((post) => ({
     params: { slug: post.id },
     props: { post },
   }));
@@ -15,6 +15,6 @@ const { post } = Astro.props;
 const { Content, headings } = await render(post);
 ---
 
-<BlogPost post={post} headings={headings} locale="en" canonicalUrl={`/blog/${post.id}`}>
+<BlogPost post={post} headings={headings} locale="fr" canonicalUrl={`/fr/blog/${post.id}`}>
   <Content />
 </BlogPost>

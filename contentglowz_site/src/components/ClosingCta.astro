@@ -1,12 +1,14 @@
 ---
 import { appSignInUrl } from '../config/site';
 import type { ClosingCtaContent } from '../data/homepageContent';
+import { detectLocaleFromPath } from '../data/siteShell';
 
 interface Props {
   content: ClosingCtaContent;
 }
 
 const { content } = Astro.props;
+const locale = detectLocaleFromPath(Astro.url.pathname);
 ---
 
 <section class="closing-cta">
@@ -15,7 +17,7 @@ const { content } = Astro.props;
     <p>{content.body}</p>
     <div class="closing-cta-buttons">
       <a href={appSignInUrl} class="btn-primary">{content.primaryCta}</a>
-      <a href="/blog" class="btn-secondary">{content.secondaryCta}</a>
+      <a href={locale === 'fr' ? '/fr/blog' : '/blog'} class="btn-secondary">{content.secondaryCta}</a>
     </div>
     <p class="closing-note">{content.note}</p>
   </div>

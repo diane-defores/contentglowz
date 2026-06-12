@@ -1,12 +1,25 @@
 ---
+import {
+  detectLocaleFromPath,
+  type Locale,
+} from '../data/siteShell';
+import { getBlogLabels } from '../data/blogContent';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale } = Astro.props;
+const currentLocale = locale ?? detectLocaleFromPath(Astro.url.pathname);
+const labels = getBlogLabels(currentLocale);
 ---
 
 <aside class="cta-banner">
   <div class="cta-banner-content">
     <p class="cta-banner-text">
-      <strong>Stop losing ideas in scattered tools.</strong> ContentGlowz turns them into reviewed articles, social posts, and newsletters with you in control.
+      <strong>{labels.ctaStrong}</strong> {labels.ctaText.replace(`${labels.ctaStrong} `, '')}
     </p>
-    <a href="/#pricing" class="cta-banner-btn">Start Free</a>
+    <a href={currentLocale === 'fr' ? '/fr#pricing' : '/#pricing'} class="cta-banner-btn">{labels.ctaButton}</a>
   </div>
 </aside>
 

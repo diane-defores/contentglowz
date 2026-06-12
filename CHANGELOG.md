@@ -68,6 +68,7 @@ All notable changes to the ContentGlowz monorepo are documented here.
 
 ### Changed
 - Added bilingual `fr/en` core routes for the marketing site with English at `/`, French under `/fr`, localized homepage/privacy/handoff copy, and locale-aware `lang`, canonical, `og:url`, `hreflang`, and `x-default` metadata on the shipped core pages.
+- Added bilingual `fr/en` blog routing with English articles under `/blog`, French articles under `/fr/blog`, locale-filtered blog indexes and tag pages, and locale-aware blog metadata plus localized shared blog CTAs/links.
 - Reprioritized ContentGlowz trackers so feedback production checks are no longer treated as the next blocking win after the admin allowlist was configured.
 - Reconnected ContentGlowz site and app Vercel auto-deploys to the organization monorepo and verified deployment from `main`.
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.

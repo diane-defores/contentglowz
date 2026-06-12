@@ -86,6 +86,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/contentglowz_site/SPEC-migrate-astro-v6.md` | ✅ done |
 | 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | ✅ done |
 | ✅ | Ship bilingual `fr/en` core-page routing and locale-aware SEO metadata for `/`, `/launch`, `/sign-in`, `/sign-up`, and `/privacy` | ✅ done |
+| ✅ | Ship bilingual `fr/en` blog routing with English at `/blog`, French at `/fr/blog`, locale-aware metadata, and locale-filtered blog indexes/tags/articles | ✅ done |
 | 🟠 | Verify post-cleanup Vercel build logs use `npm@11.12.1` after ship | 📋 todo |
 | ✅ | Website auth handoff, resilience messaging, and brand documentation are in place | ✅ done |
 
@@ -180,3 +181,6 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | 🟠 | Rationaliser les design tokens orphelins ou non consommés (`--button-*`, `--space-mobile-*`, `--breakpoint-tablet/desktop`, etc.) pour réduire la dérive | 📋 todo |
 | 🟠 | Corriger la cohérence d’échelle typo/spacing (ratios instables) et figer une règle modulaire unique (Utopia/base ratio) | 📋 todo |
 | 🟡 | Passer vers un format DTCG (`tokens.json` avec `$value/$type`) puis générer automatiquement Flutter/Astro depuis cette source unique | 📋 todo |
+🟠 [contentglowz_app] task: Retirer les dependances Flutter directes non consommees et la pile codegen associee si elle est vraiment morte (`riverpod_annotation`, `json_annotation`, `cached_network_image`, `responsive_framework`, plus `build_runner`/`json_serializable`/`riverpod_generator` si confirme) | status: todo | area: deps-unused-direct
+🟠 [contentglowz_app] task: Durcir la chaine d'installation Vercel pour Flutter sans `git clone` flottant de `stable` et avec une version/outillage pinnes et verifies | status: todo | area: deps-supply-chain-install
+🟡 [contentglowz_app] task: Appliquer les mises a jour pub patch/minor non bloquantes du lot 2026-06-12 (`audioplayers`, `go_router`, `google_fonts`, `sentry_flutter`, `build_runner`) puis rerun `flutter analyze` et les tests cibles | status: todo | area: deps-patch-minor-updates

@@ -1,11 +1,12 @@
 ---
 title: "Newsletter Robot : Comment l'IA Lit Vos Emails et Crée du Contenu qui Convertit"
 description: "Automatisez la veille concurrentielle et la rédaction de newsletters avec CrewAI + Composio. Guide complet avec code, intégration Gmail, et workflow multi-agents."
+locale: "fr"
 publishDate: "2026-02-02"
 tags: ["newsletter", "ai automation", "crewai", "composio", "gmail api", "email marketing", "content automation"]
 heroImage: "/blog/newsletter-robot-hero.jpg"
 featured: true
----
+--- 
 
 # Newsletter Robot : Comment l'IA Lit Vos Emails et Crée du Contenu qui Convertit
 

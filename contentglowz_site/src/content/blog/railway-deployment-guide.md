@@ -1,10 +1,11 @@
 ---
 title: "Pourquoi Railway Détruit la Concurrence : Le Guide Ultime du Déploiement API 2025"
 description: "Décuplez votre productivité avec Railway : déploiement Python API en 5 minutes, CI/CD automatique, et monitoring intégré. Le guide complet avec storytelling technique."
+locale: "fr"
 publishDate: "2025-01-15"
 tags: ["railway", "deployment", "api", "fastapi", "seo", "devops"]
 heroImage: "/blog/railway-deployment-hero.jpg"
----
+--- 
 
 # 🚂 Pourquoi Railway Détruit la Concurrence : Le Guide Ultime du Déploiement API 2025
 

@@ -5,6 +5,7 @@ import { z } from 'astro/zod';
 const baseSchema = z.object({
   title: z.string(),
   description: z.string(),
+  locale: z.enum(['en', 'fr']).optional().default('en'),
   pubDate: z.coerce.date().optional(),
   publishDate: z.coerce.date().optional(),
   date: z.coerce.date().optional(),
