@@ -33,6 +33,59 @@ void main() {
     expect(store.loadRecentAssets(), isEmpty);
   });
 
+  test('CaptureLocalStore updates recorder metadata in place', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final store = CaptureLocalStore(prefs);
+    final asset = CaptureAsset(
+      id: 'capture-pro',
+      kind: CaptureKind.recording,
+      path: '/app/files/capture-pro.mp4',
+      mimeType: 'video/mp4',
+      createdAt: DateTime.utc(2026, 6, 12),
+      width: 1080,
+      height: 1920,
+      byteSize: 4096,
+      microphoneEnabled: true,
+      captureScopeLabel: 'system-selected',
+      requestedAudioMode: CaptureAudioMode.microphoneAndSystemAudio,
+      effectiveAudioMode: CaptureAudioMode.microphone,
+      requestedCameraMode: CaptureCameraMode.frontCamera,
+      effectiveCameraMode: CaptureCameraMode.screenOnly,
+      degradationFlags: const ['camera_overlay_not_supported'],
+    );
+
+    await store.addAsset(asset);
+    await store.updateAsset(
+      CaptureAsset(
+        id: asset.id,
+        kind: asset.kind,
+        path: asset.path,
+        mimeType: asset.mimeType,
+        createdAt: asset.createdAt,
+        width: asset.width,
+        height: asset.height,
+        byteSize: asset.byteSize,
+        microphoneEnabled: asset.microphoneEnabled,
+        captureScopeLabel: asset.captureScopeLabel,
+        requestedAudioMode: asset.requestedAudioMode,
+        effectiveAudioMode: asset.effectiveAudioMode,
+        requestedCameraMode: asset.requestedCameraMode,
+        effectiveCameraMode: asset.effectiveCameraMode,
+        degradationFlags: const [
+          'camera_overlay_not_supported',
+          'system_audio_not_supported',
+        ],
+      ),
+    );
+
+    final loaded = store.loadRecentAssets();
+    expect(
+      loaded.single.degradationFlags,
+      contains('system_audio_not_supported'),
+    );
+  });
+
   test('CaptureLocalStore persists local content links', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

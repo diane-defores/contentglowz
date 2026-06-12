@@ -51,6 +51,15 @@ class CaptureLocalStore {
     return next;
   }
 
+  Future<List<CaptureAsset>> updateAsset(CaptureAsset asset) async {
+    final current = loadRecentAssets();
+    final next = current
+        .map((item) => item.id == asset.id ? asset : item)
+        .toList(growable: false);
+    await _save(next);
+    return next;
+  }
+
   List<CaptureContentLink> loadContentLinks() {
     final raw = _prefs.getString(_captureContentLinksKey);
     if (raw == null || raw.isEmpty) {

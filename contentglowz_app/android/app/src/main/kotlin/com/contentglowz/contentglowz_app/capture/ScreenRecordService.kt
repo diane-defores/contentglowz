@@ -37,11 +37,19 @@ class ScreenRecordService : Service() {
     private var height = 0
     private var microphoneEnabled = false
     private var stopping = false
+    private var recordingConfig = CaptureRecordingConfig()
 
     private val progressRunnable = object : Runnable {
         override fun run() {
             val duration = System.currentTimeMillis() - startedAt
-            emit(mapOf("type" to "progress", "durationMs" to duration, "maxDurationMs" to MAX_DURATION_MS))
+            emit(
+                mapOf(
+                    "type" to "progress",
+                    "durationMs" to duration,
+                    "maxDurationMs" to MAX_DURATION_MS,
+                    "isPaused" to false,
+                ).plus(recordingConfig.toEventMap())
+            )
             if (duration >= MAX_DURATION_MS) {
                 stopCapture(completed = true, reason = "duration_cap")
             } else {
@@ -62,6 +70,18 @@ class ScreenRecordService : Service() {
         @Suppress("DEPRECATION")
         val data = intent?.getParcelableExtra<Intent>(EXTRA_DATA)
         microphoneEnabled = intent?.getBooleanExtra(EXTRA_MICROPHONE, false) == true && hasRecordAudioPermission()
+        recordingConfig = CaptureRecordingConfig(
+            requestedAudioMode = intent?.getStringExtra(EXTRA_REQUESTED_AUDIO_MODE) ?: "screenOnly",
+            effectiveAudioMode = intent?.getStringExtra(EXTRA_EFFECTIVE_AUDIO_MODE) ?: "screenOnly",
+            requestedCameraMode = intent?.getStringExtra(EXTRA_REQUESTED_CAMERA_MODE) ?: "screenOnly",
+            effectiveCameraMode = intent?.getStringExtra(EXTRA_EFFECTIVE_CAMERA_MODE) ?: "screenOnly",
+            overlayConfig = CaptureOverlayConfig(
+                shape = intent?.getStringExtra(EXTRA_OVERLAY_SHAPE) ?: "circle",
+                size = intent?.getStringExtra(EXTRA_OVERLAY_SIZE) ?: "medium",
+            ),
+            degradationFlags = intent?.getStringArrayListExtra(EXTRA_DEGRADATION_FLAGS) ?: emptyList(),
+            startedWithForegroundOverlay = intent?.getBooleanExtra(EXTRA_FOREGROUND_OVERLAY, false) == true,
+        )
         activeService = this
         try {
             startCaptureForeground(microphoneEnabled)
@@ -131,8 +151,10 @@ class ScreenRecordService : Service() {
                 "type" to "recording",
                 "durationMs" to 0L,
                 "maxDurationMs" to MAX_DURATION_MS,
-                "microphoneEnabled" to microphoneEnabled
+                "microphoneEnabled" to microphoneEnabled,
+                "isPaused" to false,
             )
+                .plus(recordingConfig.toEventMap())
         )
         handler.postDelayed(progressRunnable, 1_000)
     }
@@ -195,10 +217,18 @@ class ScreenRecordService : Service() {
                         microphoneEnabled = microphoneEnabled,
                         captureScopeLabel = "system-selected"
                     )
+                        .plus(recordingConfig.toAssetMap())
                 )
             )
         } else {
-            emit(mapOf("type" to "canceled", "reason" to reason, "message" to "Screen recording stopped before a usable file was saved."))
+            emit(
+                mapOf(
+                    "type" to "canceled",
+                    "reason" to reason,
+                    "message" to "Screen recording stopped before a usable file was saved.",
+                    "failureCode" to "recording_not_finalized",
+                ).plus(recordingConfig.toEventMap())
+            )
         }
 
         stopForegroundCompat()
@@ -212,7 +242,13 @@ class ScreenRecordService : Service() {
         if (stopping) return
         stopping = true
         handler.removeCallbacks(progressRunnable)
-        emit(mapOf("type" to "failed", "message" to message))
+        emit(
+            mapOf(
+                "type" to "failed",
+                "message" to message,
+                "failureCode" to "recording_startup_failed",
+            ).plus(recordingConfig.toEventMap())
+        )
         releaseResources(deleteOutput = true)
         stopForegroundCompat()
         if (activeService === this) {
@@ -328,8 +364,10 @@ class ScreenRecordService : Service() {
             "type" to "recording",
             "durationMs" to System.currentTimeMillis() - startedAt,
             "maxDurationMs" to MAX_DURATION_MS,
-            "microphoneEnabled" to microphoneEnabled
+            "microphoneEnabled" to microphoneEnabled,
+            "isPaused" to false,
         )
+            .plus(recordingConfig.toEventMap())
     }
 
     private fun stopForegroundCompat() {
@@ -358,12 +396,21 @@ class ScreenRecordService : Service() {
         private const val EXTRA_RESULT_CODE = "resultCode"
         private const val EXTRA_DATA = "data"
         private const val EXTRA_MICROPHONE = "microphone"
+        private const val EXTRA_REQUESTED_AUDIO_MODE = "requestedAudioMode"
+        private const val EXTRA_EFFECTIVE_AUDIO_MODE = "effectiveAudioMode"
+        private const val EXTRA_REQUESTED_CAMERA_MODE = "requestedCameraMode"
+        private const val EXTRA_EFFECTIVE_CAMERA_MODE = "effectiveCameraMode"
+        private const val EXTRA_OVERLAY_SHAPE = "overlayShape"
+        private const val EXTRA_OVERLAY_SIZE = "overlaySize"
+        private const val EXTRA_DEGRADATION_FLAGS = "degradationFlags"
+        private const val EXTRA_FOREGROUND_OVERLAY = "foregroundOverlay"
 
         fun start(
             context: Context,
             resultCode: Int,
             data: Intent,
             microphoneEnabled: Boolean,
+            recordingConfig: CaptureRecordingConfig,
             eventListener: Listener
         ): Boolean {
             if (activeService != null) return false
@@ -372,6 +419,14 @@ class ScreenRecordService : Service() {
                 putExtra(EXTRA_RESULT_CODE, resultCode)
                 putExtra(EXTRA_DATA, data)
                 putExtra(EXTRA_MICROPHONE, microphoneEnabled)
+                putExtra(EXTRA_REQUESTED_AUDIO_MODE, recordingConfig.requestedAudioMode)
+                putExtra(EXTRA_EFFECTIVE_AUDIO_MODE, recordingConfig.effectiveAudioMode)
+                putExtra(EXTRA_REQUESTED_CAMERA_MODE, recordingConfig.requestedCameraMode)
+                putExtra(EXTRA_EFFECTIVE_CAMERA_MODE, recordingConfig.effectiveCameraMode)
+                putExtra(EXTRA_OVERLAY_SHAPE, recordingConfig.overlayConfig.shape)
+                putExtra(EXTRA_OVERLAY_SIZE, recordingConfig.overlayConfig.size)
+                putStringArrayListExtra(EXTRA_DEGRADATION_FLAGS, ArrayList(recordingConfig.degradationFlags))
+                putExtra(EXTRA_FOREGROUND_OVERLAY, recordingConfig.startedWithForegroundOverlay)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)

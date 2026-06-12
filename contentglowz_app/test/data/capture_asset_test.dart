@@ -25,6 +25,52 @@ void main() {
     expect(asset.toJson()['path'], '/local/capture.mp4');
   });
 
+  test('CaptureAsset keeps pro recorder metadata roundtrip compatible', () {
+    final asset = CaptureAsset.fromJson({
+      'id': 'capture-2',
+      'kind': 'recording',
+      'path': '/local/capture-2.mp4',
+      'mimeType': 'video/mp4',
+      'createdAt': '2026-06-12T12:00:00.000Z',
+      'width': 1080,
+      'height': 1920,
+      'byteSize': 8192,
+      'microphoneEnabled': true,
+      'captureScopeLabel': 'system-selected',
+      'requestedAudioMode': 'microphoneAndSystemAudio',
+      'effectiveAudioMode': 'microphone',
+      'requestedCameraMode': 'frontCamera',
+      'effectiveCameraMode': 'screenOnly',
+      'overlayConfig': {'shape': 'circle', 'size': 'medium'},
+      'degradationFlags': ['camera_overlay_not_supported'],
+      'startedWithForegroundOverlay': false,
+      'recorderCapabilities': {
+        'isSupported': true,
+        'supportsScreenOnlyRecording': true,
+        'supportsMicrophoneAudio': true,
+        'supportsSystemAudio': false,
+        'supportsPauseResume': false,
+        'supportsFloatingControls': false,
+        'supportsComposedCameraModes': false,
+        'hasFrontCamera': true,
+        'hasRearCamera': true,
+        'supportsDualCamera': false,
+        'requiresFreshConsent': true,
+        'hasNotificationPermission': true,
+        'hasMicrophonePermission': true,
+      },
+    });
+
+    expect(asset.requestedAudioMode, CaptureAudioMode.microphoneAndSystemAudio);
+    expect(asset.effectiveAudioMode, CaptureAudioMode.microphone);
+    expect(asset.requestedCameraMode, CaptureCameraMode.frontCamera);
+    expect(asset.effectiveCameraMode, CaptureCameraMode.screenOnly);
+    expect(asset.overlayConfig?.shape, CaptureOverlayShape.circle);
+    expect(asset.degradationFlags, ['camera_overlay_not_supported']);
+    expect(asset.recorderCapabilities?.hasFrontCamera, isTrue);
+    expect(asset.toJson()['requestedCameraMode'], 'frontCamera');
+  });
+
   test('CaptureNativeEvent parses completed asset event', () {
     final event = CaptureNativeEvent.fromPlatformMap({
       'type': 'completed',
@@ -45,5 +91,40 @@ void main() {
     expect(event.type, CaptureEventType.completed);
     expect(event.asset?.isScreenshot, isTrue);
     expect(event.asset?.path, '/local/shot.png');
+  });
+
+  test('CaptureNativeEvent parses recorder degradation details', () {
+    final event = CaptureNativeEvent.fromPlatformMap({
+      'type': 'notice',
+      'message':
+          'Camera overlay modes are not available in this recorder build yet.',
+      'degraded': true,
+      'failureCode': 'camera_overlay_not_supported',
+      'effectiveAudioMode': 'microphone',
+      'effectiveCameraMode': 'screenOnly',
+      'overlayConfig': {'shape': 'circle', 'size': 'medium'},
+      'capabilities': {
+        'isSupported': true,
+        'supportsScreenOnlyRecording': true,
+        'supportsMicrophoneAudio': true,
+        'supportsSystemAudio': false,
+        'supportsPauseResume': false,
+        'supportsFloatingControls': false,
+        'supportsComposedCameraModes': false,
+        'hasFrontCamera': true,
+        'hasRearCamera': true,
+        'supportsDualCamera': false,
+        'requiresFreshConsent': true,
+        'hasNotificationPermission': true,
+        'hasMicrophonePermission': true,
+      },
+      'degradationFlags': ['camera_overlay_not_supported'],
+    });
+
+    expect(event.degraded, isTrue);
+    expect(event.failureCode, 'camera_overlay_not_supported');
+    expect(event.effectiveAudioMode, CaptureAudioMode.microphone);
+    expect(event.capabilities?.supportsComposedCameraModes, isFalse);
+    expect(event.degradationFlags, ['camera_overlay_not_supported']);
   });
 }

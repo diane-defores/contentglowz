@@ -25,14 +25,42 @@ class CaptureException implements Exception {
   String toString() => '$code: $message';
 }
 
+class CaptureRecordingOptions {
+  const CaptureRecordingOptions({
+    this.audioMode = CaptureAudioMode.screenOnly,
+    this.cameraMode = CaptureCameraMode.screenOnly,
+    this.overlayConfig = const CaptureOverlayConfig(
+      shape: CaptureOverlayShape.circle,
+      size: CaptureOverlaySize.medium,
+    ),
+  });
+
+  final CaptureAudioMode audioMode;
+  final CaptureCameraMode cameraMode;
+  final CaptureOverlayConfig overlayConfig;
+
+  Map<String, Object?> toJson() {
+    return {
+      'audioMode': audioMode.name,
+      'cameraMode': cameraMode.name,
+      'overlayConfig': overlayConfig.toJson(),
+    };
+  }
+}
+
 abstract class DeviceCaptureClient {
   Stream<CaptureNativeEvent> get events;
 
   Future<CaptureSupport> checkSupport();
 
+  Future<CaptureRecordingCapabilities> checkRecordingCapabilities();
+
   Future<CaptureAsset> takeScreenshot();
 
-  Future<void> startRecording({required bool includeMicrophone});
+  Future<void> startRecording({
+    bool includeMicrophone = false,
+    CaptureRecordingOptions? options,
+  });
 
   Future<void> stopRecording();
 
@@ -103,6 +131,46 @@ class DeviceCaptureService implements DeviceCaptureClient {
   }
 
   @override
+  Future<CaptureRecordingCapabilities> checkRecordingCapabilities() async {
+    if (!_isAndroidRuntime) {
+      return const CaptureRecordingCapabilities(
+        isSupported: false,
+        supportsScreenOnlyRecording: false,
+        supportsMicrophoneAudio: false,
+        supportsSystemAudio: false,
+        supportsPauseResume: false,
+        supportsFloatingControls: false,
+        supportsComposedCameraModes: false,
+        hasFrontCamera: false,
+        hasRearCamera: false,
+        supportsDualCamera: false,
+        requiresFreshConsent: true,
+        hasNotificationPermission: false,
+        hasMicrophonePermission: false,
+      );
+    }
+    try {
+      final result = await _methodChannel.invokeMethod<Object?>(
+        'queryRecordingCapabilities',
+      );
+      if (result is Map) {
+        return CaptureRecordingCapabilities.fromJson(
+          Map<String, dynamic>.from(Map<Object?, Object?>.from(result)),
+        );
+      }
+    } on PlatformException catch (error) {
+      throw CaptureException(
+        error.code,
+        error.message ?? 'Recorder capability check failed.',
+      );
+    }
+    throw CaptureException(
+      'invalid_capabilities',
+      'Native recorder capabilities were unavailable.',
+    );
+  }
+
+  @override
   Future<CaptureAsset> takeScreenshot() async {
     _throwIfUnsupported();
     try {
@@ -117,11 +185,15 @@ class DeviceCaptureService implements DeviceCaptureClient {
   }
 
   @override
-  Future<void> startRecording({required bool includeMicrophone}) async {
+  Future<void> startRecording({
+    bool includeMicrophone = false,
+    CaptureRecordingOptions? options,
+  }) async {
     _throwIfUnsupported();
     try {
       await _methodChannel.invokeMethod<Object?>('startRecording', {
         'includeMicrophone': includeMicrophone,
+        'options': options?.toJson(),
       });
     } on PlatformException catch (error) {
       throw CaptureException(

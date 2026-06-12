@@ -78,6 +78,9 @@ void main() {
     expect(find.text('Screenshot'), findsOneWidget);
     expect(find.text('Record'), findsOneWidget);
     expect(find.text('Mic'), findsOneWidget);
+    expect(find.text('Recorder profile'), findsOneWidget);
+    expect(find.text('Audio mode'), findsOneWidget);
+    expect(find.text('Camera mode'), findsOneWidget);
     expect(find.textContaining('Upload'), findsNothing);
   });
 
@@ -141,10 +144,27 @@ void main() {
 class _FakeCaptureService implements DeviceCaptureClient {
   _FakeCaptureService({
     required this.support,
+    this.capabilities = const CaptureRecordingCapabilities(
+      isSupported: true,
+      supportsScreenOnlyRecording: true,
+      supportsMicrophoneAudio: true,
+      supportsSystemAudio: false,
+      supportsPauseResume: false,
+      supportsFloatingControls: false,
+      supportsComposedCameraModes: false,
+      hasFrontCamera: true,
+      hasRearCamera: true,
+      supportsDualCamera: false,
+      requiresFreshConsent: true,
+      hasNotificationPermission: true,
+      hasMicrophonePermission: true,
+      dualCameraHardwareHint: true,
+    ),
     Stream<CaptureNativeEvent>? events,
   }) : _events = events ?? const Stream<CaptureNativeEvent>.empty();
 
   final CaptureSupport support;
+  final CaptureRecordingCapabilities capabilities;
   final Stream<CaptureNativeEvent> _events;
 
   @override
@@ -154,13 +174,20 @@ class _FakeCaptureService implements DeviceCaptureClient {
   Future<CaptureSupport> checkSupport() async => support;
 
   @override
+  Future<CaptureRecordingCapabilities> checkRecordingCapabilities() async =>
+      capabilities;
+
+  @override
   Future<bool> deleteAsset(CaptureAsset asset) async => true;
 
   @override
   Future<void> shareAsset(CaptureAsset asset) async {}
 
   @override
-  Future<void> startRecording({required bool includeMicrophone}) async {}
+  Future<void> startRecording({
+    bool includeMicrophone = false,
+    CaptureRecordingOptions? options,
+  }) async {}
 
   @override
   Future<void> stopRecording() async {}

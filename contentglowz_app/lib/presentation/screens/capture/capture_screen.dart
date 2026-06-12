@@ -12,6 +12,7 @@ import '../../../data/services/api_service.dart';
 import '../../../data/services/capture_local_store.dart';
 import '../../../data/services/device_capture_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 import '../../../providers/providers.dart';
 import 'capture_asset_preview.dart';
 
@@ -36,6 +37,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   bool _busy = false;
   bool _recording = false;
   bool _microphoneEnabled = false;
+  CaptureRecordingCapabilities? _recordingCapabilities;
+  CaptureAudioMode _selectedAudioMode = CaptureAudioMode.screenOnly;
+  CaptureCameraMode _selectedCameraMode = CaptureCameraMode.screenOnly;
   int _durationMs = 0;
   int _maxDurationMs = 300000;
   String? _message;
@@ -58,6 +62,15 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
 
   Future<void> _load() async {
     final support = await _captureService.checkSupport();
+    CaptureRecordingCapabilities? recordingCapabilities;
+    if (support.isSupported) {
+      try {
+        recordingCapabilities = await _captureService
+            .checkRecordingCapabilities();
+      } catch (_) {
+        recordingCapabilities = null;
+      }
+    }
     CaptureLocalStore? store = _store;
     if (store == null) {
       final prefs = await SharedPreferences.getInstance();
@@ -66,6 +79,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     if (!mounted) return;
     setState(() {
       _support = support;
+      _recordingCapabilities = recordingCapabilities;
       _store = store;
       _assets = store!.loadRecentAssets();
       _links = store.loadContentLinks();
@@ -96,6 +110,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   }
 
   Future<void> _startRecording() async {
+    final options = CaptureRecordingOptions(
+      audioMode: _selectedAudioMode,
+      cameraMode: _selectedCameraMode,
+    );
     setState(() {
       _busy = true;
       _message = context.tr('Waiting for Android screen capture consent.');
@@ -103,7 +121,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     });
     try {
       await _captureService.startRecording(
-        includeMicrophone: _microphoneEnabled,
+        includeMicrophone: _audioModeNeedsMicrophone(options.audioMode),
+        options: options,
       );
     } catch (error) {
       _showError(error);
@@ -281,12 +300,21 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           _maxDurationMs = event.maxDurationMs ?? _maxDurationMs;
           _microphoneEnabled = event.microphoneEnabled ?? _microphoneEnabled;
           _message = context.tr('Screen recording is active.');
+          if (event.effectiveAudioMode != null) {
+            _selectedAudioMode = event.effectiveAudioMode!;
+          }
+          if (event.effectiveCameraMode != null) {
+            _selectedCameraMode = event.effectiveCameraMode!;
+          }
         });
       case CaptureEventType.progress:
         setState(() {
           _durationMs = event.durationMs ?? _durationMs;
           _maxDurationMs = event.maxDurationMs ?? _maxDurationMs;
           _message = event.message ?? _message;
+          if (event.degraded && event.message != null) {
+            _noticeMessage = event.message;
+          }
         });
       case CaptureEventType.completed:
         final asset = event.asset;
@@ -351,15 +379,32 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           ? _SupportedCaptureView(
               assets: _assets,
               busy: _busy,
+              recordingCapabilities: _recordingCapabilities,
               recording: _recording,
               microphoneEnabled: _microphoneEnabled,
+              selectedAudioMode: _selectedAudioMode,
+              selectedCameraMode: _selectedCameraMode,
               durationMs: _durationMs,
               maxDurationMs: _maxDurationMs,
               message: _message,
               noticeMessage: _noticeMessage,
               onToggleMicrophone: _recording || _busy
                   ? null
-                  : (value) => setState(() => _microphoneEnabled = value),
+                  : (value) => setState(() {
+                      _microphoneEnabled = value;
+                      _selectedAudioMode = value
+                          ? CaptureAudioMode.microphone
+                          : CaptureAudioMode.screenOnly;
+                    }),
+              onSelectAudioMode: _recording || _busy
+                  ? null
+                  : (value) => setState(() {
+                      _selectedAudioMode = value;
+                      _microphoneEnabled = _audioModeNeedsMicrophone(value);
+                    }),
+              onSelectCameraMode: _recording || _busy
+                  ? null
+                  : (value) => setState(() => _selectedCameraMode = value),
               onScreenshot: _busy || _recording ? null : _takeScreenshot,
               onRecord: _busy || _recording ? null : _startRecording,
               onStop: _recording ? _stopRecording : null,
@@ -373,6 +418,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
           : _UnsupportedCaptureView(support: support),
     );
   }
+}
+
+bool _audioModeNeedsMicrophone(CaptureAudioMode mode) {
+  return mode == CaptureAudioMode.microphone ||
+      mode == CaptureAudioMode.microphoneAndSystemAudio;
 }
 
 class _UnsupportedCaptureView extends StatelessWidget {
@@ -425,13 +475,18 @@ class _SupportedCaptureView extends StatelessWidget {
   const _SupportedCaptureView({
     required this.assets,
     required this.busy,
+    required this.recordingCapabilities,
     required this.recording,
     required this.microphoneEnabled,
+    required this.selectedAudioMode,
+    required this.selectedCameraMode,
     required this.durationMs,
     required this.maxDurationMs,
     required this.message,
     required this.noticeMessage,
     required this.onToggleMicrophone,
+    required this.onSelectAudioMode,
+    required this.onSelectCameraMode,
     required this.onScreenshot,
     required this.onRecord,
     required this.onStop,
@@ -445,13 +500,18 @@ class _SupportedCaptureView extends StatelessWidget {
 
   final List<CaptureAsset> assets;
   final bool busy;
+  final CaptureRecordingCapabilities? recordingCapabilities;
   final bool recording;
   final bool microphoneEnabled;
+  final CaptureAudioMode selectedAudioMode;
+  final CaptureCameraMode selectedCameraMode;
   final int durationMs;
   final int maxDurationMs;
   final String? message;
   final String? noticeMessage;
   final ValueChanged<bool>? onToggleMicrophone;
+  final ValueChanged<CaptureAudioMode>? onSelectAudioMode;
+  final ValueChanged<CaptureCameraMode>? onSelectCameraMode;
   final VoidCallback? onScreenshot;
   final VoidCallback? onRecord;
   final VoidCallback? onStop;
@@ -465,12 +525,130 @@ class _SupportedCaptureView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final palette = AppTheme.paletteOf(context);
+    final capabilities = recordingCapabilities;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.card(context),
       children: [
+        if (capabilities != null) ...[
+          Container(
+            padding: AppSpacing.card(context),
+            decoration: BoxDecoration(
+              color: palette.surface,
+              borderRadius: BorderRadius.circular(AppRadii.card),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.tr('Recorder profile'),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Text(
+                  _capabilitySummary(context, capabilities),
+                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  context.tr('Audio mode'),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _ModeChip<CaptureAudioMode>(
+                      label: context.tr('Screen only'),
+                      value: CaptureAudioMode.screenOnly,
+                      groupValue: selectedAudioMode,
+                      enabled: true,
+                      onSelected: onSelectAudioMode,
+                    ),
+                    _ModeChip<CaptureAudioMode>(
+                      label: context.tr('Mic'),
+                      value: CaptureAudioMode.microphone,
+                      groupValue: selectedAudioMode,
+                      enabled: capabilities.supportsMicrophoneAudio,
+                      onSelected: onSelectAudioMode,
+                    ),
+                    _ModeChip<CaptureAudioMode>(
+                      label: context.tr('System audio'),
+                      value: CaptureAudioMode.systemAudio,
+                      groupValue: selectedAudioMode,
+                      enabled: capabilities.supportsSystemAudio,
+                      onSelected: onSelectAudioMode,
+                    ),
+                    _ModeChip<CaptureAudioMode>(
+                      label: context.tr('Mic + system'),
+                      value: CaptureAudioMode.microphoneAndSystemAudio,
+                      groupValue: selectedAudioMode,
+                      enabled:
+                          capabilities.supportsSystemAudio &&
+                          capabilities.supportsMicrophoneAudio,
+                      onSelected: onSelectAudioMode,
+                    ),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.md),
+                Text(
+                  context.tr('Camera mode'),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xs),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _ModeChip<CaptureCameraMode>(
+                      label: context.tr('Screen only'),
+                      value: CaptureCameraMode.screenOnly,
+                      groupValue: selectedCameraMode,
+                      enabled: true,
+                      onSelected: onSelectCameraMode,
+                    ),
+                    _ModeChip<CaptureCameraMode>(
+                      label: context.tr('Front'),
+                      value: CaptureCameraMode.frontCamera,
+                      groupValue: selectedCameraMode,
+                      enabled:
+                          capabilities.supportsComposedCameraModes &&
+                          capabilities.hasFrontCamera,
+                      onSelected: onSelectCameraMode,
+                    ),
+                    _ModeChip<CaptureCameraMode>(
+                      label: context.tr('Rear'),
+                      value: CaptureCameraMode.rearCamera,
+                      groupValue: selectedCameraMode,
+                      enabled:
+                          capabilities.supportsComposedCameraModes &&
+                          capabilities.hasRearCamera,
+                      onSelected: onSelectCameraMode,
+                    ),
+                    _ModeChip<CaptureCameraMode>(
+                      label: context.tr('Dual'),
+                      value: CaptureCameraMode.dualCamera,
+                      groupValue: selectedCameraMode,
+                      enabled: capabilities.supportsDualCamera,
+                      onSelected: onSelectCameraMode,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+        ],
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: AppSpacing.xs,
+          runSpacing: AppSpacing.xs,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             FilledButton.icon(
@@ -500,14 +678,14 @@ class _SupportedCaptureView extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: AppSpacing.sm),
         if (busy) const LinearProgressIndicator(),
         if (recording) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: AppSpacing.sm),
           LinearProgressIndicator(
             value: maxDurationMs <= 0 ? null : durationMs / maxDurationMs,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppSpacing.xs),
           Text(
             '${_formatDuration(durationMs)} / ${_formatDuration(maxDurationMs)}',
             style: TextStyle(
@@ -517,14 +695,14 @@ class _SupportedCaptureView extends StatelessWidget {
           ),
         ],
         if (message != null) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: AppSpacing.sm),
           Text(
             message!,
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
         ],
         if (noticeMessage != null) ...[
-          const SizedBox(height: 12),
+          SizedBox(height: AppSpacing.sm),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -533,7 +711,7 @@ class _SupportedCaptureView extends StatelessWidget {
                 size: 18,
                 color: theme.colorScheme.tertiary,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
                   noticeMessage!,
@@ -543,14 +721,14 @@ class _SupportedCaptureView extends StatelessWidget {
             ],
           ),
         ],
-        const SizedBox(height: 24),
+        SizedBox(height: AppSpacing.xl),
         Text(
           context.tr('Local captures'),
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: AppSpacing.sm),
         if (assets.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
@@ -580,6 +758,31 @@ class _SupportedCaptureView extends StatelessWidget {
     );
   }
 
+  String _capabilitySummary(
+    BuildContext context,
+    CaptureRecordingCapabilities capabilities,
+  ) {
+    final segments = <String>[
+      capabilities.hasFrontCamera
+          ? context.tr('Front camera detected')
+          : context.tr('No front camera detected'),
+      capabilities.hasRearCamera
+          ? context.tr('Rear camera detected')
+          : context.tr('No rear camera detected'),
+      capabilities.supportsDualCamera
+          ? context.tr('Dual camera is available now')
+          : capabilities.dualCameraHardwareHint
+          ? context.tr(
+              'Dual camera hardware was detected but is not enabled yet',
+            )
+          : context.tr('Dual camera is unavailable'),
+      capabilities.supportsSystemAudio
+          ? context.tr('System audio is available')
+          : context.tr('System audio is unavailable in this build'),
+    ];
+    return segments.join(' • ');
+  }
+
   CaptureContentLink? _linkForAsset(String assetId) {
     for (final link in links) {
       if (link.assetId == assetId) return link;
@@ -594,6 +797,33 @@ class _SupportedCaptureView extends StatelessWidget {
       if (item.id == link.contentId) return item;
     }
     return null;
+  }
+}
+
+class _ModeChip<T> extends StatelessWidget {
+  const _ModeChip({
+    required this.label,
+    required this.value,
+    required this.groupValue,
+    required this.enabled,
+    required this.onSelected,
+  });
+
+  final String label;
+  final T value;
+  final T groupValue;
+  final bool enabled;
+  final ValueChanged<T>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: value == groupValue,
+      onSelected: enabled && onSelected != null
+          ? (_) => onSelected!(value)
+          : null,
+    );
   }
 }
 

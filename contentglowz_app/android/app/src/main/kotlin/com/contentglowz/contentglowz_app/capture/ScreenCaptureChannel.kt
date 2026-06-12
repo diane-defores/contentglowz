@@ -22,6 +22,7 @@ class ScreenCaptureChannel(
     private val eventChannel = EventChannel(messenger, "contentglowz/device_capture_events")
     private val projectionManager =
         activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+    private val capabilityResolver = CaptureCapabilityResolver(activity)
     private var eventSink: EventChannel.EventSink? = null
     private var pendingResult: MethodChannel.Result? = null
     private var pendingScreenshotResult: MethodChannel.Result? = null
@@ -29,6 +30,7 @@ class ScreenCaptureChannel(
     private var pendingMicrophoneRequest = false
     private var pendingNotificationRequest = false
     private var microphoneEnabledForNextRecording = false
+    private var recordingConfigForNextRecording = CaptureRecordingConfig()
 
     init {
         methodChannel.setMethodCallHandler(this)
@@ -40,10 +42,11 @@ class ScreenCaptureChannel(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "isSupported" -> result.success(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            "queryRecordingCapabilities" -> result.success(capabilityResolver.resolve())
             "takeScreenshot" -> requestProjection(PendingOperation.Screenshot, false, result)
             "startRecording" -> {
                 val includeMicrophone = call.argument<Boolean>("includeMicrophone") == true
-                requestRecording(includeMicrophone, result)
+                requestRecording(includeMicrophone, CaptureRecordingConfig.fromMethodCall(call), result)
             }
             "stopRecording" -> {
                 if (ScreenRecordService.stopActive()) {
@@ -73,7 +76,11 @@ class ScreenCaptureChannel(
         }
     }
 
-    private fun requestRecording(includeMicrophone: Boolean, result: MethodChannel.Result) {
+    private fun requestRecording(
+        includeMicrophone: Boolean,
+        requestedConfig: CaptureRecordingConfig,
+        result: MethodChannel.Result
+    ) {
         val permissions = mutableListOf<String>()
         if (includeMicrophone && !hasRecordAudioPermission()) {
             permissions.add(Manifest.permission.RECORD_AUDIO)
@@ -91,9 +98,13 @@ class ScreenCaptureChannel(
             pendingMicrophoneRequest = permissions.contains(Manifest.permission.RECORD_AUDIO)
             pendingNotificationRequest = permissions.contains(Manifest.permission.POST_NOTIFICATIONS)
             microphoneEnabledForNextRecording = includeMicrophone
+            recordingConfigForNextRecording = normalizeConfig(requestedConfig, includeMicrophone)
             activity.requestPermissions(permissions.toTypedArray(), REQUEST_RECORDING_PERMISSIONS)
             return
         }
+        val normalizedConfig = normalizeConfig(requestedConfig, includeMicrophone && hasRecordAudioPermission())
+        recordingConfigForNextRecording = normalizedConfig
+        emitDegradationNotices(normalizedConfig)
         requestProjection(PendingOperation.Recording, includeMicrophone && hasRecordAudioPermission(), result)
     }
 
@@ -178,6 +189,8 @@ class ScreenCaptureChannel(
         pendingNotificationRequest = false
         pendingResult = null
         pendingOperation = null
+        recordingConfigForNextRecording = normalizeConfig(recordingConfigForNextRecording, includeMicrophone)
+        emitDegradationNotices(recordingConfigForNextRecording)
         requestProjection(PendingOperation.Recording, includeMicrophone, result)
         return true
     }
@@ -202,12 +215,99 @@ class ScreenCaptureChannel(
         microphoneEnabled: Boolean,
         result: MethodChannel.Result
     ) {
-        val started = ScreenRecordService.start(activity, resultCode, data, microphoneEnabled, this)
+        val config = recordingConfigForNextRecording
+        val started = ScreenRecordService.start(activity, resultCode, data, microphoneEnabled, config, this)
         if (!started) {
             result.error("capture_busy", "A screen recording is already active.", null)
             return
         }
-        result.success(mapOf("status" to "recording", "microphoneEnabled" to microphoneEnabled))
+        result.success(
+            mapOf(
+                "status" to "recording",
+                "microphoneEnabled" to microphoneEnabled,
+                "effectiveAudioMode" to config.effectiveAudioMode,
+                "effectiveCameraMode" to config.effectiveCameraMode,
+                "degraded" to config.degradationFlags.isNotEmpty(),
+                "degradationFlags" to config.degradationFlags,
+            )
+        )
+    }
+
+    private fun normalizeConfig(
+        requestedConfig: CaptureRecordingConfig,
+        includeMicrophone: Boolean
+    ): CaptureRecordingConfig {
+        var effectiveAudioMode = requestedConfig.requestedAudioMode
+        var effectiveCameraMode = requestedConfig.requestedCameraMode
+        val degradationFlags = mutableListOf<String>()
+
+        effectiveAudioMode = when (requestedConfig.requestedAudioMode) {
+            "microphone" -> if (includeMicrophone) "microphone" else {
+                degradationFlags.add("microphone_permission_required")
+                "screenOnly"
+            }
+            "systemAudio" -> {
+                degradationFlags.add("system_audio_not_supported")
+                "screenOnly"
+            }
+            "microphoneAndSystemAudio" -> if (includeMicrophone) {
+                degradationFlags.add("system_audio_not_supported")
+                "microphone"
+            } else {
+                degradationFlags.add("microphone_permission_required")
+                degradationFlags.add("system_audio_not_supported")
+                "screenOnly"
+            }
+            else -> "screenOnly"
+        }
+
+        effectiveCameraMode = when (requestedConfig.requestedCameraMode) {
+            "frontCamera", "rearCamera", "dualCamera" -> {
+                degradationFlags.add("camera_overlay_not_supported")
+                "screenOnly"
+            }
+            else -> "screenOnly"
+        }
+
+        return requestedConfig.copy(
+            effectiveAudioMode = effectiveAudioMode,
+            effectiveCameraMode = effectiveCameraMode,
+            degradationFlags = degradationFlags.toList(),
+        )
+    }
+
+    private fun emitDegradationNotices(config: CaptureRecordingConfig) {
+        for (flag in config.degradationFlags) {
+            when (flag) {
+                "microphone_permission_required" -> emit(
+                    mapOf(
+                        "type" to "notice",
+                        "recoverable" to true,
+                        "degraded" to true,
+                        "failureCode" to flag,
+                        "message" to "Microphone access is unavailable. Recording will continue without microphone audio."
+                    )
+                )
+                "system_audio_not_supported" -> emit(
+                    mapOf(
+                        "type" to "notice",
+                        "recoverable" to true,
+                        "degraded" to true,
+                        "failureCode" to flag,
+                        "message" to "System audio capture is not available in this recorder build yet."
+                    )
+                )
+                "camera_overlay_not_supported" -> emit(
+                    mapOf(
+                        "type" to "notice",
+                        "recoverable" to true,
+                        "degraded" to true,
+                        "failureCode" to flag,
+                        "message" to "Camera overlay modes are not available in this recorder build yet."
+                    )
+                )
+            }
+        }
     }
 
     private fun shareFile(path: String, mimeType: String, result: MethodChannel.Result) {
