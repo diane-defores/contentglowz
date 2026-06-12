@@ -5,8 +5,23 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CACHE_DIR="${VERCEL_CACHE_DIR:-$ROOT_DIR/.vercel/cache}"
 FLUTTER_ROOT="${FLUTTER_ROOT:-$CACHE_DIR/flutter}"
+FLUTTER_VERSION_FILE="${FLUTTER_VERSION_FILE:-$ROOT_DIR/.flutter-version}"
 
 export PATH="$FLUTTER_ROOT/bin:$PATH"
+
+if [[ ! -x "$FLUTTER_ROOT/bin/flutter" ]]; then
+  echo "ERROR: Flutter SDK missing at $FLUTTER_ROOT. Run ./scripts/vercel-install.sh first." >&2
+  exit 1
+fi
+
+if [[ -f "$FLUTTER_VERSION_FILE" ]]; then
+  EXPECTED_FLUTTER_VERSION="$(tr -d '[:space:]' < "$FLUTTER_VERSION_FILE")"
+  INSTALLED_FLUTTER_VERSION="$("$FLUTTER_ROOT/bin/flutter" --version --machine 2>/dev/null | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p')"
+  if [[ -n "$EXPECTED_FLUTTER_VERSION" && "$INSTALLED_FLUTTER_VERSION" != "$EXPECTED_FLUTTER_VERSION" ]]; then
+    echo "ERROR: Expected Flutter $EXPECTED_FLUTTER_VERSION from $FLUTTER_VERSION_FILE but found $INSTALLED_FLUTTER_VERSION at $FLUTTER_ROOT" >&2
+    exit 1
+  fi
+fi
 
 API_BASE_URL_VALUE="${API_BASE_URL:-}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
