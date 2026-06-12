@@ -48,73 +48,103 @@ const pricingSchema = {
 
     <div class="pricing-grid">
       <div class="pricing-card">
-        <h3>Free</h3>
-        <div class="price">
-          <span class="amount">0</span>
-          <span class="currency">&euro;</span>
+        <div class="pricing-card-head">
+          <h3>Free</h3>
+          <div class="pricing-summary">
+            <div class="pricing-summary-chip">
+              <div class="price">
+                <span class="amount">0</span>
+                <span class="currency">&euro;</span>
+              </div>
+            </div>
+            <p class="billing-note">Forever free</p>
+          </div>
         </div>
-        <p class="billing-note">Forever free</p>
 
-        <ul class="features">
-          <li>1 project</li>
-          <li>5 content pieces/month</li>
-          <li>Swipe approval feed</li>
-          <li>1 publishing channel</li>
-          <li>Basic analytics</li>
-          <li>Community support</li>
-        </ul>
-        <a class="cta-btn" href={appSignInUrl}>Get Started</a>
+        <div class="features-wrap">
+          <ul class="features">
+            <li>1 project</li>
+            <li>5 content pieces/month</li>
+            <li>Swipe approval feed</li>
+            <li>1 publishing channel</li>
+            <li>Basic analytics</li>
+            <li>Community support</li>
+          </ul>
+        </div>
+        <div class="cta-wrap">
+          <a class="cta-btn" href={appSignInUrl}>Get Started</a>
+        </div>
       </div>
 
       <div class="pricing-card featured">
         <div class="popular-badge">Most Popular</div>
-        <h3>Creator</h3>
-        <div class="price">
-          <span class="amount">19</span>
-          <span class="currency">&euro;</span>
-          <span class="period">/mo</span>
+        <div class="pricing-card-head">
+          <h3>Creator</h3>
+          <div class="pricing-summary">
+            <div class="pricing-summary-chip">
+              <div class="price">
+                <span class="amount">19</span>
+                <span class="currency">&euro;</span>
+                <span class="period">/mo</span>
+              </div>
+            </div>
+            <p class="billing-note">Everything you need to publish consistently</p>
+          </div>
         </div>
-        <p class="billing-note">Everything you need to publish consistently</p>
 
-        <ul class="features">
-          <li>3 projects</li>
-          <li>50 content pieces/month</li>
-          <li>All 6 content formats</li>
-          <li>All publishing channels</li>
-          <li>SEO keyword research</li>
-          <li>Affiliate link management</li>
-          <li>Content scheduling</li>
-          <li>Full analytics</li>
-          <li>Email support</li>
-        </ul>
-        <a class="cta-btn primary" href={creatorCheckoutUrl}>
-          Start 14-Day Trial
-        </a>
+        <div class="features-wrap">
+          <ul class="features">
+            <li>3 projects</li>
+            <li>50 content pieces/month</li>
+            <li>All 6 content formats</li>
+            <li>All publishing channels</li>
+            <li>SEO keyword research</li>
+            <li>Affiliate link management</li>
+            <li>Content scheduling</li>
+            <li>Full analytics</li>
+            <li>Email support</li>
+          </ul>
+        </div>
+        <div class="cta-wrap">
+          <a class="cta-btn primary" href={creatorCheckoutUrl}>
+            Start 14-Day Trial
+          </a>
+        </div>
       </div>
 
       <div class="pricing-card">
-        <h3>Pro</h3>
-        <div class="price">
-          <span class="amount">49</span>
-          <span class="currency">&euro;</span>
-          <span class="period">/mo</span>
+        <div class="pricing-card-head">
+          <h3>Pro</h3>
+          <div class="pricing-summary">
+            <div class="pricing-summary-chip">
+              <div class="price">
+                <span class="amount">49</span>
+                <span class="currency">&euro;</span>
+                <span class="period">/mo</span>
+              </div>
+            </div>
+            <p class="billing-note">For serious content creators and agencies</p>
+          </div>
         </div>
-        <p class="billing-note">For serious content creators and agencies</p>
 
-        <ul class="features">
-          <li>Unlimited projects</li>
-          <li>Unlimited content</li>
-          <li>All Creator features</li>
-          <li>Competitor analysis</li>
-          <li>Ranking position tracking</li>
-          <li>Content strategy analysis</li>
-          <li>Custom audience personas</li>
-          <li>Priority support</li>
-          <li>API access</li>
-        </ul>
-        <a class="cta-btn" href={proCheckoutUrl}>
-          Start 14-Day Trial
-        </a>
+        <div class="features-wrap">
+          <ul class="features">
+            <li>Unlimited projects</li>
+            <li>Unlimited content</li>
+            <li>All Creator features</li>
+            <li>Competitor analysis</li>
+            <li>Ranking position tracking</li>
+            <li>Content strategy analysis</li>
+            <li>Custom audience personas</li>
+            <li>Priority support</li>
+            <li>API access</li>
+          </ul>
+        </div>
+        <div class="cta-wrap">
+          <a class="cta-btn" href={proCheckoutUrl}>
+            Start 14-Day Trial
+          </a>
+        </div>
       </div>
     </div>
 
@@ -145,6 +175,9 @@ const pricingSchema = {
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-card);
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
     transition: transform var(--duration-slow), box-shadow var(--duration-slow);
   }
 
@@ -173,14 +206,38 @@ const pricingSchema = {
 
   .pricing-card h3 {
     font-size: var(--text-h3);
-    margin-bottom: var(--space-6);
     color: var(--color-text-primary);
+  }
+
+  .pricing-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+
+  .pricing-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    gap: var(--space-2);
+  }
+
+  .pricing-summary-chip {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: var(--space-2) var(--space-4);
+    border: calc(var(--space-1) * 0.5) solid var(--color-border-subtle);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface-subtle) 88%, transparent);
   }
 
   .price {
     display: flex;
     align-items: baseline;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-1);
   }
 
   .currency {
@@ -205,19 +262,30 @@ const pricingSchema = {
   .billing-note {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
-    margin-bottom: var(--space-8);
+    margin: 0;
+  }
+
+  .features-wrap {
+    margin-bottom: var(--space-4);
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 
   .features {
     list-style: none;
-    margin-bottom: var(--space-8);
+    margin: 0;
+    padding-left: 0;
   }
 
   .features li {
         padding: var(--space-2) 0;
     color: var(--color-text-primary);
-    border-bottom: 1px solid var(--color-border-subtle);
+    border-bottom: calc(var(--space-1) / 4) solid var(--color-border-subtle);
     font-size: var(--text-base);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .features li:last-child {
@@ -230,8 +298,13 @@ const pricingSchema = {
     font-weight: 700;
   }
 
+  .cta-wrap {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   .cta-btn {
-    inline-size: 100%;
+    inline-size: clamp(calc(var(--space-20) * 2.5), 58%, calc(var(--space-20) * 3.2));
     padding: var(--space-4);
     border-radius: var(--radius-md);
     font-weight: 600;
@@ -277,6 +350,49 @@ const pricingSchema = {
 
     .pricing-card {
       padding: var(--space-8);
+    }
+
+    .pricing-card-head {
+      flex-direction: column;
+    }
+
+    .pricing-summary {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .features-wrap {
+      justify-content: flex-start;
+    }
+
+    .features li {
+      gap: var(--space-2);
+    }
+
+  .cta-wrap {
+      justify-content: flex-end;
+    }
+
+    .pricing-summary-chip {
+      width: 100%;
+      align-items: flex-start;
+      justify-content: flex-start;
+      background: transparent;
+      border-color: transparent;
+      padding: 0;
+    }
+
+    .pricing-summary {
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .pricing-summary .billing-note {
+      margin-inline-start: 0;
+    }
+
+    .cta-btn {
+      inline-size: min(calc(var(--space-20) * 2.9), var(--size-full));
     }
   }
 </style>

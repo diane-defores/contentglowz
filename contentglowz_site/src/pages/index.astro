@@ -17,13 +17,40 @@ import Footer from '../components/Footer.astro';
   description="ContentGlowz turns ideas into reviewed articles, newsletters, social posts, and video scripts with AI assistance, clear approval, scheduling, and supported publishing flows."
 >
   <Navbar />
-  <Hero />
-  <Problem />
-  <Robots />
-  <Features />
-  <Testimonials />
-  <Pricing />
-  <FAQ />
-  <ClosingCta />
+  <main class="landing-shell">
+    <Hero />
+    <Problem />
+    <Robots />
+    <Features />
+    <Testimonials />
+    <Pricing />
+    <FAQ />
+    <ClosingCta />
+  </main>
   <Footer />
 </Layout>
+
+<style>
+  .landing-shell > section + section {
+    position: relative;
+  }
+
+  .landing-shell > section + section::before {
+    content: "";
+    position: absolute;
+    inset-inline: var(--space-8);
+    inset-block-start: calc(var(--space-1) * -1);
+    inline-size: calc(100% - (var(--space-8) * 2));
+    block-size: calc(var(--space-1) / 4);
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .landing-shell > section + section::before {
+      inset-inline: var(--space-4);
+      inline-size: calc(100% - (var(--space-4) * 2));
+    }
+  }
+</style>

@@ -56,6 +56,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 color: palette.elevatedSurface,
                 borderRadius: BorderRadius.circular(AppRadii.card),
                 border: Border.all(color: palette.borderSubtle),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.warningColor.withAlpha(18),
+                    blurRadius: AppSpacing.xl,
+                    offset: const Offset(0, AppSpacing.md),
+                  ),
+                ],
               ),
               child: hasClerkKey
                   ? _buildForm(authSession)

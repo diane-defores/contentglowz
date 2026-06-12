@@ -125,6 +125,46 @@
     margin-bottom: var(--space-2);
   }
 
+  .robot-icon {
+    display: inline-flex;
+    width: calc(var(--space-8) + var(--space-1));
+    height: calc(var(--space-8) + var(--space-1));
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-surface-card-glass) 82%, transparent);
+    box-shadow: inset 0 0 var(--space-1) color-mix(in srgb, var(--color-white) 24%, transparent);
+    font-size: var(--text-h3);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .robot-icon {
+      animation: emoji-bounce 4.2s ease-in-out infinite;
+    }
+
+    .robot-card:nth-child(1) .robot-icon {
+      animation-delay: 0.15s;
+    }
+
+    .robot-card:nth-child(2) .robot-icon {
+      animation-delay: 0.55s;
+    }
+
+    .robot-card:nth-child(3) .robot-icon {
+      animation-delay: 0.95s;
+    }
+  }
+
+  @keyframes emoji-bounce {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    50% {
+      transform: translateY(calc(var(--space-1) * -0.5)) rotate(-6deg);
+    }
+  }
+
   .robot-card h3 {
     font-size: var(--text-h3);
     color: var(--color-text-primary);

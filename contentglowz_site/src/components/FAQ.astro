@@ -67,13 +67,15 @@ const faqSchema = {
 
   .faq-item {
     background: var(--color-surface);
+    border: calc(var(--space-1) * 0.5) solid var(--color-border-subtle);
+    box-shadow: var(--shadow-card);
     border-radius: var(--radius-md);
     overflow: hidden;
     transition: box-shadow var(--duration-slow) var(--ease-standard);
   }
 
   .faq-item:hover {
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--shadow-card-lg);
   }
 
   .faq-question {

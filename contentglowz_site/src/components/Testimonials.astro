@@ -81,12 +81,27 @@
     background: var(--color-surface-subtle);
     padding: var(--space-8);
     border-radius: var(--radius-lg);
+    border: calc(var(--space-1) * 0.5) solid var(--color-border-subtle);
+    box-shadow: var(--shadow-card);
     transition: background var(--duration-slow), box-shadow var(--duration-slow), transform var(--duration-slow);
+    will-change: transform, box-shadow, background, border-color;
+  }
+
+  .testimonial-card.is-active {
+    background: var(--color-surface);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-card-lg);
+    transform: translateY(var(--motion-lift-tiny));
+  }
+
+  .testimonial-card.is-active .card-title-icon,
+  .testimonial-card.is-active h3 {
+    color: var(--color-primary);
   }
 
   .testimonial-card:hover {
     background: var(--color-surface-elevated);
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-card-lg);
     transform: translateY(var(--motion-lift-card));
   }
 
@@ -97,12 +112,90 @@
 
   .testimonial-card .card-title-icon {
     font-size: var(--text-h3);
+    display: inline-flex;
+    width: calc(var(--space-8) + var(--space-1));
+    height: calc(var(--space-8) + var(--space-1));
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-surface-card-glass) 82%, transparent);
+    box-shadow: inset 0 0 var(--space-1) color-mix(in srgb, var(--color-white) 24%, transparent);
   }
 
   .quote {
     color: var(--color-text-muted);
     line-height: var(--leading-relaxed);
     font-size: var(--text-sm);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .testimonial-card {
+      animation: testimonial-fade-in 480ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+      animation-fill-mode: both;
+    }
+
+    .testimonial-card .card-title-icon {
+      animation: emoji-bounce 3.4s ease-in-out infinite;
+    }
+
+    .testimonial-card:nth-child(1) .card-title-icon {
+      animation-delay: 0.1s;
+    }
+
+    .testimonial-card:nth-child(2) .card-title-icon {
+      animation-delay: 0.3s;
+    }
+
+    .testimonial-card:nth-child(3) .card-title-icon {
+      animation-delay: 0.6s;
+    }
+
+    .testimonial-card:nth-child(4) .card-title-icon {
+      animation-delay: 0.9s;
+    }
+
+    .testimonial-card:nth-child(5) .card-title-icon {
+      animation-delay: 1.2s;
+    }
+
+    .testimonial-card:nth-child(6) .card-title-icon {
+      animation-delay: 1.5s;
+    }
+
+    .is-active .card-title-icon {
+      animation-name: emoji-focus-spin;
+    }
+  }
+
+  @keyframes emoji-bounce {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+    50% {
+      transform: translateY(calc(var(--space-1) * -0.5)) rotate(-6deg);
+    }
+  }
+
+  @keyframes emoji-focus-spin {
+    0%,
+    100% {
+      transform: translateY(calc(var(--space-1) * -0.5)) rotate(-6deg) scale(1.02);
+    }
+    50% {
+      transform: translateY(calc(var(--space-1) * -1)) rotate(6deg) scale(1.08);
+    }
+  }
+
+  @keyframes testimonial-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-3));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @media (max-width: 768px) {
@@ -119,3 +212,42 @@
     }
   }
 </style>
+
+<script>
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const cards = Array.from(document.querySelectorAll('.testimonials-section .testimonial-card'));
+    if (cards.length > 1) {
+      let activeIndex = 0;
+      let timer;
+
+      const setActiveCard = (index) => {
+        cards.forEach((card, idx) => {
+          card.classList.toggle('is-active', idx === index);
+        });
+      };
+
+      const rotateActiveCard = () => {
+        activeIndex = (activeIndex + 1) % cards.length;
+        setActiveCard(activeIndex);
+      };
+
+      setActiveCard(activeIndex);
+      timer = window.setInterval(rotateActiveCard, 2600);
+
+      cards.forEach((card) => {
+        card.addEventListener('mouseenter', () => {
+          if (timer) {
+            window.clearInterval(timer);
+            timer = null;
+          }
+        });
+
+        card.addEventListener('mouseleave', () => {
+          if (!timer) {
+            timer = window.setInterval(rotateActiveCard, 2600);
+          }
+        });
+      });
+    }
+  }
+</script>
