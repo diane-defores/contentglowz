@@ -2,12 +2,17 @@ package com.contentglowz.contentglowz_app.capture
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 
 class CaptureCapabilityResolver(private val activity: Activity) {
+    val supportsPauseResume: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+
+    val supportsFloatingControls: Boolean
+        get() = true
+
     fun resolve(): Map<String, Any> {
         val packageManager = activity.packageManager
         val hasFrontCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
@@ -18,8 +23,8 @@ class CaptureCapabilityResolver(private val activity: Activity) {
             "supportsScreenOnlyRecording" to true,
             "supportsMicrophoneAudio" to true,
             "supportsSystemAudio" to false,
-            "supportsPauseResume" to false,
-            "supportsFloatingControls" to false,
+            "supportsPauseResume" to supportsPauseResume,
+            "supportsFloatingControls" to supportsFloatingControls,
             "supportsComposedCameraModes" to false,
             "hasFrontCamera" to hasFrontCamera,
             "hasRearCamera" to hasRearCamera,

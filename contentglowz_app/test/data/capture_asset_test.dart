@@ -127,4 +127,21 @@ void main() {
     expect(event.capabilities?.supportsComposedCameraModes, isFalse);
     expect(event.degradationFlags, ['camera_overlay_not_supported']);
   });
+
+  test('CaptureNativeEvent parses recorder state transitions', () {
+    final event = CaptureNativeEvent.fromPlatformMap({
+      'type': 'state',
+      'state': 'paused',
+      'previousState': 'recording',
+      'stopReason': 'user_pause',
+      'failureCode': 'none',
+      'isPaused': true,
+    });
+
+    expect(event.type, CaptureEventType.state);
+    expect(event.state, CaptureRecorderState.paused);
+    expect(event.previousState, CaptureRecorderState.recording);
+    expect(event.stopReason, 'user_pause');
+    expect(event.isPaused, isTrue);
+  });
 }

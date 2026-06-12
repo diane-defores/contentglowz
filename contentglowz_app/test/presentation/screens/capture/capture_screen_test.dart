@@ -209,6 +209,12 @@ class _FakeCaptureService implements DeviceCaptureClient {
   Future<void> stopRecording() async {}
 
   @override
+  Future<void> pauseRecording() async {}
+
+  @override
+  Future<void> resumeRecording() async {}
+
+  @override
   Future<CaptureAsset> takeScreenshot() {
     throw UnimplementedError();
   }

@@ -55,6 +55,44 @@ class ScreenCaptureChannel(
                     result.success(mapOf("status" to "idle"))
                 }
             }
+            "pauseRecording" -> {
+                val supported = capabilityResolver.supportsPauseResume
+                if (!supported) {
+                    emit(
+                        mapOf(
+                            "type" to "notice",
+                            "recoverable" to true,
+                            "degraded" to true,
+                            "failureCode" to "pause_resume_not_supported",
+                            "message" to "Pause/resume is not supported on this Android version.",
+                        )
+                    )
+                    result.success(mapOf("status" to "unsupported", "failureCode" to "pause_resume_not_supported"))
+                } else if (ScreenRecordService.pauseActive()) {
+                    result.success(mapOf("status" to "paused"))
+                } else {
+                    result.success(mapOf("status" to "failed", "failureCode" to "pause_failed"))
+                }
+            }
+            "resumeRecording" -> {
+                val supported = capabilityResolver.supportsPauseResume
+                if (!supported) {
+                    emit(
+                        mapOf(
+                            "type" to "notice",
+                            "recoverable" to true,
+                            "degraded" to true,
+                            "failureCode" to "pause_resume_not_supported",
+                            "message" to "Pause/resume is not supported on this Android version.",
+                        )
+                    )
+                    result.success(mapOf("status" to "unsupported", "failureCode" to "pause_resume_not_supported"))
+                } else if (ScreenRecordService.resumeActive()) {
+                    result.success(mapOf("status" to "recording"))
+                } else {
+                    result.success(mapOf("status" to "failed", "failureCode" to "resume_failed"))
+                }
+            }
             "shareAsset" -> {
                 val path = call.argument<String>("path")
                 val mimeType = call.argument<String>("mimeType") ?: "application/octet-stream"

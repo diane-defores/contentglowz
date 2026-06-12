@@ -64,6 +64,10 @@ abstract class DeviceCaptureClient {
 
   Future<void> stopRecording();
 
+  Future<void> pauseRecording();
+
+  Future<void> resumeRecording();
+
   Future<void> shareAsset(CaptureAsset asset);
 
   Future<bool> deleteAsset(CaptureAsset asset);
@@ -212,6 +216,32 @@ class DeviceCaptureService implements DeviceCaptureClient {
       throw CaptureException(
         error.code,
         error.message ?? 'Screen recording failed to stop.',
+      );
+    }
+  }
+
+  @override
+  Future<void> pauseRecording() async {
+    _throwIfUnsupported();
+    try {
+      await _methodChannel.invokeMethod<Object?>('pauseRecording');
+    } on PlatformException catch (error) {
+      throw CaptureException(
+        error.code,
+        error.message ?? 'Screen recording failed to pause.',
+      );
+    }
+  }
+
+  @override
+  Future<void> resumeRecording() async {
+    _throwIfUnsupported();
+    try {
+      await _methodChannel.invokeMethod<Object?>('resumeRecording');
+    } on PlatformException catch (error) {
+      throw CaptureException(
+        error.code,
+        error.message ?? 'Screen recording failed to resume.',
       );
     }
   }

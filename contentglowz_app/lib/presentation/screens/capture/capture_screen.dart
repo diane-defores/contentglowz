@@ -36,6 +36,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   bool _loading = true;
   bool _busy = false;
   bool _recording = false;
+  bool _paused = false;
   bool _microphoneEnabled = false;
   CaptureRecordingCapabilities? _recordingCapabilities;
   CaptureAudioMode _selectedAudioMode = CaptureAudioMode.screenOnly;
@@ -139,6 +140,36 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     });
     try {
       await _captureService.stopRecording();
+    } catch (error) {
+      _showError(error);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _pauseRecording() async {
+    setState(() {
+      _busy = true;
+      _message = context.tr('Pausing screen recording.');
+    });
+    try {
+      await _captureService.pauseRecording();
+    } catch (error) {
+      _showError(error);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _resumeRecording() async {
+    setState(() {
+      _busy = true;
+      _message = context.tr('Resuming screen recording.');
+    });
+    try {
+      await _captureService.resumeRecording();
     } catch (error) {
       _showError(error);
       if (mounted) {
@@ -295,6 +326,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       case CaptureEventType.recording:
         setState(() {
           _recording = true;
+          _paused = false;
           _busy = false;
           _durationMs = event.durationMs ?? 0;
           _maxDurationMs = event.maxDurationMs ?? _maxDurationMs;
@@ -307,19 +339,66 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             _selectedCameraMode = event.effectiveCameraMode!;
           }
         });
+        break;
       case CaptureEventType.progress:
         setState(() {
           _durationMs = event.durationMs ?? _durationMs;
           _maxDurationMs = event.maxDurationMs ?? _maxDurationMs;
+          _paused = event.isPaused ?? _paused;
           _message = event.message ?? _message;
           if (event.degraded && event.message != null) {
             _noticeMessage = event.message;
           }
         });
+        break;
+      case CaptureEventType.state:
+        setState(() {
+          _busy = false;
+          switch (event.state) {
+            case CaptureRecorderState.starting:
+              _recording = true;
+              _paused = false;
+              _message = context.tr('Starting screen recording.');
+              break;
+            case CaptureRecorderState.recording:
+              _recording = true;
+              _paused = false;
+              _message = context.tr('Screen recording is active.');
+              break;
+            case CaptureRecorderState.paused:
+              _recording = true;
+              _paused = true;
+              _message = context.tr('Screen recording is paused.');
+              break;
+            case CaptureRecorderState.stopping:
+              _recording = true;
+              _paused = false;
+              _message = context.tr('Finalizing screen recording.');
+              break;
+            case CaptureRecorderState.failed:
+              _recording = false;
+              _paused = false;
+              _message =
+                  event.message ??
+                  context.tr('Capture could not complete. You can try again.');
+              break;
+            case CaptureRecorderState.idle:
+              _recording = false;
+              _paused = false;
+              break;
+            case null:
+              break;
+          }
+          if (event.degraded && event.message != null) {
+            _noticeMessage = event.message;
+          }
+        });
+        break;
       case CaptureEventType.completed:
         final asset = event.asset;
         setState(() {
           _recording = false;
+          _paused = false;
           _busy = false;
           _durationMs = 0;
           _message = context.tr('Capture saved locally.');
@@ -328,9 +407,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
         if (asset != null) {
           unawaited(_addAsset(asset));
         }
+        break;
       case CaptureEventType.failed:
         setState(() {
           _busy = false;
+          _recording = false;
+          _paused = false;
           if (event.recoverable) {
             _noticeMessage = event.message;
           } else {
@@ -339,10 +421,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                 context.tr('Capture could not complete. You can try again.');
           }
         });
+        break;
       case CaptureEventType.canceled:
         setState(() {
           _busy = false;
           _recording = false;
+          _paused = false;
           _message =
               event.message ??
               context.tr(
@@ -350,10 +434,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               );
           _noticeMessage = null;
         });
+        break;
       case CaptureEventType.notice:
         setState(() {
           _noticeMessage = event.message;
         });
+        break;
     }
   }
 
@@ -388,6 +474,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               maxDurationMs: _maxDurationMs,
               message: _message,
               noticeMessage: _noticeMessage,
+              paused: _paused,
               onToggleMicrophone: _recording || _busy
                   ? null
                   : (value) => setState(() {
@@ -407,6 +494,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                   : (value) => setState(() => _selectedCameraMode = value),
               onScreenshot: _busy || _recording ? null : _takeScreenshot,
               onRecord: _busy || _recording ? null : _startRecording,
+              onPause:
+                  _recording &&
+                      !_paused &&
+                      (_recordingCapabilities?.supportsPauseResume ?? false)
+                  ? _pauseRecording
+                  : null,
+              onResume: _recording && _paused ? _resumeRecording : null,
               onStop: _recording ? _stopRecording : null,
               onShare: _shareAsset,
               onDiscard: _discardAsset,
@@ -484,11 +578,14 @@ class _SupportedCaptureView extends StatelessWidget {
     required this.maxDurationMs,
     required this.message,
     required this.noticeMessage,
+    required this.paused,
     required this.onToggleMicrophone,
     required this.onSelectAudioMode,
     required this.onSelectCameraMode,
     required this.onScreenshot,
     required this.onRecord,
+    required this.onPause,
+    required this.onResume,
     required this.onStop,
     required this.onShare,
     required this.onDiscard,
@@ -509,11 +606,14 @@ class _SupportedCaptureView extends StatelessWidget {
   final int maxDurationMs;
   final String? message;
   final String? noticeMessage;
+  final bool paused;
   final ValueChanged<bool>? onToggleMicrophone;
   final ValueChanged<CaptureAudioMode>? onSelectAudioMode;
   final ValueChanged<CaptureCameraMode>? onSelectCameraMode;
   final VoidCallback? onScreenshot;
   final VoidCallback? onRecord;
+  final VoidCallback? onPause;
+  final VoidCallback? onResume;
   final VoidCallback? onStop;
   final ValueChanged<CaptureAsset> onShare;
   final ValueChanged<CaptureAsset> onDiscard;
@@ -661,6 +761,14 @@ class _SupportedCaptureView extends StatelessWidget {
               icon: const Icon(Icons.fiber_manual_record_rounded),
               label: Text(context.tr('Record')),
             ),
+            if (recording)
+              OutlinedButton.icon(
+                onPressed: paused ? onResume : onPause,
+                icon: Icon(
+                  paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                ),
+                label: Text(context.tr(paused ? 'Resume' : 'Pause')),
+              ),
             if (recording)
               OutlinedButton.icon(
                 onPressed: onStop,

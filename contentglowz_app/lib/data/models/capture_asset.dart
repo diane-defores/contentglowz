@@ -245,12 +245,22 @@ class CaptureAsset {
 }
 
 enum CaptureEventType {
+  state,
   recording,
   progress,
   completed,
   failed,
   canceled,
   notice,
+}
+
+enum CaptureRecorderState {
+  idle,
+  starting,
+  recording,
+  paused,
+  stopping,
+  failed,
 }
 
 class CaptureNativeEvent {
@@ -266,6 +276,9 @@ class CaptureNativeEvent {
     this.isPaused,
     this.degraded = false,
     this.failureCode,
+    this.state,
+    this.previousState,
+    this.stopReason,
     this.effectiveAudioMode,
     this.effectiveCameraMode,
     this.overlayConfig,
@@ -284,6 +297,9 @@ class CaptureNativeEvent {
   final bool? isPaused;
   final bool degraded;
   final String? failureCode;
+  final CaptureRecorderState? state;
+  final CaptureRecorderState? previousState;
+  final String? stopReason;
   final CaptureAudioMode? effectiveAudioMode;
   final CaptureCameraMode? effectiveCameraMode;
   final CaptureOverlayConfig? overlayConfig;
@@ -311,6 +327,11 @@ class CaptureNativeEvent {
       isPaused: _asBool(json['isPaused']),
       degraded: _asBool(json['degraded']) ?? false,
       failureCode: json['failureCode']?.toString(),
+      state: _recorderStateFromString(json['state']?.toString()),
+      previousState: _recorderStateFromString(
+        json['previousState']?.toString(),
+      ),
+      stopReason: json['stopReason']?.toString(),
       effectiveAudioMode: _audioModeFromString(
         json['effectiveAudioMode']?.toString(),
       ),
@@ -421,6 +442,8 @@ CaptureKind _kindFromString(String? value) {
 
 CaptureEventType _eventTypeFromString(String? value) {
   switch (value?.toLowerCase()) {
+    case 'state':
+      return CaptureEventType.state;
     case 'recording':
       return CaptureEventType.recording;
     case 'completed':
@@ -434,6 +457,25 @@ CaptureEventType _eventTypeFromString(String? value) {
     case 'progress':
     default:
       return CaptureEventType.progress;
+  }
+}
+
+CaptureRecorderState? _recorderStateFromString(String? value) {
+  switch (value?.toLowerCase()) {
+    case 'idle':
+      return CaptureRecorderState.idle;
+    case 'starting':
+      return CaptureRecorderState.starting;
+    case 'recording':
+      return CaptureRecorderState.recording;
+    case 'paused':
+      return CaptureRecorderState.paused;
+    case 'stopping':
+      return CaptureRecorderState.stopping;
+    case 'failed':
+      return CaptureRecorderState.failed;
+    default:
+      return null;
   }
 }
 
