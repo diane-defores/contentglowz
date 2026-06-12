@@ -2,6 +2,12 @@
 
 All notable changes to the ContentGlowz monorepo are documented here.
 
+## [2026-06-12]
+
+### Changed
+- Removed proven-unused direct/codegen Flutter dependencies from `contentglowz_app` and reconciled safe Pub updates so the remaining direct dependency drift is limited to the out-of-scope `record` major.
+- Hardened the `contentglowz_app` Vercel Flutter install/build path around the pinned `.flutter-version` SDK source and archive checksum verification instead of a floating `stable` branch clone.
+
 ## [2026-06-10]
 
 ### Changed
