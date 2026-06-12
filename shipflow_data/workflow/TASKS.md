@@ -104,6 +104,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | 🟠 | Add a simplified guided tour for “publish fast” first-run mode | 📋 todo |
 | 🟠 | Add a real account section in Settings for Clerk/account/provider management | 📋 todo |
 | 🟠 | Finish the secondary i18n pass on partially translated screens | 🔄 in progress |
+| 🟠 | Start Android pro creator recorder implementation (recording controls, camera overlay/state), with Android device proof and `android-pro-creator-recorder` QA checklist still pending | 🔄 in progress |
 | 🟠 | Finish Android APK CI setup: enable Blacksmith app on the repo, add `CLERK_PUBLISHABLE_KEY`, trigger the first run, download/install the APK, and verify logs via CLI | 📋 todo |
 
 ### Privacy Capture Roadmap
@@ -181,9 +182,9 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 | 🟠 | Rationaliser les design tokens orphelins ou non consommés (`--button-*`, `--space-mobile-*`, `--breakpoint-tablet/desktop`, etc.) pour réduire la dérive | 📋 todo |
 | 🟠 | Corriger la cohérence d’échelle typo/spacing (ratios instables) et figer une règle modulaire unique (Utopia/base ratio) | 📋 todo |
 | 🟡 | Passer vers un format DTCG (`tokens.json` avec `$value/$type`) puis générer automatiquement Flutter/Astro depuis cette source unique | 📋 todo |
-🟠 [contentglowz_app] task: Retirer les dependances Flutter directes non consommees et la pile codegen associee si elle est vraiment morte (`riverpod_annotation`, `json_annotation`, `cached_network_image`, `responsive_framework`, plus `build_runner`/`json_serializable`/`riverpod_generator` si confirme) | status: todo | area: deps-unused-direct
-🟠 [contentglowz_app] task: Durcir la chaine d'installation Vercel pour Flutter sans `git clone` flottant de `stable` et avec une version/outillage pinnes et verifies | status: todo | area: deps-supply-chain-install
-🟡 [contentglowz_app] task: Appliquer les mises a jour pub patch/minor non bloquantes du lot 2026-06-12 (`audioplayers`, `go_router`, `google_fonts`, `sentry_flutter`, `build_runner`) puis rerun `flutter analyze` et les tests cibles | status: todo | area: deps-patch-minor-updates
+🟢 [contentglowz_app] task: Retirer les dependances Flutter directes non consommees et la pile codegen associee si elle est vraiment morte (`riverpod_annotation`, `json_annotation`, `cached_network_image`, `responsive_framework`, plus `build_runner`/`json_serializable`/`riverpod_generator` si confirme) | status: done | area: deps-unused-direct
+🟢 [contentglowz_app] task: Durcir la chaine d'installation Vercel pour Flutter sans `git clone` flottant de `stable` et avec une version/outillage pinnes et verifies | status: done | area: deps-supply-chain-install
+🟢 [contentglowz_app] task: Appliquer les mises a jour pub patch/minor non bloquantes du lot 2026-06-12 (`audioplayers`, `go_router`, `google_fonts`, `sentry_flutter`, `build_runner`) puis rerun `flutter analyze` et les tests cibles | status: done | area: deps-patch-minor-updates
 🟠 [contentglowz_remotion_worker] task: Mettre a jour `@google-cloud/storage` vers `7.21.0` puis rerun `npm audit` pour supprimer la chaine `uuid`/`teeny-request`/`retry-request`/`gaxios` | status: todo | area: deps-security-storage
 🟡 [contentglowz_remotion_worker] task: Ajouter `packageManager`, `engines` Node/NPM et une automation Dependabot npm/github-actions pour figer et surveiller la chaine d'installation | status: todo | area: deps-config-automation
 🟠 [contentglowz_lab] task: Regenerer `requirements.lock` avec des versions corrigees pour `aiohttp`, `pydantic-ai`, `pyjwt`, `urllib3`, `starlette` et `idna`, puis rerun `pip-audit` sur le lock | status: todo | area: deps-security-lock-refresh

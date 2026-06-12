@@ -27,7 +27,7 @@ fi
 
 installed_version=""
 if [[ -x "$FLUTTER_ROOT/bin/flutter" ]]; then
-  installed_version="$("$FLUTTER_ROOT/bin/flutter" --version --machine 2>/dev/null | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p' || true)"
+  installed_version="$("$FLUTTER_ROOT/bin/flutter" --version --machine 2>/dev/null | tr -d '\n' | sed -n 's/.*"frameworkVersion": *"\([^"]*\)".*/\1/p' || true)"
 fi
 
 if [[ "$installed_version" != "$FLUTTER_VERSION" ]]; then

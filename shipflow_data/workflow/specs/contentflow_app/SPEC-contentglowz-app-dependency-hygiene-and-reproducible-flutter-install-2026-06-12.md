@@ -326,12 +326,15 @@ External rules that affect this spec:
 | 2026-06-12 12:54:44 UTC | 100-sf-spec | GPT-5 Codex | Created a new chantier spec from the dependency audit intake for `contentglowz_app`, preserving the audit evidence, proposed title, severity, and follow-up route. | draft saved | `/101-sf-ready contentglowz_app dependency hygiene and reproducible Flutter install` |
 | 2026-06-12 13:03:00 UTC | 101-sf-ready | GPT-5 Codex | Reviewed the spec against readiness, adversarial, and security gates. | not ready | `/101-sf-ready contentglowz_app dependency hygiene and reproducible Flutter install` |
 | 2026-06-12 13:42:00 UTC | 101-sf-ready | GPT-5 Codex | Re-reviewed the spec only for readiness blockers: canonical Flutter version source and patch/minor run policy; both are now explicitly resolved in-scope. | ready-for-102 | `/102-sf-start contentglowz_app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 15:56:00 UTC | 102-sf-start | GPT-5 Codex | Removed the dead direct/codegen dependency stack from the resolved graph, hardened the Vercel Flutter install/build scripts around the pinned repo version source, and ran local proof (`flutter pub get`, focused tests, Vercel-style web build, plus analyze with a recorded pre-existing warning pair outside scope). | implemented | `/103-sf-verify contentglowz_app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:20:00 UTC | 103-sf-verify | GPT-5 Codex | Verified the chantier on the local evidence-first path: dependency cleanup, pinned Flutter install hardening, `flutter pub get`, `flutter pub outdated`, targeted tests, `flutter analyze --no-fatal-warnings`, and Vercel install/build proof were consistent with the spec; the two `api_service.dart` warnings remain pre-existing and outside this scope. | verified | `/104-sf-end contentglowz_app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:28:00 UTC | 104-sf-end | GPT-5 Codex | Closed the verified chantier in trackers and changelog without commit/push. Dependency cleanup, reproducible Flutter install hardening, and safe patch/minor updates are recorded as done; ship remains a separate step. | closed | `/005-sf-ship contentglowz_app dependency hygiene and reproducible Flutter install` |
 
 ## Current Chantier Flow
 
 - 100-sf-spec: done
 - 101-sf-ready: done
-- 102-sf-start: ready
-- 103-sf-verify: not launched
-- 104-sf-end: not launched
+- 102-sf-start: implemented
+- 103-sf-verify: verified
+- 104-sf-end: closed
 - 005-sf-ship: not launched

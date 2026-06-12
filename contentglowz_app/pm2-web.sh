@@ -5,7 +5,7 @@ export PATH="/home/claude/.flutter-sdk/bin:$PATH"
 cd "$(cd "$(dirname "$0")" && pwd)"
 
 EXPECTED_FLUTTER_VERSION="$(tr -d '[:space:]' < .flutter-version 2>/dev/null || true)"
-INSTALLED_FLUTTER_VERSION="$(flutter --version --machine 2>/dev/null | sed -n 's/.*"frameworkVersion":"\([^"]*\)".*/\1/p')"
+INSTALLED_FLUTTER_VERSION="$(flutter --version --machine 2>/dev/null | tr -d '\n' | sed -n 's/.*"frameworkVersion": *"\([^"]*\)".*/\1/p')"
 
 if [[ -n "${EXPECTED_FLUTTER_VERSION}" && -n "${INSTALLED_FLUTTER_VERSION}" && "${EXPECTED_FLUTTER_VERSION}" != "${INSTALLED_FLUTTER_VERSION}" ]]; then
   echo "WARNING: .flutter-version expects ${EXPECTED_FLUTTER_VERSION}, but local flutter is ${INSTALLED_FLUTTER_VERSION}." >&2

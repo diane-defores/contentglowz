@@ -524,12 +524,14 @@ Implementation guardrails:
 | 2026-06-12 12:01:52 UTC | 100-sf-spec | GPT-5 Codex | Created the Android pro creator recorder spec from current capture code, Android official docs, and local exploration. | draft saved | /101-sf-ready Android pro creator recorder |
 | 2026-06-12 12:48:00 UTC | 001-sf-build | GPT-5 Codex + Spark subagents | Implemented Batch 1 recorder foundation in Flutter/Dart and Android bridge: typed recorder contracts, capability discovery, degradation events, capture preflight UI, and regression tests. | partial | Continue with native recorder state machine, real camera pipeline, and readiness/verification for the remaining recording surface |
 | 2026-06-12 13:17:00 UTC | 001-sf-build | GPT-5 Codex + Spark subagents | Added Batch 2 native recorder session controls: typed recorder state transitions, foreground pause/resume/stop actions, pause/resume channel methods, capability truth update, Flutter pause/resume wiring, and regression tests. | partial | Continue with formal 101 readiness, native composed camera/audio pipeline, real floating overlay surface, and device-level Android verification |
+| 2026-06-12 13:34:55 UTC | 103-sf-verify | GPT-5 Codex | Reviewed Batch 1+2 execution state, Flutter checks, and proof requirements. Verified partial implementation only: no native Android build/device proof on this run and no required recorder QA checklist artifact found at `shipflow_data/workflow/test-checklists/android-pro-creator-recorder.md`; unresolved drift candidates remain open across project scope (`--warn-only --max-findings 40`). | partial | Route to 405-sf-prod (target discovery), then 107-sf-test for Android device proof; create/check recorder QA checklist before 104-sf-end. |
+| 2026-06-12 13:35:57 UTC | 104-sf-end | GPT-5 Codex | Closed the spec trace as deferred because Android-native composed-pipeline/overlay proof and recorder QA checklist artifacts are still missing. | deferred | Execute `/005-sf-ship` after device checklist proof and Android validation before any final closure. |
 
 ## Current Chantier Flow
 
 - 100-sf-spec: draft created for Android Pro Creator Recorder.
 - 101-sf-ready: not launched formally; 001-sf-build performed a bounded readiness pass and selected the native recorder state-machine/control batch as the next safe slice.
 - 102-sf-start: partial implementation completed for Batch 1 foundation plus Batch 2 native recorder state and session controls.
-- 103-sf-verify: not launched.
-- 104-sf-end: not launched.
+- 103-sf-verify: partial.
+- 104-sf-end: deferred (implementation partially traced; finalization waits on Android device proof + required QA checklist).
 - 005-sf-ship: not launched.

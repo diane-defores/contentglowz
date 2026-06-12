@@ -8,6 +8,7 @@ The format is based on Keep a Changelog.
 
 ### Added
 - Added the `/editor/:id/video` timeline workspace with text/asset clip editing, clean-version preview gating, final-render gating, and signed artifact token redaction in the visible UI.
+- Added Android pro recorder Batch 2 native session-control groundwork in the content capture path (typed recorder state events, foreground pause/resume/stop wiring, and configuration preflight contracts); camera overlay composition and Android-device validation remain pending.
 
 ### Changed
 - Redesigned the empty mobile Flow dashboard into a compact swipe-action deck with one CTA per card and hidden zero-count workspace cards.
@@ -17,6 +18,18 @@ The format is based on Keep a Changelog.
 - Fixed the Clerk email sign-up OTP flow by switching the embedded SignUp component to hash routing on the static auth page and skipping duplicate mounts on the same node.
 - Fixed production API availability detection when `API_BASE_URL` is injected as a bare host such as `api.contentglowz.com`; the app now normalizes it to an HTTPS origin before health checks.
 - Fixed Android system Back in the app shell so pushed in-app routes pop to their parent before showing the app-exit confirmation dialog.
+
+## [2026-06-12]
+
+### Changed
+- Pinned the Flutter toolchain contract to the checked-in `.flutter-version` source and hardened the Vercel/local web build scripts so version checks and Dart defines remain reproducible.
+- Updated safe direct app dependencies within the existing major lines for routing, fonts, audio feedback, and Sentry while keeping native recorder migration risk out of scope.
+
+### Security
+- Replaced the floating Vercel Flutter `stable` branch clone path with a pinned archive install flow plus checksum verification.
+
+### Removed
+- Removed unused direct Riverpod/JSON/image/responsive dependencies and the dead codegen toolchain from the app manifest and resolved lockfile.
 
 ## [2026-05-04]
 
