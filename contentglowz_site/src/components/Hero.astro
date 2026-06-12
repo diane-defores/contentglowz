@@ -1,5 +1,12 @@
 ---
 import { appEntryUrl, appSignInUrl } from '../config/site';
+import type { HeroContent } from '../data/homepageContent';
+
+interface Props {
+  content: HeroContent;
+}
+
+const { content } = Astro.props;
 ---
 
 <section id="main-content" class="hero">
@@ -7,40 +14,31 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   <div class="container">
     <div class="hero-content">
       <h1 class="hero-title">
-        AI drafts your <span class="gradient-text rotating-words" aria-label="articles, newsletters, social posts, video scripts">
-          <span class="word active" aria-hidden="true">articles</span>
-          <span class="word" aria-hidden="true">newsletters</span>
-          <span class="word" aria-hidden="true">social posts</span>
-          <span class="word" aria-hidden="true">video scripts</span>
-        </span>.<br/>You stay in control.
+        {content.titlePrefix}{' '}
+        <span class="gradient-text rotating-words" aria-label={content.ariaLabel}>
+          {content.rotatingWords.map((word, index) => (
+            <span class:list={['word', { active: index === 0 }]} aria-hidden="true">{word}</span>
+          ))}
+        </span>
+        .<br/>{content.titleSuffix}
       </h1>
-      <p class="hero-subtitle">
-        ContentGlowz is a human-led content workspace for creators and lean teams.
-        Capture ideas, shape them with your voice, review every draft, then schedule or
-        publish through the channels that are connected. If the backend is briefly
-        unavailable, cached reads and supported queued edits help you keep momentum.
-      </p>
+      <p class="hero-subtitle">{content.subtitle}</p>
       <div class="hero-cta">
-        <a href={appSignInUrl} class="btn-primary">Continue with Google</a>
-        <a href={appEntryUrl} class="btn-secondary">Open App</a>
+        <a href={appSignInUrl} class="btn-primary">{content.primaryCta}</a>
+        <a href={appEntryUrl} class="btn-secondary">{content.secondaryCta}</a>
       </div>
       <div class="hero-stats">
-        <div class="stat">
-          <span class="stat-number">5 min</span>
-          <span class="stat-label">weekly ritual</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-number">1</span>
-          <span class="stat-label">review queue</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat">
-          <span class="stat-number">Safe</span>
-          <span class="stat-label">human approval</span>
-        </div>
+        {content.stats.map((stat, index) => (
+          <div class="stat-group">
+            <div class="stat">
+              <span class="stat-number">{stat.value}</span>
+              <span class="stat-label">{stat.label}</span>
+            </div>
+            {index < content.stats.length - 1 && <div class="stat-divider"></div>}
+          </div>
+        ))}
       </div>
-      <p class="hero-trust">Built by a solo founder. Bootstrapped. No VC, no fluff.</p>
+      <p class="hero-trust">{content.trust}</p>
     </div>
   </div>
 </section>
@@ -144,6 +142,10 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  .stat-group {
+    display: contents;
   }
 
   .stat-number {

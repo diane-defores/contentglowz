@@ -59,8 +59,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.warningColor.withAlpha(18),
-                    blurRadius: AppSpacing.xl,
-                    offset: const Offset(0, AppSpacing.md),
+                    blurRadius: 20,
+                    offset: const Offset(0, AppSpacing.xs),
                   ),
                 ],
               ),

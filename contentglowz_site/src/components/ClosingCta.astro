@@ -1,18 +1,23 @@
 ---
 import { appSignInUrl } from '../config/site';
+import type { ClosingCtaContent } from '../data/homepageContent';
+
+interface Props {
+  content: ClosingCtaContent;
+}
+
+const { content } = Astro.props;
 ---
 
 <section class="closing-cta">
   <div class="container">
-    <h2>Ready to turn ideas into reviewed content?</h2>
-    <p>Start with a controlled workspace for ideas, drafts, review, scheduling, and supported publishing flows. Free plan, no credit card.</p>
+    <h2>{content.title}</h2>
+    <p>{content.body}</p>
     <div class="closing-cta-buttons">
-      <a href={appSignInUrl} class="btn-primary">Start Free</a>
-      <a href="/blog" class="btn-secondary">Read the Blog</a>
+      <a href={appSignInUrl} class="btn-primary">{content.primaryCta}</a>
+      <a href="/blog" class="btn-secondary">{content.secondaryCta}</a>
     </div>
-    <p class="closing-note">
-      Built for real-world conditions: degraded mode, local queue sync for supported edits, and explicit recovery after outages.
-    </p>
+    <p class="closing-note">{content.note}</p>
   </div>
 </section>
 

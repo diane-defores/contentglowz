@@ -1,31 +1,31 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Navbar from '../components/Navbar.astro';
-import Hero from '../components/Hero.astro';
-import Problem from '../components/Problem.astro';
-import Robots from '../components/Robots.astro';
-import Features from '../components/Features.astro';
-import Pricing from '../components/Pricing.astro';
-import Testimonials from '../components/Testimonials.astro';
-import FAQ from '../components/FAQ.astro';
-import ClosingCta from '../components/ClosingCta.astro';
-import Footer from '../components/Footer.astro';
-import { homepageContent } from '../data/homepageContent';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Hero from '../../components/Hero.astro';
+import Problem from '../../components/Problem.astro';
+import Robots from '../../components/Robots.astro';
+import Features from '../../components/Features.astro';
+import Testimonials from '../../components/Testimonials.astro';
+import Pricing from '../../components/Pricing.astro';
+import FAQ from '../../components/FAQ.astro';
+import ClosingCta from '../../components/ClosingCta.astro';
+import Footer from '../../components/Footer.astro';
+import { homepageContent } from '../../data/homepageContent';
 
-const content = homepageContent.en;
+const content = homepageContent.fr;
 ---
 
 <Layout
   title={content.title}
   description={content.description}
-  locale="en"
-  canonicalUrl="https://contentglowz.com/"
+  locale="fr"
+  canonicalUrl="https://contentglowz.com/fr/"
   alternateLocales={[
     { locale: 'en', href: 'https://contentglowz.com/' },
     { locale: 'fr', href: 'https://contentglowz.com/fr/' },
   ]}
 >
-  <Navbar locale="en" />
+  <Navbar locale="fr" />
   <main class="landing-shell">
     <Hero content={content.hero} />
     <Problem content={content.problem} />
@@ -36,7 +36,7 @@ const content = homepageContent.en;
     <FAQ content={content.faq} />
     <ClosingCta content={content.closingCta} />
   </main>
-  <Footer locale="en" />
+  <Footer locale="fr" />
 </Layout>
 
 <style>

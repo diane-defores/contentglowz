@@ -1,26 +1,27 @@
 ---
+import type { ProblemContent } from '../data/homepageContent';
+
+interface Props {
+  content: ProblemContent;
+}
+
+const { content } = Astro.props;
 ---
 
 <section class="problem-section">
   <div class="container">
     <div class="problem-content">
-      <p class="problem-label">Sound familiar?</p>
-      <h2 class="problem-title">You have 100 content ideas.<br/>Zero published.</h2>
+      <p class="problem-label">{content.label}</p>
+      <h2 class="problem-title" set:html={content.title}></h2>
       <div class="problem-list">
-        <div class="problem-item">
-          <span class="problem-icon">😩</span>
-          <p>Writing one blog post takes 3 hours. You need five per week.</p>
-        </div>
-        <div class="problem-item">
-          <span class="problem-icon">🔄</span>
-          <p>Each platform needs a different format. LinkedIn, Twitter, newsletter, blog — same idea, four rewrites.</p>
-        </div>
-        <div class="problem-item">
-          <span class="problem-icon">📉</span>
-          <p>You start strong on Monday. By Thursday, you've posted nothing.</p>
-        </div>
+        {content.items.map((item) => (
+          <div class="problem-item">
+            <span class="problem-icon">{item.icon}</span>
+            <p>{item.text}</p>
+          </div>
+        ))}
       </div>
-      <p class="problem-transition">ContentGlowz fixes this.</p>
+      <p class="problem-transition">{content.transition}</p>
     </div>
   </div>
 </section>
