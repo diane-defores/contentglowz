@@ -58,6 +58,22 @@ void main() {
         isSupported: true,
         platformLabel: 'android',
       ),
+      capabilities: const CaptureRecordingCapabilities(
+        isSupported: true,
+        supportsScreenOnlyRecording: true,
+        supportsMicrophoneAudio: true,
+        supportsSystemAudio: false,
+        supportsPauseResume: false,
+        supportsFloatingControls: false,
+        supportsComposedCameraModes: false,
+        hasFrontCamera: true,
+        hasRearCamera: true,
+        supportsDualCamera: false,
+        requiresFreshConsent: true,
+        hasNotificationPermission: true,
+        hasMicrophonePermission: true,
+        dualCameraHardwareHint: true,
+      ),
     );
 
     await tester.pumpWidget(
@@ -77,7 +93,7 @@ void main() {
 
     expect(find.text('Screenshot'), findsOneWidget);
     expect(find.text('Record'), findsOneWidget);
-    expect(find.text('Mic'), findsOneWidget);
+    expect(find.text('Mic'), findsAtLeastNWidgets(1));
     expect(find.text('Recorder profile'), findsOneWidget);
     expect(find.text('Audio mode'), findsOneWidget);
     expect(find.text('Camera mode'), findsOneWidget);

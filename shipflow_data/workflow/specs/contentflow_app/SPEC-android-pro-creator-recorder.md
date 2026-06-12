@@ -6,8 +6,8 @@ project: "contentglowz_app"
 created: "2026-06-12"
 created_at: "2026-06-12 12:01:52 UTC"
 updated: "2026-06-12"
-updated_at: "2026-06-12 12:01:52 UTC"
-status: draft
+updated_at: "2026-06-12 12:48:00 UTC"
+status: active
 source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
@@ -73,7 +73,11 @@ Android Pro Creator Recorder
 
 ## Status
 
-Draft chantier for replacing the current Android screen recorder V1 with a professional creator-oriented recorder. The existing screenshot/local-capture foundation remains valuable, but screen video recording evolves into a composed pipeline with floating overlay controls, pause/resume, camera overlay modes, richer audio controls, typed diagnostics, stronger crash handling, and explicit capability degradation by Android version/device. This spec supersedes the V1 screen-recording contract inside `SPEC-android-device-screen-capture.md` for recording flows while preserving its consent, local-only, and foreground-service invariants.
+Active chantier for replacing the current Android screen recorder V1 with a professional creator-oriented recorder. The existing screenshot/local-capture foundation remains valuable, but screen video recording evolves into a composed pipeline with floating overlay controls, pause/resume, camera overlay modes, richer audio controls, typed diagnostics, stronger crash handling, and explicit capability degradation by Android version/device. This spec supersedes the V1 screen-recording contract inside `SPEC-android-device-screen-capture.md` for recording flows while preserving its consent, local-only, and foreground-service invariants.
+
+2026-06-12 implementation status:
+- Batch 1 foundation is implemented: typed recorder metadata/contracts in Dart, capability discovery and degradation plumbing in the Android bridge, capture preflight UI in Flutter, and local-store/test updates.
+- The composed video pipeline, pause/resume engine, floating in-session controls, and real camera overlay composition remain open.
 
 ## User Story
 
@@ -517,12 +521,13 @@ Implementation guardrails:
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
 | 2026-06-12 12:01:52 UTC | 100-sf-spec | GPT-5 Codex | Created the Android pro creator recorder spec from current capture code, Android official docs, and local exploration. | draft saved | /101-sf-ready Android pro creator recorder |
+| 2026-06-12 12:48:00 UTC | 001-sf-build | GPT-5 Codex + Spark subagents | Implemented Batch 1 recorder foundation in Flutter/Dart and Android bridge: typed recorder contracts, capability discovery, degradation events, capture preflight UI, and regression tests. | partial | Continue with native recorder state machine, real camera pipeline, and readiness/verification for the remaining recording surface |
 
 ## Current Chantier Flow
 
 - 100-sf-spec: draft created for Android Pro Creator Recorder.
-- 101-sf-ready: not launched.
-- 102-sf-start: not launched.
+- 101-sf-ready: not launched; full chantier still needs formal readiness review after Batch 1 foundation.
+- 102-sf-start: partial foundation implemented for Batch 1 only.
 - 103-sf-verify: not launched.
 - 104-sf-end: not launched.
 - 005-sf-ship: not launched.
