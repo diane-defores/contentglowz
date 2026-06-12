@@ -15,6 +15,24 @@ import '../../widgets/project_picker_action.dart';
 import '../../widgets/skeleton_loader.dart';
 import 'content_card.dart';
 
+const int _kMaxVisibleCards = 3;
+const double _kActionDoneAllIconSize = 18.0;
+const double _kFeedDeckBottomPadding = AppSpacing.lg;
+const double _kFeedDeckOffsetY = 30.0;
+const double _kFeedDeckPaddingHorizontal = AppSpacing.sm;
+const double _kFeedDeckPaddingVertical = AppSpacing.xl;
+const double _kFeedDeckBottomActionOffset = AppSpacing.lg;
+const double _kFeedActionButtonMin = 52.0;
+const double _kFeedActionButtonLarge = 64.0;
+const double _kFeedActionIconSizeSmall = 26.0;
+const double _kFeedActionIconSizeLarge = 32.0;
+const double _kFeedOverlayIconSize = 28.0;
+const double _kFeedOverlayPaddingH = 32.0;
+const double _kFeedOverlayPaddingV = 16.0;
+const double _kFeedOverlayLetterSpacing = 2.0;
+
+const _kFeedActionCaptionSpacing = AppSpacing.xxs;
+
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
@@ -67,7 +85,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   )
                 : TextButton.icon(
                     onPressed: () => _bulkApprove(contentAsync.value!),
-                    icon: const Icon(Icons.done_all, size: 18),
+                    icon: const Icon(Icons.done_all, size: _kActionDoneAllIconSize),
                     label: Text(
                       context.tr('All ({count})', {
                         'count': contentAsync.value!.length,
@@ -120,13 +138,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.only(bottom: _kFeedDeckBottomPadding),
           child: CardSwiper(
             controller: _swiperController,
             cardsCount: items.length,
-            numberOfCardsDisplayed: items.length.clamp(1, 3),
-            backCardOffset: const Offset(0, -30),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+            numberOfCardsDisplayed: items.length.clamp(1, _kMaxVisibleCards),
+            backCardOffset: const Offset(0, -_kFeedDeckOffsetY),
+            padding: const EdgeInsets.symmetric(
+              horizontal: _kFeedDeckPaddingHorizontal,
+              vertical: _kFeedDeckPaddingVertical,
+            ),
             scale: 0.95,
             isLoop: false,
             onSwipe: (prevIndex, currentIndex, direction) =>
@@ -157,7 +178,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         // Swipe direction overlay
         if (_swipeOverlay != null) _buildOverlay(),
         // Bottom action buttons
-        Positioned(bottom: 24, left: 0, right: 0, child: _buildActionButtons()),
+        Positioned(
+          bottom: _kFeedDeckBottomActionOffset,
+          left: 0,
+          right: 0,
+          child: _buildActionButtons(),
+        ),
       ],
     );
   }
@@ -188,24 +214,27 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           ),
           child: Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: _kFeedOverlayPaddingH,
+                vertical: _kFeedOverlayPaddingV,
+              ),
               decoration: BoxDecoration(
                 color: color.withAlpha(40),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadii.lg),
                 border: Border.all(color: color, width: 2),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, color: color, size: 28),
-                  const SizedBox(width: 12),
+                  Icon(icon, color: color, size: _kFeedOverlayIconSize),
+                  const SizedBox(width: AppSpacing.sm),
                   Text(
                     context.tr(label),
                     style: TextStyle(
                       color: color,
-                      fontSize: 24,
+                      fontSize: AppText.base + 8,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
+                      letterSpacing: _kFeedOverlayLetterSpacing,
                     ),
                   ),
                 ],
@@ -251,7 +280,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     required VoidCallback onTap,
     bool large = false,
   }) {
-    final size = large ? 64.0 : 52.0;
+    final size = large ? _kFeedActionButtonLarge : _kFeedActionButtonMin;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -267,16 +296,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             child: SizedBox(
               width: size,
               height: size,
-              child: Icon(icon, color: color, size: large ? 32 : 26),
+              child: Icon(
+                icon,
+                color: color,
+                size: large
+                    ? _kFeedActionIconSizeLarge
+                    : _kFeedActionIconSizeSmall,
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: _kFeedActionCaptionSpacing),
         Text(
           context.tr(label),
           style: TextStyle(
             color: color.withAlpha(180),
-            fontSize: 12,
+            fontSize: AppText.xs,
             fontWeight: FontWeight.w500,
           ),
         ),

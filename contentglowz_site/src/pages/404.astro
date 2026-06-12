@@ -26,7 +26,7 @@ import Footer from '../components/Footer.astro';
   }
 
   .not-found h1 {
-    font-size: calc(var(--text-h1) * 1.7);
+    font-size: calc(var(--text-h1) * var(--leading-readable));
     font-weight: 900;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     -webkit-background-clip: text;
@@ -44,14 +44,14 @@ import Footer from '../components/Footer.astro';
   .back-home {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--color-text-on-dark);
-    padding: var(--button-padding-y); var(--space-8);
+        padding: var(--button-padding-y) var(--space-8);
     border-radius: var(--button-radius);
     font-weight: 600;
     transition: transform var(--duration-base), box-shadow var(--duration-base);
   }
 
   .back-home:hover {
-    transform: translateY(calc(var(--space-1) * -0.5));
+    transform: translateY(var(--motion-lift-sm));
     box-shadow: var(--shadow-primary);
   }
 </style>

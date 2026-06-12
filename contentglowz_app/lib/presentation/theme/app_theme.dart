@@ -21,6 +21,9 @@ class AppTheme {
   static Color get warningColor => _warningColor;
   static Color get infoColor => _infoColor;
 
+  static const double entryScreenMaxWidth = 560.0;
+  static const double authScreenMaxWidth = 520.0;
+
   static ThemeData get lightTheme => _buildTheme(Brightness.light);
 
   static ThemeData get darkTheme => _buildTheme(Brightness.dark);

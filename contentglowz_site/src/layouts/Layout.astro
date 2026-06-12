@@ -193,6 +193,16 @@ const themeCssVars = `
     --z-index-sticky: 1001;
     --z-index-floating: 1000;
     --z-index-backdrop: -1;
+    --hero-mobile-padding-y: calc(var(--space-20) + var(--space-2));
+    --card-min-width: calc(var(--space-10) * 7);
+    --testimonial-card-min-width: var(--space-20);
+    --surface-backdrop-blur: blur(10px);
+    --focus-outline-width: calc(var(--space-1) / 2);
+    --motion-lift-tiny: calc(var(--space-1) * -0.5);
+    --motion-lift-sm: calc(var(--space-1) * -0.75);
+    --motion-lift-card: calc(var(--space-1) * -1.25);
+    --card-featured-border-width: 3px;
+    --card-featured-scale: 1.05;
     --leading-hero: 1.15;
     --leading-readable: 1.7;
     --leading-copy: 1.5;
@@ -393,7 +403,7 @@ const themeCssVars = `
     line-height: var(--leading-tight);
   }
 
-  @media (max-width: var(--breakpoint-mobile)); {
+  @media (max-width: var(--breakpoint-mobile)) {
     .container {
       padding: 0 var(--space-mobile-4);
     }
@@ -411,7 +421,7 @@ const themeCssVars = `
   .btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--color-text-on-dark);
-    padding: var(--space-4); var(--space-10);
+        padding: var(--space-4) var(--space-10);
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
@@ -421,14 +431,14 @@ const themeCssVars = `
   }
 
   .btn-primary:hover {
-    transform: translateY(calc(var(--space-1) * -0.75));
+    transform: translateY(var(--motion-lift-sm));
     box-shadow: var(--shadow-primary-hover);
   }
 
   .btn-secondary {
     background: var(--color-surface-elevated);
     color: var(--color-primary);
-    padding: var(--space-4); var(--space-10);
+        padding: var(--space-4) var(--space-10);
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
@@ -444,16 +454,16 @@ const themeCssVars = `
 
   /* --- Focus — WCAG 2.4.11 --- */
   :focus-visible {
-    outline: calc(var(--space-1) / 2) solid var(--color-focus-ring);
-    outline-offset: calc(var(--space-1) / 2);
+    outline: var(--focus-outline-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-outline-width);
   }
 
   /* --- Reduced motion --- */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
-      animation-duration: var(--duration-motion-reduced); !important;
+      animation-duration: var(--duration-motion-reduced) !important;
       animation-iteration-count: 1 !important;
-      transition-duration: var(--duration-motion-reduced); !important;
+      transition-duration: var(--duration-motion-reduced) !important;
     }
 
     html {

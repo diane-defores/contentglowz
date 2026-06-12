@@ -13,6 +13,13 @@ import '../../theme/app_theme.dart';
 import '../../widgets/project_picker_action.dart';
 import 'settings_widgets.dart';
 
+const double _kSettingsFinalBottomSpacing = AppSpacing.lg + AppSpacing.sm;
+const double _kSettingsMiniLoaderDotSize = AppSpacing.xs + AppSpacing.xxs;
+const double _kSettingsActionRowHeight = AppSpacing.md + AppSpacing.md + AppSpacing.sm;
+const double _kSettingsStatusAvatarSize =
+    AppSpacing.lg + AppSpacing.sm + AppSpacing.xxs;
+const double _kSettingsSmallIconSize = 18.0;
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -140,7 +147,7 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: _kSettingsFinalBottomSpacing),
         ],
       ),
     );
@@ -182,8 +189,8 @@ class _FeedbackAdminAccessRow extends StatelessWidget {
         subtitle: 'Checking access...',
         iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
         trailing: const SizedBox(
-          width: 18,
-          height: 18,
+          width: _kSettingsMiniLoaderDotSize,
+          height: _kSettingsMiniLoaderDotSize,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
@@ -246,8 +253,8 @@ class _AccountGroup extends ConsumerWidget {
               Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: _kSettingsStatusAvatarSize,
+                    height: _kSettingsStatusAvatarSize,
                     decoration: BoxDecoration(
                       color: statusColor.withAlpha(28),
                       borderRadius: BorderRadius.circular(10),
@@ -262,7 +269,7 @@ class _AccountGroup extends ConsumerWidget {
                       size: 20,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,16 +278,16 @@ class _AccountGroup extends ConsumerWidget {
                           statusLabel,
                           style: TextStyle(
                             color: statusColor,
-                            fontSize: 15,
+                            fontSize: AppText.base - 1,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: AppSpacing.xxs / 2),
                         Text(
                           subtitle,
                           style: TextStyle(
                             color: theme.colorScheme.onSurfaceVariant,
-                            fontSize: 12,
+                            fontSize: AppText.xs,
                             height: 1.4,
                           ),
                         ),
@@ -289,26 +296,26 @@ class _AccountGroup extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.md),
               SizedBox(
                 width: double.infinity,
                 child: isSignedIn || isDemo
                     ? OutlinedButton.icon(
                         onPressed: () =>
                             ref.read(authSessionProvider.notifier).signOut(),
-                        icon: const Icon(Icons.logout_rounded, size: 18),
+                        icon: const Icon(Icons.logout_rounded, size: _kSettingsSmallIconSize),
                         label: Text(context.tr('Sign out')),
                         style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 44),
+                          minimumSize: const Size(0, _kSettingsActionRowHeight),
                         ),
                       )
                     : FilledButton.icon(
                         onPressed: () => context.push('/auth'),
-                        icon: const Icon(Icons.login_rounded, size: 18),
+                        icon: const Icon(Icons.login_rounded, size: _kSettingsSmallIconSize),
                         label: Text(context.tr('Sign in')),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.approveColor,
-                          minimumSize: const Size(0, 44),
+                          minimumSize: const Size(0, _kSettingsActionRowHeight),
                         ),
                       ),
               ),
@@ -473,14 +480,17 @@ class _IdeaPoolBlock extends ConsumerWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => context.push('/idea-pool'),
-                  icon: const Icon(Icons.lightbulb_outline, size: 18),
+                    icon: const Icon(
+                      Icons.lightbulb_outline,
+                      size: _kSettingsSmallIconSize,
+                    ),
                   label: Text(context.tr('View Idea Pool')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.warningColor,
                     side: BorderSide(
                       color: AppTheme.warningColor.withAlpha(60),
                     ),
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kSettingsActionRowHeight),
                   ),
                 ),
               ),
@@ -493,11 +503,11 @@ class _IdeaPoolBlock extends ConsumerWidget {
         child: Row(
           children: [
             const SizedBox(
-              width: 18,
-              height: 18,
+              width: _kSettingsMiniLoaderDotSize,
+              height: _kSettingsMiniLoaderDotSize,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               context.tr('Loading Idea Pool settings'),
               style: TextStyle(color: theme.colorScheme.onSurface),

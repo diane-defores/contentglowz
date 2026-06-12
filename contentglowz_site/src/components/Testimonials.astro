@@ -62,7 +62,7 @@
 
 <style>
   .testimonials-section {
-    padding: var(--space-24); 0;
+        padding: var(--space-24) 0;
     background: var(--color-surface);
   }
 
@@ -73,7 +73,7 @@
 
   .testimonials-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--testimonial-card-min-width), 1fr));
     gap: var(--space-8);
   }
 
@@ -87,7 +87,7 @@
   .testimonial-card:hover {
     background: var(--color-surface-elevated);
     box-shadow: var(--shadow-card-hover);
-    transform: translateY(-5px);
+    transform: translateY(var(--motion-lift-card));
   }
 
   .testimonial-card h3 {
@@ -107,7 +107,7 @@
 
   @media (max-width: var(--breakpoint-md-max)) {
     .testimonials-section {
-      padding: var(--space-16); 0;
+            padding: var(--space-16) 0;
     }
 
     .testimonials-grid {

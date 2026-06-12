@@ -64,13 +64,13 @@
 
 <style>
   .features-section {
-    padding: var(--space-24); 0;
+        padding: var(--space-24) 0;
     background: var(--color-surface);
   }
 
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--card-min-width), 1fr));
     gap: var(--space-8);
   }
 
@@ -84,7 +84,7 @@
   .feature-card:hover {
     background: var(--color-surface);
     box-shadow: var(--shadow-card-hover);
-    transform: translateY(-5px);
+    transform: translateY(var(--motion-lift-card));
   }
 
   .feature-card h3 {
@@ -99,7 +99,7 @@
 
   @media (max-width: var(--breakpoint-md-max)) {
     .features-section {
-      padding: var(--space-16); 0;
+            padding: var(--space-16) 0;
     }
 
     .features-grid {

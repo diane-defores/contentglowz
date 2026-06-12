@@ -47,7 +47,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       appBar: AppBar(title: Text(context.tr('Authentication'))),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
+          constraints: const BoxConstraints(maxWidth: AppTheme.authScreenMaxWidth),
           child: SingleChildScrollView(
             padding: AppSpacing.card(context),
             child: Container(
@@ -147,7 +147,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Text(context.tr('Continue with Google')),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
@@ -155,7 +155,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Text(context.tr('Open App Entry')),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
             'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
@@ -165,7 +165,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             height: 1.4,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         SizedBox(
           width: double.infinity,
           child: TextButton(
@@ -208,7 +208,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Text(context.tr('Continue with Google')),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         SizedBox(
           width: double.infinity,
           child: TextButton(

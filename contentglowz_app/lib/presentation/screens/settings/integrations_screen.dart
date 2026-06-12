@@ -29,6 +29,26 @@ class IntegrationsScreen extends ConsumerStatefulWidget {
 }
 
 class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
+  static const double _kHeroPadding = 18.0;
+  static const double _kHeroIconSize = 44.0;
+  static const double _kHeroGlyphSize = 24.0;
+  static const double _kHeroTitleGap = 14.0;
+  static const double _kHeroMiniGap = 2.0;
+  static const double _kInlineSpacing6 = 6.0;
+  static const double _kInlineSpacing8 = 8.0;
+  static const double _kInlineSpacing10 = 10.0;
+  static const double _kInlineSpacing14 = 14.0;
+  static const double _kLineHeight = 1.4;
+  static const double _kCompactLineHeight = 1.35;
+  static const double _kPanelIconSize = 16.0;
+  static const double _kActionIconSize = 18.0;
+  static const double _kActionButtonHeight = 44.0;
+  static const double _kActionButtonCompactHeight = 36.0;
+  static const double _kLoaderHeight = 2.0;
+  static const double _kLoaderSmall = 16.0;
+  static const double _kLoaderRegular = 18.0;
+  static const double _kInfoTextSize = 13.0;
+
   late TextEditingController _apiUrlController;
   late TextEditingController _openRouterApiKeyController;
   late TextEditingController _emailSourceEmailController;
@@ -226,32 +246,32 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     final theme = Theme.of(context);
     final palette = AppTheme.paletteOf(context);
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(_kHeroPadding),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: palette.heroGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: palette.borderSubtle),
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: _kHeroIconSize,
+            height: _kHeroIconSize,
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withAlpha(40),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(
               Icons.hub_outlined,
               color: theme.colorScheme.primary,
-              size: 24,
+              size: _kHeroGlyphSize,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: _kHeroTitleGap),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,20 +279,20 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 Text(
                   context.tr('Connect your stack'),
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppText.base,
                     fontWeight: FontWeight.w700,
                     color: theme.colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: _kHeroMiniGap),
                 Text(
                   context.tr(
                     'AI runtime, API keys, GitHub and publishing destinations live here.',
                   ),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppText.xs,
                     color: theme.colorScheme.onSurfaceVariant,
-                    height: 1.4,
+                    height: _kLineHeight,
                   ),
                 ),
               ],
@@ -309,11 +329,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                width: _kHeroTitleGap,
+                height: _kHeroTitleGap,
+                child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: _IntegrationsScreenState._kInlineSpacing8),
               Text(context.tr('Checking...')),
             ],
           ),
@@ -325,7 +345,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 color: AppTheme.warningColor,
                 icon: Icons.error_outline,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing10),
               SettingsErrorDiagnostic(
                 details: 'Backend error: ${(error.toString()).trim()}',
                 linkUrl: '${ref.read(apiBaseUrlProvider)}/health',
@@ -335,19 +355,19 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
           ),
         ),
         if (appAccess?.isDegraded == true) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             context.tr(
               'Degraded mode is active. The app stays available, cached data may be stale, and queued actions will replay when FastAPI recovers.',
             ),
             style: TextStyle(
               color: AppTheme.warningColor.withAlpha(220),
-              fontSize: 12,
-              height: 1.4,
+              fontSize: AppText.xs,
+              height: _kLineHeight,
             ),
           ),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
         TextField(
           controller: _apiUrlController,
           decoration: InputDecoration(
@@ -397,14 +417,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Loading AI runtime settings...'),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              height: 1.4,
+              height: _kLineHeight,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kLoaderRegular,
+            height: _kLoaderRegular,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
         ],
       ),
@@ -415,10 +435,10 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Unable to load AI runtime settings.'),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              height: 1.4,
+              height: _kLineHeight,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SettingsErrorDiagnostic(
             details: 'AI runtime error: ${(error.toString()).trim()}',
             linkUrl: '${ref.read(apiBaseUrlProvider)}/api/settings/ai-runtime',
@@ -493,7 +513,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             ),
             if (status.maskedSecret != null &&
                 status.maskedSecret!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -502,17 +522,17 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: AppTheme.infoColor.withAlpha(12),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                   border: Border.all(color: AppTheme.infoColor.withAlpha(40)),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.lock_outline,
-                      size: 16,
+                      size: _IntegrationsScreenState._kPanelIconSize,
                       color: AppTheme.infoColor,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: _IntegrationsScreenState._kInlineSpacing8),
                     Expanded(
                       child: Text(
                         context.tr('Stored key: {key}', {
@@ -520,7 +540,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                         }),
                         style: TextStyle(
                           color: theme.colorScheme.onSurface,
-                          fontSize: 13,
+                          fontSize: _IntegrationsScreenState._kInfoTextSize,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -530,16 +550,16 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               ),
             ],
             if (status.updatedAt != null || status.lastValidatedAt != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 _openRouterMetaText(status),
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                 ),
               ),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _openRouterApiKeyController,
               obscureText: !_showOpenRouterKey,
@@ -568,7 +588,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -579,14 +599,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isSavingOpenRouterKey
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.save_rounded, size: 18),
+                      : const Icon(Icons.save_rounded, size: _kActionIconSize),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.approveColor,
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Save key')),
                 ),
@@ -596,13 +616,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isValidatingOpenRouterKey
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.verified_outlined, size: 18),
+                      : const Icon(Icons.verified_outlined, size: _kActionIconSize),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Validate')),
                 ),
@@ -612,15 +632,15 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isDeletingOpenRouterKey
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.delete_outline, size: 18),
+                      : const Icon(Icons.delete_outline, size: _kActionIconSize),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.rejectColor,
                     side: BorderSide(color: AppTheme.rejectColor.withAlpha(80)),
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Delete')),
                 ),
@@ -632,9 +652,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                           ref,
                           'https://openrouter.ai/keys',
                         ),
-                  icon: const Icon(Icons.open_in_new, size: 18),
+                  icon: const Icon(Icons.open_in_new, size: _kActionIconSize),
                   label: Text(context.tr('Get a key')),
-                  style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
+                  style: TextButton.styleFrom(minimumSize: const Size(0, _kActionButtonHeight)),
                 ),
               ],
             ),
@@ -644,11 +664,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       loading: () => Row(
         children: [
           const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kLoaderRegular,
+            height: _kLoaderRegular,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             context.tr('Loading OpenRouter credential status...'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -662,10 +682,10 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Unable to load OpenRouter credential state.'),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              height: 1.4,
+              height: _kLineHeight,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SettingsErrorDiagnostic(
             details: 'OpenRouter error: ${(error.toString()).trim()}',
             linkUrl:
@@ -950,18 +970,18 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                   ? Icons.mark_email_read_outlined
                   : Icons.alternate_email,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               context.tr(
                 'Connect a mailbox folder once. ContentGlowz checks it every 6 hours, turns useful emails into ideas, then moves processed emails to the archive folder.',
               ),
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 12,
-                height: 1.4,
+                fontSize: AppText.xs,
+                height: _kLineHeight,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
             TextField(
               controller: _emailSourceEmailController,
               enabled: canManage && !busy,
@@ -972,7 +992,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 isDense: true,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _emailSourcePasswordController,
               enabled: canManage && !busy,
@@ -1004,7 +1024,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _emailSourceHostController,
               enabled: canManage && !busy,
@@ -1014,7 +1034,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 isDense: true,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -1028,7 +1048,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: _IntegrationsScreenState._kInlineSpacing10),
                 Expanded(
                   child: TextField(
                     controller: _emailSourceArchiveController,
@@ -1043,16 +1063,16 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               ],
             ),
             if (status.updatedAt != null || status.lastValidatedAt != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 _emailSourceMetaText(status),
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                 ),
               ),
             ],
-            const SizedBox(height: 14),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -1063,14 +1083,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isSavingEmailSource
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.save_rounded, size: 18),
+                      : const Icon(Icons.save_rounded, size: _kActionIconSize),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.approveColor,
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Save')),
                 ),
@@ -1080,13 +1100,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isValidatingEmailSource
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.verified_outlined, size: 18),
+                      : const Icon(Icons.verified_outlined, size: _kActionIconSize),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Validate')),
                 ),
@@ -1096,29 +1116,29 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isDeletingEmailSource
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.delete_outline, size: 18),
+                      : const Icon(Icons.delete_outline, size: _kActionIconSize),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.rejectColor,
                     side: BorderSide(color: AppTheme.rejectColor.withAlpha(80)),
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Delete')),
                 ),
               ],
             ),
             if (activeProjectId == null) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing10),
               Text(
                 context.tr(
                   'Select a project before enabling automatic email ingestion.',
                 ),
                 style: TextStyle(
                   color: AppTheme.warningColor.withAlpha(220),
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                 ),
               ),
             ],
@@ -1128,11 +1148,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       loading: () => Row(
         children: [
           const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kLoaderRegular,
+            height: _kLoaderRegular,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             context.tr('Loading email source...'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -1146,7 +1166,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Unable to load email source state.'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SettingsErrorDiagnostic(
             details: 'Email source error: ${(error.toString()).trim()}',
             linkUrl:
@@ -1397,31 +1417,31 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               icon: connected ? Icons.check_circle_outline : Icons.link_off,
             ),
             if (value.scope != null && value.scope!.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 context.tr('Granted scopes: {scope}', {'scope': value.scope!}),
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                 ),
               ),
             ],
-            const SizedBox(height: 14),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
             connected
                 ? OutlinedButton.icon(
-                    icon: const Icon(Icons.link_off, size: 18),
+                    icon: const Icon(Icons.link_off, size: _kActionIconSize),
                     label: Text(context.tr('Disconnect GitHub')),
                     onPressed: _disconnectGithub,
                     style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 44),
+                      minimumSize: const Size(0, _kActionButtonHeight),
                     ),
                   )
                 : FilledButton.icon(
                     onPressed: _connectGithub,
-                    icon: const Icon(Icons.link, size: 18),
+                    icon: const Icon(Icons.link, size: _kActionIconSize),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppTheme.approveColor,
-                      minimumSize: const Size(0, 44),
+                      minimumSize: const Size(0, _kActionButtonHeight),
                     ),
                     label: Text(context.tr('Connect GitHub')),
                   ),
@@ -1431,11 +1451,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       loading: () => Row(
         children: [
           const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kLoaderRegular,
+            height: _kLoaderRegular,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             context.tr('Checking GitHub integration...'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -1449,19 +1469,19 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Unable to load GitHub integration state.'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SettingsErrorDiagnostic(
             details: 'GitHub error: ${(error.toString()).trim()}',
             linkUrl:
                 '${ref.read(apiBaseUrlProvider)}/api/integrations/github/status',
             linkLabel: context.tr('Open GitHub status endpoint'),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           FilledButton(
             onPressed: _connectGithub,
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.approveColor,
-              minimumSize: const Size(0, 44),
+              minimumSize: const Size(0, _kActionButtonHeight),
             ),
             child: Text(context.tr('Try reconnecting')),
           ),
@@ -1637,13 +1657,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             if (status.accountEmail != null ||
                 status.propertyLabel != null ||
                 status.lastSyncMessage != null) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing10),
               _SearchConsoleMetaLine(
                 icon: Icons.account_circle_outlined,
                 text:
                     status.accountEmail ?? context.tr('No Google account yet'),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing6),
               _SearchConsoleMetaLine(
                 icon: Icons.travel_explore_outlined,
                 text:
@@ -1654,7 +1674,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               ),
               if (status.lastSyncMessage != null &&
                   status.lastSyncMessage!.isNotEmpty) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: _IntegrationsScreenState._kInlineSpacing6),
                 _SearchConsoleMetaLine(
                   icon: Icons.info_outline,
                   text: status.lastSyncMessage!,
@@ -1662,7 +1682,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
               ],
             ],
             if (needsPropertyFallback && activeProjectId != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               _buildSearchConsolePropertySuggestions(
                 propertiesState,
                 projectId: activeProjectId,
@@ -1670,7 +1690,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                 canManage: canManage && !busy,
               ),
             ],
-            const SizedBox(height: 14),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -1681,14 +1701,14 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isConnectingSearchConsole
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.open_in_browser_rounded, size: 18),
+                      : const Icon(Icons.open_in_browser_rounded, size: _kActionIconSize),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.infoColor,
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Connect Google')),
                 ),
@@ -1698,13 +1718,13 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       : null,
                   icon: _isValidatingSearchConsole
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: _kLoaderSmall,
+                          height: _kLoaderSmall,
+                          child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                         )
-                      : const Icon(Icons.verified_outlined, size: 18),
+                      : const Icon(Icons.verified_outlined, size: _kActionIconSize),
                   style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 44),
+                    minimumSize: const Size(0, _kActionButtonHeight),
                   ),
                   label: Text(context.tr('Validate')),
                 ),
@@ -1715,21 +1735,21 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                         : null,
                     icon: _isDisconnectingSearchConsole
                         ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            width: _kLoaderSmall,
+                            height: _kLoaderSmall,
+                            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
                           )
-                        : const Icon(Icons.link_off_rounded, size: 18),
+                        : const Icon(Icons.link_off_rounded, size: _kActionIconSize),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.rejectColor,
-                      minimumSize: const Size(0, 44),
+                      minimumSize: const Size(0, _kActionButtonHeight),
                     ),
                     label: Text(context.tr('Disconnect')),
                   ),
               ],
             ),
             if (!canManage) ...[
-              const SizedBox(height: 10),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing10),
               Text(
                 activeProjectId == null
                     ? context.tr(
@@ -1738,8 +1758,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                     : context.tr('Sign in to manage Search Console.'),
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                  height: 1.4,
+                  fontSize: AppText.xs,
+                  height: _kLineHeight,
                 ),
               ),
             ],
@@ -1749,11 +1769,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       loading: () => Row(
         children: [
           const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kLoaderRegular,
+            height: _kLoaderRegular,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             context.tr('Checking Search Console integration...'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
@@ -1767,7 +1787,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             context.tr('Unable to load Search Console integration state.'),
             style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SettingsErrorDiagnostic(
             details: 'Search Console error: ${(error.toString()).trim()}',
             linkUrl:
@@ -1814,8 +1834,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             ),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 12,
-              height: 1.35,
+              fontSize: AppText.xs,
+              height: _IntegrationsScreenState._kCompactLineHeight,
             ),
           );
         }
@@ -1829,7 +1849,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                     context.tr('Compatible properties'),
                     style: TextStyle(
                       color: theme.colorScheme.onSurfaceVariant,
-                      fontSize: 12,
+                      fontSize: AppText.xs,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1839,11 +1859,11 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                       ? () => ref.invalidate(searchConsolePropertiesProvider)
                       : null,
                   tooltip: context.tr('Refresh properties'),
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  icon: const Icon(Icons.refresh_rounded, size: _kActionIconSize),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: _IntegrationsScreenState._kInlineSpacing6),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -1855,7 +1875,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
                   avatar: property.matchesProjectDomain
                       ? Icon(
                           Icons.check_circle_outline,
-                          size: 16,
+                          size: _IntegrationsScreenState._kPanelIconSize,
                           color: AppTheme.approveColor,
                         )
                       : null,
@@ -1876,16 +1896,16 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(
-            width: 14,
-            height: 14,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            width: _kHeroTitleGap,
+            height: _kHeroTitleGap,
+            child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: _IntegrationsScreenState._kInlineSpacing8),
           Text(
             context.tr('Loading accessible properties...'),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 12,
+              fontSize: AppText.xs,
             ),
           ),
         ],
@@ -1896,8 +1916,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         }),
         style: TextStyle(
           color: AppTheme.warningColor,
-          fontSize: 12,
-          height: 1.35,
+          fontSize: AppText.xs,
+          height: _IntegrationsScreenState._kCompactLineHeight,
         ),
       ),
     );
@@ -2211,15 +2231,15 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
       children: [
         Text(
           message,
-          style: TextStyle(color: resolvedTone, fontSize: 13, height: 1.4),
+          style: TextStyle(color: resolvedTone, fontSize: _IntegrationsScreenState._kInfoTextSize, height: _kLineHeight),
         ),
         if (detail != null && detail.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             detail,
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 12,
+              fontSize: AppText.xs,
             ),
           ),
         ],
@@ -2262,9 +2282,9 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
   }) {
     if (isLoading) {
       return const SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(strokeWidth: 2),
+        width: _kLoaderRegular,
+        height: _kLoaderRegular,
+        child: CircularProgressIndicator(strokeWidth: _IntegrationsScreenState._kLoaderHeight),
       );
     }
 
@@ -2273,7 +2293,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         context.tr('Not wired'),
         style: TextStyle(
           color: AppTheme.warningColor.withAlpha(180),
-          fontSize: 12,
+          fontSize: AppText.xs,
         ),
       );
     }
@@ -2284,7 +2304,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
         context.tr('Unavailable'),
         style: TextStyle(
           color: AppTheme.warningColor.withAlpha(180),
-          fontSize: 12,
+          fontSize: AppText.xs,
         ),
       );
     }
@@ -2297,16 +2317,19 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             label: context.tr('Connected'),
             color: AppTheme.approveColor,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xxs),
           IconButton(
             icon: Icon(
               Icons.link_off,
-              size: 20,
+              size: AppSpacing.lg,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: context.tr('Disconnect'),
             onPressed: () => _disconnectChannel(name, platform),
-            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            constraints: const BoxConstraints(
+              minWidth: _kActionButtonHeight,
+              minHeight: _kActionButtonHeight,
+            ),
           ),
         ],
       );
@@ -2315,8 +2338,8 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
     return FilledButton.tonal(
       onPressed: () => _connectChannel(name, platform),
       style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        minimumSize: const Size(0, 36),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        minimumSize: const Size(0, _kActionButtonCompactHeight),
       ),
       child: Text(context.tr('Connect')),
     );
@@ -2334,7 +2357,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadii.md),
           ),
         ),
       );
@@ -2493,7 +2516,7 @@ class _IntegrationsScreenState extends ConsumerState<IntegrationsScreen> {
             ),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
           ),
         );
@@ -2539,15 +2562,15 @@ class _SearchConsoleMetaLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
+        Icon(icon, size: _IntegrationsScreenState._kPanelIconSize, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: _IntegrationsScreenState._kInlineSpacing8),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 12,
-              height: 1.35,
+              fontSize: AppText.xs,
+              height: _IntegrationsScreenState._kCompactLineHeight,
             ),
           ),
         ),
@@ -2606,12 +2629,12 @@ class AiRuntimeSettingsCard extends StatelessWidget {
                     },
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: _IntegrationsScreenState._kInlineSpacing6),
               Text(
                 subtitle,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 12,
+                  fontSize: AppText.xs,
                 ),
               ),
             ],
@@ -2630,7 +2653,7 @@ class AiRuntimeSettingsCard extends StatelessWidget {
               label: context.tr('BYOK'),
               availability: byok,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             modeChip(
               mode: 'platform',
               label: context.tr('Platform'),
@@ -2638,7 +2661,7 @@ class AiRuntimeSettingsCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
         if (!canManage)
           Text(
             context.tr(
@@ -2646,14 +2669,14 @@ class AiRuntimeSettingsCard extends StatelessWidget {
             ),
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontSize: 12,
+              fontSize: AppText.xs,
             ),
           ),
         if (isUpdating) ...[
-          const SizedBox(height: 10),
-          const LinearProgressIndicator(minHeight: 2),
+          const SizedBox(height: _IntegrationsScreenState._kInlineSpacing10),
+          const LinearProgressIndicator(minHeight: _IntegrationsScreenState._kLoaderHeight),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: _IntegrationsScreenState._kInlineSpacing14),
         ...settings.providers.map((provider) {
           final providerLabel = switch (provider.provider) {
             'openrouter' => 'OpenRouter',
@@ -2672,11 +2695,14 @@ class AiRuntimeSettingsCard extends StatelessWidget {
           return Container(
             key: Key('ai-runtime-provider-${provider.provider}'),
             width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            margin: const EdgeInsets.only(bottom: AppSpacing.xs),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: _IntegrationsScreenState._kInlineSpacing10,
+            ),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: theme.colorScheme.outlineVariant.withAlpha(120),
               ),
@@ -2688,7 +2714,7 @@ class AiRuntimeSettingsCard extends StatelessWidget {
                     providerLabel,
                     style: TextStyle(
                       color: theme.colorScheme.onSurface,
-                      fontSize: 13,
+                      fontSize: _IntegrationsScreenState._kInfoTextSize,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2697,7 +2723,7 @@ class AiRuntimeSettingsCard extends StatelessWidget {
                   '$byokLabel · $platformLabel',
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: AppText.xs,
                   ),
                 ),
               ],

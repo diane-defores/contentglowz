@@ -133,7 +133,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     align-items: center;
     gap: var(--space-8);
     background: var(--color-surface);
-    padding: var(--space-6); var(--space-12);
+        padding: var(--space-6) var(--space-12);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     max-width: calc(var(--container-max-width) / 2.4);
@@ -177,7 +177,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
   @media (max-width: var(--breakpoint-md-max)) {
     .hero {
-      padding: 5.5rem 0 var(--space-12);
+      padding: var(--hero-mobile-padding-y) 0 var(--space-12);
     }
 
     .hero-subtitle {
@@ -195,7 +195,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
     .hero-stats {
       gap: var(--space-3);
-      padding: var(--space-4); var(--space-5);
+            padding: var(--space-4) var(--space-5);
       max-inline-size: 100%;
     }
 

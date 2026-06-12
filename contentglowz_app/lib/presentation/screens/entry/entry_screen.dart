@@ -12,6 +12,13 @@ import '../../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_error_view.dart';
 
+const double _entryOverlayIconTextLetterSpacing = 1.4;
+const double _entryActionIconSize = 18.0;
+const double _entryStateButtonHeightCompact = 44.0;
+const double _entryStateButtonHeightExpanded = 56.0;
+const double _entryIconSizeCompact = 24.0;
+const double _entryIconSizeExpanded = 28.0;
+
 class EntryScreen extends ConsumerStatefulWidget {
   const EntryScreen({super.key});
 
@@ -91,7 +98,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 vertical: AppSpacing.lg,
               ),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
+                constraints: const BoxConstraints(maxWidth: AppTheme.entryScreenMaxWidth),
                 child: stateCard,
               ),
             ),
@@ -301,7 +308,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               color: theme.colorScheme.outlineVariant.withValues(alpha: 0.9),
             ),
           ),
-          icon: const Icon(Icons.copy_all_rounded, size: 18),
+          icon: const Icon(Icons.copy_all_rounded, size: _entryActionIconSize),
           label: Text(context.tr('Copy access diagnostics')),
         ),
       ),
@@ -337,7 +344,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
         boxShadow: [
           BoxShadow(
             color: accent.withAlpha(22),
-            blurRadius: 36,
+            blurRadius: AppSpacing.xl + AppSpacing.sm,
             offset: const Offset(0, 18),
           ),
         ],
@@ -356,20 +363,26 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     color: accent,
                     fontSize: AppText.sm,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 1.4,
+                    letterSpacing: _entryOverlayIconTextLetterSpacing,
                   ),
                 ),
               ),
               Container(
-                width: compact ? 44 : 56,
-                height: compact ? 44 : 56,
+                width: compact ? _entryStateButtonHeightCompact : _entryStateButtonHeightExpanded,
+                height: compact
+                    ? _entryStateButtonHeightCompact
+                    : _entryStateButtonHeightExpanded,
                 decoration: BoxDecoration(
                   color: accent.withAlpha(30),
                   borderRadius: BorderRadius.circular(
                     compact ? AppRadii.lg : AppRadii.xl,
                   ),
                 ),
-                child: Icon(icon, color: accent, size: compact ? 24 : 28),
+                  child: Icon(
+                    icon,
+                    color: accent,
+                    size: compact ? _entryIconSizeCompact : _entryIconSizeExpanded,
+                  ),
               ),
             ],
           ),

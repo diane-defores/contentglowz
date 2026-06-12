@@ -22,7 +22,7 @@ EdgeInsets settingsPagePadding(BuildContext context) {
 /// Spacing between settings groups.
 double settingsGroupGap(BuildContext context) {
   final width = MediaQuery.sizeOf(context).width;
-  return width < 480 ? AppSpacing.lg : 28.0;
+  return width < 480 ? AppSpacing.lg : AppSpacing.lg + AppSpacing.xs;
 }
 
 /// A grouped, iOS-style settings section: optional caption + a single rounded
@@ -137,7 +137,9 @@ class SettingsGroup extends StatelessWidget {
 }
 
 /// Minimum touch target on mobile (WCAG 2.5.8 AAA recommends 44).
-const double _kMinTouch = 48.0;
+const double _kMinTouch = AppSpacing.md * 3;
+const double _kSettingsLeadingSize = AppSpacing.md + AppSpacing.md + AppSpacing.sm;
+const double _kSettingsDiagnosticIconSize = 18.0;
 
 /// A row in a [SettingsGroup]. Larger touch target on mobile, optional
 /// trailing widget (chevron / status pill / switch).
@@ -171,18 +173,18 @@ class SettingsRow extends StatelessWidget {
       contentPadding: contentPadding ??
           EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.xxs + 2,
+          vertical: AppSpacing.xxs + AppSpacing.xxs / 2,
           ),
-      minVerticalPadding: 10,
-      minLeadingWidth: 36,
+      minVerticalPadding: AppSpacing.md - AppSpacing.xxs,
+      minLeadingWidth: _kSettingsLeadingSize,
       leading: Container(
-        width: 36,
-        height: 36,
+        width: _kSettingsLeadingSize,
+        height: _kSettingsLeadingSize,
         decoration: BoxDecoration(
           color: color.withAlpha(25),
           borderRadius: BorderRadius.circular(AppRadii.md - 2),
         ),
-        child: Icon(icon, color: color, size: 20),
+        child: Icon(icon, color: color, size: AppText.base + 4),
       ),
       title: Text(
         context.tr(title),
@@ -326,7 +328,7 @@ class SettingsErrorDiagnostic extends ConsumerWidget {
           children: [
             TextButton.icon(
               onPressed: () => openSettingsUrl(context, ref, linkUrl),
-              icon: const Icon(Icons.open_in_new, size: 18),
+              icon: const Icon(Icons.open_in_new, size: _kSettingsDiagnosticIconSize),
               label: Text(linkLabel),
               style: TextButton.styleFrom(
                 foregroundColor: AppTheme.infoColor,
@@ -339,7 +341,7 @@ class SettingsErrorDiagnostic extends ConsumerWidget {
             ),
             OutlinedButton.icon(
               onPressed: () => copySettingsErrorText(context, clippedDetails),
-              icon: const Icon(Icons.content_copy, size: 18),
+              icon: const Icon(Icons.content_copy, size: _kSettingsDiagnosticIconSize),
               label: Text(context.tr('Copy')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: theme.colorScheme.onSurfaceVariant,
@@ -394,7 +396,9 @@ Future<void> copySettingsErrorText(BuildContext context, String text) async {
     SnackBar(
       content: Text(context.tr('Error copied to clipboard.')),
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
     ),
   );
 }
