@@ -1,24 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { appEntryUrl, appSignInUrl } from '../config/site';
+import { getHandoffCopy } from '../data/corePageCopy';
+import { getCoreAlternates } from '../data/siteShell';
+
+const copy = getHandoffCopy('launch', 'en');
 ---
 
 <Layout
-  title="Opening ContentGlowz App"
-  description="Redirecting to the ContentGlowz app."
+  title={copy.title}
+  description={copy.description}
+  locale="en"
+  canonicalUrl="/launch"
+  alternateLocales={getCoreAlternates('launch')}
+  xDefaultUrl="/launch"
   noindex={true}
 >
   <section class="redirect-shell">
     <div class="redirect-card">
-      <p class="eyebrow">Open app</p>
-      <h1>Opening the app entry…</h1>
-      <p>
-        The old website handoff has been retired. ContentGlowz now opens the app
-        directly on the app domain, where sign-in and session restore both happen.
-      </p>
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h1>{copy.heading}</h1>
+      <p>{copy.body}</p>
       <div class="actions">
-        <a class="btn-primary" href={appEntryUrl}>Open app entry</a>
-        <a class="btn-secondary" href={appSignInUrl}>Go to sign-in</a>
+        <a class="btn-primary" href={appEntryUrl}>{copy.primaryCta}</a>
+        <a class="btn-secondary" href={appSignInUrl}>{copy.secondaryCta}</a>
       </div>
     </div>
   </section>

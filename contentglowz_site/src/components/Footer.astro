@@ -1,49 +1,58 @@
 ---
+import {
+  detectLocaleFromPath,
+  getFooterContent,
+  getLocaleSwitchTarget,
+  type Locale,
+} from '../data/siteShell';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale } = Astro.props;
+const currentLocale = locale ?? detectLocaleFromPath(Astro.url.pathname);
+const content = getFooterContent(currentLocale);
+const localeSwitch = getLocaleSwitchTarget(Astro.url.pathname);
 ---
 
 <footer class="footer" role="contentinfo">
   <div class="container">
     <div class="footer-content">
       <div class="footer-brand">
-        <a href="/" class="logo">
+        <a href={content.brandHref} class="logo">
           <span class="logo-icon">🤖</span>
           <span class="logo-text">ContentGlowz</span>
         </a>
-        <p class="tagline">AI content pipeline. Swipe to publish.</p>
+        <p class="tagline">{content.tagline}</p>
+        {localeSwitch && (
+          <a href={localeSwitch.href} class="locale-switch" aria-label={localeSwitch.ariaLabel}>
+            {localeSwitch.label}
+          </a>
+        )}
         <!-- Social links: add real URLs when available -->
       </div>
 
       <div class="footer-links">
-        <div class="link-column">
-          <h4>Product</h4>
-          <ul>
-            <li><a href="#robots">Robots</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#testimonials">Testimonials</a></li>
-          </ul>
-        </div>
-
-        <div class="link-column">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="/blog">Blog</a></li>
-          </ul>
-        </div>
-
-        <div class="link-column">
-          <h4>Legal</h4>
-          <ul>
-            <li><a href="/privacy">Privacy</a></li>
-          </ul>
-        </div>
+        {content.linkGroups.map((group) => (
+          <div class="link-column">
+            <h4>{group.heading}</h4>
+            <ul>
+              {group.links.map((link) => (
+                <li><a href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2026 ContentGlowz. All rights reserved.</p>
+      <p>&copy; 2026 ContentGlowz. {content.rightsReserved}</p>
       <div class="footer-bottom-links">
-        <a href="/privacy">Privacy</a>
+        {content.bottomLinks.map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
       </div>
     </div>
   </div>
@@ -81,6 +90,27 @@
     color: var(--color-text-on-dark-muted);
     margin-bottom: var(--space-6);
     line-height: var(--leading-normal);
+  }
+
+  .locale-switch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--space-10) * 0.9);
+    padding: var(--space-2) var(--space-3);
+    border: calc(var(--space-1) / 4) solid var(--color-border-dark-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-on-dark);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    transition: border-color var(--duration-base), color var(--duration-base);
+  }
+
+  .locale-switch:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
   }
 
   .social-links {

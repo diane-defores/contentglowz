@@ -1,19 +1,18 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { appSignInUrl } from '../config/site';
-import { getHandoffCopy } from '../data/corePageCopy';
-import { getCoreAlternates } from '../data/siteShell';
+import Layout from '../../layouts/Layout.astro';
+import { appEntryUrl, appSignInUrl } from '../../config/site';
+import { getHandoffCopy } from '../../data/corePageCopy';
+import { getCoreAlternates } from '../../data/siteShell';
 
-const copy = getHandoffCopy('signUp', 'en');
+const copy = getHandoffCopy('launch', 'fr');
 ---
 
 <Layout
   title={copy.title}
   description={copy.description}
-  locale="en"
-  canonicalUrl="/sign-up"
-  alternateLocales={getCoreAlternates('signUp')}
-  xDefaultUrl="/sign-up"
+  locale="fr"
+  canonicalUrl="/fr/launch"
+  alternateLocales={getCoreAlternates('launch')}
   noindex={true}
 >
   <section class="redirect-shell">
@@ -21,18 +20,15 @@ const copy = getHandoffCopy('signUp', 'en');
       <p class="eyebrow">{copy.eyebrow}</p>
       <h1>{copy.heading}</h1>
       <p>{copy.body}</p>
-      <a class="btn-primary" href={appSignInUrl}>{copy.primaryCta}</a>
+      <div class="actions">
+        <a class="btn-primary" href={appEntryUrl}>{copy.primaryCta}</a>
+        <a class="btn-secondary" href={appSignInUrl}>{copy.secondaryCta}</a>
+      </div>
     </div>
   </section>
 
-  <script define:vars={{ appSignInUrl }}>
-    const target = new URL(appSignInUrl);
-    const params = new URLSearchParams(window.location.search);
-    const redirectUrl = params.get('redirect_url');
-    if (redirectUrl) {
-      target.searchParams.set('redirect_url', redirectUrl);
-    }
-    window.location.replace(target.toString());
+  <script define:vars={{ appEntryUrl }}>
+    window.location.replace(appEntryUrl);
   </script>
 </Layout>
 
@@ -43,12 +39,12 @@ const copy = getHandoffCopy('signUp', 'en');
     place-items: center;
     padding: var(--space-8);
     background:
-      radial-gradient(circle at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 48%),
+      radial-gradient(circle at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 45%),
       linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) 100%);
   }
 
   .redirect-card {
-    width: min(100%, calc(var(--space-20) * 6.75));
+    width: min(100%, calc(var(--space-20) * 7));
     padding: var(--space-8);
     border-radius: var(--radius-xl);
     background: var(--color-surface-card-glass);
@@ -74,5 +70,12 @@ const copy = getHandoffCopy('signUp', 'en');
   p {
     color: var(--color-text-muted);
     margin-bottom: var(--space-6);
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
   }
 </style>

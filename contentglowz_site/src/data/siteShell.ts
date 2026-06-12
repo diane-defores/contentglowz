@@ -16,6 +16,10 @@ export interface FooterLinkGroup {
 }
 
 const localizedCoreRoutes = {
+  home: {
+    en: '/',
+    fr: '/fr',
+  },
   launch: {
     en: '/launch',
     fr: '/fr/launch',
@@ -37,6 +41,8 @@ const localizedCoreRoutes = {
 const localeLabels = {
   en: {
     skipToContent: 'Skip to content',
+    mainNavigation: 'Main navigation',
+    toggleNavigationMenu: 'Toggle navigation menu',
     features: 'Features',
     robots: 'Robots',
     pricing: 'Pricing',
@@ -57,6 +63,8 @@ const localeLabels = {
   },
   fr: {
     skipToContent: 'Aller au contenu',
+    mainNavigation: 'Navigation principale',
+    toggleNavigationMenu: 'Ouvrir ou fermer le menu de navigation',
     features: 'Fonctionnalités',
     robots: 'Robots',
     pricing: 'Tarifs',
@@ -79,7 +87,7 @@ const localeLabels = {
 
 const localeHomeHref: Record<Locale, string> = {
   en: '/',
-  fr: '/',
+  fr: '/fr',
 };
 
 function normalizePathname(pathname: string) {
@@ -133,6 +141,8 @@ export function getNavbarContent(locale: Locale) {
 
   return {
     skipToContent: labels.skipToContent,
+    mainNavigation: labels.mainNavigation,
+    toggleNavigationMenu: labels.toggleNavigationMenu,
     brandHref: homeHref,
     primaryLinks: [
       { href: `${homeHref}#features`, label: labels.features },
@@ -162,7 +172,7 @@ export function getFooterContent(locale: Locale) {
           { href: `${homeHref}#robots`, label: labels.robots },
           { href: `${homeHref}#features`, label: labels.features },
           { href: `${homeHref}#pricing`, label: labels.pricing },
-          { href: `${homeHref}#testimonials`, label: labels.testimonials },
+          { href: `${homeHref}#who-its-for`, label: labels.whoItsFor },
         ],
       },
       {

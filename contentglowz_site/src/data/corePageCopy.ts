@@ -120,54 +120,54 @@ export const privacyPageCopy = {
     ],
   },
   fr: {
-    title: 'Politique de confidentialite | ContentGlowz',
+    title: 'Politique de confidentialité | ContentGlowz',
     description:
-      'Comment ContentGlowz utilise tes donnees et comment gerer tes preferences liees aux analytics.',
-    heading: 'Politique de confidentialite',
-    lastUpdated: 'Derniere mise a jour : mars 2026',
+      'Comment ContentGlowz utilise tes données et comment gérer tes préférences liées aux analytics.',
+    heading: 'Politique de confidentialité',
+    lastUpdated: 'Dernière mise à jour : mars 2026',
     sections: [
       {
-        heading: 'Donnees collectees',
+        heading: 'Données collectées',
         paragraphs: [
-          "ContentGlowz utilise ses propres analytics legers et sans cookies pour comprendre comment tes sites sont utilises : pages visitees, source de reference, parametres de campagne UTM et type d'appareil. Aucune information personnellement identifiable n'est collectee : aucune adresse IP n'est stockee, aucun fingerprint navigateur n'est utilise et aucun script de suivi tiers n'est charge.",
+          "ContentGlowz utilise ses propres analytics légers et sans cookies pour comprendre comment tes sites sont utilisés : pages visitées, source de référence, paramètres de campagne UTM et type d'appareil. Aucune information personnellement identifiable n'est collectée : aucune adresse IP n'est stockée, aucun fingerprint navigateur n'est utilisé et aucun script de suivi tiers n'est chargé.",
         ],
       },
       {
         heading: 'Sans cookies par conception',
         paragraphs: [
-          "Notre systeme d'analytics n'utilise ni cookies, ni localStorage, ni autre mecanisme de stockage cote client. Chaque page vue est un evenement independant et anonyme. Cela signifie qu'aucune banniere de consentement n'est requise, et l'approche est concue pour rester alignee avec les exigences du RGPD, du CCPA, d'ePrivacy et du PECR.",
+          "Notre système d'analytics n'utilise ni cookies, ni localStorage, ni autre mécanisme de stockage côté client. Chaque page vue est un événement indépendant et anonyme. Cela signifie qu'aucune bannière de consentement n'est requise, et l'approche est conçue pour rester alignée avec les exigences du RGPD, du CCPA, d'ePrivacy et du PECR.",
         ],
       },
       {
-        heading: 'Hebergement des donnees',
+        heading: 'Hébergement des données',
         paragraphs: [
-          "Toutes les donnees d'analytics sont traitees et stockees exclusivement dans l'Union europeenne. Nous ne partageons pas ces donnees avec des tiers, des reseaux publicitaires ou des courtiers en donnees. Tu peux exporter tes donnees a tout moment depuis le dashboard.",
+          "Toutes les données d'analytics sont traitées et stockées exclusivement dans l'Union européenne. Nous ne partageons pas ces données avec des tiers, des réseaux publicitaires ou des courtiers en données. Tu peux exporter tes données à tout moment depuis le dashboard.",
         ],
       },
       {
         heading: 'Ce que nous suivons',
         bullets: [
-          'URL et chemin de la page (quelles pages sont visitees)',
-          "Referent (d'ou viennent les visiteurs)",
-          'Parametres UTM (suivi de campagne)',
-          "Type d'appareil, navigateur et OS (analyses cote serveur depuis le user-agent)",
-          "Pays (derive des headers CDN, sans stockage d'IP)",
+          'URL et chemin de la page (quelles pages sont visitées)',
+          "Référent (d'où viennent les visiteurs)",
+          'Paramètres UTM (suivi de campagne)',
+          "Type d'appareil, navigateur et OS (analysés côté serveur depuis le user-agent)",
+          "Pays (dérivé des headers CDN, sans stockage d'IP)",
         ],
       },
       {
         heading: 'Ce que nous ne suivons pas',
         bullets: [
-          'Adresses IP (jamais stockees)',
+          'Adresses IP (jamais stockées)',
           'Visiteurs individuels (aucun identifiant de session ou de visiteur)',
           'Empreintes navigateur',
           'Position de scroll, mouvements de souris ou clics',
-          'Saisies de formulaire ou donnees personnelles',
+          'Saisies de formulaire ou données personnelles',
         ],
       },
       {
         heading: 'Contact',
         paragraphs: [
-          'Pour toute question liee aux donnees, contacte-nous via les canaux officiels listes sur le site.',
+          'Pour toute question liée aux données, contacte-nous via les canaux officiels listés sur le site.',
         ],
       },
     ],

@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.1.3"
 project: "contentglowz_site"
 created: "2026-06-12"
 created_at: "2026-06-12 12:03:54 UTC"
 updated: "2026-06-12"
-updated_at: "2026-06-12 12:10:00 UTC"
+updated_at: "2026-06-12 12:45:00 UTC"
 status: ready
 source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
@@ -302,7 +302,9 @@ None.
 |----------|-------|-------|--------|--------|-----------|
 | 2026-06-12 12:03:54 UTC | 100-sf-spec | GPT-5 Codex | Created the bilingual core-pages spec from translation/SEO audit findings and explicit user decisions: bilingual fr/en, root=en, scope=coeur. | draft saved | /101-sf-ready shipflow_data/workflow/specs/contentglowz_site/SPEC-bilingual-fr-en-routing-seo-metadata-core-pages-2026-06-12.md |
 | 2026-06-12 12:10:00 UTC | 101-sf-ready | GPT-5 Codex | Reviewed structure, user-story alignment, metadata/doc gates, design-system and editorial constraints, and bounded proof contract for the bilingual core-pages site chantier. | ready | /102-sf-start shipflow_data/workflow/specs/contentglowz_site/SPEC-bilingual-fr-en-routing-seo-metadata-core-pages-2026-06-12.md |
+| 2026-06-12 12:20:30 UTC | 001-sf-build | GPT-5 Codex | Implemented the bilingual core-page routing, locale-aware shell, and EN/FR metadata contract; validated with local Astro build and generated HTML inspection. | partial | Closure and ship not run in this turn. |
+| 2026-06-12 12:45:00 UTC | 005-sf-ship | GPT-5 Codex | Closed and shipped the bilingual core-pages chantier with tracker/changelog updates, bug gate review, local build proof, commit, and push to `main`. | shipped | /405-sf-prod contentglowz_site |
 
 ## Current Chantier Flow
 
-100-sf-spec done -> 101-sf-ready ready -> 102-sf-start not launched -> 103-sf-verify not launched -> 104-sf-end not launched -> 005-sf-ship not launched
+100-sf-spec done -> 101-sf-ready ready -> 102-sf-start done -> 103-sf-verify local-proof-done -> 104-sf-end integrated-via-005-full-close -> 005-sf-ship shipped

@@ -1,23 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { appSignInUrl } from '../config/site';
+import { getHandoffCopy } from '../data/corePageCopy';
+import { getCoreAlternates } from '../data/siteShell';
+
+const copy = getHandoffCopy('signIn', 'en');
+const [beforeDomain, afterDomain = ''] = copy.body.split('app.contentglowz.com');
 ---
 
 <Layout
-  title="Redirecting to App Sign-In — ContentGlowz"
-  description="Redirecting to the official ContentGlowz app sign-in flow."
+  title={copy.title}
+  description={copy.description}
+  locale="en"
+  canonicalUrl="/sign-in"
+  alternateLocales={getCoreAlternates('signIn')}
+  xDefaultUrl="/sign-in"
   noindex={true}
 >
   <section class="redirect-shell">
     <div class="redirect-card">
-      <p class="eyebrow">App auth</p>
-      <h1>Redirecting to the app sign-in…</h1>
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h1>{copy.heading}</h1>
       <p>
-        ContentGlowz authentication now runs directly on
-        <strong>app.contentglowz.com</strong> with the official Clerk web
-        flow.
+        {beforeDomain}
+        <strong>app.contentglowz.com</strong>
+        {afterDomain}
       </p>
-      <a class="btn-primary" href={appSignInUrl}>Continue with Google</a>
+      <a class="btn-primary" href={appSignInUrl}>{copy.primaryCta}</a>
     </div>
   </section>
 

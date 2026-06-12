@@ -1,19 +1,18 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { appSignInUrl } from '../config/site';
-import { getHandoffCopy } from '../data/corePageCopy';
-import { getCoreAlternates } from '../data/siteShell';
+import Layout from '../../layouts/Layout.astro';
+import { appSignInUrl } from '../../config/site';
+import { getHandoffCopy } from '../../data/corePageCopy';
+import { getCoreAlternates } from '../../data/siteShell';
 
-const copy = getHandoffCopy('signUp', 'en');
+const copy = getHandoffCopy('signUp', 'fr');
 ---
 
 <Layout
   title={copy.title}
   description={copy.description}
-  locale="en"
-  canonicalUrl="/sign-up"
+  locale="fr"
+  canonicalUrl="/fr/sign-up"
   alternateLocales={getCoreAlternates('signUp')}
-  xDefaultUrl="/sign-up"
   noindex={true}
 >
   <section class="redirect-shell">

@@ -1,26 +1,30 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { appSignInUrl } from '../config/site';
-import { getHandoffCopy } from '../data/corePageCopy';
-import { getCoreAlternates } from '../data/siteShell';
+import Layout from '../../layouts/Layout.astro';
+import { appSignInUrl } from '../../config/site';
+import { getHandoffCopy } from '../../data/corePageCopy';
+import { getCoreAlternates } from '../../data/siteShell';
 
-const copy = getHandoffCopy('signUp', 'en');
+const copy = getHandoffCopy('signIn', 'fr');
+const [beforeDomain, afterDomain = ''] = copy.body.split('app.contentglowz.com');
 ---
 
 <Layout
   title={copy.title}
   description={copy.description}
-  locale="en"
-  canonicalUrl="/sign-up"
-  alternateLocales={getCoreAlternates('signUp')}
-  xDefaultUrl="/sign-up"
+  locale="fr"
+  canonicalUrl="/fr/sign-in"
+  alternateLocales={getCoreAlternates('signIn')}
   noindex={true}
 >
   <section class="redirect-shell">
     <div class="redirect-card">
       <p class="eyebrow">{copy.eyebrow}</p>
       <h1>{copy.heading}</h1>
-      <p>{copy.body}</p>
+      <p>
+        {beforeDomain}
+        <strong>app.contentglowz.com</strong>
+        {afterDomain}
+      </p>
       <a class="btn-primary" href={appSignInUrl}>{copy.primaryCta}</a>
     </div>
   </section>
@@ -43,7 +47,7 @@ const copy = getHandoffCopy('signUp', 'en');
     place-items: center;
     padding: var(--space-8);
     background:
-      radial-gradient(circle at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 48%),
+      radial-gradient(circle at top, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 45%),
       linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)) 0%, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) 100%);
   }
 

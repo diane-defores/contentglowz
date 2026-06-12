@@ -1,26 +1,45 @@
 ---
 import { appEntryUrl, appSignInUrl } from '../config/site';
+import {
+  detectLocaleFromPath,
+  getLocaleSwitchTarget,
+  getNavbarContent,
+  type Locale,
+} from '../data/siteShell';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale } = Astro.props;
+const currentLocale = locale ?? detectLocaleFromPath(Astro.url.pathname);
+const content = getNavbarContent(currentLocale);
+const localeSwitch = getLocaleSwitchTarget(Astro.url.pathname);
 ---
 
-<a href="#main-content" class="skip-nav">Skip to content</a>
-<nav class="navbar" aria-label="Main navigation">
+<a href="#main-content" class="skip-nav">{content.skipToContent}</a>
+<nav class="navbar" aria-label={content.mainNavigation}>
   <div class="container">
-    <a href="/" class="logo">
+    <a href={content.brandHref} class="logo">
       <span class="logo-icon">🤖</span>
       <span class="logo-text">ContentGlowz</span>
     </a>
     <div class="nav-links" id="nav-links">
-      <a href="/#features">Features</a>
-      <a href="/#robots">Robots</a>
-      <a href="/#pricing">Pricing</a>
-      <a href="/#who-its-for">Who It's For</a>
-      <a href="/#faq">FAQ</a>
-      <a href="/blog">Blog</a>
-      <a href={appEntryUrl}>Open App</a>
-      <a href={appSignInUrl} class="mobile-cta">Continue with Google</a>
+      {content.primaryLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+      {localeSwitch && (
+        <a href={localeSwitch.href} class="locale-link" aria-label={localeSwitch.ariaLabel}>
+          {localeSwitch.label}
+        </a>
+      )}
+      <a href={appEntryUrl}>{content.appLinkLabel}</a>
+      <a href={appSignInUrl} class="mobile-cta">{content.authLinkLabel}</a>
     </div>
-    <a href={appSignInUrl} class="cta-button">Continue with Google</a>
-    <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle navigation menu">
+    <div class="nav-actions">
+      <a href={appSignInUrl} class="cta-button">{content.authLinkLabel}</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-expanded="false" aria-controls="nav-links" aria-label={content.toggleNavigationMenu}>
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
       <span class="hamburger-line"></span>
@@ -87,10 +106,32 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     align-items: center;
   }
 
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
   .nav-links a {
     color: var(--color-text-muted);
     font-weight: 500;
     transition: color var(--duration-base);
+  }
+
+  .locale-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--space-10) * 0.9);
+    padding: var(--space-2) var(--space-3);
+    border: calc(var(--space-1) / 4) solid var(--color-border-subtle);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-surface-elevated) 92%, transparent);
+    color: var(--color-text-primary) !important;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
   }
 
   .mobile-cta {
@@ -99,6 +140,11 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
 
   .nav-links a:hover {
     color: var(--color-primary);
+  }
+
+  .locale-link:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary) !important;
   }
 
   .cta-button {

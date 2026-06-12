@@ -67,6 +67,7 @@ All notable changes to the ContentGlowz monorepo are documented here.
 - Added baseline `shipflow_data/editorial/` governance for the public Astro site.
 
 ### Changed
+- Added bilingual `fr/en` core routes for the marketing site with English at `/`, French under `/fr`, localized homepage/privacy/handoff copy, and locale-aware `lang`, canonical, `og:url`, `hreflang`, and `x-default` metadata on the shipped core pages.
 - Reprioritized ContentGlowz trackers so feedback production checks are no longer treated as the next blocking win after the admin allowlist was configured.
 - Reconnected ContentGlowz site and app Vercel auto-deploys to the organization monorepo and verified deployment from `main`.
 - Reconciled the Flutter app tracker so the previously fixed light-mode contrast regression is marked done.

@@ -11,6 +11,7 @@ import FAQ from '../../components/FAQ.astro';
 import ClosingCta from '../../components/ClosingCta.astro';
 import Footer from '../../components/Footer.astro';
 import { homepageContent } from '../../data/homepageContent';
+import { getCoreAlternates } from '../../data/siteShell';
 
 const content = homepageContent.fr;
 ---
@@ -19,11 +20,8 @@ const content = homepageContent.fr;
   title={content.title}
   description={content.description}
   locale="fr"
-  canonicalUrl="https://contentglowz.com/fr/"
-  alternateLocales={[
-    { locale: 'en', href: 'https://contentglowz.com/' },
-    { locale: 'fr', href: 'https://contentglowz.com/fr/' },
-  ]}
+  canonicalUrl="/fr"
+  alternateLocales={getCoreAlternates('home')}
 >
   <Navbar locale="fr" />
   <main class="landing-shell">

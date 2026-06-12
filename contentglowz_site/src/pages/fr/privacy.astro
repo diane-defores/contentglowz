@@ -1,22 +1,21 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Navbar from '../components/Navbar.astro';
-import Footer from '../components/Footer.astro';
-import { getPrivacyCopy } from '../data/corePageCopy';
-import { getCoreAlternates } from '../data/siteShell';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+import { getPrivacyCopy } from '../../data/corePageCopy';
+import { getCoreAlternates } from '../../data/siteShell';
 
-const copy = getPrivacyCopy('en');
+const copy = getPrivacyCopy('fr');
 ---
 
 <Layout
   title={copy.title}
   description={copy.description}
-  locale="en"
-  canonicalUrl="/privacy"
+  locale="fr"
+  canonicalUrl="/fr/privacy"
   alternateLocales={getCoreAlternates('privacy')}
-  xDefaultUrl="/privacy"
 >
-  <Navbar locale="en" />
+  <Navbar locale="fr" />
   <main id="main-content" class="privacy-main">
     <h1>{copy.heading}</h1>
     <p class="last-updated">{copy.lastUpdated}</p>
@@ -39,7 +38,7 @@ const copy = getPrivacyCopy('en');
       ))}
     </div>
   </main>
-  <Footer locale="en" />
+  <Footer locale="fr" />
 </Layout>
 
 <style>
