@@ -62,12 +62,12 @@
 
 <style>
   .testimonials-section {
-    padding: var(--space-24) 0;
+    padding: var(--space-24); 0;
     background: var(--color-surface);
   }
 
   .section-header p {
-    max-width: 700px;
+    max-width: var(--width-content-narrow);
     margin: 0 auto;
   }
 
@@ -105,9 +105,9 @@
     font-size: var(--text-sm);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: var(--breakpoint-md-max)) {
     .testimonials-section {
-      padding: var(--space-16) 0;
+      padding: var(--space-16); 0;
     }
 
     .testimonials-grid {

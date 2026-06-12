@@ -177,7 +177,7 @@ const breadcrumbSchema = {
 
 <style>
   .blog-header {
-    padding: var(--space-20) var(--space-8) var(--space-6);
+    padding: var(--space-20) var(--space-8); var(--space-6);
     border-bottom: thin solid var(--color-light-gray);
   }
 
@@ -196,7 +196,7 @@ const breadcrumbSchema = {
   .blog-main {
     max-width: var(--container-max-width);
     margin: 0 auto;
-    padding: var(--space-8) var(--space-8) var(--space-16);
+    padding: var(--space-8) var(--space-8); var(--space-16);
   }
 
   .blog-article { margin-bottom: var(--space-16); }
@@ -207,7 +207,7 @@ const breadcrumbSchema = {
     margin-bottom: var(--space-8);
   }
 
-  .hero-image img { width: 100%; height: auto; display: block; }
+  .hero-image img { width: var(--size-full); height: auto; display: block; }
 
   .article-header { margin-bottom: var(--space-10); }
 
@@ -265,7 +265,7 @@ const breadcrumbSchema = {
   }
 
   /* On mobile: stack ToC below content */
-  @media (max-width: 768px) {
+  @media (max-width: var(--breakpoint-md-max)) {
     .article-body.has-toc {
       display: flex;
       flex-direction: column-reverse;
@@ -278,7 +278,7 @@ const breadcrumbSchema = {
     top: var(--space-8);
     background: var(--color-light-gray);
     border-radius: var(--radius-md);
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-5); var(--space-6);
     order: 2;
   }
 
@@ -314,7 +314,7 @@ const breadcrumbSchema = {
   .prose {
     font-size: var(--text-base);
     line-height: var(--leading-relaxed);
-    max-width: 72ch;
+    max-width: var(--size-prose);
   }
 
   .prose :global(h2),
@@ -348,12 +348,12 @@ const breadcrumbSchema = {
   .prose :global(pre) {
     background: var(--color-dark);
     color: var(--color-code-text);
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-5); var(--space-6);
     border-radius: var(--radius-md);
     overflow-x: auto;
     margin-bottom: var(--space-6);
     font-size: var(--text-sm);
-    line-height: 1.7;
+    line-height: var(--leading-readable);
   }
 
   .prose :global(pre code) {
@@ -363,11 +363,11 @@ const breadcrumbSchema = {
   }
 
   .prose :global(blockquote) {
-    border-left: var(--space-1) solid var(--color-primary);
+    border-left: var(--space-1); solid var(--color-primary);
     padding-left: var(--space-5);
     color: var(--color-gray);
     font-style: italic;
-    margin: var(--space-6) 0;
+    margin: var(--space-6); 0;
   }
 
   .prose :global(ul), .prose :global(ol) {
@@ -379,18 +379,18 @@ const breadcrumbSchema = {
 
   .prose :global(img) {
     border-radius: var(--radius-md);
-    margin: var(--space-6) 0;
-    width: 100%;
+    margin: var(--space-6); 0;
+    width: var(--size-full);
   }
 
   .prose :global(hr) {
     border: none;
     border-top: thin solid var(--color-light-gray);
-    margin: var(--space-10) 0;
+    margin: var(--space-10); 0;
   }
 
   .prose :global(table) {
-    width: 100%;
+    width: var(--size-full);
     border-collapse: collapse;
     margin-bottom: var(--space-6);
     font-size: var(--text-sm);
@@ -398,7 +398,7 @@ const breadcrumbSchema = {
 
   .prose :global(th), .prose :global(td) {
     border: thin solid var(--color-light-gray);
-    padding: var(--space-2) var(--space-4);
+    padding: var(--space-2); var(--space-4);
     text-align: left;
   }
 
@@ -434,7 +434,7 @@ const breadcrumbSchema = {
     transform: translateY(calc(var(--space-1) * -0.5));
   }
 
-  .related-card img { width: 100%; height: calc(var(--space-20) * 2); object-fit: cover; }
+  .related-card img { width: var(--size-full); height: calc(var(--space-20) * 2); object-fit: cover; }
 
   .related-card-body {
     padding: var(--space-5);

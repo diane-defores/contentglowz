@@ -166,6 +166,7 @@ const themeCssVars = `
     --duration-fast: ${motion.fast};
     --duration-base: ${motion.base};
     --duration-slow: ${motion.slow};
+    --duration-motion-reduced: 0.01ms;
     --ease-standard: ${motion.standard};
     --ease-out: ${motion.out};
     --ease-spring: ${motion.spring};
@@ -185,7 +186,25 @@ const themeCssVars = `
     --input-radius-compact: ${components.input.radiusCompact};
     --radius-nav: ${components.nav.radius};
     --badge-radius: ${components.badge.radius};
+    --size-full: 100%;
+    --size-prose: 72ch;
+    --height-screen: 100vh;
+    --height-screen-half: 60vh;
+    --z-index-sticky: 1001;
+    --z-index-floating: 1000;
+    --z-index-backdrop: -1;
+    --leading-hero: 1.15;
+    --leading-readable: 1.7;
+    --leading-copy: 1.5;
+    --tracking-superwide: 0.02em;
+    --tracking-heading: 0.06em;
+    --tracking-heading-tight: 0.05em;
+    --width-content-narrow: 700px;
+    --width-content-note: 640px;
     --breakpoint-mobile: ${breakpoints.mobile}px;
+    --breakpoint-md-max: 768px;
+    --breakpoint-compact-max: 700px;
+    --breakpoint-narrow-max: 640px;
     --breakpoint-tablet: ${breakpoints.tablet}px;
     --breakpoint-desktop: ${breakpoints.desktop}px;
     --mobile-density-scale: ${spacing.densityScale?.mobile};
@@ -329,7 +348,7 @@ const themeCssVars = `
   }
 
   img {
-    max-width: 100%;
+    max-width: var(--size-full);
     height: auto;
   }
 
@@ -374,7 +393,7 @@ const themeCssVars = `
     line-height: var(--leading-tight);
   }
 
-  @media (max-width: var(--breakpoint-mobile)) {
+  @media (max-width: var(--breakpoint-mobile)); {
     .container {
       padding: 0 var(--space-mobile-4);
     }
@@ -392,7 +411,7 @@ const themeCssVars = `
   .btn-primary {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--color-text-on-dark);
-    padding: var(--space-4) var(--space-10);
+    padding: var(--space-4); var(--space-10);
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
@@ -409,7 +428,7 @@ const themeCssVars = `
   .btn-secondary {
     background: var(--color-surface-elevated);
     color: var(--color-primary);
-    padding: var(--space-4) var(--space-10);
+    padding: var(--space-4); var(--space-10);
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--text-base);
@@ -432,9 +451,9 @@ const themeCssVars = `
   /* --- Reduced motion --- */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
-      animation-duration: 0.01ms !important;
+      animation-duration: var(--duration-motion-reduced); !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      transition-duration: var(--duration-motion-reduced); !important;
     }
 
     html {

@@ -53,7 +53,7 @@
   .footer {
     background: var(--color-dark);
     color: var(--color-text-on-dark);
-    padding: var(--space-16) 0 var(--space-8);
+    padding: var(--space-16); 0 var(--space-8);
   }
 
   .footer-content {
@@ -163,7 +163,7 @@
     color: var(--color-text-on-dark);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: var(--breakpoint-md-max)) {
     .footer-content {
       grid-template-columns: 1fr;
       gap: var(--space-12);

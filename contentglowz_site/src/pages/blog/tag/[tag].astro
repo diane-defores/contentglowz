@@ -74,7 +74,7 @@ const { label, posts } = Astro.props;
 
 <style>
   .tag-header {
-    padding: var(--space-20) var(--space-8) var(--space-6);
+    padding: var(--space-20) var(--space-8); var(--space-6);
     border-bottom: thin solid var(--color-border-light);
   }
 
@@ -93,7 +93,7 @@ const { label, posts } = Astro.props;
   .tag-main {
     max-width: calc(var(--container-max-width) - var(--space-20) * 2.5);
     margin: 0 auto;
-    padding: var(--space-8) var(--space-8) var(--space-16);
+    padding: var(--space-8) var(--space-8); var(--space-16);
   }
 
   .tag-main h1 {
@@ -135,7 +135,7 @@ const { label, posts } = Astro.props;
   }
 
   .post-card-body {
-    padding: var(--space-5) var(--space-5) var(--space-5) var(--space-0);
+    padding: var(--space-5) var(--space-5) var(--space-5); var(--space-0);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -169,13 +169,13 @@ const { label, posts } = Astro.props;
 
   .back-link:hover { color: var(--color-primary); }
 
-  @media (max-width: 640px) {
+  @media (max-width: var(--breakpoint-narrow-max)) {
     .post-card {
       flex-direction: column;
     }
 
     .post-card img {
-      width: 100%;
+      width: var(--size-full);
       height: calc(var(--space-20) + var(--space-24) + var(--space-4));
     }
 

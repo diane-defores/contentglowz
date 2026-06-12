@@ -33,10 +33,10 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     position: absolute;
     inset-block-start: -100%;
     inset-inline-start: var(--space-4);
-    z-index: 1001;
+    z-index: var(--z-index-sticky);
     background: var(--color-primary);
     color: var(--color-text-on-dark);
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-3); var(--space-6);
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     font-weight: 600;
     transition: inset-block-start var(--duration-base);
@@ -51,11 +51,11 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: var(--z-index-floating);
     background: var(--color-surface-navbar);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-border-subtle);
-    padding: var(--space-4) 0;
+    padding: var(--space-4); 0;
   }
 
   .container {
@@ -96,7 +96,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   .cta-button {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--color-text-on-dark);
-    padding: var(--space-3) var(--space-6);
+    padding: var(--space-3); var(--space-6);
     border-radius: var(--radius-sm);
     font-weight: 600;
     transition: transform var(--duration-base), box-shadow var(--duration-base);
@@ -143,7 +143,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     display: none;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: var(--breakpoint-md-max)) {
     .nav-links {
       display: none;
       position: absolute;
@@ -152,7 +152,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
       flex-direction: column;
       background: var(--color-surface-card-glass);
       backdrop-filter: blur(10px);
-      padding: var(--space-6) var(--space-4);
+      padding: var(--space-6); var(--space-4);
       gap: var(--space-4);
       border-bottom: 1px solid var(--color-border-subtle);
     }
@@ -172,8 +172,8 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     .mobile-cta {
       display: block;
       background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      color: var(--color-text-on-dark) !important;
-      padding: var(--space-3) var(--space-6);
+      color: var(--color-text-on-dark); !important;
+      padding: var(--space-3); var(--space-6);
       border-radius: var(--radius-sm);
       font-weight: 600;
       text-align: center;

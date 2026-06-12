@@ -20,7 +20,7 @@ import Footer from '../components/Footer.astro';
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60vh;
+    min-height: var(--height-screen-half);
     text-align: center;
     padding: calc(var(--space-16) * 2) var(--space-8) var(--space-16);
   }
@@ -44,7 +44,7 @@ import Footer from '../components/Footer.astro';
   .back-home {
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--color-text-on-dark);
-    padding: var(--button-padding-y) var(--space-8);
+    padding: var(--button-padding-y); var(--space-8);
     border-radius: var(--button-radius);
     font-weight: 600;
     transition: transform var(--duration-base), box-shadow var(--duration-base);

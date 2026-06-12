@@ -27,7 +27,7 @@
 
 <style>
   .problem-section {
-    padding: var(--space-20) 0 var(--space-12);
+    padding: var(--space-20); 0 var(--space-12);
     background: var(--color-surface-subtle);
   }
 
@@ -67,7 +67,7 @@
     align-items: flex-start;
     gap: var(--space-4);
     background: var(--color-surface);
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-5); var(--space-6);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
   }
@@ -93,9 +93,9 @@
     background-clip: text;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: var(--breakpoint-md-max)) {
     .problem-section {
-      padding: var(--space-12) 0 var(--space-8);
+      padding: var(--space-12); 0 var(--space-8);
     }
 
     .problem-item {
