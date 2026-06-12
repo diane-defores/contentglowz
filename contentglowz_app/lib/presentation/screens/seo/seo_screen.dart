@@ -62,7 +62,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
               helperText: githubStatus?.connected == true
                   ? null
                   : context.tr(
-                      'Connectez votre compte GitHub pour sélectionner un dépôt.',
+                      'Connect your GitHub account to pick a repository.',
                     ),
               suffixIcon: IconButton(
                 icon: _isRepoPickerLoading
@@ -86,7 +86,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.link),
-              label: Text(context.tr('Connecter GitHub')),
+              label: Text(context.tr('Connect GitHub')),
               onPressed: _connectGithubFromSeo,
             ),
           ],
@@ -177,14 +177,14 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             });
 
           return AlertDialog(
-            title: Text(context.tr('Choisissez un dépôt GitHub')),
+            title: Text(context.tr('Choose GitHub repository')),
             content: SizedBox(
               width: 520,
               height: 420,
               child: sorted.isEmpty
                   ? Center(
                       child: Text(
-                        context.tr('Aucun dépôt trouvé pour ce compte.'),
+                        context.tr('No repository found for this account.'),
                       ),
                     )
                   : ListView(
@@ -197,7 +197,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
                           title: Text(fullName),
                           subtitle: Text(
                             description.isEmpty
-                                ? context.tr('Aucune description')
+                                ? context.tr('No description')
                                 : description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -213,7 +213,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(context.tr('Annuler')),
+                child: Text(context.tr('Cancel')),
               ),
             ],
           );
@@ -247,10 +247,9 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
       showDiagnosticSnackBar(
         context,
         ref,
-        message: context.tr(
-          'L’authentification GitHub est indisponible : {error}',
-          {'error': error.message},
-        ),
+        message: context.tr('GitHub OAuth is unavailable: {error}', {
+          'error': error.message,
+        }),
         scope: 'seo.github.connect',
         error: error,
         stackTrace: stackTrace,
@@ -265,7 +264,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
         SnackBar(
           content: Text(
             context.tr(
-              'L’authentification GitHub n’est pas disponible. Vérifiez la configuration backend.',
+              'GitHub OAuth is unavailable. Check backend configuration.',
             ),
           ),
           backgroundColor: Colors.red.withValues(alpha: 0.8),
@@ -281,11 +280,10 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text(context.tr('Connexion GitHub')),
+          title: Text(context.tr('GitHub connection')),
           content: Text(
             context.tr(
-              'Une fenêtre navigateur s’est ouverte pour autoriser ContentGlowz.'
-              ' Revenez ici puis appuyez sur Actualiser pour mettre à jour l’état.',
+              'A browser opened for authorization. Once you finish, return here and tap Refresh.',
             ),
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -294,14 +292,14 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(context.tr('Fermer')),
+              child: Text(context.tr('Close')),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 ref.invalidate(githubIntegrationStatusProvider);
               },
-              child: Text(context.tr('Actualiser')),
+              child: Text(context.tr('Refresh')),
             ),
           ],
         ),
@@ -310,9 +308,7 @@ class _SeoScreenState extends ConsumerState<SeoScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            context.tr(
-              'Impossible d’ouvrir le navigateur pour l’autorisation GitHub.',
-            ),
+            context.tr('Could not open browser for GitHub authorization'),
           ),
           backgroundColor: Colors.red.withValues(alpha: 0.8),
         ),

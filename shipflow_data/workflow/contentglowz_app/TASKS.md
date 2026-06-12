@@ -272,6 +272,7 @@
 | ✅ | Clarifier l’étape 4 du wizard Drip (méthode de contrôle, heure de publication, draft flag, mode sécurisé GSC, rebuild manuel/automatique et détail “publication à plage aléatoire”) | ✅ done |
 | ✅ | Ajouter un sélecteur de dossier source Drip depuis le projet actif (réutilisation `content_directories`) pour éviter la saisie manuelle | ✅ done |
 | 🟡 | Étape 7 — Passe i18n complémentaire sur les écrans secondaires et harmonisation des clés de traduction | 📋 todo |
+🟢 [contentglowz_app] task: Restore French translation coverage for app UI keys | status: done | area: translate
 
 ### 🟢 P3 — Backlog
 

@@ -1242,6 +1242,8 @@ class AppLocalizations {
     'yourhandle': 'votrecompte',
     'A browser opened for authorization. Once you finish, return here and tap Refresh.':
         'Une fenêtre de navigateur s’est ouverte pour l’autorisation. Une fois terminé, revenez ici puis appuyez sur Actualiser.',
+    'A browser opened for authorization. Once Google returns, come back here and refresh the status.':
+        'Une fenêtre de navigateur s’est ouverte pour l’autorisation. Quand Google a terminé, reviens ici puis actualise l’état.',
     'AI runtime mode updated to {mode}.':
         'Le mode d’exécution IA a été mis à jour vers {mode}.',
     'AI runtime, API keys, GitHub and publishing destinations live here.':
@@ -1627,6 +1629,195 @@ class AppLocalizations {
     'Project intelligence source uploaded.':
         'Source Project Intelligence importée.',
     'Upload failed.': "Échec de l'import.",
+    'Asset library unavailable': 'Bibliothèque de ressources indisponible',
+    'Attach global': 'Attacher globalement',
+    'Capture': 'Capture',
+    'Capture could not complete. You can try again.':
+        'La capture n’a pas pu aboutir. Tu peux réessayer.',
+    'Capture linked to content.': 'Capture liée au contenu.',
+    'Capture saved locally.': 'Capture enregistrée localement.',
+    'Content created from capture.': 'Contenu créé à partir de la capture.',
+    'Creating content from capture.':
+        'Création du contenu à partir de la capture.',
+    'Device screen capture is available only in the Android app for now.':
+        'La capture d’écran de l’appareil est disponible uniquement dans l’app Android pour le moment.',
+    'Finalizing screen recording.': 'Finalisation de l’enregistrement d’écran.',
+    'Global candidate': 'Candidat global',
+    'Kind': 'Type',
+    'Link to content': 'Lier au contenu',
+    'Linked to content': 'Lié au contenu',
+    'Linked to {title}': 'Lié à {title}',
+    'Linking capture to content.': 'Liaison de la capture au contenu.',
+    'Local captures': 'Captures locales',
+    'Mic': 'Micro',
+    'Mic on': 'Micro activé',
+    'No assets': 'Aucune ressource',
+    'No local captures yet.': 'Aucune capture locale pour le moment.',
+    'No pending content is available for this project.':
+        'Aucun contenu en attente n’est disponible pour ce projet.',
+    'Primary': 'Principal',
+    'Project assets': 'Ressources du projet',
+    'Screenshot': 'Capture d’écran',
+    'Screenshot saved locally.': 'Capture d’écran enregistrée localement.',
+    'Screen capture was canceled before a file was saved.':
+        'La capture d’écran a été annulée avant qu’un fichier soit enregistré.',
+    'Screen recording is active.': 'L’enregistrement d’écran est actif.',
+    'Select': 'Sélectionner',
+    'Select a project': 'Sélectionner un projet',
+    'Select an active project first.': 'Sélectionne d’abord un projet actif.',
+    'Select an asset': 'Sélectionner une ressource',
+    'Source': 'Source',
+    'Sources': 'Sources',
+    'Tombstoned': 'Masqué',
+    'Usage: {count}': 'Utilisation : {count}',
+    'Waiting for Android screen capture consent.':
+        'En attente du consentement Android pour la capture d’écran.',
+    'Checking Google Search Console connection...':
+        'Vérification de la connexion Google Search Console...',
+    'Checking Search Console integration...':
+        'Vérification de l’intégration Search Console...',
+    'Connect Google Search Console in Integrations to sync SEO data.':
+        'Connecte Google Search Console dans Intégrations pour synchroniser les données SEO.',
+    'Connect Google Search Console, then sync a period to populate this view.':
+        'Connecte Google Search Console, puis synchronise une période pour alimenter cette vue.',
+    'Connect your GitHub account to pick a repository.':
+        'Connecte ton compte GitHub pour sélectionner un dépôt.',
+    'Could not open browser for Google Search Console authorization':
+        'Impossible d’ouvrir le navigateur pour l’autorisation Google Search Console',
+    'Failed to load SEO Stats': 'Impossible de charger les statistiques SEO',
+    'Failed to load Search Console opportunities':
+        'Impossible de charger les opportunités Search Console',
+    'Failed to save Search Console property.':
+        'Impossible d’enregistrer la propriété Search Console.',
+    'Failed to validate Search Console.':
+        'Impossible de valider Search Console.',
+    'Google Search Console OAuth is unavailable.':
+        'L’authentification Google Search Console est indisponible.',
+    'Google Search Console is connected and valid.':
+        'Google Search Console est connectée et valide.',
+    'Google Search Console is connected but degraded.':
+        'Google Search Console est connectée mais dégradée.',
+    'Google Search Console is connected. Validate it before syncing.':
+        'Google Search Console est connectée. Valide-la avant de synchroniser.',
+    'No Google landing pages synced yet.':
+        'Aucune page d’entrée Google synchronisée pour le moment.',
+    'No Google queries synced yet.':
+        'Aucune requête Google synchronisée pour le moment.',
+    'No SEO Stats yet': 'Aucune statistique SEO pour le moment',
+    'No Search Console opportunities for this period.':
+        'Aucune opportunité Search Console pour cette période.',
+    'Open Search Console status endpoint':
+        'Ouvrir le point de statut Search Console',
+    'Private tracker': 'Tracker privé',
+    'Private tracker pageviews are separate from Google Search clicks.':
+        'Les pages vues du tracker privé sont distinctes des clics Google Search.',
+    'Recent data can be delayed or incomplete.':
+        'Les données récentes peuvent être retardées ou incomplètes.',
+    'Reconnect Google Search Console to sync SEO data.':
+        'Reconnecte Google Search Console pour synchroniser les données SEO.',
+    'Search Console disconnected.': 'Search Console déconnectée.',
+    'Search Console sync completed.':
+        'Synchronisation Search Console terminée.',
+    'Search Console sync failed.':
+        'Échec de la synchronisation Search Console.',
+    'Search Console validated.': 'Search Console validée.',
+    'SEO Stats are project-scoped because Search Console properties and private traffic are project data.':
+        'Les statistiques SEO sont limitées au projet, car les propriétés Search Console et le trafic privé sont des données projet.',
+    'Select a project before connecting Search Console.':
+        'Sélectionne un projet avant de connecter Search Console.',
+    'Sign in to manage Search Console.':
+        'Connecte-toi pour gérer Search Console.',
+    'Unable to load Search Console integration state.':
+        'Impossible de charger l’état de l’intégration Search Console.',
+    '{clicks} clicks · {impressions} impressions':
+        '{clicks} clics · {impressions} impressions',
+    '{count} views': '{count} vues',
+    'Connect a mailbox folder once. ContentGlowz checks it every 6 hours, turns useful emails into ideas, then moves processed emails to the archive folder.':
+        'Connecte un dossier de boîte mail une seule fois. ContentGlowz le vérifie toutes les 6 heures, transforme les emails utiles en idées, puis déplace les emails traités vers le dossier d’archive.',
+    'Delete email source?': 'Supprimer la source email ?',
+    'Email address': 'Adresse email',
+    'Email source deleted.': 'Source email supprimée.',
+    'Email source is valid': 'La source email est valide',
+    'Email source needs attention': 'La source email requiert une attention',
+    'Email source saved, not validated yet':
+        'Source email enregistrée, pas encore validée',
+    'Email source saved. Automatic checks run every 6 hours.':
+        'Source email enregistrée. Des vérifications automatiques sont lancées toutes les 6 heures.',
+    'Enter an email address first.': 'Saisis d’abord une adresse email.',
+    'Events: {count}': 'Événements : {count}',
+    'Failed to delete email source: {error}':
+        'Impossible de supprimer la source email : {error}',
+    'Failed to disconnect Search Console.':
+        'Impossible de déconnecter Search Console.',
+    'Failed to save email source: {error}':
+        'Impossible d’enregistrer la source email : {error}',
+    'Failed to validate email source: {error}':
+        'Impossible de valider la source email : {error}',
+    'Folder to scan': 'Dossier à scanner',
+    'For Gmail: Google Account > Security > App passwords.':
+        'Pour Gmail : Compte Google > Sécurité > Mots de passe des applications.',
+    'Hide password': 'Masquer le mot de passe',
+    'IMAP host': 'Hôte IMAP',
+    'Loading email source...': 'Chargement de la source email...',
+    'No email source connected': 'Aucune source email connectée',
+    'Unable to load email source state.':
+        'Impossible de charger l’état de la source email.',
+    'Open email source endpoint': 'Ouvrir le point de source email',
+    'Processed folder': 'Dossier traité',
+    'Show password': 'Afficher le mot de passe',
+    'This removes the stored IMAP app password and stops email-based idea ingestion.':
+        'Cela supprime le mot de passe IMAP enregistré et arrête l’ingestion d’idées par email.',
+    'Accepted tags: {tags}': 'Tags acceptés : {tags}',
+    'Added {count} Search Console ideas. Skipped {skipped}.':
+        '{count} idées Search Console ajoutées. {skipped} ignorées.',
+    'Adjust the flow before review work piles up.':
+        'Ajuste le flux avant que le travail de validation ne s’accumule.',
+    'Android capture only': 'Capture Android uniquement',
+    'App password': 'Mot de passe d’application',
+    'Asset linked: {id}': 'Ressource liée : {id}',
+    'Backend link is unavailable. The local link stays on this device.':
+        'Le lien backend est indisponible. Le lien local reste sur cet appareil.',
+    'CTA': 'CTA',
+    'Choose an active project before creating content.':
+        'Choisis un projet actif avant de créer du contenu.',
+    'Choose an active project before linking assets.':
+        'Choisis un projet actif avant de lier des ressources.',
+    'Clear': 'Effacer',
+    'Disconnect Search Console?': 'Déconnecter Search Console ?',
+    'Failed to add opportunities to Idea Pool.':
+        'Impossible d’ajouter les opportunités à l’Idea Pool.',
+    'Fit: {reason}': 'Adéquation : {reason}',
+    'Generate test content': 'Générer du contenu de test',
+    'Ideas from newsletters, SEO, Search Console,\ncompetitors and social listening will appear here.':
+        'Les idées issues des newsletters, du SEO, de Search Console,\ndes concurrents et de l’écoute sociale apparaîtront ici.',
+    'Keep a clear memory of approved output.':
+        'Garde une mémoire claire des contenus approuvés.',
+    'Leave blank to keep current password':
+        'Laisse vide pour conserver le mot de passe actuel',
+    'No private analytics pageviews for this period.':
+        'Aucune page vue d’analytics privée pour cette période.',
+    'Pipeline analytics will appear as content flows through review and publishing.':
+        'Les analytics du pipeline apparaîtront à mesure que le contenu avance dans la validation et la publication.',
+    'Recording': 'Enregistrement',
+    'Scripts, shorts, reels, and hook formats.':
+        'Scripts, shorts, reels et formats d’accroche.',
+    'Sections': 'Sections',
+    'Select a project before connecting a publish account.':
+        'Sélectionne un projet avant de connecter un compte de publication.',
+    'Select a project before enabling automatic email ingestion.':
+        'Sélectionne un projet avant d’activer l’ingestion automatique des emails.',
+    'Select a project before enabling email ingestion.':
+        'Sélectionne un projet avant d’activer l’ingestion des emails.',
+    'Share': 'Partager',
+    'Subject': 'Objet',
+    'Suggested tags: {tags}': 'Tags suggérés : {tags}',
+    'This removes the project OAuth connection. Cached SEO snapshots can still be shown as stale until replaced.':
+        'Cela supprime la connexion OAuth du projet. Les instantanés SEO en cache peuvent encore apparaître comme obsolètes jusqu’à leur remplacement.',
+    'URL': 'URL',
+    'Understanding: {status}': 'Compréhension : {status}',
+    'Warnings: {warnings}': 'Avertissements : {warnings}',
+    'channel fit': 'adéquation canal',
+    '{count} test content items generated': '{count} contenus de test générés',
     'Connector sync completed.': 'Synchronisation connecteurs terminée.',
     'Connector sync failed.': 'Échec de la synchronisation connecteurs.',
     'Source removed.': 'Source supprimée.',

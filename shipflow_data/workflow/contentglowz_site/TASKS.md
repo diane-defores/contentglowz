@@ -41,6 +41,8 @@
 ## Audit Findings
 <!-- Populated by /sf-audit — dated sections with Fixed: / Remaining: -->
 
+🟠 [contentglowz_site] task: Define site locale strategy and fix technical i18n metadata | status: todo | area: translate
+
 ### Audit: Design Tokens (2026-05-10)
 
 | Pri | Task | Status |
