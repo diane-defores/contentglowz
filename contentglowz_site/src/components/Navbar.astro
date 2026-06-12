@@ -51,6 +51,7 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     top: 0;
     left: 0;
     right: 0;
+    width: 100%;
     z-index: var(--z-index-floating);
     background: var(--color-surface-navbar);
     backdrop-filter: var(--surface-backdrop-blur);
@@ -59,9 +60,12 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
   }
 
   .container {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-width: 0;
+    padding: 0 var(--space-4);
   }
 
   .logo {
@@ -143,13 +147,14 @@ import { appEntryUrl, appSignInUrl } from '../config/site';
     display: none;
   }
 
-  @media (max-width: var(--breakpoint-md-max)) {
+  @media (max-width: 768px) {
     .nav-links {
       display: none;
       position: absolute;
       inset-block-start: 100%;
       inset-inline: 0;
       flex-direction: column;
+      width: 100%;
       background: var(--color-surface-card-glass);
       backdrop-filter: var(--surface-backdrop-blur);
             padding: var(--space-6) var(--space-4);

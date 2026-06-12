@@ -5213,10 +5213,26 @@ class ApiService {
       if (_hasErrorEnvelopeShape(data)) {
         return data;
       }
+      return null;
     }
     if (data is Map) {
       final converted = data.map((key, value) => MapEntry('$key', value));
-      return _apiErrorEnvelope(converted);
+      if (_hasErrorEnvelopeShape(converted)) {
+        return converted;
+      }
+      final detail = converted['detail'];
+      if (detail is Map<String, dynamic>) {
+        return detail;
+      }
+      if (detail is Map) {
+        final convertedDetail = detail.map(
+          (key, value) => MapEntry('$key', value),
+        );
+        return convertedDetail is Map<String, dynamic>
+            ? convertedDetail
+            : Map<String, dynamic>.from(convertedDetail);
+      }
+      return null;
     }
     return null;
   }
