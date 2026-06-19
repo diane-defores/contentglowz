@@ -31,6 +31,9 @@ Thumbs.db
 # Vercel
 .vercel/
 
+# Playwright MCP artifacts
+.playwright-mcp/
+
 # Claude / AI editors
 .claude/
 .aider*
