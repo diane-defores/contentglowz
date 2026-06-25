@@ -2,6 +2,7 @@
   "name": "contentglowz-remotion-worker",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@8.11.0",
   "description": "Internal Remotion render worker for ContentGlowz",
   "scripts": {
     "dev": "tsx watch server/index.ts",
