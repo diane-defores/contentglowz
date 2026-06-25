@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_lab"
   - "contentglowz_app"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "content_assets"
   - "Image Robot"
   - "AI visual references"

@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "contentflowz"
   - "Runway API"
   - "Luma Dream Machine API"

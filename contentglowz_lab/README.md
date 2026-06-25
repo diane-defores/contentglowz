@@ -158,7 +158,7 @@ Security and retention rules:
 The canonical video timeline lives in `contentglowz_lab`, not in Remotion or
 Flutter. The backend owns validation, immutable versions, asset eligibility,
 preview/final job gates, and signed artifact URLs. Remotion is an internal
-renderer adapter behind `contentglowz_remotion_worker`.
+renderer adapter behind `contentglowz_worker`.
 
 Timeline API routes are under `/api/video-timelines`:
 

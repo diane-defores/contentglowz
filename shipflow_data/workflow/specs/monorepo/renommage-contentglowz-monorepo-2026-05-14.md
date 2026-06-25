@@ -42,7 +42,7 @@ supersedes: []
 evidence:
   - "User request 2026-05-14: project must be contentglowz / ContentGlowz everywhere; domain contentglowz.com has been purchased; GitHub repo target is https://github.com/diane-defores/contentglowz (note: /actions is the GitHub UI page, not the git remote URL)."
   - "2026-05-15: local git remote reports https://github.com/diane-defores/contentglowz.git for fetch and push."
-  - "2026-05-15: active monorepo folders exist as contentglowz_site, contentglowz_app, contentglowz_lab, contentglowz_remotion_worker, and contentglowz_theme.json."
+  - "2026-05-15: active monorepo folders exist as contentglowz_site, contentglowz_app, contentglowz_lab, contentglowz_worker, and contentglowz_theme.json."
   - "2026-05-15: .github/workflows/android-apk.yml uses contentglowz_app and artifact contentglowz-android-apk."
   - "2026-05-15: app defaults use https://contentglowz.com, https://app.contentglowz.com, and https://api.contentglowz.com."
   - "2026-05-15: backend CORS/OpenAPI paths include contentglowz.com domains and GitHub contact URL."
@@ -80,7 +80,7 @@ Quand un utilisateur, un opérateur ou un pipeline interagit avec le projet apr�
 ## Success Behavior
 
 - Depuis un clone frais du dépôt cible, `git remote -v` pointe vers `https://github.com/diane-defores/contentglowz.git` ou l'équivalent SSH du même repo.
-- Les dossiers actifs du monorepo sont renommés de façon cohérente : `contentglowz_site`, `contentglowz_app`, `contentglowz_lab`, `contentglowz_remotion_worker`, et `contentglowz_theme.json`, sauf si une contrainte outil impose une transition documentée.
+- Les dossiers actifs du monorepo sont renommés de façon cohérente : `contentglowz_site`, `contentglowz_app`, `contentglowz_lab`, `contentglowz_worker`, et `contentglowz_theme.json`, sauf si une contrainte outil impose une transition documentée.
 - Les builds et checks utilisent les nouveaux chemins dans les scripts, workflows, README et outils internes.
 - Les surfaces publiques affichent `ContentGlowz` dans les titres, métadonnées, JSON-LD, manifestes, OG, favicon/asset metadata, blog/content authors, privacy page, app title et textes localisés.
 - Les valeurs par défaut de configuration utilisent `https://contentglowz.com`, `https://app.contentglowz.com` et `https://api.contentglowz.com`; les anciennes URLs `contentflow.winflowz.com`, `app.contentflow.winflowz.com` et `contentflow.com` ne restent que dans une note de migration ou dans une liste de redirections temporaires explicitement nommée.
@@ -189,7 +189,7 @@ Update or audit:
 - `contentglowz_site/README.md`, `shipflow_data` docs, public content, privacy page, page intent/claim register.
 - `contentglowz_app/README.md`, `CHANGELOG.md`, web auth docs, setup/build scripts, localization references.
 - `contentglowz_lab/README.md`, `.env.example`, deployment docs, API docs/OpenAPI metadata.
-- `contentglowz_remotion_worker/README.md`, `DEPLOYMENT.md`, package metadata.
+- `contentglowz_worker/README.md`, `DEPLOYMENT.md`, package metadata.
 - Any generated reports/specs that are intended as active implementation inputs for future agents.
 
 No documentation surface is exempt when it states current repo, brand, domain, deploy, environment, or setup truth.
@@ -280,11 +280,11 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Notes : Ne jamais écrire de secret réel.
 
 - [ ] Tâche 10 : Valider le worker Remotion et son contrat backend
-  - Fichier : `contentglowz_remotion_worker/package.json`, `README.md`, `DEPLOYMENT.md`, `server/**`, `remotion/**`, tests
+  - Fichier : `contentglowz_worker/package.json`, `README.md`, `DEPLOYMENT.md`, `server/**`, `remotion/**`, tests
   - Action : Vérifier package/service/docs/storage path defaults et cohérence backend/worker sur `ContentGlowzTimelineVideo`.
   - User story link : les rendus et artefacts internes suivent le nouveau nom.
   - Depends on : Tâches 8, 9.
-  - Validate with : `npm run lint`, `npm run test:storage`, `npm run test:timeline` depuis `contentglowz_remotion_worker`.
+  - Validate with : `npm run lint`, `npm run test:storage`, `npm run test:timeline` depuis `contentglowz_worker`.
   - Notes : Ne pas changer à nouveau le composition ID sans mettre à jour backend, fixtures et tests ensemble.
 
 - [ ] Tâche 11 : Classifier et migrer les docs de gouvernance actives
@@ -296,7 +296,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Notes : Ne pas réécrire toute l'histoire ShipFlow; la classification doit apparaître dans le rapport de vérification.
 
 - [ ] Tâche 12 : Mettre à jour les tests, fixtures et snapshots de noms restants
-  - Fichier : `contentglowz_app/test/**`, `contentglowz_lab/tests/**`, `contentglowz_remotion_worker/**/*.test.ts`, fixtures JSON
+  - Fichier : `contentglowz_app/test/**`, `contentglowz_lab/tests/**`, `contentglowz_worker/**/*.test.ts`, fixtures JSON
   - Action : Adapter uniquement les assertions/fixtures qui portent encore l'ancien nom actif; vérifier les tests déjà migrés vers ContentGlowz.
   - User story link : la validation automatique protège le nouveau contrat de nommage.
   - Depends on : Tâches 6-10.
@@ -320,7 +320,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Notes : Le fichier de cette spec peut mentionner l'ancien nom comme preuve de migration.
 
 - [ ] Tâche 15 : Exécuter les validations multi-stack
-  - Fichier : `contentglowz_site`, `contentglowz_app`, `contentglowz_lab`, `contentglowz_remotion_worker`
+  - Fichier : `contentglowz_site`, `contentglowz_app`, `contentglowz_lab`, `contentglowz_worker`
   - Action : Lancer les builds/checks pertinents par sous-projet.
   - User story link : prouve que le renommage ne casse pas les runtimes.
   - Depends on : Tâches 6-14.
@@ -374,7 +374,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
 
 ## Execution Notes
 
-- Lire d'abord cette spec, puis `README.md`, `SETUP.md`, `.github/workflows/android-apk.yml`, `contentglowz_site/src/config/site.ts`, `contentglowz_app/lib/core/app_config.dart`, `contentglowz_app/android/app/build.gradle.kts`, `contentglowz_lab/api/main.py`, `contentglowz_remotion_worker/remotion/Root.tsx`, et `contentglowz_remotion_worker/package.json`.
+- Lire d'abord cette spec, puis `README.md`, `SETUP.md`, `.github/workflows/android-apk.yml`, `contentglowz_site/src/config/site.ts`, `contentglowz_app/lib/core/app_config.dart`, `contentglowz_app/android/app/build.gradle.kts`, `contentglowz_lab/api/main.py`, `contentglowz_worker/remotion/Root.tsx`, et `contentglowz_worker/package.json`.
 - Procéder par couches de consolidation : preuve des fondations déjà faites, correction des restes actifs, validation sécurité, validation app/backend/worker, classification gouvernance, puis audit global.
 - Ne pas refaire les renommages de dossiers ou de remote déjà appliqués; vérifier et préserver ces changements.
 - Éviter un remplacement global aveugle dans les fichiers de sécurité, JSON/YAML, lockfiles et specs historiques.

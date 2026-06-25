@@ -3,9 +3,10 @@ module.exports = {
     name: "contentglowz_app",
     cwd: "/home/claude/contentglowz/contentglowz_app",
     script: "bash",
-    args: ["-lc", "export PORT=3011 && flox activate -- doppler run -- bash -lc 'env PORT=3011 ./pm2-web.sh'"],
+    args: ["-lc", "export PORT=3011 && flox activate -- bash -lc 'env PORT=3011 CLERK_PUBLISHABLE_KEY=\"$CLERK_PUBLISHABLE_KEY\" ./pm2-web.sh'"],
     env: {
-      PORT: 3011
+      PORT: 3011,
+      CLERK_PUBLISHABLE_KEY: "a remplacer"
     },
     autorestart: true,
     max_restarts: 3,

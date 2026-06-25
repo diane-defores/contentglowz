@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "contentflowz/v0-ai-powered-animation-studio"
   - "contentflowz/remotion-template"
   - "Remotion video editor workflow"
@@ -211,8 +211,8 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
   - `contentglowz_lab/api/routers/videos.py`
   - `contentglowz_app/lib/data/models/video_project.dart`
   - `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart`
-  - `contentglowz_remotion_worker/src/schema/video-props.ts`
-  - `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - `contentglowz_worker/src/schema/video-props.ts`
+  - `contentglowz_worker/src/compositions/ContentFlowSceneVideo.tsx`
 - Fresh external docs checked:
   - `fresh-docs checked`: Remotion `interpolate()` docs at `https://www.remotion.dev/docs/interpolate`.
   - `fresh-docs checked`: Remotion `renderMedia()` docs at `https://www.remotion.dev/docs/renderer/render-media`.
@@ -242,14 +242,14 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
 - `contentglowz_app/lib/presentation/screens/editor/video_editor_screen.dart` should host the motion controls; avoid a parallel `AnimationStudioScreen`.
 - `contentglowz_lab/api/routers/videos.py` should expose motion endpoints beside other video project actions after the base video router exists.
 - `contentglowz_lab/api/services/remotion_scene_props.py` or equivalent needs to include motion props in version-to-worker adaptation.
-- `contentglowz_remotion_worker` currently does not exist in this checkout; implementation must create or use the worker package from prior specs, not silently put render logic in Flutter.
+- `contentglowz_worker` currently does not exist in this checkout; implementation must create or use the worker package from prior specs, not silently put render logic in Flutter.
 - Analytics/observability should distinguish preset apply, AI suggestion requested, suggestion applied, motion validation failure, motion preview render and motion render failure.
 
 ## Documentation Coherence
 
 - Update `contentglowz_app/README.md` after implementation with the editor-linked motion assistant, online-only AI suggestion caveat and preview-first workflow.
 - Update `contentglowz_lab/README.md` or API docs with motion endpoints, validation limits, versioning, BYOK behavior and redaction rules.
-- Update `contentglowz_remotion_worker/README.md` with motion prop schema, supported presets, sample props, local render smoke commands and known render limits.
+- Update `contentglowz_worker/README.md` with motion prop schema, supported presets, sample props, local render smoke commands and known render limits.
 - Update product/support docs to say this is guided scene motion, not a standalone animation studio.
 - Add changelog entries for manual motion presets, AI motion suggestions, stale preview handling and Remotion render support.
 - Do not document the contentflowz prototype as production behavior.
@@ -335,7 +335,7 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
   - Notes : Flutter must not submit final worker props.
 
 - [ ] Task 8: Add Remotion motion schema
-  - Fichier : `contentglowz_remotion_worker/src/schema/video-props.ts`
+  - Fichier : `contentglowz_worker/src/schema/video-props.ts`
   - Action : Add TypeScript schema/types for motion targets, presets, keyframes, easing, repeat policy and background motion parameters.
   - User story link : Lets the worker reject unsafe or malformed motion props before rendering.
   - Depends on : Worker package from base Remotion specs and Task 7 contract.
@@ -343,7 +343,7 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
   - Notes : If the worker path differs when implemented, use the actual schema file.
 
 - [ ] Task 9: Render motion in the Remotion scene composition
-  - Fichier : `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - Fichier : `contentglowz_worker/src/compositions/ContentFlowSceneVideo.tsx`
   - Action : Implement deterministic motion rendering for V1 presets using Remotion frame APIs, interpolation/easing, clamping, scene-relative timing and background motion loops.
   - User story link : Produces the visible animated result in preview and final export.
   - Depends on : Task 8.
@@ -391,7 +391,7 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
   - Notes : If this was already handled by the base video editor implementation, add regression tests only.
 
 - [ ] Task 15: Add docs and sample fixtures
-  - Fichier : `contentglowz_remotion_worker/README.md`
+  - Fichier : `contentglowz_worker/README.md`
   - Action : Document supported motion presets, prop schema, sample fixture JSON, local preview/final render commands, validation limits and troubleshooting.
   - User story link : Makes implementation and support repeatable.
   - Depends on : Tasks 8-9.
@@ -464,7 +464,7 @@ Add a scene motion layer to the video editor model and UI. V1 exposes curated so
 - Suggested validation commands after implementation:
   - `python3 -m pytest contentglowz_lab/tests/test_video_motion*.py contentglowz_lab/tests/test_video_router*.py`
   - `flutter test contentglowz_app/test/data/video_motion_test.dart contentglowz_app/test/providers/video_motion_provider_test.dart contentglowz_app/test/presentation/video_motion_panel_test.dart`
-  - worker build and sample render command documented in `contentglowz_remotion_worker/README.md`
+  - worker build and sample render command documented in `contentglowz_worker/README.md`
 
 ## Open Questions
 

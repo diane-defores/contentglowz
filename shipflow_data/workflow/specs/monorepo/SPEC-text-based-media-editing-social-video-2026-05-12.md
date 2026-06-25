@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "contentflowz/INSPIRATION.md"
   - "contentflowz/v0-cool-design-ressemble-gocharbon-connexion-reseaux-sociaux"
   - "contentflowz/remotion-template"
@@ -191,7 +191,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 - Video text editing is online-only and must not enter the offline write queue.
 - Existing publishing flow must not publish a video version whose transcript/caption/edit plan is stale or whose preview has not been validated.
 - V1 should remain mobile-usable: compact transcript list, search, sentence groups, action sheet for selected text, and caption preview instead of dense desktop timeline controls.
-- If `contentglowz_remotion_worker` has not yet been created by the Remotion specs, implementation must first finish the Remotion worker foundation rather than invent a second worker path.
+- If `contentglowz_worker` has not yet been created by the Remotion specs, implementation must first finish the Remotion worker foundation rather than invent a second worker path.
 
 ## Dependencies
 
@@ -251,7 +251,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 
 - Update `contentglowz_lab/README.md` or backend env docs with transcription provider config, provider choice, quota hooks, redaction rules and worker expectations.
 - Update `contentglowz_app/README.md` or app docs with video text-editing states, online-only behavior and diagnostics caveats.
-- Update `contentglowz_remotion_worker/README.md` when the worker exists: caption JSON contract, edit-plan props, fixture render commands and asset URL rules.
+- Update `contentglowz_worker/README.md` when the worker exists: caption JSON contract, edit-plan props, fixture render commands and asset URL rules.
 - Update `.env.example` files when provider variables are implemented.
 - Update in-app localization strings for transcript states, caption warnings, stale transcript, quota/provider errors and preview-required messages.
 - Update support docs only after QA with wording that avoids Descript parity, guaranteed accuracy or legal caption compliance claims.
@@ -350,7 +350,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : Current code explicitly rejects video_version validation; this task replaces that placeholder only after the video store ships.
 
 - [ ] Task 10: Extend Remotion props schema for captions and text edit plans
-  - Fichier : `contentglowz_remotion_worker/src/schema/video-props.ts`
+  - Fichier : `contentglowz_worker/src/schema/video-props.ts`
   - Action : Add schema fields for transcript/caption track descriptors, caption style preset, caption pages/tokens, edit decision list, cut/mute/split ranges, source asset descriptors and version ids.
   - User story link : Lets Remotion render the same text edits that the user validated.
   - Depends on : Base Remotion worker from render/video specs and Task 8.
@@ -358,7 +358,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - Notes : If worker path differs at implementation time, modify the actual schema module created by the Remotion specs.
 
 - [ ] Task 11: Render captions and non-destructive text edits in Remotion
-  - Fichier : `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - Fichier : `contentglowz_worker/src/compositions/ContentFlowSceneVideo.tsx`
   - Action : Render caption pages using `@remotion/captions` compatible data, apply cut/mute/split ranges through Sequenced audio/video descriptors, and preserve scene layout/format presets.
   - User story link : Makes preview/final video reflect text edits and captions.
   - Depends on : Task 10.
@@ -411,7 +411,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
   - User story link : Makes implementation operable and supportable.
   - Depends on : Provider and API implementation tasks.
   - Validate with : docs review plus `rg` for stale claims such as Descript clone, guaranteed captions, standalone studio or public transcript access.
-  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_remotion_worker/README.md`, `.env.example` and changelog when those files exist in implementation scope.
+  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_worker/README.md`, `.env.example` and changelog when those files exist in implementation scope.
 
 ## Acceptance Criteria
 
@@ -481,7 +481,7 @@ Add a text-based editing layer to the existing/future video editor. The backend 
 - Validation commands expected after implementation:
   - `python3 -m pytest tests/test_video_text_editing_models.py tests/test_video_text_editing_store.py tests/test_video_text_editing_router.py`
   - `flutter test test/data/video_text_editing_test.dart test/providers/video_text_editing_provider_test.dart test/presentation/video_text_editor_panel_test.dart`
-  - worker build/render smoke command from `contentglowz_remotion_worker/README.md`
+  - worker build/render smoke command from `contentglowz_worker/README.md`
 - Stop and reroute if the user asks for standalone studio, arbitrary media upload, Descript parity, destructive editing, voice overdub/cloning, legal caption compliance, translation/subtitle localization, or auto-publication without preview validation.
 - Fresh external docs verdict: `fresh-docs checked` for Remotion captions/audio/rendering, ElevenLabs STT and OpenAI STT on 2026-05-12.
 

@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "contentflowz/v0-eleven-labs-v3-podcast-generator"
   - "contentflowz/v0-eleven-labs-music-starter"
   - "Remotion video editor workflow"
@@ -249,7 +249,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 - `contentglowz_lab/api/services/feedback_storage.py` can inspire Bunny signed upload/playback mechanics, but V1 needs a content/video asset storage service with project ownership, durable public/render URLs and metadata.
 - `contentglowz_lab/api/routers/reels.py` should remain focused on Instagram import and MVP reels where possible; richer video editor APIs should live in a separate videos router.
 - `contentglowz_app` needs a route/order update for `/editor/:id/video` and possibly nested tabs inside the video editor, not a new app-shell nav item.
-- `contentglowz_remotion_worker` must support audio props and procedural background props before preview/final validation can pass.
+- `contentglowz_worker` must support audio props and procedural background props before preview/final validation can pass.
 - Quota/PAYG behavior becomes visible to users when audio/music generation is attempted; app UI must explain managed usage blocks without exposing provider internals.
 - Music generation introduces policy/legal copy obligations separate from generic AI image generation.
 
@@ -257,7 +257,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 
 - Update `contentglowz_lab/README.md` or environment docs with `ELEVENLABS_API_KEY`, audio provider config, Bunny audio storage paths, quota behavior and music policy checks.
 - Update `contentglowz_app/README.md` with video editor audio prerequisites once UI ships.
-- Update `contentglowz_remotion_worker/README.md` with audio track props, music bed props, volume/fade semantics and animated background preset schemas.
+- Update `contentglowz_worker/README.md` with audio track props, music bed props, volume/fade semantics and animated background preset schemas.
 - Add changelog entries for AI narration, music, background generation, quota behavior and provider-policy limitations.
 - Add support docs explaining that V1 uses predefined voices, does not clone user voices, and does not guarantee music exclusivity or legal clearance beyond provider terms.
 - Do not promise "podcast publishing" or "music rights guaranteed" in marketing copy for this spec.
@@ -358,7 +358,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : Do not make generic `POST /api/status/content/{id}/assets` trust Flutter for AI media origin.
 
 - [ ] Task 10: Extend Remotion scene props for audio and music
-  - Fichier : `contentglowz_remotion_worker/src/schema/video-props.ts`
+  - Fichier : `contentglowz_worker/src/schema/video-props.ts`
   - Action : Add typed props for narration tracks, music bed, volume, fades, loop/trim policy, asset URL descriptors, duration checks and selected background config.
   - User story link : Lets the worker render the selected media with the current video version.
   - Depends on : Base Remotion worker schema from the render/video specs and Task 8 API contract.
@@ -366,7 +366,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - Notes : If the worker path differs at implementation time, apply this to the actual schema module created by the Remotion specs.
 
 - [ ] Task 11: Implement Remotion audio mixing and animated backgrounds
-  - Fichier : `contentglowz_remotion_worker/src/compositions/ContentFlowSceneVideo.tsx`
+  - Fichier : `contentglowz_worker/src/compositions/ContentFlowSceneVideo.tsx`
   - Action : Render narration, music bed, fades, loop/trim behavior and allowlisted animated background presets from props.
   - User story link : Makes preview/final videos audibly and visually reflect selected audio/background choices.
   - Depends on : Task 10.
@@ -419,7 +419,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
   - User story link : Makes implementation and ops reproducible.
   - Depends on : Backend tasks.
   - Validate with : docs review plus `rg` for stale claims like standalone podcast studio or guaranteed music rights.
-  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_remotion_worker/README.md`, `.env.example` and changelog when those files exist in the implementation scope.
+  - Notes : Also update `contentglowz_app/README.md`, `contentglowz_worker/README.md`, `.env.example` and changelog when those files exist in the implementation scope.
 
 ## Acceptance Criteria
 
@@ -474,7 +474,7 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 - Validation commands expected after implementation:
   - `python3 -m pytest tests/test_video_audio_models.py tests/test_video_media_orchestrator.py tests/test_video_media_router.py`
   - `flutter test test/data/video_audio_test.dart test/providers/video_audio_provider_test.dart test/presentation/video_editor_audio_test.dart`
-  - worker build/render smoke command from `contentglowz_remotion_worker/README.md`
+  - worker build/render smoke command from `contentglowz_worker/README.md`
 - Fresh external docs verdict: `fresh-docs checked`. Official OpenRouter docs support audio input/output and TTS, but current docs do not provide the complete music plus text-to-dialogue workflow. Official ElevenLabs docs support the direct V1 audio/music provider path, with music terms constraints that must shape validation and copy.
 
 ## Open Questions

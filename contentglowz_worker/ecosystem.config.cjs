@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
-    name: "contentglowz_remotion_worker",
-    cwd: "/home/claude/contentglowz/contentglowz_remotion_worker",
+    name: "contentglowz_worker",
+    cwd: "/home/claude/contentglowz/contentglowz_worker",
     script: "bash",
     args: ["-lc", "export PORT=3018 && flox activate -- bash -lc 'pnpm dev'"],
     env: {

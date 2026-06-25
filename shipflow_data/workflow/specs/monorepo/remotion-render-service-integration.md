@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - contentglowz_app
   - contentglowz_lab
-  - contentglowz_remotion_worker
+  - contentglowz_worker
   - contentflowz/remotion-template
   - Turso jobs
   - Clerk auth
@@ -108,7 +108,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
 
 ## Scope In
 
-- Create a new local service directory `contentglowz_remotion_worker/` derived from the Remotion prototype, with Node, TypeScript, React, Remotion, and a minimal HTTP API.
+- Create a new local service directory `contentglowz_worker/` derived from the Remotion prototype, with Node, TypeScript, React, Remotion, and a minimal HTTP API.
 - Add a `ReelFromContent` Remotion composition that accepts structured content props, not raw arbitrary files.
 - Support two render modes: `preview` and `final`, both fixed to 60 seconds for MVP.
 - Use vertical 9:16 H.264 MP4 output for MVP.
@@ -155,7 +155,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
 ## Dependencies
 
 - `contentglowz_lab`: FastAPI, Clerk auth, ownership helpers, `JobStore`, `httpx`.
-- `contentglowz_remotion_worker`: `@remotion/bundler`, `@remotion/renderer`, `remotion`, React, TypeScript, Express or a similarly small Node HTTP server.
+- `contentglowz_worker`: `@remotion/bundler`, `@remotion/renderer`, `remotion`, React, TypeScript, Express or a similarly small Node HTTP server.
 - Local environment variables:
   - `REMOTION_WORKER_URL`
   - `REMOTION_WORKER_TOKEN`
@@ -212,7 +212,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
 ## Documentation Coherence
 
 - Update `contentglowz_lab/README.md` or `contentglowz_lab/ENVIRONMENT_SETUP.md` with the worker URL, token, render directory, and local startup steps.
-- Add `contentglowz_remotion_worker/README.md` with install, dev, render, and test commands.
+- Add `contentglowz_worker/README.md` with install, dev, render, and test commands.
 - Add a short note in `contentglowz_app/README.md` only after the app workflow spec is implemented.
 - Changelog entry required for new `/api/reels/render-jobs` API contract.
 
@@ -236,15 +236,15 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
 ## Implementation Tasks
 
 - [ ] Tache 1: Scaffold the isolated Remotion worker package.
-  - Fichier: `contentglowz_remotion_worker/package.json`
+  - Fichier: `contentglowz_worker/package.json`
   - Action: Create a Node/TypeScript package based on `contentflowz/remotion-template/package.json`, keeping Remotion dependencies and removing Telegram-specific dependencies unless used nowhere else.
   - User story link: Provides the render engine without replacing the FastAPI stack.
   - Depends on: None.
-  - Validate with: `npm install` and `npm run lint` from `contentglowz_remotion_worker`.
+  - Validate with: `npm install` and `npm run lint` from `contentglowz_worker`.
   - Notes: Keep this out of `contentflowz/`; that directory remains inspiration/prototype material.
 
 - [ ] Tache 2: Port the Remotion root and add a content-based composition.
-  - Fichier: `contentglowz_remotion_worker/remotion/Root.tsx`
+  - Fichier: `contentglowz_worker/remotion/Root.tsx`
   - Action: Register `ReelFromContent` with 1080x1920, 30fps, and zod-validated props.
   - User story link: Produces vertical reels from ContentFlow content.
   - Depends on: Tache 1.
@@ -252,7 +252,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
   - Notes: Do not keep quiz-only assumptions as the primary composition.
 
 - [ ] Tache 3: Implement worker render API and local artifact writes.
-  - Fichier: `contentglowz_remotion_worker/server/index.ts`
+  - Fichier: `contentglowz_worker/server/index.ts`
   - Action: Add `POST /renders`, `GET /renders/:workerJobId`, `DELETE /renders/:workerJobId`, and internal artifact metadata. Use `outputLocation` instead of in-memory buffers for MVP.
   - User story link: Lets lab create and track preview/final MP4 renders.
   - Depends on: Tache 2.
@@ -260,7 +260,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
   - Notes: Require `REMOTION_WORKER_TOKEN` on non-health endpoints.
 
 - [ ] Tache 4: Add worker path safety and retention helpers.
-  - Fichier: `contentglowz_remotion_worker/server/render-storage.ts`
+  - Fichier: `contentglowz_worker/server/render-storage.ts`
   - Action: Generate safe output paths from server-side ids, validate all paths stay under `CONTENTFLOW_RENDER_DIR`, compute 30-day retention metadata, and expose cleanup for expired preview/final artifacts.
   - User story link: Prevents unsafe local file exposure.
   - Depends on: Tache 3.
@@ -324,7 +324,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
   - Notes: Use fake worker responses; do not require real Remotion in API tests.
 
 - [ ] Tache 12: Document local setup.
-  - Fichier: `contentglowz_remotion_worker/README.md`
+  - Fichier: `contentglowz_worker/README.md`
   - Action: Document env vars, commands, API examples, and local render directory behavior.
   - User story link: Makes the worker operable by a fresh agent or developer.
   - Depends on: Taches 1-4.
@@ -370,7 +370,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
 - Validation commands:
   - `python -m compileall api`
   - `pytest tests/test_reel_renders.py`
-  - `npm run lint` in `contentglowz_remotion_worker`
+  - `npm run lint` in `contentglowz_worker`
   - `curl` smoke test against local worker and lab API
 
 ## Risks
@@ -392,7 +392,7 @@ Introduce a small isolated Remotion worker as a companion service and make `cont
   - `contentglowz_lab/api/dependencies/ownership.py`
   - `contentglowz_lab/api/routers/reels.py`
 - Implement foundation first: worker package, composition, worker API, then lab models/client/router.
-- Keep Remotion code isolated in `contentglowz_remotion_worker/`; do not add Node dependencies to `contentglowz_lab/requirements`.
+- Keep Remotion code isolated in `contentglowz_worker/`; do not add Node dependencies to `contentglowz_lab/requirements`.
 - Keep lab API as the auth and ownership gate. Do not expose worker URLs directly to Flutter.
 - Use `outputLocation` for file output to avoid large in-memory buffers.
 - Do not implement CDN, voiceover, captions, or social publishing in this chantier.
@@ -412,7 +412,7 @@ None blocking for MVP. Deferred decisions are CDN storage, cloud rendering, voic
 | 2026-05-11 09:43:54 | sf-ready | GPT-5 Codex | Evaluated readiness gate for Remotion worker, FastAPI render jobs, signed local artifacts, and local storage. | Not ready: security/availability limits, artifact token contract, final render relationship, and retention policy need concrete decisions. | /sf-spec Remotion render service integration |
 | 2026-05-11 12:41:59 | sf-spec | GPT-5 Codex | Revised spec with user decisions on signed URL TTL, 60-second MVP, 429/backpressure, 30-day local retention, preview-to-final contract, and media scope. | Draft revised for readiness rerun. | /sf-ready remotion-render-service-integration |
 | 2026-05-11 12:48:38 | sf-ready | GPT-5 Codex | Re-evaluated readiness after revised render limits, signed artifact, retention, preview/final, and media scope decisions. | Ready. | /sf-start Remotion render service integration |
-| 2026-05-14 16:10:00 | sf-start | GPT-5 Codex | Implemented Batch 0 foundation: `contentglowz_remotion_worker/`, lab render-job API routes/models/services, signed artifact token checks, and focused fake-worker tests. | Partial chantier delivery complete for prerequisite scope; focused backend tests passing. | /sf-verify Remotion render service integration |
+| 2026-05-14 16:10:00 | sf-start | GPT-5 Codex | Implemented Batch 0 foundation: `contentglowz_worker/`, lab render-job API routes/models/services, signed artifact token checks, and focused fake-worker tests. | Partial chantier delivery complete for prerequisite scope; focused backend tests passing. | /sf-verify Remotion render service integration |
 | 2026-05-14 16:45:00 | sf-start | GPT-5 Codex | Lifted worker duration validation for `ContentFlowTimelineVideo` to support timeline renders up to 180 seconds while preserving the 60-second `ReelFromContent` contract. | Timeline worker integration aligned with unified video timeline Batch 3. | /sf-verify Remotion render service integration |
 
 ## Current Chantier Flow

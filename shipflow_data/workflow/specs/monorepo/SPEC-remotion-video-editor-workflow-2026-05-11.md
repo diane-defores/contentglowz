@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - contentglowz_app
   - contentglowz_lab
-  - contentglowz_remotion_worker
+  - contentglowz_worker
   - contentflowz/remotion-template
   - editor workflow
   - reels workflow
@@ -239,7 +239,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart` may gain a video action next to visual actions once source content is eligible.
 - `contentglowz_lab` needs video project models/routes/services separate from Instagram reels routes for readability.
 - `JobStore` remains useful for render job state, but scene project state should be modeled deliberately instead of hidden entirely inside transient job metadata.
-- `contentglowz_remotion_worker` or the derived worker package needs a scene composition and schema in addition to the MVP content-summary composition.
+- `contentglowz_worker` or the derived worker package needs a scene composition and schema in addition to the MVP content-summary composition.
 - AI-generated visuals become inputs to video scenes only through validated content assets, not direct provider URLs.
 - Analytics/observability should distinguish draft saves, preview renders, stale previews, final renders and render failures.
 - Performance risk increases because editor interactions may trigger many previews; rate limits and explicit preview actions should prevent render spam.
@@ -248,7 +248,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 
 - Update `contentglowz_app/README.md` with the video editor workflow, route, online-only constraints and dependency on the Remotion worker.
 - Update `contentglowz_lab/README.md` or environment docs with video project routes, storage assumptions and render versioning rules.
-- Update `contentglowz_remotion_worker/README.md` with scene composition props, sample scene JSON and local render commands.
+- Update `contentglowz_worker/README.md` with scene composition props, sample scene JSON and local render commands.
 - Add changelog entries for video project editing, preview, final render and stale-version behavior.
 - Add support/operator notes explaining that old local preview/final artifacts may expire according to the retention policy defined by the ready render integration spec.
 - Do not duplicate Remotion official documentation in product docs; link to the worker README and keep implementation notes concise.
@@ -325,10 +325,10 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: The client never sends final Remotion props directly.
 
 - [ ] Tache 7: Extend the Remotion worker with a scene composition.
-  - Fichier: `contentglowz_remotion_worker/remotion/Root.tsx`
+  - Fichier: `contentglowz_worker/remotion/Root.tsx`
   - Action: Register a scene-based composition using typed props and schema validation for `vertical_9_16` and `landscape_16_9`.
   - User story link: Lets the worker render the saved ContentFlow scene timeline.
-  - Depends on: Ready `contentglowz_remotion_worker` package from the render integration spec.
+  - Depends on: Ready `contentglowz_worker` package from the render integration spec.
   - Validate with: Worker tests or local sample render using a checked-in sample scene props JSON.
   - Notes: Preserve the existing MVP composition required by the ready reels spec.
 
@@ -365,7 +365,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
   - Notes: Preserve current route behavior and add specific editor-video sanitizer before generic `/editor/*` matching.
 
 - [ ] Tache 12: Add documentation and operator samples.
-  - Fichier: `contentglowz_remotion_worker/README.md`
+  - Fichier: `contentglowz_worker/README.md`
   - Action: Document scene props, sample render command, editor workflow assumptions and troubleshooting for stale previews/render failures.
   - User story link: Makes future implementation and support repeatable.
   - Depends on: Taches 4, 7 and 10.

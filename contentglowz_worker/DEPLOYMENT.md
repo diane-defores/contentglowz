@@ -4,7 +4,7 @@ ContentGlowz deploys its own Remotion worker container to Cloud Run. Do not use 
 
 ## Runtime Contract
 
-- Cloud Run service: private HTTP service running `contentglowz_remotion_worker`.
+- Cloud Run service: private HTTP service running `contentglowz_worker`.
 - Durable artifacts: private Google Cloud Storage bucket.
 - Public auth boundary: `contentglowz_lab` only.
 - Playback: `contentglowz_lab` signs short-lived GCS URLs after ownership checks.
@@ -48,7 +48,7 @@ Example commands, replacing project/region/name values:
 
 ```bash
 gcloud artifacts repositories create contentglowz --repository-format=docker --location=europe-west1
-gcloud builds submit contentglowz_remotion_worker \
+gcloud builds submit contentglowz_worker \
   --tag europe-west1-docker.pkg.dev/PROJECT_ID/contentglowz/remotion-worker:latest
 gcloud run deploy contentglowz-remotion-worker \
   --image europe-west1-docker.pkg.dev/PROJECT_ID/contentglowz/remotion-worker:latest \

@@ -20,7 +20,7 @@ docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentglowz_remotion_worker"
+  - "contentglowz_worker"
   - "project asset library"
   - "Turso/libSQL"
   - "JobStore"
@@ -182,7 +182,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 - `video_version` ownership validation in `contentglowz_lab/status/service.py` must be implemented before any asset can be selected for timeline render.
 - Asset eligibility for video versions must allow the actual V1 clip needs: at minimum `image`, `thumbnail`, `video_cover`, `capture`, `video`, `audio`, `music`, `background_config` and controlled `render_output` references where safe.
 - Provider-temporary or local-only assets may appear for preview/history only if clearly marked, but cannot enter server-side Remotion renders until made durable/render-safe.
-- The Remotion worker/render-service foundation from `remotion-render-service-integration.md` is an implementation prerequisite for any preview/final render batch. If `contentglowz_remotion_worker/` or equivalent worker endpoints are absent at start time, `sf-start` must execute that prerequisite chantier first or stop before coding preview/final behavior.
+- The Remotion worker/render-service foundation from `remotion-render-service-integration.md` is an implementation prerequisite for any preview/final render batch. If `contentglowz_worker/` or equivalent worker endpoints are absent at start time, `sf-start` must execute that prerequisite chantier first or stop before coding preview/final behavior.
 - Timeline saves use optimistic concurrency. A stale client cannot overwrite newer edits.
 - A final render requires a completed preview job for the exact immutable version and format preset.
 - Preview and final jobs are separate and cannot overwrite each other.
@@ -197,7 +197,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 
 - `contentglowz_app`: Flutter, Dart 3.11+, Riverpod, GoRouter, Dio and existing editor/project asset patterns.
 - `contentglowz_lab`: FastAPI, Clerk auth, Turso/libSQL, existing project ownership helpers, project asset library APIs and `JobStore`.
-- `contentglowz_remotion_worker`: Node/TypeScript/React/Remotion render service foundation from `remotion-render-service-integration.md`.
+- `contentglowz_worker`: Node/TypeScript/React/Remotion render service foundation from `remotion-render-service-integration.md`.
 - Existing app files to read first:
   - `contentglowz_app/lib/router.dart`
   - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
@@ -517,7 +517,7 @@ Renderer adapter invariants:
 - `contentglowz_lab/status/service.py` must stop rejecting `target_type=video_version` once the video version store exists and must enforce ownership/eligibility.
 - `contentglowz_lab/status/schemas.py` and `api/models/status.py` may need enum/eligibility updates for still-image clips and controlled render outputs.
 - `contentglowz_lab/api/migrations/005_video_timelines.sql` or next available migration adds the required timeline tables and indexes.
-- `contentglowz_remotion_worker` gains a composition that consumes normalized timeline props, not storyboard-only or quiz-specific props.
+- `contentglowz_worker` gains a composition that consumes normalized timeline props, not storyboard-only or quiz-specific props.
 - Existing specs for audio/music, B-roll, motion assistant and text-based editing should attach to the same timeline model later instead of creating separate state.
 - Product analytics/observability should distinguish timeline created, version saved, asset selected, preview requested, preview completed, preview stale, final requested and final completed.
 
@@ -525,7 +525,7 @@ Renderer adapter invariants:
 
 - Update `contentglowz_app/README.md` or app docs with the `/editor/:id/video` workflow, online-only render limitation and preview/final gate.
 - Update `contentglowz_lab/README.md` or `ENVIRONMENT_SETUP.md` with timeline API routes, Turso migration requirements, worker dependency and environment variables inherited from the render service.
-- Update `contentglowz_remotion_worker/README.md` with timeline props schema, sample input props and local render commands.
+- Update `contentglowz_worker/README.md` with timeline props schema, sample input props and local render commands.
 - Add a changelog entry for the new video timeline domain, route and API family.
 - Mark `SPEC-remotion-video-editor-workflow-2026-05-11.md` as superseded or linked to this spec during docs cleanup after readiness.
 - Update operator/support notes to explain that video editing is online-only in V1, final render requires a non-stale preview and render artifacts may expire according to the render-service retention policy.
@@ -559,7 +559,7 @@ Renderer adapter invariants:
 Parallel implementation is blocked until Batch 1 locks the backend API/data contract with tests. After Batch 1 passes, Batch 2 Flutter work and Batch 3 worker composition work may run in parallel because their write sets are disjoint, but integration remains sequential.
 
 - Batch 0: Renderer foundation prerequisite
-  - Scope: verify or implement `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md` until `contentglowz_remotion_worker/` or an equivalent local worker contract exists with preview/final render job support.
+  - Scope: verify or implement `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md` until `contentglowz_worker/` or an equivalent local worker contract exists with preview/final render job support.
   - Owned files: the files owned by the render-service integration spec, not this timeline spec.
   - Blocks: any implementation of preview/final endpoints that calls a real worker.
   - Acceptance: local worker API or fake-compatible adapter contract is available; render-service tests pass; worker artifact/signing/retention/capacity rules are documented.
@@ -582,14 +582,14 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 - Batch 3: Remotion worker timeline composition
   - Scope: Remotion composition for `ContentFlowTimelineProps`, fixture props, vertical/landscape rendering, audio clipping, text/image/video layer rendering and worker tests/sample render.
-  - Owned files: `contentglowz_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
+  - Owned files: `contentglowz_worker/remotion/ContentFlowTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
   - Acceptance: sample render or worker tests handle text-only, image+text, video clip, audio/music, vertical and landscape fixtures without importing Remotion Timeline/Editor Starter UI.
   - Shippability: required before preview/final render can be considered complete.
   - Stop condition: if worker directory remains absent after Batch 0, do not invent a partial worker inside Flutter or backend; return to Batch 0.
 
 - Batch 4: Documentation, verification and release gate
   - Scope: app/backend/worker docs, changelog, operator notes, spec trace, verification and bounded ship preparation.
-  - Owned files: `contentglowz_app/README.md`, `contentglowz_lab/README.md`, `contentglowz_lab/ENVIRONMENT_SETUP.md` if present, `contentglowz_remotion_worker/README.md`, `CHANGELOG.md` files where local convention requires them and this spec history.
+  - Owned files: `contentglowz_app/README.md`, `contentglowz_lab/README.md`, `contentglowz_lab/ENVIRONMENT_SETUP.md` if present, `contentglowz_worker/README.md`, `CHANGELOG.md` files where local convention requires them and this spec history.
   - Acceptance: docs explain online-only video editing, timeline route, render worker dependency, Turso migration, preview/final gate, retention/capacity rules and Remotion license release gate.
   - Shippability: required before merge/ship.
   - Stop condition: if manual/browser/render proof is incomplete, do not ship user-visible route without explicit risk acceptance.
@@ -661,7 +661,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Register the router in `contentglowz_lab/api/main.py` and/or `contentglowz_lab/api/routers/__init__.py` following existing patterns.
 
 - [ ] Tache 9: Extend Remotion worker for timeline props.
-  - Fichier: `contentglowz_remotion_worker/remotion/ContentFlowTimelineVideo.tsx`
+  - Fichier: `contentglowz_worker/remotion/ContentFlowTimelineVideo.tsx`
   - Action: Add a composition that renders normalized timeline tracks/clips for both V1 format presets.
   - User story link: Turns timeline props into MP4 output.
   - Depends on: Tache 7.
@@ -799,7 +799,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 - Validation commands expected after implementation:
   - `pytest contentglowz_lab/tests/test_video_timeline_models.py contentglowz_lab/tests/test_video_timeline_store.py contentglowz_lab/tests/test_video_timelines_router.py contentglowz_lab/tests/test_project_assets_service.py`
   - `flutter test test/data/video_timeline_test.dart test/providers/video_timeline_provider_test.dart test/presentation/screens/editor/video_timeline_screen_test.dart test/presentation/screens/editor/editor_screen_test.dart`
-  - Worker package tests or a sample render command from `contentglowz_remotion_worker` once the worker exists locally.
+  - Worker package tests or a sample render command from `contentglowz_worker` once the worker exists locally.
 - Turso migration required: yes. This feature adds durable timeline/version storage that cannot safely live only in `JobStore`.
 - Stop and reroute to `/sf-explore` or user decision if implementation discovers that Remotion licensing, deployment constraints or worker maturity make V1 production use unacceptable.
 
