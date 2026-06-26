@@ -1,10 +1,10 @@
 ---
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "contentflow"
 created: "2026-05-11"
-updated: "2026-06-10"
+updated: "2026-06-26"
 status: reviewed
 source_skill: sf-veille
 scope: "project-competitors-and-inspirations"
@@ -17,6 +17,7 @@ evidence:
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
   - "ContentFlow scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
   - "User-pasted Savvio description on 2026-05-24."
+  - "User-pasted competitor URLs on 2026-06-26: https://pixizen.io/fr, https://geniusquiz.co/, https://lifestylo.eu/."
 depends_on: []
 supersedes:
   - "concurrent.md"
@@ -54,6 +55,7 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 | Lien | Type | Score | Pourquoi |
 |---|---:|:---:|---|
 | [Conscriba](https://betalist.com/startups/conscriba) | Concurrent / inspiration | 9/10 | Très proche sur la promesse "rendre un site lisible/actionnable par l'IA", conversion tracking et automatisation web. À benchmarker sur proposition de valeur, MCP, métriques et copywriting. |
+| [Pixizen](https://pixizen.io/fr) | Concurrent / inspiration | 9/10 | Plateforme AI de création publicitaire et produit: images, vidéos, captions, voix et motion. Très proche des workflows de génération, orchestration et publication de contenus marketing. |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration produit | 8/10 | Automatisation d'assets de release: utile pour générer captures, visuels sociaux, carrousels ou démos à partir d'un contenu source. |
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration produit | 8/10 | Voix émotionnelle/multilingue: bonne brique pour transformer des contenus en audio ou narration vidéo. |
@@ -64,6 +66,8 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 | [Firecrawl Fire PDF](https://www.firecrawl.dev/blog/fire-pdf-launch) + [`/parse` endpoint](https://docs.firecrawl.dev/api-reference/endpoint/parse) | Inspiration outillage sources de contenu | 8/10 | Brique potentielle pour ingérer des PDFs, documents locaux ou sources non publiques dans la boîte à idées et les pipelines contenu, avec extraction Markdown/JSON et options de rétention à cadrer. |
 | [BundleUp](https://betalist.com/startups/bundleup) | Inspiration architecture | 7/10 | API unifiée pour intégrations: intéressant si ContentFlow agrège CMS, réseaux sociaux, analytics et outils de publication. |
 | [Clamp](https://betalist.com/startups/clamp) | Inspiration analytics | 7/10 | Analytics privacy-first + MCP: bon modèle pour faire remonter des signaux d'usage aux agents sans dashboard lourd. |
+| [GeniusQuiz](https://geniusquiz.co/) | Concurrent indirect / inspiration contenu | 6/10 | Génération de quiz et évaluations à partir de contenu source: utile comme inspiration pour la réutilisation de contenus, les formats éducatifs et les parcours interactifs. |
+| [Lifestylo](https://lifestylo.eu/) | Concurrent indirect / inspiration compagnon IA | 6/10 | Companion/journal IA qui transforme notes, émotions et activités en récit structuré: intéressant pour les workflows de synthèse longue et de narration personnelle. |
 | [DataForSEO LLM Mentions API](https://dataforseo.com/apis/ai-optimization-api/llm-mentions-api) | Inspiration veille marketing externalisée | 7/10 | Mesure les mentions de marque, domaine, concurrents et mots-clés dans les réponses LLM/AI search: utile pour cadrer une offre de veille marketing externalisée, GEO et visibilité IA dans ContentGlowz. |
 | [DataForSEO Live vs Standard](https://dataforseo.com/help-center/live-vs-standard-method/amp) | Inspiration API | 6/10 | Utile pour cadrer coûts/latence entre requêtes live et batch, mais article ancien: vérifier docs actuelles avant décision. |
 
