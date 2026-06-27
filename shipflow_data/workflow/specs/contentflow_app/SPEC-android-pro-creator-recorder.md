@@ -51,7 +51,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-android-device-screen-capture.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "docs/explorations/2026-06-12-android-native-vs-custom-screen-recorder.md"
+  - artifact: "shipflow_data/workflow/explorations/2026-06-12-android-native-vs-custom-screen-recorder.md"
     artifact_version: "1.0.0"
     required_status: "draft"
 supersedes:
@@ -492,7 +492,7 @@ Read first:
 - `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenRecordService.kt`
 - `shipflow_data/technical/contentglowz_app/flutter-app-shell-and-capture.md`
 - `shipflow_data/technical/design-system-authority.md`
-- `docs/explorations/2026-06-12-android-native-vs-custom-screen-recorder.md`
+- `shipflow_data/workflow/explorations/2026-06-12-android-native-vs-custom-screen-recorder.md`
 
 Recommended implementation order:
 

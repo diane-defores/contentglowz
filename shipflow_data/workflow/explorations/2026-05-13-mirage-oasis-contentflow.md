@@ -54,7 +54,7 @@ Clarify what the local `mirge / oasis` signal means for ContentFlow, whether Mir
 
 - `contentflowz/TOOLS.md` - local signal: Decart Lucy ComfyUI, Oasis 2.0, and Decart API docs.
 - `shipflow_data/workflow/TASKS.md` - current priorities: design tokens, dual-mode AI runtime, project asset library, Flux/Image Robot, not realtime video.
-- `docs/explorations/2026-05-11-contentflowz-migration-remaining-ideas.md` - existing stance: contentflowz is inspiration only, not code to port.
+- `shipflow_data/workflow/explorations/2026-05-11-contentflowz-migration-remaining-ideas.md` - existing stance: contentflowz is inspiration only, not code to port.
 - `contentflow_lab/README.md` - backend owns guided API workflows, jobs, Turso persistence, Bunny asset descriptors, and Image Robot Flux generation.
 - `contentflow_app/README.md` - Flutter app owns guided user workflows, partial offline cache/queue, server-owned publishing, and blocks binary/server-first jobs offline.
 - `shipflow_data/technical/contentglowz_lab/architecture.md` and `shipflow_data/technical/contentglowz_app/architecture.md` - confirmed FastAPI/Flutter/Clerk/Turso boundaries.

@@ -28,7 +28,7 @@ linked_systems:
   - contentglowz_app/lib/data/services/api_service.dart
   - contentglowz_app/lib/providers/providers.dart
 depends_on:
-  - artifact: "docs/explorations/2026-05-12-project-intelligence-engine.md"
+  - artifact: "shipflow_data/workflow/explorations/2026-05-12-project-intelligence-engine.md"
     artifact_version: "1.0.0"
     required_status: "unknown"
   - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md"
@@ -42,7 +42,7 @@ depends_on:
     required_status: "ready"
 supersedes: []
 evidence:
-  - "docs/explorations/2026-05-12-project-intelligence-engine.md concludes that ContentFlow has feature-specific intelligence bricks but no canonical project brain."
+  - "shipflow_data/workflow/explorations/2026-05-12-project-intelligence-engine.md concludes that ContentFlow has feature-specific intelligence bricks but no canonical project brain."
   - "contentglowz_lab/api/services/ai_runtime_service.py centralizes BYOK/platform provider resolution for openrouter, exa, and firecrawl."
   - "contentglowz_lab/api/services/repo_understanding_service.py already collects repo/site evidence and synthesizes persona-ready understanding."
   - "contentglowz_lab/api/routers/search_console.py and api/services/search_console_store.py already store project-scoped SEO snapshots and opportunities."

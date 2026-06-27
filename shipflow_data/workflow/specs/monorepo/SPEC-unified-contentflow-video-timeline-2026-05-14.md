@@ -28,7 +28,7 @@ linked_systems:
   - "Remotion renderer"
   - "future reels workflow"
 depends_on:
-  - artifact: "docs/explorations/2026-05-14-video-renderer-boundary.md"
+  - artifact: "shipflow_data/workflow/explorations/2026-05-14-video-renderer-boundary.md"
     artifact_version: "1.0.0"
     required_status: "draft"
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
