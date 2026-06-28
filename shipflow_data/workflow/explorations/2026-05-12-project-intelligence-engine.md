@@ -27,9 +27,9 @@ evidence:
   - "contentflow_lab/api/routers/search_console.py creates project-scoped Search Console summaries and opportunities."
   - "contentflow_lab/api/routers/idea_pool.py and agents/sources/ingest.py ingest SEO, competitor, newsletter, social, and SERP signals into ideas."
 depends_on:
-  - shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md
-  - shipflow_data/workflow/specs/contentflow_lab/SPEC-google-search-console-intelligence.md
-  - shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
+  - shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md
+  - shipflow_data/workflow/specs/lab/SPEC-google-search-console-intelligence.md
+  - shipflow_data/workflow/specs/lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
 supersedes: []
 next_step: "/sf-spec project intelligence engine data layer"
 ---
@@ -43,8 +43,8 @@ Clarify what intelligence engine ContentFlow currently has for each project prof
 ## Context Read
 
 - `shipflow_data/workflow/TASKS.md` - showed current implementation priorities and in-progress AI/runtime work.
-- `shipflow_data/workflow/specs/contentflow_lab/SPEC-dual-mode-ai-runtime-all-providers.md` - defined BYOK/platform runtime policy and provider resolution.
-- `shipflow_data/workflow/specs/contentflow_lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md` - defined repo/site understanding for persona draft generation.
+- `shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md` - defined BYOK/platform runtime policy and provider resolution.
+- `shipflow_data/workflow/specs/lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md` - defined repo/site understanding for persona draft generation.
 - `contentflow_lab/api/services/ai_runtime_service.py` - confirmed the centralized provider resolver exists.
 - `contentflow_lab/api/services/repo_understanding_service.py` - confirmed repo/site content collection and LLM synthesis exists.
 - `contentflow_lab/api/routers/search_console.py` - confirmed project-scoped SEO intelligence/opportunity ingestion exists.

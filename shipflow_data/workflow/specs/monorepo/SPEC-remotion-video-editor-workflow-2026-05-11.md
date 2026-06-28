@@ -35,7 +35,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/reels-from-content-preview-workflow.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "contentflowz/remotion-template/README.md"
@@ -182,7 +182,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 
 - Ready foundation spec: `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
 - Ready app MVP spec: `shipflow_data/workflow/specs/monorepo/reels-from-content-preview-workflow.md`.
-- Ready visual asset spec: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready visual asset spec: `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Existing app entrypoints:
   - `contentglowz_app/lib/router.dart`
   - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
@@ -419,7 +419,7 @@ Introduce a ContentFlow video project model and content-editor-linked storyboard
 ## Execution Notes
 
 - Read first: `remotion-render-service-integration.md`, `reels-from-content-preview-workflow.md`, and `SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`; they define the lower layers and boundaries.
-- Then read: `shipflow_data/technical/contentglowz_app/guidelines.md`, `shipflow_data/technical/contentglowz_lab/guidelines.md`, `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`, `contentglowz_lab/api/services/job_store.py`, `contentglowz_lab/api/dependencies/auth.py`, and `contentglowz_lab/api/dependencies/ownership.py`.
+- Then read: `shipflow_data/technical/app/guidelines.md`, `shipflow_data/technical/lab/guidelines.md`, `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`, `contentglowz_lab/api/services/job_store.py`, `contentglowz_lab/api/dependencies/auth.py`, and `contentglowz_lab/api/dependencies/ownership.py`.
 - Implement with the readiness-fixed contracts: `/editor/:id/video`, explicit Turso video project tables, deterministic initial storyboard generation, trusted assets only, one active video project per source content and format preset, `vertical_9_16` plus `landscape_16_9`, and inherited render capacity limits.
 - Start backend-first with explicit scene/version contracts, then worker scene props, then Flutter UI. Avoid starting with UI controls that imply timeline freedom.
 - Reuse the existing Remotion worker and render job contracts. Do not create a second public render API from Flutter to Node.

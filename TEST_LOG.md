@@ -7,7 +7,7 @@
 - Status: blocked
 - Confidence: high
 - Result summary: Retest not executable because the expected `Open Interactive Demo` entry option is absent from the Android entry screen.
-- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-001.md
+- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/app/BUG-2026-05-05-001.md
 - Evidence pointer: user-provided entry diagnostics, generated at 2026-05-16T12:17:55.080922Z, build commit 77be95214347b0a7227768dfed2cec83d13324a7.
 - Follow-up: /sf-fix BUG-2026-05-05-001 Android demo entry unavailable
 
@@ -20,7 +20,7 @@
 - Status: pass
 - Confidence: medium
 - Result summary: User reported `PASS` after the demo entry fix; `Open Interactive Demo` is usable and the Android onboarding safe-area issue did not reproduce.
-- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-001.md
+- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/app/BUG-2026-05-05-001.md
 - Evidence pointer: chat reply `pass` on 2026-05-16 after retest instructions.
 - Follow-up: /sf-verify BUG-2026-05-05-001 Android safe area demo onboarding
 
@@ -33,7 +33,7 @@
 - Status: pass
 - Confidence: high
 - Result summary: Closure criteria verified; focused Flutter tests passed and the user Android retest passed.
-- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-001.md
+- Bug pointer: BUG-2026-05-05-001 -> shipflow_data/workflow/bugs/app/BUG-2026-05-05-001.md
 - Evidence pointer: `flox activate -- flutter test test/presentation/screens/entry/entry_screen_test.dart test/navigation/resume_no_jump_test.dart test/presentation/screens/onboarding/onboarding_back_test.dart` -> passed.
 - Follow-up: none
 
@@ -46,7 +46,7 @@
 - Status: pass
 - Confidence: medium
 - Result summary: User reported all requested onboarding back-navigation checks passed.
-- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
+- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/app/BUG-2026-05-05-002.md
 - Evidence pointer: chat reply `all pass` on 2026-05-16 after retest instructions.
 - Follow-up: /sf-verify BUG-2026-05-05-002 Android back navigation demo
 
@@ -59,7 +59,7 @@
 - Status: pass
 - Confidence: high
 - Result summary: Closure criteria verified; focused Flutter onboarding back test passed and the user Android retest passed.
-- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/contentflow_app/BUG-2026-05-05-002.md
+- Bug pointer: BUG-2026-05-05-002 -> shipflow_data/workflow/bugs/app/BUG-2026-05-05-002.md
 - Evidence pointer: `flox activate -- flutter test test/presentation/screens/onboarding/onboarding_back_test.dart` -> passed.
 - Follow-up: /sf-spec Android back history outside onboarding
 
@@ -72,7 +72,7 @@
 - Status: blocked
 - Confidence: medium
 - Result summary: Re-test blocked: runtime diagnostics show Clerk config missing (`hasClerkKey=false`, `sessionState=signedOut`, no Bearer token), so backend/auth flow could not be exercised.
-- Bug pointer: BUG-2026-05-10-001 -> shipflow_data/workflow/bugs/contentflow_lab/BUG-2026-05-10-001.md
+- Bug pointer: BUG-2026-05-10-001 -> shipflow_data/workflow/bugs/lab/BUG-2026-05-10-001.md
 - Evidence pointer: user diagnostics payload (build commit 438b10c9db15d2ad9a16d4288a595ba01468002c, generated 2026-05-17T10:57:04.026131Z).
 - Follow-up: /sf-fix BUG-2026-05-10-001
 

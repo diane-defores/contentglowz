@@ -21,8 +21,8 @@ linked_systems:
 evidence:
   - "https://www.firecrawl.dev/blog/fire-pdf-launch?utm_source=newsletter&utm_medium=email&utm_campaign=april-2026-product-update"
   - "shipflow_data/business/product.md"
-  - "shipflow_data/business/contentglowz_app/product.md"
-  - "shipflow_data/business/contentglowz_lab/product.md"
+  - "shipflow_data/business/app/product.md"
+  - "shipflow_data/business/lab/product.md"
 depends_on:
   - "contentglowz_app idea-pool workflow"
   - "contentglowz_lab research/content ingestion APIs"
@@ -39,8 +39,8 @@ Et si les utilisateurs voulaient déposer un PDF comme source dans la boîte à 
 ## Context Read
 
 - `shipflow_data/business/product.md` - le site promet une exécution assistée par IA, humaine et contrôlée.
-- `shipflow_data/business/contentglowz_app/product.md` - l'app porte les workflows idées, recherche, éditeur, personas et contenus.
-- `shipflow_data/business/contentglowz_lab/product.md` - le lab porte les APIs, agents, recherche, contenus, jobs et observabilité.
+- `shipflow_data/business/app/product.md` - l'app porte les workflows idées, recherche, éditeur, personas et contenus.
+- `shipflow_data/business/lab/product.md` - le lab porte les APIs, agents, recherche, contenus, jobs et observabilité.
 - Firecrawl Fire-PDF launch post - source technique récente sur extraction PDF structurée.
 
 ## Internet Research

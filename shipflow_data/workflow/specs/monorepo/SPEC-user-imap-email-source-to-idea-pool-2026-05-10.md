@@ -22,10 +22,10 @@ linked_systems:
   - UserSettings.robotSettings
   - Idea Pool
 depends_on:
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-content-pipeline-unification.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-content-pipeline-unification.md"
     artifact_version: "unknown"
     required_status: ready
-  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-newsletter-receiving.md"
+  - artifact: "shipflow_data/workflow/specs/lab/SPEC-newsletter-receiving.md"
     artifact_version: "unknown"
     required_status: draft
 supersedes: []

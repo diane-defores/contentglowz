@@ -33,13 +33,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -152,7 +152,7 @@ Define a future controlled workflow for project-specific visual identity trainin
 ## Dependencies
 
 - Ready baseline backend spec: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
-- Ready editor UI spec: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready editor UI spec: `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Existing backend entrypoints:
   - `contentglowz_lab/api/routers/images.py`
   - `contentglowz_lab/api/services/ai_image_generation.py`
@@ -282,7 +282,7 @@ Define a future controlled workflow for project-specific visual identity trainin
   - Validate with: tests for immediate disablement, provider deletion failure, partial deletion status, and future generation block.
 
 - [ ] Task 10: Specify and implement app management UI later
-  - File: `shipflow_data/workflow/specs/contentglowz_app/SPEC-ai-visual-identity-training-management-ui-2026-05-11.md`
+  - File: `shipflow_data/workflow/specs/app/SPEC-ai-visual-identity-training-management-ui-2026-05-11.md`
   - Action: Create a separate UI spec for project visual identity training management after backend gates exist; until that spec is ready, expose no public self-serve UI and keep admin-only operations backend/API driven.
   - User story link: Keeps training management separate from basic editor-linked generation and avoids accidental public exposure.
   - Depends on: Tasks 1 through 9.
@@ -334,7 +334,7 @@ Define a future controlled workflow for project-specific visual identity trainin
 
 ## Execution Notes
 
-- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/**`, `shipflow_data/technical/contentglowz_lab/guidelines.md`, `shipflow_data/technical/contentglowz_app/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
+- Read first: `contentglowz_lab/api/routers/images.py`, `contentglowz_lab/api/services/ai_image_generation.py`, `contentglowz_lab/agents/images/**`, `shipflow_data/technical/lab/guidelines.md`, `shipflow_data/technical/app/guidelines.md`, the ready Flux provider spec, and the ready editor-linked visuals UI spec.
 - Start with data contracts and disabled-by-default gates before provider calls. The first implementation milestone should prove that unauthorized users, non-admin users, missing consent, missing rights, missing retention, missing budget, missing provider-doc review, and `training_enabled=false` all block submission.
 - Prefer provider-managed FLUX.2/BFL training adapter boundaries over self-hosted GPU infrastructure. Do not add local GPU orchestration, custom model hosting, marketplace export, or broad UI exposure in this chantier.
 - Reuse existing FastAPI router/service/model patterns, Clerk auth dependencies, Bunny-backed project asset references, and Turso/libSQL storage patterns. Avoid ad-hoc string state machines; encode lifecycle states as typed values and validate transitions.

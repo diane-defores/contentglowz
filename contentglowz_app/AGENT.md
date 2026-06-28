@@ -77,7 +77,7 @@ next_step: "/sf-docs update AGENT.md"
 - If behavior appears to contradict code, update this file first and then `README.md`/`CONTEXT*`.
 - For any API/behavior inference, prefer:
   - `README.md`
-- `shipflow_data/workflow/specs/contentglowz_app/` (especially `SPEC-offline-sync-v2.md`, `architecture-cible-fastapi-clerk-flutter.md`)
+- `shipflow_data/workflow/specs/app/` (especially `SPEC-offline-sync-v2.md`, `architecture-cible-fastapi-clerk-flutter.md`)
   - concrete Dart sources in `lib/`
   - `_test` coverage.
 

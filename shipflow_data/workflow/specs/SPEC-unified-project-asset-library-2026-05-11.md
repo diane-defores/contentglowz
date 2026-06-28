@@ -36,7 +36,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
@@ -48,13 +48,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "Bunny Storage API"
@@ -177,11 +177,11 @@ Create a backend-owned unified project asset domain that indexes all reusable pr
 
 - Ready visual asset picker foundation: `shipflow_data/workflow/specs/SPEC-project-visual-asset-library-2026-05-11.md`.
 - Ready visual upload/reference foundation: `shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md`.
-- Ready editor AI visuals UI: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready editor AI visuals UI: `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Ready Flux/Image Robot provider foundation: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
 - Ready video editor audio/music/backgrounds: `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`.
 - Ready Remotion video editor workflow: `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`.
-- Existing local capture contract: `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`.
+- Existing local capture contract: `shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md`.
 - Existing backend files:
   - `contentglowz_lab/status/db.py`
   - `contentglowz_lab/status/schemas.py`

@@ -31,16 +31,16 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
-  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -180,8 +180,8 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
   - `contentglowz_app/lib/providers/providers.dart`
 - Ready/active specs:
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`
+  - `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md`
 - External docs, `fresh-docs checked` by parent on 2026-05-11:
   - Black Forest Labs FLUX.2 overview: `https://docs.bfl.ai/flux_2/flux2_overview`
   - BFL FLUX.2 Pro API: `https://docs.bfl.ml/api-reference/models/generate-or-edit-an-image-with-flux2-%5Bpro%5D`
@@ -399,7 +399,7 @@ Add a backend-owned, proxied upload lifecycle for project visual assets and refe
 
 - Read first:
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
   - `contentglowz_lab/api/routers/status.py`
   - `contentglowz_lab/status/service.py`
   - `contentglowz_lab/agents/images/tools/bunny_cdn_tools.py`

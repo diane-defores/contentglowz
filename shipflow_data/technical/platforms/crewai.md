@@ -14,8 +14,8 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - shipflow_data/technical/contentglowz_lab/code-docs-map.md
-  - shipflow_data/technical/contentglowz_lab/ai-runtime-and-url-safety.md
+  - shipflow_data/technical/lab/code-docs-map.md
+  - shipflow_data/technical/lab/ai-runtime-and-url-safety.md
   - contentglowz_lab/requirements.txt
   - contentglowz_lab/api/services/user_llm_service.py
   - contentglowz_lab/agents/
@@ -69,7 +69,7 @@ Use the global CrewAI note for current source links and release behavior:
 - `api/services/user_llm_service.py` is the request-scoped LLM boundary for CrewAI. App-visible flows should obtain a user OpenRouter key through `ai_runtime_service.preflight_providers(...)`, then construct CrewAI `LLM` with explicit `base_url`, `api_key`, `temperature`, and optional `max_tokens`.
 - `agents/seo/seo_crew.py` runs a unified six-agent SEO crew with `Process.sequential` and task-level Pydantic output schemas.
 - Several individual agents still create one-agent crews with `Crew(...).kickoff()`. Do not refactor these patterns without checking current CrewAI docs and local tests.
-- Shared Exa and Firecrawl tools are LLM-callable. URL safety must run before provider client creation, as documented in `shipflow_data/technical/contentglowz_lab/ai-runtime-and-url-safety.md`.
+- Shared Exa and Firecrawl tools are LLM-callable. URL safety must run before provider client creation, as documented in `shipflow_data/technical/lab/ai-runtime-and-url-safety.md`.
 - Contentglowz App should not own a CrewAI usage note. The Flutter app calls backend APIs; CrewAI orchestration is backend-owned by `contentglowz_lab`.
 
 ## Invariants

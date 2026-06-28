@@ -31,10 +31,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
     required_status: "active"
   - artifact: "Bunny Storage API"
@@ -167,8 +167,8 @@ Create a backend-owned project asset picker API and metadata model that normaliz
   - `contentglowz_app/lib/data/services/api_service.dart`
   - `contentglowz_app/lib/providers/providers.dart`
 - Upstream generation/reference contract: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
-- Upstream editor-linked visual workflow: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
-- Existing local capture asset contract: `shipflow_data/workflow/specs/contentglowz_app/SPEC-local-capture-assets-linked-to-content.md`.
+- Upstream editor-linked visual workflow: `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Existing local capture asset contract: `shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md`.
 - Bunny CDN/storage for durable binaries and public/proxied URLs.
 - Turso/libSQL for durable metadata and indexes.
 - Fresh external docs verdict: `fresh-docs checked`. Bunny Storage API official docs were checked on 2026-05-11 for server-side Storage API behavior and AccessKey-based HTTP upload/storage-zone semantics. BFL FLUX.2 official docs were checked on 2026-05-11 for generated/reference image metadata assumptions, including API multi-reference support. Implementation must re-check official docs only if it codes Bunny API calls, upload/delete/retention behavior, or FLUX.2 provider request construction beyond metadata linking.

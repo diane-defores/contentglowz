@@ -31,7 +31,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentflow_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md"

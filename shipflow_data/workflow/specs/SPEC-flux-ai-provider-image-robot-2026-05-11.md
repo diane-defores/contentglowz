@@ -27,10 +27,10 @@ linked_systems:
   - "Clerk"
   - "Turso/libSQL"
 depends_on:
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.1.0"
     required_status: "reviewed"
   - artifact: "contentflowz/INSPIRATION.md"

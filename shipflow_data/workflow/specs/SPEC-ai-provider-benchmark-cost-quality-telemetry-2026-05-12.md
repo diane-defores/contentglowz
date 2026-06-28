@@ -44,13 +44,13 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-text-based-media-editing-social-video-2026-05-12.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+  - artifact: "shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/business/project-competitors-and-inspirations.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "contentflowz/v0-ai-image-generation-benchmark"
@@ -190,7 +190,7 @@ Create an internal AI provider benchmark and telemetry subsystem. It records nor
 
 - Existing Flux/Image Robot foundation: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
 - Existing PAYG/quota foundation: `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`.
-- Existing BYOK/runtime foundation: `shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md` and `shipflow_data/workflow/specs/contentglowz_lab/SPEC-dual-mode-ai-runtime-all-providers.md`.
+- Existing BYOK/runtime foundation: `shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md` and `shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md`.
 - Future audio and transcription specs:
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-text-based-media-editing-social-video-2026-05-12.md`

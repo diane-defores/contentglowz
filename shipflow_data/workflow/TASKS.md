@@ -83,7 +83,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/contentglowz_site/SPEC-migrate-astro-v6.md` | ✅ done |
+| 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using `shipflow_data/workflow/specs/site/SPEC-migrate-astro-v6.md` | ✅ done |
 | 🟠 | Validate static build output, sitemap, `robots.txt`, content routes, SEO metadata, and auth handoff pages after migration | ✅ done |
 | ✅ | Ship bilingual `fr/en` core-page routing and locale-aware SEO metadata for `/`, `/launch`, `/sign-in`, `/sign-up`, and `/privacy` | ✅ done |
 | ✅ | Ship bilingual `fr/en` blog routing with English at `/blog`, French at `/fr/blog`, locale-aware metadata, and locale-filtered blog indexes/tags/articles | ✅ done |

@@ -49,7 +49,7 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "unknown"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md"
@@ -218,7 +218,7 @@ Create a backend-owned AI video generation subsystem with a provider adapter con
   - `shipflow_data/workflow/specs/SPEC-social-placement-format-registry-2026-05-13.md`
   - `shipflow_data/workflow/specs/SPEC-ai-provider-benchmark-cost-quality-telemetry-2026-05-12.md`
   - `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`
-  - `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
+  - `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-video-editor-ai-audio-music-backgrounds-2026-05-11.md`
   - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-scene-motion-assistant-2026-05-12.md`
 - Existing backend patterns:

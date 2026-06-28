@@ -57,7 +57,7 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
     - `shipflow_data/workflow/reports/markdown-governance-inventory-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-security-review-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-migration-closure-2026-05-11.md` added,
-    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `contentglowz_app/AGENT.md`, `contentglowz_app/CLAUDE.md`, `shipflow_data/editorial/contentglowz_site/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
+    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `contentglowz_app/AGENT.md`, `contentglowz_app/CLAUDE.md`, `shipflow_data/editorial/site/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
 
 ## Security and classification decisions
 

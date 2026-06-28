@@ -35,9 +35,9 @@ evidence:
   - requirements.txt
   - main.py
 depends_on:
-  - shipflow_data/business/business.md
-  - shipflow_data/business/branding.md
-  - shipflow_data/technical/guidelines.md
+  - shipflow_data/business/lab/business.md
+  - shipflow_data/business/lab/branding.md
+  - shipflow_data/technical/lab/guidelines.md
 supersedes: []
 next_step: /sf-docs audit AGENT.md
 ---
@@ -62,7 +62,7 @@ It is the authority for architecture-level notes, runtime boundaries, and docume
   - agent runtime orchestration boundaries
   - dependency and deployment constraints that affect maintainability
 
-- Keep separate from product/marketing artifacts (`shipflow_data/business/product.md`, `shipflow_data/business/gtm.md`, `shipflow_data/business/business.md`, `shipflow_data/business/branding.md`), except for `depends_on` references.
+- Keep separate from product/marketing artifacts (`shipflow_data/business/lab/product.md`, `shipflow_data/business/lab/gtm.md`, `shipflow_data/business/lab/business.md`, `shipflow_data/business/lab/branding.md`), except for `depends_on` references.
 
 ## Stack baseline inferred from current repo
 
@@ -89,9 +89,9 @@ It is the authority for architecture-level notes, runtime boundaries, and docume
   - `api/routers/*` registrations (`api/routers/__init__.py`, include list in `api/main.py`)
   - major dependency files (`requirements.txt`, `AGENT.md`, deployment manifests)
 - If dependency or auth behavior changes, update:
-  - `shipflow_data/technical/context.md`
-  - `shipflow_data/technical/context-function-tree.md`
-  - `shipflow_data/technical/architecture.md`
+  - `shipflow_data/technical/lab/context.md`
+  - `shipflow_data/technical/lab/context-function-tree.md`
+  - `shipflow_data/technical/lab/architecture.md`
   - `api/__init__.py` references if route model changes
 
 ## Explicit non-goals

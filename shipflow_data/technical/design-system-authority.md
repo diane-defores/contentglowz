@@ -23,10 +23,16 @@ linked_systems:
   - "contentglowz_app/lib/presentation/theme/app_theme.dart"
   - "contentglowz_site/src/layouts/Layout.astro"
 depends_on:
-  - artifact: "shipflow_data/technical/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/context.md"
+  - artifact: "shipflow_data/technical/site/guidelines.md"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
+  - artifact: "shipflow_data/technical/app/context.md"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
+  - artifact: "shipflow_data/technical/site/context.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []

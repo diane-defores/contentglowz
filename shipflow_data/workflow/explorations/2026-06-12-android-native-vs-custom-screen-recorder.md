@@ -23,8 +23,8 @@ evidence:
   - "Prior research for privacy capture concluded MediaProjection should stay, but direct MediaRecorder is too limited for transformed output."
   - "Android official docs confirm strict user-consent, single-use token, and visible projection constraints."
 depends_on:
-  - "shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md"
-  - "shipflow_data/workflow/specs/contentflow_app/SPEC-android-device-screen-capture.md"
+  - "shipflow_data/workflow/research/shared/android-privacy-screen-redaction-technologies.md"
+  - "shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md"
 supersedes: []
 next_step: "/100-sf-spec Android custom recorder and live composition"
 ---
@@ -37,12 +37,12 @@ Can ContentGlowz rely on Android's native screen recording experience for stabil
 
 ## Context Read
 
-- `shipflow_data/workflow/research/contentflow_other/android-privacy-screen-redaction-technologies.md` - prior Android capture research and pipeline recommendation.
-- `shipflow_data/workflow/specs/contentflow_app/SPEC-android-device-screen-capture.md` - current product contract for Android capture.
+- `shipflow_data/workflow/research/shared/android-privacy-screen-redaction-technologies.md` - prior Android capture research and pipeline recommendation.
+- `shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md` - current product contract for Android capture.
 - `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenRecordService.kt` - current native recording implementation.
 - `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenCaptureChannel.kt` - Flutter/native boundary and permission flow.
 - `contentglowz_app/lib/data/services/device_capture_service.dart` - Flutter service contract already assumes a custom native layer.
-- `shipflow_data/workflow/qa/contentflow_lab/privacy-capture-platform-matrix.md` - risk framing for privacy capture quality and stop conditions.
+- `shipflow_data/workflow/qa/lab/privacy-capture-platform-matrix.md` - risk framing for privacy capture quality and stop conditions.
 
 ## Internet Research
 

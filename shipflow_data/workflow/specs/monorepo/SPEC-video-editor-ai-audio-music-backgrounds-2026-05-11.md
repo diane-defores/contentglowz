@@ -37,19 +37,19 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
+  - artifact: "shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md"
+  - artifact: "shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipflow_data/technical/contentglowz_lab/guidelines.md"
+  - artifact: "shipflow_data/technical/lab/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/technical/contentglowz_app/guidelines.md"
+  - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "OpenRouter Audio docs"
@@ -194,9 +194,9 @@ Extend the Remotion video editor with a guided media layer for AI audio and anim
 
 - Ready Remotion editor foundation: `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md`.
 - Ready render service foundation: `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`.
-- Ready visual assets UI: `shipflow_data/workflow/specs/contentglowz_app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
+- Ready visual assets UI: `shipflow_data/workflow/specs/app/SPEC-editor-linked-ai-visuals-ui-2026-05-11.md`.
 - Ready quotas/billing foundation: `shipflow_data/workflow/specs/SPEC-ai-generation-quotas-billing-2026-05-11.md`.
-- Ready BYOK foundation: `shipflow_data/workflow/specs/contentglowz_lab/SPEC-strict-byok-llm-app-visible-ai.md`.
+- Ready BYOK foundation: `shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md`.
 - Existing app files:
   - `contentglowz_app/lib/router.dart`
   - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
