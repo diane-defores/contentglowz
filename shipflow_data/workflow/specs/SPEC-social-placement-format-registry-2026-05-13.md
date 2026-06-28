@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-13"
 created_at: "2026-05-13 03:21:04 UTC"
 updated: "2026-05-13"
@@ -13,14 +13,14 @@ source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
 confidence: "high"
-user_story: "En tant que creatrice ContentFlow authentifiee, je veux voir et attacher les bons assets aux bons emplacements de publication par plateforme, afin que mes contenus sociaux, articles, thumbnails, videos courtes et pistes audio partent avec des formats efficaces sans sortir de l'editeur guide."
+user_story: "En tant que creatrice ContentGlowz authentifiee, je veux voir et attacher les bons assets aux bons emplacements de publication par plateforme, afin que mes contenus sociaux, articles, thumbnails, videos courtes et pistes audio partent avec des formats efficaces sans sortir de l'editeur guide."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
   - "contentglowz_app"
   - "contentglowz_lab"
-  - "contentflowz"
+  - "contentglowz"
   - "Project Asset Library"
   - "publish router"
   - "Zernio/LATE"
@@ -49,10 +49,10 @@ depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-text-based-media-editing-social-video-2026-05-12.md"
     artifact_version: "unknown"
     required_status: "draft"
-  - artifact: "contentflowz/INSPIRATION.md"
+  - artifact: "contentglowz/INSPIRATION.md"
     artifact_version: "unknown"
     required_status: "inspiration-only"
-  - artifact: "contentflowz/GUIDELINES.md"
+  - artifact: "contentglowz/GUIDELINES.md"
     artifact_version: "unknown"
     required_status: "inspiration-only"
   - artifact: "TikTok Content Posting API media transfer guide"
@@ -72,10 +72,10 @@ depends_on:
     required_status: "manual official refresh before strict Instagram-specific constraints"
 supersedes: []
 evidence:
-  - "User request 2026-05-12/13: spec Social placement / formats de publication from contentflowz inspiration, linking assets to platforms: thumbnail, vertical, post image, video courte, audio."
-  - "User product direction: ContentFlow should guide users toward efficient social content, not a free creative playground."
-  - "contentflowz/INSPIRATION.md: Canva simplicity, CapCut templates, Remotion composable video, Descript text editing and AI media tools are inspirations only."
-  - "contentflowz/GUIDELINES.md: generated outputs should use standard formats: MP4, MP3/WAV, PNG/JPG/WebP, GIF/MP4; preview when possible; workflow between tools."
+  - "User request 2026-05-12/13: spec Social placement / formats de publication from contentglowz inspiration, linking assets to platforms: thumbnail, vertical, post image, video courte, audio."
+  - "User product direction: ContentGlowz should guide users toward efficient social content, not a free creative playground."
+  - "contentglowz/INSPIRATION.md: Canva simplicity, CapCut templates, Remotion composable video, Descript text editing and AI media tools are inspirations only."
+  - "contentglowz/GUIDELINES.md: generated outputs should use standard formats: MP4, MP3/WAV, PNG/JPG/WebP, GIF/MP4; preview when possible; workflow between tools."
   - "Code evidence: contentglowz_app/lib/data/models/content_item.dart defines PublishingChannel for wordpress, ghost, twitter, linkedin, instagram, tiktok and youtube."
   - "Code evidence: contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart shows platform previews but has no asset slot or placement validation."
   - "Code evidence: contentglowz_lab/api/routers/publish.py accepts media_urls and sends them to Zernio as image media without project asset ownership or placement validation."
@@ -96,11 +96,11 @@ Draft. This spec defines the product and technical contract for mapping project 
 
 ## User Story
 
-En tant que creatrice ContentFlow authentifiee, je veux voir et attacher les bons assets aux bons emplacements de publication par plateforme, afin que mes contenus sociaux, articles, thumbnails, videos courtes et pistes audio partent avec des formats efficaces sans sortir de l'editeur guide.
+En tant que creatrice ContentGlowz authentifiee, je veux voir et attacher les bons assets aux bons emplacements de publication par plateforme, afin que mes contenus sociaux, articles, thumbnails, videos courtes et pistes audio partent avec des formats efficaces sans sortir de l'editeur guide.
 
 ## Minimal Behavior Contract
 
-When a creator opens a content editor, video editor or publish review for an owned content item, ContentFlow computes a placement plan from the content type and selected platforms, shows the required and recommended asset slots, lets the creator generate or pick eligible project assets for each slot, persists the selection as project asset usages, and blocks publish only when a selected platform cannot be served safely without a required asset. If an asset is missing, foreign, local-only, tombstoned, degraded, incompatible, stale or based on a platform rule that needs manual refresh, the UI shows a recoverable warning or blocking error and the backend does not send that media to the publish provider. The easy edge case to miss is treating platform media as raw URLs: the publish path must resolve server-validated project assets and placements, while exact platform dimensions stay in a versioned registry that can be refreshed as external rules change.
+When a creator opens a content editor, video editor or publish review for an owned content item, ContentGlowz computes a placement plan from the content type and selected platforms, shows the required and recommended asset slots, lets the creator generate or pick eligible project assets for each slot, persists the selection as project asset usages, and blocks publish only when a selected platform cannot be served safely without a required asset. If an asset is missing, foreign, local-only, tombstoned, degraded, incompatible, stale or based on a platform rule that needs manual refresh, the UI shows a recoverable warning or blocking error and the backend does not send that media to the publish provider. The easy edge case to miss is treating platform media as raw URLs: the publish path must resolve server-validated project assets and placements, while exact platform dimensions stay in a versioned registry that can be refreshed as external rules change.
 
 ## Success Behavior
 
@@ -120,7 +120,7 @@ When a creator opens a content editor, video editor or publish review for an own
 
 - Missing Clerk auth returns `401` and exposes no content, asset or platform plan.
 - A content id, project id, account id or asset id outside the current user's project returns `403` or `404` without leaking titles, storage paths, prompts, signed URLs or account names.
-- A platform not supported by ContentFlow publish returns `422` with supported platform ids; blog/CMS channels remain separate from the Zernio social publish integration.
+- A platform not supported by ContentGlowz publish returns `422` with supported platform ids; blog/CMS channels remain separate from the Zernio social publish integration.
 - A placement id not present in the registry returns `400` with a registry version and supported placement ids.
 - A required placement with no selected primary asset returns a blocking preflight issue for platforms that require media, and a warning for platforms where media is optional.
 - A selected asset with status `local_only`, `degraded` or `tombstoned` returns a blocking issue for publish media and is never sent to the provider.
@@ -132,9 +132,9 @@ When a creator opens a content editor, video editor or publish review for an own
 
 ## Problem
 
-ContentFlow now has the foundations for project assets and AI image generation, but publication still treats media too loosely. The backend publish route accepts `media_urls` and forwards them as images; the Flutter preview sheet shows platform text previews but not the assets that must accompany a post. This leaves a gap between generated/reused project assets and actual distribution: users can create useful visuals, thumbnails, videos or audio, but the system does not yet model which asset belongs to which platform placement, which assets are required, which are only recommended, and what blocks publishing.
+ContentGlowz now has the foundations for project assets and AI image generation, but publication still treats media too loosely. The backend publish route accepts `media_urls` and forwards them as images; the Flutter preview sheet shows platform text previews but not the assets that must accompany a post. This leaves a gap between generated/reused project assets and actual distribution: users can create useful visuals, thumbnails, videos or audio, but the system does not yet model which asset belongs to which platform placement, which assets are required, which are only recommended, and what blocks publishing.
 
-ContentFlowz inspiration points in the right direction: Canva and CapCut show that guided formats and templates are more useful than a blank creative tool, Remotion makes video outputs composable, and the guidelines push standard media formats. For ContentFlow, the product goal is not artistic freedom; it is efficient, guided, platform-aware content distribution from the current editor.
+ContentGlowz inspiration points in the right direction: Canva and CapCut show that guided formats and templates are more useful than a blank creative tool, Remotion makes video outputs composable, and the guidelines push standard media formats. For ContentGlowz, the product goal is not artistic freedom; it is efficient, guided, platform-aware content distribution from the current editor.
 
 ## Solution
 
@@ -180,7 +180,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 - A global brand asset library across projects.
 - Public marketplace, template marketplace, licensing registry, approval workflow or multi-role review.
 - Publishing audio-only content to podcast platforms in this spec.
-- Enforcing every obscure platform supported by Zernio; V1 covers the channels already present in ContentFlow's core UX.
+- Enforcing every obscure platform supported by Zernio; V1 covers the channels already present in ContentGlowz's core UX.
 
 ## Constraints
 
@@ -217,8 +217,8 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - `contentglowz_app/test/presentation/screens/editor/editor_screen_test.dart`
 - Existing project docs:
   - `contentglowz_lab/README.md`
-  - `contentflowz/INSPIRATION.md`
-  - `contentflowz/GUIDELINES.md`
+  - `contentglowz/INSPIRATION.md`
+  - `contentglowz/GUIDELINES.md`
 - Related specs:
   - `shipflow_data/workflow/specs/SPEC-unified-project-asset-library-2026-05-11.md`
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
@@ -480,13 +480,13 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 
 ## Open Questions
 
-None blocking for this spec draft. The implementation can start with existing ContentFlow channels and conservative registry rules. Before strict Instagram enforcement, a human or agent with working Meta docs access must refresh the official Instagram Content Publishing documentation and update the registry source metadata.
+None blocking for this spec draft. The implementation can start with existing ContentGlowz channels and conservative registry rules. Before strict Instagram enforcement, a human or agent with working Meta docs access must refresh the official Instagram Content Publishing documentation and update the registry source metadata.
 
 ## Skill Run History
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-13 03:21:04 UTC | sf-spec | GPT-5 Codex | Created social placement format registry spec from contentflowz inspiration, existing asset library and official social platform docs. | Draft spec saved. | /sf-ready Social placement format registry |
+| 2026-05-13 03:21:04 UTC | sf-spec | GPT-5 Codex | Created social placement format registry spec from contentglowz inspiration, existing asset library and official social platform docs. | Draft spec saved. | /sf-ready Social placement format registry |
 
 ## Current Chantier Flow
 

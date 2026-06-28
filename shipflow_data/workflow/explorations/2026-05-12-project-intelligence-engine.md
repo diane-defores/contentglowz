@@ -2,7 +2,7 @@
 artifact: exploration_report
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow
+project: contentglowz
 created: "2026-05-12"
 updated: "2026-05-12"
 status: draft
@@ -14,18 +14,18 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentflow_lab/api/services/ai_runtime_service.py
-  - contentflow_lab/api/services/repo_understanding_service.py
-  - contentflow_lab/api/routers/personas.py
-  - contentflow_lab/api/routers/search_console.py
-  - contentflow_lab/api/routers/idea_pool.py
-  - contentflow_lab/agents/sources/ingest.py
+  - contentglowz_lab/api/services/ai_runtime_service.py
+  - contentglowz_lab/api/services/repo_understanding_service.py
+  - contentglowz_lab/api/routers/personas.py
+  - contentglowz_lab/api/routers/search_console.py
+  - contentglowz_lab/api/routers/idea_pool.py
+  - contentglowz_lab/agents/sources/ingest.py
 evidence:
   - "shipflow_data/workflow/TASKS.md marks dual-mode AI runtime, Search Console intelligence, project asset library, and Flux provider work as in progress."
-  - "contentflow_lab/api/services/ai_runtime_service.py resolves BYOK/platform modes for openrouter, exa, and firecrawl."
-  - "contentflow_lab/api/services/repo_understanding_service.py synthesizes project/persona understanding from local repo, GitHub, or public site evidence."
-  - "contentflow_lab/api/routers/search_console.py creates project-scoped Search Console summaries and opportunities."
-  - "contentflow_lab/api/routers/idea_pool.py and agents/sources/ingest.py ingest SEO, competitor, newsletter, social, and SERP signals into ideas."
+  - "contentglowz_lab/api/services/ai_runtime_service.py resolves BYOK/platform modes for openrouter, exa, and firecrawl."
+  - "contentglowz_lab/api/services/repo_understanding_service.py synthesizes project/persona understanding from local repo, GitHub, or public site evidence."
+  - "contentglowz_lab/api/routers/search_console.py creates project-scoped Search Console summaries and opportunities."
+  - "contentglowz_lab/api/routers/idea_pool.py and agents/sources/ingest.py ingest SEO, competitor, newsletter, social, and SERP signals into ideas."
 depends_on:
   - shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md
   - shipflow_data/workflow/specs/lab/SPEC-google-search-console-intelligence.md
@@ -38,17 +38,17 @@ next_step: "/sf-spec project intelligence engine data layer"
 
 ## Starting Question
 
-Clarify what intelligence engine ContentFlow currently has for each project profile, and what is missing to support an ideal flow: upload data, clean/format/deduplicate it, then route training or deployment to OpenAI, Gemini, or open-source providers for informed decisions.
+Clarify what intelligence engine ContentGlowz currently has for each project profile, and what is missing to support an ideal flow: upload data, clean/format/deduplicate it, then route training or deployment to OpenAI, Gemini, or open-source providers for informed decisions.
 
 ## Context Read
 
 - `shipflow_data/workflow/TASKS.md` - showed current implementation priorities and in-progress AI/runtime work.
 - `shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md` - defined BYOK/platform runtime policy and provider resolution.
 - `shipflow_data/workflow/specs/lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md` - defined repo/site understanding for persona draft generation.
-- `contentflow_lab/api/services/ai_runtime_service.py` - confirmed the centralized provider resolver exists.
-- `contentflow_lab/api/services/repo_understanding_service.py` - confirmed repo/site content collection and LLM synthesis exists.
-- `contentflow_lab/api/routers/search_console.py` - confirmed project-scoped SEO intelligence/opportunity ingestion exists.
-- `contentflow_lab/api/routers/idea_pool.py` and `contentflow_lab/agents/sources/ingest.py` - confirmed multiple sources already feed the Idea Pool.
+- `contentglowz_lab/api/services/ai_runtime_service.py` - confirmed the centralized provider resolver exists.
+- `contentglowz_lab/api/services/repo_understanding_service.py` - confirmed repo/site content collection and LLM synthesis exists.
+- `contentglowz_lab/api/routers/search_console.py` - confirmed project-scoped SEO intelligence/opportunity ingestion exists.
+- `contentglowz_lab/api/routers/idea_pool.py` and `contentglowz_lab/agents/sources/ingest.py` - confirmed multiple sources already feed the Idea Pool.
 
 ## Internet Research
 
@@ -56,7 +56,7 @@ Clarify what intelligence engine ContentFlow currently has for each project prof
 
 ## Problem Framing
 
-ContentFlow already has several intelligence pieces, but not yet one explicit "project brain". The current system can resolve AI credentials, understand a repository or site enough to draft a persona, ingest market/SEO/social/newsletter signals, and turn some signals into ideas. The missing layer is a canonical project intelligence data layer that normalizes all uploaded and connected data into durable, deduplicated, scored, explainable project facts before any model/provider action.
+ContentGlowz already has several intelligence pieces, but not yet one explicit "project brain". The current system can resolve AI credentials, understand a repository or site enough to draft a persona, ingest market/SEO/social/newsletter signals, and turn some signals into ideas. The missing layer is a canonical project intelligence data layer that normalizes all uploaded and connected data into durable, deduplicated, scored, explainable project facts before any model/provider action.
 
 ## Option Space
 
@@ -103,7 +103,7 @@ Create a "Project Intelligence Engine" V1:
 ## Rejected Paths
 
 - "Train everything immediately" - rejected because most current product decisions need retrieval and evidence-backed scoring first.
-- "Provider-specific uploads as the source of truth" - rejected because ContentFlow needs consistent project memory, provenance, and privacy controls across providers.
+- "Provider-specific uploads as the source of truth" - rejected because ContentGlowz needs consistent project memory, provenance, and privacy controls across providers.
 
 ## Risks And Unknowns
 
@@ -121,7 +121,7 @@ Create a "Project Intelligence Engine" V1:
 
 ## Decision Inputs For Spec
 
-- User story seed: As a project owner, I want to upload or connect project data and have ContentFlow clean, deduplicate, understand, and score it so I can make evidence-backed content and growth decisions.
+- User story seed: As a project owner, I want to upload or connect project data and have ContentGlowz clean, deduplicate, understand, and score it so I can make evidence-backed content and growth decisions.
 - Scope in seed: project-scoped ingestion jobs, raw/clean document storage, dedupe, fact extraction, embeddings/indexing, confidence/provenance, recommendations, provider runtime routing.
 - Scope out seed: automatic provider fine-tuning for all uploads, unsupported claims of training every model in minutes, public sharing of private project intelligence.
 - Invariants/constraints seed: every item scoped by `user_id + project_id`; raw secrets never exposed; provider calls use `ai_runtime_service`; recommendations must cite source evidence.

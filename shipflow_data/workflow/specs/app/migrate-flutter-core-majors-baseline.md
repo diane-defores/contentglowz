@@ -56,7 +56,7 @@ Tracked modified files observed:
 - `shipflow_data/workflow/specs/app/SPEC-content-pipeline-unification.md`
 - `shipflow_data/workflow/specs/app/SPEC-offline-sync-v2.md`
 - `shipflow_data/workflow/specs/app/architecture-cible-fastapi-clerk-flutter.md`
-- `shipflow_data/workflow/specs/app/feedback-admin-v1-contentflow.md`
+- `shipflow_data/workflow/specs/app/feedback-admin-v1-contentglowz.md`
 - `shipflow_data/workflow/specs/app/feedback-backend-contract-fastapi.md`
 - `shipflow_data/workflow/specs/app/foundation-scrollable-nav-affiliations.md`
 - `shipflow_data/workflow/specs/app/late-integration-finalization.md`

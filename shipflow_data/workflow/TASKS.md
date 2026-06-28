@@ -1,4 +1,4 @@
-# Tasks — ContentFlow Monorepo
+# Tasks — ContentGlowz Monorepo
 
 > **Priority:** 🔴 P0 blocker · 🟠 P1 high · 🟡 P2 normal · 🟢 P3 low · ⚪ deferred
 > **Status:** 📋 todo · 🔄 in progress · ✅ done · ⛔ blocked · 💤 deferred
@@ -68,7 +68,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 | Pri | Task | Status |
 |-----|------|--------|
-| ✅ | Consolidate ContentFlow surfaces into the canonical monorepo | ✅ done |
+| ✅ | Consolidate ContentGlowz surfaces into the canonical monorepo | ✅ done |
 | ✅ | Move GitHub source of truth to `diane-defores/contentglowz` with Vercel roots for site and app | ✅ done |
 | ✅ | Create root and site task tracking from existing subproject state | ✅ done |
 | ✅ | Bring active ShipFlow documentation metadata and governance layers back into lint compliance for app/site/root docs | ✅ done |
@@ -79,7 +79,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 ---
 
-## ContentFlow Site
+## ContentGlowz Site
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -92,7 +92,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 ---
 
-## ContentFlow App
+## ContentGlowz App
 
 | Pri | Task | Status |
 |-----|------|--------|
@@ -122,7 +122,7 @@ Prioritization criteria: balanced impact, effort, blockers, dependency unlocks, 
 
 ---
 
-## ContentFlow Lab
+## ContentGlowz Lab
 
 | Pri | Task | Status |
 |-----|------|--------|

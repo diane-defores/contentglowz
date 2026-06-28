@@ -2,12 +2,12 @@
 artifact: research
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-13"
 updated: "2026-05-13"
 status: reviewed
 source_skill: sf-research
-scope: "Decart Lucy/Oasis visual asset editing research for ContentFlow"
+scope: "Decart Lucy/Oasis visual asset editing research for ContentGlowz"
 confidence: "medium"
 risk_level: "high"
 security_impact: "yes"
@@ -29,7 +29,7 @@ evidence:
   - "https://github.com/DecartAI/Lucy-Edit-ComfyUI"
   - "https://huggingface.co/decart-ai/Lucy-Edit-Dev-ComfyUI/blob/main/README.md"
   - "https://oasis2.decart.ai/"
-  - "contentflowz/TOOLS.md"
+  - "contentglowz/TOOLS.md"
   - "shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md"
   - "shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md"
   - "shipflow_data/workflow/specs/SPEC-project-visual-asset-library-2026-05-11.md"
@@ -39,21 +39,21 @@ evidence:
 next_step: "Add Decart Lucy Image 2 and Lucy 2.1 as benchmark candidates before any product spec; keep Oasis/Mirage as veille only."
 ---
 
-# Research: Decart Lucy/Oasis Visual Asset Editing For ContentFlow
+# Research: Decart Lucy/Oasis Visual Asset Editing For ContentGlowz
 
 > Generated 2026-05-13 — Sources: 31
 
 ## Executive Summary
 
-Decart is relevant for ContentFlow, but not as a direct new product spec today. The best fit is narrow provider evaluation: Lucy Image 2 for editing/restyling existing project images, and Lucy 2.1 for batch video-to-video editing of existing clips. Oasis 2.0 and Mirage/Lucy Restyle Live are realtime/live-world experiences, not a near-term ContentFlow asset pipeline.
+Decart is relevant for ContentGlowz, but not as a direct new product spec today. The best fit is narrow provider evaluation: Lucy Image 2 for editing/restyling existing project images, and Lucy 2.1 for batch video-to-video editing of existing clips. Oasis 2.0 and Mirage/Lucy Restyle Live are realtime/live-world experiences, not a near-term ContentGlowz asset pipeline.
 
 Recommendation: do not create a new Decart spec yet. Add Decart to the internal provider benchmark/cost telemetry track, run controlled fixtures against owned Bunny-backed assets, and only draft a future spec if benchmarks prove a workflow gap not already covered by Flux/Image Robot, asset library, AI video b-roll, or Remotion motion specs.
 
 ## Background
 
-Local signal is limited to four inspiration links in `contentflowz/TOOLS.md`: DecartAI/Lucy-Edit-ComfyUI, Oasis 2.0, and Decart API docs for JavaScript/Python. Project direction remains Flutter app, FastAPI backend, Clerk, Turso/libSQL, Bunny CDN, and guided async workflows; `contentflowz` is inspiration only, not a Next/Supabase/Vercel migration source.
+Local signal is limited to four inspiration links in `contentglowz/TOOLS.md`: DecartAI/Lucy-Edit-ComfyUI, Oasis 2.0, and Decart API docs for JavaScript/Python. Project direction remains Flutter app, FastAPI backend, Clerk, Turso/libSQL, Bunny CDN, and guided async workflows; `contentglowz` is inspiration only, not a Next/Supabase/Vercel migration source.
 
-The existing ContentFlow specs already cover the main surfaces this research could touch:
+The existing ContentGlowz specs already cover the main surfaces this research could touch:
 
 - `SPEC-flux-ai-provider-image-robot-2026-05-11.md`: Image Robot/Flux async image generation, project visual references, Bunny durability, Turso history.
 - `SPEC-ai-visual-reference-upload-advanced-2026-05-11.md`: safe project image upload, metadata stripping, reference eligibility, deletion/versioning.
@@ -76,17 +76,17 @@ Pricing docs are usage-based: image models are billed per generation, video mode
 
 ## Clear Distinctions
 
-| Area | What it is | ContentFlow interpretation |
+| Area | What it is | ContentGlowz interpretation |
 | --- | --- | --- |
 | Lucy Image 2 | Image-to-image editing from input image + prompt, optional reference image, 480p/720p | Candidate provider for editing/restyling an owned project image, not replacing Flux generation |
 | Lucy 2.1 batch | Existing video + prompt/reference image, async `/v1/jobs/*`, 720p, MP4 input, max 200 MB, documented as unlimited duration | Candidate video-to-video edit/post-process provider for existing Bunny clips |
-| Lucy 2.1 realtime | WebRTC live video editing/character transform with short-lived client tokens | Mismatch for ContentFlow V1 async workflows; possible future live preview only |
+| Lucy 2.1 realtime | WebRTC live video editing/character transform with short-lived client tokens | Mismatch for ContentGlowz V1 async workflows; possible future live preview only |
 | Lucy Restyle 2 / Restyle Live | Style transformation/restyling of live or recorded video | More relevant to filters/restyling than durable content editing |
-| Oasis / Oasis 2.0 | Realtime game/world transformation; Oasis 2.0 site frames a Minecraft-style mod/demo | Veille/inspiration only for ContentFlow |
+| Oasis / Oasis 2.0 | Realtime game/world transformation; Oasis 2.0 site frames a Minecraft-style mod/demo | Veille/inspiration only for ContentGlowz |
 | Lucy-Edit-ComfyUI | ComfyUI nodes plus local Dev weights and API workflow examples | Non-production exploration; local weights are non-commercial per Hugging Face card |
 | Decart API/SDK | Official JS/Python/Swift/Android SDKs; Python async client; JS browser/server usage | Backend adapter possible for Process/Queue; realtime requires token service and privacy review |
 
-## Fit For ContentFlow Workflows
+## Fit For ContentGlowz Workflows
 
 ### Asset Editing / Restyle
 
@@ -96,11 +96,11 @@ This should not replace the current Flux/Image Robot spec because Flux covers gu
 
 ### Image-To-Image / References
 
-**Fit: medium-high for evaluation.** Decart docs and platform pages describe `reference_image` for Lucy Image 2, useful for adding or matching a specific item/style. ContentFlow already has the reference upload and asset library specs needed to govern this safely. The missing piece is quality/cost evidence versus Flux.2 editing/reference behavior.
+**Fit: medium-high for evaluation.** Decart docs and platform pages describe `reference_image` for Lucy Image 2, useful for adding or matching a specific item/style. ContentGlowz already has the reference upload and asset library specs needed to govern this safely. The missing piece is quality/cost evidence versus Flux.2 editing/reference behavior.
 
 ### Video-To-Video Editing
 
-**Fit: medium, future.** Lucy 2.1 batch video editing aligns with existing-video transformations: style transfer, object modifications, character replacement, visual transformation. ContentFlow could use this later to restyle or modify a user-owned clip, generated b-roll candidate, or Remotion-exported clip.
+**Fit: medium, future.** Lucy 2.1 batch video editing aligns with existing-video transformations: style transfer, object modifications, character replacement, visual transformation. ContentGlowz could use this later to restyle or modify a user-owned clip, generated b-roll candidate, or Remotion-exported clip.
 
 It is not a first b-roll generator: the documented core is editing an existing video, not creating a fresh short b-roll clip from a scene prompt. The current AI video b-roll spec already has a cleaner V1 path for prompt/image-to-video providers and durable project asset registration.
 
@@ -110,11 +110,11 @@ It is not a first b-roll generator: the documented core is editing an existing v
 
 ### Motion / Live Preview
 
-**Fit: low for current ContentFlow.** Realtime WebRTC is powerful for live camera effects and interactive filters, but ContentFlow's workflows are guided, async, durable, and review/publish oriented. Realtime would add token minting, camera permission, session duration caps, consent, and privacy complexity while overlapping the Remotion motion assistant's deterministic preview role.
+**Fit: low for current ContentGlowz.** Realtime WebRTC is powerful for live camera effects and interactive filters, but ContentGlowz's workflows are guided, async, durable, and review/publish oriented. Realtime would add token minting, camera permission, session duration caps, consent, and privacy complexity while overlapping the Remotion motion assistant's deterministic preview role.
 
 ### Simple Veille
 
-**Fit: high for Oasis/Mirage.** Oasis 2.0 and Mirage/Lucy Restyle Live are useful market signals around realtime world/video transformation, but they do not justify a product spec in ContentFlow today.
+**Fit: high for Oasis/Mirage.** Oasis 2.0 and Mirage/Lucy Restyle Live are useful market signals around realtime world/video transformation, but they do not justify a product spec in ContentGlowz today.
 
 ## Risks
 
@@ -126,17 +126,17 @@ The ComfyUI/local model path is different: the GitHub repo has no `LICENSE` file
 
 ### AUP / Safety
 
-The AUP prohibits illegal, IP-infringing, harmful, sexual abuse/minor, hate, violence, and sensitive/private-information misuse cases. It also requires redistributors of Decart models/API-powered products to include equivalent AUP/license terms and prevent prohibited use where reasonably possible. ContentFlow would need provider-level moderation mapping, user-facing policy constraints, and admin-visible safety failures before exposing identity/video editing.
+The AUP prohibits illegal, IP-infringing, harmful, sexual abuse/minor, hate, violence, and sensitive/private-information misuse cases. It also requires redistributors of Decart models/API-powered products to include equivalent AUP/license terms and prevent prohibited use where reasonably possible. ContentGlowz would need provider-level moderation mapping, user-facing policy constraints, and admin-visible safety failures before exposing identity/video editing.
 
 ### Consent, Deepfake, Identity
 
-Lucy 2.1 and Lucy Image explicitly support character/reference transformations, object/person replacement, virtual try-on, and appearance edits. This is high-risk for identity, likeness, public figures, minors, non-consensual edits, and brand/IP impersonation. Any ContentFlow integration must require owned/authorized inputs, reject or gate real-person likeness workflows, store provenance, and avoid claims of exact identity safety.
+Lucy 2.1 and Lucy Image explicitly support character/reference transformations, object/person replacement, virtual try-on, and appearance edits. This is high-risk for identity, likeness, public figures, minors, non-consensual edits, and brand/IP impersonation. Any ContentGlowz integration must require owned/authorized inputs, reject or gate real-person likeness workflows, store provenance, and avoid claims of exact identity safety.
 
 ### Privacy / Data Retention
 
 Decart's Privacy Policy describes personal data use for service operations, security, law enforcement/legal compliance, and anonymized/deidentified internal/external use including research. The DPA says Decart acts as processor for Developer Data but also describes retention as needed to provide and improve services, deletion/return on termination request unless law requires retention, and a 60-day deletion reservation after account deletion. The public Terms also allow Content use for model improvement/training.
 
-For ContentFlow, this means no sensitive customer media, faces, private captures, or enterprise content should be sent until legal review resolves whether Decart API usage, DPA, account settings, and commercial contract meet the product's privacy promises.
+For ContentGlowz, this means no sensitive customer media, faces, private captures, or enterprise content should be sent until legal review resolves whether Decart API usage, DPA, account settings, and commercial contract meet the product's privacy promises.
 
 ### Cost
 
@@ -152,7 +152,7 @@ Realtime depends on Decart WebRTC/session semantics and client token rules. Queu
 
 ### Async vs Realtime
 
-ContentFlow's current architecture favors async jobs, durable Bunny storage, Turso metadata, and review/publish state. Decart Process and Queue APIs fit that model. Realtime WebRTC does not produce a durable asset by default and should not be used for publishable media without an explicit capture, consent, storage, and moderation design.
+ContentGlowz's current architecture favors async jobs, durable Bunny storage, Turso metadata, and review/publish state. Decart Process and Queue APIs fit that model. Realtime WebRTC does not produce a durable asset by default and should not be used for publishable media without an explicit capture, consent, storage, and moderation design.
 
 ## Comparison With Existing Specs
 
@@ -166,7 +166,7 @@ The visual reference upload spec already defines the safe boundary Decart would 
 
 ### Project Asset Library
 
-The asset library spec is the right UX home for future Decart image edits: select an owned asset, request an edit/restyle, save the result as a derived candidate, compare, promote, tombstone, or attach to a placement. This avoids a Decart playground and preserves ContentFlow's guided product direction.
+The asset library spec is the right UX home for future Decart image edits: select an owned asset, request an edit/restyle, save the result as a derived candidate, compare, promote, tombstone, or attach to a placement. This avoids a Decart playground and preserves ContentGlowz's guided product direction.
 
 ### AI Video B-Roll
 
@@ -189,8 +189,8 @@ This is the strongest landing zone. Add Decart candidates to benchmark fixtures:
 
 1. **No new Decart product spec now.** Existing specs already cover the product surfaces, and Decart's fit is provider/action-level rather than a new standalone feature.
 2. **Add Decart to provider benchmark as research-backed candidates.** Start with internal fixtures and mocked/staging calls; record cost, latency, failure modes, moderation, durability, and human quality ratings.
-3. **Do not port Lucy-Edit-ComfyUI into production.** Use it for learning/prompting patterns only. Local Dev weights are non-commercial, and the repo has no product-ready license posture for ContentFlow.
-4. **Keep Oasis/Mirage as veille.** They are realtime/gaming/live-world signals, not ContentFlow asset-editing requirements.
+3. **Do not port Lucy-Edit-ComfyUI into production.** Use it for learning/prompting patterns only. Local Dev weights are non-commercial, and the repo has no product-ready license posture for ContentGlowz.
+4. **Keep Oasis/Mirage as veille.** They are realtime/gaming/live-world signals, not ContentGlowz asset-editing requirements.
 5. **Require legal/privacy review before any customer-media test.** API Terms, DPA, privacy retention, model-improvement language, likeness consent, and AUP obligations are blockers for production exposure.
 6. **If benchmarks pass, draft a future narrow spec:** "AI Asset Edit/Restyle Provider Adapter" scoped to owned Bunny-backed assets and derived asset versions, not a playground.
 
@@ -217,9 +217,9 @@ Severity: medium-high due to privacy, likeness, cost, and provider maturity risk
 
 Scope if later created: backend provider adapter for Decart Lucy Image 2 and/or Lucy 2.1 batch, benchmark fixtures, derived asset records, no creator-facing model picker, no realtime, no local ComfyUI commercial path.
 
-Evidence: Decart docs for Process/Queue/Realtime APIs; pricing docs; API Terms/DPA/Privacy/AUP; ComfyUI/Hugging Face non-commercial model card; existing ContentFlow provider benchmark, asset library, visual reference, b-roll, and Remotion motion specs.
+Evidence: Decart docs for Process/Queue/Realtime APIs; pricing docs; API Terms/DPA/Privacy/AUP; ComfyUI/Hugging Face non-commercial model card; existing ContentGlowz provider benchmark, asset library, visual reference, b-roll, and Remotion motion specs.
 
-Recommended command if benchmarks prove value: `/sf-spec Decart Lucy asset edit/restyle provider adapter for owned ContentFlow assets`
+Recommended command if benchmarks prove value: `/sf-spec Decart Lucy asset edit/restyle provider adapter for owned ContentGlowz assets`
 
 Next step: update or run the existing provider benchmark workflow with Decart as a candidate; do not create a product spec from this research alone.
 
@@ -249,7 +249,7 @@ Next step: update or run the existing provider benchmark workflow with Decart as
 - [Oasis 2.0](https://oasis2.decart.ai/) — realtime gaming/Minecraft-style experience positioning.
 - [Lucy-Edit-ComfyUI GitHub](https://github.com/DecartAI/Lucy-Edit-ComfyUI) — ComfyUI nodes, API/local workflows, prompt guidance, roadmap.
 - [Lucy Edit Dev Hugging Face model card](https://huggingface.co/decart-ai/Lucy-Edit-Dev-ComfyUI/blob/main/README.md) — non-commercial model license metadata and workflow link.
-- `contentflowz/TOOLS.md` — local Decart/Oasis/API inspiration links.
+- `contentglowz/TOOLS.md` — local Decart/Oasis/API inspiration links.
 - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md` — existing Flux/Image Robot contract.
 - `shipflow_data/workflow/specs/SPEC-ai-visual-reference-upload-advanced-2026-05-11.md` — existing visual reference upload and eligibility contract.
 - `shipflow_data/workflow/specs/SPEC-project-visual-asset-library-2026-05-11.md` — existing project visual asset picker/library contract.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentflow
+project: contentglowz
 created: "2026-05-10"
 updated: "2026-05-10"
 status: ready
@@ -13,7 +13,7 @@ confidence: high
 risk_level: high
 security_impact: yes
 docs_impact: yes
-user_story: "En tant qu'utilisateur connecte de ContentFlow, je veux connecter une boite email IMAP et choisir le dossier lu afin que ContentFlow transforme automatiquement les nouveaux emails utiles en idees pour mon projet."
+user_story: "En tant qu'utilisateur connecte de ContentGlowz, je veux connecter une boite email IMAP et choisir le dossier lu afin que ContentGlowz transforme automatiquement les nouveaux emails utiles en idees pour mon projet."
 linked_systems:
   - contentglowz_app
   - contentglowz_lab
@@ -40,7 +40,7 @@ next_step: "/sf-ship shipflow_data/workflow/specs/monorepo/SPEC-user-imap-email-
 
 ## Objective
 
-Recreate the missing user-facing email source flow so an authenticated ContentFlow user can connect an email inbox through IMAP, choose which mailbox folder/label is read, and let the backend automatically ingest useful emails into the Idea Pool as `newsletter_inbox` ideas every 6 hours.
+Recreate the missing user-facing email source flow so an authenticated ContentGlowz user can connect an email inbox through IMAP, choose which mailbox folder/label is read, and let the backend automatically ingest useful emails into the Idea Pool as `newsletter_inbox` ideas every 6 hours.
 
 ## Product Contract
 

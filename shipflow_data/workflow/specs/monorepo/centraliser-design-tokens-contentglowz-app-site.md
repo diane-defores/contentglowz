@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-10"
 created_at: "2026-05-10 08:52:41 UTC"
 updated: "2026-05-10"
@@ -13,7 +13,7 @@ source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "Diane"
 confidence: "high"
-user_story: "En tant qu'utilisateur existant de ContentFlow, je veux une interface app et site visuellement coherente, compacte sur mobile et alignee sur les tokens de marque, afin de retrouver un produit professionnel et lisible sur tous les ecrans."
+user_story: "En tant qu'utilisateur existant de ContentGlowz, je veux une interface app et site visuellement coherente, compacte sur mobile et alignee sur les tokens de marque, afin de retrouver un produit professionnel et lisible sur tous les ecrans."
 risk_level: "high"
 security_impact: "none"
 docs_impact: "yes"
@@ -44,12 +44,12 @@ evidence:
   - "contentglowz_theme.json currently centralizes base colors, surfaces, typography, radius, shadow and motion only."
   - "contentglowz_app/lib/main.dart currently applies mobile compaction through global TextScaler.linear(0.88) and VisualDensity.compact."
   - "contentglowz_app/lib/core/app_theme_preference.dart currently normalizes system but themeModeFromPreference(system) returns ThemeMode.light."
-next_step: "/sf-start Centraliser les design tokens ContentFlow app/site"
+next_step: "/sf-start Centraliser les design tokens ContentGlowz app/site"
 ---
 
 # Title
 
-Centraliser les design tokens ContentFlow app/site
+Centraliser les design tokens ContentGlowz app/site
 
 ## Status
 
@@ -57,7 +57,7 @@ Ready. Cette spec formalise le chantier issu de l'audit design tokens du 2026-05
 
 ## User Story
 
-En tant qu'utilisateur existant de ContentFlow, je veux une interface app et site visuellement coherente, compacte sur mobile et alignee sur les tokens de marque, afin de retrouver un produit professionnel et lisible sur tous les ecrans.
+En tant qu'utilisateur existant de ContentGlowz, je veux une interface app et site visuellement coherente, compacte sur mobile et alignee sur les tokens de marque, afin de retrouver un produit professionnel et lisible sur tous les ecrans.
 
 ## Minimal Behavior Contract
 
@@ -312,17 +312,17 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-10 08:52:41 UTC | sf-spec | GPT-5 Codex | Creation de la spec depuis l'audit design tokens et les demandes utilisateur | Draft enregistre dans `docs/centraliser-design-tokens-contentflow-app-site.md` | `/sf-ready Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 08:52:41 UTC | sf-spec | GPT-5 Codex | Creation de la spec depuis l'audit design tokens et les demandes utilisateur | Draft enregistre dans `docs/centraliser-design-tokens-contentglowz-app-site.md` | `/sf-ready Centraliser les design tokens ContentGlowz app/site` |
 | 2026-05-10 09:03:00 UTC | sf-ready | GPT-5 Codex | Gate de complétude et de traçabilité avant démarrage de l'implémentation | Ready |
-| 2026-05-10 10:55 UTC | sf-build | GPT-5 Codex | Orchestration de clôture chantier demandée par l'utilisateur | partial | `/sf-ready Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 10:55 UTC | sf-build | GPT-5 Codex | Orchestration de clôture chantier demandée par l'utilisateur | partial | `/sf-ready Centraliser les design tokens ContentGlowz app/site` |
 | 2026-05-10 11:26:00 UTC | sf-start | GPT-5.3 Codex | Mise en oeuvre de la centralisation: tokens partagés, générateur renforcé et bascule vers des compactages explicites | Partial |
 | 2026-05-10 09:11 UTC | sf-verify | GPT-5 Codex | Verification ship-readiness du chantier tokens app/site | partial | Corriger les ecarts hors scope et completer scan anti-literals + QA visuelle |
 | 2026-05-10 09:18 UTC | sf-build | GPT-5 Codex + GPT-5.3 Codex Spark | Correction autonome des ecarts sf-verify: garde admin restaure, scan anti-literals ajoute, builds ignores hors jugement | partial | Nettoyer le scope de ship des artefacts generes et changements hors chantier |
-| 2026-05-10 18:31 UTC | sf-verify | GPT-5 Codex | Verification des demandes: tokens/paddings centralises et cartes icone-titre-description | partial | Corriger les cartes icone/titre, reduire les literals restants, puis relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` |
-| 2026-05-10 18:36 UTC | continue | GPT-5 Codex | Reprise autonome: correction des cartes site icone/titre et centralisation globale du pattern de header carte | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` apres inspection locale |
-| 2026-05-10 18:56 UTC | sf-build | GPT-5 Codex | Execution complete app+site: pattern cartes titre-gauche/icone-droite + centralisation paddings/tokens sur surfaces critiques Flutter/Astro | partial | Relancer `/sf-verify Centraliser les design tokens ContentFlow app/site` puis orchestrer `/sf-end` et `/sf-ship` si verifie |
-| 2026-05-10 19:09 UTC | sf-verify | GPT-5 Codex | Verification post-implementation app+site avec checks Flutter/Astro et scan literals | verified | `/sf-end Centraliser les design tokens ContentFlow app/site` |
-| 2026-05-10 19:09 UTC | sf-end | GPT-5 Codex | Cloture chantier et alignement trace lifecycle | implemented | `/sf-ship Centraliser les design tokens ContentFlow app/site` |
+| 2026-05-10 18:31 UTC | sf-verify | GPT-5 Codex | Verification des demandes: tokens/paddings centralises et cartes icone-titre-description | partial | Corriger les cartes icone/titre, reduire les literals restants, puis relancer `/sf-verify Centraliser les design tokens ContentGlowz app/site` |
+| 2026-05-10 18:36 UTC | continue | GPT-5 Codex | Reprise autonome: correction des cartes site icone/titre et centralisation globale du pattern de header carte | partial | Relancer `/sf-verify Centraliser les design tokens ContentGlowz app/site` apres inspection locale |
+| 2026-05-10 18:56 UTC | sf-build | GPT-5 Codex | Execution complete app+site: pattern cartes titre-gauche/icone-droite + centralisation paddings/tokens sur surfaces critiques Flutter/Astro | partial | Relancer `/sf-verify Centraliser les design tokens ContentGlowz app/site` puis orchestrer `/sf-end` et `/sf-ship` si verifie |
+| 2026-05-10 19:09 UTC | sf-verify | GPT-5 Codex | Verification post-implementation app+site avec checks Flutter/Astro et scan literals | verified | `/sf-end Centraliser les design tokens ContentGlowz app/site` |
+| 2026-05-10 19:09 UTC | sf-end | GPT-5 Codex | Cloture chantier et alignement trace lifecycle | implemented | `/sf-ship Centraliser les design tokens ContentGlowz app/site` |
 | 2026-05-10 19:09 UTC | sf-ship | GPT-5 Codex | Ship du scope chantier sur `main` (commit `9942f10` detecte sur `origin/main`) | implemented | none |
 | 2026-05-23 22:02 UTC | continue | GPT-5 Codex | Reprise bornee de l'audit literals: migration de `AuthScreen` vers les tokens/theme existants | partial | Continuer par un autre ecran critique ou basculer vers le runtime IA dual-mode |
 | 2026-05-24 08:13 UTC | sf-build | GPT-5 Codex + subagent `gpt-5.3-codex-spark` | Execution deleguee sequentielle: migration partielle de `EntryScreen` vers les text themes/tokens existants | partial | Continuer les literals restants par lots bornes; ne pas shipper tant que les fichiers dirty hors scope ne sont pas exclus ou nettoyes |

@@ -39,10 +39,10 @@ sf-spec ✅ -> sf-ready ✅ -> sf-build 🔄 -> sf-verify ⏳ -> sf-end ⏳ -> s
 | 2026-05-30 21:31 UTC | sf-build | unknown | Resumed dual-mode AI runtime chantier, added platform resolver and dispatch matrix regression coverage, ran focused backend and Flutter tests, updated spec progress. | partial | Run manual smoke with real provider credentials, then sf-verify/sf-end/sf-ship. |
 
 ## Problem
-The product direction is no longer “strict OpenRouter BYOK only”. ContentFlow now needs one coherent architecture that supports two commercial modes for user-triggered AI workflows:
+The product direction is no longer “strict OpenRouter BYOK only”. ContentGlowz now needs one coherent architecture that supports two commercial modes for user-triggered AI workflows:
 
 - `byok`: the user pays providers directly with their own keys
-- `platform`: ContentFlow pays providers and will monetize usage later through plans or credits
+- `platform`: ContentGlowz pays providers and will monetize usage later through plans or credits
 
 The current codebase is not ready for that model:
 
@@ -52,7 +52,7 @@ The current codebase is not ready for that model:
 - newsletter memory is not consistently scoped by `user_id` and `project_id`
 - the app still interprets any `409` as “OpenRouter missing”, which is unsafe once runtime errors and normal business conflicts coexist
 
-Without one runtime policy and one resolver, ContentFlow cannot safely support:
+Without one runtime policy and one resolver, ContentGlowz cannot safely support:
 
 - BYOK pay-as-you-go
 - platform-paid usage
@@ -833,8 +833,8 @@ Flutter must not parse `kind == "dependency"` as an AI runtime setup error.
   10. Flutter error handling
   11. Regression tests
 - Validation commands:
-  - `cd /home/claude/contentflow/contentglowz_lab && pytest tests/test_ai_runtime_models.py tests/test_user_data_store_ai_runtime.py tests/test_ai_entitlement_service.py tests/test_ai_runtime_service.py tests/test_settings_ai_runtime_router.py tests/test_persona_draft_route.py tests/test_psychology_auth_jobs.py tests/test_dispatch_pipeline_runtime.py tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py tests/test_research_router.py`
-  - `cd /home/claude/contentflow/contentglowz_app && flutter test`
+  - `cd /home/claude/contentglowz/contentglowz_lab && pytest tests/test_ai_runtime_models.py tests/test_user_data_store_ai_runtime.py tests/test_ai_entitlement_service.py tests/test_ai_runtime_service.py tests/test_settings_ai_runtime_router.py tests/test_persona_draft_route.py tests/test_psychology_auth_jobs.py tests/test_dispatch_pipeline_runtime.py tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py tests/test_research_router.py`
+  - `cd /home/claude/contentglowz/contentglowz_app && flutter test`
 - Stop conditions:
   - stop if any covered route still reads provider env vars outside the centralized runtime resolver
   - stop if optional providers remain registered as broken tools instead of being removed from tool profiles

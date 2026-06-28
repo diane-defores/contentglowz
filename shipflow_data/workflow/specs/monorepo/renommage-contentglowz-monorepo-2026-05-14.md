@@ -83,7 +83,7 @@ Quand un utilisateur, un opérateur ou un pipeline interagit avec le projet apr�
 - Les dossiers actifs du monorepo sont renommés de façon cohérente : `contentglowz_site`, `contentglowz_app`, `contentglowz_lab`, `contentglowz_worker`, et `contentglowz_theme.json`, sauf si une contrainte outil impose une transition documentée.
 - Les builds et checks utilisent les nouveaux chemins dans les scripts, workflows, README et outils internes.
 - Les surfaces publiques affichent `ContentGlowz` dans les titres, métadonnées, JSON-LD, manifestes, OG, favicon/asset metadata, blog/content authors, privacy page, app title et textes localisés.
-- Les valeurs par défaut de configuration utilisent `https://contentglowz.com`, `https://app.contentglowz.com` et `https://api.contentglowz.com`; les anciennes URLs `contentflow.winflowz.com`, `app.contentflow.winflowz.com` et `contentflow.com` ne restent que dans une note de migration ou dans une liste de redirections temporaires explicitement nommée.
+- Les valeurs par défaut de configuration utilisent `https://contentglowz.com`, `https://app.contentglowz.com` et `https://api.contentglowz.com`; les anciennes URLs `contentglowz.winflowz.com`, `app.contentglowz.winflowz.com` et `contentglowz.com` ne restent que dans une note de migration ou dans une liste de redirections temporaires explicitement nommée.
 - FastAPI accepte les nouvelles origines CORS, publie des métadonnées OpenAPI ContentGlowz, conserve des messages d'erreur sûrs, et ne loggue aucun secret pendant la migration.
 - GitHub Actions produit un artefact `contentglowz-android-apk` et lit les nouveaux chemins.
 - Les tests et audits d'occurrences distinguent les références historiques explicitement permises des identifiants actifs à migrer.
@@ -93,7 +93,7 @@ Quand un utilisateur, un opérateur ou un pipeline interagit avec le projet apr�
 - Si `contentglowz.com`, `app.contentglowz.com` ou `api.contentglowz.com` ne sont pas provisionnés au moment de l'implémentation, l'agent doit arrêter avant release et documenter le blocage au lieu de livrer des defaults incohérents.
 - Si le changement Android `applicationId` menace une app déjà publiée, l'agent doit demander une décision explicite avant de modifier l'identifiant package; le nom affiché peut être renommé séparément.
 - Si des secrets ou variables externes manquent dans GitHub, Vercel, Doppler, Clerk, Sentry, Turso, Bunny ou GCP, l'agent doit mettre à jour les exemples et docs, puis signaler les actions opérateur nécessaires sans inventer ni exposer de secrets.
-- Si `rg -i "contentflow|content flow"` trouve encore des occurrences actives après migration, le chantier ne passe pas ready/verify tant que chaque occurrence n'est pas soit migrée, soit classée comme historique autorisée.
+- Si `rg -i "contentglowz|content flow"` trouve encore des occurrences actives après migration, le chantier ne passe pas ready/verify tant que chaque occurrence n'est pas soit migrée, soit classée comme historique autorisée.
 - Le chantier ne doit jamais casser volontairement l'auth, élargir CORS à des domaines non maîtrisés, supprimer des données utilisateur, exposer des tokens, ni remplacer des clés de stockage sans plan de compatibilité.
 - Une erreur OAuth/Clerk/Google auth partielle (callback invalide, redirect mismatch, origin mismatch) doit créer un état d'erreur observable (log + blocage manuel) et ne doit pas déclencher de fallback automatique vers des valeurs anciennes.
 - Toute modification de domaines ou d'identifiants de sécurité doit être suivie d'une vérification d'influence cross-file (site/app/lab/worker) avant tout push.
@@ -122,7 +122,7 @@ Reprendre la migration en phase de consolidation: vérifier les fondations déj�
 
 - Purchasing or configuring DNS, Vercel domains, Clerk domains, OAuth clients, Sentry projects, Turso databases, Bunny zones, GCS buckets, Doppler projects, or GitHub repository settings directly from code.
 - Rotating production secrets or changing live database names without operator confirmation.
-- Rewriting product positioning beyond the mechanical brand rename from ContentFlow to ContentGlowz.
+- Rewriting product positioning beyond the mechanical brand rename from ContentGlowz to ContentGlowz.
 - Removing old redirects or backwards-compatible origins before production traffic is proven moved.
 - Changing feature behavior unrelated to naming, branding, domains, CORS/auth handoff, build paths, or deployment names.
 
@@ -156,7 +156,7 @@ Reprendre la migration en phase de consolidation: vérifier les fondations déj�
   - Doppler: `docs.doppler.com/docs/service-tokens` (séparation read-only/prod, création de token).
   - Sentry: `docs.sentry.io/api/auth/` et `docs.sentry.dev/cli/configuration` (variables/token DSN/auth).
   - Turso: `docs.turso.tech/cli/introduction` et `docs.turso.tech/tutorials/get-started-turso-cli/step-01-installation` (CLI, nom DB, URL de base de l'instance).
-- Operator-owned prerequisites: DNS/domain mapping pour `contentglowz.com`, `app.contentglowz.com`, `api.contentglowz.com`; renommage GitHub (ancien `contentflow` → `contentglowz`) ; root directories Vercel et variables/secrets dans Vercel, Doppler, Clerk, Sentry, Turso, Bunny, GCP/GCS.
+- Operator-owned prerequisites: DNS/domain mapping pour `contentglowz.com`, `app.contentglowz.com`, `api.contentglowz.com`; renommage GitHub (ancien `contentglowz` → `contentglowz`) ; root directories Vercel et variables/secrets dans Vercel, Doppler, Clerk, Sentry, Turso, Bunny, GCP/GCS.
 
 ## Invariants
 
@@ -175,7 +175,7 @@ Reprendre la migration en phase de consolidation: vérifier les fondations déj�
 - Clerk, Google OAuth, Search Console, CORS and redirect URLs must be updated together; partial migration can break sign-in and integrations.
 - Android package/applicationId changes can affect installed app continuity and app-store identity.
 - LocalStorage keys, method channels and file provider authorities can strand old local state or break Android native bridges if renamed without compatibility.
-- Turso database names like `contentflow-prod2`, Bunny zones like `contentflow-images`, GCS paths like `contentflow/renders`, and Sentry releases may require explicit migration or compatibility aliases.
+- Turso database names like `contentglowz-prod2`, Bunny zones like `contentglowz-images`, GCS paths like `contentglowz/renders`, and Sentry releases may require explicit migration or compatibility aliases.
 - Public SEO metadata and canonical URLs must switch atomically with domain deployment to avoid duplicate indexing.
 - ShipFlow trackers and old specs contain many old-name occurrences; verification must distinguish active current-truth docs from archived historical evidence.
 - Les erreurs d'authentification doivent être observables: callback invalide, domaine non autorisé, token manquant doivent produire un log/état d'échec net, pas de fallback silencieux vers l'ancien environnement.
@@ -198,7 +198,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
 
 - `ContentGlowzTimelineVideo` is now a shared backend/worker API/schema composition ID; changing it again breaks compatibility unless backend, worker, fixtures and tests change together.
 - Android package paths are now under `com/contentglowz/contentglowz_app`; any future applicationId change can affect installed app continuity and must be operator-approved if the app is published.
-- App-local keys such as `contentflow:eruda` may need migration to avoid losing useful debug preferences.
+- App-local keys such as `contentglowz:eruda` may need migration to avoid losing useful debug preferences.
 - CORS regex currently allows ContentGlowz deployment domains and subdomains; broad edits can over-allow domains.
 - Generated comments in theme token files point to `contentglowz_theme.json`; regenerate after renaming the theme source.
 - Lockfiles (`package-lock.json`, `pubspec.lock`) should reflect package renames after package manager commands, not hand-edited unless the package manager has no better path.
@@ -220,15 +220,15 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Action : Remplacer uniquement les occurrences qui désignent l'ancien produit ou les anciens chemins actifs; conserver les expressions génériques en anglais comme `content flows` si elles ne désignent pas la marque.
   - User story link : supprime les restes visibles ou opérateur de l'ancien nom.
   - Depends on : Tâche 1.
-  - Validate with : `rg -n -i "contentflow|content flow" contentglowz_app contentglowz_site contentglowz_lab --glob '!**/.flox/**' --glob '!**/.venv_check/**'`.
-  - Notes : Ne pas remplacer mécaniquement les phrases naturelles `content flows` qui ne sont pas une référence à ContentFlow.
+  - Validate with : `rg -n -i "contentglowz|content flow" contentglowz_app contentglowz_site contentglowz_lab --glob '!**/.flox/**' --glob '!**/.venv_check/**'`.
+  - Notes : Ne pas remplacer mécaniquement les phrases naturelles `content flows` qui ne sont pas une référence à ContentGlowz.
 
 - [ ] Tâche 3 : Vérifier et finaliser les docs root/setup/changelog
   - Fichier : `README.md`, `SETUP.md`, `CHANGELOG.md`
   - Action : Confirmer que clone URL, chemins, domaines, noms d'artefacts, commandes de setup et entrée de migration utilisent ContentGlowz; corriger les restes actifs éventuels.
   - User story link : un opérateur suit le bon dépôt et les bons chemins.
   - Depends on : Tâche 1.
-  - Validate with : `rg -n -i "contentflow|content flow|diane-defores/contentglowz" README.md SETUP.md CHANGELOG.md`.
+  - Validate with : `rg -n -i "contentglowz|content flow|diane-defores/contentglowz" README.md SETUP.md CHANGELOG.md`.
   - Notes : Les mentions historiques dans `CHANGELOG.md` sont autorisées si explicitement historiques.
 
 - [ ] Tâche 4 : Vérifier les scripts et tokens de design après renommage
@@ -244,7 +244,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Action : Vérifier que le workflow pointe vers `contentglowz_app`, les nouveaux domaines et l'artefact `contentglowz-android-apk`; corriger uniquement les restes si l'audit en trouve.
   - User story link : les builds CI publient des artefacts sous le nouveau nom.
   - Depends on : Tâche 1.
-  - Validate with : YAML parse/check local si disponible et `rg -n -i "contentflow" .github/workflows/android-apk.yml`.
+  - Validate with : YAML parse/check local si disponible et `rg -n -i "contentglowz" .github/workflows/android-apk.yml`.
   - Notes : Variables GitHub `APP_SITE_URL`, `APP_WEB_URL`, `API_BASE_URL` restent overrideables.
 
 - [ ] Tâche 6 : Valider le site Astro sous ContentGlowz
@@ -252,7 +252,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Action : Corriger les restes actifs, vérifier canonical URL, app URL, API URL, metadata, JSON-LD, copy publique, privacy, authors et liens GitHub/API.
   - User story link : le site public présente ContentGlowz et les bons domaines.
   - Depends on : Tâches 2, 3.
-  - Validate with : `npm run build` depuis `contentglowz_site` et audit `rg -n -i "contentflow|content flow" contentglowz_site`.
+  - Validate with : `npm run build` depuis `contentglowz_site` et audit `rg -n -i "contentglowz|content flow" contentglowz_site`.
   - Notes : Les phrases naturelles `content flows` peuvent rester si elles ne désignent pas la marque.
 
 - [ ] Tâche 7 : Valider l'app Flutter et Android native
@@ -268,7 +268,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Action : Vérifier OpenAPI title/contact, CORS origins/regex, user-agent, messages, docs, env examples et noms de service; corriger les restes actifs sans élargir les domaines autorisés.
   - User story link : l'API accepte et décrit les nouveaux domaines sans élargir la sécurité.
   - Depends on : Tâches 2, 3.
-  - Validate with : tests ciblés backend et `rg -n -i "contentflow|content flow" contentglowz_lab/api contentglowz_lab/tests contentglowz_lab/.env.example contentglowz_lab/README.md`.
+  - Validate with : tests ciblés backend et `rg -n -i "contentglowz|content flow" contentglowz_lab/api contentglowz_lab/tests contentglowz_lab/.env.example contentglowz_lab/README.md`.
   - Notes : Conserver les anciennes origines seulement comme alias temporaires commentés avec plan de retrait.
 
 - [ ] Tâche 9 : Finaliser les contrats auth, OAuth et intégrations externes documentées
@@ -292,7 +292,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
   - Action : Migrer les documents qui décrivent l'état courant; laisser les specs/research/bugs historiques si leur ancien nom est une preuve ou un contexte passé.
   - User story link : les agents futurs lisent ContentGlowz comme source de vérité.
   - Depends on : Tâches 2-10.
-  - Validate with : `rg -n -i "contentflow|content flow" shipflow_data`.
+  - Validate with : `rg -n -i "contentglowz|content flow" shipflow_data`.
   - Notes : Ne pas réécrire toute l'histoire ShipFlow; la classification doit apparaître dans le rapport de vérification.
 
 - [ ] Tâche 12 : Mettre à jour les tests, fixtures et snapshots de noms restants
@@ -313,7 +313,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
 
 - [ ] Tâche 14 : Auditer les occurrences globales et classifier les restes
   - Fichier : repo complet
-  - Action : Exécuter `rg -n -i "contentflow|content flow|contentflowz"` avec exclusions de dossiers générés, puis migrer ou classer chaque occurrence restante.
+  - Action : Exécuter `rg -n -i "contentglowz|content flow|contentglowz"` avec exclusions de dossiers générés, puis migrer ou classer chaque occurrence restante.
   - User story link : garantit le "partout" demandé.
   - Depends on : Tâches 2-13.
   - Validate with : rapport d'audit final listant zéro occurrence active non justifiée.
@@ -345,7 +345,7 @@ No documentation surface is exempt when it states current repo, brand, domain, d
 - [ ] CA 6 : Given l'API FastAPI, when une requête vient de `https://contentglowz.com` ou `https://app.contentglowz.com`, then CORS l'autorise sans accepter des domaines non maîtrisés.
 - [ ] CA 7 : Given l'auth web et les intégrations OAuth, when les callbacks sont documentés, then les nouvelles URLs ContentGlowz sont listées et aucun secret réel n'est committé.
 - [ ] CA 8 : Given le worker Remotion, when les tests timeline et storage passent, then backend et worker partagent le même nom de composition ou un alias compatible documenté.
-- [ ] CA 9 : Given un audit `rg -i "contentflow|content flow"`, when une occurrence reste, then elle est soit supprimée, soit classée comme historique autorisée dans le rapport de vérification.
+- [ ] CA 9 : Given un audit `rg -i "contentglowz|content flow"`, when une occurrence reste, then elle est soit supprimée, soit classée comme historique autorisée dans le rapport de vérification.
 - [ ] CA 10 : Given les anciens domaines, when ils restent dans CORS ou docs, then ils sont marqués comme aliases temporaires de migration avec plan de retrait.
 - [ ] CA 11 : Given une app Android déjà publiée, when l'applicationId doit changer, then l'implémentation s'arrête et demande validation opérateur avant modification.
 - [ ] CA 12 : Given les docs ShipFlow actives, when un agent frais lit les contextes business/techniques, then il comprend que la source de vérité est ContentGlowz et non l'ancien nom.
@@ -403,7 +403,7 @@ None.
 | 2026-05-15 19:22:36 UTC | sf-ready | GPT-5 Codex | Revue DoR après exécution partielle: le contrat décrit encore l'état initial et ne sépare pas assez le reste à faire des tâches déjà exécutées. | Not ready | `/sf-spec Renommage ContentGlowz monorepo` |
 | 2026-05-15 19:39:20 UTC | sf-spec | GPT-5 Codex | Recadrage de la spec en phase de consolidation après exécution partielle: preuves actualisées, tâches déjà faites sorties du chemin critique, tâches restantes ordonnées et garde-fous sécurité conservés. | Draft updated | `/sf-ready Renommage ContentGlowz monorepo` |
 | 2026-05-15 19:53:23 UTC | sf-ready | GPT-5 Codex | Gate DoR stricte sur la spec recadrée: structure complète, tâches restantes actionnables, sécurité/domaines/auth bornés, et état partiel explicitement pris en compte. | Ready | `/sf-start Renommage ContentGlowz monorepo` |
-| 2026-05-15 20:25:00 UTC | sf-start | GPT-5 Codex | Exécution de consolidation: correction des chemins actifs restants `contentflow` dans les docs opérateur backend, maintien des expressions génériques `content flows`, et relance d'audit ciblé des occurrences actives. | implemented | `/sf-verify Renommage ContentGlowz monorepo` |
+| 2026-05-15 20:25:00 UTC | sf-start | GPT-5 Codex | Exécution de consolidation: correction des chemins actifs restants `contentglowz` dans les docs opérateur backend, maintien des expressions génériques `content flows`, et relance d'audit ciblé des occurrences actives. | implemented | `/sf-verify Renommage ContentGlowz monorepo` |
 | 2026-05-15 20:33:49 UTC | sf-verify | GPT-5 Codex | Vérification de l'exécution de consolidation: corrections lab confirmées, mais critères d'acceptance multi-stack et bug gate global non encore clôturés. | partial | `/sf-start Renommage ContentGlowz monorepo` |
 | 2026-05-15 20:38:28 UTC | sf-start | GPT-5 Codex | Reprise du chantier en mode consolidation: revalidation des fondations (remote/dossiers/theme), audit ciblé des occurrences actives, et relance du check design tokens pour confirmer les écarts hors scope renommage. | partial | `/sf-verify Renommage ContentGlowz monorepo` |
 | 2026-05-16 06:52:41 UTC | sf-verify | GPT-5 Codex | Vérification reprise: fondations ContentGlowz confirmées, mais readiness non atteinte à cause du bug gate partiel, de `contentglowz_lab/AGENTS.md` non symlink malgré bug clos, du check design tokens en échec, et des preuves preview/multi-stack manquantes. | partial | `/sf-start Renommage ContentGlowz monorepo` |

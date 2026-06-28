@@ -20,7 +20,7 @@ supersedes: []
 evidence: []
 next_step: "/sf-docs audit shipflow_data/workflow/specs/app/feedback-backend-contract-fastapi.md"
 ---
-# Feedback Backend Contract for ContentFlow
+# Feedback Backend Contract for ContentGlowz
 
 ## Scope
 
@@ -130,7 +130,7 @@ The frontend parser accepts either camelCase or snake_case. Standardize on camel
   "platform": "web",
   "locale": "fr-FR",
   "userId": "user_2vYx...",
-  "userEmail": "admin@contentflow.app",
+  "userEmail": "admin@contentglowz.app",
   "status": "new",
   "createdAt": "2026-04-19T15:42:31.123Z"
 }
@@ -279,7 +279,7 @@ Success response:
   "platform": "web",
   "locale": "fr-FR",
   "userId": "user_2vYx...",
-  "userEmail": "admin@contentflow.app",
+  "userEmail": "admin@contentglowz.app",
   "status": "new",
   "createdAt": "2026-04-19T15:42:31.123Z"
 }
@@ -329,7 +329,7 @@ Success response:
       "platform": "web",
       "locale": "fr-FR",
       "userId": "user_2vYx...",
-      "userEmail": "admin@contentflow.app",
+      "userEmail": "admin@contentglowz.app",
       "status": "new",
       "createdAt": "2026-04-19T15:42:31.123Z"
     }

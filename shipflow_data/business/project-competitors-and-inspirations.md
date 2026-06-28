@@ -2,7 +2,7 @@
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-11"
 updated: "2026-06-26"
 status: reviewed
@@ -15,16 +15,16 @@ security_impact: none
 docs_impact: yes
 evidence:
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
-  - "ContentFlow scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
+  - "ContentGlowz scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
   - "User-pasted Savvio description on 2026-05-24."
   - "User-pasted competitor URLs on 2026-06-26: https://pixizen.io/fr, https://geniusquiz.co/, https://lifestylo.eu/."
 depends_on: []
 supersedes:
   - "concurrent.md"
 next_review: "2026-06-11"
-next_step: "/sf-market-study contentflow"
+next_step: "/sf-market-study contentglowz"
 target_projects:
-  - contentflow
+  - contentglowz
   - contentglowz_app
   - contentglowz_lab
   - contentglowz_site
@@ -39,16 +39,16 @@ aliases:
   - contentglowz_lab
   - contentglowz_site
 ignored_aliases:
-  - contentflowz
+  - contentglowz
 ---
 
-# Concurrents et inspirations — ContentFlow
+# Concurrents et inspirations — ContentGlowz
 
 ## Lecture projet
 
-ContentFlow est le projet canonique. `contentglowz_app`, `contentglowz_lab` et `contentglowz_site` sont traités comme surfaces ou sous-parties de ContentFlow. `contentflowz` est à ignorer comme projet canonique.
+ContentGlowz est le projet canonique. `contentglowz_app`, `contentglowz_lab` et `contentglowz_site` sont traités comme surfaces ou sous-parties de ContentGlowz. `contentglowz` est à ignorer comme projet canonique.
 
-ContentFlow est le projet le plus concerné par cette veille: génération, recyclage, pilotage, enrichissement et distribution de contenu. Les liens ci-dessous sont principalement des concurrents indirects, des briques produit ou des inspirations de workflow.
+ContentGlowz est le projet le plus concerné par cette veille: génération, recyclage, pilotage, enrichissement et distribution de contenu. Les liens ci-dessous sont principalement des concurrents indirects, des briques produit ou des inspirations de workflow.
 
 ## À suivre en priorité
 
@@ -60,11 +60,11 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration produit | 8/10 | Voix émotionnelle/multilingue: bonne brique pour transformer des contenus en audio ou narration vidéo. |
 | [Browser7](https://betalist.com/startups/browser7) | Inspiration architecture | 8/10 | Scraping JS, proxy, captcha: utile pour enrichissement de sources, audits concurrents ou collecte contrôlée. À traiter avec prudence légale. |
-| [Spec27](https://betalist.com/startups/spec27) | Inspiration validation agent | 8/10 | Très bon modèle pour tester les pipelines IA ContentFlow avec specs, fixtures et critères de non-régression. |
+| [Spec27](https://betalist.com/startups/spec27) | Inspiration validation agent | 8/10 | Très bon modèle pour tester les pipelines IA ContentGlowz avec specs, fixtures et critères de non-régression. |
 | [Web-Analytics.ai](https://web-analytics.ai/) | Inspiration reporting | 8/10 | Résumés hebdomadaires en langage clair + alertes: très bon format pour rapports clients ou pilotage interne. |
 | Savvio (URL non fournie) | Inspiration produit | 8/10 | Transforme vidéo, article ou document en notes claires, carte visuelle d'idées et plan d'action étape par étape: très pertinent pour la boîte à idées, l'ingestion de sources longues et le suivi d'exécution. |
 | [Firecrawl Fire PDF](https://www.firecrawl.dev/blog/fire-pdf-launch) + [`/parse` endpoint](https://docs.firecrawl.dev/api-reference/endpoint/parse) | Inspiration outillage sources de contenu | 8/10 | Brique potentielle pour ingérer des PDFs, documents locaux ou sources non publiques dans la boîte à idées et les pipelines contenu, avec extraction Markdown/JSON et options de rétention à cadrer. |
-| [BundleUp](https://betalist.com/startups/bundleup) | Inspiration architecture | 7/10 | API unifiée pour intégrations: intéressant si ContentFlow agrège CMS, réseaux sociaux, analytics et outils de publication. |
+| [BundleUp](https://betalist.com/startups/bundleup) | Inspiration architecture | 7/10 | API unifiée pour intégrations: intéressant si ContentGlowz agrège CMS, réseaux sociaux, analytics et outils de publication. |
 | [Clamp](https://betalist.com/startups/clamp) | Inspiration analytics | 7/10 | Analytics privacy-first + MCP: bon modèle pour faire remonter des signaux d'usage aux agents sans dashboard lourd. |
 | [GeniusQuiz](https://geniusquiz.co/) | Concurrent indirect / inspiration contenu | 6/10 | Génération de quiz et évaluations à partir de contenu source: utile comme inspiration pour la réutilisation de contenus, les formats éducatifs et les parcours interactifs. |
 | [Lifestylo](https://lifestylo.eu/) | Concurrent indirect / inspiration compagnon IA | 6/10 | Companion/journal IA qui transforme notes, émotions et activités en récit structuré: intéressant pour les workflows de synthèse longue et de narration personnelle. |
@@ -79,14 +79,14 @@ ContentFlow est le projet le plus concerné par cette veille: génération, recy
 | [IntelCue](https://betalist.com/startups/intelcue-2) | Inspiration recherche | 6/10 | Market intelligence branchée à Claude/ChatGPT: utile pour briefs concurrentiels automatisés. |
 | [Airbin](https://betalist.com/startups/airbin) | Inspiration workspace | 6/10 | Workspace privé de fichiers + recherche contexte: utile pour bibliothèque de sources clients. |
 | [Kurate](https://betalist.com/startups/kurate) | Inspiration curation | 5/10 | Classement d'articles scientifiques: pattern utile pour scoring de sources et sélection documentaire. |
-| [Impulse AI](https://betalist.com/startups/impulse-ai) | Inspiration déploiement IA | 5/10 | À surveiller si ContentFlow veut packager/déployer des modèles ou pipelines IA. |
+| [Impulse AI](https://betalist.com/startups/impulse-ai) | Inspiration déploiement IA | 5/10 | À surveiller si ContentGlowz veut packager/déployer des modèles ou pipelines IA. |
 
 ## Notes de dispatch
 
 - `contentglowz_app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
 - `contentglowz_lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
 - `contentglowz_site`: site marketing et preuve produit.
-- `contentflowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.
+- `contentglowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.
 
 
 TeachTools offers an AI toolkit for K-12 teachers to quickly generate worksheets, quizzes, lesson plans, and more. It includes 23 focused generators with simple forms and built-in grade levels and standards, producing print-ready PDFs with answer keys and Google Docs exports. The platform is FERPA-compliant by design, collects no student data, and encrypts all content with AES-256, so you can use it without district approval. Start free with 3 generations per month, or upgrade for unlimited use or a school plan.

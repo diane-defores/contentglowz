@@ -1,11 +1,11 @@
 # Markdown Governance Inventory Report
 
 Date: 2026-05-11
-Project: contentflow
+Project: contentglowz
 Scope command:
 
 ```bash
-find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentflowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort
+find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentglowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort
 ```
 
 ## Summary
@@ -54,7 +54,7 @@ find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path '.
 | contentglowz_app/specs/SPEC-windows-privacy-capture-dynamic-redaction.md | shipflow_data/workflow/specs/app/SPEC-windows-privacy-capture-dynamic-redaction.md |
 | contentglowz_app/specs/architecture-cible-fastapi-clerk-flutter.md | shipflow_data/workflow/specs/app/architecture-cible-fastapi-clerk-flutter.md |
 | contentglowz_app/specs/conversation-local-capture-assets-linked-to-content-20260505.md | shipflow_data/workflow/specs/app/conversation-local-capture-assets-linked-to-content-20260505.md |
-| contentglowz_app/specs/feedback-admin-v1-contentflow.md | shipflow_data/workflow/specs/app/feedback-admin-v1-contentflow.md |
+| contentglowz_app/specs/feedback-admin-v1-contentglowz.md | shipflow_data/workflow/specs/app/feedback-admin-v1-contentglowz.md |
 | contentglowz_app/specs/feedback-backend-contract-fastapi.md | shipflow_data/workflow/specs/app/feedback-backend-contract-fastapi.md |
 | contentglowz_app/specs/foundation-scrollable-nav-affiliations.md | shipflow_data/workflow/specs/app/foundation-scrollable-nav-affiliations.md |
 | contentglowz_app/specs/late-integration-finalization.md | shipflow_data/workflow/specs/app/late-integration-finalization.md |
@@ -96,7 +96,7 @@ find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path '.
 | contentglowz_site/docs/copywriting/strategie.md | shipflow_data/workflow/research/site/strategie.md |
 | contentglowz_site/docs/spec-i18n-structure.md | shipflow_data/workflow/research/site/spec-i18n-structure.md |
 | contentglowz_site/specs/SPEC-migrate-astro-v6.md | shipflow_data/workflow/specs/site/SPEC-migrate-astro-v6.md |
-| docs/centraliser-design-tokens-contentflow-app-site.md | shipflow_data/workflow/specs/monorepo/centraliser-design-tokens-contentflow-app-site.md |
+| docs/centraliser-design-tokens-contentglowz-app-site.md | shipflow_data/workflow/specs/monorepo/centraliser-design-tokens-contentglowz-app-site.md |
 | docs/explorations/2026-05-06-screen-text-obfuscation.md | shipflow_data/workflow/explorations/2026-05-06-screen-text-obfuscation.md |
 | docs/explorations/2026-05-08-ios-privacy-capture-redaction.md | shipflow_data/workflow/explorations/2026-05-08-ios-privacy-capture-redaction.md |
 | docs/explorations/2026-05-08-linux-privacy-capture-redaction.md | shipflow_data/workflow/explorations/2026-05-08-linux-privacy-capture-redaction.md |

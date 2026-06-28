@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-11"
 created_at: "2026-05-11 07:24:15 UTC"
 updated: "2026-05-11"
@@ -13,7 +13,7 @@ source_model: "gpt-5"
 scope: "migration"
 owner: "Diane"
 confidence: "high"
-user_story: "As the ContentFlow operator, I want all durable governance, spec, research, QA, bug, and operational Markdown sources in the ContentFlow monorepo to live under `shipflow_data/**`, excluding `contentflowz/**`, so there is no active source of truth scattered at repo root or in legacy folders."
+user_story: "As the ContentGlowz operator, I want all durable governance, spec, research, QA, bug, and operational Markdown sources in the ContentGlowz monorepo to live under `shipflow_data/**`, excluding `contentglowz/**`, so there is no active source of truth scattered at repo root or in legacy folders."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -44,7 +44,7 @@ supersedes:
   - "shipflow_data/workflow/specs/monorepo/SPEC-shipflow-data-governance-multi-repo-2026-05-10.md"
 evidence:
   - "User decision 2026-05-11: 'y'a aucune exception. on va migrer'."
-  - "User decision 2026-05-11 during sf-spec update: contentflowz is ignored entirely and excluded from this migration."
+  - "User decision 2026-05-11 during sf-spec update: contentglowz is ignored entirely and excluded from this migration."
   - "Global inventory 2026-05-11: 202 project Markdown files outside .git, node_modules, .flox and .pytest_cache."
   - "Audit found root legacy specs under shipflow_data/workflow/specs/lab/SPEC-*.md without ShipFlow frontmatter."
   - "Audit found durable governance notes under contentglowz_lab/*.md such as CONTENT_GUIDELINES.md, COST-MODEL.md, ENVIRONMENT_SETUP.md and TOOLS.md."
@@ -59,15 +59,15 @@ Global Markdown Governance Migration To ShipFlow Data
 
 ## Status
 
-Ready. This spec formalizes the 2026-05-11 operator decision that durable ContentFlow governance and workflow Markdown must no longer have active source-of-truth copies outside `shipflow_data/**`. Conventional files may remain only as tooling entrypoints, short pointers, excluded trackers, or runtime application content. `contentflowz/**` is explicitly excluded from this migration and must not be moved, edited, indexed, linted, or converted by this chantier.
+Ready. This spec formalizes the 2026-05-11 operator decision that durable ContentGlowz governance and workflow Markdown must no longer have active source-of-truth copies outside `shipflow_data/**`. Conventional files may remain only as tooling entrypoints, short pointers, excluded trackers, or runtime application content. `contentglowz/**` is explicitly excluded from this migration and must not be moved, edited, indexed, linted, or converted by this chantier.
 
 ## User Story
 
-As the ContentFlow operator, I want all durable governance, spec, research, QA, bug, and operational Markdown sources in the ContentFlow monorepo to live under `shipflow_data/**`, excluding `contentflowz/**`, so there is no active source of truth scattered at repo root or in legacy folders.
+As the ContentGlowz operator, I want all durable governance, spec, research, QA, bug, and operational Markdown sources in the ContentGlowz monorepo to live under `shipflow_data/**`, excluding `contentglowz/**`, so there is no active source of truth scattered at repo root or in legacy folders.
 
 ## Minimal Behavior Contract
 
-When a Markdown file in scope is a durable ShipFlow artifact, spec, bug file, research record, QA matrix, audit, review, governance note, business source, technical source, editorial source, or reusable operational note, the migration classifies it, moves it to the canonical `shipflow_data/**` family, preserves its body except for required link updates or redaction, adds or fixes ShipFlow frontmatter, updates internal references, and proves that no old active duplicate remains. If the file is Astro runtime content, an explicitly excluded tracker, a required tooling entrypoint, or any file under `contentflowz/**`, it is not converted to a ShipFlow artifact in this chantier. Failures stop the affected batch with a visible blocked report, and the easiest edge case to miss is breaking runtime/tooling schemas or leaking sensitive historical content while trying to make every Markdown file lintable.
+When a Markdown file in scope is a durable ShipFlow artifact, spec, bug file, research record, QA matrix, audit, review, governance note, business source, technical source, editorial source, or reusable operational note, the migration classifies it, moves it to the canonical `shipflow_data/**` family, preserves its body except for required link updates or redaction, adds or fixes ShipFlow frontmatter, updates internal references, and proves that no old active duplicate remains. If the file is Astro runtime content, an explicitly excluded tracker, a required tooling entrypoint, or any file under `contentglowz/**`, it is not converted to a ShipFlow artifact in this chantier. Failures stop the affected batch with a visible blocked report, and the easiest edge case to miss is breaking runtime/tooling schemas or leaking sensitive historical content while trying to make every Markdown file lintable.
 
 ## Success Behavior
 
@@ -77,7 +77,7 @@ When a Markdown file in scope is a durable ShipFlow artifact, spec, bug file, re
 - Given a spec, bug file, research artifact, QA matrix, audit, or review is moved, when a link, `depends_on`, `next_step`, changelog entry, tracker entry, README, AGENT, or CLAUDE reference points to the old path, then the reference is updated to the canonical path or documented as historical evidence in the closure report.
 - Given `contentglowz_site/src/content/**` is loaded by Astro, when migration completes, then the build and schema are not exposed to unsupported ShipFlow metadata fields.
 - Given an in-scope legacy note may contain secrets, tokens, private URLs, logs, private customer/project data, or sensitive operational data, when the batch is processed, then the file is scanned before moving and is either redacted before migration or recorded as `blocked-security-review` without copying sensitive content to a new canonical artifact.
-- Given migration completes, when validation runs, then ShipFlow metadata lint passes on canonical artifacts, legacy path searches return only allowed pointers or migration reports, `contentflowz/**` remains unchanged, and Git status contains no unexplained deletion or application-code modification.
+- Given migration completes, when validation runs, then ShipFlow metadata lint passes on canonical artifacts, legacy path searches return only allowed pointers or migration reports, `contentglowz/**` remains unchanged, and Git status contains no unexplained deletion or application-code modification.
 
 ## Error Behavior
 
@@ -86,22 +86,22 @@ When a Markdown file in scope is a durable ShipFlow artifact, spec, bug file, re
 - If a move breaks a link, `depends_on`, `next_step`, tracker pointer, changelog reference, README reference, AGENT/CLAUDE instruction, or documentation import, stop the affected batch until the reference is corrected.
 - If ShipFlow metadata lint fails on a migrated canonical artifact, the file remains in the active work batch and the batch is not complete.
 - If Astro runtime content or a tooling entrypoint breaks after migration, revert only the affected runtime/entrypoint batch and use a pointer/no-frontmatter strategy.
-- If implementation detects any change under `contentflowz/**`, stop and revert only those accidental `contentflowz/**` changes before continuing.
-- What must never happen: two active sources for the same contract, ShipFlow frontmatter added to incompatible runtime content, sensitive content copied into a new canonical artifact without redaction review, deletion of an active spec without archive/pointer evidence, tracker history loss, or modifications to excluded `contentflowz/**`.
+- If implementation detects any change under `contentglowz/**`, stop and revert only those accidental `contentglowz/**` changes before continuing.
+- What must never happen: two active sources for the same contract, ShipFlow frontmatter added to incompatible runtime content, sensitive content copied into a new canonical artifact without redaction review, deletion of an active spec without archive/pointer evidence, tracker history loss, or modifications to excluded `contentglowz/**`.
 
 ## Problem
 
-The previous migration consolidated the main business, branding, product, GTM, architecture, context, guidelines, content-map, and technical documentation contracts. It intentionally left functional specs, trackers, research, QA matrices, legacy notes, and some content folders out of scope. The result is still ambiguous for in-scope ContentFlow governance: `shipflow_data/workflow/specs/lab/SPEC-*.md`, `docs/`, `research/`, `shipflow_data/workflow/specs/app/`, and project-local bug folders contain durable artifacts outside `shipflow_data/**`, and some files lack required ShipFlow frontmatter. `contentflowz/**` also contains Markdown, but the operator explicitly decided to ignore it entirely for this chantier.
+The previous migration consolidated the main business, branding, product, GTM, architecture, context, guidelines, content-map, and technical documentation contracts. It intentionally left functional specs, trackers, research, QA matrices, legacy notes, and some content folders out of scope. The result is still ambiguous for in-scope ContentGlowz governance: `shipflow_data/workflow/specs/lab/SPEC-*.md`, `docs/`, `research/`, `shipflow_data/workflow/specs/app/`, and project-local bug folders contain durable artifacts outside `shipflow_data/**`, and some files lack required ShipFlow frontmatter. `contentglowz/**` also contains Markdown, but the operator explicitly decided to ignore it entirely for this chantier.
 
 ## Solution
 
-Run a staged local filesystem governance migration that makes `shipflow_data/**` the only active umbrella for in-scope ContentFlow governance and workflow artifacts. Specs, bugs, research, audits, reviews, QA, conversations, explorations, reports, and archives move under `shipflow_data/workflow/**`; business, technical, and editorial contracts remain under their existing `shipflow_data` families; conventional root/project files become short pointers or documented runtime/tracker/tooling exclusions. `contentflowz/**` remains untouched and is excluded from inventory, moves, lint gates, pointer conversion, and reference rewrites.
+Run a staged local filesystem governance migration that makes `shipflow_data/**` the only active umbrella for in-scope ContentGlowz governance and workflow artifacts. Specs, bugs, research, audits, reviews, QA, conversations, explorations, reports, and archives move under `shipflow_data/workflow/**`; business, technical, and editorial contracts remain under their existing `shipflow_data` families; conventional root/project files become short pointers or documented runtime/tracker/tooling exclusions. `contentglowz/**` remains untouched and is excluded from inventory, moves, lint gates, pointer conversion, and reference rewrites.
 
 ## Scope In
 
 - Define target directories under `shipflow_data/workflow/specs`, `bugs`, `research`, `qa`, `explorations`, `audits`, `reviews`, `conversations`, `archives`, and `reports`.
-- Exclude `.git`, `node_modules`, `.flox`, `.pytest_cache`, build outputs, vendored dependencies, and `contentflowz/**` from the migration inventory and hard validation gates.
-- Migrate active and historical specs from `shipflow_data/workflow/specs/app/**`, `shipflow_data/workflow/specs/app/**`, `shipflow_data/workflow/specs/lab/**`, `shipflow_data/workflow/specs/site/**`, `shipflow_data/workflow/specs/lab/SPEC-*.md`, and `docs/centraliser-design-tokens-contentflow-app-site.md`.
+- Exclude `.git`, `node_modules`, `.flox`, `.pytest_cache`, build outputs, vendored dependencies, and `contentglowz/**` from the migration inventory and hard validation gates.
+- Migrate active and historical specs from `shipflow_data/workflow/specs/app/**`, `shipflow_data/workflow/specs/app/**`, `shipflow_data/workflow/specs/lab/**`, `shipflow_data/workflow/specs/site/**`, `shipflow_data/workflow/specs/lab/SPEC-*.md`, and `docs/centraliser-design-tokens-contentglowz-app-site.md`.
 - Migrate bug files from `contentglowz_app/bugs/**` and `contentglowz_lab/bugs/**` to `shipflow_data/workflow/bugs/<project>/**`.
 - Migrate research and exploration artifacts from `research/**` and `shipflow_data/workflow/explorations/**` to `shipflow_data/workflow/research/**` or `shipflow_data/workflow/explorations/**`.
 - Migrate QA artifacts from `shipflow_data/workflow/qa/**` to `shipflow_data/workflow/qa/**`.
@@ -114,7 +114,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 
 ## Scope Out
 
-- Any file or directory under `contentflowz/**`; do not move, edit, lint, index, delete, add pointers to, or rewrite references inside `contentflowz/**`.
+- Any file or directory under `contentglowz/**`; do not move, edit, lint, index, delete, add pointers to, or rewrite references inside `contentglowz/**`.
 - Editorial rewriting of Astro runtime content in `contentglowz_site/src/content/**`.
 - Converting Astro runtime frontmatter to ShipFlow frontmatter.
 - Functional code changes to Flutter, FastAPI, Astro, Convex, Next.js, Remotion, or prototypes.
@@ -125,7 +125,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 ## Constraints
 
 - The operator's "no exception" decision applies to in-scope ShipFlow sources of truth: no active spec, bug record, research, QA artifact, or durable governance contract may remain outside `shipflow_data/**`.
-- The later operator decision explicitly excludes `contentflowz/**` from this chantier even if it contains durable-looking Markdown.
+- The later operator decision explicitly excludes `contentglowz/**` from this chantier even if it contains durable-looking Markdown.
 - Astro runtime content remains under `contentglowz_site/src/content/**` because the framework loads it from that path and its schema does not accept ShipFlow fields.
 - Operational trackers remain excluded from ShipFlow frontmatter; if they contain durable decisions, extract those decisions to `shipflow_data/**` and leave a pointer.
 - README files required by subprojects, templates, or tooling may remain as entrypoints, but they must not duplicate governance contracts.
@@ -152,7 +152,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 ## Invariants
 
 - `shipflow_data/**` is the only canonical home for ShipFlow governance and workflow artifacts after this migration.
-- `contentflowz/**` is outside this chantier and must be unchanged after this migration.
+- `contentglowz/**` is outside this chantier and must be unchanged after this migration.
 - Runtime content is not a ShipFlow governance artifact unless its framework schema explicitly accepts the ShipFlow metadata fields.
 - Trackers are not decision contracts and must not receive ShipFlow frontmatter solely for lint compliance.
 - A moved artifact keeps its body intact unless redaction or link update is required.
@@ -168,7 +168,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - `shipflow_data/workflow/explorations/**` and `research/**`: research-like artifacts move to `shipflow_data/workflow/research/` or `shipflow_data/workflow/explorations/`.
 - `shipflow_data/workflow/qa/**`: QA matrices move to `shipflow_data/workflow/qa/`.
 - `contentglowz_site/docs/copywriting/**`: editorial governance contracts move to `shipflow_data/editorial/site/`; non-contract working drafts move to `shipflow_data/workflow/research/site/editorial/` with `status: draft` or `status: stale`.
-- `contentflowz/**`: no consequence in this chantier; it must remain untouched and omitted from migration reports except for one statement that it was intentionally excluded by operator decision.
+- `contentglowz/**`: no consequence in this chantier; it must remain untouched and omitted from migration reports except for one statement that it was intentionally excluded by operator decision.
 - `README.md`, `CHANGELOG.md`, `TASKS.md`, `AUDIT_LOG.md`, `TEST_LOG.md`: update links and wording but do not turn trackers into canonical contracts.
 - Downstream ShipFlow skills must be pointed to the new workflow paths after migration; otherwise they will keep creating specs in legacy `shipflow_data/workflow/specs/app/`.
 - Security posture: migrated governance files may preserve sensitive history only after redaction review; reports must record counts, paths, and decisions without exposing sensitive values.
@@ -181,7 +181,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - Update `AGENT.md` and `CLAUDE.md` references only when they point to moved artifacts or old conventions.
 - Add a compact `shipflow_data/README.md` or `shipflow_data/workflow/README.md` index if it does not exist after migration.
 - Do not change public marketing copy unless a moved editorial artifact is public-facing and the link itself must change.
-- Document `contentflowz/**` as excluded from this migration only in the closure report; do not add or change `contentflowz` files.
+- Document `contentglowz/**` as excluded from this migration only in the closure report; do not add or change `contentglowz` files.
 
 ## Edge Cases
 
@@ -192,17 +192,17 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - README files inside imported templates or prototype subprojects may be required by those projects; convert only duplicated governance content to pointers.
 - Paths with spaces such as `contentglowz_app/Isa Build/README.md` need careful link handling and should not be moved without classifying ownership.
 - Legacy notes can contain sensitive operational details; scan and redact before canonicalizing, and do not include sensitive snippets in reports.
-- `contentflowz/**` contains durable-looking Markdown, but it is explicitly excluded; broad `find` and `rg` commands must prune it so the implementation cannot accidentally migrate it.
+- `contentglowz/**` contains durable-looking Markdown, but it is explicitly excluded; broad `find` and `rg` commands must prune it so the implementation cannot accidentally migrate it.
 
 ## Implementation Tasks
 
 - [x] Task 1: Freeze and snapshot in-scope Markdown inventory
   - File: `shipflow_data/workflow/reports/markdown-governance-inventory-2026-05-11.md`
-  - Action: Generate a classified inventory of all in-scope project Markdown excluding `.git`, `node_modules`, `.flox`, `.pytest_cache`, build outputs, vendored dependencies, and `contentflowz/**`.
+  - Action: Generate a classified inventory of all in-scope project Markdown excluding `.git`, `node_modules`, `.flox`, `.pytest_cache`, build outputs, vendored dependencies, and `contentglowz/**`.
   - User story link : Establishes the complete migration scope before moving files.
   - Depends on: none.
-  - Validate with: `find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentflowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
-  - Notes: Include current path, category, target path, security review status, and action. Do not list `contentflowz/**` files except in an exclusion note.
+  - Validate with: `find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentglowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
+  - Notes: Include current path, category, target path, security review status, and action. Do not list `contentglowz/**` files except in an exclusion note.
 
 - [x] Task 2: Create workflow corpus directories and indexes
   - File: `shipflow_data/workflow/README.md`
@@ -217,7 +217,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Action: Review in-scope legacy notes and reports for likely secrets, tokens, private URLs, raw logs, private customer/project data, and sensitive operational content before moving them.
   - User story link : Prevents canonical governance migration from spreading sensitive historical content.
   - Depends on: Task 1.
-  - Validate with: `rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentflowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'`
+  - Validate with: `rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentglowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'`
   - Notes: Record paths and decisions only. Do not paste secret values or long sensitive snippets into the report.
 
 - [x] Task 4: Migrate active and historical specs
@@ -225,7 +225,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Action: Move specs from root `shipflow_data/workflow/specs/app/**`, project `*/specs/**`, `shipflow_data/workflow/specs/lab/SPEC-*.md`, and spec-like docs under `docs/**` into project-scoped workflow spec folders.
   - User story link : Removes the main class of Markdown exceptions named by the operator.
   - Depends on: Task 2.
-  - Validate with: `find . \( -path './shipflow_data' -o -path './contentflowz' \) -prune -o -type f -name 'SPEC-*.md' -printf '%p\n'`
+  - Validate with: `find . \( -path './shipflow_data' -o -path './contentglowz' \) -prune -o -type f -name 'SPEC-*.md' -printf '%p\n'`
   - Notes: Use `status: draft|ready|stale|deprecated` based on current evidence. Do not mark legacy task lists as ready.
 
 - [x] Task 5: Migrate bug records
@@ -257,7 +257,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Action: Delete old copies when no tool requires them; otherwise replace with a short pointer to the canonical `shipflow_data/**` path.
   - User story link : Enforces no parallel source of truth.
   - Depends on: Tasks 4-7.
-  - Validate with: `rg -n "source of truth|canonical|shipflow_data" README.md contentglowz_app contentglowz_lab contentglowz_site shipflow_data -g '*.md' -g '!contentflowz/**'`
+  - Validate with: `rg -n "source of truth|canonical|shipflow_data" README.md contentglowz_app contentglowz_lab contentglowz_site shipflow_data -g '*.md' -g '!contentglowz/**'`
   - Notes: Do not leave full duplicate bodies as compatibility files.
 
 - [x] Task 9: Update references and command targets
@@ -265,20 +265,20 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
   - Action: Replace links, `depends_on`, `next_step`, bug pointers, changelog references, and validation commands that still target legacy paths.
   - User story link : Keeps future agents from recreating legacy paths.
   - Depends on: Task 8.
-  - Validate with: `rg -n "shipflow_data/workflow/specs/lab/SPEC-|/specs/|^specs/|docs/technical|docs/editorial|docs/explorations|docs/qa|^research/" . -g '*.md' -g '!contentglowz_site/src/content/**' -g '!contentflowz/**'`
+  - Validate with: `rg -n "shipflow_data/workflow/specs/lab/SPEC-|/specs/|^specs/|docs/technical|docs/editorial|docs/explorations|docs/qa|^research/" . -g '*.md' -g '!contentglowz_site/src/content/**' -g '!contentglowz/**'`
   - Notes: Allow references only inside migration reports that explicitly document old-to-new mappings.
 
 - [x] Task 10: Validate metadata, runtime boundaries, and exclusions
   - File: `shipflow_data/**` and `contentglowz_site/src/content.config.ts`
-  - Action: Run metadata lint on canonical artifacts, verify Astro runtime content was not converted to ShipFlow schema, and verify `contentflowz/**` has no diff.
+  - Action: Run metadata lint on canonical artifacts, verify Astro runtime content was not converted to ShipFlow schema, and verify `contentglowz/**` has no diff.
   - User story link : Proves the migration is coherent without breaking runtime content.
   - Depends on: Task 9.
   - Validate with: `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data`
-  - Notes: Use `--all-markdown` only as an audit signal, not as a hard gate for runtime content, trackers, or excluded `contentflowz/**`.
+  - Notes: Use `--all-markdown` only as an audit signal, not as a hard gate for runtime content, trackers, or excluded `contentglowz/**`.
 
 - [x] Task 11: Produce closure report
   - File: `shipflow_data/workflow/reports/markdown-governance-migration-closure-2026-05-11.md`
-  - Action: Document moved files, pointer files, excluded runtime content, excluded trackers, archived files, redaction/security decisions, linter output, blocked classifications, `contentflowz/**` exclusion, and rollback notes.
+  - Action: Document moved files, pointer files, excluded runtime content, excluded trackers, archived files, redaction/security decisions, linter output, blocked classifications, `contentglowz/**` exclusion, and rollback notes.
   - User story link : Gives the operator a final proof that no source-of-truth exception remains.
   - Depends on: Task 10.
   - Validate with: `git status --short` and `git diff --check`
@@ -296,7 +296,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - [x] CA 8: Given old paths are searched, when `rg` runs for legacy locations, then only migration reports, historical evidence, or explicit pointer files mention them.
 - [x] CA 9: Given metadata lint runs on canonical `shipflow_data/**` artifacts, when migration completes, then it passes without missing required fields.
 - [x] CA 10: Given a fresh agent opens the repo, when it needs a spec, bug, research, QA, audit, or review, then repo guidance points it to `shipflow_data/workflow/**`.
-- [x] CA 11: Given `contentflowz/**` exists, when migration completes, then `git diff -- contentflowz` is empty and migration reports state that it was intentionally excluded.
+- [x] CA 11: Given `contentglowz/**` exists, when migration completes, then `git diff -- contentglowz` is empty and migration reports state that it was intentionally excluded.
 - [x] CA 12: Given a legacy file triggers the security preflight, when migration completes, then the file is redacted before canonical migration or listed as `blocked-security-review` without exposing sensitive values in reports.
 - [x] CA 13: Given a file cannot be classified without a new product/archive decision, when migration completes, then it is listed as `blocked-classification` and no silent move is performed.
 - [x] CA 14: Given a rollback is needed for one migration batch, when it is applied, then unrelated batches remain intact and no user code changes are reverted.
@@ -304,21 +304,21 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 ## Test Strategy
 
 - Inventory checks:
-  - `find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentflowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
-  - `find . \( -path './shipflow_data' -o -path './contentflowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
+  - `find . \( -path './.git' -o -path './contentglowz_site/node_modules' -o -path './contentglowz_lab/.flox' -o -path './contentglowz_lab/.pytest_cache' -o -path './contentglowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
+  - `find . \( -path './shipflow_data' -o -path './contentglowz' \) -prune -o -type f -name '*.md' -printf '%p\n' | sort`
 - Security checks:
-  - `rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentflowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'`
+  - `rg -n -i "api[_-]?key|token|secret|password|bearer|authorization|cookie|private|localhost|supabase|service[_-]?role|webhook|client_secret" . -g '*.md' -g '!contentglowz/**' -g '!node_modules/**' -g '!contentglowz_site/node_modules/**'`
 - Metadata checks:
   - `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data`
   - Optional audit only: `/home/claude/shipflow/tools/shipflow_metadata_lint.py --all-markdown <classified paths>`
 - Reference checks:
-  - `rg -n "shipflow_data/workflow/specs/lab/SPEC-|docs/technical|docs/editorial|docs/explorations|docs/qa|^research/|^specs/" . -g '*.md' -g '!contentglowz_site/src/content/**' -g '!contentflowz/**'`
+  - `rg -n "shipflow_data/workflow/specs/lab/SPEC-|docs/technical|docs/editorial|docs/explorations|docs/qa|^research/|^specs/" . -g '*.md' -g '!contentglowz_site/src/content/**' -g '!contentglowz/**'`
 - Runtime checks:
   - `npm --prefix contentglowz_site run build` if site dependencies are installed and no unrelated build blockers exist.
 - Git hygiene:
   - `git diff --check`
   - `git status --short`
-  - `git diff -- contentflowz`
+  - `git diff -- contentglowz`
 
 ## Risks
 
@@ -327,7 +327,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - High: legacy governance notes may contain secrets, private URLs, raw logs, or sensitive operational content that must not be copied into canonical artifacts or reports without redaction.
 - Medium: legacy docs may be stale; migrating them as reviewed would create false authority.
 - Medium: deleting old files too early can break links in changelogs, specs, README or trackers.
-- Medium: broad search/move commands could accidentally touch excluded `contentflowz/**` unless every command prunes it.
+- Medium: broad search/move commands could accidentally touch excluded `contentglowz/**` unless every command prunes it.
 - Low: using pointer files may still look like exceptions unless they are short and clearly non-canonical.
 
 ## Execution Notes
@@ -344,13 +344,13 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 - Do not use `--all-markdown` as a success gate until runtime content and trackers are excluded from the hard gate.
 - Avoid new packages and avoid custom parsing beyond shell inventory plus ShipFlow metadata lint unless a batch proves it needs a dedicated script.
 - Use structured move/classification tables in reports rather than ad hoc prose when listing many files.
-- Stop condition: any runtime build failure caused by content frontmatter, any metadata lint failure in canonical artifacts, any unclassified full-body in-scope legacy Markdown left outside `shipflow_data/**`, any suspected sensitive content without redaction decision, or any diff under `contentflowz/**`.
+- Stop condition: any runtime build failure caused by content frontmatter, any metadata lint failure in canonical artifacts, any unclassified full-body in-scope legacy Markdown left outside `shipflow_data/**`, any suspected sensitive content without redaction decision, or any diff under `contentglowz/**`.
 - Reroute condition: if an in-scope file cannot be classified without a product/archive decision, record `blocked-classification`; if a file requires security judgment beyond obvious redaction, record `blocked-security-review`.
 - Fresh external docs verdict: `fresh-docs not needed`; local repo files define the migration behavior.
 
 ## Open Questions
 
-- None. The operator confirmed on 2026-05-11 that `contentflowz/**` is ignored entirely for this chantier. Runtime content and trackers are non-governance categories rather than forced ShipFlow artifacts.
+- None. The operator confirmed on 2026-05-11 that `contentglowz/**` is ignored entirely for this chantier. Runtime content and trackers are non-governance categories rather than forced ShipFlow artifacts.
 
 ## Skill Run History
 
@@ -358,7 +358,7 @@ Run a staged local filesystem governance migration that makes `shipflow_data/**`
 |----------|-------|-------|--------|--------|-----------|
 | 2026-05-11 | sf-spec | gpt-5 | création de la spec de migration Markdown globale sans exception de source de vérité | draft saved | /sf-ready shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |
 | 2026-05-11 | sf-ready | gpt-5 | readiness gate avant migration globale des Markdown | not ready | /sf-spec Global Markdown Governance Migration To ShipFlow Data |
-| 2026-05-11 | sf-spec | gpt-5 | updated spec after readiness gate: excluded contentflowz, added security preflight, expanded acceptance criteria, aligned internal contract language | draft saved | /sf-ready shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |
+| 2026-05-11 | sf-spec | gpt-5 | updated spec after readiness gate: excluded contentglowz, added security preflight, expanded acceptance criteria, aligned internal contract language | draft saved | /sf-ready shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |
 | 2026-05-11 | sf-ready | gpt-5 | readiness gate after spec update: checked structure, behavior contract, dependencies, security, language doctrine, and execution notes | ready | /sf-start shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |
 | 2026-05-11 | sf-start | gpt-5.4-codex | migration execution and validation for canonical markdown governance completed with path cleanup + new reports | implemented | /sf-verify shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |
 | 2026-05-11 | sf-verify | gpt-5 | verified migration execution and documentation consistency against spec contract, including metadata lint and legacy-path sweeps | verified | /sf-end shipflow_data/workflow/specs/SPEC-global-markdown-governance-migration-2026-05-11.md |

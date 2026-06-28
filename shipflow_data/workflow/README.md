@@ -36,4 +36,4 @@ Entry rule:
 
 - Runtime content and editorial pages under `contentglowz_site/src/content/**` remain in
   `contentglowz_site/src/content`.
-- `contentflowz/**` is intentionally excluded from this migration.
+- `contentglowz/**` is intentionally excluded from this migration.

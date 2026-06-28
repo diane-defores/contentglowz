@@ -2,22 +2,22 @@
 artifact: exploration_report
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-13"
 updated: "2026-05-13"
 status: draft
 source_skill: sf-explore
-scope: "Mirage / Oasis realtime AI world-video signal for ContentFlow"
+scope: "Mirage / Oasis realtime AI world-video signal for ContentGlowz"
 owner: "Diane"
 confidence: medium
 risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "contentflow_app"
-  - "contentflow_lab"
-  - "contentflow_remotion_worker"
-  - "contentflowz/TOOLS.md"
+  - "contentglowz_app"
+  - "contentglowz_lab"
+  - "contentglowz_remotion_worker"
+  - "contentglowz/TOOLS.md"
   - "Decart Mirage/Oasis/Lucy"
   - "Remotion video editor workflow"
   - "AI video b-roll generation workflow"
@@ -26,14 +26,14 @@ linked_systems:
   - "Clerk"
   - "Turso/libSQL"
 evidence:
-  - "contentflowz/TOOLS.md lists DecartAI/Lucy-Edit-ComfyUI, Oasis 2.0, and Decart JavaScript/Python API docs."
+  - "contentglowz/TOOLS.md lists DecartAI/Lucy-Edit-ComfyUI, Oasis 2.0, and Decart JavaScript/Python API docs."
   - "Decart Mirage publication frames MirageLSD as live stream diffusion for realtime video-to-video transformation."
   - "Decart Oasis publication frames Oasis as an interactive realtime open-world AI model conditioned by user inputs."
   - "Decart API docs expose Realtime WebRTC, Queue async video, and Process image APIs; current public model names emphasize Lucy 2.1 and Lucy Restyle."
-  - "ContentFlow specs already define guided Remotion storyboard editing, scene motion, AI b-roll, text-based media editing, Flux/Image Robot, and provider telemetry."
-  - "ContentFlow architecture and README docs confirm Flutter app, FastAPI backend, Clerk auth, Turso/libSQL persistence, Bunny-backed durable assets, async jobs, and partial offline behavior."
+  - "ContentGlowz specs already define guided Remotion storyboard editing, scene motion, AI b-roll, text-based media editing, Flux/Image Robot, and provider telemetry."
+  - "ContentGlowz architecture and README docs confirm Flutter app, FastAPI backend, Clerk auth, Turso/libSQL persistence, Bunny-backed durable assets, async jobs, and partial offline behavior."
 depends_on:
-  - "contentflowz/TOOLS.md"
+  - "contentglowz/TOOLS.md"
   - "shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md"
   - "shipflow_data/workflow/specs/monorepo/SPEC-remotion-scene-motion-assistant-2026-05-12.md"
   - "shipflow_data/workflow/specs/monorepo/SPEC-ai-video-broll-generation-workflow-2026-05-13.md"
@@ -44,21 +44,21 @@ supersedes: []
 next_step: "continue exploring only if a focused Decart provider/product decision is requested"
 ---
 
-# Exploration Report: Mirage / Oasis For ContentFlow
+# Exploration Report: Mirage / Oasis For ContentGlowz
 
 ## Starting Question
 
-Clarify what the local `mirge / oasis` signal means for ContentFlow, whether Mirage/Oasis/Decart realtime video should become a product direction, how it contrasts with the current async guided-content architecture, and whether it deserves a new spec, research note, or future note inside existing specs.
+Clarify what the local `mirge / oasis` signal means for ContentGlowz, whether Mirage/Oasis/Decart realtime video should become a product direction, how it contrasts with the current async guided-content architecture, and whether it deserves a new spec, research note, or future note inside existing specs.
 
 ## Context Read
 
-- `contentflowz/TOOLS.md` - local signal: Decart Lucy ComfyUI, Oasis 2.0, and Decart API docs.
+- `contentglowz/TOOLS.md` - local signal: Decart Lucy ComfyUI, Oasis 2.0, and Decart API docs.
 - `shipflow_data/workflow/TASKS.md` - current priorities: design tokens, dual-mode AI runtime, project asset library, Flux/Image Robot, not realtime video.
-- `shipflow_data/workflow/explorations/2026-05-11-contentflowz-migration-remaining-ideas.md` - existing stance: contentflowz is inspiration only, not code to port.
-- `contentflow_lab/README.md` - backend owns guided API workflows, jobs, Turso persistence, Bunny asset descriptors, and Image Robot Flux generation.
-- `contentflow_app/README.md` - Flutter app owns guided user workflows, partial offline cache/queue, server-owned publishing, and blocks binary/server-first jobs offline.
+- `shipflow_data/workflow/explorations/2026-05-11-contentglowz-migration-remaining-ideas.md` - existing stance: contentglowz is inspiration only, not code to port.
+- `contentglowz_lab/README.md` - backend owns guided API workflows, jobs, Turso persistence, Bunny asset descriptors, and Image Robot Flux generation.
+- `contentglowz_app/README.md` - Flutter app owns guided user workflows, partial offline cache/queue, server-owned publishing, and blocks binary/server-first jobs offline.
 - `shipflow_data/technical/lab/architecture.md` and `shipflow_data/technical/app/architecture.md` - confirmed FastAPI/Flutter/Clerk/Turso boundaries.
-- `contentflow_lab/status/schemas.py` and `contentflow_lab/api/services/project_asset_storage.py` - confirmed project asset kinds, sources, and durable vs provider-temporary storage descriptors.
+- `contentglowz_lab/status/schemas.py` and `contentglowz_lab/api/services/project_asset_storage.py` - confirmed project asset kinds, sources, and durable vs provider-temporary storage descriptors.
 - Existing specs compared:
   - Remotion video editor workflow.
   - Remotion scene motion assistant.
@@ -88,16 +88,16 @@ Clarify what the local `mirge / oasis` signal means for ContentFlow, whether Mir
 Mirage/Oasis is not just "another video model". It points to a different product class:
 
 ```text
-Async ContentFlow today
+Async ContentGlowz today
   source content -> guided generation job -> durable Bunny asset -> editor/review -> publish queue
 
 Mirage/Oasis class
   live media/input -> WebRTC or frame loop -> realtime transformed stream -> optional capture/share
 ```
 
-Oasis is closer to realtime interactive world simulation. Mirage/Lucy is closer to realtime video-to-video restyle/editing. Both are impressive R&D and may become useful provider capabilities, but the default ContentFlow product is the opposite shape: guided, project-scoped, asynchronous, reviewable, durable, and publish-gated.
+Oasis is closer to realtime interactive world simulation. Mirage/Lucy is closer to realtime video-to-video restyle/editing. Both are impressive R&D and may become useful provider capabilities, but the default ContentGlowz product is the opposite shape: guided, project-scoped, asynchronous, reviewable, durable, and publish-gated.
 
-The useful translation is therefore not "build Oasis inside ContentFlow". It is: decide whether Decart becomes a future provider in existing video workflows, or whether realtime preview becomes a later experimental surface after the durable Remotion/video/asset spine exists.
+The useful translation is therefore not "build Oasis inside ContentGlowz". It is: decide whether Decart becomes a future provider in existing video workflows, or whether realtime preview becomes a later experimental surface after the durable Remotion/video/asset spine exists.
 
 ## Option Space
 
@@ -116,7 +116,7 @@ The useful translation is therefore not "build Oasis inside ContentFlow". It is:
 ### Option C: Async Decart Video Restyle Provider
 
 - Summary: treat Decart Queue API/Lucy as a candidate provider for the existing AI video b-roll/restyle spec, not as realtime UI. Generated outputs would be downloaded server-side, stored to Bunny, and registered as project assets.
-- Pros: best fit with ContentFlow architecture; reuses async jobs, Bunny durability, project asset library, quota and telemetry; can be compared with Runway/Luma/Veo later.
+- Pros: best fit with ContentGlowz architecture; reuses async jobs, Bunny durability, project asset library, quota and telemetry; can be compared with Runway/Luma/Veo later.
 - Cons: loses the "realtime magic"; still raises safety/consent and provider-cost risks; requires docs refresh and provider adapter work.
 
 ### Option D: Live Preview / Avatar-Persona Surface
@@ -129,7 +129,7 @@ The useful translation is therefore not "build Oasis inside ContentFlow". It is:
 
 | Criterion | A: Veille | B: Prototype | C: Async Provider | D: Live Surface |
 | --- | --- | --- | --- | --- |
-| Fit with ContentFlow guided workflows | High | Medium | High | Low/Medium |
+| Fit with ContentGlowz guided workflows | High | Medium | High | Low/Medium |
 | Fit with durable Bunny assets | N/A | Low unless recorded | High | Low unless capture/export added |
 | Fit with Remotion | Indirect | Indirect | High as scene asset input | Low; Remotion is render-time, not live stream |
 | Flutter/mobile complexity | None | High | Medium | Very high |
@@ -166,7 +166,7 @@ Disposition: important future gate. Any Decart evaluation should enter this tele
 
 ## Emerging Recommendation
 
-Keep Mirage/Oasis in research for now. Do not create a standalone ContentFlow spec for realtime world/video generation yet.
+Keep Mirage/Oasis in research for now. Do not create a standalone ContentGlowz spec for realtime world/video generation yet.
 
 The most pragmatic future path is:
 
@@ -174,7 +174,7 @@ The most pragmatic future path is:
 2. If evidence is needed, run a later internal prototype only after the Remotion video editor, project asset library, b-roll generation, quotas and provider telemetry are implemented enough to measure cost and durable-output fit.
 3. Treat any realtime WebRTC surface as a separate future product decision with explicit consent, mobile, cost and safety gates.
 
-Key finding: Mirage/Oasis is a strong signal for future provider capability, not a near-term ContentFlow product surface. Its value for ContentFlow is most likely async video restyling or provider benchmarking, not interactive worlds.
+Key finding: Mirage/Oasis is a strong signal for future provider capability, not a near-term ContentGlowz product surface. Its value for ContentGlowz is most likely async video restyling or provider benchmarking, not interactive worlds.
 
 ## Non-Decisions
 
@@ -183,20 +183,20 @@ Key finding: Mirage/Oasis is a strong signal for future provider capability, not
 - No decision to store or record live transformed streams.
 - No decision to support avatar/persona realtime features.
 - No change to existing specs.
-- No porting of `contentflowz` code.
+- No porting of `contentglowz` code.
 
 ## Rejected Paths
 
-- Build an Oasis-like interactive world in ContentFlow - rejected because it is game/R&D territory, not current content pipeline value.
+- Build an Oasis-like interactive world in ContentGlowz - rejected because it is game/R&D territory, not current content pipeline value.
 - Add a public realtime playground - rejected because it conflicts with guided workflows, quotas, safety review and durable assets.
-- Let Flutter call Decart directly with a permanent API key - rejected by Decart docs and ContentFlow backend-boundary rules.
-- Use provider temporary streams/URLs as durable assets - rejected by ContentFlow Bunny/project asset invariants.
+- Let Flutter call Decart directly with a permanent API key - rejected by Decart docs and ContentGlowz backend-boundary rules.
+- Use provider temporary streams/URLs as durable assets - rejected by ContentGlowz Bunny/project asset invariants.
 - Treat realtime avatar/character transformation as a casual visual feature - rejected until consent, disclosure, likeness and abuse policies are explicit.
 
 ## Risks And Unknowns
 
 - Cost: Decart realtime/video pricing is per active/generated second; live exploration can burn spend without producing reusable assets.
-- Latency: Decart claims low latency, but ContentFlow would still need end-user network, Flutter WebRTC, mobile device capture, app lifecycle and reconnect behavior.
+- Latency: Decart claims low latency, but ContentGlowz would still need end-user network, Flutter WebRTC, mobile device capture, app lifecycle and reconnect behavior.
 - Mobile Flutter: WebRTC support, codec constraints, battery, bandwidth and background lifecycle are all non-trivial; Decart docs specifically call out mobile resource concerns.
 - Security: short-lived tokens reduce key exposure but active sessions can continue after token expiry; backend needs session governance, disconnect policy and abuse controls.
 - Privacy and consent: live camera/screen streams can include faces, private rooms, other apps, minors, client data or third-party content.
@@ -218,7 +218,7 @@ Key finding: Mirage/Oasis is a strong signal for future provider capability, not
 
 If this becomes a spec later, the likely spec should not be "Mirage/Oasis realtime playground". A safer seed is:
 
-- User story seed: En tant que creatrice ContentFlow, je veux appliquer une transformation video guidee a un clip owned et obtenir un asset durable, afin d'enrichir une scene sociale sans manipuler un flux live ou ouvrir un playground.
+- User story seed: En tant que creatrice ContentGlowz, je veux appliquer une transformation video guidee a un clip owned et obtenir un asset durable, afin d'enrichir une scene sociale sans manipuler un flux live ou ouvrir un playground.
 - Scope in seed: backend provider adapter, async Decart Queue API evaluation, cost/quality telemetry, Bunny durable storage, project asset registration, scene/placement candidate linking.
 - Scope out seed: public realtime playground, WebRTC live streaming, avatar/likeness transformation, arbitrary game/world generation, direct Flutter provider calls, provider temporary URLs as durable output.
 - Invariants/constraints seed: FastAPI owns provider calls; Clerk + project ownership required; outputs reusable only after Bunny storage; Remotion receives validated asset ids; quota and telemetry gates are required.
@@ -233,4 +233,4 @@ If this becomes a spec later, the likely spec should not be "Mirage/Oasis realti
 
 | Date UTC | Prompt/Focus | Action | Result | Next step |
 |----------|--------------|--------|--------|-----------|
-| 2026-05-13 04:16:10 UTC | Mirage / Oasis realtime AI world-video signal for ContentFlow | Read local signal, ContentFlow architecture/docs/specs, and public Decart Mirage/Oasis/API/pricing/safety docs. | Recommended research-only for now; Decart may become a future async video restyle provider candidate, not a near-term realtime product surface. | Continue exploring only if a focused Decart provider/product decision is requested. |
+| 2026-05-13 04:16:10 UTC | Mirage / Oasis realtime AI world-video signal for ContentGlowz | Read local signal, ContentGlowz architecture/docs/specs, and public Decart Mirage/Oasis/API/pricing/safety docs. | Recommended research-only for now; Decart may become a future async video restyle provider candidate, not a near-term realtime product surface. | Continue exploring only if a focused Decart provider/product decision is requested. |

@@ -13,14 +13,14 @@ confidence: medium
 risk_level: medium
 security_impact: unknown
 docs_impact: yes
-user_story: "Cartographier l'integration du module Drip avec les composants existants de ContentFlow Lab"
+user_story: "Cartographier l'integration du module Drip avec les composants existants de ContentGlowz Lab"
 linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
 next_step: "/sf-docs audit shipflow_data/workflow/specs/lab/DRIP_IMPLEMENTATION.md"
 ---
-# Analyse d'integration : Content Drip × Existant ContentFlow Lab
+# Analyse d'integration : Content Drip × Existant ContentGlowz Lab
 
 Date: 2026-04-06
 Companion de: `SPEC-progressive-content-release.md`

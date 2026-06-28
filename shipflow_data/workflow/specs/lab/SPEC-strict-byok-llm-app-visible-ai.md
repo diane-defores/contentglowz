@@ -313,8 +313,8 @@ Keep non-LLM tools server-managed (`Exa`, `Firecrawl`, IMAP/Composio, SendGrid, 
   6. research route migration
   7. app UX polish and tests
 - Validation commands:
-  - `cd /home/claude/contentflow/contentglowz_lab && pytest tests/test_psychology_auth_jobs.py tests/test_persona_draft_route.py tests/test_settings_integrations_router.py tests/test_newsletter_router.py tests/test_research_router.py`
-  - `cd /home/claude/contentflow/contentglowz_app && flutter test test/core/byok_guard_test.dart`
+  - `cd /home/claude/contentglowz/contentglowz_lab && pytest tests/test_psychology_auth_jobs.py tests/test_persona_draft_route.py tests/test_settings_integrations_router.py tests/test_newsletter_router.py tests/test_research_router.py`
+  - `cd /home/claude/contentglowz/contentglowz_app && flutter test test/core/byok_guard_test.dart`
 - Stop conditions:
   - If explicit request-scoped `CrewAI` LLM injection still triggers env-based auth, stop and re-evaluate the agent integration pattern before touching more routes
   - If pipeline article generation still fails after the import fix, isolate article-pipeline repair as a prerequisite patch before completing the BYOK rollout

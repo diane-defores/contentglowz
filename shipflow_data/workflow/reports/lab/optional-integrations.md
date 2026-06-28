@@ -1,6 +1,6 @@
 # Optional Integrations
 
-ContentFlow Lab keeps the default FastAPI/AI runtime install focused on the core dependency graph in `requirements.lock`.
+ContentGlowz Lab keeps the default FastAPI/AI runtime install focused on the core dependency graph in `requirements.lock`.
 
 ## Reels / Instagram
 

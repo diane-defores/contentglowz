@@ -13,14 +13,14 @@ confidence: medium
 risk_level: medium
 security_impact: yes
 docs_impact: yes
-user_story: "En tant qu'admin ContentFlow, je veux un ecran in-app pour lister, filtrer et traiter les feedbacks utilisateurs textes et audio."
+user_story: "En tant qu'admin ContentGlowz, je veux un ecran in-app pour lister, filtrer et traiter les feedbacks utilisateurs textes et audio."
 linked_systems: []
 depends_on: []
 supersedes: []
 evidence: []
-next_step: "/sf-docs audit shipflow_data/workflow/specs/app/feedback-admin-v1-contentflow.md"
+next_step: "/sf-docs audit shipflow_data/workflow/specs/app/feedback-admin-v1-contentglowz.md"
 ---
-# Feedback Admin v1 pour ContentFlow
+# Feedback Admin v1 pour ContentGlowz
 
 ## Adaptation au projet actuel
 

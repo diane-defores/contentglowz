@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentflow"
+project: "contentglowz"
 created: "2026-05-14"
 created_at: "2026-05-14 15:27:39 UTC"
 updated: "2026-05-14"
@@ -13,7 +13,7 @@ source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
 confidence: "high"
-user_story: "En tant que creatrice ContentFlow authentifiee, je veux une seule timeline video ContentFlow pour assembler textes, images, videos, audio et musique depuis un contenu existant, afin de previsualiser puis rendre une video sociale sans gerer Remotion ni maintenir deux modeles de montage concurrents."
+user_story: "En tant que creatrice ContentGlowz authentifiee, je veux une seule timeline video ContentGlowz pour assembler textes, images, videos, audio et musique depuis un contenu existant, afin de previsualiser puis rendre une video sociale sans gerer Remotion ni maintenir deux modeles de montage concurrents."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -60,10 +60,10 @@ depends_on:
     required_status: "official"
 supersedes:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md"
-    reason: "Superseded as the canonical product direction because the user rejected two separate storyboard/timeline models. Storyboard may remain only as a simplified view over the same ContentFlow timeline."
+    reason: "Superseded as the canonical product direction because the user rejected two separate storyboard/timeline models. Storyboard may remain only as a simplified view over the same ContentGlowz timeline."
 evidence:
-  - "User decision 2026-05-14: ContentFlow must not have two competing timelines."
-  - "User decision 2026-05-14: Remotion is the V1 rendering engine, but ContentFlow owns the timeline, editor, schema, validation and adapter boundary."
+  - "User decision 2026-05-14: ContentGlowz must not have two competing timelines."
+  - "User decision 2026-05-14: Remotion is the V1 rendering engine, but ContentGlowz owns the timeline, editor, schema, validation and adapter boundary."
   - "User decision 2026-05-14: prefer a mature rendering product over a Dart-only renderer if maturity protects the application."
   - "User answer 2026-05-14: V1 starts from existing content through /editor/:id/video."
   - "User answer 2026-05-14: model the full clip family from the start, even if V1 UI stays focused."
@@ -80,27 +80,27 @@ evidence:
   - "Fresh-docs checked 2026-05-14: Remotion renderMedia official docs support programmatic rendering with JSON inputProps, output locations, progress callbacks and codec options."
   - "Fresh-docs checked 2026-05-14: Remotion SSR Node official docs define server-side rendering as a Node workflow."
   - "Fresh-docs checked 2026-05-14: Remotion selectComposition official docs confirm composition selection and inputProps usage."
-  - "Fresh-docs checked 2026-05-14: Remotion timeline official docs describe a React timeline/editor product surface that is explicitly out of scope for ContentFlow V1 UI."
+  - "Fresh-docs checked 2026-05-14: Remotion timeline official docs describe a React timeline/editor product surface that is explicitly out of scope for ContentGlowz V1 UI."
   - "Fresh-docs checked 2026-05-14: Remotion license official docs require explicit commercial/license review before production commitment."
   - "Adversarial readiness review 2026-05-14 found the first draft lacked safe execution batches, concrete API/data/render contracts, render abuse controls and an explicit worker prerequisite."
-next_step: "/sf-spec Remotion Cloud Run GCS render deployment for ContentFlow video timeline"
+next_step: "/sf-spec Remotion Cloud Run GCS render deployment for ContentGlowz video timeline"
 ---
 
 ## Title
 
-Unified ContentFlow Video Timeline
+Unified ContentGlowz Video Timeline
 
 ## Status
 
-Ready after adversarial `sf-ready` correction and focused re-review. This spec captures the new product decision: ContentFlow has one canonical video timeline, implemented as ContentFlow-owned Flutter/backend product code, rendered by Remotion through a replaceable adapter in V1. It supersedes the previous storyboard-only Remotion video editor framing. A storyboard can still exist later, but only as a guided view over the same timeline data, not as a separate source of truth.
+Ready after adversarial `sf-ready` correction and focused re-review. This spec captures the new product decision: ContentGlowz has one canonical video timeline, implemented as ContentGlowz-owned Flutter/backend product code, rendered by Remotion through a replaceable adapter in V1. It supersedes the previous storyboard-only Remotion video editor framing. A storyboard can still exist later, but only as a guided view over the same timeline data, not as a separate source of truth.
 
 ## User Story
 
-En tant que creatrice ContentFlow authentifiee, je veux une seule timeline video ContentFlow pour assembler textes, images, videos, audio et musique depuis un contenu existant, afin de previsualiser puis rendre une video sociale sans gerer Remotion ni maintenir deux modeles de montage concurrents.
+En tant que creatrice ContentGlowz authentifiee, je veux une seule timeline video ContentGlowz pour assembler textes, images, videos, audio et musique depuis un contenu existant, afin de previsualiser puis rendre une video sociale sans gerer Remotion ni maintenir deux modeles de montage concurrents.
 
 ## Minimal Behavior Contract
 
-Depuis un contenu appartenant au projet actif, ContentFlow ouvre ou cree une timeline video unique, persistante et versionnee, qui accepte des clips textes, images, videos, audio, musique et fonds issus d'assets serveur valides, permet de les placer dans le temps avec des durees et des pistes, lance une preview MP4 serveur pour la version courante, puis autorise un rendu final uniquement depuis cette preview terminee et non stale. Si les droits, le contenu, les assets, la sauvegarde, la validation, le worker Remotion ou le rendu echouent, l'utilisateur voit un etat recuperable, aucune version incoherente ne devient courante et aucun artefact final n'est annonce pret. Le cas facile a rater est la derive entre modeles: Remotion recoit seulement des props derivees d'une timeline ContentFlow immuable; il ne devient jamais la timeline canonique, et une interface storyboard ne peut pas enregistrer un etat concurrent.
+Depuis un contenu appartenant au projet actif, ContentGlowz ouvre ou cree une timeline video unique, persistante et versionnee, qui accepte des clips textes, images, videos, audio, musique et fonds issus d'assets serveur valides, permet de les placer dans le temps avec des durees et des pistes, lance une preview MP4 serveur pour la version courante, puis autorise un rendu final uniquement depuis cette preview terminee et non stale. Si les droits, le contenu, les assets, la sauvegarde, la validation, le worker Remotion ou le rendu echouent, l'utilisateur voit un etat recuperable, aucune version incoherente ne devient courante et aucun artefact final n'est annonce pret. Le cas facile a rater est la derive entre modeles: Remotion recoit seulement des props derivees d'une timeline ContentGlowz immuable; il ne devient jamais la timeline canonique, et une interface storyboard ne peut pas enregistrer un etat concurrent.
 
 ## Success Behavior
 
@@ -130,11 +130,11 @@ Depuis un contenu appartenant au projet actif, ContentFlow ouvre ou cree une tim
 
 ## Problem
 
-ContentFlow currently has no real video timeline. Existing "Timeline" language in the app is an activity/publishing chronology, not a media editing model. The existing Remotion video editor spec framed the V1 product as a guided storyboard, but the product decision has changed: there must not be a separate storyboard timeline and a later "real" timeline. The product needs a single canonical ContentFlow timeline from day one, while still using Remotion as the mature renderer for V1.
+ContentGlowz currently has no real video timeline. Existing "Timeline" language in the app is an activity/publishing chronology, not a media editing model. The existing Remotion video editor spec framed the V1 product as a guided storyboard, but the product decision has changed: there must not be a separate storyboard timeline and a later "real" timeline. The product needs a single canonical ContentGlowz timeline from day one, while still using Remotion as the mature renderer for V1.
 
 ## Solution
 
-Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips, asset usages, validation, preview/final render state and a Flutter editor at `/editor/:id/video`. Remotion remains the V1 render engine behind a backend adapter that converts immutable timeline versions into Remotion input props; the adapter can be replaced later without changing the product timeline model.
+Introduce a ContentGlowz-owned video timeline domain with versioned tracks, clips, asset usages, validation, preview/final render state and a Flutter editor at `/editor/:id/video`. Remotion remains the V1 render engine behind a backend adapter that converts immutable timeline versions into Remotion input props; the adapter can be replaced later without changing the product timeline model.
 
 ## Scope In
 
@@ -150,7 +150,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 - Add a Flutter route `/editor/:id/video` as the V1 entry point from the existing content editor.
 - Add a Flutter timeline screen with tracks, clip blocks, basic trim/move/reorder, asset picker integration, inspector controls, save state, preview state and final render action.
 - Use server-rendered Remotion MP4 preview as the V1 truth for previewing and final-render eligibility.
-- Convert immutable ContentFlow timeline versions into Remotion `inputProps` through a backend-owned renderer adapter contract.
+- Convert immutable ContentGlowz timeline versions into Remotion `inputProps` through a backend-owned renderer adapter contract.
 - Implement `RemotionRendererAdapter` for V1, delegating to the existing Remotion worker/render service foundation.
 - Support `vertical_9_16` and `landscape_16_9`, 30fps, maximum total duration 180 seconds.
 - Use existing render job infrastructure where appropriate for preview/final status; keep timeline state in dedicated timeline tables.
@@ -159,7 +159,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 ## Scope Out
 
 - Building a custom low-level renderer, codec stack, muxer, media decoder, FFmpeg distribution, or browser capture engine from scratch in V1.
-- Using Remotion Timeline, Remotion Editor Starter, or any React timeline/editor product UI as the ContentFlow editor surface.
+- Using Remotion Timeline, Remotion Editor Starter, or any React timeline/editor product UI as the ContentGlowz editor surface.
 - Creating a second storyboard source of truth. Storyboard mode, if added, is only a constrained view over the same timeline.
 - Real-time in-app interactive preview as the final source of truth. Flutter may show thumbnails, scrub handles or rough local hints later, but V1 render eligibility comes from server MP4 preview.
 - Client-side final rendering as the only or primary path.
@@ -173,7 +173,7 @@ Introduce a ContentFlow-owned video timeline domain with versioned tracks, clips
 
 ## Constraints
 
-- ContentFlow timeline data is canonical. Remotion props, storyboard views and preview artifacts are derived outputs.
+- ContentGlowz timeline data is canonical. Remotion props, storyboard views and preview artifacts are derived outputs.
 - Flutter never calls the Remotion worker directly; `contentglowz_lab` remains the authenticated public API boundary.
 - Client requests pass ids and guided mutations, not trusted storage descriptors, file paths or arbitrary URLs.
 - Every timeline, version, usage and render job is scoped to `user_id`, `project_id` and `content_id`.
@@ -380,7 +380,7 @@ Artifact URL rules:
 
 ## Timeline Data Contract
 
-The canonical timeline document is owned by ContentFlow and is stored as validated JSON. The backend accepts canonical frame-based values; Flutter may display seconds, but API writes must send frame integers to avoid rounding drift.
+The canonical timeline document is owned by ContentGlowz and is stored as validated JSON. The backend accepts canonical frame-based values; Flutter may display seconds, but API writes must send frame integers to avoid rounding drift.
 
 ```json
 {
@@ -448,11 +448,11 @@ Validation rejects unknown fields that would affect render behavior, unknown cli
 
 ## Renderer Contract
 
-`contentglowz_lab` converts immutable `VideoTimelineVersionResponse.timeline` into `ContentFlowTimelineProps`. Remotion receives only this derived object, never the mutable draft and never client-supplied URLs.
+`contentglowz_lab` converts immutable `VideoTimelineVersionResponse.timeline` into `ContentGlowzTimelineProps`. Remotion receives only this derived object, never the mutable draft and never client-supplied URLs.
 
 ```json
 {
-  "composition_id": "ContentFlowTimelineVideo",
+  "composition_id": "ContentGlowzTimelineVideo",
   "timeline_id": "timeline-123",
   "version_id": "version-123",
   "format": {"preset": "vertical_9_16", "width": 1080, "height": 1920, "fps": 30, "duration_in_frames": 450},
@@ -512,7 +512,7 @@ Renderer adapter invariants:
 - `contentglowz_app/lib/providers/` gains a timeline provider/notifier; implementation should follow existing Riverpod patterns and avoid hiding a large feature in unrelated providers if local conventions allow a separate file.
 - `contentglowz_lab/api/models/video_timeline.py` or equivalent is created for request/response schemas.
 - `contentglowz_lab/api/services/video_timeline_store.py` or equivalent owns Turso persistence and optimistic concurrency.
-- `contentglowz_lab/api/services/video_renderer_adapter.py` and a Remotion implementation own conversion from ContentFlow timeline to renderer calls.
+- `contentglowz_lab/api/services/video_renderer_adapter.py` and a Remotion implementation own conversion from ContentGlowz timeline to renderer calls.
 - `contentglowz_lab/api/routers/video_timelines.py` exposes the authenticated API and is registered in the FastAPI app/router registry.
 - `contentglowz_lab/status/service.py` must stop rejecting `target_type=video_version` once the video version store exists and must enforce ownership/eligibility.
 - `contentglowz_lab/status/schemas.py` and `api/models/status.py` may need enum/eligibility updates for still-image clips and controlled render outputs.
@@ -529,7 +529,7 @@ Renderer adapter invariants:
 - Add a changelog entry for the new video timeline domain, route and API family.
 - Mark `SPEC-remotion-video-editor-workflow-2026-05-11.md` as superseded or linked to this spec during docs cleanup after readiness.
 - Update operator/support notes to explain that video editing is online-only in V1, final render requires a non-stale preview and render artifacts may expire according to the render-service retention policy.
-- Do not copy Remotion docs into project docs; link official docs and keep local docs focused on ContentFlow contracts.
+- Do not copy Remotion docs into project docs; link official docs and keep local docs focused on ContentGlowz contracts.
 
 ## Edge Cases
 
@@ -581,8 +581,8 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Stop condition: if backend Batch 1 response shapes change, stop and update Dart models/API before UI expansion.
 
 - Batch 3: Remotion worker timeline composition
-  - Scope: Remotion composition for `ContentFlowTimelineProps`, fixture props, vertical/landscape rendering, audio clipping, text/image/video layer rendering and worker tests/sample render.
-  - Owned files: `contentglowz_worker/remotion/ContentFlowTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
+  - Scope: Remotion composition for `ContentGlowzTimelineProps`, fixture props, vertical/landscape rendering, audio clipping, text/image/video layer rendering and worker tests/sample render.
+  - Owned files: `contentglowz_worker/remotion/ContentGlowzTimelineVideo.tsx`, worker root registration, worker schema/fixtures/tests and worker README examples.
   - Acceptance: sample render or worker tests handle text-only, image+text, video clip, audio/music, vertical and landscape fixtures without importing Remotion Timeline/Editor Starter UI.
   - Shippability: required before preview/final render can be considered complete.
   - Stop condition: if worker directory remains absent after Batch 0, do not invent a partial worker inside Flutter or backend; return to Batch 0.
@@ -607,7 +607,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 - [ ] Tache 2: Define backend timeline schemas.
   - Fichier: `contentglowz_lab/api/models/video_timeline.py`
   - Action: Add Pydantic models for format presets, tracks, clips, clip roles, timeline draft, immutable version, preview/final job responses, validation errors and renderer props DTOs.
-  - User story link: Establishes the ContentFlow-owned canonical timeline model.
+  - User story link: Establishes the ContentGlowz-owned canonical timeline model.
   - Depends on: Tache 1.
   - Validate with: `pytest contentglowz_lab/tests/test_video_timeline_models.py`.
   - Notes: Include schema versioning and 30fps frame conversion helpers or explicit DTO fields.
@@ -646,7 +646,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 - [ ] Tache 7: Add Remotion timeline props conversion.
   - Fichier: `contentglowz_lab/api/services/remotion_timeline_props.py`
-  - Action: Convert validated ContentFlow timeline versions and render-safe asset descriptors into Remotion `inputProps`.
+  - Action: Convert validated ContentGlowz timeline versions and render-safe asset descriptors into Remotion `inputProps`.
   - User story link: Produces renderable previews/finals from the canonical timeline.
   - Depends on: Tache 5 and Tache 6.
   - Validate with: fixture tests comparing timeline JSON to expected props.
@@ -661,7 +661,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
   - Notes: Register the router in `contentglowz_lab/api/main.py` and/or `contentglowz_lab/api/routers/__init__.py` following existing patterns.
 
 - [ ] Tache 9: Extend Remotion worker for timeline props.
-  - Fichier: `contentglowz_worker/remotion/ContentFlowTimelineVideo.tsx`
+  - Fichier: `contentglowz_worker/remotion/ContentGlowzTimelineVideo.tsx`
   - Action: Add a composition that renders normalized timeline tracks/clips for both V1 format presets.
   - User story link: Turns timeline props into MP4 output.
   - Depends on: Tache 7.
@@ -742,7 +742,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 ## Acceptance Criteria
 
-- [ ] CA 1: Given an authenticated user owns a content item, when they open `/editor/:id/video`, then ContentFlow creates or loads the active timeline for that content and format.
+- [ ] CA 1: Given an authenticated user owns a content item, when they open `/editor/:id/video`, then ContentGlowz creates or loads the active timeline for that content and format.
 - [ ] CA 2: Given a user does not own the content, when they open or mutate a video timeline for it, then the API returns `403` or `404` and leaks no timeline or asset metadata.
 - [ ] CA 3: Given a timeline draft with valid text/image/video/audio clips under 180 seconds, when the user saves, then the backend creates an immutable version and returns it as current.
 - [ ] CA 4: Given a stale client saves over a newer version, when the request includes an old version token, then the backend returns conflict and preserves the newer version.
@@ -791,7 +791,7 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 - Execute Batch 0 before any real preview/final render work if the render-service integration is not already implemented locally. The timeline backend can use a fake renderer adapter for tests, but user-visible preview/final success requires the render-service foundation.
 - Implement backend foundations before Flutter UI: schemas, migration, store, asset validation, adapter and router. The UI depends on stable API contracts.
 - Do not run parallel implementation until Batch 1 passes. After Batch 1, Flutter Batch 2 and worker Batch 3 may run in parallel only if their write ownership stays disjoint.
-- Use the existing ContentFlow patterns: FastAPI auth/ownership checks, Turso/libSQL migrations/ensures, Riverpod providers, GoRouter routes and Dio diagnostics redaction.
+- Use the existing ContentGlowz patterns: FastAPI auth/ownership checks, Turso/libSQL migrations/ensures, Riverpod providers, GoRouter routes and Dio diagnostics redaction.
 - Do not introduce Remotion Timeline/Editor Starter or a React editor UI. Use Remotion only for render composition and server-side render execution.
 - Keep render preview online-only and user-triggered. Do not route timeline saves or renders through offline replay in V1.
 - Enforce render capacity and props-size limits before dispatching a worker job. Do not rely on Flutter button disablement as the anti-abuse boundary.
@@ -805,24 +805,24 @@ Parallel implementation is blocked until Batch 1 locks the backend API/data cont
 
 ## Open Questions
 
-None blocking for V1. The preview decision is fixed here as: server-rendered Remotion MP4 is the source of truth for preview/final gating; interactive in-app preview can be added later as a convenience layer if it reads from the same ContentFlow timeline and never becomes a second renderer authority.
+None blocking for V1. The preview decision is fixed here as: server-rendered Remotion MP4 is the source of truth for preview/final gating; interactive in-app preview can be added later as a convenience layer if it reads from the same ContentGlowz timeline and never becomes a second renderer authority.
 
 ## Skill Run History
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-14 15:27:39 UTC | sf-spec | GPT-5 Codex | Created unified video timeline spec from renderer-boundary exploration and user decisions | Draft saved | /sf-ready Unified ContentFlow Video Timeline |
-| 2026-05-14 15:41:42 UTC | sf-ready | GPT-5 Codex | Initial readiness pass before adversarial review | not ready | /sf-spec Unified ContentFlow Video Timeline |
-| 2026-05-14 15:46:55 UTC | sf-build | GPT-5 Codex with GPT-5.5 xhigh review | Stopped premature implementation and added execution batches, API contract, data/render contract and anti-abuse constraints | rerouted | /sf-ready Unified ContentFlow Video Timeline |
-| 2026-05-14 15:52:48 UTC | sf-build | GPT-5 Codex with GPT-5.5 xhigh review | Resolved artifact playback and audio-only timeline readiness blockers | rerouted | /sf-ready Unified ContentFlow Video Timeline |
-| 2026-05-14 15:54:00 UTC | sf-ready | GPT-5.5 xhigh review | Focused re-review confirmed no remaining blockers for execution batches, worker prerequisite, API/data/render contract, signed playback URLs, audio-only rejection and anti-abuse controls | ready | /sf-start Unified ContentFlow Video Timeline |
+| 2026-05-14 15:27:39 UTC | sf-spec | GPT-5 Codex | Created unified video timeline spec from renderer-boundary exploration and user decisions | Draft saved | /sf-ready Unified ContentGlowz Video Timeline |
+| 2026-05-14 15:41:42 UTC | sf-ready | GPT-5 Codex | Initial readiness pass before adversarial review | not ready | /sf-spec Unified ContentGlowz Video Timeline |
+| 2026-05-14 15:46:55 UTC | sf-build | GPT-5 Codex with GPT-5.5 xhigh review | Stopped premature implementation and added execution batches, API contract, data/render contract and anti-abuse constraints | rerouted | /sf-ready Unified ContentGlowz Video Timeline |
+| 2026-05-14 15:52:48 UTC | sf-build | GPT-5 Codex with GPT-5.5 xhigh review | Resolved artifact playback and audio-only timeline readiness blockers | rerouted | /sf-ready Unified ContentGlowz Video Timeline |
+| 2026-05-14 15:54:00 UTC | sf-ready | GPT-5.5 xhigh review | Focused re-review confirmed no remaining blockers for execution batches, worker prerequisite, API/data/render contract, signed playback URLs, audio-only rejection and anti-abuse controls | ready | /sf-start Unified ContentGlowz Video Timeline |
 | 2026-05-14 16:10:00 UTC | sf-start | GPT-5.3 Codex implementation | Executed Batch 0 render-service prerequisite: worker package, reel render-job API, signed local artifacts, retention/capacity rules and focused tests | implemented foundation | Batch 1 backend timeline |
 | 2026-05-14 16:30:00 UTC | sf-start | GPT-5 Codex with GPT-5.5 xhigh review | Executed Batch 1 backend timeline contract: migration/store/models/router, video_version asset validation, props conversion, renderer adapter boundary and focused tests | backend batch implemented and tests passing | Batch 2 Flutter and Batch 3 worker |
-| 2026-05-14 16:44:00 UTC | sf-start | GPT-5.3 Codex implementation | Executed Batch 2 Flutter route/models/provider/screen and Batch 3 Remotion timeline composition with backend adapter wiring and worker duration limit lifted to 180s | integrated implementation; Node runtime smoke still pending because worker dependencies are absent | /sf-verify Unified ContentFlow Video Timeline |
-| 2026-05-14 17:35:30 UTC | sf-verify | GPT-5 Codex | Verified the unified timeline implementation against the spec contract, dependency spec, focused backend and Flutter checks, worker smoke availability, and Remotion official docs freshness gate | partial: backend skeleton and local app checks pass, but asset-to-Remotion resolution/usages, real Flutter editing controls, worker runtime proof, real MP4 smoke, and app/backend docs remain incomplete | /sf-start Unified ContentFlow Video Timeline |
-| 2026-05-14 18:15:51 UTC | sf-build | GPT-5 Codex with delegated workers | Closed partial verify gaps for render readiness: backend asset resolution and usage auditing, Flutter editable timeline controls, worker dependency lock/runtime checks, MP4 smoke fixture, docs and changelog updates | implemented; local checks passing, ready for verification | /sf-verify Unified ContentFlow Video Timeline |
+| 2026-05-14 16:44:00 UTC | sf-start | GPT-5.3 Codex implementation | Executed Batch 2 Flutter route/models/provider/screen and Batch 3 Remotion timeline composition with backend adapter wiring and worker duration limit lifted to 180s | integrated implementation; Node runtime smoke still pending because worker dependencies are absent | /sf-verify Unified ContentGlowz Video Timeline |
+| 2026-05-14 17:35:30 UTC | sf-verify | GPT-5 Codex | Verified the unified timeline implementation against the spec contract, dependency spec, focused backend and Flutter checks, worker smoke availability, and Remotion official docs freshness gate | partial: backend skeleton and local app checks pass, but asset-to-Remotion resolution/usages, real Flutter editing controls, worker runtime proof, real MP4 smoke, and app/backend docs remain incomplete | /sf-start Unified ContentGlowz Video Timeline |
+| 2026-05-14 18:15:51 UTC | sf-build | GPT-5 Codex with delegated workers | Closed partial verify gaps for render readiness: backend asset resolution and usage auditing, Flutter editable timeline controls, worker dependency lock/runtime checks, MP4 smoke fixture, docs and changelog updates | implemented; local checks passing, ready for verification | /sf-verify Unified ContentGlowz Video Timeline |
 | 2026-05-14 18:27:00 UTC | sf-verify | GPT-5.5 xhigh subagent | Re-verified backend asset resolution, Flutter timeline editability, worker Remotion runtime proof, docs, and ship readiness | partial: local core verified, but final provider dirty-draft guard, Flutter provider/diagnostics tests, worker git hygiene, deployed Cloud Run/GCS proof, and clean ship scope remained incomplete | /sf-build corrective pass |
-| 2026-05-14 18:32:37 UTC | sf-build | GPT-5 Codex | Added final-render dirty-draft guard, provider tests for dirty final and playback URL refresh, diagnostics redaction test for signed playback URLs, worker .gitignore, and reran local backend/app/worker checks plus MP4 smoke | partial: local implementation verifies, but production durable renderer deployment/E2E proof and unrelated dirty worktree still block sf-end/sf-ship | /sf-spec Remotion Cloud Run GCS render deployment for ContentFlow video timeline |
+| 2026-05-14 18:32:37 UTC | sf-build | GPT-5 Codex | Added final-render dirty-draft guard, provider tests for dirty final and playback URL refresh, diagnostics redaction test for signed playback URLs, worker .gitignore, and reran local backend/app/worker checks plus MP4 smoke | partial: local implementation verifies, but production durable renderer deployment/E2E proof and unrelated dirty worktree still block sf-end/sf-ship | /sf-spec Remotion Cloud Run GCS render deployment for ContentGlowz video timeline |
 
 ## Current Chantier Flow
 
@@ -832,4 +832,4 @@ None blocking for V1. The preview decision is fixed here as: server-rendered Rem
 - sf-verify: partial; local backend, Flutter and worker proof pass, but no deployed durable renderer proof exists yet
 - sf-end: blocked by missing Cloud Run/GCS or equivalent production render-service proof
 - sf-ship: blocked by missing deployed E2E proof and unrelated dirty worktree entries outside this chantier
-- Prochaine commande: `/sf-spec Remotion Cloud Run GCS render deployment for ContentFlow video timeline`
+- Prochaine commande: `/sf-spec Remotion Cloud Run GCS render deployment for ContentGlowz video timeline`

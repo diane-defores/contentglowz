@@ -1,4 +1,4 @@
-# Audit Log — ContentFlow Monorepo
+# Audit Log — ContentGlowz Monorepo
 
 | Date | Audit | Overall | Critical |
 |------|-------|---------|----------|

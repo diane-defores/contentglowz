@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: Diane
-user_story: "En tant qu'utilisateur ContentFlow connecte a un projet web, je veux comprendre en langage naturel ce qui se passe dans Google Search pour mon site et transformer ces signaux en priorites editoriales, afin de savoir quel contenu creer, renforcer, corriger ou laisser tranquille."
+user_story: "En tant qu'utilisateur ContentGlowz connecte a un projet web, je veux comprendre en langage naturel ce qui se passe dans Google Search pour mon site et transformer ces signaux en priorites editoriales, afin de savoir quel contenu creer, renforcer, corriger ou laisser tranquille."
 risk_level: high
 security_impact: yes
 docs_impact: yes
@@ -64,9 +64,9 @@ Ready. This spec creates a new product layer on top of the existing low-level GS
 
 ## User Story
 
-En tant qu'utilisateur ContentFlow connecte a un projet web, je veux comprendre en langage naturel ce qui se passe dans Google Search pour mon site et transformer ces signaux en priorites editoriales, afin de savoir quel contenu creer, renforcer, corriger ou laisser tranquille.
+En tant qu'utilisateur ContentGlowz connecte a un projet web, je veux comprendre en langage naturel ce qui se passe dans Google Search pour mon site et transformer ces signaux en priorites editoriales, afin de savoir quel contenu creer, renforcer, corriger ou laisser tranquille.
 
-Primary actor: authenticated ContentFlow user with access to a project and at least one configured work domain.
+Primary actor: authenticated ContentGlowz user with access to a project and at least one configured work domain.
 
 Trigger: the user connects Google Search Console for a project through OAuth, opens the SEO Stats/Analytics area, or runs a manual/scheduled Search Console sync.
 
@@ -74,13 +74,13 @@ Observable result: the user sees a concise natural-language diagnosis of organic
 
 ## Minimal Behavior Contract
 
-The system accepts a project-scoped Google Search Console OAuth connection, automatically binds the best matching Search Console property from the already-selected ContentFlow project's domains, synchronizes recent Search Analytics and selected URL Inspection data for domains owned by that project, renders a plain-language overview of organic Google visibility, risk, and opportunities in the main SEO stats screen, and can convert selected Search Console opportunities into Idea Pool items that the existing content pipeline can generate or refresh. Manual property confirmation is only a fallback when the Google account returns no clear compatible property or an ambiguous/invalid state. The private first-party analytics tracker can appear in the same screen as a separate site-traffic section and can be used as contextual evidence in cross-source insights, but it is not Search Console data; every metric and insight must keep its source provenance and no combined traffic total can be invented. If authorization, ownership, Google quotas, project domains, or API calls fail, the user sees a recoverable explanation and no partial content-generation action is triggered automatically. The easy edge case is confusing "indexed" with "performing": an indexed page with weak impressions, CTR, or declining clicks must be treated as an editorial opportunity, not as a successful SEO outcome.
+The system accepts a project-scoped Google Search Console OAuth connection, automatically binds the best matching Search Console property from the already-selected ContentGlowz project's domains, synchronizes recent Search Analytics and selected URL Inspection data for domains owned by that project, renders a plain-language overview of organic Google visibility, risk, and opportunities in the main SEO stats screen, and can convert selected Search Console opportunities into Idea Pool items that the existing content pipeline can generate or refresh. Manual property confirmation is only a fallback when the Google account returns no clear compatible property or an ambiguous/invalid state. The private first-party analytics tracker can appear in the same screen as a separate site-traffic section and can be used as contextual evidence in cross-source insights, but it is not Search Console data; every metric and insight must keep its source provenance and no combined traffic total can be invented. If authorization, ownership, Google quotas, project domains, or API calls fail, the user sees a recoverable explanation and no partial content-generation action is triggered automatically. The easy edge case is confusing "indexed" with "performing": an indexed page with weak impressions, CTR, or declining clicks must be treated as an editorial opportunity, not as a successful SEO outcome.
 
 ## Success Behavior
 
 - A user can open Settings > Integrations and see a Google Search Console OAuth connection block with status: missing, connected, valid, invalid, expired, or degraded.
-- A user can click "Connect Google Search Console", complete Google's OAuth consent flow in the system browser, and return to ContentFlow with the integration attached to their account.
-- After OAuth, the backend auto-matches a Search Console property from the selected ContentFlow project's configured domains; the user only sees a fallback choice if no compatible property can be attached automatically.
+- A user can click "Connect Google Search Console", complete Google's OAuth consent flow in the system browser, and return to ContentGlowz with the integration attached to their account.
+- After OAuth, the backend auto-matches a Search Console property from the selected ContentGlowz project's configured domains; the user only sees a fallback choice if no compatible property can be attached automatically.
 - A user can validate the connection; validation checks token refresh, Search Console API access, property access, and whether at least one configured project domain belongs under the attached property.
 - A user can open the primary SEO Stats screen, replacing the current analytics-first screen, and see:
   - a default "Overview" area that summarizes what matters without requiring the user to choose a data source first;
@@ -113,7 +113,7 @@ The system accepts a project-scoped Google Search Console OAuth connection, auto
 
 ## Problem
 
-The current implementation treats Google Search Console as a publishing accelerator inside Drip: submit URLs and inspect indexation after publication. That is not the product the user described. Users need an interface that explains organic-search reality in human language, then feeds that reality back into content decisions. The current `AnalyticsScreen` is also not answering that need: it summarizes ContentFlow pipeline state, not search performance.
+The current implementation treats Google Search Console as a publishing accelerator inside Drip: submit URLs and inspect indexation after publication. That is not the product the user described. Users need an interface that explains organic-search reality in human language, then feeds that reality back into content decisions. The current `AnalyticsScreen` is also not answering that need: it summarizes ContentGlowz pipeline state, not search performance.
 
 Today there is no general GSC OAuth connection UI, no Search Analytics ingestion, no narrative SEO status, no project-scoped Search Console snapshot, and no direct bridge from real GSC data to the Idea Pool. The existing Drip toggle only sends published URLs when a plan is configured, and `gsc_client.py` only reads server environment credentials.
 
@@ -361,7 +361,7 @@ Build a project-scoped Search Console Intelligence module:
 - [ ] Tache 8 : Link opportunities to local content records
   - Fichier : `contentglowz_lab/agents/sources/search_console_feedback.py`
   - Action : Match GSC page URLs to `ContentRecord.target_url`, `content_path`, or normalized path. Include match confidence and never block if no match exists.
-  - User story link : Allows ContentFlow to decide whether to refresh existing content or create new content.
+  - User story link : Allows ContentGlowz to decide whether to refresh existing content or create new content.
   - Depends on : Tache 7
   - Validate with : feedback tests covering target_url, content_path, and no-match cases.
   - Notes : Use owned project scope in all status service reads.
@@ -473,7 +473,7 @@ Build a project-scoped Search Console Intelligence module:
 - [ ] CA 1 : Given a user owns a project with a configured domain, when they open Integrations, then they can see a Google Search Console OAuth connection block.
 - [ ] CA 2 : Given a user clicks Connect Google Search Console, when Google redirects back with a valid authorization code and state, then the backend exchanges the code, stores encrypted tokens, and returns a connected status without exposing tokens.
 - [ ] CA 3 : Given an expired, missing, replayed, or wrong-user OAuth state, when callback is received, then the backend rejects the callback and stores no tokens.
-- [ ] CA 4 : Given the connected Google account lacks Search Console property access for the selected ContentFlow project domain, when OAuth/validation runs, then the status explains that no compatible property could be attached and instructs the user to use an account with access.
+- [ ] CA 4 : Given the connected Google account lacks Search Console property access for the selected ContentGlowz project domain, when OAuth/validation runs, then the status explains that no compatible property could be attached and instructs the user to use an account with access.
 - [ ] CA 5 : Given a valid connection, when the user runs sync for 30d, then the backend queries Search Analytics, caches a snapshot, and returns clicks, impressions, CTR, position, and top rows.
 - [ ] CA 5b : Given first-party analytics data exists for the project, when SEO Stats loads, then the interface shows site visits/pageviews for Today, Last 7 days, Last 30 days/current month, Last 90 days, and Last 6 months.
 - [ ] CA 5c : Given Search Console data exists for the project, when SEO Stats loads, then the interface shows Google organic clicks for the same periods and does not call them total visitors.
@@ -521,7 +521,7 @@ Build a project-scoped Search Console Intelligence module:
   - SEO Stats metric cards and top page lists for all required periods.
   - Opportunity selection and ingest action.
 - Manual QA:
-- Configure a test Google OAuth client and Search Console property matching the selected ContentFlow project domain.
+- Configure a test Google OAuth client and Search Console property matching the selected ContentGlowz project domain.
 - Connect an account through OAuth and confirm the backend auto-attaches the matching property without requiring routine user selection.
   - Run sync for 7d and 30d.
   - Confirm no raw OAuth token appears in network responses/logs.

@@ -1,4 +1,4 @@
-# Parcours Client — ContentFlow
+# Parcours Client — ContentGlowz
 
 > Dernière mise à jour : 2026-04-06
 
@@ -25,7 +25,7 @@
 
 ## Flux de conversion souhaité
 ```
-[Google/Social] → Blog article → CTA banner "Try ContentFlow" → Homepage ou Signup
+[Google/Social] → Blog article → CTA banner "Try ContentGlowz" → Homepage ou Signup
 [Direct/Referral] → Homepage → Problem → Who It's For → How It Works → Pricing → Checkout
 [Indécis] → Newsletter signup ou Free resource → Email nurture → Conversion
 ```
