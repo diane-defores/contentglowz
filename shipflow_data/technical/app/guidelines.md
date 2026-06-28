@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-25"
 updated: "2026-04-26"
 status: reviewed
@@ -29,7 +29,7 @@ next_step: /sf-docs audit shipflow_data/technical/app/guidelines.md
 
 ## Scope
 
-This document describes conventions for working in `contentglowz_app`, the Flutter user-facing application in the ContentGlowz ecosystem.
+This document describes conventions for working in `app`, the Flutter user-facing application in the ContentGlowz ecosystem.
 
 ## Tech Stack
 

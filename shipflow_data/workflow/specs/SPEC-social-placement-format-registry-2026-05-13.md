@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app"
-  - "contentglowz_lab"
+  - "app"
+  - "lab"
   - "contentglowz"
   - "Project Asset Library"
   - "publish router"
@@ -76,12 +76,12 @@ evidence:
   - "User product direction: ContentGlowz should guide users toward efficient social content, not a free creative playground."
   - "contentglowz/INSPIRATION.md: Canva simplicity, CapCut templates, Remotion composable video, Descript text editing and AI media tools are inspirations only."
   - "contentglowz/GUIDELINES.md: generated outputs should use standard formats: MP4, MP3/WAV, PNG/JPG/WebP, GIF/MP4; preview when possible; workflow between tools."
-  - "Code evidence: contentglowz_app/lib/data/models/content_item.dart defines PublishingChannel for wordpress, ghost, twitter, linkedin, instagram, tiktok and youtube."
-  - "Code evidence: contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart shows platform previews but has no asset slot or placement validation."
-  - "Code evidence: contentglowz_lab/api/routers/publish.py accepts media_urls and sends them to Zernio as image media without project asset ownership or placement validation."
-  - "Code evidence: contentglowz_lab/status/schemas.py and contentglowz_lab/api/routers/assets.py already define project assets, usages, placement, primary state, tombstone history and storage descriptors."
-  - "Code evidence: contentglowz_lab/status/service.py supports usage actions including select_for_content, publish_media and set_primary, but video_version target validation is not available yet."
-  - "Code evidence: contentglowz_app/lib/presentation/widgets/project_asset_picker.dart already accepts a placement string and can be reused for slot-specific picking."
+  - "Code evidence: app/lib/data/models/content_item.dart defines PublishingChannel for wordpress, ghost, twitter, linkedin, instagram, tiktok and youtube."
+  - "Code evidence: app/lib/presentation/screens/editor/platform_preview_sheet.dart shows platform previews but has no asset slot or placement validation."
+  - "Code evidence: lab/api/routers/publish.py accepts media_urls and sends them to Zernio as image media without project asset ownership or placement validation."
+  - "Code evidence: lab/status/schemas.py and lab/api/routers/assets.py already define project assets, usages, placement, primary state, tombstone history and storage descriptors."
+  - "Code evidence: lab/status/service.py supports usage actions including select_for_content, publish_media and set_primary, but video_version target validation is not available yet."
+  - "Code evidence: app/lib/presentation/widgets/project_asset_picker.dart already accepts a placement string and can be reused for slot-specific picking."
   - "Fresh docs checked 2026-05-13: official docs confirm current social APIs treat media as platform-specific upload/use cases rather than arbitrary raw URLs."
 next_step: "/sf-ready Social placement format registry"
 ---
@@ -142,7 +142,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 
 ## Scope In
 
-- A versioned placement registry in `contentglowz_lab` covering V1 platform/channel surfaces: blog/CMS output, X/Twitter, LinkedIn, Instagram, TikTok and YouTube.
+- A versioned placement registry in `lab` covering V1 platform/channel surfaces: blog/CMS output, X/Twitter, LinkedIn, Instagram, TikTok and YouTube.
 - Stable placement ids for V1:
   - `blog_hero`
   - `inline_image`
@@ -184,8 +184,8 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 
 ## Constraints
 
-- `contentglowz_lab` remains the authority for registry rules, asset ownership, placement validation and publish payload construction.
-- `contentglowz_app` must not hard-code platform constraints as final truth; it can cache registry responses but must refresh before publish if the backend version changes.
+- `lab` remains the authority for registry rules, asset ownership, placement validation and publish payload construction.
+- `app` must not hard-code platform constraints as final truth; it can cache registry responses but must refresh before publish if the backend version changes.
 - All placement actions require Clerk auth and project/content ownership.
 - The existing project asset library remains the storage/governance layer; this spec adds platform placement semantics, not a new asset table unless needed for registry snapshots.
 - Bunny CDN remains the durable media path. Provider-temporary URLs are not durable placement assets.
@@ -198,25 +198,25 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 ## Dependencies
 
 - Existing project asset backend:
-  - `contentglowz_lab/status/schemas.py`
-  - `contentglowz_lab/status/service.py`
-  - `contentglowz_lab/api/routers/assets.py`
-  - `contentglowz_lab/api/models/status.py`
+  - `lab/status/schemas.py`
+  - `lab/status/service.py`
+  - `lab/api/routers/assets.py`
+  - `lab/api/models/status.py`
 - Existing Flutter asset client/state:
-  - `contentglowz_app/lib/data/models/project_asset.dart`
-  - `contentglowz_app/lib/data/services/api_service.dart`
-  - `contentglowz_app/lib/providers/providers.dart`
-  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `app/lib/data/models/project_asset.dart`
+  - `app/lib/data/services/api_service.dart`
+  - `app/lib/providers/providers.dart`
+  - `app/lib/presentation/widgets/project_asset_picker.dart`
 - Existing publish backend:
-  - `contentglowz_lab/api/routers/publish.py`
-  - `contentglowz_lab/tests/integration/test_publish_router.py`
+  - `lab/api/routers/publish.py`
+  - `lab/tests/integration/test_publish_router.py`
 - Existing editor and preview UI:
-  - `contentglowz_app/lib/data/models/content_item.dart`
-  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart`
-  - `contentglowz_app/test/presentation/screens/editor/editor_screen_test.dart`
+  - `app/lib/data/models/content_item.dart`
+  - `app/lib/presentation/screens/editor/editor_screen.dart`
+  - `app/lib/presentation/screens/editor/platform_preview_sheet.dart`
+  - `app/test/presentation/screens/editor/editor_screen_test.dart`
 - Existing project docs:
-  - `contentglowz_lab/README.md`
+  - `lab/README.md`
   - `contentglowz/INSPIRATION.md`
   - `contentglowz/GUIDELINES.md`
 - Related specs:
@@ -249,20 +249,20 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 
 ## Links & Consequences
 
-- `contentglowz_lab/api/routers/publish.py`: must stop treating app-provided media URLs as the authoritative media contract for new publish flows. It needs preflight validation and provider payload construction from project assets.
-- `contentglowz_lab/api/routers/assets.py`: existing placement and usage endpoints can remain, but this spec may add placement-aware filters or usage summaries.
-- `contentglowz_lab/status/service.py`: eligibility currently supports broad `publish_media`; it needs placement registry checks for asset media kind, target platform, required slot and current asset status.
-- `contentglowz_lab/api/models/status.py`: may need typed placement/preflight response models or a new `api/models/social_placements.py`.
-- `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`: should receive placement/platform constraints so users do not pick irrelevant assets for a slot.
-- `contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart`: should display selected/missing assets alongside platform previews, not just text truncation.
-- `contentglowz_app/lib/data/models/content_item.dart`: existing `PublishingChannel` is the app-facing channel enum; registry platform ids must map cleanly to it.
+- `lab/api/routers/publish.py`: must stop treating app-provided media URLs as the authoritative media contract for new publish flows. It needs preflight validation and provider payload construction from project assets.
+- `lab/api/routers/assets.py`: existing placement and usage endpoints can remain, but this spec may add placement-aware filters or usage summaries.
+- `lab/status/service.py`: eligibility currently supports broad `publish_media`; it needs placement registry checks for asset media kind, target platform, required slot and current asset status.
+- `lab/api/models/status.py`: may need typed placement/preflight response models or a new `api/models/social_placements.py`.
+- `app/lib/presentation/widgets/project_asset_picker.dart`: should receive placement/platform constraints so users do not pick irrelevant assets for a slot.
+- `app/lib/presentation/screens/editor/platform_preview_sheet.dart`: should display selected/missing assets alongside platform previews, not just text truncation.
+- `app/lib/data/models/content_item.dart`: existing `PublishingChannel` is the app-facing channel enum; registry platform ids must map cleanly to it.
 - Publish metadata: should record `assetPlacements`, registry version, platform preflight issues and provider media payload summary without storing raw signed tokens.
 - Analytics/ops: preflight warnings should be counted so we can learn which slots users miss most often.
 - Security: this is a hardening step for publish media ownership and URL trust.
 
 ## Documentation Coherence
 
-- Update `contentglowz_lab/README.md` with the placement registry, preflight endpoint, supported placement ids and legacy `media_urls` behavior.
+- Update `lab/README.md` with the placement registry, preflight endpoint, supported placement ids and legacy `media_urls` behavior.
 - Add an internal note to any publish API documentation that `asset_placements` or server-selected project asset usages are the preferred media path.
 - Update Flutter developer notes or README with the rule: UI may display registry hints but backend validation is final.
 - Add support/product copy for users explaining missing required asset, recommended asset, incompatible asset and generate/choose actions.
@@ -287,15 +287,15 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 ## Implementation Tasks
 
 - [ ] Task 1: Add backend placement registry models
-  - File: `contentglowz_lab/api/models/social_placements.py`
+  - File: `lab/api/models/social_placements.py`
   - Action: Define Pydantic models for `PlacementSpec`, `PlacementRule`, `PlacementPlan`, `PlacementSlot`, `PlacementIssue`, `AssetPlacementInput`, `PublishPreflightRequest` and `PublishPreflightResponse`.
   - User story link: Makes platform slots explicit and inspectable.
   - Depends on: Existing project asset models.
-  - Validate with: `python -m pytest contentglowz_lab/tests/test_social_placement_registry.py` after tests are added.
+  - Validate with: `python -m pytest lab/tests/test_social_placement_registry.py` after tests are added.
   - Notes: Keep ids ASCII and stable; include `registry_version`, `last_reviewed_at`, `doc_sources` and `rule_strictness`.
 
 - [ ] Task 2: Implement the registry service
-  - File: `contentglowz_lab/api/services/social_placement_registry.py`
+  - File: `lab/api/services/social_placement_registry.py`
   - Action: Create the V1 registry for blog/CMS output, X/Twitter, LinkedIn, Instagram, TikTok and YouTube with the stable placement ids listed in this spec.
   - User story link: Converts content type/platform choices into required and recommended asset slots.
   - Depends on: Task 1.
@@ -303,7 +303,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Use conservative recommendations for Instagram until official docs are manually refreshed; do not embed unverified exact limits as blocking rules.
 
 - [ ] Task 3: Add placement plan/preflight routes
-  - File: `contentglowz_lab/api/routers/social_placements.py`
+  - File: `lab/api/routers/social_placements.py`
   - Action: Expose `GET /api/content/{content_id}/placement-plan` or equivalent project/content-scoped endpoint, plus `POST /api/publish/preflight` if not folded into publish.
   - User story link: Lets the UI show slots before publishing.
   - Depends on: Task 2.
@@ -311,7 +311,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Route naming can follow existing API conventions, but plan and preflight must be content-owned and project-scoped.
 
 - [ ] Task 4: Add server-side asset compatibility checks
-  - File: `contentglowz_lab/status/service.py`
+  - File: `lab/status/service.py`
   - Action: Extend project asset eligibility for `publish_media` to accept placement/platform context and validate media kind, status, ownership, storage descriptor, optional MIME/aspect/duration metadata and required slot policy.
   - User story link: Prevents wrong or unsafe assets from reaching publish.
   - Depends on: Tasks 1-3.
@@ -319,15 +319,15 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Keep generic project asset actions backward compatible where no placement context is provided, but publish preflight must use placement-aware checks.
 
 - [ ] Task 5: Extend publish request and payload construction
-  - File: `contentglowz_lab/api/routers/publish.py`
+  - File: `lab/api/routers/publish.py`
   - Action: Add `asset_placements` or server-side primary-usage resolution, run preflight before provider call, resolve provider media payloads from validated project assets, and record placement metadata in content publish metadata.
   - User story link: Makes actual publishing use the selected slots.
   - Depends on: Tasks 1-4.
-  - Validate with: `contentglowz_lab/tests/integration/test_publish_router.py` covering success, missing required media, incompatible asset, foreign asset, tombstoned asset, raw media URL legacy behavior and provider payload shape.
+  - Validate with: `lab/tests/integration/test_publish_router.py` covering success, missing required media, incompatible asset, foreign asset, tombstoned asset, raw media URL legacy behavior and provider payload shape.
   - Notes: Keep provider account authorization and duplicate publish checks before external calls. Do not expose raw storage tokens in responses.
 
 - [ ] Task 6: Add Flutter models/API methods for registry and preflight
-  - File: `contentglowz_app/lib/data/models/social_placement.dart`
+  - File: `app/lib/data/models/social_placement.dart`
   - Action: Create typed Dart models matching backend placement/preflight responses.
   - User story link: Gives the app typed slot data instead of hard-coded platform assumptions.
   - Depends on: Tasks 1-3 contracts.
@@ -335,7 +335,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Include unknown-field tolerance for registry evolution.
 
 - [ ] Task 7: Add Flutter API client methods
-  - File: `contentglowz_app/lib/data/services/api_service.dart`
+  - File: `app/lib/data/services/api_service.dart`
   - Action: Add methods to fetch placement plans and run publish preflight; add publish request support for asset placements if publish is called from Flutter in this flow.
   - User story link: Connects editor/publish UI to backend slots.
   - Depends on: Task 6.
@@ -343,7 +343,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Resolve local id mappings like the existing project asset methods do.
 
 - [ ] Task 8: Add placement state/provider
-  - File: `contentglowz_app/lib/providers/providers.dart`
+  - File: `app/lib/providers/providers.dart`
   - Action: Add a notifier or extend existing content/editor state to load placement plans, cache registry version, track preflight issues and ignore stale project/content responses.
   - User story link: Shows current slot status in the editor and publish review.
   - Depends on: Task 7.
@@ -351,7 +351,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Follow the revision pattern already used by `ProjectAssetLibraryNotifier`.
 
 - [ ] Task 9: Update project asset picker for slot-specific selection
-  - File: `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - File: `app/lib/presentation/widgets/project_asset_picker.dart`
   - Action: Accept placement/platform constraints, show why assets are eligible/ineligible, and call `setPrimary` or `selectForTarget` with the placement id.
   - User story link: Lets creators attach the right asset without leaving guided flow.
   - Depends on: Tasks 6-8.
@@ -359,7 +359,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Do not turn the picker into a free media library; keep the slot context visible.
 
 - [ ] Task 10: Update editor and platform preview surfaces
-  - File: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - File: `app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Add a placement panel or publish-readiness section that appears from the content editor and uses `ProjectAssetPicker` per slot.
   - User story link: Makes asset placement part of the current editor, not a separate playground.
   - Depends on: Tasks 8-9.
@@ -367,7 +367,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Keep mobile layout compact; if dense editing becomes unreadable, route to a linked editor sheet/screen rather than crowding the main editor.
 
 - [ ] Task 11: Update platform preview sheet
-  - File: `contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart`
+  - File: `app/lib/presentation/screens/editor/platform_preview_sheet.dart`
   - Action: Show selected/missing asset slots for each platform preview and surface blocking/warning issue states.
   - User story link: Lets creators see what will be published per platform.
   - Depends on: Tasks 8-10.
@@ -375,7 +375,7 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Avoid hard-coding official limits as final truth in the UI; display backend issue messages.
 
 - [ ] Task 12: Register generation actions from placement slots
-  - File: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - File: `app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Add guided actions from empty image slots to existing Image Robot/Flux profiles where available.
   - User story link: Makes missing slots actionable.
   - Depends on: Flux/Image Robot route availability and Tasks 8-10.
@@ -383,23 +383,23 @@ Add a backend-owned social placement registry and publish preflight layer. The r
   - Notes: Do not add a standalone playground; action must stay scoped to content/project/placement.
 
 - [ ] Task 13: Add tests for backend registry and publish validation
-  - File: `contentglowz_lab/tests/test_social_placement_registry.py`
+  - File: `lab/tests/test_social_placement_registry.py`
   - Action: Cover registry shape, doc provenance, required/recommended policies, content type mappings and platform-specific issue generation.
   - User story link: Ensures the registry stays dependable as docs/platforms evolve.
   - Depends on: Tasks 1-5.
-  - Validate with: `python -m pytest contentglowz_lab/tests/test_social_placement_registry.py contentglowz_lab/tests/integration/test_publish_router.py`.
+  - Validate with: `python -m pytest lab/tests/test_social_placement_registry.py lab/tests/integration/test_publish_router.py`.
   - Notes: Include tests proving provider HTTP client is not called on blocking preflight failure.
 
 - [ ] Task 14: Add Flutter tests
-  - File: `contentglowz_app/test/data/social_placement_test.dart`
+  - File: `app/test/data/social_placement_test.dart`
   - Action: Test model parsing, provider state and editor/preview widget states for placement slots.
   - User story link: Protects the guided UI behavior.
   - Depends on: Tasks 6-11.
-  - Validate with: `flutter test contentglowz_app/test/data/social_placement_test.dart contentglowz_app/test/presentation/screens/editor/editor_screen_test.dart`.
+  - Validate with: `flutter test app/test/data/social_placement_test.dart app/test/presentation/screens/editor/editor_screen_test.dart`.
   - Notes: Add focused tests rather than broad golden coverage.
 
 - [ ] Task 15: Update docs
-  - File: `contentglowz_lab/README.md`
+  - File: `lab/README.md`
   - Action: Document the placement registry, supported placements, preflight behavior, publish media contract and legacy `media_urls` handling.
   - User story link: Keeps future agents and operators from reintroducing raw URL publishing.
   - Depends on: Tasks 1-5.
@@ -459,11 +459,11 @@ Add a backend-owned social placement registry and publish preflight layer. The r
 ## Execution Notes
 
 - Read first:
-  - `contentglowz_lab/api/routers/publish.py`
-  - `contentglowz_lab/api/routers/assets.py`
-  - `contentglowz_lab/status/service.py`
-  - `contentglowz_app/lib/presentation/screens/editor/platform_preview_sheet.dart`
-  - `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart`
+  - `lab/api/routers/publish.py`
+  - `lab/api/routers/assets.py`
+  - `lab/status/service.py`
+  - `app/lib/presentation/screens/editor/platform_preview_sheet.dart`
+  - `app/lib/presentation/widgets/project_asset_picker.dart`
 - Implementation order:
   - Backend registry and preflight models.
   - Registry service tests.

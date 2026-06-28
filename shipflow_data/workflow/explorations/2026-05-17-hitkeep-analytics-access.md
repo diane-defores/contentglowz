@@ -14,11 +14,11 @@ risk_level: medium
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentglowz_app/lib/presentation/screens/analytics/
-  - contentglowz_app/lib/data/models/app_access_state.dart
-  - contentglowz_lab/api/routers/analytics.py
-  - contentglowz_lab/api/routers/search_console.py
-  - contentglowz_lab/api/dependencies/ownership.py
+  - app/lib/presentation/screens/analytics/
+  - app/lib/data/models/app_access_state.dart
+  - lab/api/routers/analytics.py
+  - lab/api/routers/search_console.py
+  - lab/api/dependencies/ownership.py
 evidence:
   - "HitKeep public pages describe RBAC, per-site permissions, API clients, read-only MCP access, shareable dashboards, email reports, cookie-free tracking, and open exports."
   - "Clamp public pages describe agent-native analytics via MCP, analyst-grade prompt workflows, funnels, cohorts, alerts, revenue, custom events, and project-scoped API keys."
@@ -38,11 +38,11 @@ Est-ce que HitKeep peut nous aider a ameliorer notre systeme d'acces a l'Analyti
 
 ## Context Read
 
-- `contentglowz_lab/api/routers/analytics.py` - public collect endpoint and authenticated analytics query endpoints.
-- `contentglowz_lab/api/routers/search_console.py` - current combined Search Console/private tracker summary.
-- `contentglowz_lab/api/dependencies/ownership.py` - project ownership gate.
-- `contentglowz_app/lib/data/models/app_access_state.dart` - app-level access states and workspace-data readiness.
-- `contentglowz_app/lib/presentation/screens/analytics/analytics_screen.dart` - current Analytics screen composition.
+- `lab/api/routers/analytics.py` - public collect endpoint and authenticated analytics query endpoints.
+- `lab/api/routers/search_console.py` - current combined Search Console/private tracker summary.
+- `lab/api/dependencies/ownership.py` - project ownership gate.
+- `app/lib/data/models/app_access_state.dart` - app-level access states and workspace-data readiness.
+- `app/lib/presentation/screens/analytics/analytics_screen.dart` - current Analytics screen composition.
 
 ## Internet Research
 

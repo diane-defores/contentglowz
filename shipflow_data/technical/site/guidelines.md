@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_site
+project: site
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -14,8 +14,8 @@ risk_level: medium
 security_impact: none
 docs_impact: yes
 linked_systems:
-  - contentglowz_app
-  - contentglowz_lab
+  - app
+  - lab
 evidence:
   - CLAUDE.md
   - shipflow_data/business/site/business.md
@@ -31,7 +31,7 @@ next_step: /sf-docs audit shipflow_data/technical/site/guidelines.md
 
 ## Scope
 
-This document defines conventions for working on the Astro website in `contentglowz_site`.
+This document defines conventions for working on the Astro website in `site`.
 
 ## Tech Stack
 

@@ -18,14 +18,14 @@ risk_level: "high"
 security_impact: "none"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_theme.json"
-  - "tools/generate_app_theme_tokens.mjs"
-  - "contentglowz_app/lib/presentation/theme/app_theme.dart"
-  - "contentglowz_app/lib/presentation/theme/app_theme_tokens.dart"
-  - "contentglowz_app/lib/main.dart"
-  - "contentglowz_app/lib/presentation/**"
-  - "contentglowz_site/src/layouts/Layout.astro"
-  - "contentglowz_site/src/**"
+  - "tools/design-tokens/contentglowz_theme.json"
+  - "tools/design-tokens/generate_app_theme_tokens.mjs"
+  - "app/lib/presentation/theme/app_theme.dart"
+  - "app/lib/presentation/theme/app_theme_tokens.dart"
+  - "app/lib/main.dart"
+  - "app/lib/presentation/**"
+  - "site/src/layouts/Layout.astro"
+  - "site/src/**"
 depends_on:
   - artifact: "shipflow_data/business/app/business.md"
     artifact_version: "1.0.0"
@@ -41,9 +41,9 @@ evidence:
   - "Audit design tokens 2026-05-10: app_hardcoded_visuals=722 across Flutter presentation files."
   - "Audit design tokens 2026-05-10: site_literal_type_space_motion=223 across Astro/CSS files."
   - "Audit design tokens 2026-05-10: site_hardcoded_colors=45 remain after initial token alignment."
-  - "contentglowz_theme.json currently centralizes base colors, surfaces, typography, radius, shadow and motion only."
-  - "contentglowz_app/lib/main.dart currently applies mobile compaction through global TextScaler.linear(0.88) and VisualDensity.compact."
-  - "contentglowz_app/lib/core/app_theme_preference.dart currently normalizes system but themeModeFromPreference(system) returns ThemeMode.light."
+  - "tools/design-tokens/contentglowz_theme.json currently centralizes base colors, surfaces, typography, radius, shadow and motion only."
+  - "app/lib/main.dart currently applies mobile compaction through global TextScaler.linear(0.88) and VisualDensity.compact."
+  - "app/lib/core/app_theme_preference.dart currently normalizes system but themeModeFromPreference(system) returns ThemeMode.light."
 next_step: "/sf-start Centraliser les design tokens ContentGlowz app/site"
 ---
 
@@ -65,7 +65,7 @@ Quand l'app Flutter ou le site Astro rend une page, les couleurs, surfaces, poli
 
 ## Success Behavior
 
-- Etat de depart: `contentglowz_theme.json` existe, mais ne couvre pas assez de tokens semantiques ni responsives; Flutter et Astro ont encore beaucoup de valeurs visuelles directes.
+- Etat de depart: `tools/design-tokens/contentglowz_theme.json` existe, mais ne couvre pas assez de tokens semantiques ni responsives; Flutter et Astro ont encore beaucoup de valeurs visuelles directes.
 - Declencheur: un developpeur modifie les tokens partages puis regenere les sorties app/site.
 - Resultat visible: l'app et le site utilisent la palette inspiree du site, un dark theme coherent, une variante "app colors", et une densite mobile plus compacte sans texte disproportionne.
 - Effet systeme: les tokens Flutter generes exposent couleurs, surfaces, typo, spacing, radius, shadows, motion et breakpoints; le site consomme les memes valeurs via CSS variables; les pages n'ajoutent plus de nouveaux literals visuels hors allowlist.
@@ -73,7 +73,7 @@ Quand l'app Flutter ou le site Astro rend une page, les couleurs, surfaces, poli
 
 ## Error Behavior
 
-- Si `contentglowz_theme.json` contient un token invalide, le generateur doit retourner une erreur explicite avec le chemin du token.
+- Si `tools/design-tokens/contentglowz_theme.json` contient un token invalide, le generateur doit retourner une erreur explicite avec le chemin du token.
 - Si une page a besoin d'une valeur visuelle non couverte, l'implementation doit ajouter un token semantique avant de modifier la page, sauf cas allowliste comme assets, dimensions media intrinseques ou demos de design.
 - Si un theme systeme est selectionne, l'app doit suivre le mode OS via `ThemeMode.system`; elle ne doit pas forcer le light theme silencieusement.
 - Si une migration de page degrade la lisibilite mobile, la modification doit etre corrigee avant ship; aucun echec silencieux ne doit etre accepte sur l'entree app, auth, settings, feed et navigation.
@@ -85,15 +85,15 @@ Le chantier precedent a cree une base commune, mais elle n'est pas encore un vra
 
 ## Solution
 
-Etendre `contentglowz_theme.json` en source unique semantique et responsive, renforcer le generateur pour produire des tokens Flutter complets et des CSS variables site, puis migrer les pages par lots vers ces tokens. Ajouter des garde-fous de scan pour empecher la reintroduction de literals visuels hors fichiers allowlistes.
+Etendre `tools/design-tokens/contentglowz_theme.json` en source unique semantique et responsive, renforcer le generateur pour produire des tokens Flutter complets et des CSS variables site, puis migrer les pages par lots vers ces tokens. Ajouter des garde-fous de scan pour empecher la reintroduction de literals visuels hors fichiers allowlistes.
 
 ## Scope In
 
-- Source unique `contentglowz_theme.json` pour palettes light, dark et app-color, surfaces, texte, spacing, radius, shadows, motion, breakpoints et tokens mobile.
-- Generation Flutter dans `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart` avec helpers ou constantes pour les tokens non-couleurs.
+- Source unique `tools/design-tokens/contentglowz_theme.json` pour palettes light, dark et app-color, surfaces, texte, spacing, radius, shadows, motion, breakpoints et tokens mobile.
+- Generation Flutter dans `app/lib/presentation/theme/app_theme_tokens.dart` avec helpers ou constantes pour les tokens non-couleurs.
 - Generation ou injection CSS variables site depuis les memes tokens.
-- Migration des fichiers Flutter UI sous `contentglowz_app/lib/presentation/**` vers `Theme.of`, `AppTheme.paletteOf`, tokens de spacing/radius/typo/motion.
-- Migration des fichiers Astro/CSS sous `contentglowz_site/src/**` vers `var(--...)`.
+- Migration des fichiers Flutter UI sous `app/lib/presentation/**` vers `Theme.of`, `AppTheme.paletteOf`, tokens de spacing/radius/typo/motion.
+- Migration des fichiers Astro/CSS sous `site/src/**` vers `var(--...)`.
 - Correction de `ThemeMode.system` pour respecter le theme OS.
 - Remplacement de la compaction mobile globale par des tokens responsives explicites.
 - Ajout d'un script de verification anti-literals et d'une allowlist maintenable.
@@ -103,7 +103,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 - Refonte produit complete des pages ou nouveau design marketing.
 - Changement des flows auth, data, sync, offline ou backend.
-- Migration des artefacts de build sous `contentglowz_app/build/**`.
+- Migration des artefacts de build sous `app/build/**`.
 - Normalisation exhaustive des dimensions media intrinseques, images, canvas ou exemples pedagogiques quand elles sont explicitement allowlistees.
 - Ajout de nouvelle librairie UI ou remplacement de Flutter Material/Astro.
 - Changement de pricing, SEO editorial ou copywriting hors coherence documentaire minimale.
@@ -122,13 +122,13 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 - Flutter Material 3, `ThemeData`, `ThemeExtension`, `ColorScheme`, `MediaQuery`.
 - Astro layout global et CSS variables.
-- Node.js pour `tools/generate_app_theme_tokens.mjs`.
+- Node.js pour `tools/design-tokens/generate_app_theme_tokens.mjs`.
 - `shipflow_data/business/app/business.md@1.0.0`, `shipflow_data/business/app/branding.md@1.0.0`, `shipflow_data/business/site/branding.md@1.0.0`.
 - Fresh external docs: not needed for this spec, because the chantier uses existing local Flutter/Astro patterns and does not depend on new framework APIs, SDK behavior, auth, storage, backend, payment, or deployment contracts.
 
 ## Invariants
 
-- Une modification de marque doit passer par `contentglowz_theme.json`, pas par une page.
+- Une modification de marque doit passer par `tools/design-tokens/contentglowz_theme.json`, pas par une page.
 - Le theme principal app doit rester inspire du site.
 - Le dark theme doit etre derive du light theme et garder les memes roles semantiques.
 - La variante "app colors" garde les anciennes couleurs app au niveau palette mais reutilise les effets/surfaces du site.
@@ -137,18 +137,18 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 ## Links & Consequences
 
-- `contentglowz_app/lib/main.dart`: impacte tous les rendus Flutter via theme, `ThemeMode` et wrapper mobile.
-- `contentglowz_app/lib/presentation/theme/app_theme.dart`: source runtime des themes, couleurs semantiques et extensions.
-- `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart`: sortie generee consommee par l'app.
-- `contentglowz_site/src/layouts/Layout.astro`: point d'injection global des CSS variables et styles communs.
-- `contentglowz_site/src/pages/design.astro`: doit refléter la nouvelle palette et les tokens responsives.
-- `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`: doit garder les choix light/dark/system/app colors coherents.
+- `app/lib/main.dart`: impacte tous les rendus Flutter via theme, `ThemeMode` et wrapper mobile.
+- `app/lib/presentation/theme/app_theme.dart`: source runtime des themes, couleurs semantiques et extensions.
+- `app/lib/presentation/theme/app_theme_tokens.dart`: sortie generee consommee par l'app.
+- `site/src/layouts/Layout.astro`: point d'injection global des CSS variables et styles communs.
+- `site/src/pages/design.astro`: doit refléter la nouvelle palette et les tokens responsives.
+- `app/lib/presentation/screens/settings/settings_screen.dart`: doit garder les choix light/dark/system/app colors coherents.
 - Regression principale: pages mobiles qui changent de hauteur, textes tronques, contrastes dark insuffisants, composants denses trop petits pour etre actionnes.
 
 ## Documentation Coherence
 
-- Mettre a jour `contentglowz_site/src/pages/design.astro` pour documenter les tokens ajoutes.
-- Ajouter ou mettre a jour une note courte dans `README.md` ou `SETUP.md` sur la regeneration des tokens.
+- Mettre a jour `site/src/pages/design.astro` pour documenter les tokens ajoutes.
+- Ajouter ou mettre a jour une note courte dans `README.md` ou `shipflow_data/technical/SETUP.md` sur la regeneration des tokens.
 - Ajouter une entree changelog dans les changelogs pertinents si le chantier est shippe.
 - Pas de changement requis dans la documentation backend, car aucun contrat API/data/auth n'est modifie.
 
@@ -163,7 +163,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 ## Implementation Tasks
 
 - [ ] Tache 1 : Etendre le schema de tokens partage
-  - Fichier : `contentglowz_theme.json`
+  - Fichier : `tools/design-tokens/contentglowz_theme.json`
   - Action : Ajouter roles semantiques (`text`, `status`, `action`, `focus`, `overlay`), tokens composants (`card`, `button`, `input`, `nav`, `badge`), tokens layout (`container`, `section`) et tokens responsives (`mobile.text`, `mobile.space`, `mobile.radius`, `breakpoints`).
   - User story link : coherence app/site et mobile compact.
   - Depends on : none.
@@ -171,23 +171,23 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Garder la palette site comme theme principal; inclure dark et app-color sans dupliquer inutilement.
 
 - [ ] Tache 2 : Renforcer le generateur de tokens
-  - Fichier : `tools/generate_app_theme_tokens.mjs`
+  - Fichier : `tools/design-tokens/generate_app_theme_tokens.mjs`
   - Action : Valider les types de tokens, generer couleurs, doubles, durees, radius, spacing, breakpoints et listes de gradients pour Flutter; produire des erreurs explicites sur token manquant/invalide.
   - User story link : source unique fiable.
   - Depends on : Tache 1.
-  - Validate with : `node tools/generate_app_theme_tokens.mjs`.
+  - Validate with : `node tools/design-tokens/generate_app_theme_tokens.mjs`.
   - Notes : Ne pas ecrire de logique metier dans le generateur.
 
 - [ ] Tache 3 : Regenerer les tokens Flutter complets
-  - Fichier : `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart`
+  - Fichier : `app/lib/presentation/theme/app_theme_tokens.dart`
   - Action : Regenerer depuis le generateur; exposer seulement des constantes et helpers simples.
   - User story link : app consomme la source unique.
   - Depends on : Tache 2.
-  - Validate with : `dart format contentglowz_app/lib/presentation/theme/app_theme_tokens.dart`.
+  - Validate with : `dart format app/lib/presentation/theme/app_theme_tokens.dart`.
   - Notes : Fichier genere, ne pas editer manuellement hors exception.
 
 - [ ] Tache 4 : Faire d'AppTheme le point d'acces unique Flutter
-  - Fichier : `contentglowz_app/lib/presentation/theme/app_theme.dart`
+  - Fichier : `app/lib/presentation/theme/app_theme.dart`
   - Action : Ajouter helpers `AppSpacing`, `AppRadii`, `AppText`, `AppMotion` ou extensions equivalentes; migrer les valeurs internes hardcodees du theme vers tokens.
   - User story link : un seul AppTheme exploitable par les pages.
   - Depends on : Tache 3.
@@ -195,7 +195,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Garder `ThemeExtension` pour palette/surfaces; eviter une API verbeuse.
 
 - [ ] Tache 5 : Corriger la preference system/dark/app-colors
-  - Fichier : `contentglowz_app/lib/core/app_theme_preference.dart`
+  - Fichier : `app/lib/core/app_theme_preference.dart`
   - Action : Faire retourner `ThemeMode.system` pour `system`; conserver `light`, `dark`, `app`.
   - User story link : theme sombre coherent et attendu.
   - Depends on : Tache 4.
@@ -203,7 +203,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Si `app` reste une variante light, le documenter dans le libelle UI.
 
 - [ ] Tache 6 : Remplacer la compaction mobile globale par tokens responsives
-  - Fichier : `contentglowz_app/lib/main.dart`
+  - Fichier : `app/lib/main.dart`
   - Action : Retirer le `TextScaler.linear(0.88)` comme solution finale; fournir le breakpoint mobile via helper/theme et laisser les widgets consommer les tailles compactes.
   - User story link : mobile plus petit sans casser l'accessibilite.
   - Depends on : Tache 4.
@@ -211,7 +211,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Ne pas bloquer les preferences d'accessibilite systeme de l'utilisateur.
 
 - [ ] Tache 7 : Migrer les surfaces critiques Flutter
-  - Fichier : `contentglowz_app/lib/presentation/screens/entry/entry_screen.dart`, `contentglowz_app/lib/presentation/screens/auth/auth_screen.dart`, `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`, `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`, `contentglowz_app/lib/presentation/widgets/in_app_tour_overlay.dart`
+  - Fichier : `app/lib/presentation/screens/entry/entry_screen.dart`, `app/lib/presentation/screens/auth/auth_screen.dart`, `app/lib/presentation/screens/feed/feed_screen.dart`, `app/lib/presentation/screens/settings/settings_screen.dart`, `app/lib/presentation/widgets/in_app_tour_overlay.dart`
   - Action : Remplacer fontSize, EdgeInsets, BorderRadius, couleurs directes et durees directes par tokens/theme.
   - User story link : experience mobile et entree app professionnelle.
   - Depends on : Taches 4 et 6.
@@ -219,7 +219,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Commencer par ces fichiers avant le reste de `presentation`.
 
 - [ ] Tache 8 : Migrer le reste des fichiers Flutter presentation par lots
-  - Fichier : `contentglowz_app/lib/presentation/**/*.dart`
+  - Fichier : `app/lib/presentation/**/*.dart`
   - Action : Remplacer les literals visuels restants par tokens ou allowlist documentee.
   - User story link : coherence globale app.
   - Depends on : Tache 7.
@@ -227,15 +227,15 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Ne pas toucher au comportement des providers, services ou modeles.
 
 - [ ] Tache 9 : Centraliser les CSS variables du site
-  - Fichier : `contentglowz_site/src/layouts/Layout.astro`
-  - Action : Injecter toutes les nouvelles variables depuis `contentglowz_theme.json`, y compris mobile, composants et dark-ready tokens si utilises.
+  - Fichier : `site/src/layouts/Layout.astro`
+  - Action : Injecter toutes les nouvelles variables depuis `tools/design-tokens/contentglowz_theme.json`, y compris mobile, composants et dark-ready tokens si utilises.
   - User story link : site reference et source partagee.
   - Depends on : Tache 1.
-  - Validate with : `npm run build` dans `contentglowz_site`.
+  - Validate with : `npm run build` dans `site`.
   - Notes : Garder les variables lisibles et stables.
 
 - [ ] Tache 10 : Migrer les pages et composants site vers variables
-  - Fichier : `contentglowz_site/src/**/*.astro`
+  - Fichier : `site/src/**/*.astro`
   - Action : Remplacer couleurs, font sizes, spacing, radius, transitions et shadows directs par `var(--...)` ou allowlist.
   - User story link : coherence site/app et dette tokens reduite.
   - Depends on : Tache 9.
@@ -243,7 +243,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Prioriser `Navbar`, `Hero`, auth pages, blog layouts et `design.astro`.
 
 - [ ] Tache 11 : Mettre a jour la page design et la documentation de generation
-  - Fichier : `contentglowz_site/src/pages/design.astro`, `README.md` ou `SETUP.md`
+  - Fichier : `site/src/pages/design.astro`, `README.md` ou `shipflow_data/technical/SETUP.md`
   - Action : Documenter les palettes, tokens mobiles, variantes et commande de regeneration.
   - User story link : maintenance durable du systeme.
   - Depends on : Taches 9 et 10.
@@ -251,7 +251,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
   - Notes : Ne pas transformer la page design en landing page.
 
 - [ ] Tache 12 : Ajouter un garde-fou anti-literals
-  - Fichier : `tools/check_design_tokens.mjs` ou script equivalent; `package.json`/docs si pertinent
+  - Fichier : `tools/design-tokens/check_design_tokens.mjs` ou script equivalent; `package.json`/docs si pertinent
   - Action : Scanner Flutter et Astro pour nouveaux `fontSize`, `EdgeInsets`, `BorderRadius.circular`, `Color(0x...)`, hex CSS, `rem/px` UI, transitions directes; appliquer une allowlist pour tokens, fichiers generes, demos et dimensions media.
   - User story link : empecher la regression.
   - Depends on : Taches 8 et 10.
@@ -268,7 +268,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 ## Acceptance Criteria
 
-- [ ] CA 1 : Given un changement de couleur primaire dans `contentglowz_theme.json`, when les tokens sont regeneres, then l'app Flutter et le site Astro utilisent la nouvelle couleur sans modification manuelle de page.
+- [ ] CA 1 : Given un changement de couleur primaire dans `tools/design-tokens/contentglowz_theme.json`, when les tokens sont regeneres, then l'app Flutter et le site Astro utilisent la nouvelle couleur sans modification manuelle de page.
 - [ ] CA 2 : Given un viewport mobile, when l'utilisateur ouvre la page d'entree app, then les actions de connexion/acces restent visibles au-dessus du viewport avec des polices compactes et lisibles.
 - [ ] CA 3 : Given la preference theme `system`, when l'OS est en dark mode, then l'app utilise le dark theme au lieu de forcer le light theme.
 - [ ] CA 4 : Given la preference `app colors`, when l'app est ouverte, then la variante palette app s'applique sans diverger des surfaces/effets du site.
@@ -280,7 +280,7 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 ## Test Strategy
 
-- Unit/Script: tester `tools/generate_app_theme_tokens.mjs` avec tokens valides et invalides si la structure le permet.
+- Unit/Script: tester `tools/design-tokens/generate_app_theme_tokens.mjs` avec tokens valides et invalides si la structure le permet.
 - Static: `flutter analyze` pour l'app, `npm run build` pour le site, `git diff --check`.
 - Token audit: lancer le nouveau scan anti-literals et comparer les compteurs aux seuils attendus.
 - Manual QA mobile: app entry/auth/feed/settings sur largeur inferieure a 600px; verifier taille texte, espacement, actions visibles et absence d'overflow.
@@ -297,12 +297,12 @@ Etendre `contentglowz_theme.json` en source unique semantique et responsive, ren
 
 ## Execution Notes
 
-- Lire d'abord `contentglowz_theme.json`, `tools/generate_app_theme_tokens.mjs`, `contentglowz_app/lib/presentation/theme/app_theme.dart`, `contentglowz_app/lib/main.dart`, `contentglowz_site/src/layouts/Layout.astro`.
+- Lire d'abord `tools/design-tokens/contentglowz_theme.json`, `tools/design-tokens/generate_app_theme_tokens.mjs`, `app/lib/presentation/theme/app_theme.dart`, `app/lib/main.dart`, `site/src/layouts/Layout.astro`.
 - Implementer par fondations avant pages: schema tokens, generateur, theme Flutter, injection CSS, puis migrations UI.
 - Garder les migrations UI en lots petits pour pouvoir attribuer les regressions visuelles a un groupe de fichiers.
 - Ne pas ajouter de package sans justification; les APIs Flutter/Astro existantes suffisent.
 - Stop condition: si un flow auth, offline sync, provider ou route change de comportement, sortir du scope et demander validation.
-- Commandes de validation attendues: `node tools/generate_app_theme_tokens.mjs`, `dart format ...`, `flutter analyze`, `npm run build`, `git diff --check`, scan anti-literals.
+- Commandes de validation attendues: `node tools/design-tokens/generate_app_theme_tokens.mjs`, `dart format ...`, `flutter analyze`, `npm run build`, `git diff --check`, scan anti-literals.
 
 ## Open Questions
 

@@ -14,8 +14,8 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "contentglowz_app"
-  - "contentglowz_lab"
+  - "app"
+  - "lab"
   - "contentglowz_remotion_worker"
   - "contentglowz/TOOLS.md"
   - "Decart Mirage/Oasis/Lucy"
@@ -55,10 +55,10 @@ Clarify what the local `mirge / oasis` signal means for ContentGlowz, whether Mi
 - `contentglowz/TOOLS.md` - local signal: Decart Lucy ComfyUI, Oasis 2.0, and Decart API docs.
 - `shipflow_data/workflow/TASKS.md` - current priorities: design tokens, dual-mode AI runtime, project asset library, Flux/Image Robot, not realtime video.
 - `shipflow_data/workflow/explorations/2026-05-11-contentglowz-migration-remaining-ideas.md` - existing stance: contentglowz is inspiration only, not code to port.
-- `contentglowz_lab/README.md` - backend owns guided API workflows, jobs, Turso persistence, Bunny asset descriptors, and Image Robot Flux generation.
-- `contentglowz_app/README.md` - Flutter app owns guided user workflows, partial offline cache/queue, server-owned publishing, and blocks binary/server-first jobs offline.
+- `lab/README.md` - backend owns guided API workflows, jobs, Turso persistence, Bunny asset descriptors, and Image Robot Flux generation.
+- `app/README.md` - Flutter app owns guided user workflows, partial offline cache/queue, server-owned publishing, and blocks binary/server-first jobs offline.
 - `shipflow_data/technical/lab/architecture.md` and `shipflow_data/technical/app/architecture.md` - confirmed FastAPI/Flutter/Clerk/Turso boundaries.
-- `contentglowz_lab/status/schemas.py` and `contentglowz_lab/api/services/project_asset_storage.py` - confirmed project asset kinds, sources, and durable vs provider-temporary storage descriptors.
+- `lab/status/schemas.py` and `lab/api/services/project_asset_storage.py` - confirmed project asset kinds, sources, and durable vs provider-temporary storage descriptors.
 - Existing specs compared:
   - Remotion video editor workflow.
   - Remotion scene motion assistant.

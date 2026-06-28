@@ -2,7 +2,7 @@
 artifact: technical_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_site
+project: site
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -33,10 +33,10 @@ next_review: "2026-07-26"
 next_step: /sf-docs update shipflow_data/technical/site/context.md
 ---
 
-# shipflow_data/technical/site/context.md — contentglowz_site
+# shipflow_data/technical/site/context.md — site
 
 ## Contexte produit
-`contentglowz_site` est la surface web publique de ContentGlowz : landing page, pages éditoriales (`blog`, `seo-strategy`, `technical-optimization`, etc.), privacy page et pages de point d’entrée vers l’app officielle.
+`site` est la surface web publique de ContentGlowz : landing page, pages éditoriales (`blog`, `seo-strategy`, `technical-optimization`, etc.), privacy page et pages de point d’entrée vers l’app officielle.
 
 Le site assure:
 - la découverte produit,

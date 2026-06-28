@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-06-12"
 created_at: "2026-06-12 12:01:52 UTC"
 updated: "2026-06-12"
@@ -18,11 +18,11 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app Flutter capture UI"
-  - "contentglowz_app Flutter theme tokens"
-  - "contentglowz_app Android native capture bridge"
-  - "contentglowz_app Android foreground services"
-  - "contentglowz_app local capture metadata store"
+  - "app Flutter capture UI"
+  - "app Flutter theme tokens"
+  - "app Android native capture bridge"
+  - "app Android foreground services"
+  - "app local capture metadata store"
   - "Android MediaProjection"
   - "Android CameraX concurrent camera"
   - "Android camera2 multi-camera capability checks"
@@ -57,7 +57,7 @@ depends_on:
 supersedes:
   - "shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md"
 evidence:
-  - "Current capture UI in contentglowz_app/lib/presentation/screens/capture/capture_screen.dart only exposes screenshot, record, stop, and microphone toggle."
+  - "Current capture UI in app/lib/presentation/screens/capture/capture_screen.dart only exposes screenshot, record, stop, and microphone toggle."
   - "Current Android recorder in ScreenRecordService uses MediaProjection -> VirtualDisplay -> MediaRecorder with no live camera overlay, pause/resume, or composition stage."
   - "ScreenCaptureChannel already provides a stable custom Flutter/native boundary for capture lifecycle and permission events."
   - "Design-system authority requires all spacing, motion, radii, colors, overlay layers, and responsive values to come from shared Flutter theme/token sources."
@@ -206,19 +206,19 @@ This is not a greenfield feature. It is a bounded architectural upgrade of the c
 
 Local code and docs to update:
 
-- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
-- new recorder-specific Flutter presentation components under `contentglowz_app/lib/presentation/screens/capture/`
-- `contentglowz_app/lib/data/services/device_capture_service.dart`
-- `contentglowz_app/lib/data/models/capture_asset.dart`
-- `contentglowz_app/lib/data/services/capture_local_store.dart`
-- `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart` and/or `app_theme.dart` if new shared recorder tokens are required
-- `contentglowz_app/android/app/src/main/AndroidManifest.xml`
-- `contentglowz_app/android/app/build.gradle.kts`
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenCaptureChannel.kt`
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenRecordService.kt`
-- new native recorder classes under `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/pro/`
-- `contentglowz_app/lib/main.dart` and diagnostics surfaces if recorder-specific copy-diagnostics needs extension
-- `contentglowz_app/README.md`
+- `app/lib/presentation/screens/capture/capture_screen.dart`
+- new recorder-specific Flutter presentation components under `app/lib/presentation/screens/capture/`
+- `app/lib/data/services/device_capture_service.dart`
+- `app/lib/data/models/capture_asset.dart`
+- `app/lib/data/services/capture_local_store.dart`
+- `app/lib/presentation/theme/app_theme_tokens.dart` and/or `app_theme.dart` if new shared recorder tokens are required
+- `app/android/app/src/main/AndroidManifest.xml`
+- `app/android/app/build.gradle.kts`
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenCaptureChannel.kt`
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenRecordService.kt`
+- new native recorder classes under `app/android/app/src/main/kotlin/com/contentglowz/app/capture/pro/`
+- `app/lib/main.dart` and diagnostics surfaces if recorder-specific copy-diagnostics needs extension
+- `app/README.md`
 - `shipflow_data/technical/app/guidelines.md`
 
 Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
@@ -264,10 +264,10 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
 
 ## Documentation Coherence
 
-- Update `contentglowz_app/README.md` with recorder capabilities, device-dependent dual-camera truth, audio limitations, and visible-indicator/platform limits.
+- Update `app/README.md` with recorder capabilities, device-dependent dual-camera truth, audio limitations, and visible-indicator/platform limits.
 - Update `shipflow_data/technical/app/flutter-app-shell-and-capture.md` after implementation to reflect the new recorder architecture and validation commands.
 - Update `shipflow_data/technical/app/guidelines.md` with recorder-specific capability gating, diagnostics redaction, and cleanup invariants.
-- Update `contentglowz_app/CHANGELOG.md` after implementation.
+- Update `app/CHANGELOG.md` after implementation.
 - Do not update public marketing/site copy until real-device QA validates the experience and wording is honest about capability variance.
 
 ## Edge Cases
@@ -288,7 +288,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
 ## Implementation Tasks
 
 - [ ] Task 1: Define the professional recorder contract in shared Dart models.
-  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
+  - File: `app/lib/data/models/capture_asset.dart`
   - Action: Extend asset metadata with recorder mode, audio mode, camera mode, overlay preset snapshot, capability fallback flags, pause/resume segmentation state if needed, and diagnostics summary fields.
   - User story link: Lets the app represent advanced recorder sessions honestly.
   - Depends on: None.
@@ -296,7 +296,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Do not store private local temp paths or raw diagnostics payloads.
 
 - [ ] Task 2: Add typed recorder configuration and event contracts in Dart.
-  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
+  - File: `app/lib/data/services/device_capture_service.dart`
   - Action: Introduce typed config/event objects for audio mode, camera mode, overlay config, capability reports, pause/resume, and recorder degradation events instead of expanding ad-hoc maps.
   - User story link: Keeps the Flutter/native boundary professional and evolvable.
   - Depends on: Task 1.
@@ -304,7 +304,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Preserve backwards compatibility for screenshot calls where possible.
 
 - [ ] Task 3: Define recorder capability discovery in native and Flutter layers.
-  - File: `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenCaptureChannel.kt`
+  - File: `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenCaptureChannel.kt`
   - Action: Add methods to report capture/camera/audio capability availability, including dual-camera support truth and playback-capture eligibility signals when discoverable.
   - User story link: Prevents unsupported pro modes from appearing as if they work everywhere.
   - Depends on: Task 2.
@@ -312,7 +312,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Camera concurrency must be reported as device/session capability, not guessed from brand/model.
 
 - [ ] Task 4: Create recorder token and overlay design primitives.
-  - File: `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart`, `contentglowz_app/lib/presentation/theme/app_theme.dart`
+  - File: `app/lib/presentation/theme/app_theme_tokens.dart`, `app/lib/presentation/theme/app_theme.dart`
   - Action: Add named shared tokens/constants for recorder overlay spacing, radii, elevations, chip sizes, animation timings, and safe placement rules if the existing token set is insufficient.
   - User story link: Makes the overlay visually coherent and maintainable.
   - Depends on: None.
@@ -320,7 +320,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: No hardcoded overlay literals in screen widgets unless platform-bound and documented.
 
 - [ ] Task 5: Build the Flutter recorder configuration surface.
-  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Replace the simple record controls with a recorder setup panel that selects audio mode, camera mode, and overlay preset based on discovered capabilities, while preserving screenshot access.
   - User story link: Lets creators configure the session before starting.
   - Depends on: Tasks 1-4.
@@ -328,7 +328,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Unsupported choices should be disabled with short rationale, not hidden mysteriously.
 
 - [ ] Task 6: Add a recorder overlay UI contract in Flutter.
-  - File: new files under `contentglowz_app/lib/presentation/screens/capture/`
+  - File: new files under `app/lib/presentation/screens/capture/`
   - Action: Create overlay/state widgets or controllers that represent active, paused, degraded, and finishing recorder states, synchronized with the native event stream.
   - User story link: Gives users in-session controls comparable to and stronger than the Android recorder.
   - Depends on: Task 5.
@@ -336,7 +336,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: If the live overlay itself must be native for reliability, Flutter still owns the canonical visual/state contract and configuration metadata.
 
 - [ ] Task 7: Add native dependencies for CameraX and advanced recording.
-  - File: `contentglowz_app/android/app/build.gradle.kts`
+  - File: `app/android/app/build.gradle.kts`
   - Action: Add current stable CameraX artifacts needed for preview/video/concurrent-camera support and any recorder/composition helpers, plus safe version alignment notes.
   - User story link: Provides the native camera foundation for front/rear/dual modes.
   - Depends on: fresh-docs checked.
@@ -344,7 +344,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Record exact versions chosen during implementation because concurrent-camera support evolves over time.
 
 - [ ] Task 8: Create native recorder config/capability classes.
-  - File: new files under `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/pro/`
+  - File: new files under `app/android/app/src/main/kotlin/com/contentglowz/app/capture/pro/`
   - Action: Define typed Kotlin models for recorder config, capability report, degraded state, overlay commands, and terminal failure taxonomy.
   - User story link: Keeps state transitions explicit and testable.
   - Depends on: Tasks 2, 3, and 7.
@@ -392,7 +392,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Respect Android overlay/service constraints and avoid invasive permissions if the chosen overlay approach can stay inside supported recorder surfaces.
 
 - [ ] Task 14: Extend local store for advanced recorder metadata and recovery.
-  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
+  - File: `app/lib/data/services/capture_local_store.dart`
   - Action: Persist finalized recorder metadata and any crash-recovery markers needed to reconcile interrupted sessions on next launch, without exposing temp artifacts as normal assets.
   - User story link: Prevents ghost sessions and confusing post-crash history.
   - Depends on: Task 1.
@@ -400,7 +400,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Recovery markers are operational metadata only.
 
 - [ ] Task 15: Extend diagnostics and Sentry-safe observability.
-  - File: `contentglowz_app/lib/main.dart` and/or recorder diagnostics surface files
+  - File: `app/lib/main.dart` and/or recorder diagnostics surface files
   - Action: Ensure recorder errors can be copied through a safe diagnostics surface with build identity, release info, Paris/UTC build timestamps, effective recorder mode, and redacted stop reason or failure taxonomy.
   - User story link: Professional stability requires actionable diagnostics, not vague failure toasts.
   - Depends on: Tasks 2, 8, and 9.
@@ -408,7 +408,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Never include captured content or private media paths.
 
 - [ ] Task 16: Add Flutter tests for recorder contracts.
-  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`
+  - File: `app/test/data/capture_asset_test.dart`, `app/test/data/capture_local_store_test.dart`, `app/test/presentation/screens/capture/capture_screen_test.dart`
   - Action: Cover capability gating, recorder configuration defaults, event-driven state transitions, degraded-mode messaging, and finalized metadata behavior.
   - User story link: Protects the new recorder UX from regressions.
   - Depends on: Tasks 1-6 and 14.
@@ -424,7 +424,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
   - Notes: Include explicit expected degraded outcomes, not just happy paths.
 
 - [ ] Task 18: Update docs and legacy V1 contract references.
-  - File: `contentglowz_app/README.md`, `shipflow_data/technical/app/flutter-app-shell-and-capture.md`, `shipflow_data/technical/app/guidelines.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `app/README.md`, `shipflow_data/technical/app/flutter-app-shell-and-capture.md`, `shipflow_data/technical/app/guidelines.md`, `app/CHANGELOG.md`
   - Action: Document the new recorder architecture, capability gating, Android limits, diagnostics, and the fact that V1 recording assumptions have been superseded.
   - User story link: Aligns implementation, operators, and future agents around the new recorder contract.
   - Depends on: Tasks 1-17.
@@ -486,10 +486,10 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-06-12.
 
 Read first:
 
-- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
-- `contentglowz_app/lib/data/services/device_capture_service.dart`
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenCaptureChannel.kt`
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenRecordService.kt`
+- `app/lib/presentation/screens/capture/capture_screen.dart`
+- `app/lib/data/services/device_capture_service.dart`
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenCaptureChannel.kt`
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenRecordService.kt`
 - `shipflow_data/technical/app/flutter-app-shell-and-capture.md`
 - `shipflow_data/technical/design-system-authority.md`
 - `shipflow_data/workflow/explorations/2026-06-12-android-native-vs-custom-screen-recorder.md`

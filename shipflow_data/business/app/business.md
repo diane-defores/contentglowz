@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-25"
 updated: "2026-04-26"
 status: reviewed
@@ -49,9 +49,9 @@ ContentGlowz reduces this friction by keeping the user interface usable in degra
 
 The application is the execution layer of a larger ContentGlowz ecosystem:
 
-- `contentglowz_site`: acquisition and product communication (Astro + marketing pages),
-- `contentglowz_lab`: AI pipeline and automation research/orchestration (Python/FastAPI agents),
-- `contentglowz_app`: authenticated creation shell for day-to-day planning and review.
+- `site`: acquisition and product communication (Astro + marketing pages),
+- `lab`: AI pipeline and automation research/orchestration (Python/FastAPI agents),
+- `app`: authenticated creation shell for day-to-day planning and review.
 
 The app itself is positioned as a practical operations surface, not an agent training interface.
 

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.3"
-project: "contentglowz_site"
+project: "site"
 created: "2026-06-12"
 created_at: "2026-06-12 12:03:54 UTC"
 updated: "2026-06-12"
@@ -23,7 +23,7 @@ linked_systems:
   - "App handoff routes"
   - "Sitemap and canonical SEO signals"
 depends_on:
-  - artifact: "contentglowz_site/CLAUDE.md"
+  - artifact: "site/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/editorial/site/content-map.md"
@@ -43,12 +43,12 @@ depends_on:
     required_status: "draft"
 supersedes: []
 evidence:
-  - "contentglowz_site/src/layouts/Layout.astro hardcodes html lang=en and emits canonical/og:url without locale alternates."
-  - "contentglowz_site/src/pages/index.astro"
-  - "contentglowz_site/src/pages/launch.astro"
-  - "contentglowz_site/src/pages/sign-in.astro"
-  - "contentglowz_site/src/pages/sign-up.astro"
-  - "contentglowz_site/src/pages/privacy.astro"
+  - "site/src/layouts/Layout.astro hardcodes html lang=en and emits canonical/og:url without locale alternates."
+  - "site/src/pages/index.astro"
+  - "site/src/pages/launch.astro"
+  - "site/src/pages/sign-in.astro"
+  - "site/src/pages/sign-up.astro"
+  - "site/src/pages/privacy.astro"
   - "User decision 2026-06-12: site bilingue fr/en, root=en, scope=coeur."
 next_step: "/101-sf-ready shipflow_data/workflow/specs/site/SPEC-bilingual-fr-en-routing-seo-metadata-core-pages-2026-06-12.md"
 ---
@@ -112,13 +112,13 @@ Introduire une petite couche i18n site-side, limitée aux pages coeur:
 La solution reste volontairement bornée: aucun routage de collections Markdown, aucun auto-detect par navigateur, aucune redirection géolocalisée, aucun fallback silencieux du blog vers `/fr`.
 
 ## Scope In
-- `contentglowz_site/src/layouts/Layout.astro`
-- `contentglowz_site/src/pages/index.astro`
-- `contentglowz_site/src/pages/launch.astro`
-- `contentglowz_site/src/pages/sign-in.astro`
-- `contentglowz_site/src/pages/sign-up.astro`
-- `contentglowz_site/src/pages/privacy.astro`
-- nouvelles routes `contentglowz_site/src/pages/fr/*.astro` pour ces cinq surfaces
+- `site/src/layouts/Layout.astro`
+- `site/src/pages/index.astro`
+- `site/src/pages/launch.astro`
+- `site/src/pages/sign-in.astro`
+- `site/src/pages/sign-up.astro`
+- `site/src/pages/privacy.astro`
+- nouvelles routes `site/src/pages/fr/*.astro` pour ces cinq surfaces
 - composants communs ou helper(s) nécessaires au changement de langue sur les pages coeur
 - source de données locale simple pour les strings coeur EN/FR si elle réduit la duplication
 - métadonnées SEO coeur: `html lang`, canonical, `og:url`, `hreflang`, `x-default`, `noindex`
@@ -143,7 +143,7 @@ La solution reste volontairement bornée: aucun routage de collections Markdown,
 - Les alternates SEO doivent être exacts: ne jamais annoncer une page non publiée.
 - La mise en oeuvre doit rester reviewable et éviter une duplication logique inutile entre EN et FR.
 - Aucun changement ne doit casser les liens app issus de `src/config/site.ts`.
-- Toute adaptation visuelle liée au switcher de langue, à la nav ou au footer doit réutiliser les tokens existants de `contentglowz_theme.json` injectés par `Layout.astro`; aucun nouveau literal visuel ad hoc.
+- Toute adaptation visuelle liée au switcher de langue, à la nav ou au footer doit réutiliser les tokens existants de `tools/design-tokens/contentglowz_theme.json` injectés par `Layout.astro`; aucun nouveau literal visuel ad hoc.
 
 ## Test Contract
 - surface: `Astro marketing site core pages`
@@ -173,15 +173,15 @@ La solution reste volontairement bornée: aucun routage de collections Markdown,
 ## Dependencies
 Internal:
 
-- `contentglowz_site/CLAUDE.md`: language and cross-repo contract notes.
+- `site/CLAUDE.md`: language and cross-repo contract notes.
 - `shipflow_data/editorial/site/content-map.md`: scope authority for landing and conversion pages.
 - `shipflow_data/editorial/site/page-intent-map.md`: route intent and CTA constraints.
 - `shipflow_data/editorial/site/editorial-update-gate.md`: required editorial closure path for public-copy changes.
 - `shipflow_data/editorial/site/claim-register.md`: claim guardrails for AI, privacy, pricing, and outcome wording.
 - `shipflow_data/technical/design-system-authority.md`: token and styling guardrails for any visible navigation/switcher change.
-- `contentglowz_site/src/config/site.ts`: canonical site URL and app handoff URLs.
-- `contentglowz_site/src/layouts/Layout.astro`: current metadata authority.
-- `contentglowz_site/src/components/*` used by the homepage and shared shell.
+- `site/src/config/site.ts`: canonical site URL and app handoff URLs.
+- `site/src/layouts/Layout.astro`: current metadata authority.
+- `site/src/components/*` used by the homepage and shared shell.
 
 External docs freshness verdict:
 
@@ -215,7 +215,7 @@ Downstream:
 - Apply an Editorial Update Plan for any changed public copy on `/`, `/fr`, `/privacy`, or the handoff pages, even if the outcome is `no editorial impact` for some surfaces.
 - Update `shipflow_data/workflow/site/TASKS.md` and closure artifacts during lifecycle end, not during spec creation.
 - No README or product-doc update is required unless navigation labels or support copy become materially bilingual outside the five pages.
-- If a reusable locale contract/helper is introduced, `contentglowz_site/CLAUDE.md` may need a short note after implementation for future agents.
+- If a reusable locale contract/helper is introduced, `site/CLAUDE.md` may need a short note after implementation for future agents.
 
 ## Edge Cases
 - `/fr` should resolve as the French homepage, not require `/fr/` knowledge from callers.
@@ -228,22 +228,22 @@ Downstream:
 
 ## Implementation Tasks
 - [ ] Task 1: Create the locale contract and metadata helpers
-  - Files: `contentglowz_site/src/layouts/Layout.astro`, new helper(s) under `contentglowz_site/src/lib` or `src/data`
+  - Files: `site/src/layouts/Layout.astro`, new helper(s) under `site/src/lib` or `src/data`
   - Action: add explicit props/types for `locale`, `canonicalUrl`, and `alternateLocales`; normalize localized canonical generation and `hreflang` rendering in one place.
   - Validation: source inspection shows no hardcoded `<html lang="en">` left for localized pages.
 
 - [ ] Task 2: Extract or define bilingual content for the five core pages
-  - Files: new locale data file(s) under `contentglowz_site/src/data` or page-local shared modules
+  - Files: new locale data file(s) under `site/src/data` or page-local shared modules
   - Action: move user-facing strings for the five core pages into a small EN/FR structure, preserving redirect behavior and page intent.
   - Validation: each page can render EN and FR without mixed-language literals.
 
 - [ ] Task 3: Localize the homepage and shared shell for core scope
-  - Files: `contentglowz_site/src/pages/index.astro`, homepage components touched by visible copy, navbar/footer if needed
+  - Files: `site/src/pages/index.astro`, homepage components touched by visible copy, navbar/footer if needed
   - Action: feed localized props/content into homepage sections; add a safe language switcher or locale-aware links for supported pages.
   - Validation: EN homepage remains at `/`; FR homepage exists at `/fr`.
 
 - [ ] Task 4: Create French route files for handoff and privacy pages
-  - Files: `contentglowz_site/src/pages/fr/index.astro`, `fr/launch.astro`, `fr/sign-in.astro`, `fr/sign-up.astro`, `fr/privacy.astro`
+  - Files: `site/src/pages/fr/index.astro`, `fr/launch.astro`, `fr/sign-in.astro`, `fr/sign-up.astro`, `fr/privacy.astro`
   - Action: implement French routes by reusing shared content/logic and preserving `noindex` and redirect scripts where applicable.
   - Validation: build output contains each `/fr/...` route.
 
@@ -280,13 +280,13 @@ Downstream:
 - If canonical normalization is inconsistent, the site can emit duplicate or malformed URLs.
 
 ## Execution Notes
-- Read first: `contentglowz_site/CLAUDE.md`, `src/layouts/Layout.astro`, `src/pages/index.astro`, `src/pages/launch.astro`, `src/pages/sign-in.astro`, `src/pages/sign-up.astro`, `src/pages/privacy.astro`.
+- Read first: `site/CLAUDE.md`, `src/layouts/Layout.astro`, `src/pages/index.astro`, `src/pages/launch.astro`, `src/pages/sign-in.astro`, `src/pages/sign-up.astro`, `src/pages/privacy.astro`.
 - Prefer a small explicit locale helper over scattering string concatenation and pathname logic across pages.
 - Preserve current component structure where it still fits; refactor only enough to feed localized copy/links.
 - If a language switch UI is added, keep it inside the current site token system and avoid introducing raw spacing/color/typography literals outside the canonical token layer.
 - Do not add runtime locale detection, cookies, or external i18n libraries unless the existing code proves a compelling need.
 - Validation commands:
-  - `cd contentglowz_site && npm run build`
+  - `cd site && npm run build`
   - HTML inspection commands against `dist`
 - Stop conditions:
   - if homepage shared components require a whole-site i18n refactor beyond the five pages,
@@ -303,7 +303,7 @@ None.
 | 2026-06-12 12:03:54 UTC | 100-sf-spec | GPT-5 Codex | Created the bilingual core-pages spec from translation/SEO audit findings and explicit user decisions: bilingual fr/en, root=en, scope=coeur. | draft saved | /101-sf-ready shipflow_data/workflow/specs/site/SPEC-bilingual-fr-en-routing-seo-metadata-core-pages-2026-06-12.md |
 | 2026-06-12 12:10:00 UTC | 101-sf-ready | GPT-5 Codex | Reviewed structure, user-story alignment, metadata/doc gates, design-system and editorial constraints, and bounded proof contract for the bilingual core-pages site chantier. | ready | /102-sf-start shipflow_data/workflow/specs/site/SPEC-bilingual-fr-en-routing-seo-metadata-core-pages-2026-06-12.md |
 | 2026-06-12 12:20:30 UTC | 001-sf-build | GPT-5 Codex | Implemented the bilingual core-page routing, locale-aware shell, and EN/FR metadata contract; validated with local Astro build and generated HTML inspection. | partial | Closure and ship not run in this turn. |
-| 2026-06-12 12:45:00 UTC | 005-sf-ship | GPT-5 Codex | Closed and shipped the bilingual core-pages chantier with tracker/changelog updates, bug gate review, local build proof, commit, and push to `main`. | shipped | /405-sf-prod contentglowz_site |
+| 2026-06-12 12:45:00 UTC | 005-sf-ship | GPT-5 Codex | Closed and shipped the bilingual core-pages chantier with tracker/changelog updates, bug gate review, local build proof, commit, and push to `main`. | shipped | /405-sf-prod site |
 
 ## Current Chantier Flow
 

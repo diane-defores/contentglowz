@@ -16,27 +16,27 @@ docs_impact: yes
 linked_systems:
   - shipflow_data/technical/lab/code-docs-map.md
   - shipflow_data/technical/lab/ai-runtime-and-url-safety.md
-  - contentglowz_lab/requirements.txt
-  - contentglowz_lab/api/services/user_llm_service.py
-  - contentglowz_lab/agents/
+  - lab/requirements.txt
+  - lab/api/services/user_llm_service.py
+  - lab/agents/
 depends_on:
   - artifact: "shipflow_data/technical/external-platforms/crewai.md"
     artifact_version: "0.1.0"
     required_status: "draft"
 supersedes: []
 evidence:
-  - "contentglowz_lab/requirements.txt pins crewai>=1.6.1,<1.7 and notes newer CrewAI 1.14.x requires openai>=2.30."
-  - "contentglowz_lab imports CrewAI Agent, Task, Crew, Process, LLM, and @tool wrappers across SEO, psychology, newsletter, social, short, scheduler, and shared tools."
+  - "lab/requirements.txt pins crewai>=1.6.1,<1.7 and notes newer CrewAI 1.14.x requires openai>=2.30."
+  - "lab imports CrewAI Agent, Task, Crew, Process, LLM, and @tool wrappers across SEO, psychology, newsletter, social, short, scheduler, and shared tools."
   - "Contentglowz App references CrewAI as backend-owned; CrewAI usage belongs to the lab/backend surface."
 next_review: "2026-06-24"
-next_step: "/sf-docs technical audit contentglowz_lab"
+next_step: "/sf-docs technical audit lab"
 ---
 
 # CrewAI Usage
 
 ## Purpose
 
-Document how the Contentglowz monorepo uses CrewAI. This is the governance-root usage contract for the backend agent runtime, scoped primarily to `contentglowz_lab/`.
+Document how the Contentglowz monorepo uses CrewAI. This is the governance-root usage contract for the backend agent runtime, scoped primarily to `lab/`.
 
 Use the global CrewAI note for current source links and release behavior:
 
@@ -45,7 +45,7 @@ Use the global CrewAI note for current source links and release behavior:
 ## Usage Summary
 
 - Provider role: backend multi-agent orchestration for SEO, psychology, newsletter, short content, social posts, scheduler tooling, and shared research tools.
-- Applies to paths: `contentglowz_lab/agents/**`, `contentglowz_lab/api/routers/**`, `contentglowz_lab/api/services/user_llm_service.py`, `contentglowz_lab/requirements*.txt`.
+- Applies to paths: `lab/agents/**`, `lab/api/routers/**`, `lab/api/services/user_llm_service.py`, `lab/requirements*.txt`.
 - Environments used: local Python backend runtime, test runtime, deployed FastAPI backend when agent routes are enabled.
 - Validation surface: dependency policy, import/compile checks, focused agent tests, URL-safety tests for LLM-callable tools, API route tests, and live-provider smoke only when credentials are intentionally available.
 - Owner: Diane.
@@ -70,7 +70,7 @@ Use the global CrewAI note for current source links and release behavior:
 - `agents/seo/seo_crew.py` runs a unified six-agent SEO crew with `Process.sequential` and task-level Pydantic output schemas.
 - Several individual agents still create one-agent crews with `Crew(...).kickoff()`. Do not refactor these patterns without checking current CrewAI docs and local tests.
 - Shared Exa and Firecrawl tools are LLM-callable. URL safety must run before provider client creation, as documented in `shipflow_data/technical/lab/ai-runtime-and-url-safety.md`.
-- Contentglowz App should not own a CrewAI usage note. The Flutter app calls backend APIs; CrewAI orchestration is backend-owned by `contentglowz_lab`.
+- Contentglowz App should not own a CrewAI usage note. The Flutter app calls backend APIs; CrewAI orchestration is backend-owned by `lab`.
 
 ## Invariants
 
@@ -122,7 +122,7 @@ Run live-provider or full agent smoke tests only when the needed user/provider c
 
 ## Reader Checklist
 
-- `contentglowz_lab/requirements*.txt` or lockfiles changed -> check CrewAI, OpenAI, LiteLLM, Pydantic, Python version, and security advisory impact.
+- `lab/requirements*.txt` or lockfiles changed -> check CrewAI, OpenAI, LiteLLM, Pydantic, Python version, and security advisory impact.
 - `api/services/user_llm_service.py` changed -> verify request-scoped CrewAI `LLM` construction and no ambient key fallback.
 - `agents/**` changed and imports CrewAI -> check current global CrewAI note and this usage note.
 - `agents/shared/tools/exa_tools.py` or `agents/shared/tools/firecrawl_tools.py` changed -> verify URL safety and provider client creation order.

@@ -13,7 +13,7 @@
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrate `contentglowz_site` from Astro 5 to Astro 6 using the ready spec | ✅ done |
+| 🔴 | Migrate `site` from Astro 5 to Astro 6 using the ready spec | ✅ done |
 | 🟠 | Validate `npm run build` after migration and compare generated content routes, sitemap, `robots.txt`, and auth handoff pages | ✅ done |
 | 🟡 | Update site docs and changelog after the migration ships | ✅ done |
 | 🟠 | Ship bilingual `fr/en` blog routing with locale-aware metadata and locale-filtered indexes, tags, and articles | ✅ done |
@@ -42,12 +42,12 @@
 ## Audit Findings
 <!-- Populated by /sf-audit — dated sections with Fixed: / Remaining: -->
 
-✅ [contentglowz_site] task: Define site locale strategy and fix technical i18n metadata | status: done | area: translate
+✅ [site] task: Define site locale strategy and fix technical i18n metadata | status: done | area: translate
 
 ### Audit: Design Tokens (2026-05-10)
 
 | Pri | Task | Status |
 |-----|------|--------|
-| 🔴 | Migrer les 223 valeurs CSS site hardcodées de typographie, spacing, radius et motion vers les variables générées depuis `contentglowz_theme.json` | 🔄 in progress |
+| 🔴 | Migrer les 223 valeurs CSS site hardcodées de typographie, spacing, radius et motion vers les variables générées depuis `tools/design-tokens/contentglowz_theme.json` | 🔄 in progress |
 | 🟠 | Remplacer les couleurs directes restantes (`white`, `rgba`, hex affichés hors cas de documentation) par variables sémantiques | 📋 todo |
 | 🟠 | Ajouter des variables CSS mobile-first compactes pour sections, cards, listes, CTA et pages article/blog | 📋 todo |

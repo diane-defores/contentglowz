@@ -15,9 +15,9 @@ security_impact: none
 docs_impact: yes
 user_story: "En tant qu'équipe ShipFlow, nous voulons un emplacement canonique unique `shipflow_data/**` pour la gouvernance docs sur les 3 repos afin d'éviter drift, doublons et incohérences de migration."
 linked_systems:
-  - contentglowz_app
-  - contentglowz_site
-  - contentglowz_lab
+  - app
+  - site
+  - lab
 depends_on: []
 supersedes: []
 evidence:
@@ -29,7 +29,7 @@ next_step: "/sf-start shipflow_data/workflow/specs/monorepo/SPEC-shipflow-data-g
 
 ## Objectif
 
-Aligner `contentglowz_app`, `contentglowz_site` et `contentglowz_lab` sur la doctrine ShipFlow qui impose un emplacement canonique dans `shipflow_data/**` pour les artefacts de gouvernance, sans duplication de source de vérité.
+Aligner `app`, `site` et `lab` sur la doctrine ShipFlow qui impose un emplacement canonique dans `shipflow_data/**` pour les artefacts de gouvernance, sans duplication de source de vérité.
 
 ## Scope In
 
@@ -41,7 +41,7 @@ Aligner `contentglowz_app`, `contentglowz_site` et `contentglowz_lab` sur la doc
 ## Scope Out
 
 - Réécriture éditoriale du contenu métier.
-- Migration des trackers opérationnels (`TASKS.md`, `AUDIT_LOG.md`, `TEST_LOG.md`, `BUGS.md`).
+- Migration des trackers opérationnels (`TASKS.md`, `AUDIT_LOG.md`, `shipflow_data/workflow/qa/TEST_LOG.md`, `BUGS.md`).
 - Refonte des specs fonctionnelles hors impact de chemins.
 
 ## Canonical Mapping Contract
@@ -59,19 +59,19 @@ Aligner `contentglowz_app`, `contentglowz_site` et `contentglowz_lab` sur la doc
 
 ## État initial par repo (résumé)
 
-### `contentglowz_app`
+### `app`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` présent; `docs/editorial` absent.
 - `AGENTS.md` absent.
 
-### `contentglowz_site`
+### `site`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` et `docs/editorial` présents.
 - `AGENTS.md` absent.
 
-### `contentglowz_lab`
+### `lab`
 
 - Fichiers de gouvernance racine présents.
 - `docs/technical` présent; beaucoup de `.md` legacy hors frontmatter.
@@ -133,7 +133,7 @@ find shipflow_data -type f -name "*.md" | sort
 
 ## Minimal Behavior Contract
 
-- Trigger: migration de gouvernance demandée sur `contentglowz_app`, `contentglowz_site`, `contentglowz_lab`.
+- Trigger: migration de gouvernance demandée sur `app`, `site`, `lab`.
 - Input: artefacts legacy en racine et sous `docs/technical/**`.
 - Output: artefacts canoniques déplacés vers `shipflow_data/**`, références mises à jour, compatibilité `AGENT.md`/`AGENTS.md` préservée.
 - Failure behavior: si un repo ne peut pas être migré proprement, il est marqué `blocked` sans contaminer les deux autres.

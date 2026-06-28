@@ -2,7 +2,7 @@
 artifact: code_docs_map
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_site
+project: site
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -25,9 +25,9 @@ depends_on:
     required_status: draft
 supersedes: []
 evidence:
-  - "Baseline map created after metadata compliance audit found no technical governance layer for contentglowz_site."
+  - "Baseline map created after metadata compliance audit found no technical governance layer for site."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_site"
+next_step: "/sf-docs technical audit site"
 ---
 
 # Code Docs Map

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:30:12 UTC"
 updated: "2026-05-10"
@@ -18,12 +18,12 @@ risk_level: medium
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app Flutter editor"
-  - "contentglowz_app Markdown preview"
-  - "contentglowz_app Riverpod content detail state"
-  - "contentglowz_app ApiService content body save/versioning"
-  - "contentglowz_lab status body versioning"
-  - "contentglowz_lab publish router"
+  - "app Flutter editor"
+  - "app Markdown preview"
+  - "app Riverpod content detail state"
+  - "app ApiService content body save/versioning"
+  - "lab status body versioning"
+  - "lab publish router"
 depends_on:
   - artifact: "shipflow_data/workflow/specs/app/SPEC-content-editing-infrastructure.md"
     artifact_version: "0.1.0"
@@ -138,8 +138,8 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
   - `test/data/content_item_test.dart`
   - New focused tests for formatting transforms if helpers are extracted.
 - Backend contracts:
-  - `../contentglowz_lab/api/routers/status.py`
-  - `../contentglowz_lab/status/service.py`
+  - `../lab/api/routers/status.py`
+  - `../lab/status/service.py`
 - Fresh external docs verdict: `fresh-docs not needed` for V1 because it uses existing local Flutter `TextField`, `TextEditingController`, and `flutter_markdown` contracts and does not add a new framework, SDK, service, or package. A later dependency-based editor must run a fresh docs/license/platform check in a separate readiness pass.
 
 ## Invariants
@@ -163,7 +163,7 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
 ## Documentation Coherence
 
 - Update `CHANGELOG.md` after the feature ships.
-- Update `contentglowz_app/README.md` only if user-facing editing behavior is documented there.
+- Update `app/README.md` only if user-facing editing behavior is documented there.
 - Update localization strings for toolbar labels and dialogs.
 - No marketing-site copy change is required until the feature is actually implemented and verified.
 
@@ -276,7 +276,7 @@ Add a universal rich editing toolbar and editing behavior on top of the existing
 - V1 implementation approach: use a Markdown-backed toolbar on the existing `TextField`, `TextEditingController`, and `flutter_markdown` preview.
 - Do not implement arbitrary colors in V1.
 - Read first: `lib/presentation/screens/editor/editor_screen.dart`, `lib/presentation/screens/editor/platform_preview_sheet.dart`, `lib/providers/providers.dart`, `lib/data/services/api_service.dart`, and `test/presentation/screens/editor/editor_screen_test.dart`.
-- Suggested validation commands: `flutter test test/presentation/screens/editor/editor_screen_test.dart` and `flutter test test/data/content_item_test.dart` from `contentglowz_app`.
+- Suggested validation commands: `flutter test test/presentation/screens/editor/editor_screen_test.dart` and `flutter test test/data/content_item_test.dart` from `app`.
 - Stop conditions: if the existing text controller cannot support stable selection transforms, if `flutter_markdown` cannot render an offered toolbar feature, if a new package becomes necessary, or if storage format changes become necessary.
 - Keep helper functions pure and heavily tested before wiring UI buttons.
 - If implementation later needs a new package, stop and create a follow-up spec or readiness note with official docs, license, platform support, and migration/storage implications.

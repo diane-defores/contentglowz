@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-06-12"
 created_at: "2026-06-12 12:54:44 UTC"
 updated: "2026-06-12"
@@ -12,23 +12,23 @@ source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "Diane"
-user_story: "En tant que mainteneur de contentglowz_app, je veux nettoyer les dépendances Flutter inutiles et rendre l'installation Flutter de build reproductible, afin de réduire le risque supply-chain, la dette de maintenance et les futures migrations cassantes sans changer le comportement produit."
+user_story: "En tant que mainteneur de app, je veux nettoyer les dépendances Flutter inutiles et rendre l'installation Flutter de build reproductible, afin de réduire le risque supply-chain, la dette de maintenance et les futures migrations cassantes sans changer le comportement produit."
 risk_level: "medium"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app/pubspec.yaml"
-  - "contentglowz_app/pubspec.lock"
-  - "contentglowz_app/scripts/vercel-install.sh"
-  - "contentglowz_app/scripts/vercel-build.sh"
-  - "contentglowz_app/build.sh"
-  - "contentglowz_app/pm2-web.sh"
-  - "contentglowz_app/.github/dependabot.yml"
-  - "contentglowz_app/.flutter-version"
-  - "contentglowz_app/lib/"
-  - "contentglowz_app/test/"
+  - "app/pubspec.yaml"
+  - "app/pubspec.lock"
+  - "app/scripts/vercel-install.sh"
+  - "app/scripts/vercel-build.sh"
+  - "app/build.sh"
+  - "app/pm2-web.sh"
+  - "app/.github/dependabot.yml"
+  - "app/.flutter-version"
+  - "app/lib/"
+  - "app/test/"
 depends_on:
-  - artifact: "contentglowz_app/CLAUDE.md"
+  - artifact: "app/CLAUDE.md"
     artifact_version: "unknown"
     required_status: "reviewed"
   - artifact: "shipflow_data/workflow/specs/app/SPEC-migrate-flutter-core-majors.md"
@@ -48,16 +48,16 @@ evidence:
   - "`flutter analyze` on 2026-06-12 reported only two non-blocking warnings in `lib/data/services/api_service.dart`, unrelated to this dependency-hygiene perimeter."
   - "Targeted Flutter tests for bootstrap, access resume, entry flow, resume-no-jump routing, and projects screen all passed on 2026-06-12."
   - "Attempting the hardened Vercel install path failed on local disk exhaustion during Flutter archive extraction, so runtime proof of that path is partial and environment-blocked rather than disproved."
-next_step: "/005-sf-ship contentglowz_app dependency hygiene and reproducible Flutter install"
+next_step: "/005-sf-ship app dependency hygiene and reproducible Flutter install"
 ---
 
-# Spec: contentglowz_app dependency hygiene and reproducible Flutter install
+# Spec: app dependency hygiene and reproducible Flutter install
 
-🟠 [contentglowz_app] spec: dependency hygiene and reproducible Flutter install | status: closed | path: shipflow_data/workflow/specs/app/SPEC-contentglowz-app-dependency-hygiene-and-reproducible-flutter-install-2026-06-12.md | next: /005-sf-ship contentglowz_app dependency hygiene and reproducible Flutter install
+🟠 [app] spec: dependency hygiene and reproducible Flutter install | status: closed | path: shipflow_data/workflow/specs/app/SPEC-contentglowz-app-dependency-hygiene-and-reproducible-flutter-install-2026-06-12.md | next: /005-sf-ship app dependency hygiene and reproducible Flutter install
 
 ## Title
 
-contentglowz_app dependency hygiene and reproducible Flutter install
+app dependency hygiene and reproducible Flutter install
 
 ## Status
 
@@ -69,7 +69,7 @@ Closed after verified local proof and bookkeeping alignment. The repo already ap
 
 ## User Story
 
-En tant que mainteneur de `contentglowz_app`, je veux nettoyer les dépendances Flutter inutiles et rendre l'installation Flutter de build reproductible, afin de réduire le risque supply-chain, la dette de maintenance et les futures migrations cassantes sans changer le comportement produit.
+En tant que mainteneur de `app`, je veux nettoyer les dépendances Flutter inutiles et rendre l'installation Flutter de build reproductible, afin de réduire le risque supply-chain, la dette de maintenance et les futures migrations cassantes sans changer le comportement produit.
 
 ## Minimal Behavior Contract
 
@@ -115,14 +115,14 @@ Le chantier préfère la plus petite implémentation professionnelle complète: 
 
 ## Scope In
 
-- `contentglowz_app/pubspec.yaml`
-- `contentglowz_app/pubspec.lock`
-- `contentglowz_app/scripts/vercel-install.sh`
-- `contentglowz_app/scripts/vercel-build.sh`
-- `contentglowz_app/build.sh`
-- `contentglowz_app/pm2-web.sh`
-- `contentglowz_app/.flutter-version`
-- validation des imports/usages sous `contentglowz_app/lib/` et `contentglowz_app/test/`
+- `app/pubspec.yaml`
+- `app/pubspec.lock`
+- `app/scripts/vercel-install.sh`
+- `app/scripts/vercel-build.sh`
+- `app/build.sh`
+- `app/pm2-web.sh`
+- `app/.flutter-version`
+- validation des imports/usages sous `app/lib/` et `app/test/`
 - documentation locale si la stratégie d’installation ou les commandes changent réellement
 
 ## Scope Out
@@ -131,7 +131,7 @@ Le chantier préfère la plus petite implémentation professionnelle complète: 
 - Toute migration Flutter SDK majeure du projet au-delà du pinning/reproductibility concerné
 - Toute refonte UI/UX ou design-system
 - Toute mutation backend, Turso, FastAPI, Remotion, ou site Astro
-- Toute nouvelle automation de release plus large que le besoin de build reproductible de `contentglowz_app`
+- Toute nouvelle automation de release plus large que le besoin de build reproductible de `app`
 - Toute suppression agressive de dépendances sans preuve de non-usage
 
 ## Constraints
@@ -143,7 +143,7 @@ Le chantier préfère la plus petite implémentation professionnelle complète: 
 - Toute stratégie d’installation Flutter doit rester compatible avec le modèle de build Vercel actuel du repo.
 - Le chantier doit prouver le comportement avec des commandes locales; ne pas demander à l’opératrice de vérifier des logs que l’agent peut lire lui-même.
 - Aucune conclusion “unused” n’est acceptable sans vérifier imports, génération de code, scripts, et dépendances de build.
-- La source de vérité Flutter SDK doit être unique et vérifiée: `contentglowz_app/.flutter-version`. `scripts/vercel-install.sh` ne doit jamais retomber sur une valeur flottante ou sur `stable` en l’absence de version explicite.
+- La source de vérité Flutter SDK doit être unique et vérifiée: `app/.flutter-version`. `scripts/vercel-install.sh` ne doit jamais retomber sur une valeur flottante ou sur `stable` en l’absence de version explicite.
 
 ## Test Contract
 
@@ -202,10 +202,10 @@ Exceptions:
 ## Dependencies
 
 Internal:
-- `contentglowz_app/CLAUDE.md`
+- `app/CLAUDE.md`
 - `shipflow_data/workflow/specs/app/SPEC-migrate-flutter-core-majors.md`
 - `shipflow_data/workflow/specs/app/SPEC-record-package-migration-flutter-3-41.md`
-- `contentglowz_app/.github/dependabot.yml`
+- `app/.github/dependabot.yml`
 
 External freshness verdict: `fresh-docs checked`
 
@@ -226,7 +226,7 @@ External rules that affect this spec:
 
 ## Invariants
 
-- `contentglowz_app` remains buildable as a Flutter web app with the same product flows.
+- `app` remains buildable as a Flutter web app with the same product flows.
 - No auth/session contract changes are introduced.
 - No offline storage schema or queue behavior changes are introduced.
 - No new package source outside trusted hosted Pub artifacts is introduced.
@@ -242,7 +242,7 @@ External rules that affect this spec:
 
 ## Documentation Coherence
 
-- Update `contentglowz_app/README.md` or local build docs only if the Flutter install/build workflow used by maintainers actually changes.
+- Update `app/README.md` or local build docs only if the Flutter install/build workflow used by maintainers actually changes.
 - If the chosen install strategy depends on a pinned version variable or archive URL, document the single source of truth for that version.
 - If a dependency thought dead is intentionally kept for hidden tooling reasons, capture that rationale in the spec execution notes or follow-up docs to avoid repeating the audit ambiguity.
 
@@ -257,7 +257,7 @@ External rules that affect this spec:
 ## Implementation Tasks
 
 - [ ] Tâche 1: Prouver l’usage réel des dépendances directes suspectes
-  - Fichier : `contentglowz_app/pubspec.yaml`
+  - Fichier : `app/pubspec.yaml`
   - Action : vérifier imports, fichiers générés, annotations, scripts et besoins build pour `riverpod_annotation`, `json_annotation`, `cached_network_image`, `responsive_framework`, puis classer chaque package en `dead`, `live`, ou `uncertain`.
   - User story link : éviter de garder des dépendances mortes ou d’en casser une encore utile.
   - Depends on : aucune
@@ -265,8 +265,8 @@ External rules that affect this spec:
   - Notes : cette tâche inclut la preuve sur `build_runner`, `json_serializable`, et `riverpod_generator`.
 
 - [ ] Tâche 2: Nettoyer le manifest et le lockfile selon la preuve du lot 1
-  - Fichier : `contentglowz_app/pubspec.yaml`
-  - Fichier : `contentglowz_app/pubspec.lock`
+  - Fichier : `app/pubspec.yaml`
+  - Fichier : `app/pubspec.lock`
   - Action : retirer uniquement les dépendances prouvées mortes et exécuter la résolution Pub correspondante.
   - User story link : réduire la dette sans changer le comportement produit.
   - Depends on : Tâche 1
@@ -274,17 +274,17 @@ External rules that affect this spec:
   - Notes : si une dépendance est `uncertain`, ne pas la supprimer dans ce chantier sans preuve supplémentaire.
 
 - [ ] Tâche 3: Remplacer l’installation Flutter flottante par une stratégie reproductible
-  - Fichier : `contentglowz_app/scripts/vercel-install.sh`
-  - Fichier : `contentglowz_app/scripts/vercel-build.sh`
-  - Action : remplacer le `git clone --branch stable` par une récupération Flutter à partir de la version déclarée dans `contentglowz_app/.flutter-version`, compatible avec le modèle de build Vercel.
+  - Fichier : `app/scripts/vercel-install.sh`
+  - Fichier : `app/scripts/vercel-build.sh`
+  - Action : remplacer le `git clone --branch stable` par une récupération Flutter à partir de la version déclarée dans `app/.flutter-version`, compatible avec le modèle de build Vercel.
   - User story link : réduire le risque supply-chain et rendre les builds explicables.
   - Depends on : Tâche 1
   - Validate with : lecture de diff + exécution du chemin d’installation ou vérification shell ciblée
   - Notes : garder le blast radius minimal; ne pas transformer ce chantier en refonte CI.
 
 - [ ] Tâche 4: Aligner les scripts locaux sur la source de vérité Flutter si nécessaire
-  - Fichier : `contentglowz_app/build.sh`
-  - Fichier : `contentglowz_app/pm2-web.sh`
+  - Fichier : `app/build.sh`
+  - Fichier : `app/pm2-web.sh`
   - Action : si le chantier introduit une variable ou une convention unique de version Flutter, aligner les scripts locaux pour éviter deux sources de vérité contradictoires.
   - User story link : éviter un drift entre build local et build Vercel.
   - Depends on : Tâche 3
@@ -292,8 +292,8 @@ External rules that affect this spec:
   - Notes : ne modifier ces scripts que si la divergence devient réelle.
 
 - [ ] Tâche 5: Appliquer les patch/minor updates sûres et résolubles
-  - Fichier : `contentglowz_app/pubspec.yaml`
-  - Fichier : `contentglowz_app/pubspec.lock`
+  - Fichier : `app/pubspec.yaml`
+  - Fichier : `app/pubspec.lock`
   - Action : mettre à jour seulement les packages patch/minor validés sûrs par `flutter pub outdated`, puis rerésoudre.
   - User story link : réduire la dette de currency sans ouvrir un chantier de migration.
   - Depends on : Tâche 2, Tâche 3
@@ -301,8 +301,8 @@ External rules that affect this spec:
   - Notes : si une régression de build/analyze/test survient, arrêter ce lot et déférer la dépendance ou le groupe à un migration-only spec.
 
 - [ ] Tâche 6: Exécuter la preuve technique complète du lot
-  - Fichier : `contentglowz_app/lib/`
-  - Fichier : `contentglowz_app/test/`
+  - Fichier : `app/lib/`
+  - Fichier : `app/test/`
   - Action : lancer analyze, les tests ciblés, et le build web ou son exception avec preuve, puis consigner ce qui a été effectivement démontré.
   - User story link : prouver que le nettoyage et le hardening n’ont pas cassé l’app.
   - Depends on : Tâche 5
@@ -326,8 +326,8 @@ External rules that affect this spec:
 - Build proof: `flutter build web --release` if env is available; otherwise document precise blocking env input and validate script coherence.
 - Trust proof: inspect the resulting install/build scripts for pinned version source and lack of floating branch clone.
 - Gate proof:
-  - `test -s contentglowz_app/.flutter-version` and `cat contentglowz_app/.flutter-version`
-  - `rg "FLUTTER_VERSION|branch stable" contentglowz_app/scripts/vercel-install.sh`
+  - `test -s app/.flutter-version` and `cat app/.flutter-version`
+  - `rg "FLUTTER_VERSION|branch stable" app/scripts/vercel-install.sh`
   - vérifier qu’un run de `flutter --version` produit la version attendue après install.
 
 ## Risks
@@ -352,13 +352,13 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-12 12:54:44 UTC | 100-sf-spec | GPT-5 Codex | Created a new chantier spec from the dependency audit intake for `contentglowz_app`, preserving the audit evidence, proposed title, severity, and follow-up route. | draft saved | `/101-sf-ready contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 13:03:00 UTC | 101-sf-ready | GPT-5 Codex | Reviewed the spec against readiness, adversarial, and security gates. | not ready | `/101-sf-ready contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 16:08:37 UTC | 100-sf-spec | GPT-5 Codex | Reconciled the spec with the repo state after direct verification of manifest cleanup, pinned Flutter script hardening, targeted tests, and the remaining Vercel runtime proof gap caused by local disk exhaustion. | draft updated | `/101-sf-ready contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 16:09:43 UTC | 101-sf-ready | GPT-5 Codex | Re-ran the readiness gate after reconciling the spec with the actual repo state and making the test-contract and proof exceptions explicit. | ready | `/102-sf-start contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 16:21:41 UTC | 102-sf-start | GPT-5 Codex | Re-verified the current implementation state with dependency-usage scans, `flutter pub get`, `flutter pub outdated`, `flutter analyze`, targeted Flutter tests, and a retried `scripts/vercel-install.sh` run after removing the untracked `.vercel/` cache to recover disk. The hardened install path resolved the pinned Flutter archive and passed SHA256 verification, but archive extraction still failed on local `No space left on device` before the host-arch note could complete. | implemented | `/103-sf-verify contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 16:24:13 UTC | 103-sf-verify | GPT-5 Codex | Verified the chantier against the spec's exception-with-proof contract and the app's hybrid development mode. Proof is sufficient: removed direct/codegen packages remain absent and unused, no generated `*.g.dart` or `*.freezed.dart` files exist, `.flutter-version` remains the single Flutter SDK authority, `flutter pub get` passed, `flutter pub outdated` leaves only the out-of-scope `record` major drift, shell syntax checks passed, `flutter analyze` passed with only two unrelated warnings, targeted Flutter tests passed, and the hardened Vercel install path proved pinned archive resolution plus SHA256 verification. The remaining installer stop was local disk exhaustion during archive extraction on an aarch64 host while the script intentionally targets the Vercel x64 Linux archive, so the gap is environmental rather than a contract failure. | verified | `/104-sf-end contentglowz_app dependency hygiene and reproducible Flutter install` |
-| 2026-06-12 16:28:13 UTC | 104-sf-end | GPT-5 Codex | Closed the chantier from a verification standpoint without extending the proof claim: the spec trace is now aligned with the verified state, both root/app task trackers were already done and required no mutation, and the changelog now records the dependency-hygiene plus reproducible Flutter install work. | closed | `/005-sf-ship contentglowz_app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 12:54:44 UTC | 100-sf-spec | GPT-5 Codex | Created a new chantier spec from the dependency audit intake for `app`, preserving the audit evidence, proposed title, severity, and follow-up route. | draft saved | `/101-sf-ready app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 13:03:00 UTC | 101-sf-ready | GPT-5 Codex | Reviewed the spec against readiness, adversarial, and security gates. | not ready | `/101-sf-ready app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:08:37 UTC | 100-sf-spec | GPT-5 Codex | Reconciled the spec with the repo state after direct verification of manifest cleanup, pinned Flutter script hardening, targeted tests, and the remaining Vercel runtime proof gap caused by local disk exhaustion. | draft updated | `/101-sf-ready app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:09:43 UTC | 101-sf-ready | GPT-5 Codex | Re-ran the readiness gate after reconciling the spec with the actual repo state and making the test-contract and proof exceptions explicit. | ready | `/102-sf-start app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:21:41 UTC | 102-sf-start | GPT-5 Codex | Re-verified the current implementation state with dependency-usage scans, `flutter pub get`, `flutter pub outdated`, `flutter analyze`, targeted Flutter tests, and a retried `scripts/vercel-install.sh` run after removing the untracked `.vercel/` cache to recover disk. The hardened install path resolved the pinned Flutter archive and passed SHA256 verification, but archive extraction still failed on local `No space left on device` before the host-arch note could complete. | implemented | `/103-sf-verify app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:24:13 UTC | 103-sf-verify | GPT-5 Codex | Verified the chantier against the spec's exception-with-proof contract and the app's hybrid development mode. Proof is sufficient: removed direct/codegen packages remain absent and unused, no generated `*.g.dart` or `*.freezed.dart` files exist, `.flutter-version` remains the single Flutter SDK authority, `flutter pub get` passed, `flutter pub outdated` leaves only the out-of-scope `record` major drift, shell syntax checks passed, `flutter analyze` passed with only two unrelated warnings, targeted Flutter tests passed, and the hardened Vercel install path proved pinned archive resolution plus SHA256 verification. The remaining installer stop was local disk exhaustion during archive extraction on an aarch64 host while the script intentionally targets the Vercel x64 Linux archive, so the gap is environmental rather than a contract failure. | verified | `/104-sf-end app dependency hygiene and reproducible Flutter install` |
+| 2026-06-12 16:28:13 UTC | 104-sf-end | GPT-5 Codex | Closed the chantier from a verification standpoint without extending the proof claim: the spec trace is now aligned with the verified state, both root/app task trackers were already done and required no mutation, and the changelog now records the dependency-hygiene plus reproducible Flutter install work. | closed | `/005-sf-ship app dependency hygiene and reproducible Flutter install` |
 
 ## Current Chantier Flow
 

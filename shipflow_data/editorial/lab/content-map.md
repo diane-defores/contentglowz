@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -42,7 +42,7 @@ next_step: /sf-docs audit shipflow_data/editorial/lab/content-map.md
 
 ## Contexte global
 
-Ce document mappe les surfaces de contenu/contrat de `contentglowz_lab` utiles aux équipes produit, docs et opérations.
+Ce document mappe les surfaces de contenu/contrat de `lab` utiles aux équipes produit, docs et opérations.
 
 ## 1. Points d’entrée de documentation
 
@@ -107,8 +107,8 @@ Ce document mappe les surfaces de contenu/contrat de `contentglowz_lab` utiles a
 
 ## 6. Relations inter-repo
 
-- `contentglowz_app` consomme ce backend pour la couche auth/projets/flux de contenu.
-- `contentglowz_site` peut consommer les points d’entrée de dashboard/auth/web.
+- `app` consomme ce backend pour la couche auth/projets/flux de contenu.
+- `site` peut consommer les points d’entrée de dashboard/auth/web.
 
 ## 7. Cartographie des documents à maintenir
 

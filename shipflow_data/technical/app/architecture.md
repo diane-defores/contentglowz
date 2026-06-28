@@ -2,7 +2,7 @@
 artifact: architecture_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-26"
 updated: "2026-05-10"
 status: reviewed
@@ -35,8 +35,8 @@ depends_on:
     required_status: "draft"
 supersedes: []
 linked_systems:
-  - "contentglowz_lab FastAPI services"
-  - "contentglowz_site marketing surface"
+  - "lab FastAPI services"
+  - "site marketing surface"
   - "ClerkJS auth"
 external_dependencies:
   - "Flutter SDK 3.11+"
@@ -52,7 +52,7 @@ next_review: "2026-07-26"
 next_step: "/sf-docs update shipflow_data/technical/app/architecture.md"
 ---
 
-# shipflow_data/technical/app/architecture.md — contentglowz_app (Flutter + FastAPI + Clerk)
+# shipflow_data/technical/app/architecture.md — app (Flutter + FastAPI + Clerk)
 
 ## 1) High-level architecture
 

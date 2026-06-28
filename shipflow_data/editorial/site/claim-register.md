@@ -2,7 +2,7 @@
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_site
+project: site
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -38,7 +38,7 @@ supersedes: []
 evidence:
   - "Baseline claim register created for public site governance."
 next_review: "2026-06-06"
-next_step: "/sf-docs editorial audit contentglowz_site"
+next_step: "/sf-docs editorial audit site"
 ---
 
 # Claim Register

@@ -2,7 +2,7 @@
 artifact: technical_docs_index
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: contentglowz_lab
+project: lab
 created: "2026-05-04"
 updated: "2026-05-04"
 status: draft
@@ -24,7 +24,7 @@ evidence:
   - "sf-build resumed SPEC-migrate-pydantic-ai-major.md and found no technical docs map."
   - "CrewAI governance-root usage note added because CrewAI is core backend orchestration infrastructure."
 next_review: "2026-06-04"
-next_step: "/sf-docs technical audit contentglowz_lab"
+next_step: "/sf-docs technical audit lab"
 ---
 
 # Technical Docs
@@ -36,7 +36,7 @@ Start with `code-docs-map.md`. Load only the mapped module context for the files
 ## Current Coverage
 
 - `ai-runtime-and-url-safety.md`: PydanticAI adapter, BYOK OpenRouter key resolution, repo understanding synthesis, and URL safety for Exa/Firecrawl.
-- `../platforms/crewai.md`: CrewAI version policy, request-scoped LLM routing, agent/tool boundaries, structured outputs, and migration risks for `contentglowz_lab`.
+- `../platforms/crewai.md`: CrewAI version policy, request-scoped LLM routing, agent/tool boundaries, structured outputs, and migration risks for `lab`.
 
 ## Maintenance Rule
 

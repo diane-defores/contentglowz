@@ -14,14 +14,14 @@ risk_level: "high"
 security_impact: "no"
 docs_impact: "yes"
 content_surfaces:
-  - "contentglowz_app"
-  - "contentglowz_site"
+  - "app"
+  - "site"
 linked_systems:
-  - "contentglowz_theme.json"
-  - "tools/generate_app_theme_tokens.mjs"
-  - "contentglowz_app/lib/presentation/theme/app_theme_tokens.dart"
-  - "contentglowz_app/lib/presentation/theme/app_theme.dart"
-  - "contentglowz_site/src/layouts/Layout.astro"
+  - "tools/design-tokens/contentglowz_theme.json"
+  - "tools/design-tokens/generate_app_theme_tokens.mjs"
+  - "app/lib/presentation/theme/app_theme_tokens.dart"
+  - "app/lib/presentation/theme/app_theme.dart"
+  - "site/src/layouts/Layout.astro"
 depends_on:
   - artifact: "shipflow_data/technical/app/guidelines.md"
     artifact_version: "1.0.0"
@@ -37,9 +37,9 @@ depends_on:
     required_status: "reviewed"
 supersedes: []
 evidence:
-  - "Code scan: `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart` and `contentglowz_app/lib/presentation/theme/app_theme.dart` are explicit Flutter token layers."
-  - "Site scan: `contentglowz_site/src/layouts/Layout.astro` injects shared CSS variables from `contentglowz_theme.json`."
-  - "Token generator source: `tools/generate_app_theme_tokens.mjs` transforms `contentglowz_theme.json` into `app_theme_tokens.dart`."
+  - "Code scan: `app/lib/presentation/theme/app_theme_tokens.dart` and `app/lib/presentation/theme/app_theme.dart` are explicit Flutter token layers."
+  - "Site scan: `site/src/layouts/Layout.astro` injects shared CSS variables from `tools/design-tokens/contentglowz_theme.json`."
+  - "Token generator source: `tools/design-tokens/generate_app_theme_tokens.mjs` transforms `tools/design-tokens/contentglowz_theme.json` into `app_theme_tokens.dart`."
   - "Cross-project design-token drift baseline: `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/contentglowz --warn-only --format markdown --max-findings 5000`."
 next_step: "run 503-sf-audit-design-tokens contentglowz"
 ---
@@ -49,13 +49,13 @@ next_step: "run 503-sf-audit-design-tokens contentglowz"
 ## 1) Canonical token sources
 
 ### App (Flutter)
-- **Primary source**: `contentglowz_theme.json`
-- **Token adapter**: `tools/generate_app_theme_tokens.mjs`
-- **Theme mapping**: `contentglowz_app/lib/presentation/theme/app_theme_tokens.dart` and `contentglowz_app/lib/presentation/theme/app_theme.dart`
+- **Primary source**: `tools/design-tokens/contentglowz_theme.json`
+- **Token adapter**: `tools/design-tokens/generate_app_theme_tokens.mjs`
+- **Theme mapping**: `app/lib/presentation/theme/app_theme_tokens.dart` and `app/lib/presentation/theme/app_theme.dart`
 
 ### Site (Astro)
-- **Primary source**: `contentglowz_theme.json`
-- **Theme injection**: `contentglowz_site/src/layouts/Layout.astro`
+- **Primary source**: `tools/design-tokens/contentglowz_theme.json`
+- **Theme injection**: `site/src/layouts/Layout.astro`
 
 ## 2) Authoritative rule
 
@@ -97,14 +97,14 @@ Any change introducing or modifying **colors, typography, spacing, radii, shadow
 
 ## 5) Temporary exceptions
 
-- `contentglowz_app/web_auth/clerk-auth.css` is an external Clerk auth shell and keeps legacy values until migrated behind shared tokens.
-- `contentglowz_site/dist/**` and other generated build artifacts are non-authoritative.
-- `contentglowz_lab/venv/**` and other dependency artifacts are out of scope of product UI contracts.
+- `app/web_auth/clerk-auth.css` is an external Clerk auth shell and keeps legacy values until migrated behind shared tokens.
+- `site/dist/**` and other generated build artifacts are non-authoritative.
+- `lab/venv/**` and other dependency artifacts are out of scope of product UI contracts.
 
 ## 6) Change process
 
 For every style-related commit:
-1. Update canonical token source first (`contentglowz_theme.json`) or the token injection path that feeds both app and site.
+1. Update canonical token source first (`tools/design-tokens/contentglowz_theme.json`) or the token injection path that feeds both app and site.
 2. Regenerate app tokens where relevant.
 3. Consume the value through shared helpers/variables.
 4. Run the token-drift check with generated/output artifacts excluded from evidence.

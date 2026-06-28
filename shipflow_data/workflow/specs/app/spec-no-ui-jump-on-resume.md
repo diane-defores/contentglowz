@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-25"
 updated: "2026-05-10"
 status: ready
@@ -55,7 +55,7 @@ La resolution d'acces continue de tourner au resume pour garder la fiabilite (re
 - Nouvelle logique metier onboarding/projets.
 
 ## Constraints
-- Respecter les conventions locales-first de `contentglowz_app` (degraded mode et cache restent actifs).
+- Respecter les conventions locales-first de `app` (degraded mode et cache restent actifs).
 - Conserver la compatibilite GoRouter existante (`/entry`, `/onboarding`, shell routes, editor route).
 - Ne pas introduire de regressions sur les transitions legitimes: signedOut -> `/entry`, ready sur `/entry` -> `/feed`.
 - Le comportement doit rester coherent sur Flutter mobile et Flutter web.

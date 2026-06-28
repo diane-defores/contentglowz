@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.1"
-project: "contentglowz_site"
+project: "site"
 created: "2026-06-12"
 created_at: "2026-06-12 13:10:00 UTC"
 updated: "2026-06-12"
@@ -22,7 +22,7 @@ linked_systems:
   - "Blog post layout metadata"
   - "Shared CTA and shell links"
 depends_on:
-  - artifact: "contentglowz_site/CLAUDE.md"
+  - artifact: "site/CLAUDE.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/editorial/site/content-map.md"
@@ -41,9 +41,9 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: "draft"
 evidence:
-  - "contentglowz_site/src/pages/blog/index.astro lists published blog posts without locale split while the blog corpus already mixes EN and FR content."
-  - "contentglowz_site/src/pages/blog/tag/[tag].astro and src/pages/blog/[...slug].astro inherit the same mixed-locale assumption."
-  - "contentglowz_site/src/layouts/BlogPost.astro formats UI chrome in English and receives no explicit locale from content entries."
+  - "site/src/pages/blog/index.astro lists published blog posts without locale split while the blog corpus already mixes EN and FR content."
+  - "site/src/pages/blog/tag/[tag].astro and src/pages/blog/[...slug].astro inherit the same mixed-locale assumption."
+  - "site/src/layouts/BlogPost.astro formats UI chrome in English and receives no explicit locale from content entries."
   - "User decision 2026-06-12: site bilingue fr/en, root=en, continuer avec le reste après les pages coeur."
 next_step: "/101-sf-ready shipflow_data/workflow/specs/site/SPEC-bilingual-fr-en-blog-routing-and-locale-metadata-2026-06-12.md"
 ---
@@ -61,14 +61,14 @@ En tant que lecteur francophone ou anglophone du blog ContentGlowz, je veux acc�
 Le site publie les articles anglais du blog sous `/blog/...` et les articles français sous `/fr/blog/...`. Les index et pages tag n'affichent que les articles de leur locale. Chaque article rend le bon `lang`, le bon canonical, et n'émet un alternate `hreflang` que lorsqu'une vraie paire EN/FR existe. Les CTA et liens blog partagés ne doivent pas renvoyer un visiteur francophone vers l'index anglais par défaut.
 
 ## Scope In
-- `contentglowz_site/src/content.config.ts`
-- `contentglowz_site/src/content/blog/*.md`
-- `contentglowz_site/src/layouts/BlogPost.astro`
-- `contentglowz_site/src/pages/blog/index.astro`
-- `contentglowz_site/src/pages/blog/tag/[tag].astro`
-- `contentglowz_site/src/pages/blog/[...slug].astro`
-- nouvelles routes `contentglowz_site/src/pages/fr/blog/**/*.astro`
-- helper(s) blog/locale sous `contentglowz_site/src/data`
+- `site/src/content.config.ts`
+- `site/src/content/blog/*.md`
+- `site/src/layouts/BlogPost.astro`
+- `site/src/pages/blog/index.astro`
+- `site/src/pages/blog/tag/[tag].astro`
+- `site/src/pages/blog/[...slug].astro`
+- nouvelles routes `site/src/pages/fr/blog/**/*.astro`
+- helper(s) blog/locale sous `site/src/data`
 - composants partagés strictement nécessaires à cette tranche (`CtaBanner`, `ClosingCta`, `siteShell` si impact blog)
 
 ## Scope Out
@@ -95,7 +95,7 @@ Le site publie les articles anglais du blog sous `/blog/...` et les articles fra
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-12 12:39:00 UTC | 001-sf-build | GPT-5 Codex | Implemented, verified, closed, and shipped bilingual blog routing with locale-aware content filtering, metadata, and shared blog links/CTAs. | shipped | /405-sf-prod contentglowz_site |
+| 2026-06-12 12:39:00 UTC | 001-sf-build | GPT-5 Codex | Implemented, verified, closed, and shipped bilingual blog routing with locale-aware content filtering, metadata, and shared blog links/CTAs. | shipped | /405-sf-prod site |
 
 ## Current Chantier Flow
 

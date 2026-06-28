@@ -3,7 +3,7 @@ artifact: technical_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 status: reviewed
-project: contentglowz_lab
+project: lab
 created: "2026-04-26"
 updated: "2026-04-27"
 source_skill: sf-docs
@@ -51,9 +51,9 @@ next_step: /sf-docs audit shipflow_data/technical/lab/context.md
 
 # shipflow_data/technical/lab/context.md
 
-## What `contentglowz_lab` is
+## What `lab` is
 
-`contentglowz_lab` is a FastAPI backend that serves ContentGlowz client surfaces and orchestrates AI-driven content workflows.
+`lab` is a FastAPI backend that serves ContentGlowz client surfaces and orchestrates AI-driven content workflows.
 It combines:
 
 - REST + WebSocket endpoints in `api/`
@@ -102,6 +102,6 @@ It combines:
 ## Operational boundaries
 
 - This backend is consumed by at least:
-  - Flutter app (`contentglowz_app`)
+  - Flutter app (`app`)
   - downstream web/chat surfaces in the wider ContentGlowz ecosystem
 - Any contract change touching auth, payload shape, IDs, job semantics, or migration strategy must be coordinated with related consumers before rollout.

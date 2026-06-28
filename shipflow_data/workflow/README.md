@@ -9,9 +9,9 @@ Directory layout:
 
 - `specs/` — workflow specs and migrated legacy spec-like documents
   - `specs/monorepo/` (legacy root specs and global migration specs)
-  - `specs/contentglowz_app/` (application project specs)
-  - `specs/contentglowz_lab/` (lab project specs and root `SPEC-*.md`)
-  - `specs/contentglowz_site/` (site project specs)
+  - `specs/app/` (application project specs)
+  - `specs/lab/` (lab project specs and root `SPEC-*.md`)
+  - `specs/site/` (site project specs)
 - `bugs/` — bug records and issue traces
 - `research/` — research dossiers and decision notes
 - `explorations/` — exploration notes
@@ -34,6 +34,6 @@ Subproject-local trackers live with each subproject when they exist:
 
 Entry rule:
 
-- Runtime content and editorial pages under `contentglowz_site/src/content/**` remain in
-  `contentglowz_site/src/content`.
+- Runtime content and editorial pages under `site/src/content/**` remain in
+  `site/src/content`.
 - `contentglowz/**` is intentionally excluded from this migration.

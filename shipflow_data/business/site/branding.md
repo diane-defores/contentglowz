@@ -2,7 +2,7 @@
 artifact: brand_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_site
+project: site
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -36,7 +36,7 @@ next_step: /sf-docs audit shipflow_data/business/site/branding.md
 
 The website presents ContentGlowz as an execution assistant, not a fully automated ghost writer.
 It should support trust, clarity, and transparency before conversion intent.
-All public claims must stay aligned with `contentglowz_app`, which is the canonical product/business truth.
+All public claims must stay aligned with `app`, which is the canonical product/business truth.
 
 ## Voice and Tone
 

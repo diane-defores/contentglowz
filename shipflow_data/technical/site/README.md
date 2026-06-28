@@ -2,7 +2,7 @@
 artifact: technical_docs_index
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_site
+project: site
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -20,9 +20,9 @@ linked_systems:
 depends_on: []
 supersedes: []
 evidence:
-  - "contentglowz_site is an Astro public site with pages, layouts, content config, and Vercel deployment config."
+  - "site is an Astro public site with pages, layouts, content config, and Vercel deployment config."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_site"
+next_step: "/sf-docs technical audit site"
 ---
 
 # Technical Docs

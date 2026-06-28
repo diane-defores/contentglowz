@@ -14,18 +14,18 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentglowz_lab/api/services/ai_runtime_service.py
-  - contentglowz_lab/api/services/repo_understanding_service.py
-  - contentglowz_lab/api/routers/personas.py
-  - contentglowz_lab/api/routers/search_console.py
-  - contentglowz_lab/api/routers/idea_pool.py
-  - contentglowz_lab/agents/sources/ingest.py
+  - lab/api/services/ai_runtime_service.py
+  - lab/api/services/repo_understanding_service.py
+  - lab/api/routers/personas.py
+  - lab/api/routers/search_console.py
+  - lab/api/routers/idea_pool.py
+  - lab/agents/sources/ingest.py
 evidence:
   - "shipflow_data/workflow/TASKS.md marks dual-mode AI runtime, Search Console intelligence, project asset library, and Flux provider work as in progress."
-  - "contentglowz_lab/api/services/ai_runtime_service.py resolves BYOK/platform modes for openrouter, exa, and firecrawl."
-  - "contentglowz_lab/api/services/repo_understanding_service.py synthesizes project/persona understanding from local repo, GitHub, or public site evidence."
-  - "contentglowz_lab/api/routers/search_console.py creates project-scoped Search Console summaries and opportunities."
-  - "contentglowz_lab/api/routers/idea_pool.py and agents/sources/ingest.py ingest SEO, competitor, newsletter, social, and SERP signals into ideas."
+  - "lab/api/services/ai_runtime_service.py resolves BYOK/platform modes for openrouter, exa, and firecrawl."
+  - "lab/api/services/repo_understanding_service.py synthesizes project/persona understanding from local repo, GitHub, or public site evidence."
+  - "lab/api/routers/search_console.py creates project-scoped Search Console summaries and opportunities."
+  - "lab/api/routers/idea_pool.py and agents/sources/ingest.py ingest SEO, competitor, newsletter, social, and SERP signals into ideas."
 depends_on:
   - shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md
   - shipflow_data/workflow/specs/lab/SPEC-google-search-console-intelligence.md
@@ -45,10 +45,10 @@ Clarify what intelligence engine ContentGlowz currently has for each project pro
 - `shipflow_data/workflow/TASKS.md` - showed current implementation priorities and in-progress AI/runtime work.
 - `shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md` - defined BYOK/platform runtime policy and provider resolution.
 - `shipflow_data/workflow/specs/lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md` - defined repo/site understanding for persona draft generation.
-- `contentglowz_lab/api/services/ai_runtime_service.py` - confirmed the centralized provider resolver exists.
-- `contentglowz_lab/api/services/repo_understanding_service.py` - confirmed repo/site content collection and LLM synthesis exists.
-- `contentglowz_lab/api/routers/search_console.py` - confirmed project-scoped SEO intelligence/opportunity ingestion exists.
-- `contentglowz_lab/api/routers/idea_pool.py` and `contentglowz_lab/agents/sources/ingest.py` - confirmed multiple sources already feed the Idea Pool.
+- `lab/api/services/ai_runtime_service.py` - confirmed the centralized provider resolver exists.
+- `lab/api/services/repo_understanding_service.py` - confirmed repo/site content collection and LLM synthesis exists.
+- `lab/api/routers/search_console.py` - confirmed project-scoped SEO intelligence/opportunity ingestion exists.
+- `lab/api/routers/idea_pool.py` and `lab/agents/sources/ingest.py` - confirmed multiple sources already feed the Idea Pool.
 
 ## Internet Research
 

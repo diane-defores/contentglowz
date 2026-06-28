@@ -2,7 +2,7 @@
 artifact: product_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-04-26"
 updated: "2026-05-04"
 status: "reviewed"
@@ -44,10 +44,10 @@ next_review: "2026-07-26"
 next_step: "/sf-docs audit shipflow_data/business/app/product.md"
 ---
 
-# Product Context — contentglowz_app
+# Product Context — app
 
 ## Position
-`contentglowz_app` is the authenticated Flutter execution layer of the ContentGlowz ecosystem. It is the operator-facing app that turns source inputs (ideas, project context, personas, rituals) into reviewable, schedulable content output while tolerating API instability.
+`app` is the authenticated Flutter execution layer of the ContentGlowz ecosystem. It is the operator-facing app that turns source inputs (ideas, project context, personas, rituals) into reviewable, schedulable content output while tolerating API instability.
 
 ## What this product does now
 - provides authenticated onboarding and workspace bootstrap via Clerk + FastAPI session flow;

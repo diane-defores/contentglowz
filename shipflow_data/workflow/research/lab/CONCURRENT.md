@@ -7,7 +7,7 @@ https://octopus.do/
 **Lien :** https://github.com/firecrawl/web-agent
 **Date de veille :** 2026-06-10
 **Statut :** à surveiller / benchmark futur
-**Pertinence :** contentglowz_lab (8/10)
+**Pertinence :** lab (8/10)
 
 **Pourquoi c'est un concurrent indirect :**
 - Même zone fonctionnelle que les agents ContentGlowz de recherche, veille, SEO et extraction structurée.

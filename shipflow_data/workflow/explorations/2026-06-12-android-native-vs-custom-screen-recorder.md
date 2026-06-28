@@ -14,12 +14,12 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "contentglowz_app Flutter Android"
-  - "contentglowz_app Android native Kotlin capture stack"
+  - "app Flutter Android"
+  - "app Android native Kotlin capture stack"
   - "Android MediaProjection"
   - "Android foreground services"
 evidence:
-  - "Existing Android capture implementation in contentglowz_app already uses MediaProjection via custom Kotlin services."
+  - "Existing Android capture implementation in app already uses MediaProjection via custom Kotlin services."
   - "Prior research for privacy capture concluded MediaProjection should stay, but direct MediaRecorder is too limited for transformed output."
   - "Android official docs confirm strict user-consent, single-use token, and visible projection constraints."
 depends_on:
@@ -39,9 +39,9 @@ Can ContentGlowz rely on Android's native screen recording experience for stabil
 
 - `shipflow_data/workflow/research/shared/android-privacy-screen-redaction-technologies.md` - prior Android capture research and pipeline recommendation.
 - `shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md` - current product contract for Android capture.
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenRecordService.kt` - current native recording implementation.
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/ScreenCaptureChannel.kt` - Flutter/native boundary and permission flow.
-- `contentglowz_app/lib/data/services/device_capture_service.dart` - Flutter service contract already assumes a custom native layer.
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenRecordService.kt` - current native recording implementation.
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/ScreenCaptureChannel.kt` - Flutter/native boundary and permission flow.
+- `app/lib/data/services/device_capture_service.dart` - Flutter service contract already assumes a custom native layer.
 - `shipflow_data/workflow/qa/lab/privacy-capture-platform-matrix.md` - risk framing for privacy capture quality and stop conditions.
 
 ## Internet Research

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-02"
 created_at: "2026-05-02 06:03:02 UTC"
 updated: "2026-05-02"
@@ -18,13 +18,13 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app Flutter feed"
-  - "contentglowz_app Flutter editor"
-  - "contentglowz_app offline sync"
-  - "contentglowz_lab FastAPI status router"
-  - "contentglowz_lab Turso/libSQL status storage"
-  - "contentglowz_lab generation agents"
-  - "contentglowz_lab publish router"
+  - "app Flutter feed"
+  - "app Flutter editor"
+  - "app offline sync"
+  - "lab FastAPI status router"
+  - "lab Turso/libSQL status storage"
+  - "lab generation agents"
+  - "lab publish router"
 depends_on:
   - artifact: "shipflow_data/business/app/business.md"
     artifact_version: "1.0.0"
@@ -51,8 +51,8 @@ evidence:
   - "lib/data/models/content_item.dart: ContentItem currently maps content_preview into body when body is missing."
   - "lib/data/services/api_service.dart: fetchContentBody/saveContentBody/fetchContentAuditTrail/updateContent/transitionContent already exist."
   - "lib/providers/providers.dart: PendingContentNotifier.approve currently publishes item.body."
-  - "../contentglowz_lab/api/routers/status.py: exposes /api/status/content/{id}/body and /body/history with ownership checks."
-  - "../contentglowz_lab/status/service.py: persists content body versions and content edit audit entries."
+  - "../lab/api/routers/status.py: exposes /api/status/content/{id}/body and /body/history with ownership checks."
+  - "../lab/status/service.py: persists content body versions and content edit audit entries."
 next_step: "/sf-ready content editing infrastructure"
 ---
 
@@ -116,7 +116,7 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
 
 ## Constraints
 
-- Follow `contentglowz_app` architecture: UI in `lib/presentation`, data models/services in `lib/data`, app state in `lib/providers`.
+- Follow `app` architecture: UI in `lib/presentation`, data models/services in `lib/data`, app state in `lib/providers`.
 - Use existing `ApiService`, Riverpod providers, and offline storage patterns instead of ad-hoc HTTP calls from widgets.
 - Keep Clerk/FastAPI ownership boundaries intact; never trust client-side `content_id` alone.
 - Keep publish operations online-only unless a future spec defines a safe server-side scheduling contract.
@@ -131,9 +131,9 @@ Treat content editing as a staged infrastructure chantier. First, make the exist
   - `lib/providers/providers.dart`
   - `lib/presentation/screens/feed/feed_screen.dart`
   - `lib/presentation/screens/editor/editor_screen.dart`
-  - `../contentglowz_lab/api/routers/status.py`
-  - `../contentglowz_lab/status/service.py`
-  - `../contentglowz_lab/api/migrations/004_status_lifecycle.sql`
+  - `../lab/api/routers/status.py`
+  - `../lab/status/service.py`
+  - `../lab/api/migrations/004_status_lifecycle.sql`
 - Existing specs:
   - `shipflow_data/workflow/specs/app/SPEC-content-editing-full-body-preview.md`
   - `shipflow_data/workflow/specs/app/SPEC-content-pipeline-unification.md`

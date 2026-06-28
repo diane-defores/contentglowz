@@ -14,9 +14,9 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentglowz_app
-  - contentglowz_lab
-  - contentglowz_site
+  - app
+  - lab
+  - site
   - Firecrawl Fire-PDF
 evidence:
   - "https://www.firecrawl.dev/blog/fire-pdf-launch?utm_source=newsletter&utm_medium=email&utm_campaign=april-2026-product-update"
@@ -24,8 +24,8 @@ evidence:
   - "shipflow_data/business/app/product.md"
   - "shipflow_data/business/lab/product.md"
 depends_on:
-  - "contentglowz_app idea-pool workflow"
-  - "contentglowz_lab research/content ingestion APIs"
+  - "app idea-pool workflow"
+  - "lab research/content ingestion APIs"
 supersedes: []
 next_step: "/sf-spec ContentGlowz PDF source to idea box"
 ---
@@ -63,7 +63,7 @@ Le produit ne devrait pas traiter le PDF comme un simple fichier joint. La vraie
 
 ### Option A: URL PDF via Firecrawl
 
-- Summary: l'utilisateur colle une URL vers un PDF public ; `contentglowz_lab` appelle Firecrawl et récupère du markdown structuré.
+- Summary: l'utilisateur colle une URL vers un PDF public ; `lab` appelle Firecrawl et récupère du markdown structuré.
 - Pros: rapide à tester, peu de stockage fichier côté ContentGlowz, bonne compatibilité avec les sources publiques.
 - Cons: ne couvre pas les PDFs privés, dépendance fournisseur, exposition potentielle de documents à un tiers, coûts à surveiller.
 

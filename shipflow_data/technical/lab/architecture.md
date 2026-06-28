@@ -3,7 +3,7 @@ artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 status: reviewed
-project: contentglowz_lab
+project: lab
 created: "2026-04-26"
 updated: "2026-05-10"
 source_skill: sf-docs

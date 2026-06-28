@@ -15,8 +15,8 @@ security_impact: yes
 docs_impact: yes
 linked_systems:
   - "contentglowz"
-  - "contentglowz_app"
-  - "contentglowz_lab"
+  - "app"
+  - "lab"
   - "Image Robot"
   - "Remotion"
   - "ElevenLabs"

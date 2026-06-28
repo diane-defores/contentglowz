@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-05-11"
 status: stale
@@ -15,7 +15,7 @@ security_impact: "yes"
 docs_impact: "yes"
 user_story: "Legacy IMAP newsletter receiving task preserved as historical workflow context."
 linked_systems:
-  - contentglowz_lab
+  - lab
 evidence: []
 depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md"

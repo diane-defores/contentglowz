@@ -2,7 +2,7 @@
 artifact: code_docs_map
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: contentglowz_lab
+project: lab
 created: "2026-05-04"
 updated: "2026-05-10"
 status: draft
@@ -28,7 +28,7 @@ evidence:
   - "Created during PydanticAI runtime adapter verification."
   - "CrewAI usage note added for backend agent orchestration, tools, structured outputs, and dependency migration risk."
 next_review: "2026-06-04"
-next_step: "/sf-docs technical audit contentglowz_lab"
+next_step: "/sf-docs technical audit lab"
 ---
 
 # Code Docs Map

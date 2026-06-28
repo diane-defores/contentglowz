@@ -2,7 +2,7 @@
 artifact: technical_docs_index
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_app
+project: app
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -21,9 +21,9 @@ linked_systems:
 depends_on: []
 supersedes: []
 evidence:
-  - "contentglowz_app is a Flutter application with Android native integration and tests."
+  - "app is a Flutter application with Android native integration and tests."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_app"
+next_step: "/sf-docs technical audit app"
 ---
 
 # Technical Docs

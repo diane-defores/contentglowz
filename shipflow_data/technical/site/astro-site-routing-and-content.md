@@ -2,7 +2,7 @@
 artifact: technical_module_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_site
+project: site
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -30,10 +30,10 @@ depends_on:
     required_status: reviewed
 supersedes: []
 evidence:
-  - "Astro public site source is present under contentglowz_site/src."
+  - "Astro public site source is present under site/src."
   - "Existing specs cover i18n structure and Astro major migration."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_site"
+next_step: "/sf-docs technical audit site"
 ---
 
 # Technical Module Context: Astro Site Routing And Content

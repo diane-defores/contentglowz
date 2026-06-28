@@ -14,15 +14,15 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - "contentglowz_app Flutter capture UI"
-  - "contentglowz_app Android MediaProjection native capture"
-  - "contentglowz_app local capture storage"
-  - "contentglowz_app capture/content asset linking"
+  - "app Flutter capture UI"
+  - "app Android MediaProjection native capture"
+  - "app local capture storage"
+  - "app capture/content asset linking"
 evidence:
   - "shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md defines Android MediaProjection local-only PNG/MP4 capture."
   - "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md keeps media local and stores only asset metadata server-side."
-  - "contentglowz_app/lib/data/services/device_capture_service.dart exposes takeScreenshot/startRecording through platform channels."
-  - "contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/* records actual screen pixels through MediaProjection surfaces."
+  - "app/lib/data/services/device_capture_service.dart exposes takeScreenshot/startRecording through platform channels."
+  - "app/android/app/src/main/kotlin/com/contentglowz/app/capture/* records actual screen pixels through MediaProjection surfaces."
   - "Android documentation requires user consent per MediaProjection session and treats a session as one createVirtualDisplay call."
   - "shipflow_data/workflow/research/shared/android-privacy-screen-redaction-technologies.md validates Android-native ML Kit/MediaCodec/MediaMuxer/Media3 technology choices for privacy redaction."
 depends_on:
@@ -42,9 +42,9 @@ For confidentiality, all text visible in whole-device screen recordings should b
 
 - `shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md` - Confirms V1 is Android MediaProjection, local-only, with screenshot and recording outputs saved as PNG/MP4.
 - `shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md` - Confirms captures may be linked to content but raw files remain local in V1.
-- `contentglowz_app/lib/data/services/device_capture_service.dart` - Shows Flutter only starts/stops native capture and receives completed asset metadata.
-- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart` - Shows the current user workflow has capture controls, local history, share, discard, and content attachment.
-- `contentglowz_app/android/app/src/main/kotlin/com/contentglowz/contentglowz_app/capture/*` - Shows native code captures rendered pixels through MediaProjection, VirtualDisplay, ImageReader, and MediaRecorder.
+- `app/lib/data/services/device_capture_service.dart` - Shows Flutter only starts/stops native capture and receives completed asset metadata.
+- `app/lib/presentation/screens/capture/capture_screen.dart` - Shows the current user workflow has capture controls, local history, share, discard, and content attachment.
+- `app/android/app/src/main/kotlin/com/contentglowz/app/capture/*` - Shows native code captures rendered pixels through MediaProjection, VirtualDisplay, ImageReader, and MediaRecorder.
 
 ## Internet Research
 

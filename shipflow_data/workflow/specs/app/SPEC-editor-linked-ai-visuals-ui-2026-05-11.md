@@ -18,8 +18,8 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app"
-  - "contentglowz_lab"
+  - "app"
+  - "lab"
   - "api/images"
   - "api/status/content assets"
   - "Image Robot"
@@ -56,14 +56,14 @@ evidence:
   - "User decision 2026-05-11: Flux/Image Robot generation should integrate into existing guided workflows, not as a free playground."
   - "User decision 2026-05-11: primary uses are blog images, thumbnails, post visuals, and later video images."
   - "User decision 2026-05-11: V1 UI should be tied to the existing editor; if a dedicated surface exists, it is linked from the editor, not standalone navigation."
-  - "Code evidence: contentglowz_app/lib/presentation/screens/editor/editor_screen.dart is the current content editor with AppBar actions, platform preview, save, publish, and audit trail."
-  - "Code evidence: contentglowz_app/lib/router.dart has /editor/:id but no Remotion editor route currently integrated."
-  - "Code evidence: contentglowz_app/lib/presentation/screens/reels/reels_screen.dart exists, but Remotion UI work is governed by the ready reels specs."
-  - "Code evidence: contentglowz_lab/api/routers/status.py already exposes /api/status/content/{content_id}/assets for attached content asset metadata."
-  - "Code evidence: contentglowz_app/lib/data/services/api_service.dart already attaches capture assets to content through /api/status/content/{id}/assets."
-  - "Code evidence: contentglowz_app/lib/router.dart currently sanitizes /editor/* before a visuals-specific branch; implementation must add /editor/:id/visuals before the generic editor sanitizer."
-  - "Code evidence: contentglowz_app/lib/data/models/content_item.dart currently has imageUrl/copyWith imageUrl but lacks a typed projectId field."
-  - "Code evidence: contentglowz_lab/api/routers/publish.py currently accepts raw media_urls; publish hardening is required before live Image Robot media publishing."
+  - "Code evidence: app/lib/presentation/screens/editor/editor_screen.dart is the current content editor with AppBar actions, platform preview, save, publish, and audit trail."
+  - "Code evidence: app/lib/router.dart has /editor/:id but no Remotion editor route currently integrated."
+  - "Code evidence: app/lib/presentation/screens/reels/reels_screen.dart exists, but Remotion UI work is governed by the ready reels specs."
+  - "Code evidence: lab/api/routers/status.py already exposes /api/status/content/{content_id}/assets for attached content asset metadata."
+  - "Code evidence: app/lib/data/services/api_service.dart already attaches capture assets to content through /api/status/content/{id}/assets."
+  - "Code evidence: app/lib/router.dart currently sanitizes /editor/* before a visuals-specific branch; implementation must add /editor/:id/visuals before the generic editor sanitizer."
+  - "Code evidence: app/lib/data/models/content_item.dart currently has imageUrl/copyWith imageUrl but lacks a typed projectId field."
+  - "Code evidence: lab/api/routers/publish.py currently accepts raw media_urls; publish hardening is required before live Image Robot media publishing."
   - "Prototype evidence: contentglowz/v0-flux-2-playground has useful concepts: reference images, profile-like ratios, history, gallery/single result, and use-as-input, but its Next/Supabase/Vercel stack is excluded."
 next_step: "/sf-start Editor-Linked AI Visuals UI"
 ---
@@ -158,8 +158,8 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
 
 ## Constraints
 
-- `contentglowz_app` remains Flutter + Riverpod + GoRouter + Dio; no React/Next prototype code is imported.
-- `contentglowz_lab` remains the only public generation and storage boundary.
+- `app` remains Flutter + Riverpod + GoRouter + Dio; no React/Next prototype code is imported.
+- `lab` remains the only public generation and storage boundary.
 - V1 must not add a global AppShell nav item.
 - Generation and reference writes are online-only.
 - The screen must use typed models and `ApiService`; widgets must not make ad-hoc Dio/fetch calls.
@@ -185,21 +185,21 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - `shipflow_data/workflow/specs/monorepo/remotion-render-service-integration.md`
   - `shipflow_data/workflow/specs/monorepo/reels-from-content-preview-workflow.md`
 - Existing app files:
-  - `contentglowz_app/lib/router.dart`
-  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentglowz_app/lib/data/services/api_service.dart`
-  - `contentglowz_app/lib/providers/providers.dart`
-  - `contentglowz_app/lib/data/models/content_item.dart`
-  - `contentglowz_app/lib/l10n/app_localizations.dart`
-  - `contentglowz_app/lib/presentation/theme/app_theme.dart`
+  - `app/lib/router.dart`
+  - `app/lib/presentation/screens/editor/editor_screen.dart`
+  - `app/lib/data/services/api_service.dart`
+  - `app/lib/providers/providers.dart`
+  - `app/lib/data/models/content_item.dart`
+  - `app/lib/l10n/app_localizations.dart`
+  - `app/lib/presentation/theme/app_theme.dart`
 - Existing backend status asset contract:
-  - `contentglowz_lab/api/models/status.py`
-  - `contentglowz_lab/api/routers/status.py`
-  - `contentglowz_lab/status/service.py`
+  - `lab/api/models/status.py`
+  - `lab/api/routers/status.py`
+  - `lab/status/service.py`
 - Existing publish media contract:
-  - `contentglowz_app/lib/data/services/api_service.dart` `publishContent(mediaUrls: ...)`
-  - `contentglowz_lab/api/routers/publish.py` `PublishRequest.media_urls`
-  - `contentglowz_app/lib/providers/providers.dart` `channelToPlatform` currently maps `twitter`, `linkedin`, `instagram`, `tiktok`, and `youtube`; other channels are not V1 media publish targets.
+  - `app/lib/data/services/api_service.dart` `publishContent(mediaUrls: ...)`
+  - `lab/api/routers/publish.py` `PublishRequest.media_urls`
+  - `app/lib/providers/providers.dart` `channelToPlatform` currently maps `twitter`, `linkedin`, `instagram`, `tiktok`, and `youtube`; other channels are not V1 media publish targets.
 - Existing Flutter dependency for network image previews: `cached_network_image`.
 - App-facing Image Robot routes expected by this UI:
   - `GET /api/images/profiles?provider=flux&project_id={project_id}` lists Flux-capable guided profiles.
@@ -232,8 +232,8 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
 - `router.dart` gains a route and Sentry route sanitizer branch.
 - `ApiService` expands from capture-only content asset attachment to generic content asset listing/attachment/update for image robot assets.
 - The Image Robot attach path must not rely on Flutter as the security boundary; ownership and generation/result validation stay server-side.
-- `contentglowz_lab` publish handling must validate media URLs against owned content assets before forwarding to the existing publish provider path; raw `media_urls` are not trustworthy for Image Robot publishing.
-- `contentglowz_lab` content asset handling must add an atomic primary-selection path for content+placement, or expose an equivalent server action used by this UI.
+- `lab` publish handling must validate media URLs against owned content assets before forwarding to the existing publish provider path; raw `media_urls` are not trustworthy for Image Robot publishing.
+- `lab` content asset handling must add an atomic primary-selection path for content+placement, or expose an equivalent server action used by this UI.
 - `providers.dart` needs a focused visual editor state controller. Keep it bounded; if it grows too large, move feature logic to a dedicated provider file only if the repo already accepts that pattern during implementation.
 - `PendingContentNotifier.approve` must pass selected image URLs to `publishContent(mediaUrls: ...)` for platforms that accept media.
 - `ContentItem` currently has `imageUrl` and `copyWith(imageUrl: ...)`, but lacks typed `projectId`; the model must expose `projectId` for UI project/content coherence checks.
@@ -242,10 +242,10 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
 
 ## Documentation Coherence
 
-- Update `contentglowz_app/README.md` with a short note that editor-linked visuals require Image Robot/Flux backend availability and are online-only.
-- Update `contentglowz_app/CHANGELOG.md` after implementation with the editor-linked visual workflow and publish media behavior.
-- Update `contentglowz_lab` docs through the backend Flux spec for provider env vars and generation behavior, not by duplicating provider setup here.
-- Add/update localization entries in `contentglowz_app/lib/l10n/app_localizations.dart`.
+- Update `app/README.md` with a short note that editor-linked visuals require Image Robot/Flux backend availability and are online-only.
+- Update `app/CHANGELOG.md` after implementation with the editor-linked visual workflow and publish media behavior.
+- Update `lab` docs through the backend Flux spec for provider env vars and generation behavior, not by duplicating provider setup here.
+- Add/update localization entries in `app/lib/l10n/app_localizations.dart`.
 - No marketing-site copy change is required until the feature ships and is verified.
 
 ## Edge Cases
@@ -271,7 +271,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
 ## Implementation Tasks
 
 - [ ] Task 1: Add typed visual models.
-  - File: `contentglowz_app/lib/data/models/image_visual.dart`
+  - File: `app/lib/data/models/image_visual.dart`
   - Action: Define `ImageProfile`, `ProjectVisualReference`, `ImageGenerationJob`, `GeneratedVisualResult`, `ContentVisualAsset`, `VisualPlacement`, and status enum parsing from backend JSON.
   - User story link: Gives the app stable types for guided visuals, references, jobs, and attached assets.
   - Depends on: `SPEC-flux-ai-provider-image-robot-2026-05-11.md` response schema and existing status asset schema.
@@ -279,7 +279,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Include unknown-status fallbacks and keep provider metadata in a sanitized map.
 
 - [ ] Task 2: Harden backend Image Robot content asset attachment.
-  - File: `contentglowz_lab/api/routers/status.py`
+  - File: `lab/api/routers/status.py`
   - Action: Add or route `image_robot` attachment through a server-side validation path that accepts generation/result identity, verifies authenticated user ownership, same project/content eligibility, `kind=image`, supported MIME type, durable Bunny/backend URL, and rejects raw arbitrary URLs.
   - User story link: Prevents editor-generated visuals from becoming a cross-project or arbitrary-URL publishing bypass.
   - Depends on: Backend Flux/Image Robot generation store from `SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
@@ -287,7 +287,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Preserve existing `device_capture` attachment behavior.
 
 - [ ] Task 3: Add atomic primary selection for content visuals.
-  - File: `contentglowz_lab/status/service.py`
+  - File: `lab/status/service.py`
   - Action: Add a server-side action used by the route layer to set one `image_robot` asset as primary for a `content_id + placement`, clearing other primaries for that placement in the same transaction/update operation.
   - User story link: Gives publishing and future Remotion a single selected visual per placement.
   - Depends on: Task 2.
@@ -295,7 +295,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Do not leave primary uniqueness as client-side JSON convention only.
 
 - [ ] Task 4: Validate publish media server-side.
-  - File: `contentglowz_lab/api/routers/publish.py`
+  - File: `lab/api/routers/publish.py`
   - Action: Before forwarding media through the existing publish provider path, validate every `media_url` against owned selected content assets or generation records for the `content_record_id`, enforce durable URL allowlist, enforce a V1 maximum of one image URL, and return sanitized warnings/errors.
   - User story link: Ensures attached visuals can safely affect real publication without trusting Flutter-provided URLs.
   - Depends on: Tasks 2-3 and existing publish account ownership checks.
@@ -303,7 +303,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Never log signed URLs, provider URLs, or raw external error payloads.
 
 - [ ] Task 5: Add generic content asset API methods.
-  - File: `contentglowz_app/lib/data/services/api_service.dart`
+  - File: `app/lib/data/services/api_service.dart`
   - Action: Add `fetchContentAssets`, `attachImageRobotAssetToContent`, `setPrimaryContentVisualAsset`, `updateContentAsset`, and `deleteContentAsset`; keep existing `attachCaptureAssetToContent` behavior unchanged.
   - User story link: Persists generated image options and primary visual selection on the current content.
   - Depends on: Tasks 1-3.
@@ -311,7 +311,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: For image robot assets use `source=image_robot`, `kind=image`, `status=uploaded`, `storage_uri=<durable Bunny URL>`, and metadata fields `placement`, `is_primary`, `generation_id`, `provider`, `profile_id`, `alt_text`, `primary_url`, and `responsive_urls`. The method must accept only backend-returned generation/result objects, not arbitrary URL strings from UI controls, and must stop if the server cannot validate same-user/same-project/same-content ownership.
 
 - [ ] Task 6: Add Image Robot UI API methods.
-  - File: `contentglowz_app/lib/data/services/api_service.dart`
+  - File: `app/lib/data/services/api_service.dart`
   - Action: Add typed methods for the app-facing Image Robot routes listed in Dependencies: Flux-capable profiles, generation creation through `/api/images/generate-from-profile`, generation status, generation history, project references, optional cancellation only if the backend exposes it, and promoting a generated result to project reference.
   - User story link: Connects the editor UI to guided Image Robot generation.
   - Depends on: Task 1 and ready backend Flux/Image Robot endpoints.
@@ -319,7 +319,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Keep wrappers typed so widgets do not depend on raw maps. Do not invent alternate client routes during implementation; update this spec first if the backend Flux implementation ships a different app-facing contract.
 
 - [ ] Task 7: Update content model helpers for project and selected visuals.
-  - File: `contentglowz_app/lib/data/models/content_item.dart`
+  - File: `app/lib/data/models/content_item.dart`
   - Action: Add typed `projectId` parsing/copyWith support, add safe metadata helpers for selected visual ids/placements if backend responses include them, and keep `content_preview` separate from body.
   - User story link: Lets editor/feed state reflect selected visual changes without breaking content reliability.
   - Depends on: Task 1.
@@ -327,7 +327,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: `imageUrl` already exists in the model and copyWith; do not make `image_url` authoritative if the content asset endpoint returns a newer selected asset.
 
 - [ ] Task 8: Add visual editor state controller.
-  - File: `contentglowz_app/lib/providers/providers.dart`
+  - File: `app/lib/providers/providers.dart`
   - Action: Add a family notifier/provider keyed by `contentId` that loads content detail, active project id, content assets, image profiles, references, generation history, current placement, in-flight job, selected asset, and retry/error state.
   - User story link: Keeps generation, polling, attachment, and project-change resets coherent.
   - Depends on: Tasks 1, 5, 6, and 7.
@@ -335,7 +335,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Use `autoDispose.family` keyed by `contentId`, register `ref.onDispose` cancellation/stop logic, poll with a bounded cadence/backoff, stop after terminal status/route dispose/project change/client timeout, and test with fake clock where possible. Track a request nonce/project id/content id for in-flight generation, attach, promote, and primary-update actions so stale responses cannot mutate current state.
 
 - [ ] Task 9: Add visual editor route.
-  - File: `contentglowz_app/lib/router.dart`
+  - File: `app/lib/router.dart`
   - Action: Add `/editor/:id/visuals` route and sanitize it as `/editor/:id/visuals` for Sentry route naming.
   - User story link: Creates an editor-linked surface without global nav.
   - Depends on: None.
@@ -343,7 +343,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Add the visuals sanitizer branch before the generic `/editor/` branch; do not add an AppShell nav item.
 
 - [ ] Task 10: Add the visual editor screen.
-  - File: `contentglowz_app/lib/presentation/screens/editor/visual_editor_screen.dart`
+  - File: `app/lib/presentation/screens/editor/visual_editor_screen.dart`
   - Action: Build the content-linked visual workflow UI: placement selector, existing content visual options, project references, generation status card, result gallery, "keep as option" action, "use for this placement" action, promote-to-reference action, primary-conflict state, and retry states.
   - User story link: Lets the creator generate/review/attach visuals from the current editor context.
   - Depends on: Tasks 1, 5, 6, 8, and 9.
@@ -351,7 +351,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Use stable aspect-ratio containers and `cached_network_image`; do not expose raw provider/model controls.
 
 - [ ] Task 11: Add editor entry point.
-  - File: `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
+  - File: `app/lib/presentation/screens/editor/editor_screen.dart`
   - Action: Add an AppBar icon action that opens `/editor/{contentId}/visuals`; refresh content detail/assets when returning if the visual editor changed attachments.
   - User story link: Keeps visuals tied to editing/review instead of a standalone tool.
   - Depends on: Task 9.
@@ -359,7 +359,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Use an image/icon tooltip string through localization.
 
 - [ ] Task 12: Add reusable visual widgets if needed.
-  - File: `contentglowz_app/lib/presentation/screens/editor/visual_editor_widgets.dart`
+  - File: `app/lib/presentation/screens/editor/visual_editor_widgets.dart`
   - Action: Extract focused widgets for placement chips, reference thumbnails, generated result cards, content asset cards, and job status rows if `visual_editor_screen.dart` becomes too large.
   - User story link: Keeps the UI maintainable and testable.
   - Depends on: Task 10.
@@ -367,7 +367,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Keep cards for repeated items only; do not create nested cards.
 
 - [ ] Task 13: Pass selected visual media to publishing.
-  - File: `contentglowz_app/lib/providers/providers.dart`
+  - File: `app/lib/providers/providers.dart`
   - Action: Before publish, resolve selected primary visual assets for the content and pass their durable URLs through `publishContent(mediaUrls: ...)` only for channels mapped by `channelToPlatform`.
   - User story link: Makes attached visuals affect posts/thumbnails instead of staying decorative in the editor.
   - Depends on: Tasks 4, 5, and 8.
@@ -375,7 +375,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Preserve full-body resolution order and online-only publish behavior. Filter to selected primary `image_robot` assets with durable URLs and no duplicate-primary conflict; never publish local, provider-temporary, user-entered, or malformed URLs. Backend publish validation must reject any media URL not backed by an owned content asset/generation.
 
 - [ ] Task 14: Add localization strings.
-  - File: `contentglowz_app/lib/l10n/app_localizations.dart`
+  - File: `app/lib/l10n/app_localizations.dart`
   - Action: Add French/English strings for visual action tooltip, placements, generation states, attach/promote/cancel/retry actions, and recoverable errors.
   - User story link: Keeps the new UI consistent with the localized app.
   - Depends on: Tasks 10-11.
@@ -383,7 +383,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Avoid provider-marketing copy; prefer placement/outcome wording.
 
 - [ ] Task 15: Add documentation note.
-  - File: `contentglowz_app/README.md`
+  - File: `app/README.md`
   - Action: Document that editor-linked visuals are online-only and require the Image Robot/Flux backend.
   - User story link: Helps operators understand runtime prerequisites.
   - Depends on: Feature implementation.
@@ -391,7 +391,7 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Notes: Backend env var details belong to the Flux backend spec/docs.
 
 - [ ] Task 16: Add changelog entry.
-  - File: `contentglowz_app/CHANGELOG.md`
+  - File: `app/CHANGELOG.md`
   - Action: Add an Unreleased entry for editor-linked AI visual generation and selected visual publish media behavior.
   - User story link: Records the user-facing behavior change.
   - Depends on: Feature implementation.
@@ -436,8 +436,8 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
   - Open editor for video/reel content, attach `video_cover`, confirm no Remotion render is started by this screen.
   - Switch active project mid-flow and confirm stale generation cannot attach.
 - Suggested validation commands:
-  - `cd contentglowz_app && flutter analyze`
-  - `cd contentglowz_app && flutter test`
+  - `cd app && flutter analyze`
+  - `cd app && flutter test`
 
 ## Risks
 
@@ -452,10 +452,10 @@ Add a child visual editor route launched from `EditorScreen`, backed by typed Fl
 ## Execution Notes
 
 - Read first:
-  - `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart`
-  - `contentglowz_app/lib/data/services/api_service.dart`
-  - `contentglowz_app/lib/providers/providers.dart`
-  - `contentglowz_lab/api/routers/status.py`
+  - `app/lib/presentation/screens/editor/editor_screen.dart`
+  - `app/lib/data/services/api_service.dart`
+  - `app/lib/providers/providers.dart`
+  - `lab/api/routers/status.py`
   - `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`
 - Backend readiness precheck before wiring live publish media:
   - Confirm image generation results include stable `generation_id`, durable URL fields, project id, content id or attach eligibility, and ownership-safe status/history reads.

@@ -14,8 +14,8 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
-  - contentglowz_app
-  - contentglowz_lab
+  - app
+  - lab
   - contentglowz_remotion_worker
   - project asset library
   - future video timeline editor
@@ -43,8 +43,8 @@ Where should ContentGlowz draw the boundary between proprietary product code and
 ## Context Read
 
 - `shipflow_data/workflow/specs/monorepo/SPEC-remotion-video-editor-workflow-2026-05-11.md` - existing ready spec frames the current plan as a guided Remotion storyboard, not a single source-of-truth timeline.
-- `contentglowz_app/lib/presentation/screens/editor/editor_screen.dart` - current editor can open project assets but has no video timeline.
-- `contentglowz_app/lib/presentation/widgets/project_asset_picker.dart` - existing asset picker links assets to content targets, which is relevant for future timeline clip insertion.
+- `app/lib/presentation/screens/editor/editor_screen.dart` - current editor can open project assets but has no video timeline.
+- `app/lib/presentation/widgets/project_asset_picker.dart` - existing asset picker links assets to content targets, which is relevant for future timeline clip insertion.
 
 ## Internet Research
 

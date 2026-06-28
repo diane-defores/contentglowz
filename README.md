@@ -4,20 +4,21 @@ Canonical monorepo for the full ContentGlowz platform.
 
 ## Repository Layout
 
-- `contentglowz_site` - Astro marketing site
-- `contentglowz_app` - Flutter application, including the web build deployed on Vercel
-- `contentglowz_lab` - FastAPI backend and internal tooling
+- `site` - Astro marketing site
+- `app` - Flutter application, including the web build deployed on Vercel
+- `lab` - FastAPI backend and internal tooling
+- `worker` - Remotion render worker
 
 ## Setup
 
-Start with [SETUP.md](SETUP.md) after cloning the repository. It lists the required local tools, Flox commands, app/site/backend checks, and Turso CLI authentication flow.
+Start with [shipflow_data/technical/SETUP.md](shipflow_data/technical/SETUP.md) after cloning the repository. It lists the required local tools, Flox commands, app/site/backend checks, and Turso CLI authentication flow.
 
 ## Deployment Model
 
 - GitHub source of truth: `diane-defores/contentglowz`
-- Vercel project `ContentGlowz` uses `contentglowz_site` as its Root Directory
-- Vercel project `ContentGlowz-App` uses `contentglowz_app` as its Root Directory
-- `contentglowz_lab` is maintained in this monorepo but deployed outside Vercel
+- Vercel project `ContentGlowz` uses `site` as its Root Directory
+- Vercel project `ContentGlowz-App` uses `app` as its Root Directory
+- `lab` is maintained in this monorepo but deployed outside Vercel
 
 ## Working Rule
 

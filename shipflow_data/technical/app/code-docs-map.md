@@ -2,7 +2,7 @@
 artifact: code_docs_map
 metadata_schema_version: "1.0"
 artifact_version: "0.2.0"
-project: contentglowz_app
+project: app
 created: "2026-05-06"
 updated: "2026-05-24"
 status: draft
@@ -27,10 +27,10 @@ depends_on:
     required_status: draft
 supersedes: []
 evidence:
-  - "Baseline map created after metadata compliance audit found no technical governance layer for contentglowz_app."
+  - "Baseline map created after metadata compliance audit found no technical governance layer for app."
   - "Project-local platform notes added only for Clerk and Vercel because local auth/deploy behavior affects validation and production proof."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_app"
+next_step: "/sf-docs technical audit app"
 ---
 
 # Code Docs Map

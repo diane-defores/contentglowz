@@ -2,7 +2,7 @@
 artifact: technical_module_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_app
+project: app
 created: "2026-05-24"
 updated: "2026-05-24"
 status: draft
@@ -31,7 +31,7 @@ evidence:
   - "Contentglowz App uses a custom Flutter web build on Vercel with explicit install/build scripts."
   - "Vercel rewrites are coupled to ClerkJS auth routes and SPA fallback behavior."
 next_review: "2026-06-24"
-next_step: "/sf-docs technical audit contentglowz_app"
+next_step: "/sf-docs technical audit app"
 ---
 
 # Vercel Project Usage

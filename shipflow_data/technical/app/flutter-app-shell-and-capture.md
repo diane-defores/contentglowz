@@ -2,7 +2,7 @@
 artifact: technical_module_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: contentglowz_app
+project: app
 created: "2026-05-06"
 updated: "2026-05-06"
 status: draft
@@ -30,10 +30,10 @@ depends_on:
     required_status: reviewed
 supersedes: []
 evidence:
-  - "Flutter source and Android native capture paths are present in contentglowz_app."
+  - "Flutter source and Android native capture paths are present in app."
   - "Recent specs cover Android screen capture, local capture assets, offline sync, and content editing."
 next_review: "2026-06-06"
-next_step: "/sf-docs technical audit contentglowz_app"
+next_step: "/sf-docs technical audit app"
 ---
 
 # Technical Module Context: Flutter App Shell And Capture

@@ -2,7 +2,7 @@
 artifact: execution_log
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-05"
 updated: "2026-05-05"
 status: draft
@@ -15,8 +15,8 @@ security_impact: unknown
 docs_impact: yes
 linked_systems:
   - "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md"
-  - "contentglowz_app Flutter capture flow"
-  - "contentglowz_lab FastAPI status router"
+  - "app Flutter capture flow"
+  - "lab FastAPI status router"
 depends_on:
   - artifact: "shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md"
     artifact_version: "1.0.0"
@@ -143,14 +143,14 @@ next_step: "/sf-docs audit shipflow_data/workflow/specs/app/conversation-local-c
   └ Search channelToPlatform|_resolvePublishAccount|ApproveSeverity in
            api_service.dart
 
-• Ran tail -80 contentglowz_app/lib/data/services/api_service.dart
+• Ran tail -80 app/lib/data/services/api_service.dart
   └       );
           return {'queued': true};
     … +77 lines (ctrl + t to view transcript)
       }
     }
 
-• Edited contentglowz_app/lib/data/services/api_service.dart (+41 -0)
+• Edited app/lib/data/services/api_service.dart (+41 -0)
     4419  }
     4420 +
     4421 +String _captureDraftTitle(CaptureAsset asset) {
@@ -206,7 +206,7 @@ next_step: "/sf-docs audit shipflow_data/workflow/specs/app/conversation-local-c
   contenu” / “lier à un contenu”. Je garde le flux existant capture/
   partage/suppression intact.
 
-• Edited contentglowz_app/lib/presentation/screens/capture/
+• Edited app/lib/presentation/screens/capture/
 capture_screen.dart (+236 -4)
       2
       3 +import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -554,12 +554,12 @@ capture_screen.dart (+236 -4)
   liens locaux.
 
 • Edited 2 files (+54 -18)
-  └ contentglowz_app/test/data/capture_local_store_test.dart (+25 -0)
-     1  import 'package:contentglowz_app/data/models/capture_asset.dart
+  └ app/test/data/capture_local_store_test.dart (+25 -0)
+     1  import 'package:app/data/models/capture_asset.dart
         ';
-     2 +import 'package:contentglowz_app/data/models/capture_content_li
+     2 +import 'package:app/data/models/capture_content_li
         nk.dart';
-     3  import 'package:contentglowz_app/data/services/capture_local_st
+     3  import 'package:app/data/services/capture_local_st
         ore.dart';
        ⋮
     34    });
@@ -591,11 +591,11 @@ capture_screen.dart (+236 -4)
     58 +  });
     59  }
 
-  └ contentglowz_app/test/presentation/screens/capture/
+  └ app/test/presentation/screens/capture/
 capture_screen_test.dart (+29 -18)
-      7  import 'package:contentglowz_app/presentation/screens/capture/
+      7  import 'package:app/presentation/screens/capture/
          capture_screen.dart';
-      8 +import 'package:contentglowz_app/providers/providers.dart';
+      8 +import 'package:app/providers/providers.dart';
       9  import 'package:flutter/material.dart';
      10 +import 'package:flutter_riverpod/flutter_riverpod.dart';
      11  import 'package:flutter_test/flutter_test.dart';
@@ -677,7 +677,7 @@ capture_screen_test.dart (+29 -18)
   └ Read README.md, CHANGELOG.md, shipflow_data/technical/app/guidelines.md
 
 • Edited 4 files (+9 -3)
-  └ contentglowz_app/CHANGELOG.md (+2 -1)
+  └ app/CHANGELOG.md (+2 -1)
     10  - Added Android-first local device capture with MediaProjectio
         n screenshots, foreground-service screen recording, optional m
         icrophone audio, local capture history, preview, discard, and
@@ -710,7 +710,7 @@ capture_screen_test.dart (+29 -18)
         storage spec is ready.
     93
 
-  └ contentglowz_app/README.md (+4 -1)
+  └ app/README.md (+4 -1)
     116  - local captures can be previewed, discarded, or shared/expor
          ted by the user
     117 +- local captures can be linked to a content draft or attached
@@ -736,7 +736,7 @@ capture_screen_test.dart (+29 -18)
          when FastAPI is reachable.
     128
 
-  └ contentglowz_lab/CHANGELOG.md (+1 -0)
+  └ lab/CHANGELOG.md (+1 -0)
     7  ### Added
     8 +- Added a `content_assets` metadata contract for local-only cap
        ture assets linked to authenticated content records, with futur
@@ -746,7 +746,7 @@ capture_screen_test.dart (+29 -18)
        tion and development installs can use pinned dependency resolut
        ions.
 
-• Edited contentglowz_app/lib/presentation/screens/capture/
+• Edited app/lib/presentation/screens/capture/
 capture_screen.dart (+9 -8)
      10  import '../../../data/models/content_item.dart';
      11 +import '../../../data/services/api_service.dart';
@@ -839,7 +839,7 @@ presentation/screens/capture/capture_screen_test.dart
   └ Resolving dependencies...
     Downloading packages...
     … +37 lines (ctrl + t to view transcript)
-    Analyzing contentglowz_app...
+    Analyzing app...
     No issues found! (ran in 6.4s)
 
 ──────────────────────────────────────────────────────────────────────
@@ -850,11 +850,11 @@ presentation/screens/capture/capture_screen_test.dart
   à py_compile pour ce tour et je le note comme limite.
 
 • Ran git status --short
-  └  M contentglowz_app/CHANGELOG.md
+  └  M app/CHANGELOG.md
      M shipflow_data/technical/app/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
-    ?? contentglowz_app/test/presentation/screens/onboarding/
+    ?? app/test/presentation/screens/onboarding/
 
 ──────────────────────────────────────────────────────────────────────
 
@@ -889,23 +889,23 @@ content.md (+21 -10)
     125
     126 -- [ ] Task 1: Add backend asset schema and service methods.
     126 +- [x] Task 1: Add backend asset schema and service methods.
-    127    - Files: `contentglowz_lab/api/migrations/004_status_lifecyc
-         le.sql`, `contentglowz_lab/status/db.py`, `contentglowz_lab/sta
-         tus/schemas.py`, `contentglowz_lab/status/service.py`
+    127    - Files: `lab/api/migrations/004_status_lifecyc
+         le.sql`, `lab/status/db.py`, `lab/sta
+         tus/schemas.py`, `lab/status/service.py`
         ⋮
     129
     130 -- [ ] Task 2: Add FastAPI request/response models and status
          router endpoints.
     130 +- [x] Task 2: Add FastAPI request/response models and status
          router endpoints.
-    131    - Files: `contentglowz_lab/api/models/status.py`, `contentfl
+    131    - Files: `lab/api/models/status.py`, `contentfl
          ow_lab/api/routers/status.py`
         ⋮
     133
     134 -- [ ] Task 3: Add Flutter local link model/store methods.
     134 +- [x] Task 3: Add Flutter local link model/store methods.
-    135    - Files: `contentglowz_app/lib/data/models/capture_content_l
-         ink.dart`, `contentglowz_app/lib/data/services/capture_local_s
+    135    - Files: `app/lib/data/models/capture_content_l
+         ink.dart`, `app/lib/data/services/capture_local_s
          tore.dart`
         ⋮
     137
@@ -913,20 +913,20 @@ content.md (+21 -10)
          apture and attach metadata.
     138 +- [x] Task 4: Add Flutter API methods for create draft from c
          apture and attach metadata.
-    139    - Files: `contentglowz_app/lib/data/services/api_service.dar
+    139    - Files: `app/lib/data/services/api_service.dar
          t`
         ⋮
     141
     142 -- [ ] Task 5: Add capture UI attachment flow.
     142 +- [x] Task 5: Add capture UI attachment flow.
-    143    - Files: `contentglowz_app/lib/presentation/screens/capture/
+    143    - Files: `app/lib/presentation/screens/capture/
          capture_screen.dart`
         ⋮
     145
     146 -- [ ] Task 6: Update docs and changelog.
     146 +- [x] Task 6: Update docs and changelog.
-    147    - Files: `contentglowz_app/README.md`, `contentglowz_app/CHAN
-         GELOG.md`, `shipflow_data/technical/app/guidelines.md`, `contentglowz_lab/
+    147    - Files: `app/README.md`, `app/CHAN
+         GELOG.md`, `shipflow_data/technical/app/guidelines.md`, `lab/
          CHANGELOG.md`
         ⋮
     163  | 2026-05-05 | sf-build | GPT-5 | Created full-stack local ca
@@ -1010,12 +1010,12 @@ content.md (+1 -0)
 
   Fichiers clés :
 
-  - contentglowz_app/lib/presentation/screens/capture/
+  - app/lib/presentation/screens/capture/
     capture_screen.dart
-  - contentglowz_app/lib/data/models/capture_content_link.dart
-  - contentglowz_app/lib/data/services/api_service.dart
-  - contentglowz_lab/api/migrations/004_status_lifecycle.sql
-  - contentglowz_lab/api/routers/status.py
+  - app/lib/data/models/capture_content_link.dart
+  - app/lib/data/services/api_service.dart
+  - lab/api/migrations/004_status_lifecycle.sql
+  - lab/api/routers/status.py
   - shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-
     content.md
 
@@ -1067,11 +1067,11 @@ Something went wrong? Hit `/feedback` to report the issue.
   └ Read project-development-mode.md
 
 • Ran git status --short
-  └  M contentglowz_app/CHANGELOG.md
+  └  M app/CHANGELOG.md
      M shipflow_data/technical/app/guidelines.md
     … +22 lines (ctrl + t to view transcript)
     SPEC-local-capture-assets-linked-to-content.md
-    ?? contentglowz_app/test/presentation/screens/onboarding/
+    ?? app/test/presentation/screens/onboarding/
 
 • Ran git log --oneline -5
   └ 5f4704e chore: configure apk ci and trigger vercel redeploy
@@ -1091,10 +1091,10 @@ Something went wrong? Hit `/feedback` to report the issue.
   gate secrets/bugs bloque.
 
 • Ran git status --short --untracked-files=all
-  └  M contentglowz_app/CHANGELOG.md
+  └  M app/CHANGELOG.md
      M shipflow_data/technical/app/guidelines.md
     … +24 lines (ctrl + t to view transcript)
-    ?? contentglowz_app/test/presentation/screens/onboarding/
+    ?? app/test/presentation/screens/onboarding/
     onboarding_back_test.dart
 
 • Ran git status --short --untracked-files=all | rg -i "(^.. .*\.env|
@@ -1102,7 +1102,7 @@ Something went wrong? Hit `/feedback` to report the issue.
   │ \.jks$|keystore)"
   └ (no output)
 
-• Ran find shipflow_data/workflow/bugs/contentglowz_app -maxdepth 1 -type f -name '*.md'
+• Ran find shipflow_data/workflow/bugs/app -maxdepth 1 -type f -name '*.md'
   │ -print 2>/dev/null | sort
   └ shipflow_data/workflow/bugs/app/BUG-2026-05-05-001.md
     shipflow_data/workflow/bugs/app/BUG-2026-05-05-002.md
@@ -1111,17 +1111,17 @@ Something went wrong? Hit `/feedback` to report the issue.
   │ validation_surface|ship_before_preview_test|
   │ post_ship_verification|deployment_provider" CLAUDE.md
   │ … +2 lines
-  └ contentglowz_site/CLAUDE.md:44:## ShipFlow Development Mode
-    contentglowz_site/CLAUDE.md:46:- development_mode: hybrid
+  └ site/CLAUDE.md:44:## ShipFlow Development Mode
+    site/CLAUDE.md:46:- development_mode: hybrid
     … +9 lines (ctrl + t to view transcript)
-    contentglowz_lab/CLAUDE.md:89:- post_ship_verification: none
-    contentglowz_lab/CLAUDE.md:90:- deployment_provider: other
+    lab/CLAUDE.md:89:- post_ship_verification: none
+    lab/CLAUDE.md:90:- deployment_provider: other
 
 • Explored
   └ Read BUG-2026-05-05-002.md, BUG-2026-05-05-001.md
 
 • Ran git diff --stat
-  └  contentglowz_app/CHANGELOG.md                       |   3 +-
+  └  app/CHANGELOG.md                       |   3 +-
      shipflow_data/technical/app/guidelines.md                      |   3 +-
     … +19 lines (ctrl + t to view transcript)
     ++++++++
@@ -1196,7 +1196,7 @@ presentation/screens/onboarding/onboarding_back_test.dart
   └ Resolving dependencies...
     Downloading packages...
     … +37 lines (ctrl + t to view transcript)
-    Analyzing contentglowz_app...
+    Analyzing app...
     No issues found! (ran in 3.4s)
 
 • Waited for background terminal
@@ -1236,11 +1236,11 @@ bin/python -m pip install pytest
     Successfully installed iniconfig-2.3.0 pluggy-1.6.0 pytest-9.0.3
 
 • Ran git diff --name-only
-  └ contentglowz_app/CHANGELOG.md
+  └ app/CHANGELOG.md
     shipflow_data/technical/app/guidelines.md
     … +15 lines (ctrl + t to view transcript)
-    contentglowz_lab/status/schemas.py
-    contentglowz_lab/status/service.py
+    lab/status/schemas.py
+    lab/status/service.py
 
 • Ran /tmp/contentglowz-pytest-venv/bin/python -m pytest tests/
   │ test_status_content_body.py -q
@@ -1446,7 +1446,7 @@ content.md (+1 -1)
   └ [main cf4a393] Ship capture asset content linking
      25 files changed, 1718 insertions(+), 96 deletions(-)
     … +8 lines (ctrl + t to view transcript)
-     create mode 100644 contentglowz_app/test/presentation/screens/
+     create mode 100644 app/test/presentation/screens/
     onboarding/onboarding_back_test.dart
 
 ──────────────────────────────────────────────────────────────────────
@@ -1496,7 +1496,7 @@ content.md (+1 -1)
 ─ Worked for 5m 45s ──────────────────────────────────────────────────
 
 
-› $tmux-capture-conversation enregistre ca a coté de contentglowz_app/
+› $tmux-capture-conversation enregistre ca a coté de app/
   shipflow_data/workflow/specs/app/SPEC-local-capture-assets-linked-to-content.md
 
 

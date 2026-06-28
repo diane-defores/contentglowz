@@ -2,7 +2,7 @@
 artifact: product_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_site"
+project: "site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -49,16 +49,16 @@ non_goals:
 next_step: "/sf-docs audit shipflow_data/business/site/product.md"
 ---
 
-# Contexte produit — contentglowz_site
+# Contexte produit — site
 
 ## Utilisateur cible
 - Founders et équipes content ops qui veulent piloter la publication avec moins de friction.
 - Visiteurs intéressés par une solution d’automatisation assistée par IA, mais qui exigent une vraie continuité.
 
 ## Problème
-Le site positionne le produit, rassure sur les limites techniques et guide rapidement vers `contentglowz_app`.
+Le site positionne le produit, rassure sur les limites techniques et guide rapidement vers `app`.
 Sans ce site, la promesse produit est morcelée entre pages, et le passage vers l’app est moins crédible.
-`contentglowz_app` reste la source canonique pour les capacités produit et le contrat business.
+`app` reste la source canonique pour les capacités produit et le contrat business.
 
 ## Sorties souhaitées
 - Traiter la découverte, la preuve sociale, la preuve de valeur et la conversion initiale.

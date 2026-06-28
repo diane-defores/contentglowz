@@ -2,7 +2,7 @@
 artifact: gtm
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -34,7 +34,7 @@ next_step: /sf-docs audit shipflow_data/business/lab/gtm.md
 
 ## Positionnement commercial (backend observé)
 
-`contentglowz_lab` n’est pas un produit final consommé directement par les utilisateurs finaux. C’est un **moteur de services** qui rend disponibles :
+`lab` n’est pas un produit final consommé directement par les utilisateurs finaux. C’est un **moteur de services** qui rend disponibles :
 
 - API stables pour l’application et les expériences web,
 - orchestration asynchrone des workflows IA,
@@ -71,7 +71,7 @@ La promesse produit doit donc être formulée comme :
 - Point d’entrée FastAPI pour toutes les opérations de contenu.
 - Pipelines IA : recherche/veille, rédaction, planification, publication.
 - Planification et rappel par scheduler.
-- Contrôles utilisateur via app Flutter (`contentglowz_app`) et surfaces web (`contentglowz_site`).
+- Contrôles utilisateur via app Flutter (`app`) et surfaces web (`site`).
 
 ## Objections & réponses
 

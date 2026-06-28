@@ -2,7 +2,7 @@
 artifact: technical_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -32,16 +32,16 @@ depends_on:
     required_status: "reviewed"
 supersedes: []
 linked_systems:
-  - "contentglowz_lab FastAPI"
+  - "lab FastAPI"
   - "Clerk"
 next_review: "2026-07-26"
 next_step: "/sf-docs update shipflow_data/technical/app/context.md"
 ---
 
-# shipflow_data/technical/app/context.md — contentglowz_app
+# shipflow_data/technical/app/context.md — app
 
 ## Product technical context
-`contentglowz_app` is the primary Flutter application for ContentGlowz. It hosts:
+`app` is the primary Flutter application for ContentGlowz. It hosts:
 - Entry/auth gate (`/entry`, `/auth`).
 - Authenticated shell and feature screens (`/feed`, `/projects`, `/drip`, `/settings`, etc.).
 - Feature state orchestration via Riverpod providers and a FastAPI-backed `ApiService`.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: reviewed
@@ -30,7 +30,7 @@ next_step: "/sf-docs audit shipflow_data/workflow/specs/lab/DRIP_IMPLEMENTATION.
 ---
 # Drip — Progressive Publishing (Implementation Notes)
 
-This document describes the **real implementation** of Content Drip in `contentglowz_lab` (FastAPI + scheduler) and the expected **SSG-side contracts** to make it “Google-index-proof”.
+This document describes the **real implementation** of Content Drip in `lab` (FastAPI + scheduler) and the expected **SSG-side contracts** to make it “Google-index-proof”.
 
 ## Status rationale
 

@@ -2,7 +2,7 @@
 artifact: gtm_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -38,7 +38,7 @@ offer: operation-focused Flutter workflow shell for planning, review, scheduling
 channels:
   - web auth onboarding path via web_auth routes (entry, sign-in, sign-up, sso-callback)
   - README and scripts used for install, runbook and validation
-  - ecosystem referral through contentglowz_site and internal links
+  - ecosystem referral through site and internal links
 proof_points:
   - Clerk-session gate and routed onboarding with `AppAccessState` checks
   - local cache + queue + replay behavior documented and implemented for supported offline writes
@@ -47,7 +47,7 @@ next_review: "2026-07-26"
 next_step: "/sf-docs audit shipflow_data/business/app/gtm.md"
 ---
 
-# Go-to-Market Context — contentglowz_app
+# Go-to-Market Context — app
 
 ## Public promise
 ContentGlowz App is a practical operator interface for creators and lean teams who want to move from idea to publish-ready content with less tooling friction and stronger continuity. It does **not** claim complete automation; it claims controlled, traceable execution backed by human review and resilient workflows.
@@ -65,7 +65,7 @@ ContentGlowz App is a practical operator interface for creators and lean teams w
 ## Channels currently documented in repo
 - **Direct usage / onboarding channel:** web auth handoff paths under `APP_WEB_URL` + `web_auth/*` (`/sign-in`, `/sign-up`, `/sso-callback`).
 - **Supportive conversion surface:** in-repo documentation (`README.md`) and setup scripts that are reused for installation + validation.
-- **Cross-surface referral channel:** ecosystem references to `contentglowz_site` for acquisition and positioning (external to this repo).
+- **Cross-surface referral channel:** ecosystem references to `site` for acquisition and positioning (external to this repo).
 
 ## Proof points (supported in code/docs)
 - End-to-end auth path and gated routing are documented and implemented for app entry.

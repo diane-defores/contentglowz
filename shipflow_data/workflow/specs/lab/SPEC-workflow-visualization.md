@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-05-11"
 status: stale
@@ -15,7 +15,7 @@ security_impact: "no"
 docs_impact: "yes"
 user_story: "Legacy workflow visualization task checklist preserved as workflow reference under canonical specs storage."
 linked_systems:
-  - contentglowz_lab
+  - lab
 evidence: []
 depends_on: []
 supersedes: []

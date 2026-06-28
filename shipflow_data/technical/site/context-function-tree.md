@@ -2,7 +2,7 @@
 artifact: artifact_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_site
+project: site
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -27,7 +27,7 @@ next_review: "2026-07-26"
 next_step: /sf-docs update shipflow_data/technical/site/context-function-tree.md
 ---
 
-# shipflow_data/technical/site/context-function-tree.md — contentglowz_site
+# shipflow_data/technical/site/context-function-tree.md — site
 
 ## Racine Astro
 - `src/pages/index.astro`

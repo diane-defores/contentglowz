@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_site
+project: site
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -15,7 +15,7 @@ security_impact: none
 docs_impact: yes
 target_audience: creators, independent operators, SMB content teams
 value_proposition: turn content ideas into publish-ready outcomes with predictable, transparent execution
-business_model: acquisition and qualification on site, then handoff to contentglowz_app where product and commercial truth is defined
+business_model: acquisition and qualification on site, then handoff to app where product and commercial truth is defined
 market: content teams, founders, and solo operators
 depends_on:
   - CLAUDE.md@0.1.0
@@ -31,11 +31,11 @@ next_step: /sf-docs audit shipflow_data/business/site/business.md
 
 ## Purpose
 
-`contentglowz_site` is the public website and acquisition surface for ContentGlowz.
+`site` is the public website and acquisition surface for ContentGlowz.
 It presents the product, sets expectations, captures trust signals, and routes users into the
 authenticated Flutter app handoff flow.
 
-For product and business truth, `contentglowz_app` is the canonical repository. This site mirrors
+For product and business truth, `app` is the canonical repository. This site mirrors
 that contract and must not create a parallel product or pricing truth.
 
 ## Problem

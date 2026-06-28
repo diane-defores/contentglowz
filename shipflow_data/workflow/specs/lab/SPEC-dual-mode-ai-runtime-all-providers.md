@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-05-30"
 status: in_progress
@@ -573,35 +573,35 @@ Flutter must not parse `kind == "dependency"` as an AI runtime setup error.
 
 ## Dependencies
 - Backend persistence and models:
-  - `contentglowz_lab/api/services/user_key_store.py`
-  - `contentglowz_lab/api/services/user_data_store.py`
-  - `contentglowz_lab/api/models/user_data.py`
+  - `lab/api/services/user_key_store.py`
+  - `lab/api/services/user_data_store.py`
+  - `lab/api/models/user_data.py`
 - Backend routing and services:
-  - `contentglowz_lab/api/routers/settings_integrations.py`
-  - `contentglowz_lab/api/routers/personas.py`
-  - `contentglowz_lab/api/routers/psychology.py`
-  - `contentglowz_lab/api/routers/newsletter.py`
-  - `contentglowz_lab/api/routers/research.py`
-  - `contentglowz_lab/api/services/user_llm_service.py`
-  - `contentglowz_lab/api/services/repo_understanding_service.py`
+  - `lab/api/routers/settings_integrations.py`
+  - `lab/api/routers/personas.py`
+  - `lab/api/routers/psychology.py`
+  - `lab/api/routers/newsletter.py`
+  - `lab/api/routers/research.py`
+  - `lab/api/services/user_llm_service.py`
+  - `lab/api/services/repo_understanding_service.py`
 - Shared provider tools:
-  - `contentglowz_lab/agents/shared/tools/exa_tools.py`
-  - `contentglowz_lab/agents/shared/tools/firecrawl_tools.py`
-  - `contentglowz_lab/agents/newsletter/tools/content_tools.py`
-  - `contentglowz_lab/agents/newsletter/tools/gmail_tools.py`
-  - `contentglowz_lab/agents/newsletter/tools/imap_tools.py`
+  - `lab/agents/shared/tools/exa_tools.py`
+  - `lab/agents/shared/tools/firecrawl_tools.py`
+  - `lab/agents/newsletter/tools/content_tools.py`
+  - `lab/agents/newsletter/tools/gmail_tools.py`
+  - `lab/agents/newsletter/tools/imap_tools.py`
 - Memory:
-  - `contentglowz_lab/memory/memory_config.py`
-  - `contentglowz_lab/memory/memory_service.py`
-  - `contentglowz_lab/agents/newsletter/newsletter_agent.py`
-  - `contentglowz_lab/agents/newsletter/newsletter_crew.py`
-  - `contentglowz_lab/agents/newsletter/tools/memory_tools.py`
+  - `lab/memory/memory_config.py`
+  - `lab/memory/memory_service.py`
+  - `lab/agents/newsletter/newsletter_agent.py`
+  - `lab/agents/newsletter/newsletter_crew.py`
+  - `lab/agents/newsletter/tools/memory_tools.py`
 - Flutter:
-  - `contentglowz_app/lib/data/models/app_settings.dart`
-  - `contentglowz_app/lib/data/models/openrouter_credential.dart`
-  - `contentglowz_app/lib/data/services/api_service.dart`
-  - `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`
-  - `contentglowz_app/lib/core/openrouter_guard.dart`
+  - `app/lib/data/models/app_settings.dart`
+  - `app/lib/data/models/openrouter_credential.dart`
+  - `app/lib/data/services/api_service.dart`
+  - `app/lib/presentation/screens/settings/settings_screen.dart`
+  - `app/lib/core/openrouter_guard.dart`
 
 ## Invariants
 - Every covered request resolves exactly one runtime context before any provider call.
@@ -639,112 +639,112 @@ Flutter must not parse `kind == "dependency"` as an AI runtime setup error.
 
 ## Implementation Tasks
 - [x] Task 1: Define typed AI runtime models and the canonical error envelope
-  - File: `contentglowz_lab/api/models/ai_runtime.py`, `contentglowz_lab/api/models/user_data.py`
+  - File: `lab/api/models/ai_runtime.py`, `lab/api/models/user_data.py`
   - Action: Create typed models for runtime mode, available modes, provider status, credential status, and machine-readable runtime errors; update `api/models/user_data.py` only as needed to embed `aiRuntime` inside user settings
   - Depends on: none
   - Validate with: `pytest tests/test_ai_runtime_models.py`
   - Notes: The JSON shapes in this spec are the source of truth
 
 - [x] Task 2: Persist `robotSettings.aiRuntime` cleanly in the settings store
-  - File: `contentglowz_lab/api/services/user_data_store.py`
+  - File: `lab/api/services/user_data_store.py`
   - Action: Merge `aiRuntime` without clobbering unrelated `robotSettings` keys and expose a helper for resolving the effective runtime mode when unset
   - Depends on: Task 1
   - Validate with: `pytest tests/test_user_data_store_ai_runtime.py`
   - Notes: Default to `byok` when no runtime policy is stored
 
 - [x] Task 3: Add the platform-mode entitlement service
-  - File: `contentglowz_lab/api/services/ai_entitlement_service.py`
+  - File: `lab/api/services/ai_entitlement_service.py`
   - Action: Implement one backend gate that decides whether `platform` mode is available for a given user, using V1 env-backed policy from `AI_PLATFORM_MODE_ENABLED` and `AI_PLATFORM_MODE_ALLOWED_USER_IDS`
   - Depends on: Task 1
   - Validate with: `pytest tests/test_ai_entitlement_service.py`
   - Notes: Billing is out of scope; this is only the availability gate; the selected mode is persisted separately in `UserSettings`
 
 - [x] Task 4: Build the centralized AI runtime resolver
-  - File: `contentglowz_lab/api/services/ai_runtime_service.py`
+  - File: `lab/api/services/ai_runtime_service.py`
   - Action: Resolve `byok` vs `platform`, load required provider credentials, construct request-scoped OpenRouter/Exa/Firecrawl clients, expose optional-provider tool profiles, and emit canonical runtime errors
   - Depends on: Tasks 1, 2, and 3
   - Validate with: `pytest tests/test_ai_runtime_service.py`
   - Notes: This service becomes the only valid place to read operator AI provider env vars
 
 - [x] Task 5: Replace the OpenRouter-only settings surface with the generic runtime and provider API
-  - File: `contentglowz_lab/api/routers/settings_integrations.py`, `contentglowz_lab/api/models/ai_runtime.py`
+  - File: `lab/api/routers/settings_integrations.py`, `lab/api/models/ai_runtime.py`
   - Action: Add `GET|PUT /api/settings/ai-runtime` plus generic `/api/settings/integrations/{provider}` endpoints, while preserving temporary `/openrouter` aliases for backward compatibility
   - Depends on: Tasks 1, 2, 3, and 4
   - Validate with: `pytest tests/test_settings_ai_runtime_router.py`
   - Notes: Provider payloads and error codes must match the spec exactly
 
 - [x] Task 6: Make provider tools runtime-injectable and support optional-provider tool profiles
-  - File: `contentglowz_lab/agents/shared/tools/exa_tools.py`, `contentglowz_lab/agents/shared/tools/firecrawl_tools.py`, `contentglowz_lab/agents/newsletter/tools/content_tools.py`
+  - File: `lab/agents/shared/tools/exa_tools.py`, `lab/agents/shared/tools/firecrawl_tools.py`, `lab/agents/newsletter/tools/content_tools.py`
   - Action: Refactor shared Exa and Firecrawl tools so covered agents can be built with required providers and with optional providers removed from the tool list instead of left as broken env-driven tools
   - Depends on: Task 4
   - Validate with: `pytest tests/test_provider_tools_runtime.py`
   - Notes: Update `firecrawl_tools.py`, `agents/newsletter/tools/content_tools.py`, and any helper needed for tool-profile assembly
 
 - [x] Task 7: Remove Mem0 env fallback and make memory behavior explicit
-  - File: `contentglowz_lab/memory/memory_config.py`, `contentglowz_lab/memory/memory_service.py`
+  - File: `lab/memory/memory_config.py`, `lab/memory/memory_service.py`
   - Action: Stop binding Mem0 LLM extraction to `OPENROUTER_API_KEY` at import time; add runtime-aware configuration entrypoints and a clean “memory disabled” path when no safe runtime is available
   - Depends on: Task 4
   - Validate with: `pytest tests/test_memory_runtime_scoping.py`
   - Notes: Update `memory_service.py` together with the config layer
 
 - [x] Task 8: Migrate persona draft to the generic runtime matrix
-  - File: `contentglowz_lab/api/routers/personas.py`, `contentglowz_lab/api/services/repo_understanding_service.py`
+  - File: `lab/api/routers/personas.py`, `lab/api/services/repo_understanding_service.py`
   - Action: Replace OpenRouter-specific gating with runtime preflight and update `api/services/repo_understanding_service.py` so manual non-GitHub URLs use runtime-injected Firecrawl instead of env fallback
   - Depends on: Tasks 4 and 6
   - Validate with: `pytest tests/test_persona_draft_route.py`
   - Notes: Preserve `blank_form` as a non-LLM exception
 
 - [x] Task 9: Migrate psychology narrative and angle routes to the generic runtime
-  - File: `contentglowz_lab/api/routers/psychology.py`
+  - File: `lab/api/routers/psychology.py`
   - Action: Resolve runtime before `synthesize-narrative`, `refine-persona`, and `generate-angles`, using the route matrix in this spec
   - Depends on: Task 4
   - Validate with: `pytest tests/test_psychology_auth_jobs.py`
   - Notes: These three routes require only `openrouter`
 
 - [x] Task 10: Migrate `dispatch-pipeline` by target format
-  - File: `contentglowz_lab/api/routers/psychology.py`, `contentglowz_lab/agents/seo/seo_crew.py`, `contentglowz_lab/agents/newsletter/newsletter_agent.py`, `contentglowz_lab/agents/newsletter/newsletter_crew.py`, `contentglowz_lab/agents/newsletter/tools/gmail_tools.py`, `contentglowz_lab/agents/newsletter/tools/imap_tools.py`, `contentglowz_lab/agents/short/short_crew.py`, `contentglowz_lab/agents/social/social_crew.py`
+  - File: `lab/api/routers/psychology.py`, `lab/agents/seo/seo_crew.py`, `lab/agents/newsletter/newsletter_agent.py`, `lab/agents/newsletter/newsletter_crew.py`, `lab/agents/newsletter/tools/gmail_tools.py`, `lab/agents/newsletter/tools/imap_tools.py`, `lab/agents/short/short_crew.py`, `lab/agents/social/social_crew.py`
   - Action: Apply the per-format runtime matrix for `article`, `newsletter`, `short`, and `social_post`; keep duplicate-content conflicts distinct from runtime errors; preserve the single canonical content record; extract the shared newsletter execution-profile builder and implement the dedicated no-email profile used by the pipeline path
   - Depends on: Tasks 4, 6, and 7
   - Validate with: `pytest tests/test_dispatch_pipeline_runtime.py`
   - Notes: `article` and `newsletter` must no longer rely on hidden provider defaults inside their crews; `NewsletterResearchAgent` tool assembly must be made explicit for email vs no-email profiles
 
 - [x] Task 11: Fix newsletter standalone generation, readiness, and memory scoping
-  - File: `contentglowz_lab/api/routers/newsletter.py`, `contentglowz_lab/agents/newsletter/newsletter_agent.py`, `contentglowz_lab/agents/newsletter/newsletter_crew.py`, `contentglowz_lab/agents/newsletter/tools/gmail_tools.py`, `contentglowz_lab/agents/newsletter/tools/imap_tools.py`, `contentglowz_lab/agents/newsletter/tools/memory_tools.py`, `contentglowz_lab/agents/newsletter/config/newsletter_config.py`
+  - File: `lab/api/routers/newsletter.py`, `lab/agents/newsletter/newsletter_agent.py`, `lab/agents/newsletter/newsletter_crew.py`, `lab/agents/newsletter/tools/gmail_tools.py`, `lab/agents/newsletter/tools/imap_tools.py`, `lab/agents/newsletter/tools/memory_tools.py`, `lab/agents/newsletter/config/newsletter_config.py`
   - Action: Enforce the newsletter provider matrix, make request body field `include_email_insights` choose between inbox-enabled and no-email profiles for standalone generation, preserve `/api/newsletter/config/check` as a compatibility endpoint with the V1 contract defined in this spec, and thread `user_id` and `project_id` into newsletter memory paths
   - Depends on: Tasks 4, 6, 7, and 10
   - Validate with: `pytest tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py`
   - Notes: Covered newsletter flows must stop using unscoped `load_context()` and `store_generation()`; the standalone route and the dispatch-pipeline route must not share the same inbox profile by accident
 
 - [x] Task 12: Migrate research to the generic runtime and stop swallowing provider failures
-  - File: `contentglowz_lab/api/routers/research.py`, `contentglowz_lab/agents/seo/research_analyst.py`
+  - File: `lab/api/routers/research.py`, `lab/agents/seo/research_analyst.py`
   - Action: Resolve runtime using the route matrix, inject optional-provider tool profiles, and return explicit provider/runtime failures instead of empty successful responses
   - Depends on: Tasks 4 and 6
   - Validate with: `pytest tests/test_research_router.py`
   - Notes: `openrouter` and `exa` are required; `firecrawl` is optional
 
 - [x] Task 13: Generalize Flutter models and API client to the runtime contract
-  - File: `contentglowz_app/lib/data/services/api_service.dart`, `contentglowz_app/lib/data/models/app_settings.dart`, `contentglowz_app/lib/data/models/ai_runtime.dart`
+  - File: `app/lib/data/services/api_service.dart`, `app/lib/data/models/app_settings.dart`, `app/lib/data/models/ai_runtime.dart`
   - Action: Add methods for `GET|PUT /api/settings/ai-runtime` and generic provider integrations, plus Flutter models for runtime mode, available modes, provider statuses, and structured AI runtime errors
   - Depends on: Task 5
   - Validate with: `flutter test test/data/api_service_ai_runtime_test.dart`
   - Notes: `AppSettings` must carry `robotSettings['aiRuntime']`
 
 - [x] Task 14: Replace the OpenRouter-only Settings UI with a dual-mode runtime UI
-  - File: `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`, `contentglowz_app/lib/data/models/ai_runtime.dart`
+  - File: `app/lib/presentation/screens/settings/settings_screen.dart`, `app/lib/data/models/ai_runtime.dart`
   - Action: Add a runtime mode selector, provider status cards, platform locked states, and migration-safe compatibility for older OpenRouter-only flows
   - Depends on: Task 13
   - Validate with: `flutter test test/presentation/settings/ai_runtime_settings_test.dart`
   - Notes: The UI must not promise billing behavior or pricing
 
 - [x] Task 15: Replace broad `409` heuristics with structured runtime-error handling in Flutter
-  - File: `contentglowz_app/lib/core/openrouter_guard.dart`, `contentglowz_app/lib/presentation/screens/ritual/ritual_screen.dart`, `contentglowz_app/lib/presentation/screens/angles/angles_screen.dart`, `contentglowz_app/lib/presentation/screens/newsletter/newsletter_screen.dart`, `contentglowz_app/lib/presentation/screens/research/research_screen.dart`
+  - File: `app/lib/core/openrouter_guard.dart`, `app/lib/presentation/screens/ritual/ritual_screen.dart`, `app/lib/presentation/screens/angles/angles_screen.dart`, `app/lib/presentation/screens/newsletter/newsletter_screen.dart`, `app/lib/presentation/screens/research/research_screen.dart`
   - Action: Replace the current `statusCode == 409` check with parsing of the formal `kind/code` error envelope defined in this spec, then update the covered screens that surface provider/mode setup errors
   - Depends on: Tasks 5 and 13
   - Validate with: `flutter test test/core/ai_runtime_guard_test.dart`
   - Notes: Duplicate-content conflicts and newsletter non-runtime configuration errors must no longer be misclassified as missing-provider runtime errors
 
 - [x] Task 16: Add regression coverage and mark the previous strict-BYOK spec as superseded
-  - File: `contentglowz_lab/tests/test_persona_draft_route.py`, `contentglowz_lab/tests/test_psychology_auth_jobs.py`, `contentglowz_lab/tests/test_dispatch_pipeline_runtime.py`, `contentglowz_lab/tests/test_newsletter_router.py`, `contentglowz_lab/tests/test_newsletter_memory_scoping.py`, `contentglowz_lab/tests/test_research_router.py`, `shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md`
+  - File: `lab/tests/test_persona_draft_route.py`, `lab/tests/test_psychology_auth_jobs.py`, `lab/tests/test_dispatch_pipeline_runtime.py`, `lab/tests/test_newsletter_router.py`, `lab/tests/test_newsletter_memory_scoping.py`, `lab/tests/test_research_router.py`, `shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md`
   - Action: Add mixed-mode, mixed-user, no-env-fallback, and optional-provider tests across backend routes, then add a superseded note to the previous strict-BYOK spec
   - Depends on: Tasks 8, 9, 10, 11, and 12
   - Validate with: `pytest tests/test_persona_draft_route.py tests/test_psychology_auth_jobs.py tests/test_dispatch_pipeline_runtime.py tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py tests/test_research_router.py`
@@ -812,14 +812,14 @@ Flutter must not parse `kind == "dependency"` as an AI runtime setup error.
 
 ## Execution Notes
 - Read these files first:
-  - `contentglowz_lab/api/services/user_key_store.py`
-  - `contentglowz_lab/api/services/user_llm_service.py`
-  - `contentglowz_lab/api/routers/settings_integrations.py`
-  - `contentglowz_lab/api/routers/psychology.py`
-  - `contentglowz_lab/api/routers/newsletter.py`
-  - `contentglowz_lab/api/routers/research.py`
-  - `contentglowz_lab/memory/memory_config.py`
-  - `contentglowz_app/lib/presentation/screens/settings/settings_screen.dart`
+  - `lab/api/services/user_key_store.py`
+  - `lab/api/services/user_llm_service.py`
+  - `lab/api/routers/settings_integrations.py`
+  - `lab/api/routers/psychology.py`
+  - `lab/api/routers/newsletter.py`
+  - `lab/api/routers/research.py`
+  - `lab/memory/memory_config.py`
+  - `app/lib/presentation/screens/settings/settings_screen.dart`
 - Recommended execution order:
   1. Models
   2. Settings persistence
@@ -833,8 +833,8 @@ Flutter must not parse `kind == "dependency"` as an AI runtime setup error.
   10. Flutter error handling
   11. Regression tests
 - Validation commands:
-  - `cd /home/claude/contentglowz/contentglowz_lab && pytest tests/test_ai_runtime_models.py tests/test_user_data_store_ai_runtime.py tests/test_ai_entitlement_service.py tests/test_ai_runtime_service.py tests/test_settings_ai_runtime_router.py tests/test_persona_draft_route.py tests/test_psychology_auth_jobs.py tests/test_dispatch_pipeline_runtime.py tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py tests/test_research_router.py`
-  - `cd /home/claude/contentglowz/contentglowz_app && flutter test`
+  - `cd /home/claude/contentglowz/lab && pytest tests/test_ai_runtime_models.py tests/test_user_data_store_ai_runtime.py tests/test_ai_entitlement_service.py tests/test_ai_runtime_service.py tests/test_settings_ai_runtime_router.py tests/test_persona_draft_route.py tests/test_psychology_auth_jobs.py tests/test_dispatch_pipeline_runtime.py tests/test_newsletter_router.py tests/test_newsletter_memory_scoping.py tests/test_research_router.py`
+  - `cd /home/claude/contentglowz/app && flutter test`
 - Stop conditions:
   - stop if any covered route still reads provider env vars outside the centralized runtime resolver
   - stop if optional providers remain registered as broken tools instead of being removed from tool profiles

@@ -6,17 +6,17 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
 
 ## Scope Executed
 
-- `contentglowz_app/specs`
-- `contentglowz_lab/specs`
+- `app/specs`
+- `lab/specs`
 - `specs`
-- `contentglowz_app/bugs`
-- `contentglowz_lab/bugs`
+- `app/bugs`
+- `lab/bugs`
 - `research`
 - `docs/explorations`
 - `docs/qa`
-- `contentglowz_lab/docs`
-- `contentglowz_lab` root governance notes
-- `contentglowz_site/docs` (targeted spec/research copies)
+- `lab/docs`
+- `lab` root governance notes
+- `site/docs` (targeted spec/research copies)
 
 ## Outcome Summary
 
@@ -35,7 +35,7 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
 
 ### Inventory / Reference / Runtime evidence
 
-- `find specs contentglowz_app/specs contentglowz_lab/specs contentglowz_lab/docs docs/explorations docs/qa research contentglowz_app/bugs contentglowz_lab/bugs contentglowz_site/docs -maxdepth 2 -type f -name '*.md'` (with missing directories ignored) returned no remaining in-scope legacy markdown files in those paths.
+- `find specs app/specs lab/specs lab/docs docs/explorations docs/qa research app/bugs lab/bugs site/docs -maxdepth 2 -type f -name '*.md'` (with missing directories ignored) returned no remaining in-scope legacy markdown files in those paths.
 
 - `git diff -- contentglowz` returned empty output (no changes in `contentglowz/**`).
 
@@ -57,7 +57,7 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
     - `shipflow_data/workflow/reports/markdown-governance-inventory-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-security-review-2026-05-11.md` added,
     - `shipflow_data/workflow/reports/markdown-governance-migration-closure-2026-05-11.md` added,
-    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `contentglowz_app/AGENT.md`, `contentglowz_app/CLAUDE.md`, `shipflow_data/editorial/site/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
+    - workflow and guidance files (`CHANGELOG.md`, `TASKS.md`, `app/AGENT.md`, `app/CLAUDE.md`, `shipflow_data/editorial/site/astro-content-schema-policy.md`) updated per next-step/reference cleanup.
 
 ## Security and classification decisions
 
@@ -70,8 +70,8 @@ Chantier spec: `shipflow_data/workflow/specs/SPEC-global-markdown-governance-mig
 ## Exclusions and preserved legacy surfaces
 
 - `contentglowz/**`: fully excluded and unchanged.
-- `contentglowz_site/src/content/**`: kept as runtime content and not converted to ShipFlow frontmatter.
-- Trackers (`CHANGELOG.md`, `TASKS.md`, `AUDIT_LOG.md`, `TEST_LOG.md`, repo `README` files) preserved as trackers; references updated where they pointed to old governance paths.
+- `site/src/content/**`: kept as runtime content and not converted to ShipFlow frontmatter.
+- Trackers (`CHANGELOG.md`, `TASKS.md`, `AUDIT_LOG.md`, `shipflow_data/workflow/qa/TEST_LOG.md`, repo `README` files) preserved as trackers; references updated where they pointed to old governance paths.
 
 ## Rollback notes
 

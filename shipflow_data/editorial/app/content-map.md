@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: "contentglowz_app"
+project: "app"
 created: "2026-04-26"
 updated: "2026-05-11"
 status: "reviewed"
@@ -39,10 +39,10 @@ next_review: "2026-07-26"
 next_step: "/sf-docs audit shipflow_data/editorial/app/content-map.md"
 ---
 
-# Content Map — contentglowz_app
+# Content Map — app
 
 ## Purpose of this map
-`contentglowz_app` is a Flutter application repository with a production web shell plus Clerk web auth assets. It has limited in-repo marketing/content pages; most public-facing acquisition copy lives outside this repo.
+`app` is a Flutter application repository with a production web shell plus Clerk web auth assets. It has limited in-repo marketing/content pages; most public-facing acquisition copy lives outside this repo.
 
 ## 1) Public-facing runtime entrypoints (repo-owned)
 
@@ -119,8 +119,8 @@ Primary shell routes:
 
 ## 5) Cross-repo links / navigation assumptions
 
-- `contentglowz_site` (external) is the primary acquisition/landing ecosystem surface and not documented in detail here.
-- `contentglowz_lab` (external API/service owner) is the backend + AI/automation context referenced by code and specs.
+- `site` (external) is the primary acquisition/landing ecosystem surface and not documented in detail here.
+- `lab` (external API/service owner) is the backend + AI/automation context referenced by code and specs.
 - Internal routing/docs should treat those repos as separate canonical sources for their own surfaces.
 
 ## 6) Documentation mapping by user intent

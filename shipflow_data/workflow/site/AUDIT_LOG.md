@@ -12,4 +12,4 @@
 | 2026-04-28 | monorepo code audit | B | — | — | — | — | — | — | — | B | 0/1/1 |
 | 2026-06-11 | design-system authority | — | C- | — | — | — | — | — | — | C- | 0/1/2 (authority contract added; baseline site scan: 28 files / 36 candidates) |
 | 2026-05-10 | design tokens | — | C- | — | — | — | — | — | — | C- | 0/2/1 (shared source exists; 223 literal CSS type/spacing/motion values remain) |
-🟠 [contentglowz_site] audit: translate | date: 2026-06-12 | overall: D | issues: 0/1/1 | scope: layout hardcodes lang=en and the site has no locale routing or hreflang strategy despite mixed-language content
+🟠 [site] audit: translate | date: 2026-06-12 | overall: D | issues: 0/1/1 | scope: layout hardcodes lang=en and the site has no locale routing or hreflang strategy despite mixed-language content

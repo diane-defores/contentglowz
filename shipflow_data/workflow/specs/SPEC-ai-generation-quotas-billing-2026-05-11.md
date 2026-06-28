@@ -18,9 +18,9 @@ risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_lab"
-  - "contentglowz_app"
-  - "contentglowz_site"
+  - "lab"
+  - "app"
+  - "site"
   - "Image Robot"
   - "Flux/BFL"
   - "Bunny CDN"
@@ -54,11 +54,11 @@ evidence:
   - "Official BFL FLUX.2 Pro API docs were checked on 2026-05-11 and return nullable cost/input_mp/output_mp fields."
   - "Lifetime Deal BYOK PRD says the product must not promise unlimited AI consumption and should separate platform access from variable provider usage."
   - "Strict BYOK spec says app-visible LLM actions use the requesting user's OpenRouter key; non-LLM services such as Bunny remain server-managed."
-  - "contentglowz_lab/status/cost_tracker.py already persists estimated external API costs by project, job, job_type, pipeline, mode, provider, and time range."
-  - "contentglowz_lab/api/services/job_store.py persists async jobs in Turso but does not store user_id/org_id or quota reservation data."
-  - "contentglowz_app/lib/data/services/api_service.dart already maps structured API error envelopes with code, kind, provider, settingsPath, and retryable."
-  - "contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart already mentions BYOK versus ContentGlowz-managed credits in AI runtime copy."
-  - "contentglowz_site/src/components/Pricing.astro currently states that all plans include AI generation costs and no hidden fees, which may conflict with BYOK/PAYG and future managed-credit packaging."
+  - "lab/status/cost_tracker.py already persists estimated external API costs by project, job, job_type, pipeline, mode, provider, and time range."
+  - "lab/api/services/job_store.py persists async jobs in Turso but does not store user_id/org_id or quota reservation data."
+  - "app/lib/data/services/api_service.dart already maps structured API error envelopes with code, kind, provider, settingsPath, and retryable."
+  - "app/lib/presentation/screens/settings/integrations_screen.dart already mentions BYOK versus ContentGlowz-managed credits in AI runtime copy."
+  - "site/src/components/Pricing.astro currently states that all plans include AI generation costs and no hidden fees, which may conflict with BYOK/PAYG and future managed-credit packaging."
   - "User decision 2026-05-11: quota enforcement must hard-block before provider calls when managed usage is insufficient."
   - "User decision 2026-05-11: future commercial model is pay-as-you-go for managed AI generation."
   - "User decision 2026-05-11: Lifetime Deal covers platform access with BYOK, not included operator-paid managed AI usage."
@@ -162,15 +162,15 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 - Existing Flux foundation spec: `shipflow_data/workflow/specs/SPEC-flux-ai-provider-image-robot-2026-05-11.md`.
 - Existing BYOK/product framing: `shipflow_data/workflow/specs/app/PRD-lifetime-deal-early-bird-payg.md`.
 - Existing BYOK enforcement spec: `shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md`.
-- Existing async persistence: `contentglowz_lab/api/services/job_store.py`.
-- Existing provider error-normalization pattern: `contentglowz_lab/api/routers/publish.py`.
-- Existing auth dependency: `contentglowz_lab/api/dependencies/auth.py`.
-- Existing project ownership helpers in `contentglowz_lab/api/dependencies/ownership.py` and project store patterns.
-- Existing cost table and helpers: `contentglowz_lab/status/cost_tracker.py` and `contentglowz_lab/api/migrations/004_status_lifecycle.sql`.
-- Existing Flutter API error envelope parsing: `contentglowz_app/lib/data/services/api_service.dart`.
-- Existing Riverpod provider wiring: `contentglowz_app/lib/providers/providers.dart`.
-- Existing app AI runtime/BYOK copy: `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`.
-- Existing marketing pricing copy: `contentglowz_site/src/components/Pricing.astro`.
+- Existing async persistence: `lab/api/services/job_store.py`.
+- Existing provider error-normalization pattern: `lab/api/routers/publish.py`.
+- Existing auth dependency: `lab/api/dependencies/auth.py`.
+- Existing project ownership helpers in `lab/api/dependencies/ownership.py` and project store patterns.
+- Existing cost table and helpers: `lab/status/cost_tracker.py` and `lab/api/migrations/004_status_lifecycle.sql`.
+- Existing Flutter API error envelope parsing: `app/lib/data/services/api_service.dart`.
+- Existing Riverpod provider wiring: `app/lib/providers/providers.dart`.
+- Existing app AI runtime/BYOK copy: `app/lib/presentation/screens/settings/integrations_screen.dart`.
+- Existing marketing pricing copy: `site/src/components/Pricing.astro`.
 - Project language guidelines: `shipflow_data/technical/lab/guidelines.md`, `shipflow_data/technical/app/guidelines.md`, and `shipflow_data/technical/site/guidelines.md`.
 - External docs freshness: `fresh-docs checked` for BFL FLUX.2 Pro on 2026-05-11. Official BFL API docs show the submit response includes nullable `cost`, `input_mp`, and `output_mp` fields. Bunny pricing, Remotion rendering pricing, and checkout provider docs are `fresh-docs not needed` for this chantier because exact provider price tables, render hosting pricing, and payment collection are out of scope; if a later implementation task adds hard-coded prices, checkout, invoices, taxes, or Remotion-specific billing, that work must run a new freshness check first.
 
@@ -189,16 +189,16 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 
 ## Links & Consequences
 
-- `contentglowz_lab/api/services/job_store.py`: current jobs table lacks user/project indexes for quota reservation and owner-scoped queries. The future implementation may need a schema extension or a separate `ai_generation_jobs`/`usage_reservations` table instead of overloading `data`.
-- `contentglowz_lab/status/cost_tracker.py`: existing `api_cost_log` is useful for operational cost summaries but is too DataForSEO-shaped for quota enforcement. The new ledger should either extend it carefully or create a dedicated `ai_usage_ledger` while continuing to feed cost summaries.
-- `contentglowz_lab/api/routers/images.py`: Flux generation must call the quota service before provider submission and reconcile after completion.
-- `contentglowz_lab/api/services/flux_image_generation.py`: should return normalized actual-cost metadata when BFL exposes it.
-- `contentglowz_lab/agents/images/cdn_manager.py` and Bunny tools: upload/storage/optimizer usage may need cost events or estimates, especially for large uploads and generated variants.
+- `lab/api/services/job_store.py`: current jobs table lacks user/project indexes for quota reservation and owner-scoped queries. The future implementation may need a schema extension or a separate `ai_generation_jobs`/`usage_reservations` table instead of overloading `data`.
+- `lab/status/cost_tracker.py`: existing `api_cost_log` is useful for operational cost summaries but is too DataForSEO-shaped for quota enforcement. The new ledger should either extend it carefully or create a dedicated `ai_usage_ledger` while continuing to feed cost summaries.
+- `lab/api/routers/images.py`: Flux generation must call the quota service before provider submission and reconcile after completion.
+- `lab/api/services/flux_image_generation.py`: should return normalized actual-cost metadata when BFL exposes it.
+- `lab/agents/images/cdn_manager.py` and Bunny tools: upload/storage/optimizer usage may need cost events or estimates, especially for large uploads and generated variants.
 - Future Remotion integration: render seconds, concurrency, output size, and failed renders must use the same reservation/reconciliation model.
-- `contentglowz_app/lib/data/services/api_service.dart`: should add typed usage/quota models and preserve structured error mapping.
-- `contentglowz_app/lib/providers/providers.dart`: should expose current quota/credit state, generation preflight state, and stale/refresh behavior through Riverpod.
-- `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`: existing AI runtime copy already distinguishes BYOK and managed credits, but it needs real usage state and actions.
-- `contentglowz_site/src/components/Pricing.astro`: current "All plans include AI generation costs" copy is a product risk and must be revised before managed provider quotas are marketed.
+- `app/lib/data/services/api_service.dart`: should add typed usage/quota models and preserve structured error mapping.
+- `app/lib/providers/providers.dart`: should expose current quota/credit state, generation preflight state, and stale/refresh behavior through Riverpod.
+- `app/lib/presentation/screens/settings/integrations_screen.dart`: existing AI runtime copy already distinguishes BYOK and managed credits, but it needs real usage state and actions.
+- `site/src/components/Pricing.astro`: current "All plans include AI generation costs" copy is a product risk and must be revised before managed provider quotas are marketed.
 - Analytics/ops: cost summaries become decision support for pricing and abuse response; logs must be useful without leaking user secrets or prompts unnecessarily.
 - Support: quota and billing errors need stable codes so support can diagnose without raw database access.
 - Language doctrine: stable ShipFlow headings, acceptance criteria, stop conditions, metadata keys, and internal contracts remain in English. User-facing French copy must use natural accented French. Product copy must not mix BYOK, managed credits, and PAYG terminology casually in one visible sentence.
@@ -206,8 +206,8 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 ## Documentation Coherence
 
 - Update product/pricing docs to distinguish BYOK usage, managed credits/PAYG usage, included plan limits if later approved, overages if later approved, and operator-paid provider costs without inventing exact prices in this chantier.
-- Update `contentglowz_site/src/components/Pricing.astro` before launch of any managed-credit promise; current copy conflicts with the BYOK/PAYG strategy and future quota controls.
-- Update `contentglowz_lab` environment/setup docs with required provider cost config, usage ledger migration, admin override env/roles, and reconciliation job behavior.
+- Update `site/src/components/Pricing.astro` before launch of any managed-credit promise; current copy conflicts with the BYOK/PAYG strategy and future quota controls.
+- Update `lab` environment/setup docs with required provider cost config, usage ledger migration, admin override env/roles, and reconciliation job behavior.
 - Update app support/help copy for quota exhausted, payment required, rate limited, provider failed, retry available, and refund pending states.
 - Add an ops playbook for manual adjustments, refund/retry review, anomalous spend, provider price changes, and cost reconciliation failures.
 - Add changelog/release notes when enforcement moves from draft to active because user-visible generation availability will change.
@@ -246,7 +246,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 ## Implementation Tasks
 
 - [ ] Task 1: Define the AI usage domain models
-  - File: `contentglowz_lab/api/models/ai_usage.py`
+  - File: `lab/api/models/ai_usage.py`
   - Action: Add Pydantic models/enums for `AIUsageAction`, `AIUsageScope`, `AIEntitlement`, `AIUsageReservation`, `AIUsageLedgerEntry`, `AIQuotaStatus`, `AIQuotaError`, and provider-cost metadata.
   - User story link: Gives backend and app a shared language for available generation rights and recoverable errors.
   - Depends on: none.
@@ -254,7 +254,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Do not encode plan prices or included quantities here.
 
 - [ ] Task 2: Create durable ledger and entitlement store
-  - File: `contentglowz_lab/api/services/ai_usage_store.py`
+  - File: `lab/api/services/ai_usage_store.py`
   - Action: Implement Turso/libSQL-backed tables for entitlements, reservations, ledger entries, provider cost rows, and admin adjustments with idempotent startup ensures or migrations.
   - User story link: Makes quota state auditable and resilient across API restarts.
   - Depends on: Task 1.
@@ -262,7 +262,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Prefer dedicated tables over mutating `api_cost_log` into an enforcement table.
 
 - [ ] Task 3: Add atomic reservation and reconciliation service
-  - File: `contentglowz_lab/api/services/ai_usage_service.py`
+  - File: `lab/api/services/ai_usage_service.py`
   - Action: Implement preflight, reserve, mark_provider_started, consume, release, refund, expire_stale_reservations, and summarize usage. Enforce concurrency with transactions or compare-and-set updates supported by the chosen libSQL path.
   - User story link: Prevents simultaneous jobs from exceeding managed credits or limits.
   - Depends on: Task 2.
@@ -270,7 +270,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: If libSQL transaction semantics are insufficient, stop and reroute to an architecture decision before implementation.
 
 - [ ] Task 4: Define configurable action policies without choosing pricing
-  - File: `contentglowz_lab/api/services/ai_usage_policies.py`
+  - File: `lab/api/services/ai_usage_policies.py`
   - Action: Add config-driven policy resolution for action type, provider, model, estimated internal `managed_usage_unit` amount, hard-limit behavior, provider-failure release/refund behavior, and admin override eligibility.
   - User story link: Allows PAYG enforcement to work without baking public prices into code.
   - Depends on: Task 3.
@@ -278,7 +278,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Fixture names may be illustrative; exact customer-facing commercial packages stay out of scope.
 
 - [ ] Task 5: Gate Flux image generation before provider calls
-  - File: `contentglowz_lab/api/routers/images.py`
+  - File: `lab/api/routers/images.py`
   - Action: Call the usage service before queueing/submitting managed Flux generation, attach reservation id to the job/generation record, and return quota status in the app-facing response.
   - User story link: Blocks unaffordable AI images before operator spend happens.
   - Depends on: Tasks 1-4 and the Flux provider implementation.
@@ -286,7 +286,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Keep V1 abuse controls from the Flux spec active.
 
 - [ ] Task 6: Capture Flux/BFL actual-cost metadata
-  - File: `contentglowz_lab/api/services/flux_image_generation.py`
+  - File: `lab/api/services/flux_image_generation.py`
   - Action: Normalize BFL `cost`, `input_mp`, `output_mp`, model, request id, and timing fields into provider-cost metadata returned to the worker/router.
   - User story link: Lets users and ops compare estimated usage with actual provider spend.
   - Depends on: Task 5.
@@ -294,7 +294,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Never hard-code BFL pricing as a product truth.
 
 - [ ] Task 7: Reconcile usage after Bunny upload and job completion
-  - File: `contentglowz_lab/api/services/image_generation_store.py`
+  - File: `lab/api/services/image_generation_store.py`
   - Action: Persist reservation id, estimated units, actual provider cost, Bunny asset metadata, final quota status, release/refund/consume outcome, and error code on each generation. Consume user-facing units only when a durable asset/job result is produced; release/refund the reservation when the provider attempt fails before a durable result.
   - User story link: Ensures the visible generation history matches ledger state.
   - Depends on: Tasks 5-6.
@@ -302,7 +302,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: If the Flux implementation stores generation history elsewhere, apply the same contract there.
 
 - [ ] Task 8: Extend job metadata for owner-scoped quota operations
-  - File: `contentglowz_lab/api/services/job_store.py`
+  - File: `lab/api/services/job_store.py`
   - Action: Add explicit user_id, project_id, org_id nullable, reservation_id, and cost-control status fields or document a separate job linkage table if direct migration is too risky.
   - User story link: Allows users and operators to inspect pending generation jobs and recover stuck reservations.
   - Depends on: Task 2.
@@ -310,7 +310,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Preserve existing job consumers; do not break deployment/content-generation jobs.
 
 - [ ] Task 9: Add usage/quota API routes
-  - File: `contentglowz_lab/api/routers/ai_usage.py`
+  - File: `lab/api/routers/ai_usage.py`
   - Action: Add authenticated endpoints for current quota summary, action preflight, usage history, pending reservations, and app-visible policy metadata. Add admin endpoints only behind an explicit admin authorization check.
   - User story link: Powers UI state before generation and gives support/ops visibility.
   - Depends on: Tasks 1-4 and Task 8.
@@ -318,7 +318,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Use `require_current_user` and existing ownership helpers.
 
 - [ ] Task 10: Add admin/ops adjustment and override flow
-  - File: `contentglowz_lab/api/routers/admin_ai_usage.py`
+  - File: `lab/api/routers/admin_ai_usage.py`
   - Action: Add admin-only APIs for granting credits/units, setting temporary overrides, refunding failed jobs, viewing high-cost users/projects, and adding audit reasons.
   - User story link: Lets operators resolve support cases and abuse safely.
   - Depends on: Task 9.
@@ -326,7 +326,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: If no admin role system is ready, implementation must stop and create/attach an admin-auth spec.
 
 - [ ] Task 11: Wire Flutter usage models and API methods
-  - File: `contentglowz_app/lib/data/services/api_service.dart`
+  - File: `app/lib/data/services/api_service.dart`
   - Action: Add typed methods for usage summary, action preflight, usage history, and quota-aware generation responses/errors.
   - User story link: Allows the app to show quota state and recoverable error actions.
   - Depends on: Task 9.
@@ -334,7 +334,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Reuse existing `ApiException` envelope fields.
 
 - [ ] Task 12: Expose quota state through Riverpod
-  - File: `contentglowz_app/lib/providers/providers.dart`
+  - File: `app/lib/providers/providers.dart`
   - Action: Add providers/notifiers for AI usage summary, per-action preflight, refresh after generation completion, and stale state handling.
   - User story link: Keeps generation buttons, settings, and history in sync.
   - Depends on: Task 11.
@@ -342,7 +342,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Avoid making offline cache imply quota is current for paid actions.
 
 - [ ] Task 13: Add app UI contract for generation state and quota errors
-  - File: `contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart`
+  - File: `app/lib/presentation/screens/settings/integrations_screen.dart`
   - Action: Show managed PAYG/BYOK state, current quota summary, error states, and entry points for existing AI runtime/settings or support/admin request flows. Do not add checkout UX in this chantier.
   - User story link: Makes generation limits visible before the user hits a hard block.
   - Depends on: Task 12.
@@ -350,7 +350,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Dedicated Image Robot UI files may be added by the Flux UI chantier; this task names settings as the existing place where AI runtime copy lives.
 
 - [ ] Task 14: Update marketing and support copy
-  - File: `contentglowz_site/src/components/Pricing.astro`
+  - File: `site/src/components/Pricing.astro`
   - Action: Replace or conditionalize "All plans include AI generation costs" and align plan claims with the approved model: Lifetime Deal/platform access plus BYOK, with managed AI as PAYG and no promise of included operator-paid credits.
   - User story link: Prevents users from buying under a promise the product cannot enforce economically.
   - Depends on: Product decisions captured in this spec.
@@ -358,7 +358,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
   - Notes: Do not invent exact public prices or plan quantities.
 
 - [ ] Task 15: Add provider cost configuration documentation
-  - File: `contentglowz_lab/README.md`
+  - File: `lab/README.md`
   - Action: Document provider-cost config, cost metadata sources, quota enforcement sequence, reconciliation job, admin override rules, and support error codes.
   - User story link: Makes the system operable and explainable.
   - Depends on: Tasks 1-10.
@@ -409,7 +409,7 @@ Add a backend-owned entitlement and usage ledger that gates managed AI generatio
 
 ## Execution Notes
 
-- Read these files first when implementing: `contentglowz_lab/status/cost_tracker.py`, `contentglowz_lab/api/services/job_store.py`, `contentglowz_lab/api/dependencies/auth.py`, `contentglowz_app/lib/data/services/api_service.dart`, and the current Flux implementation files.
+- Read these files first when implementing: `lab/status/cost_tracker.py`, `lab/api/services/job_store.py`, `lab/api/dependencies/auth.py`, `app/lib/data/services/api_service.dart`, and the current Flux implementation files.
 - Start with the backend ledger and atomic reservation service before touching UI. UI state without enforcement creates false safety.
 - Keep public pricing values out of code. Use configurable policy fixtures and explicit names such as `managed_image_generation_default`; the only required unit for this chantier is internal `managed_usage_unit`.
 - Do not trust client-sent units, costs, provider names, or plan ids. The backend resolves all entitlement and cost policy.

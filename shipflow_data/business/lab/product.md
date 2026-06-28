@@ -2,7 +2,7 @@
 artifact: product
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -38,7 +38,7 @@ next_step: /sf-docs audit shipflow_data/business/lab/product.md
 
 ## Positionnement produit
 
-`contentglowz_lab` est le noyau backend de **ContentGlowz** côté service. Il fournit les API FastAPI, les orchestrations asynchrones, les pipelines IA et les services de planification nécessaires pour les produits clients (`contentglowz_app`) et web (`contentglowz_site`).
+`lab` est le noyau backend de **ContentGlowz** côté service. Il fournit les API FastAPI, les orchestrations asynchrones, les pipelines IA et les services de planification nécessaires pour les produits clients (`app`) et web (`site`).
 
 La promesse opérationnelle du dépôt est la suivante :
 

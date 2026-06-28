@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-16"
 created_at: "2026-05-16 14:15:47 UTC"
 updated: "2026-05-17"
@@ -16,14 +16,14 @@ user_story: "En tant qu'utilisateur Android de ContentGlowz, je veux que le bout
 security_impact: "none"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app/lib/router.dart"
-  - "contentglowz_app/lib/presentation/screens/app_shell.dart"
-  - "contentglowz_app/lib/presentation/screens/onboarding/onboarding_screen.dart"
-  - "contentglowz_app/lib/presentation/widgets/app_exit_confirmation.dart"
-  - "contentglowz_app/test/navigation/"
-  - "contentglowz_app/test/presentation/screens/"
+  - "app/lib/router.dart"
+  - "app/lib/presentation/screens/app_shell.dart"
+  - "app/lib/presentation/screens/onboarding/onboarding_screen.dart"
+  - "app/lib/presentation/widgets/app_exit_confirmation.dart"
+  - "app/test/navigation/"
+  - "app/test/presentation/screens/"
 depends_on:
-  - artifact: "contentglowz_app/CLAUDE.md"
+  - artifact: "app/CLAUDE.md"
     artifact_version: "unknown"
     required_status: "active"
   - artifact: "shipflow_data/workflow/bugs/app/BUG-2026-05-05-002.md"
@@ -87,7 +87,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
 
 ## Scope In
 
-- Audit des routes `GoRoute`, `ShellRoute`, `context.push()` et `context.go()` dans `contentglowz_app/lib`.
+- Audit des routes `GoRoute`, `ShellRoute`, `context.push()` et `context.go()` dans `app/lib`.
 - Correction du comportement Back dans `AppShell` si le `PopScope` intercepte trop tôt les routes empilées.
 - Tests Flutter pour au moins:
   - route racine shell -> confirmation de sortie;
@@ -111,12 +111,12 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
 - Ne pas remplacer aveuglément tous les `context.go()` par `context.push()`.
 - Préserver `context.go()` pour les destinations de navigation principale afin d'éviter une pile de tabs imprévisible.
 - Ne pas introduire de dépendance Flutter/GoRouter nouvelle sans justification.
-- Respecter `contentglowz_app/CLAUDE.md`: sur ARM64 Linux, pas de build Android release local; validation locale limitée à `flutter analyze`, `flutter test`, et éventuellement build web.
+- Respecter `app/CLAUDE.md`: sur ARM64 Linux, pas de build Android release local; validation locale limitée à `flutter analyze`, `flutter test`, et éventuellement build web.
 
 ## Dependencies
 
 - Stack: Flutter, Riverpod, GoRouter, `PopScope`, `ShellRoute`, Android system Back.
-- Project development mode: `contentglowz_app` est `hybrid`; ce chantier est local Android/UI et ne nécessite pas de preview Vercel pour la validation initiale.
+- Project development mode: `app` est `hybrid`; ce chantier est local Android/UI et ne nécessite pas de preview Vercel pour la validation initiale.
 - Fresh external docs: `fresh-docs not needed` pour cette spec light, car le comportement cible est défini par le contrat produit et les patterns locaux existants. Si l'implémentation dépend d'un détail GoRouter/Flutter non évident, l'agent d'exécution doit consulter la documentation officielle actuelle avant de patcher.
 
 ## Invariants
@@ -137,7 +137,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
 
 ## Documentation Coherence
 
-- Mettre à jour `contentglowz_app/CHANGELOG.md` si présent ou le journal de livraison utilisé par le projet si le comportement Back est user-visible.
+- Mettre à jour `app/CHANGELOG.md` si présent ou le journal de livraison utilisé par le projet si le comportement Back est user-visible.
 - Ne pas modifier les docs marketing/site: le changement est un détail d'expérience mobile app.
 - Si une aide utilisateur décrit la navigation Android, l'aligner sur la règle finale.
 
@@ -153,7 +153,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
 ## Implementation Tasks
 
 - [ ] Tâche 1 : Cartographier les routes root, action/detail et modales
-  - Fichier : `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/app_shell.dart`
+  - Fichier : `app/lib/router.dart`, `app/lib/presentation/screens/app_shell.dart`
   - Action : Classer les routes racine shell, les routes poussées hors shell, et les actions qui utilisent `context.push()` ou `context.go()`.
   - User story link : identifie où Back doit revenir en arrière et où il doit proposer la sortie.
   - Depends on : none.
@@ -161,7 +161,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
   - Notes : Ne pas modifier le code dans cette tâche si la classification révèle une ambiguïté produit.
 
 - [ ] Tâche 2 : Corriger l'interception Back du shell si elle masque une pile existante
-  - Fichier : `contentglowz_app/lib/presentation/screens/app_shell.dart`
+  - Fichier : `app/lib/presentation/screens/app_shell.dart`
   - Action : Ajuster `_wrapWithExitConfirmation` pour laisser la navigation dépiler quand un parent réel existe, et n'appeler `confirmAndExitApp` que sur une destination racine sans retour interne.
   - User story link : empêche la proposition de sortie prématurée hors onboarding.
   - Depends on : Tâche 1.
@@ -169,7 +169,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
   - Notes : Préserver la confirmation de sortie sur les routes root du shell.
 
 - [ ] Tâche 3 : Ajouter des tests de navigation Android Back hors onboarding
-  - Fichier : `contentglowz_app/test/navigation/android_back_history_test.dart` ou fichier de test voisin existant.
+  - Fichier : `app/test/navigation/android_back_history_test.dart` ou fichier de test voisin existant.
   - Action : Couvrir route root -> confirmation, route poussée -> retour parent, et non-régression onboarding.
   - User story link : prouve que Back remonte l'historique réel avant de proposer la sortie.
   - Depends on : Tâche 2.
@@ -177,7 +177,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
   - Notes : Utiliser des routes/widgets minimaux si le routeur complet rend les fixtures trop lourdes.
 
 - [ ] Tâche 4 : Vérifier cohérence globale app
-  - Fichier : `contentglowz_app/lib/router.dart`, tests navigation existants.
+  - Fichier : `app/lib/router.dart`, tests navigation existants.
   - Action : Relancer les tests de navigation existants et analyser les regressions potentielles.
   - User story link : garantit que le fix ne casse pas auth redirects, resume/no-jump ou onboarding.
   - Depends on : Tâche 3.
@@ -213,7 +213,7 @@ Définir puis implémenter une règle claire pour le shell Flutter: Back remonte
 
 ## Execution Notes
 
-- Lire d'abord `contentglowz_app/lib/router.dart`, `contentglowz_app/lib/presentation/screens/app_shell.dart`, `contentglowz_app/lib/presentation/screens/onboarding/onboarding_screen.dart`, `contentglowz_app/lib/presentation/widgets/app_exit_confirmation.dart`, `contentglowz_app/test/navigation/resume_no_jump_test.dart`, et `contentglowz_app/test/presentation/screens/onboarding/onboarding_back_test.dart`.
+- Lire d'abord `app/lib/router.dart`, `app/lib/presentation/screens/app_shell.dart`, `app/lib/presentation/screens/onboarding/onboarding_screen.dart`, `app/lib/presentation/widgets/app_exit_confirmation.dart`, `app/test/navigation/resume_no_jump_test.dart`, et `app/test/presentation/screens/onboarding/onboarding_back_test.dart`.
 - Commencer par classer les navigations `push` vs `go`.
 - Ne pas modifier `resolveAppRedirect` sauf preuve que le bug vient d'un guard.
 - Fresh external docs: `fresh-docs not needed` tant que l'implémentation s'appuie sur les patterns locaux. Si un détail de `PopScope` ou GoRouter devient bloquant, consulter les docs officielles avant de patcher.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-08"
 created_at: "2026-05-08 10:06:37 UTC"
 updated: "2026-05-08"
@@ -18,11 +18,11 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app Flutter capture asset model"
-  - "contentglowz_app Flutter device capture service boundary"
-  - "contentglowz_app local capture metadata store"
-  - "contentglowz_app Capture UI share/export/content-link flows"
-  - "contentglowz_app API capture/content metadata payloads"
+  - "app Flutter capture asset model"
+  - "app Flutter device capture service boundary"
+  - "app local capture metadata store"
+  - "app Capture UI share/export/content-link flows"
+  - "app API capture/content metadata payloads"
   - "Android privacy capture pipeline"
   - "Web/browser privacy capture pipeline"
   - "Windows desktop privacy capture pipeline"
@@ -66,10 +66,10 @@ depends_on:
 supersedes: []
 evidence:
   - "Android, Web, and Windows privacy capture specs all require best-effort disclosure, flattened redacted output, OCR text non-persistence, safe temporary-file handling, and review before share/export."
-  - "contentglowz_app/lib/data/models/capture_asset.dart currently has only basic capture metadata and no privacy contract fields."
-  - "contentglowz_app/lib/data/services/device_capture_service.dart currently exposes an Android-only capture service boundary and typed native events."
-  - "contentglowz_app/lib/data/services/capture_local_store.dart stores recent capture metadata in SharedPreferences and can be extended without storing binary data."
-  - "contentglowz_app/lib/data/services/api_service.dart currently sends capture metadata through _captureAssetMetadata(asset) and must remain backend-safe."
+  - "app/lib/data/models/capture_asset.dart currently has only basic capture metadata and no privacy contract fields."
+  - "app/lib/data/services/device_capture_service.dart currently exposes an Android-only capture service boundary and typed native events."
+  - "app/lib/data/services/capture_local_store.dart stores recent capture metadata in SharedPreferences and can be extended without storing binary data."
+  - "app/lib/data/services/api_service.dart currently sends capture metadata through _captureAssetMetadata(asset) and must remain backend-safe."
   - "iOS, Linux, and macOS explorations show future platform pipelines can produce the same flattened redacted asset contract while using different native capture/OCR/render/encode APIs."
 next_step: "/sf-ready shared privacy capture contract"
 ---
@@ -180,15 +180,15 @@ The shared contract has two layers:
 
 Local files and contracts:
 
-- `contentglowz_app/lib/data/models/capture_asset.dart`: current `CaptureAsset` and `CaptureNativeEvent` model boundary to extend.
-- `contentglowz_app/lib/data/services/device_capture_service.dart`: current `DeviceCaptureClient`/`DeviceCaptureService` boundary for support, platform methods, and event parsing.
-- `contentglowz_app/lib/data/services/capture_local_store.dart`: current SharedPreferences metadata store and future review-state update surface.
-- `contentglowz_app/lib/data/services/api_service.dart`: current `_captureAssetMetadata(asset)` helper used by content draft and asset attachment payloads.
-- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`: current Capture UI, local history, share, discard, create-content, and attach-content actions.
-- `contentglowz_app/test/data/capture_asset_test.dart`: model serialization tests.
-- `contentglowz_app/test/data/capture_local_store_test.dart`: local metadata persistence tests.
-- `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`: Capture UI and event-flow tests.
-- `contentglowz_app/README.md`, `shipflow_data/technical/app/guidelines.md`, and `contentglowz_app/CHANGELOG.md`: docs to align after implementation.
+- `app/lib/data/models/capture_asset.dart`: current `CaptureAsset` and `CaptureNativeEvent` model boundary to extend.
+- `app/lib/data/services/device_capture_service.dart`: current `DeviceCaptureClient`/`DeviceCaptureService` boundary for support, platform methods, and event parsing.
+- `app/lib/data/services/capture_local_store.dart`: current SharedPreferences metadata store and future review-state update surface.
+- `app/lib/data/services/api_service.dart`: current `_captureAssetMetadata(asset)` helper used by content draft and asset attachment payloads.
+- `app/lib/presentation/screens/capture/capture_screen.dart`: current Capture UI, local history, share, discard, create-content, and attach-content actions.
+- `app/test/data/capture_asset_test.dart`: model serialization tests.
+- `app/test/data/capture_local_store_test.dart`: local metadata persistence tests.
+- `app/test/presentation/screens/capture/capture_screen_test.dart`: Capture UI and event-flow tests.
+- `app/README.md`, `shipflow_data/technical/app/guidelines.md`, and `app/CHANGELOG.md`: docs to align after implementation.
 
 Source specs and explorations:
 
@@ -326,8 +326,8 @@ Copy constraints:
 ## Documentation Coherence
 
 - Update `shipflow_data/technical/app/guidelines.md` with this shared privacy metadata, backend-safe payload, OCR non-persistence, temp-file/quarantine, and review gate contract.
-- Update `contentglowz_app/README.md` with a product-facing explanation of cross-platform privacy capture status, best-effort limitation, local-first processing, and manual review requirement.
-- Update `contentglowz_app/CHANGELOG.md` after implementation lands.
+- Update `app/README.md` with a product-facing explanation of cross-platform privacy capture status, best-effort limitation, local-first processing, and manual review requirement.
+- Update `app/CHANGELOG.md` after implementation lands.
 - Update platform specs or implementation notes to reference this spec as the shared contract before platform-specific implementation starts.
 - Do not update public marketing copy until at least one platform implementation passes manual QA and product/legal wording review.
 - Do not update `.env.example` unless implementation introduces a configurable privacy feature flag, OCR worker path, or backend contract setting.
@@ -352,7 +352,7 @@ Copy constraints:
 ## Implementation Tasks
 
 - [ ] Task 1: Add shared privacy metadata enums and value contract.
-  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
+  - File: `app/lib/data/models/capture_asset.dart`
   - Action: Add `PrivacyPlatform`, `RedactionStatus`, `TextRedactionStyle`, `PhotoRedactionStyle`, `RedactionStrength`, `ReviewState`, and a sanitized `PrivacyProcessingStats` representation, or split them into a focused model file imported by `capture_asset.dart` if that keeps the model readable.
   - User story link: Establishes the common contract every platform must return.
   - Depends on: None.
@@ -360,7 +360,7 @@ Copy constraints:
   - Notes: Use lowerCamelCase Dart fields and parse snake_case aliases where native/backend maps already use them.
 
 - [ ] Task 2: Extend `CaptureAsset` parsing and serialization backwards compatibly.
-  - File: `contentglowz_app/lib/data/models/capture_asset.dart`
+  - File: `app/lib/data/models/capture_asset.dart`
   - Action: Add privacy fields with defaults for old assets; serialize local metadata with no OCR text, no raw boxes, no temp paths, and no binary data.
   - User story link: Lets existing captures keep working while privacy assets carry required state.
   - Depends on: Task 1.
@@ -368,7 +368,7 @@ Copy constraints:
   - Notes: Unknown privacy enum values must fail closed to blocked/failed-style behavior, not reviewed/shareable behavior.
 
 - [ ] Task 3: Define shared privacy capture options and event fields at the service boundary.
-  - File: `contentglowz_app/lib/data/services/device_capture_service.dart`
+  - File: `app/lib/data/services/device_capture_service.dart`
   - Action: Add typed privacy options/status/failure parsing for platform clients, including platform capability data and privacy event reason codes, while keeping normal capture methods compatible.
   - User story link: Gives Android/Web/Windows/future platforms a stable Flutter boundary for privacy requests and results.
   - Depends on: Tasks 1 and 2.
@@ -376,7 +376,7 @@ Copy constraints:
   - Notes: Do not silently route unsupported platforms into normal clear capture.
 
 - [ ] Task 4: Add local review-state update and quarantine-aware metadata behavior.
-  - File: `contentglowz_app/lib/data/services/capture_local_store.dart`
+  - File: `app/lib/data/services/capture_local_store.dart`
   - Action: Add a metadata-only update path for `reviewState`, `redactionStatus`, sanitized `processingStats`, and degradation reasons without rewriting binary files or changing recent capture ordering.
   - User story link: Lets users review once and safely continue share/export/content attachment later.
   - Depends on: Task 2.
@@ -384,7 +384,7 @@ Copy constraints:
   - Notes: Quarantined/blocked assets must not appear as normal shareable captures.
 
 - [ ] Task 5: Sanitize backend capture metadata payloads.
-  - File: `contentglowz_app/lib/data/services/api_service.dart`
+  - File: `app/lib/data/services/api_service.dart`
   - Action: Extend `_captureAssetMetadata(asset)` with the backend metadata keys from this spec; exclude OCR text, raw boxes, clear frame data, local clear paths, temp paths, object URLs, and editable layer metadata.
   - User story link: Preserves privacy context in content metadata without leaking sensitive capture data.
   - Depends on: Task 2.
@@ -392,7 +392,7 @@ Copy constraints:
   - Notes: Do not add backend schema changes unless a later readiness gate proves metadata JSON is insufficient.
 
 - [ ] Task 6: Apply the review gate to all public-use actions.
-  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Block share/export/download/create-content/attach-content for `reviewState=needsReview` until acknowledgement; keep `blocked` assets blocked; persist `reviewState=reviewed` through the local store.
   - User story link: Makes manual review mandatory before a privacy-marked capture enters a public workflow.
   - Depends on: Tasks 2 and 4.
@@ -400,7 +400,7 @@ Copy constraints:
   - Notes: Content attachment is included because it sends metadata and moves the asset into a publishing workflow.
 
 - [ ] Task 7: Add disclosure and review gate copy slots.
-  - File: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+  - File: `app/lib/presentation/screens/capture/capture_screen.dart`
   - Action: Implement UI references to the disclosure/review copy keys and required semantics from this spec, using existing localization helpers.
   - User story link: Ensures users understand best-effort limits before capture and review obligations before public use.
   - Depends on: Task 6.
@@ -416,7 +416,7 @@ Copy constraints:
   - Notes: Keep platform-specific API choices in platform specs; only centralize shared behavior here.
 
 - [ ] Task 9: Add contract tests for forbidden durable data.
-  - File: `contentglowz_app/test/data/capture_asset_test.dart`, `contentglowz_app/test/data/capture_local_store_test.dart`, `contentglowz_app/test/presentation/screens/capture/capture_screen_test.dart`
+  - File: `app/test/data/capture_asset_test.dart`, `app/test/data/capture_local_store_test.dart`, `app/test/presentation/screens/capture/capture_screen_test.dart`
   - Action: Add tests proving old assets default safely, privacy assets serialize required fields, `needsReview` blocks public-use actions, `blocked/quarantined` cannot be shared, and unsafe keys are absent from local/API metadata.
   - User story link: Protects the shared privacy promise from regressions.
   - Depends on: Tasks 1-7.
@@ -424,7 +424,7 @@ Copy constraints:
   - Notes: Include negative fixtures containing `ocrText`, `recognizedText`, `clearPath`, `tempPath`, `objectUrl`, and raw `boxes` keys and assert they are dropped or rejected.
 
 - [ ] Task 10: Update documentation after implementation.
-  - File: `shipflow_data/technical/app/guidelines.md`, `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`
+  - File: `shipflow_data/technical/app/guidelines.md`, `app/README.md`, `app/CHANGELOG.md`
   - Action: Document the shared contract, data minimization rules, temp-file/quarantine behavior, review gate, and supported platform status.
   - User story link: Aligns implementers and operators with the feature's real guarantees.
   - Depends on: Tasks 1-9.
@@ -497,11 +497,11 @@ Read first:
 - `shipflow_data/workflow/specs/app/SPEC-android-privacy-capture-dynamic-redaction.md`
 - `shipflow_data/workflow/specs/app/SPEC-web-privacy-capture-dynamic-redaction.md`
 - `shipflow_data/workflow/specs/app/SPEC-windows-privacy-capture-dynamic-redaction.md`
-- `contentglowz_app/lib/data/models/capture_asset.dart`
-- `contentglowz_app/lib/data/services/device_capture_service.dart`
-- `contentglowz_app/lib/data/services/capture_local_store.dart`
-- `contentglowz_app/lib/data/services/api_service.dart`
-- `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+- `app/lib/data/models/capture_asset.dart`
+- `app/lib/data/services/device_capture_service.dart`
+- `app/lib/data/services/capture_local_store.dart`
+- `app/lib/data/services/api_service.dart`
+- `app/lib/presentation/screens/capture/capture_screen.dart`
 
 Implementation approach:
 

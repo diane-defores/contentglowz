@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_site"
+project: "site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -50,11 +50,11 @@ next_review: "2026-07-26"
 next_step: "/sf-repurpose"
 ---
 
-# Content Map — contentglowz_site
+# Content Map — site
 
 ## Purpose
 La carte des surfaces qui permet de publier vite sans perdre la cohérence entre acquisition, preuve et routage app.
-Les claims de ces surfaces doivent rester alignés sur `contentglowz_app` (source canonique produit/business).
+Les claims de ces surfaces doivent rester alignés sur `app` (source canonique produit/business).
 
 ## Content Map
 

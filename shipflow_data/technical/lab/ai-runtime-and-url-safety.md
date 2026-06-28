@@ -2,7 +2,7 @@
 artifact: technical_module_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-05-04"
 updated: "2026-05-04"
 status: draft
@@ -37,7 +37,7 @@ evidence:
   - "tests/conftest.py"
   - "pytest.ini"
 next_review: "2026-06-04"
-next_step: "/sf-docs technical audit contentglowz_lab"
+next_step: "/sf-docs technical audit lab"
 ---
 
 # Technical Module Context: AI Runtime And URL Safety

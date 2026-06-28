@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: reviewed
@@ -27,7 +27,7 @@ next_step: /sf-docs audit shipflow_data/technical/lab/guidelines.md
 
 ## Scope
 
-Backend/API conventions for `contentglowz_lab`.
+Backend/API conventions for `lab`.
 
 ## Stack
 
@@ -63,6 +63,6 @@ Backend/API conventions for `contentglowz_lab`.
 
 - When adding new endpoints:
   - update `api/` router registration,
-  - update env/deployment docs (`ENVIRONMENT_SETUP.md`, `README.md`),
+  - update env/deployment docs (`ENVIRONMENT_shipflow_data/technical/SETUP.md`, `README.md`),
   - include migration impact in `CHANGELOG.md`.
-- If contract changes affect `contentglowz_app`, flag compatibility considerations immediately in notes.
+- If contract changes affect `app`, flag compatibility considerations immediately in notes.

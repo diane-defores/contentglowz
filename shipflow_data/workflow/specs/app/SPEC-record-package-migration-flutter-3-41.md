@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-06-12"
 created_at: "2026-06-12 04:10:19 UTC"
 updated: "2026-06-12"
@@ -17,13 +17,13 @@ risk_level: "medium"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app/lib/data/services/device_capture_service.dart"
-  - "contentglowz_app/lib/data/services/feedback_service.dart"
-  - "contentglowz_app/lib/presentation/screens/feedback/feedback_screen.dart"
-  - "contentglowz_app/pubspec.yaml"
-  - "contentglowz_app/pubspec.lock"
+  - "app/lib/data/services/device_capture_service.dart"
+  - "app/lib/data/services/feedback_service.dart"
+  - "app/lib/presentation/screens/feedback/feedback_screen.dart"
+  - "app/pubspec.yaml"
+  - "app/pubspec.lock"
 depends_on:
-  - artifact: "contentglowz_app/AGENT.md"
+  - artifact: "app/AGENT.md"
     artifact_version: "unknown"
     required_status: "reviewed"
   - artifact: "shipflow_data/workflow/specs/app/SPEC-migrate-flutter-core-majors.md"
@@ -38,7 +38,7 @@ evidence:
 next_step: "/101-sf-ready Migrate Flutter `record` package in contentglowz app"
 ---
 
-# Migrate Flutter audio capture dependency (`record`) in `contentglowz_app`
+# Migrate Flutter audio capture dependency (`record`) in `app`
 
 ## Status
 
@@ -83,12 +83,12 @@ Appliquer une migration de dépendance audio pilotée par résolution réelle, a
 
 ## Scope In
 
-- `contentglowz_app/pubspec.yaml`
-- `contentglowz_app/pubspec.lock`
-- `contentglowz_app/lib/data/services/device_capture_service.dart`
-- `contentglowz_app/lib/data/services/feedback_service.dart`
-- `contentglowz_app/lib/presentation/screens/feedback/feedback_screen.dart`
-- `contentglowz_app/test` (ajout/modification de tests ciblés si existants ou nécessaires)
+- `app/pubspec.yaml`
+- `app/pubspec.lock`
+- `app/lib/data/services/device_capture_service.dart`
+- `app/lib/data/services/feedback_service.dart`
+- `app/lib/presentation/screens/feedback/feedback_screen.dart`
+- `app/test` (ajout/modification de tests ciblés si existants ou nécessaires)
 - Validation Flutter locale: analyze/test/possible build smoke
 
 ## Scope Out
@@ -117,7 +117,7 @@ Appliquer une migration de dépendance audio pilotée par résolution réelle, a
 ## Dependencies
 
 ### Internal
-- `contentglowz_app/AGENT.md`
+- `app/AGENT.md`
 - `shipflow_data/technical/app/architecture.md` (si disponible), `shipflow_data/business/*` uniquement pour contexte
 
 ### External (freshness)
@@ -154,7 +154,7 @@ Decision de fraîcheur: `fresh-docs needed` avant mise en oeuvre pour confirmer 
 ## Implementation Tasks
 
 - [ ] Tâche 1: Capturer la baseline migration
-  - Fichier : `contentglowz_app/pubspec.yaml`, `contentglowz_app/pubspec.lock`
+  - Fichier : `app/pubspec.yaml`, `app/pubspec.lock`
   - Action : noter versions Flutter/Dart, versions `record` actuelle/résolue/latest, et états transitive.
   - User story link : Garantir une décision de migration fondée sur la compatibilité réelle.
   - Depends on : aucune
@@ -162,7 +162,7 @@ Decision de fraîcheur: `fresh-docs needed` avant mise en oeuvre pour confirmer 
   - Notes : vérifier l’état initial du dépôt (worktree dirty) sans rollback forcé.
 
 - [ ] Tâche 2: Résoudre la cible `record` compatible
-  - Fichier : `contentglowz_app/pubspec.yaml`
+  - Fichier : `app/pubspec.yaml`
   - Action : poser la cible de version (idéalement dernier stable compatible; ou `6.x` résoluble si `7.x` invalide dans ce contexte), puis `flutter pub get`.
   - User story link : Stabiliser la dépendance sans casser le produit.
   - Depends on : Tâche 1
@@ -170,9 +170,9 @@ Decision de fraîcheur: `fresh-docs needed` avant mise en oeuvre pour confirmer 
   - Notes : ne pas forcer des pré-releases, ni git/path deps.
 
 - [ ] Tâche 3: Ajuster les usages applicatifs du flux audio
-  - Fichier : `contentglowz_app/lib/data/services/device_capture_service.dart`
-  - Fichier : `contentglowz_app/lib/data/services/feedback_service.dart`
-  - Fichier : `contentglowz_app/lib/presentation/screens/feedback/feedback_screen.dart`
+  - Fichier : `app/lib/data/services/device_capture_service.dart`
+  - Fichier : `app/lib/data/services/feedback_service.dart`
+  - Fichier : `app/lib/presentation/screens/feedback/feedback_screen.dart`
   - Action : corriger uniquement les appels d’API impactés par la migration, sans réécrire la UX feedback.
   - User story link : Préserver le comportement feedback après migration.
   - Depends on : Tâche 2
@@ -180,7 +180,7 @@ Decision de fraîcheur: `fresh-docs needed` avant mise en oeuvre pour confirmer 
   - Notes : priorité aux changements minimum; conserver les messages d’erreur locaux.
 
 - [ ] Tâche 4: Mettre en place les preuves de non-régression
-  - Fichier : `contentglowz_app/test/data/services` ou fichier dédié feedback existant
+  - Fichier : `app/test/data/services` ou fichier dédié feedback existant
   - Action : ajouter un test ciblé si absent, ou adapter les tests existants pour couvrir start/stop/upload erreur permission.
   - User story link : Prouver que le contrat utilisateur reste stable.
   - Depends on : Tâche 3
@@ -241,7 +241,7 @@ Stop conditions:
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-12 04:10:19 UTC | 100-sf-spec | GPT-5 Codex | Création du spec de migration `record` pour `contentglowz_app` après revue de la surface feedback/record et contraintes Flutter/Dart. | draft saved | `/101-sf-ready Migrate Flutter 'record' package in contentglowz app` |
+| 2026-06-12 04:10:19 UTC | 100-sf-spec | GPT-5 Codex | Création du spec de migration `record` pour `app` après revue de la surface feedback/record et contraintes Flutter/Dart. | draft saved | `/101-sf-ready Migrate Flutter 'record' package in contentglowz app` |
 
 ## Current Chantier Flow
 

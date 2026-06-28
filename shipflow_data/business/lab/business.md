@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_lab
+project: lab
 created: "2026-04-25"
 updated: "2026-04-27"
 status: reviewed
@@ -21,7 +21,7 @@ depends_on: []
 supersedes: []
 evidence:
   - CLAUDE.md
-  - ENVIRONMENT_SETUP.md
+  - ENVIRONMENT_shipflow_data/technical/SETUP.md
   - AGENTS.md
 next_review: "2026-07-26"
 next_step: /sf-docs audit shipflow_data/business/lab/business.md
@@ -30,13 +30,13 @@ next_step: /sf-docs audit shipflow_data/business/lab/business.md
 
 ## Positionnement Backend
 
-`contentglowz_lab` is the authoritative backend layer for ContentGlowz, responsible for:
+`lab` is the authoritative backend layer for ContentGlowz, responsible for:
 
 - data APIs for authenticated product workflows,
 - content status/scheduling orchestration,
 - AI-assisted analysis and automation endpoints.
 
-For user-facing product truth, `contentglowz_app` remains canonical. This repository is authoritative for backend contracts and operational guarantees, not for the primary market promise.
+For user-facing product truth, `app` remains canonical. This repository is authoritative for backend contracts and operational guarantees, not for the primary market promise.
 
 The product promise is operational continuity: the Flutter app stays usable at the user layer while backend flows remain consistent and recoverable.
 

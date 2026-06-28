@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-10"
 created_at: "2026-05-10 22:28:27 UTC"
 updated: "2026-05-11"
@@ -36,9 +36,9 @@ depends_on:
     required_status: "reviewed"
 supersedes: []
 evidence:
-  - "contentglowz_app/lib/presentation/screens/feed/feed_screen.dart currently repeats Review creation settings in the hero and Next best actions."
-  - "contentglowz_app/lib/presentation/screens/feed/feed_screen.dart currently shows empty status cards for pending review, drip plans, queued actions, and history even when counts are zero."
-  - "contentglowz_app/pubspec.yaml already includes flutter_card_swiper and FeedScreen already uses it for review queue cards."
+  - "app/lib/presentation/screens/feed/feed_screen.dart currently repeats Review creation settings in the hero and Next best actions."
+  - "app/lib/presentation/screens/feed/feed_screen.dart currently shows empty status cards for pending review, drip plans, queued actions, and history even when counts are zero."
+  - "app/pubspec.yaml already includes flutter_card_swiper and FeedScreen already uses it for review queue cards."
 next_step: "/sf-verify shipflow_data/workflow/specs/app/SPEC-mobile-flow-dashboard-swipe-actions.md"
 ---
 
@@ -105,10 +105,10 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 
 ## Dependencies
 
-- `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
-- `contentglowz_app/test/presentation/screens/feed/feed_screen_test.dart`
-- `contentglowz_app/lib/l10n/app_localizations.dart` if new visible strings require localization entries
-- `contentglowz_app/CHANGELOG.md`
+- `app/lib/presentation/screens/feed/feed_screen.dart`
+- `app/test/presentation/screens/feed/feed_screen_test.dart`
+- `app/lib/l10n/app_localizations.dart` if new visible strings require localization entries
+- `app/CHANGELOG.md`
 - Fresh external docs verdict: fresh-docs not needed because the implementation reuses the existing Flutter framework patterns and the already-installed `flutter_card_swiper` usage present in `FeedScreen`; no new SDK, package, backend service, auth flow, or API behavior is introduced.
 
 ## Invariants
@@ -130,7 +130,7 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 
 ## Documentation Coherence
 
-- Update `contentglowz_app/CHANGELOG.md` with an app behavior entry.
+- Update `app/CHANGELOG.md` with an app behavior entry.
 - README, SETUP, env docs, pricing, and backend docs are not affected because this is a client-side dashboard presentation change.
 - No marketing site update is required in this implementation pass, but future product copy can cite the dashboard as proof of "Swipe to Publish" only after browser/device proof passes.
 
@@ -148,7 +148,7 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 ## Implementation Tasks
 
 - [x] Task 1: Introduce action-card data model and conditional inventory.
-  - File: `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
+  - File: `app/lib/presentation/screens/feed/feed_screen.dart`
   - Action: Add a private `_DashboardAction` model with title, subtitle/body copy, icon, color, route action, primary label, optional metric, and stable id; build a deduplicated action list from provider counts.
   - User story link: One clear card per useful action.
   - Depends on: None.
@@ -156,7 +156,7 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
   - Notes: Keep it private to `feed_screen.dart`.
 
 - [x] Task 2: Replace mobile empty dashboard with swipe deck.
-  - File: `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
+  - File: `app/lib/presentation/screens/feed/feed_screen.dart`
   - Action: Add mobile deck state, render one full-height card stack for compact widths, wire left swipe to session dismissal and right swipe to the action route.
   - User story link: Swipe left to postpone, swipe right to start.
   - Depends on: Task 1.
@@ -164,35 +164,35 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
   - Notes: Reuse `CardSwiper` where practical; if programmatic test stability requires a simpler gesture detector around one card, preserve equivalent behavior and keep the pending-content swiper untouched.
 
 - [x] Task 3: Provide accessible buttons and exhausted-deck state.
-  - File: `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
+  - File: `app/lib/presentation/screens/feed/feed_screen.dart`
   - Action: Add visible bottom controls for Later and Start, plus an all-caught-up state with refresh and create-content actions when every card is dismissed.
   - User story link: Users can act without gesture-only interaction.
   - Depends on: Task 2.
   - Validate with: Widget tests tapping buttons on a 320 px viewport with no overflow exceptions.
 
 - [x] Task 4: Keep desktop/tablet concise without mobile full-screen behavior.
-  - File: `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart`
+  - File: `app/lib/presentation/screens/feed/feed_screen.dart`
   - Action: Replace the old hero + action cards + status cards with a desktop-friendly card deck/grid that uses the same filtered action inventory and no zero-count status cards.
   - User story link: Desktop still has action clarity without mobile full-screen dominance.
   - Depends on: Task 1.
   - Validate with: Existing wide widget pump still finds one setup action and conditional cards only when applicable.
 
 - [x] Task 5: Update localization strings if needed.
-  - File: `contentglowz_app/lib/l10n/app_localizations.dart`
+  - File: `app/lib/l10n/app_localizations.dart`
   - Action: Add English-to-French entries for any new strings introduced by the redesign.
   - User story link: Visible copy remains coherent across supported locales.
   - Depends on: Tasks 2-4.
   - Validate with: `flutter test test/presentation/screens/feed/feed_screen_test.dart`.
 
 - [x] Task 6: Rewrite focused widget tests.
-  - File: `contentglowz_app/test/presentation/screens/feed/feed_screen_test.dart`
+  - File: `app/test/presentation/screens/feed/feed_screen_test.dart`
   - Action: Replace assertions tied to the old dashboard with tests for filtered cards, action navigation, mobile dismissal, narrow viewport, and unchanged pending-content swiper.
   - User story link: Verifies the redesigned mobile dashboard behavior.
   - Depends on: Tasks 1-5.
   - Validate with: `flutter test test/presentation/screens/feed/feed_screen_test.dart`.
 
 - [x] Task 7: Add changelog note.
-  - File: `contentglowz_app/CHANGELOG.md`
+  - File: `app/CHANGELOG.md`
   - Action: Add an Unreleased entry describing the mobile Flow dashboard swipe-action redesign.
   - User story link: Documents the user-visible behavior change.
   - Depends on: Implementation complete.
@@ -215,8 +215,8 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 
 ## Test Strategy
 
-- Run `flutter test test/presentation/screens/feed/feed_screen_test.dart` from `contentglowz_app`.
-- Run `flutter analyze` from `contentglowz_app` if local Flutter tooling is healthy.
+- Run `flutter test test/presentation/screens/feed/feed_screen_test.dart` from `app`.
+- Run `flutter analyze` from `app` if local Flutter tooling is healthy.
 - Widget tests should cover empty deck mobile, conditional drip visibility, active-project setup routing, button fallback, swipe/dismiss behavior, and pending-content preservation.
 - Manual browser/device proof is recommended after implementation because the design goal is mobile visual quality.
 
@@ -229,7 +229,7 @@ Replace the mobile empty dashboard with a swipe-first action deck that reuses th
 
 ## Execution Notes
 
-Read `contentglowz_app/lib/presentation/screens/feed/feed_screen.dart` first, especially `_FeedEmptyDashboard`, `_HeroCard`, `_ActionCard`, `_StatusCard`, and the existing pending-content swiper. Keep the implementation scoped to this file plus tests/localization/changelog. Prefer private widgets and helpers over new shared abstractions. Use `LayoutBuilder` to branch mobile vs non-mobile. Keep all provider refresh invalidations intact. Stop if the redesign requires persistent dismiss state, backend task state, or new content scheduling semantics; those are out of scope.
+Read `app/lib/presentation/screens/feed/feed_screen.dart` first, especially `_FeedEmptyDashboard`, `_HeroCard`, `_ActionCard`, `_StatusCard`, and the existing pending-content swiper. Keep the implementation scoped to this file plus tests/localization/changelog. Prefer private widgets and helpers over new shared abstractions. Use `LayoutBuilder` to branch mobile vs non-mobile. Keep all provider refresh invalidations intact. Stop if the redesign requires persistent dismiss state, backend task state, or new content scheduling semantics; those are out of scope.
 
 ## Open Questions
 

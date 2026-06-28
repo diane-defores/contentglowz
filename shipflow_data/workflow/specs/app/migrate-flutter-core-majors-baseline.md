@@ -2,7 +2,7 @@
 artifact: execution_log
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-04-27"
 updated: "2026-04-27"
 status: active

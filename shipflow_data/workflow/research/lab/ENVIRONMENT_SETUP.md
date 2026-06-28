@@ -297,6 +297,6 @@ Good for learning, testing, and 2-3 articles/week.
 
 ## Next Steps
 
-- See `docs/LLM_PROVIDER_SETUP.md` for LLM configuration details
+- See `docs/LLM_PROVIDER_shipflow_data/technical/SETUP.md` for LLM configuration details
 - See `AGENTS.md` for agent-specific settings
 - See `docs/RENDER_MCP_GUIDE.md` for deployment

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_app"
+project: "app"
 created: "2026-05-05"
 created_at: "2026-05-05 00:00:00 UTC"
 updated: "2026-05-05"
@@ -18,11 +18,11 @@ risk_level: high
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "contentglowz_app Flutter capture UI"
-  - "contentglowz_app local capture storage"
-  - "contentglowz_app ApiService/offline content flow"
-  - "contentglowz_lab FastAPI status router"
-  - "contentglowz_lab Turso/libSQL status schema"
+  - "app Flutter capture UI"
+  - "app local capture storage"
+  - "app ApiService/offline content flow"
+  - "lab FastAPI status router"
+  - "lab Turso/libSQL status schema"
 depends_on:
   - artifact: "shipflow_data/workflow/specs/app/SPEC-android-device-screen-capture.md"
     artifact_version: "1.0.0"
@@ -36,7 +36,7 @@ depends_on:
 supersedes: []
 evidence:
   - "Capture V1 stores local metadata in SharedPreferences under capture_recent_assets_v1 and does not link assets to projects or content records."
-  - "contentglowz_lab already owns ContentRecord, content_bodies, content_edits, and authenticated project ownership checks."
+  - "lab already owns ContentRecord, content_bodies, content_edits, and authenticated project ownership checks."
   - "No backend content_assets table or API exists yet."
 next_step: "/sf-test local capture assets linked to content on Android"
 ---
@@ -125,27 +125,27 @@ Statuses:
 ## Implementation Tasks
 
 - [x] Task 1: Add backend asset schema and service methods.
-  - Files: `contentglowz_lab/api/migrations/004_status_lifecycle.sql`, `contentglowz_lab/status/db.py`, `contentglowz_lab/status/schemas.py`, `contentglowz_lab/status/service.py`
+  - Files: `lab/api/migrations/004_status_lifecycle.sql`, `lab/status/db.py`, `lab/status/schemas.py`, `lab/status/service.py`
   - Validate with: backend unit/import tests or targeted pytest where feasible.
 
 - [x] Task 2: Add FastAPI request/response models and status router endpoints.
-  - Files: `contentglowz_lab/api/models/status.py`, `contentglowz_lab/api/routers/status.py`
+  - Files: `lab/api/models/status.py`, `lab/api/routers/status.py`
   - Validate with: route-level tests or API model import checks.
 
 - [x] Task 3: Add Flutter local link model/store methods.
-  - Files: `contentglowz_app/lib/data/models/capture_content_link.dart`, `contentglowz_app/lib/data/services/capture_local_store.dart`
+  - Files: `app/lib/data/models/capture_content_link.dart`, `app/lib/data/services/capture_local_store.dart`
   - Validate with: Dart unit tests.
 
 - [x] Task 4: Add Flutter API methods for create draft from capture and attach metadata.
-  - Files: `contentglowz_app/lib/data/services/api_service.dart`
+  - Files: `app/lib/data/services/api_service.dart`
   - Validate with: existing API parsing tests or compile/analyze.
 
 - [x] Task 5: Add capture UI attachment flow.
-  - Files: `contentglowz_app/lib/presentation/screens/capture/capture_screen.dart`
+  - Files: `app/lib/presentation/screens/capture/capture_screen.dart`
   - Validate with: widget tests and manual Android follow-up.
 
 - [x] Task 6: Update docs and changelog.
-  - Files: `contentglowz_app/README.md`, `contentglowz_app/CHANGELOG.md`, `shipflow_data/technical/app/guidelines.md`, `contentglowz_lab/CHANGELOG.md`
+  - Files: `app/README.md`, `app/CHANGELOG.md`, `shipflow_data/technical/app/guidelines.md`, `lab/CHANGELOG.md`
   - Validate with: docs review.
 
 ## Acceptance Criteria

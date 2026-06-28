@@ -25,9 +25,9 @@ next_review: "2026-06-11"
 next_step: "/sf-market-study contentglowz"
 target_projects:
   - contentglowz
-  - contentglowz_app
-  - contentglowz_lab
-  - contentglowz_site
+  - app
+  - lab
+  - site
 reference_categories:
   - direct_competitor
   - indirect_competitor
@@ -35,9 +35,9 @@ reference_categories:
   - workflow_inspiration
 source_policy: "Track public sources only; do not copy private positioning, paid assets, credentials, or non-public customer data."
 aliases:
-  - contentglowz_app
-  - contentglowz_lab
-  - contentglowz_site
+  - app
+  - lab
+  - site
 ignored_aliases:
   - contentglowz
 ---
@@ -46,7 +46,7 @@ ignored_aliases:
 
 ## Lecture projet
 
-ContentGlowz est le projet canonique. `contentglowz_app`, `contentglowz_lab` et `contentglowz_site` sont traités comme surfaces ou sous-parties de ContentGlowz. `contentglowz` est à ignorer comme projet canonique.
+ContentGlowz est le projet canonique. `app`, `lab` et `site` sont traités comme surfaces ou sous-parties de ContentGlowz. `contentglowz` est à ignorer comme projet canonique.
 
 ContentGlowz est le projet le plus concerné par cette veille: génération, recyclage, pilotage, enrichissement et distribution de contenu. Les liens ci-dessous sont principalement des concurrents indirects, des briques produit ou des inspirations de workflow.
 
@@ -83,9 +83,9 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 
 ## Notes de dispatch
 
-- `contentglowz_app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
-- `contentglowz_lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
-- `contentglowz_site`: site marketing et preuve produit.
+- `app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
+- `lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
+- `site`: site marketing et preuve produit.
 - `contentglowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.
 
 

@@ -2,7 +2,7 @@
 artifact: artifact_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: contentglowz_app
+project: app
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -25,7 +25,7 @@ next_review: "2026-07-26"
 next_step: "/sf-docs update shipflow_data/technical/app/context-function-tree.md"
 ---
 
-# CONTEXT-FUNCTION-TREE.md — contentglowz_app
+# CONTEXT-FUNCTION-TREE.md — app
 
 ## `lib/main.dart`
 - `main()`

@@ -2,7 +2,7 @@
 artifact: gtm_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "contentglowz_site"
+project: "site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -37,7 +37,7 @@ channels: "SEO (blog, guides), landing page, pages de pricing/FAQ, sign-up/sign-
 proof_points: "stack Astro SEO-first, handoff app via `/launch`, documentation dégradée explicite, promesse publicisée autour du contrôle humain"
 ---
 
-# Contexte GTM — contentglowz_site
+# Contexte GTM — site
 
 ## Segment cible
 - Segment principal : indépendants et équipes compactes qui préfèrent la continuité opérationnelle à la promesse magique.
@@ -46,7 +46,7 @@ proof_points: "stack Astro SEO-first, handoff app via `/launch`, documentation d
 ## Offre
 Tu expliques le produit comme un passage simple : du message public à un espace exécutable,
 avec continuité, visibilité des limites et contrôle humain.
-La vérité produit et business reste portée par `contentglowz_app`; le site convertit sans réécrire ce contrat.
+La vérité produit et business reste portée par `app`; le site convertit sans réécrire ce contrat.
 
 ## Positionnement
 Tu positionnes le site comme preuve de clarté : pas de buzz IA, pas de promesse de publication autonome,

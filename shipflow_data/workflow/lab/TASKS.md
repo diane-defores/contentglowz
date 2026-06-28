@@ -40,7 +40,7 @@
 ### Feedback Admin v1 (2026-04-19)
 
 Contexte:
-- Le code backend FastAPI est implémenté localement dans `contentglowz_lab`
+- Le code backend FastAPI est implémenté localement dans `lab`
 - L'app Flutter appelle maintenant ce backend
 - Il reste surtout la partie déploiement/config serveur
 
@@ -54,7 +54,7 @@ Fait:
 - [x] Ajouter des tests d'intégration ciblés sur le flux feedback
 
 À faire côté serveur:
-- [x] Push/merge les changements `contentglowz_lab` sur la branche de déploiement du backend
+- [x] Push/merge les changements `lab` sur la branche de déploiement du backend
 - [x] Déployer la nouvelle version du backend sur le serveur
 - [x] Redémarrer le process FastAPI après déploiement
 - [x] Vérifier que la table `FeedbackEntry` est bien créée

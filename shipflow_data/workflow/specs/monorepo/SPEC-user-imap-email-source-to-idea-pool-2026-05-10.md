@@ -15,8 +15,8 @@ security_impact: yes
 docs_impact: yes
 user_story: "En tant qu'utilisateur connecte de ContentGlowz, je veux connecter une boite email IMAP et choisir le dossier lu afin que ContentGlowz transforme automatiquement les nouveaux emails utiles en idees pour mon projet."
 linked_systems:
-  - contentglowz_app
-  - contentglowz_lab
+  - app
+  - lab
   - Gmail IMAP
   - UserProviderCredential
   - UserSettings.robotSettings
@@ -30,9 +30,9 @@ depends_on:
     required_status: draft
 supersedes: []
 evidence:
-  - "contentglowz_lab/agents/newsletter/tools/imap_tools.py already implements IMAPNewsletterReader with env-backed credentials."
-  - "contentglowz_lab/agents/sources/ingest.py ingests newsletters into source=passthrough newsletter_inbox but currently uses global env IMAP config."
-  - "contentglowz_app/lib/presentation/screens/settings/integrations_screen.dart has no email integration UI."
+  - "lab/agents/newsletter/tools/imap_tools.py already implements IMAPNewsletterReader with env-backed credentials."
+  - "lab/agents/sources/ingest.py ingests newsletters into source=passthrough newsletter_inbox but currently uses global env IMAP config."
+  - "app/lib/presentation/screens/settings/integrations_screen.dart has no email integration UI."
 next_step: "/sf-ship shipflow_data/workflow/specs/monorepo/SPEC-user-imap-email-source-to-idea-pool-2026-05-10.md"
 ---
 
@@ -140,11 +140,11 @@ Uses the authenticated user's configured IMAP settings by default. This remains 
 ## Validation Commands
 
 ```bash
-cd contentglowz_lab && pytest tests/test_newsletter_router.py tests/test_settings_integrations_router.py
+cd lab && pytest tests/test_newsletter_router.py tests/test_settings_integrations_router.py
 ```
 
 ```bash
-cd contentglowz_app && flutter test
+cd app && flutter test
 ```
 
 ## Current Chantier Flow
