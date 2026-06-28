@@ -19,19 +19,19 @@ content_surfaces:
 claim_register: shipflow_data/editorial/site/claim-register.md
 page_intent: shipflow_data/editorial/site/page-intent-map.md
 linked_systems:
-  - shipflow_data/business/site/business.md
-  - shipflow_data/business/site/product.md
-  - shipflow_data/business/site/branding.md
-  - shipflow_data/business/site/gtm.md
+  - shipflow_data/business/business.md
+  - shipflow_data/product/site/product.md
+  - shipflow_data/branding/branding.md
+  - shipflow_data/gtm/site/gtm.md
   - src/pages/
 depends_on:
-  - artifact: "shipflow_data/business/site/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: reviewed
-  - artifact: "shipflow_data/business/site/product.md"
+  - artifact: "shipflow_data/product/site/product.md"
     artifact_version: "1.0.0"
     required_status: reviewed
-  - artifact: "shipflow_data/business/site/gtm.md"
+  - artifact: "shipflow_data/gtm/site/gtm.md"
     artifact_version: "1.0.0"
     required_status: reviewed
 supersedes: []
@@ -45,11 +45,11 @@ next_step: "/sf-docs editorial audit site"
 
 | Claim area | Allowed posture | Evidence source | Status | Notes |
 | --- | --- | --- | --- | --- |
-| AI automation | Describe implemented workflows and reviewed specs only | `shipflow_data/business/site/product.md`, ready specs, verified code | needs proof per claim | Do not promise autonomous publishing without product evidence. |
-| Time savings or growth outcomes | Use cautious benefit language | `shipflow_data/business/site/gtm.md`, user evidence, analytics when available | needs proof | Avoid quantified gains unless validated. |
+| AI automation | Describe implemented workflows and reviewed specs only | `shipflow_data/product/site/product.md`, ready specs, verified code | needs proof per claim | Do not promise autonomous publishing without product evidence. |
+| Time savings or growth outcomes | Use cautious benefit language | `shipflow_data/gtm/site/gtm.md`, user evidence, analytics when available | needs proof | Avoid quantified gains unless validated. |
 | Security and privacy | State only verified handling | `privacy` page source, backend/app contracts, legal review | needs proof | Do not imply certifications or compliance not documented. |
 | Availability or reliability | Avoid uptime promises | deployment proof and runtime monitoring | needs proof | Use operational status only when measured. |
-| Pricing or offers | Match current GTM/pricing source | `shipflow_data/business/site/gtm.md`, pricing spec if present | needs proof | No public pricing claim without a current offer contract. |
+| Pricing or offers | Match current GTM/pricing source | `shipflow_data/gtm/site/gtm.md`, pricing spec if present | needs proof | No public pricing claim without a current offer contract. |
 
 ## Claim Impact Plan
 

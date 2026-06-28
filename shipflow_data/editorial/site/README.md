@@ -22,10 +22,10 @@ claim_register: shipflow_data/editorial/site/claim-register.md
 page_intent: shipflow_data/editorial/site/page-intent-map.md
 linked_systems:
   - shipflow_data/editorial/site/content-map.md
-  - shipflow_data/business/site/business.md
-  - shipflow_data/business/site/product.md
-  - shipflow_data/business/site/branding.md
-  - shipflow_data/business/site/gtm.md
+  - shipflow_data/business/business.md
+  - shipflow_data/product/site/product.md
+  - shipflow_data/branding/branding.md
+  - shipflow_data/gtm/site/gtm.md
   - src/pages/
   - src/content.config.ts
   - src/content/

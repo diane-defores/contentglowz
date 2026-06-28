@@ -16,8 +16,8 @@ security_impact: "none"
 evidence:
   - "README.md"
   - "CLAUDE.md"
-  - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/branding/branding.md"
   - "shipflow_data/technical/app/guidelines.md"
   - "lib/router.dart"
   - "lib/data/services/"
@@ -27,8 +27,8 @@ evidence:
   - "shipflow_data/workflow/specs/app/late-integration-finalization.md"
   - ".env.example"
 depends_on:
-  - "shipflow_data/business/app/business.md@1.0.0"
-  - "shipflow_data/business/app/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
   - "shipflow_data/technical/app/guidelines.md@1.0.0"
 supersedes: []
 target_user: creators and operators who produce recurring content
@@ -41,7 +41,7 @@ non_goals:
   - Fully autonomous content generation or automatic publication without human review.
   - Native mobile auth stack parity or native-only feature set.
 next_review: "2026-07-26"
-next_step: "/sf-docs audit shipflow_data/business/app/product.md"
+next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 ---
 
 # Product Context — app

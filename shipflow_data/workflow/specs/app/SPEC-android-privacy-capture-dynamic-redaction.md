@@ -28,10 +28,10 @@ linked_systems:
   - "Google ML Kit Text Recognition and Face Detection"
   - "AndroidX Media3 Transformer"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"
@@ -216,7 +216,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08.
 - Update `app/README.md` with privacy capture scope, Android-only status, best-effort limitation, post-production review requirement, and no cloud upload behavior.
 - Update `shipflow_data/technical/app/guidelines.md` with privacy capture data-minimization rules: no OCR text persistence, no clear temp file exposure, review-gated share.
 - Update `app/CHANGELOG.md` after implementation.
-- Update `shipflow_data/business/app/product.md` only if the feature ships publicly and changes product positioning.
+- Update `shipflow_data/product/app/product.md` only if the feature ships publicly and changes product positioning.
 - Do not update `.env.example` in V1 unless implementation introduces a configurable build/runtime flag.
 - Do not update `site` marketing copy until QA proves the feature is usable and wording is legally safe.
 

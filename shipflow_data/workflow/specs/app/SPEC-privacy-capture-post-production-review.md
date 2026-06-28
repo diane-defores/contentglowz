@@ -29,10 +29,10 @@ linked_systems:
   - "Web privacy capture dynamic redaction"
   - "Windows privacy capture dynamic redaction"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"

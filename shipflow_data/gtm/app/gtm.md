@@ -16,8 +16,8 @@ security_impact: "unknown"
 evidence:
   - "README.md"
   - "CLAUDE.md"
-  - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/branding/branding.md"
   - "lib/router.dart"
   - "lib/presentation/screens/settings/integrations_screen.dart"
   - "web_auth/sign-in.html"
@@ -26,8 +26,8 @@ evidence:
   - "shipflow_data/workflow/specs/app/late-integration-finalization.md"
   - "shipflow_data/workflow/specs/app/SPEC-content-pipeline-unification.md"
 depends_on:
-  - "shipflow_data/business/app/business.md@1.0.0"
-  - "shipflow_data/business/app/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
   - "shipflow_data/technical/app/guidelines.md@1.0.0"
 supersedes: []
 target_segment:
@@ -44,7 +44,7 @@ proof_points:
   - local cache + queue + replay behavior documented and implemented for supported offline writes
   - multi-project selection and diagnostics surfaces (projects, uptime, performance, activity)
 next_review: "2026-07-26"
-next_step: "/sf-docs audit shipflow_data/business/app/gtm.md"
+next_step: "/sf-docs audit shipflow_data/gtm/app/gtm.md"
 ---
 
 # Go-to-Market Context — app

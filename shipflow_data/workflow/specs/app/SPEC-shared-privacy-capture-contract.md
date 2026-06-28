@@ -30,10 +30,10 @@ linked_systems:
   - "Future Linux xdg-desktop-portal/PipeWire privacy capture pipeline"
   - "Future macOS ScreenCaptureKit privacy capture pipeline"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"

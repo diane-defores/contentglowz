@@ -18,7 +18,8 @@ evidence:
   - "ContentGlowz scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
   - "User-pasted Savvio description on 2026-05-24."
   - "User-pasted competitor URLs on 2026-06-26: https://pixizen.io/fr, https://geniusquiz.co/, https://lifestylo.eu/."
-depends_on: []
+depends_on:
+  - "shipflow_data/business/business.md@1.0.0"
 supersedes:
   - "concurrent.md"
 next_review: "2026-06-11"
@@ -46,7 +47,7 @@ ignored_aliases:
 
 ## Lecture projet
 
-ContentGlowz est le projet canonique. `app`, `lab` et `site` sont traités comme surfaces ou sous-parties de ContentGlowz. `contentglowz` est à ignorer comme projet canonique.
+ContentGlowz est le projet canonique. `app`, `lab`, `site` et `worker` sont traités comme surfaces ou sous-parties de ContentGlowz. `contentglowz` est à ignorer comme alias de surface.
 
 ContentGlowz est le projet le plus concerné par cette veille: génération, recyclage, pilotage, enrichissement et distribution de contenu. Les liens ci-dessous sont principalement des concurrents indirects, des briques produit ou des inspirations de workflow.
 
@@ -84,8 +85,9 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 ## Notes de dispatch
 
 - `app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
-- `lab`: laboratoire/backend, pipelines, données, agents, sources et expérimentation.
+- `lab`: backend, pipelines, données, agents, sources et expérimentation.
 - `site`: site marketing et preuve produit.
+- `worker`: service d’exécution spécialisé pour les rendus et exports.
 - `contentglowz`: à ignorer pour les prochains dispatchs, sauf demande explicite.
 
 

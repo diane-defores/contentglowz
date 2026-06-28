@@ -77,7 +77,7 @@ npm run build
 - Public routes must keep honest CTAs and app handoff URLs.
 - SEO metadata must stay coherent with canonical routes, language state, sitemap, and robots behavior.
 - Runtime content frontmatter must match `src/content.config.ts`.
-- Public claims must not exceed `shipflow_data/business/site/business.md`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/branding.md`, `shipflow_data/business/site/gtm.md`, verified behavior, or claim-register evidence.
+- Public claims must not exceed `shipflow_data/business/business.md`, `shipflow_data/product/site/product.md`, `shipflow_data/branding/branding.md`, `shipflow_data/gtm/site/gtm.md`, verified behavior, or claim-register evidence.
 
 ## Failure Modes
 

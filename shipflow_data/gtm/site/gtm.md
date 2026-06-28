@@ -14,23 +14,23 @@ risk_level: medium
 docs_impact: "yes"
 security_impact: unknown
 evidence:
-  - "shipflow_data/business/site/business.md"
-  - "shipflow_data/business/site/branding.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/branding/branding.md"
   - "CLAUDE.md"
   - "README.md"
   - "src/pages/index.astro"
   - "src/components/*.astro"
   - "src/pages/launch.astro"
 linked_artifacts:
-  - "shipflow_data/business/site/business.md@1.0.0"
-  - "shipflow_data/business/site/branding.md@1.0.0"
-  - "shipflow_data/business/site/product.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
+  - "shipflow_data/product/site/product.md@1.0.0"
 depends_on:
-  - "shipflow_data/business/site/business.md@1.0.0"
-  - "shipflow_data/business/site/product.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/product/site/product.md@1.0.0"
 supersedes: []
 next_review: "2026-07-26"
-next_step: "/sf-docs audit shipflow_data/business/site/gtm.md"
+next_step: "/sf-docs audit shipflow_data/gtm/site/gtm.md"
 target_segment: "créateurs, founders et petites équipes marketing qui veulent une exécution de contenu rapide sans perdre le contrôle humain"
 offer: "site d’acquisition + conversion qui valorise ContentGlowz comme couche d’exécution guidée, avec continuité même en cas de service API instable"
 channels: "SEO (blog, guides), landing page, pages de pricing/FAQ, sign-up/sign-in, et redirection explicite vers l’app"

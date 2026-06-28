@@ -23,10 +23,10 @@ linked_systems:
   - "app Riverpod providers"
   - "Android MediaProjection"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"
@@ -190,7 +190,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
 
 - Update `README.md` with Android capture feature scope, required Android permissions, local build limitations, 5-minute cap, local-only behavior, and platform limitations.
 - Do not update `.env.example` for V1 because no capture backend env vars are introduced.
-- Update `shipflow_data/business/app/product.md` if the product promise expands from review/publish preparation into device media capture.
+- Update `shipflow_data/product/app/product.md` if the product promise expands from review/publish preparation into device media capture.
 - Update `shipflow_data/technical/app/guidelines.md` only if a reusable platform-channel convention is introduced.
 - Update `CHANGELOG.md` after implementation.
 - Update `site` marketing copy only after the feature ships and after platform limits are worded honestly.
@@ -296,7 +296,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
   - Notes: Gallery save is not required unless existing app patterns already support it cleanly.
 
 - [x] Task 11: Add V1 QA and documentation updates.
-  - File: `app/README.md`, `app/CHANGELOG.md`, `shipflow_data/business/app/product.md`
+  - File: `app/README.md`, `app/CHANGELOG.md`, `shipflow_data/product/app/product.md`
   - Action: Document Android capture scope, platform limits, local-only behavior, microphone toggle, 5-minute cap, and changelog entry.
   - User story link: Keeps operator/product claims aligned with real platform behavior.
   - Depends on: Tasks 1-10.
@@ -382,7 +382,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-04.
 - Screenshot and recording paths both start Android foreground services with `mediaProjection` service types before creating a `VirtualDisplay`.
 - Recording state is replayed to Flutter when `/capture` resubscribes, so a visible Stop action can return after navigation/recreation while the native service is still active.
 - Microphone-denied and notification-denied states are modeled as recoverable notices instead of terminal capture failures.
-- V1 docs were updated in `README.md`, `shipflow_data/business/app/product.md`, `shipflow_data/technical/app/guidelines.md`, and `CHANGELOG.md`.
+- V1 docs were updated in `README.md`, `shipflow_data/product/app/product.md`, `shipflow_data/technical/app/guidelines.md`, and `CHANGELOG.md`.
 - Static validation passed locally: `flutter analyze`, focused capture tests, full `flutter test`, and Android `:app:compileDebugKotlin -x :app:processDebugResources`.
 - `flutter build apk --debug` was attempted locally and failed before app code packaging because Gradle could not start the Linux AAPT2 daemon on this ARM64 environment.
 - Pending proof: real-device Android smoke and full debug APK packaging on a compatible Android build environment.

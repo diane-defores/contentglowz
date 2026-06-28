@@ -39,8 +39,8 @@ next_step: "/sf-docs editorial audit site"
 
 | Surface | Path | Role | Source of truth | Update trigger |
 | --- | --- | --- | --- | --- |
-| Marketing home | `src/pages/index.astro` | Public positioning and primary CTA | `shipflow_data/business/site/business.md`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/branding.md`, `shipflow_data/business/site/gtm.md` | Offer, ICP, CTA, claim, or product behavior changes |
-| Launch handoff | `src/pages/launch.astro` | App entry handoff | `shipflow_data/business/site/product.md`, app route contracts | Auth/app URL or onboarding changes |
+| Marketing home | `src/pages/index.astro` | Public positioning and primary CTA | `shipflow_data/business/business.md`, `shipflow_data/product/site/product.md`, `shipflow_data/branding/branding.md`, `shipflow_data/gtm/site/gtm.md` | Offer, ICP, CTA, claim, or product behavior changes |
+| Launch handoff | `src/pages/launch.astro` | App entry handoff | `shipflow_data/product/site/product.md`, app route contracts | Auth/app URL or onboarding changes |
 | Sign-in/sign-up handoff | `src/pages/sign-in.astro`, `src/pages/sign-up.astro` | Auth handoff routes | app auth contract and site config | Auth provider, app URL, or CTA changes |
 | Privacy | `src/pages/privacy.astro` | Public privacy/security explanation | verified product data handling and legal review | Data, auth, storage, analytics, or compliance changes |
 | Runtime content | `src/content/**` | Astro-rendered Markdown content | `src/content.config.ts` and content policy | Content schema or collection changes |

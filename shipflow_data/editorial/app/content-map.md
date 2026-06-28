@@ -25,8 +25,8 @@ evidence:
   - "CHANGELOG.md"
   - "shipflow_data/workflow/TASKS.md"
 depends_on:
-  - "shipflow_data/business/app/business.md@1.0.0"
-  - "shipflow_data/business/app/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
   - "shipflow_data/technical/app/guidelines.md@1.0.0"
 supersedes: []
 content_surfaces:
@@ -100,8 +100,8 @@ Primary shell routes:
 ### Decision and context documents
 - `README.md`
 - `CLAUDE.md`
-- `shipflow_data/business/app/business.md`
-- `shipflow_data/business/app/branding.md`
+- `shipflow_data/business/business.md`
+- `shipflow_data/branding/branding.md`
 - `shipflow_data/technical/app/guidelines.md`
 - `CHANGELOG.md`
 - `shipflow_data/workflow/AUDIT_LOG.md`

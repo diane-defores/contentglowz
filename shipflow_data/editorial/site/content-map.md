@@ -32,19 +32,19 @@ evidence:
   - "src/layouts"
   - "src/components"
   - "src/config/site.ts"
-  - "shipflow_data/business/site/branding.md"
-  - "shipflow_data/business/site/business.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/business/business.md"
   - "shipflow_data/technical/site/guidelines.md"
 linked_artifacts:
-  - "shipflow_data/business/site/branding.md@1.0.0"
-  - "shipflow_data/business/site/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
   - "shipflow_data/technical/site/guidelines.md@1.0.0"
-  - "shipflow_data/business/site/product.md@1.0.0"
-  - "shipflow_data/business/site/gtm.md@1.0.0"
+  - "shipflow_data/product/site/product.md@1.0.0"
+  - "shipflow_data/gtm/site/gtm.md@1.0.0"
 depends_on:
-  - "shipflow_data/business/site/business.md@1.0.0"
-  - "shipflow_data/business/site/product.md@1.0.0"
-  - "shipflow_data/business/site/gtm.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/product/site/product.md@1.0.0"
+  - "shipflow_data/gtm/site/gtm.md@1.0.0"
 supersedes: []
 next_review: "2026-07-26"
 next_step: "/sf-repurpose"
@@ -60,10 +60,10 @@ Les claims de ces surfaces doivent rester alignés sur `app` (source canonique p
 
 | Surface | Canonical path | Usage | Format | Source de vérité | Mise à jour |
 |---|---|---|---|---|---|
-| Landing | `src/pages/index.astro` | Positionnement, promesse, conversion initiale | Astro | `shipflow_data/business/site/product.md`, `shipflow_data/business/site/gtm.md`, `shipflow_data/business/site/branding.md` | Changement d’offre ou de copy d’entrée |
+| Landing | `src/pages/index.astro` | Positionnement, promesse, conversion initiale | Astro | `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md`, `shipflow_data/branding/branding.md` | Changement d’offre ou de copy d’entrée |
 | Blog | `src/content/blog/*` + `src/pages/blog/[...slug].astro` | Notoriété, intent informationnel, preuve | Markdown + pages dynamiques | Stratégie éditoriale | Publication d’un nouvel article |
 | Tutorials | `src/content/tutorials/*` + `src/pages/tutorials/[...slug].astro` | Onboarding technique, usage concret | Markdown + pages dynamiques | Guide produit | Ajout/mise à jour de tutoriel |
-| Docs | `src/content/docs/**/*` + `src/pages/...` | Définition des cas d’usage par zone | Markdown | `shipflow_data/business/site/branding.md`, `shipflow_data/technical/site/guidelines.md` | Changement de fonctionnalités décrites |
+| Docs | `src/content/docs/**/*` + `src/pages/...` | Définition des cas d’usage par zone | Markdown | `shipflow_data/branding/branding.md`, `shipflow_data/technical/site/guidelines.md` | Changement de fonctionnalités décrites |
 | Agents | `src/content/ai-agents/*` + `src/pages/ai-agents/[...slug].astro` | Narratif produit orienté agents | Markdown + index | Content strategy | Ajout d’un robot ou changement de capacité |
 | SEO strategy | `src/content/seo-strategy/*` + `src/pages/seo-strategy/[...slug].astro` | Traction organique & intent achat | Markdown + pages dynamiques | Content plan | Nouveau cluster sémantique |
 | Platform | `src/content/platform/*` + `src/pages/platform/[...slug].astro` | Présentation des fonctionnalités clés | Markdown + pages dynamiques | Comportements supportés | Modification de capacité produit |
@@ -73,9 +73,9 @@ Les claims de ces surfaces doivent rester alignés sur `app` (source canonique p
 | Support documentaire | `src/pages/privacy.astro`, `src/content.config.ts`, `astro.config.mjs` | Confiance, SEO technique, conformité | mixte | Conventions techniques | Modification légale ou technique |
 
 ## Règles de mise à jour
-- Toute modification du tunnel de conversion met à jour `shipflow_data/business/site/gtm.md` + `shipflow_data/business/site/product.md`.
+- Toute modification du tunnel de conversion met à jour `shipflow_data/gtm/site/gtm.md` + `shipflow_data/product/site/product.md`.
 - Toute nouvelle surface d’articles doit être ajoutée à `content_surfaces`.
-- Tout claim business doit être cohérent avec `shipflow_data/business/site/business.md` et les comportements app.
+- Tout claim business doit être cohérent avec `shipflow_data/business/business.md` et les comportements app.
 - Si une page décrit une capacité non livrée, c’est un bug documentaire.
 
 ## Gaps

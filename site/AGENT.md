@@ -15,8 +15,8 @@ security_impact: low
 docs_impact: yes
 depends_on:
   - CLAUDE.md@1.0.0
-  - shipflow_data/business/site/business.md@0.1.0
-  - shipflow_data/business/site/branding.md@0.1.0
+  - shipflow_data/business/business.md@0.1.0
+  - shipflow_data/branding/branding.md@0.1.0
   - shipflow_data/technical/site/guidelines.md@1.0.0
 evidence:
   - README.md
@@ -37,7 +37,7 @@ next_step: /sf-docs audit AGENT.md
 ## Mission
 - Garder `site` comme surface d’entrée public stable, cohérente et fidèle au comportement réel de l’écosystème ContentGlowz.
 - Traiter ce repo comme un **site de marketing + documentation SEO + conversion vers l’application**, pas comme un backend métier.
-- Aligner `README.md`, `shipflow_data/business/site/branding.md`, `shipflow_data/technical/site/guidelines.md`, `shipflow_data/business/site/business.md` et les artefacts contextuels à chaque changement de route, d’handoff ou de contenu majeur.
+- Aligner `README.md`, `shipflow_data/branding/branding.md`, `shipflow_data/technical/site/guidelines.md`, `shipflow_data/business/business.md` et les artefacts contextuels à chaque changement de route, d’handoff ou de contenu majeur.
 
 ## Mandat technique
 1. **Rendu Astro**
@@ -53,7 +53,7 @@ next_step: /sf-docs audit AGENT.md
     - `/launch` -> `APP_WEB_URL + /#/entry`
   - Préserver la logique de propagation de `redirect_url` quand présente.
 4. **Surface publique**
-  - Les pages de contenu, FAQ, blog, pricing et trust pages doivent rester en phase avec `shipflow_data/business/site/branding.md` et la promesse de résilience.
+  - Les pages de contenu, FAQ, blog, pricing et trust pages doivent rester en phase avec `shipflow_data/branding/branding.md` et la promesse de résilience.
 5. **Sécurité opérationnelle**
   - Conserver les headers HTTP de production (`vercel.json`) et les tags `noindex` quand nécessaire.
   - Préserver `rel="preload"`/`script` d’analytics cookie-free selon l’environnement.

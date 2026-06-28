@@ -16,11 +16,11 @@ docs_impact: yes
 linked_systems: []
 evidence:
   - CLAUDE.md
-  - shipflow_data/business/app/business.md
-  - shipflow_data/business/app/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
 depends_on:
-  - shipflow_data/business/app/business.md@0.1.0
-  - shipflow_data/business/app/branding.md@0.1.0
+  - shipflow_data/business/business.md@0.1.0
+  - shipflow_data/branding/branding.md@0.1.0
 supersedes: []
 next_review: "2026-07-26"
 next_step: /sf-docs audit shipflow_data/technical/app/guidelines.md

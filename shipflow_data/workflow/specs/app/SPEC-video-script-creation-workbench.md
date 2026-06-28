@@ -29,7 +29,7 @@ linked_systems:
   - "lab status/content body versioning"
   - "lab AI runtime preflight"
 depends_on:
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/architecture.md"
@@ -235,7 +235,7 @@ Turn `/reels` into a script-first workbench with import/repurpose as a secondary
 
 - Update `app/README.md` if app feature docs list creator tools or content formats.
 - Update `app/CHANGELOG.md` after implementation ships.
-- Update `shipflow_data/business/app/product.md` because product positioning expands from content review/prep to explicit video script preparation.
+- Update `shipflow_data/product/app/product.md` because product positioning expands from content review/prep to explicit video script preparation.
 - Update `shipflow_data/technical/app/context-function-tree.md` because the file exists and this feature changes route/provider behavior.
 - Update `site` marketing copy only after the workbench is implemented and verified; do not claim real video generation.
 - Update localization strings for all new workbench labels, validation messages, progress states, landscape / long-format button, and no-video copy.

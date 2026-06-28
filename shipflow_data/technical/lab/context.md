@@ -42,8 +42,8 @@ evidence:
   - main.py
   - run_seo_tools.sh
 depends_on:
-  - shipflow_data/business/lab/business.md
-  - shipflow_data/business/lab/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
   - shipflow_data/technical/lab/guidelines.md
 supersedes: []
 next_step: /sf-docs audit shipflow_data/technical/lab/context.md

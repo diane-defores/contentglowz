@@ -21,10 +21,10 @@ linked_systems:
   - "Sitemap and robots endpoints"
   - "ContentGlowz app handoff routes"
 depends_on:
-  - artifact: "shipflow_data/business/site/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/site/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/site/guidelines.md"
@@ -175,8 +175,8 @@ La migration doit être incrémentale:
 Internal dependencies:
 
 - `CLAUDE.md@0.1.0`: contraintes opérationnelles, structure, handoff backend, règles de langue.
-- `shipflow_data/business/site/business.md@1.0.0`: promesse produit et cohérence business.
-- `shipflow_data/business/site/branding.md@1.0.0`: ton, positionnement, microcopy.
+- `shipflow_data/business/business.md@1.0.0`: promesse produit et cohérence business.
+- `shipflow_data/branding/branding.md@1.0.0`: ton, positionnement, microcopy.
 - `shipflow_data/technical/site/guidelines.md@0.1.0`: dette metadata car statut draft.
 - `shipflow_data/technical/site/architecture.md@0.1.0`: architecture site statique et routes à préserver.
 - `package.json`: scripts `dev`, `start`, `build`, `preview`; engines Node/npm.
@@ -239,7 +239,7 @@ Documentation to update if implementation changes commands, engines, routes, or 
 
 Documentation coherence debt already present:
 
-- `shipflow_data/technical/site/guidelines.md` and `shipflow_data/technical/site/architecture.md` are draft metadata, while `shipflow_data/business/site/business.md`, `shipflow_data/business/site/branding.md`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/gtm.md`, and `shipflow_data/editorial/site/content-map.md` are reviewed. `/sf-ready` should decide whether draft docs block readiness.
+- `shipflow_data/technical/site/guidelines.md` and `shipflow_data/technical/site/architecture.md` are draft metadata, while `shipflow_data/business/business.md`, `shipflow_data/branding/branding.md`, `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md`, and `shipflow_data/editorial/site/content-map.md` are reviewed. `/sf-ready` should decide whether draft docs block readiness.
 
 ## Edge Cases
 - Collection entries named `index.md` currently generate paths like `/ai-agents/index/index.html` under Astro 5 baseline. Do not assume Astro 6 should collapse these paths unless product explicitly wants route cleanup.

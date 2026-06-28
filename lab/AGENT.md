@@ -35,8 +35,8 @@ evidence:
   - requirements.txt
   - main.py
 depends_on:
-  - shipflow_data/business/lab/business.md
-  - shipflow_data/business/lab/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
   - shipflow_data/technical/lab/guidelines.md
 supersedes: []
 next_step: /sf-docs audit AGENT.md
@@ -62,7 +62,7 @@ It is the authority for architecture-level notes, runtime boundaries, and docume
   - agent runtime orchestration boundaries
   - dependency and deployment constraints that affect maintainability
 
-- Keep separate from product/marketing artifacts (`shipflow_data/business/lab/product.md`, `shipflow_data/business/lab/gtm.md`, `shipflow_data/business/lab/business.md`, `shipflow_data/business/lab/branding.md`), except for `depends_on` references.
+- Keep separate from product/marketing artifacts (`shipflow_data/product/lab/product.md`, `shipflow_data/gtm/lab/gtm.md`, `shipflow_data/business/business.md`, `shipflow_data/branding/branding.md`), except for `depends_on` references.
 
 ## Stack baseline inferred from current repo
 

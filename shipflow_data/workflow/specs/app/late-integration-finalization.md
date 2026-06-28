@@ -30,10 +30,10 @@ linked_systems:
   - app/lib/presentation/screens/feed/feed_screen.dart
   - Zernio API
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/architecture.md"
@@ -190,8 +190,8 @@ Le flow de connexion utilise un profil Zernio par projet ContentGlowz. Le backen
 ## Dependencies
 
 Local:
-- `shipflow_data/business/app/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
-- `shipflow_data/business/app/product.md` v1.0.0 reviewed: multi-projet et limites produit.
+- `shipflow_data/business/business.md` v1.0.0 reviewed: parcours createur et contraintes business.
+- `shipflow_data/product/app/product.md` v1.0.0 reviewed: multi-projet et limites produit.
 - `shipflow_data/technical/app/architecture.md` v1.0.0 reviewed: Flutter + FastAPI + Clerk, providers, offline/degraded mode.
 - `shipflow_data/technical/app/guidelines.md` v1.0.0 reviewed: auth, tests, offline/sync.
 - `app/CLAUDE.md` v1.0.0 reviewed: commandes, structure, Turso/libSQL.

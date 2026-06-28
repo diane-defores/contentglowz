@@ -16,8 +16,8 @@ docs_impact: "yes"
 evidence:
   - "README.md"
   - "CLAUDE.md"
-  - "shipflow_data/business/site/business.md"
-  - "shipflow_data/business/site/branding.md"
+  - "shipflow_data/business/business.md"
+  - "shipflow_data/branding/branding.md"
   - "shipflow_data/technical/site/guidelines.md"
   - "src/config/site.ts"
   - "src/pages/index.astro"
@@ -26,12 +26,12 @@ evidence:
   - "src/pages/sign-up.astro"
   - "src/content"
 linked_artifacts:
-  - "shipflow_data/business/site/business.md@1.0.0"
-  - "shipflow_data/business/site/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
   - "shipflow_data/technical/site/guidelines.md@1.0.0"
 depends_on:
-  - "shipflow_data/business/site/business.md@1.0.0"
-  - "shipflow_data/business/site/branding.md@1.0.0"
+  - "shipflow_data/business/business.md@1.0.0"
+  - "shipflow_data/branding/branding.md@1.0.0"
   - "shipflow_data/technical/site/guidelines.md@1.0.0"
 supersedes: []
 next_review: "2026-07-26"
@@ -46,7 +46,7 @@ non_goals:
   - "Le site n’exécute pas le traitement métier de génération de contenu."
   - "Le site ne gère pas la facturation directe ni les jobs backend."
   - "Le site ne remplace pas le handoff sécurisé côté app."
-next_step: "/sf-docs audit shipflow_data/business/site/product.md"
+next_step: "/sf-docs audit shipflow_data/product/site/product.md"
 ---
 
 # Contexte produit — site
@@ -83,7 +83,7 @@ Sans ce site, la promesse produit est morcelée entre pages, et le passage vers 
 
 ## Signaux de succès
 - Taux d’entrée vers `/launch` stable et compréhensible.
-- Messages de promesse cohérents avec `shipflow_data/business/site/branding.md` et `shipflow_data/business/site/business.md`.
+- Messages de promesse cohérents avec `shipflow_data/branding/branding.md` et `shipflow_data/business/business.md`.
 - Faible volume de copies contradictoires entre pages.
 
 ## Risques

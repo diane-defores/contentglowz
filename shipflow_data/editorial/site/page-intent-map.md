@@ -36,8 +36,8 @@ next_step: "/sf-docs editorial audit site"
 
 | Route or file | Intent | Primary CTA | Source contracts | Shared-file risk |
 | --- | --- | --- | --- | --- |
-| `/` via `src/pages/index.astro` | Explain ContentGlowz and move qualified visitors toward the app | Open app or start/sign in | `shipflow_data/business/site/business.md`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/gtm.md` | High: homepage copy affects positioning and claims |
-| `/launch` | Route users into the app experience | Continue to app | `shipflow_data/business/site/product.md`, app handoff config | Medium: app URL and auth state must stay current |
+| `/` via `src/pages/index.astro` | Explain ContentGlowz and move qualified visitors toward the app | Open app or start/sign in | `shipflow_data/business/business.md`, `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md` | High: homepage copy affects positioning and claims |
+| `/launch` | Route users into the app experience | Continue to app | `shipflow_data/product/site/product.md`, app handoff config | Medium: app URL and auth state must stay current |
 | `/sign-in` | Redirect or hand off existing users to app sign-in | Sign in | app auth contract | High: auth claims and route correctness |
 | `/sign-up` | Redirect or hand off new users to app sign-up | Sign up | app auth contract, GTM offer | High: conversion and auth correctness |
 | `/privacy` | State privacy and data-handling posture | None or contextual app link | legal/product evidence | High: security and privacy claims need proof |

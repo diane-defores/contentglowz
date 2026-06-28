@@ -49,7 +49,7 @@ evidence:
 depends_on:
   - shipflow_data/technical/lab/context.md
   - shipflow_data/technical/lab/context-function-tree.md
-  - shipflow_data/business/lab/business.md
+  - shipflow_data/business/business.md
   - shipflow_data/technical/lab/guidelines.md
 supersedes: []
 next_review: "2026-07-26"

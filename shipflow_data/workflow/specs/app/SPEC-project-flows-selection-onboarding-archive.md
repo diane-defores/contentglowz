@@ -22,10 +22,10 @@ linked_systems:
   - "UserSettings.projectSelectionMode"
   - "Firecrawl-backed public URL analysis"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "unknown"
     required_status: "active"
-  - artifact: "shipflow_data/business/app/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "unknown"
     required_status: "active"
   - artifact: "shipflow_data/technical/app/guidelines.md"

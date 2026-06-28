@@ -25,10 +25,10 @@ linked_systems:
   - "contentHistoryProvider"
   - "GoRouter app routes"
 depends_on:
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"

@@ -116,7 +116,7 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
 ## 6) Contraintes de cohérence
 - Les pages d’accueil et de documentation doivent rester alignées avec les capacités réelles de l’écosystème (app + backend).
 - Les liens d’authentification doivent rester des redirections courtes et prévisibles.
-- Les données de contenu affichées en page d’accueil, FAQ, pricing et CTA doivent être maintenues cohérentes avec `shipflow_data/business/site/branding.md` et `shipflow_data/business/site/business.md`.
+- Les données de contenu affichées en page d’accueil, FAQ, pricing et CTA doivent être maintenues cohérentes avec `shipflow_data/branding/branding.md` et `shipflow_data/business/business.md`.
 
 ## 7) Risques techniques
 - `draft: true` sur un article non filtré peut changer le SEO si une collection est mal configurée.

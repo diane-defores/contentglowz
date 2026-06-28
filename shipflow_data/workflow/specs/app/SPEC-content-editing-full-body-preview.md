@@ -26,10 +26,10 @@ linked_systems:
   - "lab status service"
   - "lab publish router"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"
@@ -173,7 +173,7 @@ Separate preview display data from authoritative body data, add a content detail
 
 - Update `CHANGELOG.md` after implementation with a short reliability note.
 - Update `shipflow_data/workflow/specs/app/SPEC-offline-sync-v2.md` only if queue action schema, cache keys, or offline behavior changes.
-- No `shipflow_data/business/app/product.md` change is required if this only fixes the existing promised behavior.
+- No `shipflow_data/product/app/product.md` change is required if this only fixes the existing promised behavior.
 - No marketing-site copy change is required.
 - If implementation discovers that publish behavior changes user-visible copy, update `lib/l10n/app_localizations.dart` consistently.
 

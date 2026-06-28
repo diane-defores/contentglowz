@@ -43,12 +43,12 @@ Tracked modified files observed:
 - `AGENT.md`
 - `shipflow_data/technical/app/architecture.md`
 - `AUDIT_LOG.md`
-- `shipflow_data/business/app/branding.md`
+- `shipflow_data/branding/branding.md`
 - `shipflow_data/editorial/app/content-map.md`
 - `CONTEXT-FUNCTION-TREE.md`
 - `shipflow_data/technical/app/context.md`
-- `shipflow_data/business/app/gtm.md`
-- `shipflow_data/business/app/product.md`
+- `shipflow_data/gtm/app/gtm.md`
+- `shipflow_data/product/app/product.md`
 - `TASKS.md`
 - `pubspec.lock`
 - `pubspec.yaml`

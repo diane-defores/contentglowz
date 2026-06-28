@@ -30,10 +30,10 @@ linked_systems:
   - "Shape Detection TextDetector"
   - "OCR WASM fallback"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"
@@ -221,7 +221,7 @@ Fresh external docs verdict: `fresh-docs checked via exploration` on 2026-05-08.
 - Update `app/README.md` with browser privacy capture scope, best-effort limits, browser support caveats, local-only processing, and review-before-share behavior.
 - Update `shipflow_data/technical/app/guidelines.md` with web privacy data-minimization rules: no OCR text persistence, no clear frame/blob registration, no cloud redaction, and review-gated export.
 - Update `app/CHANGELOG.md` after implementation.
-- Update `shipflow_data/business/app/product.md` only if the feature ships publicly and changes supported-platform positioning.
+- Update `shipflow_data/product/app/product.md` only if the feature ships publicly and changes supported-platform positioning.
 - Do not update `site` marketing copy until manual browser QA proves the feature is usable and wording is legally safe.
 - Do not update `.env.example` unless OCR fallback or worker packaging introduces a configurable runtime flag.
 

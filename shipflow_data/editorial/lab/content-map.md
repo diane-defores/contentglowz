@@ -24,8 +24,8 @@ evidence:
   - agents/
   - tests/
 depends_on:
-  - shipflow_data/business/lab/business.md@1.0.0
-  - shipflow_data/business/lab/branding.md@1.0.0
+  - shipflow_data/business/business.md@1.0.0
+  - shipflow_data/branding/branding.md@1.0.0
   - shipflow_data/technical/lab/guidelines.md@1.0.0
 supersedes: []
 content_surfaces:
@@ -48,7 +48,7 @@ Ce document mappe les surfaces de contenu/contrat de `lab` utiles aux équipes p
 
 - `README.md` — vue produit + démarrage.
 - `CLAUDE.md` — conventions de travail et limites opérationnelles.
-- `shipflow_data/business/lab/business.md`, `shipflow_data/business/lab/branding.md`, `shipflow_data/technical/lab/guidelines.md` — contrats décisionnels.
+- `shipflow_data/business/business.md`, `shipflow_data/branding/branding.md`, `shipflow_data/technical/lab/guidelines.md` — contrats décisionnels.
 - `docs` technique manquant (non présent dans ce repo).
 - `shipflow_data/workflow/specs/lab/*.md` — spécifications d’implémentation et d’évolution.
 - `tests/README.md` — stratégie de validation.

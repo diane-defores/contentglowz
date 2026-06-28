@@ -18,8 +18,8 @@ depends_on: []
 supersedes: []
 evidence:
   - CLAUDE.md
-  - shipflow_data/business/lab/business.md
-  - shipflow_data/business/lab/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
 next_review: "2026-07-26"
 next_step: /sf-docs audit shipflow_data/technical/lab/guidelines.md
 ---

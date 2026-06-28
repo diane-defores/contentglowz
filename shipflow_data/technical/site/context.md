@@ -15,8 +15,8 @@ security_impact: low
 docs_impact: yes
 depends_on:
   - AGENT.md@1.0.0
-  - shipflow_data/business/site/business.md@0.1.0
-  - shipflow_data/business/site/branding.md@0.1.0
+  - shipflow_data/business/business.md@0.1.0
+  - shipflow_data/branding/branding.md@0.1.0
   - shipflow_data/technical/site/guidelines.md@1.0.0
   - README.md@0.1.0
 evidence:

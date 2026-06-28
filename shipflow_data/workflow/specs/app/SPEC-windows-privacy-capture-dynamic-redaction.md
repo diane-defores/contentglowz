@@ -30,10 +30,10 @@ linked_systems:
   - "Windows.Media.Transcoding MediaTranscoder"
   - "Microsoft Media Foundation"
 depends_on:
-  - artifact: "shipflow_data/business/app/business.md"
+  - artifact: "shipflow_data/business/business.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/technical/app/guidelines.md"
@@ -229,7 +229,7 @@ Fresh external docs verdict: `fresh-docs checked` on 2026-05-08 through official
 - Update `shipflow_data/technical/app/guidelines.md` with Windows native capture temp-file rules, OCR text discard rules, multi-monitor/DPI validation expectations, and review-gated share behavior.
 - Update `shipflow_data/technical/app/flutter-app-shell-and-capture.md` to add Windows runner/native capture ownership, validation commands, and Windows QA requirements.
 - Update `app/CHANGELOG.md` after implementation.
-- Update `shipflow_data/business/app/product.md` only if Windows privacy capture ships publicly and changes platform positioning.
+- Update `shipflow_data/product/app/product.md` only if Windows privacy capture ships publicly and changes platform positioning.
 - Do not update `site` marketing copy until Windows QA proves the feature usable and wording is legally safe.
 
 ## Edge Cases

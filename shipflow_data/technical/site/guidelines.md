@@ -18,11 +18,11 @@ linked_systems:
   - lab
 evidence:
   - CLAUDE.md
-  - shipflow_data/business/site/business.md
-  - shipflow_data/business/site/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
 depends_on:
-  - shipflow_data/business/site/business.md@1.0.0
-  - shipflow_data/business/site/branding.md@1.0.0
+  - shipflow_data/business/business.md@1.0.0
+  - shipflow_data/branding/branding.md@1.0.0
 supersedes: []
 next_review: "2026-07-26"
 next_step: /sf-docs audit shipflow_data/technical/site/guidelines.md
@@ -73,4 +73,4 @@ This document defines conventions for working on the Astro website in `site`.
 
 - Update `README.md` and doc pages when navigation or auth handoff flow changes.
 - Keep environment expectations in `.env.example` synchronized with `src/config/site.ts` and deployment config.
-- For any significant behavior change, update `shipflow_data/business/site/branding.md`, `shipflow_data/business/site/business.md`, and `CLAUDE.md` references.
+- For any significant behavior change, update `shipflow_data/branding/branding.md`, `shipflow_data/business/business.md`, and `CLAUDE.md` references.

@@ -16,8 +16,8 @@ docs_impact: yes
 evidence:
   - README.md
   - CLAUDE.md
-  - shipflow_data/business/lab/business.md
-  - shipflow_data/business/lab/branding.md
+  - shipflow_data/business/business.md
+  - shipflow_data/branding/branding.md
   - shipflow_data/technical/lab/guidelines.md
   - shipflow_data/workflow/specs/lab/SPEC-backend-persona-autofill-repo-understanding-user-keys.md
   - shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md
@@ -26,15 +26,15 @@ evidence:
   - shipflow_data/workflow/specs/lab/SPEC-strict-byok-llm-app-visible-ai.md
   - shipflow_data/workflow/specs/lab/social-listener.md
 depends_on:
-  - shipflow_data/business/lab/business.md@1.0.0
-  - shipflow_data/business/lab/branding.md@1.0.0
+  - shipflow_data/business/business.md@1.0.0
+  - shipflow_data/branding/branding.md@1.0.0
   - shipflow_data/technical/lab/guidelines.md@1.0.0
 supersedes: []
 next_review: "2026-07-26"
-next_step: /sf-docs audit shipflow_data/business/lab/product.md
+next_step: /sf-docs audit shipflow_data/product/lab/product.md
 ---
 
-# shipflow_data/business/lab/product.md
+# shipflow_data/product/lab/product.md
 
 ## Positionnement produit
 
