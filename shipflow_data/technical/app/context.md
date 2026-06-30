@@ -45,6 +45,8 @@ next_step: "/sf-docs update shipflow_data/technical/app/context.md"
 - Entry/auth gate (`/entry`, `/auth`).
 - Authenticated shell and feature screens (`/feed`, `/projects`, `/drip`, `/settings`, etc.).
 - Feature state orchestration via Riverpod providers and a FastAPI-backed `ApiService`.
+- Project-scoped intelligence, capture, and timeline surfaces that depend on
+  backend-owned data and render contracts.
 
 ## Source-of-truth stack
 - **UI framework:** Flutter 3.11+
@@ -54,6 +56,7 @@ next_step: "/sf-docs update shipflow_data/technical/app/context.md"
 - **Identity/auth:** Clerk web bridge (`contentglowzClerkBridge`) and tokens forwarded to FastAPI
 - **Persistence:** SharedPreferences for prefs + offline cache/queue/id-mapping stores
 - **Build chain:** Flutter web -> injected Clerk keys/runtime metadata via `build.sh` and `scripts/*`
+- **Android release boundary:** APK release builds are CI-only on GitHub Actions/Blacksmith; this VM is not an approved release-build surface.
 
 ## Runtime domains
 - **Authentication/session domain:**
@@ -62,6 +65,9 @@ next_step: "/sf-docs update shipflow_data/technical/app/context.md"
   - `AppAccessNotifier` computes stages (`restoringSession`, `signedOut`, `demo`, `apiUnavailable`, `bootstrapFailed`, `needsOnboarding`, `ready`).
 - **Feature domains:**
   - Projects, workspace/settings, creator profile, personas, content pipeline, integrations, analytics-like views, feedback.
+  - `Project Intelligence V1`: read project intelligence status, source inventory, extracted facts, recommendations, provider readiness, upload text-like sources, remove sources, and convert recommendations into Idea Pool items.
+  - `Video Timeline V1`: online-only timeline editing and preview/final render orchestration for `/editor/:id/video`, with `lab` as the public API boundary and the Remotion worker hidden behind backend contracts.
+  - Android local capture: screenshot/recording flows backed by MediaProjection and app-scoped storage.
 - **Offline domain:**
   - Read-through cache + mutation queue + temp-ID reconciliation via offline stores and queue controller.
 
@@ -73,6 +79,7 @@ next_step: "/sf-docs update shipflow_data/technical/app/context.md"
   - Build metadata (defined in scripts and README): `BUILD_COMMIT_SHA`, `BUILD_ENVIRONMENT`, `BUILD_TIMESTAMP`.
 - `server.js` serves SPA fallback plus `/sign-in|/sign-up|/sso-callback` directories.
 - Vercel rewrites preserve auth and SPA paths; build scripts inject Dart defines and Clerk runtime assets.
+- Android release proof comes from GitHub Actions artifacts/logs, not from local VM builds.
 
 ## Architecture flow (inferred)
 1. App bootstrap (`main`) wires diagnostics + preference providers.
@@ -96,6 +103,8 @@ next_step: "/sf-docs update shipflow_data/technical/app/context.md"
 - **ClerkJS routes** are generated in `web_auth/*` and injected into build output by scripts.
 - **FastAPI** remains backend contract boundary; mobile/desktop-specific auth branches are not currently enabled by production code.
 - **Feedback admin** uses backend endpoints with optional local draft/submission cache.
+- **Project Intelligence** is project-scoped and backend-constrained; offline queue does not cover file/binary uploads for this surface.
+- **Video Timeline** never calls the Remotion worker directly from Flutter; signed playback URLs are ephemeral response data and must not be persisted with their query tokens.
 
 ## Testing references
 - `test/core` validates providers, retry behavior, queue mapping, project onboarding validation, AI guards.

@@ -13,6 +13,12 @@ HOST_ARCH="$(uname -m)"
 
 mkdir -p "$CACHE_DIR"
 
+mark_flutter_safe_directory() {
+  if [[ -d "$FLUTTER_ROOT/.git" ]]; then
+    git config --global --add safe.directory "$FLUTTER_ROOT"
+  fi
+}
+
 if [[ ! -f "$FLUTTER_VERSION_FILE" ]]; then
   echo "ERROR: Flutter version file not found: $FLUTTER_VERSION_FILE" >&2
   exit 1
@@ -78,6 +84,8 @@ if [[ "$installed_version" != "$FLUTTER_VERSION" ]]; then
 
   tar -xJf "$archive_file" -C "$CACHE_DIR"
 fi
+
+mark_flutter_safe_directory
 
 if [[ "$FLUTTER_TARGET_ARCH" == "x64" && "$HOST_ARCH" != "x86_64" && "$HOST_ARCH" != "amd64" ]]; then
   echo "NOTE: Downloaded pinned Flutter $FLUTTER_VERSION for linux/$FLUTTER_TARGET_ARCH, but host arch is $HOST_ARCH." >&2

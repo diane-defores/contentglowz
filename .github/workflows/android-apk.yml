@@ -3,11 +3,11 @@ name: ContentGlowz Android Checks and Manual APK
 on:
   push:
     paths:
-      - "contentglowz_app/**"
+      - "app/**"
       - ".github/workflows/android-apk.yml"
   pull_request:
     paths:
-      - "contentglowz_app/**"
+      - "app/**"
       - ".github/workflows/android-apk.yml"
   workflow_dispatch:
 
@@ -19,8 +19,8 @@ permissions:
   contents: read
 
 env:
-  FLUTTER_VERSION_FILE: contentglowz_app/.fvmrc
-  APP_DIR: contentglowz_app
+  FLUTTER_VERSION_FILE: app/.fvmrc
+  APP_DIR: app
   API_BASE_URL: ${{ vars.API_BASE_URL || 'https://api.contentglowz.com' }}
   APP_SITE_URL: ${{ vars.APP_SITE_URL || 'https://contentglowz.com' }}
   APP_WEB_URL: ${{ vars.APP_WEB_URL || 'https://app.contentglowz.com' }}
@@ -123,6 +123,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: contentglowz-android-apk
-          path: contentglowz_app/build/app/outputs/flutter-apk/app-release.apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 1

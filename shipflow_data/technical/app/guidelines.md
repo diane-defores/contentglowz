@@ -86,6 +86,7 @@ This document describes conventions for working in `app`, the Flutter user-facin
 - Keep native platform-channel APIs typed at the service/model boundary before they reach widgets.
 - Android MediaProjection work must request fresh user consent per capture session.
 - Screen capture and recording must run through foreground-service paths that match the declared Android service type.
+- Do not run Android release APK builds on this VM. Local app validation is limited to bounded checks such as `flutter analyze` and `flutter test`; release APK generation belongs to GitHub Actions on the Blacksmith x64 runner path.
 - Store captured media files only in app-scoped storage unless a separate export/save-to-gallery scope says otherwise.
 - Persist only metadata and local file paths in SharedPreferences; never store binary capture data there.
 - Backend capture asset contracts may store metadata and client asset IDs, but must not store device-local file paths as durable server truth.

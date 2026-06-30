@@ -53,6 +53,8 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 - provides authenticated onboarding and workspace bootstrap via Clerk + FastAPI session flow;
 - supports multi-project workspace management with an explicit active-project selection model;
 - runs content workflows (feed, ideas, angles, editor, personas, scheduling, drip plans, affiliation/content domains);
+- exposes `Project Intelligence V1` for project-scoped source ingestion, recommendations, and Idea Pool conversion;
+- exposes `Video Timeline V1` for backend-orchestrated preview/final render preparation from existing content items;
 - captures local Android screenshots and screen recordings for creator reference assets;
 - supports production-adjacent resilience through degraded mode (cached reads + queued writes + replay + sync state)
 - exposes diagnostics and observability (`/uptime`, `/performance`, `/analytics`, `/activity`) so operators understand backend and queue health;
@@ -67,6 +69,8 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 
 ## Product boundaries (what is currently documented and delivered)
 - **In scope:** human-in-the-loop review/publish preparation, project configuration, content status, offline continuity, and workflow surfaces.
+- **Project Intelligence V1 scope:** active-project intelligence status, source management, evidence ingestion, recommendations, and Idea Pool conversion, with backend constraints on upload types and sizes.
+- **Video Timeline V1 scope:** timeline editing plus preview/final render orchestration through backend contracts, without direct Flutter-to-worker calls.
 - **Android-only V1 scope:** local device screenshot and screen-recording capture with Android consent, app-scoped storage, preview, discard, and share/export.
 - **Partially in scope / not finished:** end-to-end external publish execution by channel.
   - Route and UX for publish actions exists in some paths, but full channel-account linking and feedback loop are not fully closed yet.

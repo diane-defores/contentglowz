@@ -9,6 +9,14 @@
 
 **Top priority**: Reprendre les priorités app haut impact après validation hostée du fix Clerk OTP.
 
+## Documentation Migration (2026-06-29)
+
+### Done
+
+- [x] Reclassify `app/TASKS.md` as a deprecated local façade and keep canonical tracker ownership in `shipflow_data/workflow/app/TASKS.md`.
+- [x] Reclassify `app/AUDIT_LOG.md` as a deprecated local façade and keep canonical audit ownership in `shipflow_data/workflow/app/AUDIT_LOG.md`.
+- [x] Reduce `app/README.md`, `app/AGENT.md`, and `app/CLAUDE.md` to the same lightweight façade pattern as `lab` and `site`.
+
 ---
 
 ## Phase 1 — Scaffold & Core Screens ✅

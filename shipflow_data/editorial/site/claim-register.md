@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.2.0"
 project: site
 created: "2026-05-06"
-updated: "2026-05-06"
+updated: "2026-06-30"
 status: draft
 source_skill: sf-docs
 scope: claim-register
@@ -49,7 +49,9 @@ next_step: "/sf-docs editorial audit site"
 | Time savings or growth outcomes | Use cautious benefit language | `shipflow_data/gtm/site/gtm.md`, user evidence, analytics when available | needs proof | Avoid quantified gains unless validated. |
 | Security and privacy | State only verified handling | `privacy` page source, backend/app contracts, legal review | needs proof | Do not imply certifications or compliance not documented. |
 | Availability or reliability | Avoid uptime promises | deployment proof and runtime monitoring | needs proof | Use operational status only when measured. |
+| Degraded mode and resilience | Allow bounded recovery messaging only | app + lab canonical docs, verified product behavior | needs proof | Allowed claim: authenticated app access, cached reads where supported, local queue for supported actions, automatic replay. |
 | Pricing or offers | Match current GTM/pricing source | `shipflow_data/gtm/site/gtm.md`, pricing spec if present | needs proof | No public pricing claim without a current offer contract. |
+| Localized French copy | Preserve claim meaning, not just translated wording | source EN copy + canonical business/product docs | needs proof | No stronger promise in `fr/*` than in default locale. |
 
 ## Claim Impact Plan
 

@@ -112,6 +112,7 @@ Client surfaces
   - `agents/*` host the CrewAI/PydanticAI pipelines.
   - Heavy imports are deferred using `lru_cache` providers to protect startup latency.
   - Newsletter inbox ingestion reads a user-configured IMAP folder, extracts ideas, writes them to the Idea Pool with user/project ownership, and archives processed messages to the configured folder when possible.
+  - Historical local README files under `lab/agents/*` are migration façades only; durable workflow documentation belongs in `shipflow_data/technical/lab/agent-pipelines.md` and this architecture file.
 
 - **Persistence layer**
   - User/project/security-critical state is persisted to Turso (`libsql`).
@@ -120,6 +121,7 @@ Client surfaces
 - **Background processing**
   - In-process scheduler (`scheduler/scheduler_service.py`) executes periodic jobs and updates state transitions.
   - Jobs can invoke newsletter/SEO/social pipeline steps.
+  - Some historical subsystems were documented as "agents" even when they behave as deterministic pipelines; architecture decisions should follow current code behavior, not legacy naming.
 
 ## External dependencies and boundaries
 

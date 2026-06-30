@@ -1,10 +1,10 @@
 ---
 artifact: artifact_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: site
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-06-30"
 status: reviewed
 source_skill: sf-docs
 scope: function_tree
@@ -41,8 +41,11 @@ next_step: /sf-docs update shipflow_data/technical/site/context-function-tree.md
   - script client `window.location.replace()` avec support optionnel de `redirect_url`.
 - `src/pages/sign-up.astro`
   - même comportement redirection que `/sign-in` pour cohérence CTA.
+  - propage aussi `redirect_url` vers la cible app.
 - `src/pages/launch.astro`
   - route d’entrée explicite vers l’app (`APP_WEB_URL/#/entry`) avec fallback UI.
+- `src/pages/fr/sign-in.astro`, `src/pages/fr/sign-up.astro`, `src/pages/fr/launch.astro`
+  - variantes localisées du handoff avec mêmes invariants (`noindex`, redirection client, contrat app inchangé).
 
 ## Pages de contenu éditorial
 - `src/pages/blog/index.astro`
@@ -57,6 +60,8 @@ next_step: /sf-docs update shipflow_data/technical/site/context-function-tree.md
   - agrège tous les tags existants depuis `blog` (`getCollection`)
   - génère un chemin par tag avec slug
   - filtre les posts taggés puis affiche la liste.
+- `src/pages/fr/blog/index.astro`, `src/pages/fr/blog/[...slug].astro`, `src/pages/fr/blog/tag/[tag].astro`
+  - variantes localisées du blog avec metadata et routage par locale.
 - `src/pages/platform/[...slug].astro`
   - route dynamique de collection `platform`, même pattern que `blog`.
 - `src/pages/ai-agents/[...slug].astro`
@@ -71,6 +76,8 @@ next_step: /sf-docs update shipflow_data/technical/site/context-function-tree.md
   - route dynamique de collection `tutorials`.
 - `src/pages/privacy.astro`
   - page statique privacy + déclaration cookie-free analytics.
+- `src/pages/fr/index.astro`, `src/pages/fr/privacy.astro`
+  - surfaces coeur localisées pour acquisition et trust.
 - `src/pages/robots.txt.ts`
   - handler `GET: APIRoute`
   - répond `text/plain` avec `Sitemap: ${siteUrl}/sitemap-index.xml`.
@@ -82,7 +89,7 @@ next_step: /sf-docs update shipflow_data/technical/site/context-function-tree.md
 - `src/layouts/Layout.astro` (continuation)
   - `articleSchema` conditionnel quand `ogType === article`.
   - injection JSON-LD `Organization` + `WebSite`.
-  - script analytics non bloquant en production.
+  - script analytics non bloquant en production uniquement.
 - `src/layouts/BlogPost.astro`
   - compose `Layout` avec metadata article.
   - calcule `wordCount` + `readingTime`.

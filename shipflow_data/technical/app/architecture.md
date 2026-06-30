@@ -79,6 +79,10 @@ The app is structured as a **single Flutter client boundary** with backend data 
 - Route graph in `lib/router.dart`.
 - Screen modules for workflows: feed/review, onboarding, projects, settings, drip, content tools, research/seo/analytics, uptime.
 - Settings integrations include a minimal email-source panel for per-user IMAP connection, validation, sender preview, and ingestion to the active project's Idea Pool.
+- Product-specific workflow surfaces also include:
+  - `Project Intelligence V1` for project-scoped evidence ingestion and recommendations
+  - `Video Timeline V1` for `/editor/:id/video`
+  - Android local capture flows for screenshot/recording creator assets
 
 ### 2.2 State layer (`lib/providers/providers.dart`)
 - Single-provider root controls:
@@ -98,6 +102,23 @@ The app is structured as a **single Flutter client boundary** with backend data 
   - `offline_queue_v1`
   - `offline_id_mappings_v1`
 - Clerk auth service implementations are split by target environment (web bridge + stub).
+
+### 2.5 Product feature contracts
+- `Project Intelligence V1` is active-project scoped and supports:
+  - reading intelligence status, sources, extracted facts, recommendations, and provider readiness
+  - syncing connector-backed evidence into project memory
+  - uploading backend-constrained text-like source content
+  - removing a source and excluding derived evidence from backend reads/recommendations
+  - converting a recommendation into an Idea Pool item
+- `Video Timeline V1` is online-only:
+  - Flutter enters through `/editor/:id/video`
+  - backend creates or loads one active timeline for the content item and format preset
+  - preview/final renders are requested through `lab`, never directly through the Remotion worker
+  - signed playback URLs are ephemeral response data and must not be displayed or persisted with query tokens
+- Android local capture remains local-first:
+  - screenshot PNG and recording MP4 are stored in app-scoped storage
+  - every session requires fresh MediaProjection consent
+  - backend asset rows store metadata only for `local_only` relationships
 
 ### 2.4 Core layer (`lib/core`)
 - `AppConfig` holds compile-time env defines.
@@ -154,6 +175,8 @@ Notes:
 - binary/audio uploads
 - destructive deletes
 - complex server-first jobs (queue/execute/tick/import-like operations)
+- Project Intelligence file uploads
+- Video Timeline preview/final render flows
 
 ## 4.5 Zernio/LATE publish scoping
 
@@ -179,6 +202,14 @@ Notes:
 - `scripts/vercel-install.sh` installs Flutter.
 - `scripts/vercel-build.sh` sets Dart defines and injects Clerk runtime assets.
 - `vercel.json` rewrites auth routes and SPA fallback.
+
+### 5.3 Android CI boundary
+- Android release APK generation is CI-only and runs on GitHub Actions/Blacksmith, not on this VM.
+- Local app work is limited to bounded validation such as `flutter analyze` and `flutter test`.
+- The current workflow contract is:
+  - `push` / `pull_request`: Flutter checks only
+  - `workflow_dispatch`: release APK build artifact
+- If a local note or archived workflow suggests otherwise, treat it as historical context, not an active build contract.
 
 ## 6) Test and observation
 - Behavioral tests are present in `test/` (core + presentation) and should remain aligned with this architecture.

@@ -1,5 +1,54 @@
 # ContentGlowz Lab — Tasks
 
+## Documentation Migration (2026-06-29)
+
+### Done
+
+- [x] Reclassify `lab/tasks.md` as a deprecated local façade and move canonical backlog ownership to `shipflow_data/workflow/lab/TASKS.md`.
+- [x] Reclassify `lab/TEST_LOG.md` as a deprecated local façade and merge retained QA entries into `shipflow_data/workflow/qa/TEST_LOG.md`.
+- [x] Create canonical technical docs for testing and historical agent/pipeline documentation under `shipflow_data/technical/lab/`.
+- [x] Reduce local `lab/tests/README.md`, `lab/agents/seo/README.md`, and `lab/agents/scheduler/README.md` to migration pointers.
+- [x] Consolidate important former `lab/README.md` backend contracts into `shipflow_data/technical/lab/backend-runtime-and-product-apis.md`.
+- [x] Restore planning items that had only existed in deprecated `lab/tasks.md` into canonical workflow tracking or canonical research notes.
+
+### Next
+
+- [ ] Reduce `lab/README.md`, `lab/AGENT.md`, and `lab/CLAUDE.md` further if duplicate operational detail drifts again from `shipflow_data/technical/lab/*`.
+- [ ] Decide whether the monorepo should keep one shared `shipflow_data/workflow/TASKS.md` in addition to surface-scoped trackers, or keep `shipflow_data/workflow/<surface>/TASKS.md` as the working pattern.
+
+### Recovered From Deprecated `lab/tasks.md`
+
+These items were present in the local `lab/tasks.md` before it was converted to a façade. They were not deleted; they are retained here with ownership still to confirm.
+
+- [ ] Connect frontmatter audit actions (`audit`/`dry-run`/`autofix`) to an explicit confirmation modal before `autofix`.
+- [ ] Add an optional commit message input in `Grow -> Strategy` for grouped autofix commits.
+- [x] Define repository content containers per project using registered `Content Sources`.
+- [x] Scope Strategy analytics by `projectId` to avoid cross-project cluster/funnel contamination.
+- [x] Add frontmatter governance flow in `Grow -> Strategy`: audit, dry-run, autofix with grouped commits per `repo@branch`, and JSON/CSV report export.
+- [ ] Add scheduled frontmatter audit job, nightly per project.
+- [ ] Add policy presets for required canonical fields by project type: blog, docs, mixed.
+
+### Filmora Parity Roadmap
+
+Research source: `shipflow_data/workflow/research/filmora-gap-analysis-2026-06-29.md`.
+
+- [ ] Strengthen the timeline editor UX: ripple trim, split, duplicate, snap, zoom, playhead scrubbing, undo/redo, keyboard shortcuts, and clearer track locking/muting semantics.
+- [ ] Add a property animation system for timeline clips with keyframes on transform, opacity, scale, rotation, crop, blur, and volume, then expose easing curves and a graph editor.
+- [ ] Introduce reusable adjustment layers and clip-level effect stacks.
+- [ ] Ship transcript-native editing: speech-to-text, editable transcript segments, text-based cuts, silence detection, and timeline export from transcript edits.
+- [ ] Build a caption pipeline with auto captions, timing edits, multilingual translation, style presets, burned-in vs sidecar outputs, and project-level caption reuse.
+- [ ] Add audio finishing tools: normalization, denoise, ducking, fade handles, beat sync, audio meters, and music/voice balance presets.
+- [ ] Add motion tools: motion tracking, planar/smart masking, subject linking, picture-in-picture controls, and freeze-frame workflows.
+- [ ] Add pro color controls: LUTs, color wheels, curves/HSL, scopes, comparison view, and reusable look presets.
+- [ ] Implement multicam workflows with sync by waveform/markers, angle switching in preview, and automatic camera-cut generation.
+- [ ] Add short-form automation: smart scene cut, highlight extraction, auto reframe, and candidate short clips generated from long-form source content.
+- [ ] Turn ContentGlowz strategy context into editing assistance: AI copilot suggestions for hooks, scene ordering, B-roll slots, text overlays, CTA placement, and per-platform pacing.
+- [ ] Create reusable templates and presets for video formats, titles, lower thirds, intros/outros, caption styles, and project-scoped brand kits.
+- [ ] Upgrade preview/render confidence: background queues, stale-preview states, proxy previews, deterministic cache invalidation, and recovery after failed renders.
+- [ ] Expand export/publish readiness with platform presets, ratio/duration/safe-zone validation, thumbnail/cover packaging, and final asset bundles per channel.
+- [ ] Add asset provenance and library controls: trusted media intake, search/filter/tagging, usage history, licensing metadata, and safe replacement across versions.
+- [ ] Instrument performance and quality at editor scale: preview FPS, render timings, memory pressure, queue latency, crash recovery, and project health diagnostics for heavy timelines.
+
 ## Completed
 
 | Task | Status |

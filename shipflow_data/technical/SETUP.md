@@ -180,8 +180,19 @@ Do not confuse:
 
 ## 7. Android APK CI
 
-GitHub Actions builds the Android APK on every push through `.github/workflows/android-apk.yml`.
-The job runs on the Blacksmith runner label `blacksmith-4vcpu-ubuntu-2404` and uploads `contentglowz-android-apk`.
+The Android release APK is a CI-owned build path. Do not run Android release
+builds on this VM: the local environment is reserved for analysis, tests, and
+web/lab work, and Android release builds are routed to x64 CI to avoid unstable
+or crashing local toolchain behavior.
+
+`.github/workflows/android-apk.yml` currently does two different things on the
+Blacksmith runner label `blacksmith-4vcpu-ubuntu-2404`:
+
+- on `push` and `pull_request`: Flutter checks only (`flutter analyze` and `flutter test`)
+- on `workflow_dispatch`: the release APK build, then upload of the
+  `contentglowz-android-apk` artifact
+
+Treat GitHub Actions as the only approved place for Android release APK output.
 
 Repository or organization prerequisite:
 
@@ -200,6 +211,12 @@ gh run view <run-id> --log
 gh run download <run-id> -n contentglowz-android-apk -D ./artifacts/android
 adb install -r ./artifacts/android/app-release.apk
 ```
+
+Operational rule:
+
+- local VM: `flutter analyze`, `flutter test`, and bounded non-release checks only
+- GitHub Actions + Blacksmith: release APK build and artifact production
+- if documentation or notes still imply "build Android locally", treat them as stale
 
 ## 8. Fast Sanity Checklist
 

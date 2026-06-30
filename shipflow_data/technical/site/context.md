@@ -1,10 +1,10 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: site
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-06-30"
 status: reviewed
 source_skill: sf-docs
 scope: technique
@@ -40,6 +40,7 @@ next_step: /sf-docs update shipflow_data/technical/site/context.md
 
 Le site assure:
 - la découverte produit,
+- la variante localisée du coeur de tunnel public (`/fr`, `/fr/sign-in`, `/fr/sign-up`, `/fr/launch`, `/fr/privacy`),
 - la communication des limites (notamment dégradation backend),
 - la redirection fluide vers le tunnel d’auth et d’ouverture de l’app (`app.contentglowz.com`).
 
@@ -60,7 +61,9 @@ Le site assure:
 
 ## Domaines de responsabilité
 - **Pages marketing / conversion**: `index`, `privacy`, sections hero/FAQ/pricing/témoignages.
+- **Pages marketing localisées**: `fr/index`, `fr/privacy` et variantes handoff `fr/sign-in`, `fr/sign-up`, `fr/launch`.
 - **Documentation éditoriale**: `blog`, `platform`, `ai-agents`, `seo-strategy`, `startup-journey`, `technical-optimization`, `tutorials`.
+- **Blog localisé**: `fr/blog`, `fr/blog/[...slug]`, `fr/blog/tag/[tag]`.
 - **Handoff app/auth**: `sign-in`, `sign-up`, `launch`.
 - **SEO opérationnel**: `robots.txt.ts` + sitemap via integration Astro.
 - **Configuration runtime**: URLs du site, cible d’application, métadonnées de build.
@@ -75,9 +78,13 @@ Le site assure:
 
 ## Contraintes
 - Les routes d’authentification du site sont **devenues des pages de redirection**, pas de gestion d’identité.
+- `/sign-in` et `/sign-up` propagent `redirect_url` quand le paramètre est présent.
+- Les pages handoff (`sign-in`, `sign-up`, `launch` et variantes `fr`) restent `noindex`.
 - Les promesses produits doivent rester compatibles avec ce qui est réellement exposé par l’écosystème app/backend.
+- Le messaging de résilience doit rester cohérent: backend indisponible = app encore accessible après authentification, lectures cache possibles, actions supportées mises en file locale puis rejouées.
 - Tout ajout de collection, de route dynamique, ou de CTA de conversion doit être répercuté sur les docs d’architecture et de contexte.
 
 ## Contexte de déploiement
 - Déploiement prévu sur Vercel avec support du site statique Astro et headers de sécurité.
+- Les builds Vercel sont épinglés sur `npm@11.12.1` via `vercel.json`.
 - `astro.config.mjs` et `vercel.json` sont les points centraux à faire évoluer si les domaines/champs SEO changent.

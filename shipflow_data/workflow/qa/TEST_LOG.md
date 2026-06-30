@@ -101,3 +101,29 @@
 - Bug pointer: none
 - Evidence pointer: user reply `PASS` on 2026-06-10 after OTP test instructions; no raw OTP or private email details stored.
 - Follow-up: /sf-verify hosted Clerk OTP sign-up fix
+
+## 2026-05-06 - LAB AGENTS compatibility symlink retest
+
+- Scope: BUG-2026-05-06-001
+- Environment: local
+- Tester: tooling
+- Source: sf-test
+- Status: pass
+- Confidence: high
+- Result summary: `lab/AGENTS.md` is a symlink to `lab/AGENT.md`; canonical guidance is consolidated and stale contradictory references were not found.
+- Bug pointer: BUG-2026-05-06-001 -> shipflow_data/workflow/bugs/lab/BUG-2026-05-06-001.md
+- Evidence pointer: `test -L lab/AGENTS.md`; `readlink lab/AGENTS.md`; focused `rg` checks on canonical and stale references
+- Follow-up: /sf-verify BUG-2026-05-06-001
+
+## 2026-05-10 - LAB personas draft prod retest
+
+- Scope: BUG-2026-05-10-001
+- Environment: prod
+- Tester: tooling
+- Source: sf-test
+- Status: blocked
+- Confidence: high
+- Result summary: `POST /api/personas/draft` on `https://api.contentglowz.com` returned `401`; the job was not created and polling could not be exercised.
+- Bug pointer: BUG-2026-05-10-001 -> shipflow_data/workflow/bugs/lab/BUG-2026-05-10-001.md
+- Evidence pointer: `curl https://api.contentglowz.com/health` (200), `curl -X POST https://api.contentglowz.com/api/personas/draft` (401), outputs saved to local temp files during the retest
+- Follow-up: /sf-fix BUG-2026-05-10-001

@@ -1,3 +1,5 @@
-# Audit Log — app
+# App Audit Log
 
-🟠 [app] audit: dependency health | date: 2026-06-12 | overall: C | issues: 4_unused_direct+34_outdated+1_supply_chain_gap | scope: flutter-pub
+This local audit tracker is deprecated.
+
+Canonical audit history for `app` now lives in `shipflow_data/workflow/app/AUDIT_LOG.md`.

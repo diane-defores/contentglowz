@@ -14,6 +14,10 @@ if [[ ! -x "$FLUTTER_ROOT/bin/flutter" ]]; then
   exit 1
 fi
 
+if [[ -d "$FLUTTER_ROOT/.git" ]]; then
+  git config --global --add safe.directory "$FLUTTER_ROOT"
+fi
+
 if [[ -f "$FLUTTER_VERSION_FILE" ]]; then
   EXPECTED_FLUTTER_VERSION="$(tr -d '[:space:]' < "$FLUTTER_VERSION_FILE")"
   INSTALLED_FLUTTER_VERSION="$("$FLUTTER_ROOT/bin/flutter" --version --machine 2>/dev/null | tr -d '\n' | sed -n 's/.*"frameworkVersion": *"\([^"]*\)".*/\1/p')"

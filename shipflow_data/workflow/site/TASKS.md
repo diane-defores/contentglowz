@@ -7,6 +7,18 @@
 
 **Top priority**: Verify the post-cleanup Vercel deployment logs use `npm@11.12.1`, then re-audit the marketing site.
 
+## Documentation Migration (2026-06-29)
+
+### Done
+
+- [x] Reduce `site/README.md`, `site/AGENT.md`, and `site/CLAUDE.md` to local façades pointing to canonical `shipflow_data/site/*` docs.
+- [x] Confirm `site` already uses canonical technical, editorial, and workflow docs under the monorepo root `shipflow_data/`.
+- [x] Run a semantic preservation pass so local `site` docs did not just disappear: runtime/build contract, auth handoff with `redirect_url`, localized `fr/*` surfaces, public navigation invariants, `noindex`, analytics gate, and degraded-mode messaging are now explicit in canonical docs.
+- [x] Remove non-canonical `site/CHANGELOG.md`; durable release and migration history now lives in canonical workflow artifacts (`shipflow_data/workflow/CHANGELOG.md`, site specs, and `shipflow_data/workflow/site/TASKS.md`).
+
+### Next
+- [ ] Revisit whether any future site-only release note still needs a dedicated canonical tracker entry, or should go directly into shared workflow history.
+
 ---
 
 ## Migration

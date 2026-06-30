@@ -1,9 +1,9 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: site
-updated: "2026-04-27"
+updated: "2026-06-30"
 created: "2026-04-26"
 status: reviewed
 source_skill: sf-docs
@@ -75,6 +75,7 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
 - **Compilation**: Astro + Node (scripts `astro dev`, `astro build`, `astro preview`).
 - **Rendu par route**:
   - pages statiques (`index`, `privacy`, redirections auth),
+  - variantes localisées `fr/*` pour home, privacy, handoff et blog,
   - routes dynamiques pré-générées via `getStaticPaths`.
 - **Intégration SEO**:
   - sitemap intégré via `@astrojs/sitemap`,
@@ -98,11 +99,12 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
   - `siteUrl`, `appWebUrl`, `appSignInUrl`, `appEntryUrl`,
   - `apiBaseUrl`, `buildCommitSha`, `buildEnvironment`, `buildTimestamp`.
 - `/sign-in`, `/sign-up`, `/launch` sont des pages de transition vers l’app.
+- `/sign-in` et `/sign-up` conservent `redirect_url` quand le paramètre existe.
 - `Navbar/Hero/ClosingCta/CtaBanner` exposent les CTAs de conversion de manière homogène.
 
 ## 5) Couche déploiement
 - Build Node -> artefacts dans `dist/`.
-- Déploiement attendu sur Vercel avec headers globaux:
+- Déploiement attendu sur Vercel avec install/build épinglés sur `npm@11.12.1` et headers globaux:
   - `X-Content-Type-Options: nosniff`,
   - `X-Frame-Options: DENY`,
   - `Referrer-Policy`,
@@ -116,6 +118,8 @@ Il ne contient pas de logique métier backend ni de règles business sensibles ;
 ## 6) Contraintes de cohérence
 - Les pages d’accueil et de documentation doivent rester alignées avec les capacités réelles de l’écosystème (app + backend).
 - Les liens d’authentification doivent rester des redirections courtes et prévisibles.
+- Les pages handoff doivent rester `noindex`.
+- La promesse publique de résilience doit rester bornée au mode dégradé réellement décrit: accès app après auth, lectures cache, file locale des actions supportées, replay automatique.
 - Les données de contenu affichées en page d’accueil, FAQ, pricing et CTA doivent être maintenues cohérentes avec `shipflow_data/branding/branding.md` et `shipflow_data/business/business.md`.
 
 ## 7) Risques techniques
