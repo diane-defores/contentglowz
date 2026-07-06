@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentglowz"
 created: "2026-05-14"
 created_at: "2026-05-14 20:30:29 UTC"
 updated: "2026-05-14"
 updated_at: "2026-05-14 21:17:45 UTC"
-status: partial
+status: active
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "deployment"

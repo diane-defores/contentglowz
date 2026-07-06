@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.3"
+artifact_version: "1.0.0"
 project: "site"
 created: "2026-06-12"
 created_at: "2026-06-12 12:03:54 UTC"
@@ -12,6 +12,7 @@ source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant que visiteur francophone ou anglophone du site ContentGlowz, je veux accéder aux pages coeur dans ma langue avec des URLs et métadonnées cohérentes, afin de comprendre l'offre et entrer dans l'app sans ambiguïté de langue ni dette SEO."
 risk_level: "high"
 security_impact: "none"

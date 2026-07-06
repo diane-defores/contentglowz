@@ -56,6 +56,8 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 | Lien | Type | Score | Pourquoi |
 |---|---:|:---:|---|
 | [Conscriba](https://betalist.com/startups/conscriba) | Concurrent / inspiration | 9/10 | Très proche sur la promesse "rendre un site lisible/actionnable par l'IA", conversion tracking et automatisation web. À benchmarker sur proposition de valeur, MCP, métriques et copywriting. |
+| [Filmora](https://filmora.wondershare.com/) | Concurrent / inspiration | 9/10 | Référence directe pour l'éditeur vidéo grand public/pro: timeline, AI Copilot, multicam, captions, motion tracking, adjustment layers, templates et export. À benchmarker pour l'UX d'édition et l'assistance IA. |
+| [PixVerse](https://pixverse.ai/en) | Concurrent / inspiration | 9/10 | Référence directe pour la génération vidéo IA: text-to-video, image-to-video, agent guidé, templates, multi-shot, lip sync, audio et workflows courts orientés social. À benchmarker pour la génération et le remix. |
 | [Pixizen](https://pixizen.io/fr) | Concurrent / inspiration | 9/10 | Plateforme AI de création publicitaire et produit: images, vidéos, captions, voix et motion. Très proche des workflows de génération, orchestration et publication de contenus marketing. |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration produit | 8/10 | Automatisation d'assets de release: utile pour générer captures, visuels sociaux, carrousels ou démos à partir d'un contenu source. |
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |

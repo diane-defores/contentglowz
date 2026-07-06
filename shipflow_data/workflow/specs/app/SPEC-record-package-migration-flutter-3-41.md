@@ -12,6 +12,7 @@ source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "migration"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant que mainteneur ContentGlowz, je veux faire évoluer la dépendance audio `record` de l’application Flutter sans changer le comportement fonctionnel, afin de réduire le risque de sécurité, les écarts de compatibilité et les futures dépendances non maintenables."
 risk_level: "medium"
 security_impact: "yes"

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 
 FormatPreset = Literal["vertical_9_16", "landscape_16_9"]
@@ -148,6 +148,34 @@ class VideoTimelineFromContentRequest(BaseModel):
     content_id: str = Field(..., min_length=1)
     format_preset: FormatPreset = "vertical_9_16"
     client_request_id: str | None = Field(default=None, max_length=128)
+
+
+class BrandedVideoTimelineFromContentRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("contentId", "content_id"),
+        serialization_alias="contentId",
+    )
+    brand_profile_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("brandProfileId", "brand_profile_id"),
+        serialization_alias="brandProfileId",
+    )
+    blueprint_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("blueprintId", "blueprint_id"),
+        serialization_alias="blueprintId",
+    )
+    format_preset: FormatPreset = Field(
+        default="vertical_9_16",
+        validation_alias=AliasChoices("formatPreset", "format_preset"),
+        serialization_alias="formatPreset",
+    )
 
 
 class VideoTimelineDraftRequest(BaseModel):

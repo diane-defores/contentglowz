@@ -34,11 +34,10 @@ supersedes: []
 target_user: creators and operators who produce recurring content
 user_problem: content teams lose continuity when backend services are unstable or workflows are split across disconnected tools
 desired_outcomes:
-  - Improve throughput from idea to review-ready publishing preparation.
+  - Improve throughput from idea or source assets to ready-made publishable outputs.
   - Keep authenticated workflows usable in degraded/partial-offline states.
   - Preserve workspace and queue state continuity across app restarts and reconnection cycles.
 non_goals:
-  - Fully autonomous content generation or automatic publication without human review.
   - Native mobile auth stack parity or native-only feature set.
 next_review: "2026-07-26"
 next_step: "/sf-docs audit shipflow_data/product/app/product.md"
@@ -47,7 +46,7 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 # Product Context — app
 
 ## Position
-`app` is the authenticated Flutter execution layer of the ContentGlowz ecosystem. It is the operator-facing app that turns source inputs (ideas, project context, personas, rituals) into reviewable, schedulable content output while tolerating API instability.
+`app` is the authenticated Flutter execution layer of the ContentGlowz ecosystem. It is the operator-facing app that turns source inputs (ideas, project context, personas, rituals, media assets) into ready-made publishable output with optional edits while tolerating API instability.
 
 ## What this product does now
 - provides authenticated onboarding and workspace bootstrap via Clerk + FastAPI session flow;
@@ -68,7 +67,7 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 5. if API is unavailable, supported actions are queued and replayed when connectivity returns.
 
 ## Product boundaries (what is currently documented and delivered)
-- **In scope:** human-in-the-loop review/publish preparation, project configuration, content status, offline continuity, and workflow surfaces.
+- **In scope:** AI-first content assembly, optional review/edit, publish approval flows, project configuration, content status, offline continuity, and workflow surfaces.
 - **Project Intelligence V1 scope:** active-project intelligence status, source management, evidence ingestion, recommendations, and Idea Pool conversion, with backend constraints on upload types and sizes.
 - **Video Timeline V1 scope:** timeline editing plus preview/final render orchestration through backend contracts, without direct Flutter-to-worker calls.
 - **Android-only V1 scope:** local device screenshot and screen-recording capture with Android consent, app-scoped storage, preview, discard, and share/export.
@@ -83,7 +82,7 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 - Settings and integrations surfaces (`/settings`, `/settings/integrations`).
 
 ## Non-goals (explicitly maintained)
-- Not positioned as a fully autonomous publishing factory.
+- Not positioned as a blind autopilot that publishes opaque outputs without user visibility or control.
 - Not responsible for marketing pages or external campaign channel management.
 - Not a native-auth-first mobile rewrite yet (web auth path is the active production path in this repo).
 - Not a cloud screen-recording asset library yet; capture uploads, retention, and sync need a separate backend spec.

@@ -69,6 +69,8 @@ from api.routers import (
     assets_router,
     reel_renders_router,
     video_timelines_router,
+    brand_profiles_router,
+    brand_video_blueprints_router,
 )
 from api.routers.scheduler import router as scheduler_router
 from api.routers.templates import router as templates_router
@@ -228,6 +230,24 @@ async def lifespan(app: FastAPI):
             print("✅ Video timeline tables ensured")
     except Exception as e:
         print(f"❌ Video timeline tables migration failed: {e}")
+        raise
+
+    try:
+        from api.services.brand_profile_store import brand_profile_store
+        if brand_profile_store.db_client:
+            await brand_profile_store.ensure_tables()
+            print("✅ Brand profile tables ensured")
+    except Exception as e:
+        print(f"❌ Brand profile tables migration failed: {e}")
+        raise
+
+    try:
+        from api.services.brand_video_blueprint_store import brand_video_blueprint_store
+        if brand_video_blueprint_store.db_client:
+            await brand_video_blueprint_store.ensure_tables()
+            print("✅ Brand video blueprint tables ensured")
+    except Exception as e:
+        print(f"❌ Brand video blueprint tables migration failed: {e}")
         raise
 
     try:
@@ -480,6 +500,8 @@ app.include_router(project_intelligence_router)
 app.include_router(assets_router)
 app.include_router(reel_renders_router)
 app.include_router(video_timelines_router)
+app.include_router(brand_profiles_router)
+app.include_router(brand_video_blueprints_router)
 
 
 # ─────────────────────────────────────────────────

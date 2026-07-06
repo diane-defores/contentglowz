@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from api.dependencies.auth import CurrentUser, require_current_user
 from api.dependencies.ownership import require_owned_content_record, require_owned_project_id
 from api.models.video_timeline import (
+    BrandedVideoTimelineFromContentRequest,
     TimelineErrorDetail,
     VideoTimelineDraftRequest,
     VideoTimelineDraftResponse,
@@ -28,6 +29,9 @@ from api.models.video_timeline import (
     VideoTimelineVersionResponse,
 )
 from api.services.project_asset_storage import build_project_asset_storage_descriptor
+from api.services.brand_profile_store import brand_profile_store
+from api.services.brand_video_blueprint_store import brand_video_blueprint_store
+from api.services.branded_video_assembly import assemble_branded_timeline_draft
 from api.services.remotion_timeline_props import TimelinePropsError, build_remotion_timeline_props
 from api.services.video_renderer_adapter import (
     VideoRendererCapacityError,
@@ -343,6 +347,43 @@ def _initial_timeline(*, title: str, format_preset: str) -> dict[str, Any]:
             }
         ],
     }
+
+
+async def _require_brand_profile_for_project(
+    *,
+    brand_profile_id: str,
+    project_id: str,
+    current_user: CurrentUser,
+) -> dict[str, Any]:
+    profile = await brand_profile_store.get_brand_profile(
+        brand_profile_id=brand_profile_id,
+        user_id=current_user.user_id,
+    )
+    if not profile:
+        _raise(404, "brand_profile_not_found", "Brand profile not found")
+    if profile["project_id"] != project_id:
+        _raise(409, "brand_profile_project_mismatch", "Brand profile does not belong to this project")
+    return profile
+
+
+async def _require_blueprint_for_brand_profile(
+    *,
+    blueprint_id: str,
+    project_id: str,
+    brand_profile_id: str,
+    current_user: CurrentUser,
+) -> dict[str, Any]:
+    blueprint = await brand_video_blueprint_store.get_brand_video_blueprint(
+        blueprint_id=blueprint_id,
+        user_id=current_user.user_id,
+    )
+    if not blueprint:
+        _raise(404, "brand_blueprint_not_found", "Brand video blueprint not found")
+    if blueprint["project_id"] != project_id:
+        _raise(409, "brand_blueprint_project_mismatch", "Brand video blueprint does not belong to this project")
+    if blueprint["brand_profile_id"] != brand_profile_id:
+        _raise(409, "brand_blueprint_profile_mismatch", "Brand video blueprint does not match this brand profile")
+    return blueprint
 
 
 async def _require_timeline(timeline_id: str, current_user: CurrentUser) -> dict[str, Any]:
@@ -667,6 +708,72 @@ async def create_or_load_video_timeline_from_content(
             format_preset=request.format_preset,
             draft=draft,
         )
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=_detail("internal_error", "Video timeline store unavailable"),
+        ) from exc
+    response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return await _timeline_response(timeline)
+
+
+@router.post("/from-content/branded-draft", response_model=VideoTimelineResponse)
+async def create_or_refresh_branded_video_timeline_draft(
+    request: BrandedVideoTimelineFromContentRequest,
+    response: Response,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    status_service = get_status_service()
+    owned_record = await require_owned_content_record(
+        content_id=request.content_id,
+        current_user=current_user,
+        status_service=status_service,
+    )
+    brand_profile = await _require_brand_profile_for_project(
+        brand_profile_id=request.brand_profile_id,
+        project_id=owned_record.project_id,
+        current_user=current_user,
+    )
+    blueprint = await _require_blueprint_for_brand_profile(
+        blueprint_id=request.blueprint_id,
+        project_id=owned_record.project_id,
+        brand_profile_id=brand_profile["id"],
+        current_user=current_user,
+    )
+    project_assets = status_service.list_project_assets(
+        project_id=owned_record.project_id,
+        user_id=current_user.user_id,
+        limit=24,
+        offset=0,
+    )
+    branded_draft = assemble_branded_timeline_draft(
+        content_record=owned_record,
+        brand_profile=brand_profile,
+        blueprint=blueprint,
+        project_assets=project_assets,
+        format_preset=request.format_preset,
+    )
+    try:
+        timeline, created = await video_timeline_store.create_or_get_active(
+            user_id=current_user.user_id,
+            project_id=owned_record.project_id,
+            content_id=request.content_id,
+            format_preset=request.format_preset,
+            draft=branded_draft,
+        )
+        if not created:
+            timeline = await video_timeline_store.save_draft(
+                timeline_id=timeline["id"],
+                user_id=current_user.user_id,
+                base_version_id=timeline.get("current_version_id"),
+                draft_revision=int(timeline["draft_revision"]),
+                timeline=branded_draft,
+            )
+    except VideoTimelineConflictError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=_detail("timeline_conflict", str(exc), field="draft_revision"),
+        ) from exc
     except RuntimeError as exc:
         raise HTTPException(
             status_code=503,

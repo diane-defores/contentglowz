@@ -49,6 +49,65 @@ Research source: `shipflow_data/workflow/research/filmora-gap-analysis-2026-06-2
 - [ ] Add asset provenance and library controls: trusted media intake, search/filter/tagging, usage history, licensing metadata, and safe replacement across versions.
 - [ ] Instrument performance and quality at editor scale: preview FPS, render timings, memory pressure, queue latency, crash recovery, and project health diagnostics for heavy timelines.
 
+### PixVerse Parity Roadmap
+
+Research source: fresh official PixVerse product/docs pages checked 2026-06-30.
+
+- [ ] Add AI video generation entry points for text-to-video and image-to-video, with template-driven creation flows and clear model selection.
+- [ ] Introduce short-form generation controls for duration, aspect ratio, resolution, and native audio so creator outputs are predictable for social formats.
+- [ ] Build reference-driven generation: character/reference assets, style references, and multi-frame or multi-shot continuity controls.
+- [ ] Add a guided "video agent" workflow that turns a rough idea into prompts, scene structure, and a draft storyboard before generation.
+- [ ] Support remix/modify workflows for existing clips, including add/replace/remove/transform operations on generated or imported video.
+- [ ] Expose trend-oriented effect packs and reusable presets so the app can ship fast, viral-style variations without custom prompt work every time.
+- [ ] Add asset management for generated clips, prompt history, reference images, and versioned outputs so iterations remain auditable.
+- [ ] Support API/CLI-friendly generation paths for automation, batch creation, and agent-driven media workflows.
+- [ ] Connect generation outputs to the editor timeline so AI clips can become governed project assets instead of isolated exports.
+
+### Priority Slices
+
+Direction produit retenue le 2026-07-04:
+
+Spec source: `shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-generation-and-swipe-publish-2026-07-04.md`.
+
+- [ ] Make AI-first branded video assembly the default workflow: users provide images/videos/content inputs, ContentGlowz generates a finished video draft automatically, and manual editing stays optional.
+- [ ] Add a canonical brand-to-video system: one brand profile should drive templates, scene sequencing, motion rules, transitions, typography, overlays, CTA blocks, caption style, and export defaults.
+- [ ] Add a dedicated branding editor surface so users can tune brand kits, template rules, animation language, and reusable video systems separately from one-off timeline edits.
+- [x] Review product/docs promise alignment because current docs still frame ContentGlowz as human-in-the-loop and not fully automated; update canonical product language if this AI-first direction is adopted.
+
+#### P0 — editor core and trust
+
+- [ ] Define the "brand video blueprint" schema that maps brand kit inputs to layouts, typography, color usage, transitions, motion presets, lower thirds, intro/outro blocks, and safe CTA patterns.
+- [ ] Build automatic timeline/story assembly from source content plus selected media assets, so the first output is a complete branded draft rather than an empty editor.
+- [ ] Ship timeline ergonomics: ripple trim, split, duplicate, snap, zoom, playhead scrubbing, undo/redo, keyboard shortcuts, and track locking/muting semantics.
+- [ ] Add preview/render confidence: stale-preview states, background queues, proxy previews, deterministic cache invalidation, and recovery after failed renders.
+- [ ] Introduce reusable adjustment layers and clip-level effect stacks.
+- [ ] Add property animation with keyframes plus easing/graph editing for transform, opacity, scale, rotation, crop, blur, and volume.
+- [ ] Create reusable templates and presets for video formats, titles, lower thirds, intros/outros, caption styles, and project-scoped brand kits.
+- [ ] Add a lightweight branding editor MVP for fonts, colors, logo treatments, caption style, intro/outro modules, transition family, and motion intensity.
+
+#### P1 — transcript, audio, and creator automation
+
+- [ ] Ship transcript-native editing: speech-to-text, editable transcript segments, text-based cuts, silence detection, and timeline export from transcript edits.
+- [ ] Build a caption pipeline with auto captions, timing edits, multilingual translation, style presets, burned-in vs sidecar outputs, and project-level caption reuse.
+- [ ] Add audio finishing tools: normalization, denoise, ducking, fade handles, beat sync, audio meters, and music/voice balance presets.
+- [ ] Add short-form automation: smart scene cut, highlight extraction, auto reframe, and candidate short clips generated from long-form source content.
+- [ ] Turn ContentGlowz strategy context into editing assistance: AI copilot suggestions for hooks, scene ordering, B-roll slots, text overlays, CTA placement, and per-platform pacing.
+- [ ] Let users edit generated videos indirectly through brand rules: changing a brand preset should update future drafts and offer controlled regeneration of existing videos.
+- [ ] Add per-brand video archetypes such as testimonial, product demo, UGC ad, talking-head highlight, faceless reel, and recap, each with default pacing and scene grammar.
+
+#### P2 — generation, tracking, and scale
+
+- [ ] Add AI video generation entry points for text-to-video and image-to-video, with template-driven creation flows and clear model selection.
+- [ ] Build reference-driven generation: character/reference assets, style references, and multi-frame or multi-shot continuity controls.
+- [ ] Add a guided "video agent" workflow that turns a rough idea into prompts, scene structure, and a draft storyboard before generation.
+- [ ] Support remix/modify workflows for existing clips, including add/replace/remove/transform operations on generated or imported video.
+- [ ] Implement multicam workflows with sync by waveform/markers, angle switching in preview, and automatic camera-cut generation.
+- [ ] Add motion tools: motion tracking, planar/smart masking, subject linking, picture-in-picture controls, and freeze-frame workflows.
+- [ ] Add pro color controls: LUTs, color wheels, curves/HSL, scopes, comparison view, and reusable look presets.
+- [ ] Add asset provenance and library controls: trusted media intake, search/filter/tagging, usage history, licensing metadata, and safe replacement across versions.
+- [ ] Instrument performance and quality at editor scale: preview FPS, render timings, memory pressure, queue latency, crash recovery, and project health diagnostics for heavy timelines.
+- [ ] Add regenerate-with-constraints workflows so users can ask AI for a new cut while preserving selected brand rules, locked scenes, chosen assets, or caption timing.
+
 ## Completed
 
 | Task | Status |

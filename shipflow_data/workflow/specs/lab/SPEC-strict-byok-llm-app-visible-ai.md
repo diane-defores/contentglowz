@@ -17,6 +17,7 @@ user_story: "unknown (legacy spec migrated to ShipFlow metadata)"
 linked_systems: []
 depends_on: []
 supersedes: []
+superseded_by: "shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md"
 evidence: []
 next_step: "Superseded by shipflow_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md"
 ---

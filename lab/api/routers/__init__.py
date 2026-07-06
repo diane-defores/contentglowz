@@ -29,6 +29,8 @@ from .project_intelligence import router as project_intelligence_router
 from .assets import router as assets_router
 from .reel_renders import router as reel_renders_router
 from .video_timelines import router as video_timelines_router
+from .brand_profiles import router as brand_profiles_router
+from .brand_video_blueprints import router as brand_video_blueprints_router
 
 __all__ = [
     "mesh_router",
@@ -62,4 +64,6 @@ __all__ = [
     "assets_router",
     "reel_renders_router",
     "video_timelines_router",
+    "brand_profiles_router",
+    "brand_video_blueprints_router",
 ]

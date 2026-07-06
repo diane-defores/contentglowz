@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "1.0.0"
 project: "site"
 created: "2026-06-12"
 created_at: "2026-06-12 13:10:00 UTC"
@@ -12,8 +12,10 @@ source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant que lecteur francophone ou anglophone du blog ContentGlowz, je veux accéder à un index, des tags, des articles et des métadonnées cohérents avec la langue réelle du contenu, afin de ne pas naviguer dans un blog mixte avec de faux signaux SEO."
 risk_level: "high"
+supersedes: []
 security_impact: "none"
 docs_impact: "yes"
 linked_systems:

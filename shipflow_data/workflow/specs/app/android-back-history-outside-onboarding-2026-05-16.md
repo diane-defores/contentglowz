@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "app"
 created: "2026-05-16"
 created_at: "2026-05-16 14:15:47 UTC"
@@ -12,7 +12,9 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
+confidence: "high"
 user_story: "En tant qu'utilisateur Android de ContentGlowz, je veux que le bouton système Back remonte l'historique de navigation interne avant de proposer de fermer l'app, afin d'éviter des sorties prématurées quand j'explore des actions hors onboarding."
+risk_level: "medium"
 security_impact: "none"
 docs_impact: "yes"
 linked_systems:

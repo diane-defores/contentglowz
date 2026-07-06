@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentglowz"
 created: "2026-05-14"
 created_at: "2026-05-14 15:27:39 UTC"

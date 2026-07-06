@@ -5,7 +5,7 @@ artifact_version: "1.0.0"
 project: lab
 created: "2026-04-25"
 updated: "2026-05-30"
-status: in_progress
+status: active
 source_skill: sf-docs
 scope: feature
 owner: "Diane"

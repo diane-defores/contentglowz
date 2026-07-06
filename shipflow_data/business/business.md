@@ -14,7 +14,7 @@ risk_level: medium
 security_impact: none
 docs_impact: yes
 target_audience: creators, independent operators, founders, and SMB content teams
-value_proposition: turn content ideas into publish-ready outcomes with predictable, transparent execution
+value_proposition: turn content ideas and source assets into ready-made publishable outputs with predictable, transparent execution
 business_model: one ContentGlowz product expressed across multiple surfaces with shared business truth
 market: content teams, founders, and solo operators
 depends_on: []
@@ -38,7 +38,7 @@ next_step: /sf-docs audit shipflow_data/business/business.md
 ContentGlowz is one product system with multiple delivery surfaces.
 The business truth is shared across the project even when the runtimes differ.
 
-The project exists to help creators and lean teams move from idea to publish-ready content with less tooling friction, more continuity, and clearer operational control.
+The project exists to help creators and lean teams move from idea or source assets to ready-made publishable content with less tooling friction, more continuity, and clearer operational control.
 
 ## Problem
 
@@ -50,7 +50,7 @@ The target users often face:
 - unclear boundaries between marketing promise, operator workflow, and automation layer.
 
 ContentGlowz reduces this friction by keeping the promise explicit:
-AI assists, humans stay in control, and the system must remain understandable when dependencies fail.
+AI assembles publishable drafts by default, users can approve fast or modify when needed, and the system must remain understandable when dependencies fail.
 
 ## Shared Product Positioning
 
@@ -67,9 +67,10 @@ They are surfaces of one ContentGlowz offer and must stay aligned on audience, p
 ## Core User Value
 
 - Reduce the overhead between idea and execution.
+- Deliver ready-made outputs that are publishable immediately in the default path.
 - Preserve continuity when services degrade or reconnect.
 - Keep workflows explicit, reviewable, and operationally trustworthy.
-- Centralize planning, drafting, scheduling, and orchestration without pretending to remove human judgment.
+- Centralize planning, drafting, scheduling, generation, and swipe-to-publish orchestration without forcing manual editing as the normal path.
 
 ## Commercial Scope
 

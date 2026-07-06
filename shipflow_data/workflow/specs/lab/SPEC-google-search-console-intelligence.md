@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: lab
 created: "2026-05-11"
 created_at: "2026-05-11 14:04:51 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: Diane
+confidence: high
 user_story: "En tant qu'utilisateur ContentGlowz connecte a un projet web, je veux comprendre en langage naturel ce qui se passe dans Google Search pour mon site et transformer ces signaux en priorites editoriales, afin de savoir quel contenu creer, renforcer, corriger ou laisser tranquille."
 risk_level: high
 security_impact: yes

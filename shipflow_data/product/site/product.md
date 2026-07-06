@@ -53,7 +53,7 @@ next_step: "/sf-docs audit shipflow_data/product/site/product.md"
 
 ## Utilisateur cible
 - Founders et équipes content ops qui veulent piloter la publication avec moins de friction.
-- Visiteurs intéressés par une solution d’automatisation assistée par IA, mais qui exigent une vraie continuité.
+- Visiteurs intéressés par une solution qui livre des contenus déjà fabriqués, publiables vite, sans sacrifier la continuité.
 
 ## Problème
 Le site positionne le produit, rassure sur les limites techniques et guide rapidement vers `app`.
@@ -63,7 +63,7 @@ Sans ce site, la promesse produit est morcelée entre pages, et le passage vers 
 ## Sorties souhaitées
 - Traiter la découverte, la preuve sociale, la preuve de valeur et la conversion initiale.
 - Centraliser les pages de contenu (blog, guides, agents, SEO) sur une même grille éditoriale.
-- Rendre les messages cohérents avec les contraintes réelles : workflow humain + mode dégradé.
+- Rendre les messages cohérents avec les contraintes réelles : automation-first, édition optionnelle, mode dégradé.
 
 ## Workflows principaux
 1. Un prospect arrive sur la landing, comprend la proposition (`Hero`, features, pricing, FAQ).
@@ -87,6 +87,6 @@ Sans ce site, la promesse produit est morcelée entre pages, et le passage vers 
 - Faible volume de copies contradictoires entre pages.
 
 ## Risques
-- Réticence commerciale si la promesse d’automatisation dépasse l’opération réelle.
+- Réticence commerciale si la promesse de contenus prêts à publier dépasse l’opération réelle.
 - Détérioration de confiance si la page ne rappelle pas le flux de reprise/handoff.
 - Dérive de contenu quand les claims marketing ne suivent pas les changements d’app.

@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "1.0.0"
 project: lab
 created: "2026-05-13"
 created_at: "2026-05-13 07:41:19 UTC"
@@ -12,6 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: feature
 owner: Diane
+confidence: high
 user_story: "En tant que propriétaire d'un projet ContentGlowz, je veux importer ou connecter mes données projet et obtenir une mémoire projet nettoyée, dédupliquée et exploitable, afin de prendre des décisions de contenu, SEO et croissance avec des preuves et un niveau de confiance."
 risk_level: high
 security_impact: yes

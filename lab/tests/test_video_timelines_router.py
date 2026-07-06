@@ -9,6 +9,7 @@ from fastapi import HTTPException, Response
 
 from api.dependencies.auth import CurrentUser
 from api.models.video_timeline import (
+    BrandedVideoTimelineFromContentRequest,
     VideoTimelineDraftRequest,
     VideoTimelineFinalRenderRequest,
     VideoTimelineFromContentRequest,
@@ -273,6 +274,75 @@ async def test_video_timeline_router_create_version_preview_approve_and_final(ti
         current_user=ctx.user,
     )
     assert final.render_mode == "final"
+
+
+@pytest.mark.asyncio
+async def test_create_or_refresh_branded_video_timeline_draft_persists_canonical_draft(timeline_context, monkeypatch):
+    ctx = timeline_context
+    asset = _create_project_asset(ctx)
+    monkeypatch.setattr(
+        router,
+        "require_owned_content_record",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                id="content-1",
+                title="Launch faster",
+                project_id="project-1",
+                content_preview="A short summary that should appear inside the branded draft.",
+            )
+        ),
+    )
+
+    async def _brand_profile(*, brand_profile_id: str, user_id: str):
+        assert brand_profile_id == "brand-1"
+        assert user_id == "user-1"
+        return {
+            "id": "brand-1",
+            "project_id": "project-1",
+            "primary_colors": ["#FFFFFF", "#111111"],
+            "secondary_colors": ["#FF4F00"],
+            "font_heading": "Space Grotesk",
+            "font_body": "Manrope",
+            "motion_intensity": "medium",
+            "transition_family": "swipe",
+            "caption_style_defaults": {"textColor": "#FFFFFF"},
+            "cta_defaults": {"primaryText": "Try it now"},
+            "intro_module_enabled": True,
+            "outro_module_enabled": True,
+            "tone_keywords": ["clean"],
+        }
+
+    async def _blueprint(*, blueprint_id: str, user_id: str):
+        assert blueprint_id == "blueprint-1"
+        assert user_id == "user-1"
+        return {
+            "id": "blueprint-1",
+            "project_id": "project-1",
+            "brand_profile_id": "brand-1",
+            "default_archetype": "ugc_ad",
+            "scene_rules_json": {"sceneDurationFrames": 84},
+            "cta_rules_json": {"durationFrames": 36},
+        }
+
+    monkeypatch.setattr(router.brand_profile_store, "get_brand_profile", _brand_profile)
+    monkeypatch.setattr(router.brand_video_blueprint_store, "get_brand_video_blueprint", _blueprint)
+
+    response = Response()
+    timeline = await router.create_or_refresh_branded_video_timeline_draft(
+        BrandedVideoTimelineFromContentRequest(
+            contentId="content-1",
+            brandProfileId="brand-1",
+            blueprintId="blueprint-1",
+        ),
+        response,
+        current_user=ctx.user,
+    )
+
+    assert response.status_code == 201
+    assert timeline.draft_revision == 0
+    assert any(clip.asset_id == asset.id for clip in timeline.draft.clips if clip.asset_id)
+    assert any(clip.role == "hook_title" for clip in timeline.draft.clips)
+    assert any(clip.role == "cta" for clip in timeline.draft.clips)
 
 
 @pytest.mark.asyncio
