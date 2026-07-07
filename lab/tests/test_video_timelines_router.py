@@ -9,12 +9,14 @@ from fastapi import HTTPException, Response
 
 from api.dependencies.auth import CurrentUser
 from api.models.video_timeline import (
+    BrandedVideoTimelinePreviewRequest,
     BrandedVideoTimelineFromContentRequest,
     VideoTimelineDraftRequest,
     VideoTimelineFinalRenderRequest,
     VideoTimelineFromContentRequest,
     VideoTimelinePreviewApproveRequest,
     VideoTimelinePreviewRequest,
+    VideoTimelineSwipePublishRequest,
     VideoTimelineVersionCreateRequest,
 )
 from api.routers import video_timelines as router
@@ -277,6 +279,131 @@ async def test_video_timeline_router_create_version_preview_approve_and_final(ti
 
 
 @pytest.mark.asyncio
+async def test_video_timeline_swipe_publish_approves_preview_renders_final_and_calls_publish(
+    timeline_context, monkeypatch
+):
+    ctx = timeline_context
+    timeline = await _create_timeline(ctx)
+    version = await router.create_video_timeline_version(
+        timeline.timeline_id,
+        VideoTimelineVersionCreateRequest(
+            base_version_id=None,
+            draft_revision=0,
+            timeline=_timeline_payload("Edited title"),
+            client_request_id="save-1",
+        ),
+        current_user=ctx.user,
+    )
+    preview = await router.request_video_timeline_preview(
+        timeline.timeline_id,
+        version.version_id,
+        VideoTimelinePreviewRequest(client_request_id="preview-1"),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    async def _fake_publish(request, current_user):
+        return SimpleNamespace(
+            status="published",
+            model_dump=lambda mode="json": {
+                "success": True,
+                "status": "published",
+                "post_id": "post-video-1",
+                "platform_urls": {"twitter": "https://x.example/post-video-1"},
+                "platform_results": [],
+                "error": None,
+            },
+        )
+
+    monkeypatch.setattr(router, "publish_content", _fake_publish)
+
+    result = await router.swipe_publish_video_timeline(
+        timeline.timeline_id,
+        version.version_id,
+        VideoTimelineSwipePublishRequest(
+            preview_job_id=preview.job_id,
+            content="Launch faster with AI video",
+            platforms=[{"platform": "twitter", "account_id": "local_acct_1"}],
+            title="Launch faster",
+            client_request_id="swipe-1",
+        ),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    assert result.state == "published"
+    assert result.final_job is not None
+    assert result.final_job.render_mode == "final"
+    assert result.final_job.status == "completed"
+    assert result.publish_result is not None
+    assert result.publish_result["post_id"] == "post-video-1"
+
+
+@pytest.mark.asyncio
+async def test_video_timeline_swipe_publish_returns_pending_when_final_not_ready(timeline_context, monkeypatch):
+    ctx = timeline_context
+    set_video_renderer_adapter_for_tests(_FakeRenderer(completed=False))
+    timeline = await _create_timeline(ctx)
+    version = await router.create_video_timeline_version(
+        timeline.timeline_id,
+        VideoTimelineVersionCreateRequest(
+            base_version_id=None,
+            draft_revision=0,
+            timeline=_timeline_payload("Edited title"),
+            client_request_id="save-1",
+        ),
+        current_user=ctx.user,
+    )
+    preview = await router.request_video_timeline_preview(
+        timeline.timeline_id,
+        version.version_id,
+        VideoTimelinePreviewRequest(client_request_id="preview-1"),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+    completed_preview = await ctx.store.update_render_job(
+        job_id=preview.job_id,
+        user_id=ctx.user.user_id,
+        status="completed",
+        progress=100,
+        message="Completed",
+        artifact={
+            "playback_url": "https://api.example.test/artifact/preview.mp4?token=redacted",
+            "artifact_expires_at": datetime.now(UTC).isoformat(),
+            "retention_expires_at": datetime.now(UTC).isoformat(),
+            "deletion_warning_at": datetime.now(UTC).isoformat(),
+            "byte_size": 123,
+            "mime_type": "video/mp4",
+            "file_name": "preview.mp4",
+            "render_mode": "preview",
+        },
+    )
+    assert completed_preview["status"] == "completed"
+
+    async def _unexpected_publish(request, current_user):
+        raise AssertionError("publish should not be called while final render is pending")
+
+    monkeypatch.setattr(router, "publish_content", _unexpected_publish)
+    result = await router.swipe_publish_video_timeline(
+        timeline.timeline_id,
+        version.version_id,
+        VideoTimelineSwipePublishRequest(
+            preview_job_id=preview.job_id,
+            content="Launch faster with AI video",
+            platforms=[{"platform": "twitter", "account_id": "local_acct_1"}],
+            title="Launch faster",
+            client_request_id="swipe-1",
+        ),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    assert result.state == "final_pending"
+    assert result.final_job is not None
+    assert result.final_job.status == "queued"
+
+
+@pytest.mark.asyncio
 async def test_create_or_refresh_branded_video_timeline_draft_persists_canonical_draft(timeline_context, monkeypatch):
     ctx = timeline_context
     asset = _create_project_asset(ctx)
@@ -343,6 +470,157 @@ async def test_create_or_refresh_branded_video_timeline_draft_persists_canonical
     assert any(clip.asset_id == asset.id for clip in timeline.draft.clips if clip.asset_id)
     assert any(clip.role == "hook_title" for clip in timeline.draft.clips)
     assert any(clip.role == "cta" for clip in timeline.draft.clips)
+
+
+@pytest.mark.asyncio
+async def test_create_branded_video_preview_generation_creates_version_and_preview(timeline_context, monkeypatch):
+    ctx = timeline_context
+    asset = _create_project_asset(ctx)
+    monkeypatch.setattr(
+        router,
+        "require_owned_content_record",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                id="content-1",
+                title="Launch faster",
+                project_id="project-1",
+                content_preview="A short summary that should appear inside the branded draft.",
+            )
+        ),
+    )
+
+    async def _brand_profile(*, brand_profile_id: str, user_id: str):
+        return {
+            "id": brand_profile_id,
+            "project_id": "project-1",
+            "primary_colors": ["#FFFFFF", "#111111"],
+            "secondary_colors": ["#FF4F00"],
+            "font_heading": "Space Grotesk",
+            "font_body": "Manrope",
+            "motion_intensity": "medium",
+            "transition_family": "swipe",
+            "caption_style_defaults": {"textColor": "#FFFFFF"},
+            "cta_defaults": {"primaryText": "Try it now"},
+            "intro_module_enabled": True,
+            "outro_module_enabled": True,
+            "tone_keywords": ["clean"],
+        }
+
+    async def _blueprint(*, blueprint_id: str, user_id: str):
+        return {
+            "id": blueprint_id,
+            "project_id": "project-1",
+            "brand_profile_id": "brand-1",
+            "default_archetype": "ugc_ad",
+            "scene_rules_json": {"sceneDurationFrames": 84},
+            "cta_rules_json": {"durationFrames": 36},
+        }
+
+    monkeypatch.setattr(router.brand_profile_store, "get_brand_profile", _brand_profile)
+    monkeypatch.setattr(router.brand_video_blueprint_store, "get_brand_video_blueprint", _blueprint)
+
+    response = Response()
+    generation = await router.create_branded_video_preview_generation(
+        BrandedVideoTimelinePreviewRequest(
+            contentId="content-1",
+            brandProfileId="brand-1",
+            blueprintId="blueprint-1",
+            clientRequestId="brand-run-1",
+        ),
+        response,
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    assert response.status_code == 201
+    assert generation.readiness == "preview_ready"
+    assert generation.preview_job.status == "completed"
+    assert generation.preview_job.artifact is not None
+    assert generation.version.timeline_id == generation.timeline.timeline_id
+    assert any(clip.asset_id == asset.id for clip in generation.timeline.draft.clips if clip.asset_id)
+
+
+@pytest.mark.asyncio
+async def test_create_branded_video_preview_generation_is_idempotent_per_client_request(
+    timeline_context, monkeypatch
+):
+    ctx = timeline_context
+    _create_project_asset(ctx)
+    monkeypatch.setattr(
+        router,
+        "require_owned_content_record",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                id="content-1",
+                title="Launch faster",
+                project_id="project-1",
+                content_preview="A short summary that should appear inside the branded draft.",
+            )
+        ),
+    )
+
+    async def _brand_profile(*, brand_profile_id: str, user_id: str):
+        return {
+            "id": brand_profile_id,
+            "project_id": "project-1",
+            "primary_colors": ["#FFFFFF", "#111111"],
+            "secondary_colors": ["#FF4F00"],
+            "font_heading": "Space Grotesk",
+            "font_body": "Manrope",
+            "motion_intensity": "medium",
+            "transition_family": "swipe",
+            "caption_style_defaults": {"textColor": "#FFFFFF"},
+            "cta_defaults": {"primaryText": "Try it now"},
+            "intro_module_enabled": True,
+            "outro_module_enabled": True,
+            "tone_keywords": ["clean"],
+        }
+
+    async def _blueprint(*, blueprint_id: str, user_id: str):
+        return {
+            "id": blueprint_id,
+            "project_id": "project-1",
+            "brand_profile_id": "brand-1",
+            "default_archetype": "ugc_ad",
+            "scene_rules_json": {"sceneDurationFrames": 84},
+            "cta_rules_json": {"durationFrames": 36},
+        }
+
+    monkeypatch.setattr(router.brand_profile_store, "get_brand_profile", _brand_profile)
+    monkeypatch.setattr(router.brand_video_blueprint_store, "get_brand_video_blueprint", _blueprint)
+
+    first = await router.create_branded_video_preview_generation(
+        BrandedVideoTimelinePreviewRequest(
+            contentId="content-1",
+            brandProfileId="brand-1",
+            blueprintId="blueprint-1",
+            clientRequestId="brand-run-1",
+        ),
+        Response(),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+    second = await router.create_branded_video_preview_generation(
+        BrandedVideoTimelinePreviewRequest(
+            contentId="content-1",
+            brandProfileId="brand-1",
+            blueprintId="blueprint-1",
+            clientRequestId="brand-run-1",
+        ),
+        Response(),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    assert first.timeline.timeline_id == second.timeline.timeline_id
+    assert first.version.version_id == second.version.version_id
+    jobs = await ctx.store.list_render_jobs(
+        timeline_id=first.timeline.timeline_id,
+        version_id=first.version.version_id,
+        user_id=ctx.user.user_id,
+        render_mode="preview",
+    )
+    assert len(jobs) == 1
 
 
 @pytest.mark.asyncio

@@ -247,6 +247,55 @@ def test_publish_persists_metadata_and_published_transitions():
     )
 
 
+def test_publish_supports_typed_video_media_payload():
+    client = _build_client()
+    fake_record = _owned_record(metadata={"existing": "value"})
+    fake_service = MagicMock()
+    fake_service.get_content.return_value = fake_record
+
+    http_response = MagicMock()
+    http_response.status_code = 200
+    http_response.headers = {"content-type": "application/json"}
+    http_response.json.return_value = {
+        "posts": [
+            {
+                "_id": "post_video_123",
+                "status": "published",
+                "platforms": [
+                    {
+                        "platform": "twitter",
+                        "status": "published",
+                        "platformPostUrl": "https://x.example/post_video_123",
+                    }
+                ],
+            }
+        ]
+    }
+
+    fake_client = _FakeAsyncClient(http_response)
+    with (
+        patch("api.routers.publish.get_status_service", return_value=fake_service),
+        patch("api.routers.publish.require_owned_content_record", AsyncMock(return_value=fake_record)),
+        patch("api.routers.publish.require_active_publish_account", AsyncMock(return_value=_authorized_account())),
+        patch("api.routers.publish.httpx.AsyncClient", return_value=fake_client),
+    ):
+        response = client.post(
+            "/api/publish",
+            json={
+                "content": "Video post",
+                "platforms": [{"platform": "twitter", "account_id": "local_acct_1"}],
+                "content_record_id": "content_1",
+                "publish_now": True,
+                "media": [{"type": "video", "url": "https://cdn.example.test/final.mp4"}],
+            },
+        )
+
+    assert response.status_code == 200
+    assert fake_client.post_calls[0][1]["json"]["media"] == [
+        {"type": "video", "url": "https://cdn.example.test/final.mp4"}
+    ]
+
+
 def test_publish_persists_scheduled_state_without_published_transition():
     client = _build_client()
     fake_record = _owned_record()

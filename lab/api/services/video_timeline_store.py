@@ -424,9 +424,10 @@ class VideoTimelineStore:
         if not updates:
             return current
         if "artifact" in updates:
+            artifact_value = updates.pop("artifact")
             updates["artifact_json"] = (
-                json.dumps(updates.pop("artifact"), separators=(",", ":"), sort_keys=True)
-                if updates["artifact"] is not None
+                json.dumps(artifact_value, separators=(",", ":"), sort_keys=True)
+                if artifact_value is not None
                 else None
             )
         updates["updated_at"] = datetime.utcnow().isoformat()

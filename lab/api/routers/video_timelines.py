@@ -14,6 +14,8 @@ from fastapi.responses import FileResponse
 from api.dependencies.auth import CurrentUser, require_current_user
 from api.dependencies.ownership import require_owned_content_record, require_owned_project_id
 from api.models.video_timeline import (
+    BrandedVideoGenerationResponse,
+    BrandedVideoTimelinePreviewRequest,
     BrandedVideoTimelineFromContentRequest,
     TimelineErrorDetail,
     VideoTimelineDraftRequest,
@@ -22,12 +24,15 @@ from api.models.video_timeline import (
     VideoTimelineFromContentRequest,
     VideoTimelinePreviewApproveRequest,
     VideoTimelinePreviewRequest,
+    VideoTimelineSwipePublishRequest,
+    VideoTimelineSwipePublishResponse,
     VideoTimelineRenderJobResponse,
     VideoTimelineResponse,
     VideoTimelineValidationResult,
     VideoTimelineVersionCreateRequest,
     VideoTimelineVersionResponse,
 )
+from api.routers.publish import PublishMediaItem, PublishRequest, publish_content
 from api.services.project_asset_storage import build_project_asset_storage_descriptor
 from api.services.brand_profile_store import brand_profile_store
 from api.services.brand_video_blueprint_store import brand_video_blueprint_store
@@ -518,6 +523,26 @@ def _job_response(job: dict[str, Any], request: Request | None = None) -> VideoT
     )
 
 
+def _branded_generation_readiness(
+    preview_job: VideoTimelineRenderJobResponse,
+) -> tuple[str, list[str]]:
+    if preview_job.status == "completed" and preview_job.artifact is not None and not preview_job.stale:
+        return "preview_ready", []
+    if preview_job.status in {"queued", "in_progress"}:
+        return "preview_pending", []
+    blocker = preview_job.message or "preview_render_unavailable"
+    return "blocked", [blocker]
+
+
+def _publish_state_for_final_job(job: VideoTimelineRenderJobResponse) -> tuple[str, list[str]]:
+    if job.status == "completed" and job.artifact is not None and not job.stale:
+        return "published", []
+    if job.status in {"queued", "in_progress"}:
+        return "final_pending", []
+    blocker = job.message or "final_render_unavailable"
+    return "blocked", [blocker]
+
+
 async def _latest_status(timeline: dict[str, Any], render_mode: str) -> str:
     version_id = timeline.get("current_version_id")
     if not version_id:
@@ -783,6 +808,153 @@ async def create_or_refresh_branded_video_timeline_draft(
     return await _timeline_response(timeline)
 
 
+@router.post("/from-content/branded-preview", response_model=BrandedVideoGenerationResponse)
+async def create_branded_video_preview_generation(
+    request: BrandedVideoTimelinePreviewRequest,
+    response: Response,
+    raw_request: Request,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    status_service = get_status_service()
+    owned_record = await require_owned_content_record(
+        content_id=request.content_id,
+        current_user=current_user,
+        status_service=status_service,
+    )
+    brand_profile = await _require_brand_profile_for_project(
+        brand_profile_id=request.brand_profile_id,
+        project_id=owned_record.project_id,
+        current_user=current_user,
+    )
+    blueprint = await _require_blueprint_for_brand_profile(
+        blueprint_id=request.blueprint_id,
+        project_id=owned_record.project_id,
+        brand_profile_id=brand_profile["id"],
+        current_user=current_user,
+    )
+    project_assets = status_service.list_project_assets(
+        project_id=owned_record.project_id,
+        user_id=current_user.user_id,
+        limit=24,
+        offset=0,
+    )
+    branded_draft = assemble_branded_timeline_draft(
+        content_record=owned_record,
+        brand_profile=brand_profile,
+        blueprint=blueprint,
+        project_assets=project_assets,
+        format_preset=request.format_preset,
+    )
+    try:
+        timeline, created = await video_timeline_store.create_or_get_active(
+            user_id=current_user.user_id,
+            project_id=owned_record.project_id,
+            content_id=request.content_id,
+            format_preset=request.format_preset,
+            draft=branded_draft,
+        )
+        if not created:
+            timeline = await video_timeline_store.save_draft(
+                timeline_id=timeline["id"],
+                user_id=current_user.user_id,
+                base_version_id=timeline.get("current_version_id"),
+                draft_revision=int(timeline["draft_revision"]),
+                timeline=branded_draft,
+            )
+        render_assets = _resolve_timeline_assets(
+            timeline=branded_draft,
+            project_id=timeline["project_id"],
+            user_id=current_user.user_id,
+            status_service=status_service,
+        )
+        version_id = str(uuid.uuid4())
+        props = build_remotion_timeline_props(
+            timeline_id=timeline["id"],
+            version_id=version_id,
+            timeline=branded_draft,
+            assets=render_assets,
+        )
+        version = await video_timeline_store.create_version(
+            timeline_id=timeline["id"],
+            user_id=current_user.user_id,
+            version_id=version_id,
+            base_version_id=timeline.get("current_version_id"),
+            draft_revision=int(timeline["draft_revision"]),
+            timeline=branded_draft,
+            renderer_props=props,
+            client_request_id=request.client_request_id,
+        )
+    except TimelinePropsError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=_detail("invalid_timeline", str(exc), field="timeline"),
+        ) from exc
+    except (ContentNotFoundError, ProjectAssetEligibilityError) as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=_detail("asset_not_eligible", str(exc), field="timeline.clips"),
+        ) from exc
+    except VideoTimelineConflictError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=_detail("timeline_conflict", str(exc), field="draft_revision"),
+        ) from exc
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=_detail("internal_error", "Video timeline store unavailable"),
+        ) from exc
+
+    try:
+        _record_timeline_asset_usages(
+            status_service=status_service,
+            timeline_record=timeline,
+            version=version,
+        )
+    except (ContentNotFoundError, ProjectAssetEligibilityError) as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=_detail("asset_not_eligible", str(exc), field="timeline.clips"),
+        ) from exc
+
+    existing = await video_timeline_store.find_render_job(
+        timeline_id=timeline["id"],
+        version_id=version["id"],
+        user_id=current_user.user_id,
+        render_mode="preview",
+        statuses=ACTIVE_RENDER_STATUSES.union({"completed"}),
+    )
+    if existing:
+        preview_job = _job_response(existing, raw_request)
+    else:
+        job = await _dispatch_render_job(
+            timeline=await video_timeline_store.get_timeline(
+                timeline_id=timeline["id"],
+                user_id=current_user.user_id,
+            ),
+            version=version,
+            render_mode="preview",
+            current_user=current_user,
+            client_request_id=request.client_request_id,
+        )
+        preview_job = _job_response(job, raw_request)
+
+    readiness, blockers = _branded_generation_readiness(preview_job)
+    response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return BrandedVideoGenerationResponse(
+        timeline=await _timeline_response(
+            await video_timeline_store.get_timeline(
+                timeline_id=timeline["id"],
+                user_id=current_user.user_id,
+            )
+        ),
+        version=_version_response(version),
+        preview_job=preview_job,
+        readiness=readiness,
+        blockers=blockers,
+    )
+
+
 @router.get("/{timeline_id}", response_model=VideoTimelineResponse)
 async def get_video_timeline(
     timeline_id: str,
@@ -991,6 +1163,117 @@ async def request_video_timeline_final_render(
         parent_preview_job_id=request.preview_job_id,
     )
     return _job_response(job, raw_request)
+
+
+@router.post(
+    "/{timeline_id}/versions/{version_id}/swipe-publish",
+    response_model=VideoTimelineSwipePublishResponse,
+)
+async def swipe_publish_video_timeline(
+    timeline_id: str,
+    version_id: str,
+    request: VideoTimelineSwipePublishRequest,
+    raw_request: Request,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    timeline = await _require_timeline(timeline_id, current_user)
+    version = await _require_version(
+        timeline_id=timeline_id,
+        version_id=version_id,
+        current_user=current_user,
+    )
+    if timeline.get("current_version_id") != version_id:
+        _raise(409, "preview_stale", "Swipe publish requires the current timeline version")
+
+    approved_preview_job_id = version.get("approved_preview_job_id")
+    if not approved_preview_job_id:
+        if not request.preview_job_id:
+            _raise(409, "preview_stale", "Swipe publish requires an approved preview", field="preview_job_id")
+        try:
+            version = await video_timeline_store.approve_preview(
+                version_id=version_id,
+                user_id=current_user.user_id,
+                preview_job_id=request.preview_job_id,
+            )
+        except (VideoTimelineConflictError, VideoTimelineNotFoundError) as exc:
+            raise HTTPException(
+                status_code=409,
+                detail=_detail("preview_stale", "Preview cannot be approved"),
+            ) from exc
+        approved_preview_job_id = version.get("approved_preview_job_id")
+
+    existing_final = await video_timeline_store.find_render_job(
+        timeline_id=timeline_id,
+        version_id=version_id,
+        user_id=current_user.user_id,
+        render_mode="final",
+        statuses=ACTIVE_RENDER_STATUSES.union({"completed"}),
+        parent_preview_job_id=approved_preview_job_id,
+    )
+    if existing_final:
+        final_job = _job_response(existing_final, raw_request)
+    else:
+        dispatched = await _dispatch_render_job(
+            timeline=timeline,
+            version=version,
+            render_mode="final",
+            current_user=current_user,
+            client_request_id=request.client_request_id,
+            parent_preview_job_id=approved_preview_job_id,
+        )
+        final_job = _job_response(dispatched, raw_request)
+
+    state, blockers = _publish_state_for_final_job(final_job)
+    if state != "published":
+        return VideoTimelineSwipePublishResponse(
+            state=state,
+            version=_version_response(version),
+            final_job=final_job,
+            publish_result=None,
+            blockers=blockers,
+        )
+
+    artifact = final_job.artifact
+    if artifact is None or not artifact.playback_url:
+        return VideoTimelineSwipePublishResponse(
+            state="blocked",
+            version=_version_response(version),
+            final_job=final_job,
+            publish_result=None,
+            blockers=["final_artifact_unavailable"],
+        )
+
+    publish_request = PublishRequest(
+        content=request.content,
+        platforms=[
+            {
+                "platform": target.platform,
+                "account_id": target.account_id,
+                "custom_content": target.custom_content,
+            }
+            for target in request.platforms
+        ],
+        title=request.title,
+        media=[
+            PublishMediaItem(
+                type="video",
+                url=artifact.playback_url,
+            )
+        ],
+        scheduled_for=request.scheduled_for,
+        publish_now=request.publish_now,
+        tags=request.tags,
+        content_record_id=timeline["content_id"],
+    )
+    publish_result = await publish_content(publish_request, current_user=current_user)
+    state = "scheduled" if publish_result.status == "scheduled" else "published"
+    return VideoTimelineSwipePublishResponse(
+        state=state,
+        version=_version_response(version),
+        final_job=final_job,
+        publish_result=publish_result.model_dump(mode="json"),
+        blockers=[],
+    )
 
 
 @router.get("/{timeline_id}/jobs/{job_id}", response_model=VideoTimelineRenderJobResponse)

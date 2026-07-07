@@ -61,11 +61,17 @@ class PlatformTarget(BaseModel):
     custom_content: Optional[str] = Field(None, description="Override content for this platform")
 
 
+class PublishMediaItem(BaseModel):
+    type: str = Field(..., description="Media type: image or video")
+    url: str = Field(..., min_length=1, description="Public or signed URL to the media")
+
+
 class PublishRequest(BaseModel):
     content: str = Field(..., description="Post content/text")
     platforms: List[PlatformTarget] = Field(..., min_length=1)
     title: Optional[str] = Field(None, description="Reference title")
     media_urls: List[str] = Field(default_factory=list, description="URLs of images/videos to attach")
+    media: List[PublishMediaItem] = Field(default_factory=list, description="Typed media attachments")
     scheduled_for: Optional[str] = Field(None, description="ISO 8601 datetime for scheduling")
     publish_now: bool = Field(default=True, description="Publish immediately")
     tags: List[str] = Field(default_factory=list)
@@ -83,6 +89,17 @@ class PublishResponse(BaseModel):
     platform_urls: Dict[str, str] = Field(default_factory=dict)
     platform_results: List[Dict[str, Any]] = Field(default_factory=list)
     error: Optional[str] = None
+
+
+def _provider_media_payload(request: PublishRequest) -> list[dict[str, str]]:
+    typed_media = [
+        {"type": item.type.strip().lower(), "url": item.url}
+        for item in request.media
+        if item.url.strip()
+    ]
+    if typed_media:
+        return typed_media
+    return [{"type": "image", "url": url} for url in request.media_urls if str(url).strip()]
 
 
 # -- Provider helpers --------------------------------------------------------
@@ -474,8 +491,9 @@ async def publish_content(
         payload["title"] = request.title
     if request.tags:
         payload["tags"] = request.tags
-    if request.media_urls:
-        payload["media"] = [{"type": "image", "url": url} for url in request.media_urls]
+    media_payload = _provider_media_payload(request)
+    if media_payload:
+        payload["media"] = media_payload
     if request.scheduled_for and not request.publish_now:
         payload["scheduledFor"] = request.scheduled_for
 

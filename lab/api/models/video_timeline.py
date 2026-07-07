@@ -14,6 +14,7 @@ ClipType = Literal["text", "image", "video", "audio", "music", "background", "re
 RenderMode = Literal["preview", "final"]
 RenderJobStatus = Literal["queued", "in_progress", "completed", "failed", "cancelled"]
 TimelineStatus = Literal["missing", "queued", "in_progress", "completed", "failed", "cancelled", "stale"]
+BrandedGenerationReadiness = Literal["preview_ready", "preview_pending", "blocked"]
 
 FPS = 30
 MAX_DURATION_FRAMES = 180 * FPS
@@ -178,6 +179,40 @@ class BrandedVideoTimelineFromContentRequest(BaseModel):
     )
 
 
+class BrandedVideoTimelinePreviewRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("contentId", "content_id"),
+        serialization_alias="contentId",
+    )
+    brand_profile_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("brandProfileId", "brand_profile_id"),
+        serialization_alias="brandProfileId",
+    )
+    blueprint_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("blueprintId", "blueprint_id"),
+        serialization_alias="blueprintId",
+    )
+    format_preset: FormatPreset = Field(
+        default="vertical_9_16",
+        validation_alias=AliasChoices("formatPreset", "format_preset"),
+        serialization_alias="formatPreset",
+    )
+    client_request_id: str | None = Field(
+        default=None,
+        max_length=128,
+        validation_alias=AliasChoices("clientRequestId", "client_request_id"),
+        serialization_alias="clientRequestId",
+    )
+
+
 class VideoTimelineDraftRequest(BaseModel):
     base_version_id: str | None = None
     draft_revision: int = Field(..., ge=0)
@@ -268,6 +303,39 @@ class VideoTimelineResponse(BaseModel):
     final_status: TimelineStatus = "missing"
     created_at: datetime
     updated_at: datetime
+
+
+class BrandedVideoGenerationResponse(BaseModel):
+    timeline: VideoTimelineResponse
+    version: VideoTimelineVersionResponse
+    preview_job: VideoTimelineRenderJobResponse
+    readiness: BrandedGenerationReadiness
+    blockers: list[str] = Field(default_factory=list)
+
+
+class VideoTimelinePublishPlatformTarget(BaseModel):
+    platform: str = Field(..., min_length=1)
+    account_id: str = Field(..., min_length=1)
+    custom_content: str | None = None
+
+
+class VideoTimelineSwipePublishRequest(BaseModel):
+    preview_job_id: str | None = Field(default=None, min_length=1)
+    content: str = Field(..., min_length=1, max_length=10000)
+    platforms: list[VideoTimelinePublishPlatformTarget] = Field(..., min_length=1)
+    title: str | None = Field(default=None, max_length=500)
+    scheduled_for: str | None = None
+    publish_now: bool = True
+    tags: list[str] = Field(default_factory=list)
+    client_request_id: str | None = Field(default=None, max_length=128)
+
+
+class VideoTimelineSwipePublishResponse(BaseModel):
+    state: Literal["published", "scheduled", "final_pending", "blocked"]
+    version: VideoTimelineVersionResponse
+    final_job: VideoTimelineRenderJobResponse | None = None
+    publish_result: dict[str, Any] | None = None
+    blockers: list[str] = Field(default_factory=list)
 
 
 class ContentGlowzTimelineProps(BaseModel):
