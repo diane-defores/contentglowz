@@ -42,6 +42,7 @@ Research source: `shipflow_data/workflow/research/filmora-gap-analysis-2026-06-2
 - [ ] Add pro color controls: LUTs, color wheels, curves/HSL, scopes, comparison view, and reusable look presets.
 - [ ] Implement multicam workflows with sync by waveform/markers, angle switching in preview, and automatic camera-cut generation.
 - [ ] Add short-form automation: smart scene cut, highlight extraction, auto reframe, and candidate short clips generated from long-form source content.
+- [ ] Add a live retake recording mode inspired by Vento: pause, rewind a few seconds, and re-record over mistakes without restarting the whole take.
 - [ ] Turn ContentGlowz strategy context into editing assistance: AI copilot suggestions for hooks, scene ordering, B-roll slots, text overlays, CTA placement, and per-platform pacing.
 - [ ] Create reusable templates and presets for video formats, titles, lower thirds, intros/outros, caption styles, and project-scoped brand kits.
 - [ ] Upgrade preview/render confidence: background queues, stale-preview states, proxy previews, deterministic cache invalidation, and recovery after failed renders.
@@ -90,6 +91,7 @@ Spec source: `shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-
 - [ ] Ship transcript-native editing: speech-to-text, editable transcript segments, text-based cuts, silence detection, and timeline export from transcript edits.
 - [ ] Build a caption pipeline with auto captions, timing edits, multilingual translation, style presets, burned-in vs sidecar outputs, and project-level caption reuse.
 - [ ] Add audio finishing tools: normalization, denoise, ducking, fade handles, beat sync, audio meters, and music/voice balance presets.
+- [ ] Add recording-session structure tools: rewind checkpoints, quick alternate takes from the last checkpoint, chapter markers, and post-record author annotations for async viewing.
 - [ ] Add short-form automation: smart scene cut, highlight extraction, auto reframe, and candidate short clips generated from long-form source content.
 - [ ] Turn ContentGlowz strategy context into editing assistance: AI copilot suggestions for hooks, scene ordering, B-roll slots, text overlays, CTA placement, and per-platform pacing.
 - [ ] Let users edit generated videos indirectly through brand rules: changing a brand preset should update future drafts and offer controlled regeneration of existing videos.

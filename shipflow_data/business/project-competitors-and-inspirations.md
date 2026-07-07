@@ -1,10 +1,10 @@
 ---
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.0.2"
 project: "contentglowz"
 created: "2026-05-11"
-updated: "2026-06-26"
+updated: "2026-07-06"
 status: reviewed
 source_skill: sf-veille
 scope: "project-competitors-and-inspirations"
@@ -18,6 +18,7 @@ evidence:
   - "ContentGlowz scope covers content generation, recycling, enrichment, reporting, and distribution workflows."
   - "User-pasted Savvio description on 2026-05-24."
   - "User-pasted competitor URLs on 2026-06-26: https://pixizen.io/fr, https://geniusquiz.co/, https://lifestylo.eu/."
+  - "Fresh public-source review on 2026-07-06 for https://vento.so/ and the Chrome Web Store listing."
 depends_on:
   - "shipflow_data/business/business.md@1.0.0"
 supersedes:
@@ -59,6 +60,7 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 | [Filmora](https://filmora.wondershare.com/) | Concurrent / inspiration | 9/10 | Référence directe pour l'éditeur vidéo grand public/pro: timeline, AI Copilot, multicam, captions, motion tracking, adjustment layers, templates et export. À benchmarker pour l'UX d'édition et l'assistance IA. |
 | [PixVerse](https://pixverse.ai/en) | Concurrent / inspiration | 9/10 | Référence directe pour la génération vidéo IA: text-to-video, image-to-video, agent guidé, templates, multi-shot, lip sync, audio et workflows courts orientés social. À benchmarker pour la génération et le remix. |
 | [Pixizen](https://pixizen.io/fr) | Concurrent / inspiration | 9/10 | Plateforme AI de création publicitaire et produit: images, vidéos, captions, voix et motion. Très proche des workflows de génération, orchestration et publication de contenus marketing. |
+| [Vento](https://vento.so/) | Concurrent / inspiration workflow | 8/10 | Très bon benchmark pour l'édition live pendant l'enregistrement: pause, rewind de quelques secondes, re-record sur la même prise, prises multiples depuis un point de reprise, chapitres, annotations auteur, transcription audio, webcam + audio système. À benchmarker pour un mode "retake sans redémarrer". |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration produit | 8/10 | Automatisation d'assets de release: utile pour générer captures, visuels sociaux, carrousels ou démos à partir d'un contenu source. |
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration produit | 8/10 | Voix émotionnelle/multilingue: bonne brique pour transformer des contenus en audio ou narration vidéo. |
@@ -85,6 +87,18 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 | [Impulse AI](https://betalist.com/startups/impulse-ai) | Inspiration déploiement IA | 5/10 | À surveiller si ContentGlowz veut packager/déployer des modèles ou pipelines IA. |
 
 ## Notes de dispatch
+
+## Note ciblée — Vento et l'édition "live"
+
+Ce qui ressort de Vento n'est pas un éditeur timeline riche type Filmora, mais un workflow de capture beaucoup plus rassurant pour parler en enregistrant:
+
+- on peut mettre en pause, remonter de quelques secondes et ré-enregistrer par-dessus l'erreur au lieu de recommencer toute la vidéo;
+- le point de rewind devient un point de reprise naturel pour faire plusieurs takes très vite;
+- la vidéo garde une structure légère avec chapitres et annotations auteur;
+- la transcription audio aide à se repérer dans la prise;
+- le produit reste simple: navigateur, webcam, audio et partage.
+
+Pour ContentGlowz, l'idée la plus différenciante n'est pas "un autre screen recorder", mais un mode de capture assistée qui réduit le coût mental de l'enregistrement avant même de passer dans l'éditeur complet.
 
 - `app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
 - `lab`: backend, pipelines, données, agents, sources et expérimentation.
