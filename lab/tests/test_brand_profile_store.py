@@ -1,6 +1,9 @@
 import pytest
 
-from api.services.brand_profile_store import BrandProfileStore
+from api.services.brand_profile_store import (
+    BrandProfileStore,
+    DefaultBrandProfileDeletionError,
+)
 from utils.libsql_async import create_client
 
 
@@ -64,3 +67,33 @@ async def test_brand_profile_store_crud_and_default_switching(tmp_path):
     )
     assert deleted is True
     assert await store.get_brand_profile(brand_profile_id=second["id"], user_id="user-1") is None
+
+
+@pytest.mark.asyncio
+async def test_brand_profile_store_blocks_default_profile_deletion(tmp_path):
+    db_path = tmp_path / "brand-profiles-default-delete.db"
+    client = create_client(url=f"file:{db_path}")
+    store = BrandProfileStore(db_client=client)
+    await store.ensure_tables()
+
+    created = await store.create_brand_profile(
+        user_id="user-1",
+        payload={
+            "project_id": "project-1",
+            "name": "Primary",
+            "is_default": True,
+        },
+    )
+
+    with pytest.raises(DefaultBrandProfileDeletionError):
+        await store.delete_brand_profile(
+            brand_profile_id=created["id"],
+            user_id="user-1",
+        )
+
+    existing = await store.get_brand_profile(
+        brand_profile_id=created["id"],
+        user_id="user-1",
+    )
+    assert existing is not None
+    assert existing["is_default"] is True

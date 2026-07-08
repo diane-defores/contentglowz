@@ -18,6 +18,72 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets(
+    'default brand profile cannot be deleted from the branding screen',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final sharedPreferences = await SharedPreferences.getInstance();
+      final api = _FakeBrandProfilesApiService();
+      final activeProject = _project(id: 'project-1', name: 'Project 1');
+      final router = GoRouter(
+        initialLocation: '/settings/branding',
+        routes: [
+          GoRoute(
+            path: '/settings/branding',
+            builder: (context, state) => const BrandProfilesScreen(),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            apiServiceProvider.overrideWithValue(api),
+            activeProjectIdProvider.overrideWithValue('project-1'),
+            appAccessStateProvider.overrideWith(_FakeReadyAccessNotifier.new),
+            appDiagnosticsProvider.overrideWithValue(AppDiagnostics()),
+            sharedPrefsProvider.overrideWithValue(sharedPreferences),
+            projectsStateProvider.overrideWith(
+              (ref) async => ProjectsState(items: [activeProject]),
+            ),
+            activeProjectProvider.overrideWith((ref) => activeProject),
+            currentUserSettingsProvider.overrideWith(
+              () => _TestUserSettingsNotifier(
+                const AppSettings(
+                  id: 'settings-1',
+                  userId: 'user-1',
+                  defaultProjectId: 'project-1',
+                  projectSelectionMode: projectSelectionModeSelected,
+                ),
+              ),
+            ),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Set another profile as default before deleting this one.'),
+        findsOneWidget,
+      );
+
+      final deleteButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Delete'),
+      );
+      expect(deleteButton.onPressed, isNull);
+    },
+  );
+
+  testWidgets(
     'preview impact routes through canonical branded generation and opens the editor',
     (tester) async {
       tester.view.physicalSize = const Size(1280, 1400);
@@ -121,6 +187,7 @@ class _FakeBrandProfilesApiService extends ApiService {
         projectId: projectId,
         name: 'Primary',
         primaryColors: const ['#111111'],
+        isDefault: true,
         revision: 1,
         createdAt: DateTime.utc(2026, 7, 8, 12),
         updatedAt: DateTime.utc(2026, 7, 8, 12),

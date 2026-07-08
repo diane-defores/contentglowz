@@ -1,7 +1,9 @@
 import pytest
+from fastapi import HTTPException, status
 
 from api.models.brand_profile import BrandProfileCreateRequest, BrandProfileUpdateRequest
 from api.routers import brand_profiles as router
+from api.services.brand_profile_store import DefaultBrandProfileDeletionError
 
 
 class _FakeStore:
@@ -59,6 +61,10 @@ class _FakeStore:
         item = await self.get_brand_profile(brand_profile_id=brand_profile_id, user_id=user_id)
         if not item:
             return False
+        if item["is_default"]:
+            raise DefaultBrandProfileDeletionError(
+                "Set another brand profile as default before deleting this one."
+            )
         del self.items[brand_profile_id]
         return True
 
@@ -80,11 +86,11 @@ async def test_brand_profiles_router_crud(monkeypatch):
     monkeypatch.setattr(router, "require_owned_project_id", _require_owned_project_id)
 
     created = await router.create_brand_profile(
-        BrandProfileCreateRequest(projectId="project-1", name="Core Brand", isDefault=True),
+        BrandProfileCreateRequest(projectId="project-1", name="Core Brand", isDefault=False),
         current_user=_CurrentUser(),
     )
     assert created.project_id == "project-1"
-    assert created.is_default is True
+    assert created.is_default is False
 
     listed = await router.list_brand_profiles(projectId="project-1", current_user=_CurrentUser())
     assert len(listed) == 1
@@ -103,3 +109,41 @@ async def test_brand_profiles_router_crud(monkeypatch):
 
     deleted = await router.delete_brand_profile("brand-1", current_user=_CurrentUser())
     assert deleted["success"] is True
+
+
+@pytest.mark.asyncio
+async def test_brand_profiles_router_blocks_default_profile_deletion(monkeypatch):
+    fake_store = _FakeStore()
+    fake_store.items["brand-1"] = {
+        "id": "brand-1",
+        "user_id": "user-1",
+        "project_id": "project-1",
+        "name": "Core Brand",
+        "logo_asset_id": None,
+        "primary_colors": [],
+        "secondary_colors": [],
+        "font_heading": None,
+        "font_body": None,
+        "tone_keywords": [],
+        "cta_defaults": None,
+        "caption_style_defaults": None,
+        "motion_intensity": "medium",
+        "transition_family": None,
+        "intro_module_enabled": True,
+        "outro_module_enabled": True,
+        "is_default": True,
+        "revision": 1,
+        "created_at": "2026-07-05T00:00:00+00:00",
+        "updated_at": "2026-07-05T00:00:00+00:00",
+    }
+
+    monkeypatch.setattr(router, "brand_profile_store", fake_store)
+
+    with pytest.raises(HTTPException) as error:
+        await router.delete_brand_profile("brand-1", current_user=_CurrentUser())
+
+    assert error.value.status_code == status.HTTP_409_CONFLICT
+    assert (
+        error.value.detail
+        == "Set another brand profile as default before deleting this one."
+    )

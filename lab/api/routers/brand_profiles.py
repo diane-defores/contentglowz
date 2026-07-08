@@ -11,7 +11,10 @@ from api.models.brand_profile import (
     BrandProfileResponse,
     BrandProfileUpdateRequest,
 )
-from api.services.brand_profile_store import brand_profile_store
+from api.services.brand_profile_store import (
+    DefaultBrandProfileDeletionError,
+    brand_profile_store,
+)
 
 router = APIRouter(prefix="/api/brand-profiles", tags=["Brand Profiles"])
 
@@ -77,10 +80,16 @@ async def delete_brand_profile(
     brand_profile_id: str,
     current_user: CurrentUser = Depends(require_current_user),
 ) -> dict[str, object]:
-    deleted = await brand_profile_store.delete_brand_profile(
-        brand_profile_id=brand_profile_id,
-        user_id=current_user.user_id,
-    )
+    try:
+        deleted = await brand_profile_store.delete_brand_profile(
+            brand_profile_id=brand_profile_id,
+            user_id=current_user.user_id,
+        )
+    except DefaultBrandProfileDeletionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
     if not deleted:
         raise HTTPException(status_code=404, detail="Brand profile not found")
     return {"success": True, "id": brand_profile_id}

@@ -106,8 +106,13 @@ class BrandProfilesScreen extends ConsumerWidget {
                                       ref,
                                       state.items[i],
                                     ),
-                              onDelete: () =>
-                                  _confirmDelete(context, ref, state.items[i]),
+                              onDelete: state.items[i].isDefault
+                                  ? null
+                                  : () => _confirmDelete(
+                                      context,
+                                      ref,
+                                      state.items[i],
+                                    ),
                             ),
                         ],
                       ),
@@ -171,6 +176,20 @@ class BrandProfilesScreen extends ConsumerWidget {
     WidgetRef ref,
     BrandProfile profile,
   ) async {
+    if (profile.isDefault) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'Set another profile as default before deleting this one.',
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -470,7 +489,7 @@ class _BrandProfileCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onPreview;
   final VoidCallback? onSetDefault;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -578,6 +597,18 @@ class _BrandProfileCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (profile.isDefault) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                context.tr(
+                  'Set another profile as default before deleting this one.',
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ],
         ),
       ),

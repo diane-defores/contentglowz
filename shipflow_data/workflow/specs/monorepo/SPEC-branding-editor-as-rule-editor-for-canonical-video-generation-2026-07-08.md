@@ -6,7 +6,7 @@ project: "contentglowz"
 created: "2026-07-08"
 created_at: "2026-07-08 14:33:23 UTC"
 updated: "2026-07-08"
-updated_at: "2026-07-08 17:05:05 UTC"
+updated_at: "2026-07-08 23:05:00 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
@@ -76,7 +76,7 @@ Depuis le projet actif, l'utilisateur peut ouvrir une surface Branding dans l'ap
 - Invalid field values return field-level validation errors and leave the saved profile revision unchanged.
 - If no brand profile exists yet, the UI shows an empty state with a clear create action rather than a broken editor.
 - If preview generation fails, the editor keeps the last saved profile state and surfaces the failure as a recoverable error instead of wiping user edits.
-- If the currently active profile is deleted or archived, the app must resolve a new explicit default and explain the transition instead of silently falling back to an arbitrary unrelated profile.
+- If the user tries to delete the current default profile, the app must block the action and explain that another profile must be set as default first.
 - What must never happen: a profile save mutates a video timeline directly, the app invents a second renderable branding model, or a preview claims success without using the canonical generation path.
 
 ## Problem
@@ -85,12 +85,12 @@ The repo already has the backend substrate for project-scoped brand profiles, an
 
 ## Solution
 
-Build a dedicated brand-profile editor in the app, anchored in Settings, that manages the project-scoped defaults used by future branded video generations. The editor owns list/create/edit/default/archive flows and preview-through-generation requests, but it never becomes a timeline editor or a second render model. This keeps the user on a single rule-management surface for future generations while preserving the canonical timeline as the only editable video instance.
+Build a dedicated brand-profile editor in the app, anchored in Settings, that manages the project-scoped defaults used by future branded video generations. The editor owns list/create/edit/default/delete-when-allowed flows and preview-through-generation requests, but it never becomes a timeline editor or a second render model. The current default profile is protected from deletion until the user explicitly promotes another profile. This keeps the user on a single rule-management surface for future generations while preserving the canonical timeline as the only editable video instance.
 
 ## Scope In
 
 - App models and API wrappers for brand profiles.
-- Provider state for loading, editing, saving, selecting default, and deleting brand profiles.
+- Provider state for loading, editing, saving, selecting default, and deleting non-default brand profiles.
 - A Settings entry point and a dedicated Brand Profiles editor screen.
 - Editing of project-scoped branding defaults:
   - colors
@@ -159,6 +159,7 @@ Build a dedicated brand-profile editor in the app, anchored in Settings, that ma
 ## Invariants
 
 - One project can have multiple brand profiles, but only one should be treated as the default at a time.
+- The current default brand profile cannot be deleted; the user must set another profile as default first.
 - Brand profiles are rule data, not renderable timelines.
 - The canonical generation route remains the source of truth for previewing branding impact.
 - Saved profile revisions must remain available for later generations until the user explicitly changes them.
@@ -181,7 +182,7 @@ Build a dedicated brand-profile editor in the app, anchored in Settings, that ma
 
 - A user creates the first brand profile for a project that had no defaults.
 - A user edits a profile while a branded generation job is already in flight.
-- The default profile is deleted or archived.
+- The user attempts to delete the default profile and must first promote another one.
 - A profile contains only partial branding inputs, such as colors without a logo or fonts.
 - The user switches projects while the Brand Profiles screen is open.
 - The canonical preview route succeeds but the returned artifact is stale because a newer save happened after the request started.
@@ -206,7 +207,7 @@ Build a dedicated brand-profile editor in the app, anchored in Settings, that ma
 
 - [ ] Tache 3: Build the Brand Profiles editor screen.
   - Fichiers: `app/lib/presentation/screens/branding/brand_profiles_screen.dart`, related widgets under `app/lib/presentation/screens/branding/`
-  - Action: provide create/edit/default/delete controls for the profile fields and keep unsaved edits separate from saved state.
+  - Action: provide create/edit/default/delete controls for the profile fields, block deletion for the current default profile, and keep unsaved edits separate from saved state.
   - User story link: lets the user manage project branding rules directly.
   - Depends on: Tache 2.
   - Validate with: widget tests for empty, loading, edit, save, error, and default-switch states.

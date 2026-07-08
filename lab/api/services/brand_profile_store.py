@@ -58,6 +58,10 @@ CREATE TABLE IF NOT EXISTS brand_profiles (
 """
 
 
+class DefaultBrandProfileDeletionError(RuntimeError):
+    """Raised when the current default profile is targeted for deletion."""
+
+
 class BrandProfileStore:
     def __init__(self, db_client: Any | None = None) -> None:
         self.db_client = db_client
@@ -278,6 +282,10 @@ class BrandProfileStore:
         existing = await self.get_brand_profile(brand_profile_id=brand_profile_id, user_id=user_id)
         if not existing:
             return False
+        if existing["is_default"]:
+            raise DefaultBrandProfileDeletionError(
+                "Set another brand profile as default before deleting this one."
+            )
         await self.db_client.execute(
             "DELETE FROM brand_profiles WHERE id = ? AND user_id = ?",
             [brand_profile_id, user_id],
