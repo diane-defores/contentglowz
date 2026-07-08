@@ -748,6 +748,68 @@ class VideoTimelineResponse {
   }
 }
 
+class BrandedVideoGenerationResponse {
+  const BrandedVideoGenerationResponse({
+    required this.timeline,
+    required this.version,
+    required this.previewJob,
+    required this.readiness,
+    required this.blockers,
+  });
+
+  final VideoTimelineResponse timeline;
+  final VideoTimelineVersion version;
+  final VideoTimelineRenderJob previewJob;
+  final String readiness;
+  final List<String> blockers;
+
+  factory BrandedVideoGenerationResponse.fromJson(Map<String, dynamic> json) {
+    return BrandedVideoGenerationResponse(
+      timeline: VideoTimelineResponse.fromJson(_asMap(json['timeline'])),
+      version: VideoTimelineVersion.fromJson(_asMap(json['version'])),
+      previewJob: VideoTimelineRenderJob.fromJson(
+        _asMap(json['preview_job'] ?? json['previewJob']),
+      ),
+      readiness: _asString(json['readiness']),
+      blockers: _asStringList(json['blockers']),
+    );
+  }
+}
+
+class VideoTimelineSwipePublishResponse {
+  const VideoTimelineSwipePublishResponse({
+    required this.state,
+    required this.version,
+    required this.finalJob,
+    required this.publishResult,
+    required this.blockers,
+  });
+
+  final String state;
+  final VideoTimelineVersion version;
+  final VideoTimelineRenderJob? finalJob;
+  final Map<String, dynamic>? publishResult;
+  final List<String> blockers;
+
+  factory VideoTimelineSwipePublishResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return VideoTimelineSwipePublishResponse(
+      state: _asString(json['state']),
+      version: VideoTimelineVersion.fromJson(_asMap(json['version'])),
+      finalJob: _asMapOrNull(json['final_job'] ?? json['finalJob']) == null
+          ? null
+          : VideoTimelineRenderJob.fromJson(
+              _asMap(json['final_job'] ?? json['finalJob']),
+            ),
+      publishResult: _asMapOrNull(
+        json['publish_result'] ?? json['publishResult'],
+      ),
+      blockers: _asStringList(json['blockers']),
+    );
+  }
+}
+
 String _asString(Object? value) {
   if (value == null) {
     return '';
@@ -850,6 +912,13 @@ List<Map<String, dynamic>> _asList(Object? value) {
     return const <Map<String, dynamic>>[];
   }
   return value.map(_asMap).toList();
+}
+
+List<String> _asStringList(Object? value) {
+  if (value is! List) {
+    return const <String>[];
+  }
+  return value.map((item) => item.toString()).toList(growable: false);
 }
 
 DateTime _asDateTime(Object? value) {

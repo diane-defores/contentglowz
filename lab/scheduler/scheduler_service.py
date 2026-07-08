@@ -104,6 +104,8 @@ class SchedulerService:
                 await self._run_social_job(job)
             elif job_type == "drip":
                 await self._run_drip_job(job)
+            elif job_type == "auto_video":
+                await self._run_auto_video_job(job)
             elif job_type == "ingest_newsletters":
                 await self._run_ingest_newsletters(job)
             elif job_type == "ingest_seo":
@@ -468,6 +470,74 @@ class SchedulerService:
             print("⚠ Social crew not available for scheduled generation")
         except Exception as e:
             raise RuntimeError(f"Social generation failed: {e}") from e
+
+    async def _run_auto_video_job(self, job: dict) -> None:
+        """Run scheduled branded video generation for complete content items."""
+        config = job.get("configuration", {}) or {}
+        svc = get_status_service()
+        user_id = job.get("user_id")
+        if not user_id or user_id == "system":
+            print(f"ℹ️  Auto-video job {job['id']}: no owning user, skipping")
+            return
+
+        target_count = int(config.get("target_count", 1) or 1)
+        project_id = job.get("project_id")
+        complete_items = []
+        try:
+            items = svc.list_content(
+                project_id=project_id,
+                limit=200,
+            )
+            for item in items:
+                if item.user_id != user_id:
+                    continue
+                metadata = item.metadata or {}
+                if not metadata.get("content_complete_at"):
+                    continue
+                if metadata.get("video_generation_state") == "generated":
+                    continue
+                content_type = getattr(item.content_type, "value", item.content_type)
+                if str(content_type) not in {"video_script", "short"}:
+                    continue
+                complete_items.append(item)
+                if len(complete_items) >= target_count:
+                    break
+        except Exception as e:
+            raise RuntimeError(f"Video generation queue lookup failed: {e}") from e
+
+        if not complete_items:
+            print(f"ℹ️  Auto-video job {job['id']}: no complete content items available")
+            return
+
+        try:
+            from api.dependencies.auth import CurrentUser
+            from api.routers.video_timelines import _generate_branded_video_preview
+            from fastapi import Response
+
+            for item in complete_items:
+                current_user = CurrentUser(user_id=user_id, email=None, bearer_token="system")
+                generation = await _generate_branded_video_preview(
+                    content_id=item.id,
+                    brand_profile_id=None,
+                    blueprint_id=None,
+                    format_preset="vertical_9_16",
+                    client_request_id=f"auto-video:{job['id']}",
+                    response=Response(),
+                    raw_request=None,
+                    current_user=current_user,
+                )
+                metadata = dict(item.metadata or {})
+                metadata["video_generation_state"] = "generated"
+                metadata["video_generation_generated_at"] = datetime.utcnow().isoformat()
+                metadata["video_generation_timeline_id"] = generation.timeline.timeline_id
+                metadata["video_generation_version_id"] = generation.version.version_id
+                metadata["video_generation_preview_job_id"] = generation.preview_job.job_id
+                svc.update_content(item.id, metadata=metadata)
+                print(f"✅ Auto-video job {job['id']} generated content {item.id}")
+        except ImportError:
+            print("⚠ Auto-video pipeline unavailable for scheduled generation")
+        except Exception as e:
+            raise RuntimeError(f"Auto-video generation failed: {e}") from e
 
     async def _run_ingest_newsletters(self, job: dict) -> None:
         """Ingest newsletter emails into the Idea Pool with LLM extraction."""
@@ -837,6 +907,11 @@ class SchedulerService:
                     "count": freq.get("social_posts_per_day", 0),
                     "schedule": "daily",
                     "schedule_time": "09:00",
+                },
+                "video": {
+                    "count": freq.get("video_drafts_per_day", 0),
+                    "schedule": "daily",
+                    "schedule_time": "11:00",
                 },
             }
 

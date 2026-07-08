@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from api.dependencies.auth import CurrentUser, require_current_user
 from api.dependencies.ownership import require_owned_content_record, require_owned_project_id
 from api.models.video_timeline import (
+    BrandedVideoGenerateRequest,
     BrandedVideoGenerationResponse,
     BrandedVideoTimelinePreviewRequest,
     BrandedVideoTimelineFromContentRequest,
@@ -534,6 +535,77 @@ def _branded_generation_readiness(
     return "blocked", [blocker]
 
 
+async def _resolve_default_brand_profile_for_project(
+    *,
+    project_id: str,
+    current_user: CurrentUser,
+) -> dict[str, Any]:
+    profiles = await brand_profile_store.list_brand_profiles(
+        user_id=current_user.user_id,
+        project_id=project_id,
+    )
+    for profile in profiles:
+        if profile.get("is_default"):
+            return profile
+    if profiles:
+        return profiles[0]
+    _raise(409, "brand_setup_required", "Create a brand profile before generating a branded video")
+
+
+async def _resolve_default_blueprint_for_brand_profile(
+    *,
+    project_id: str,
+    brand_profile_id: str,
+    current_user: CurrentUser,
+) -> dict[str, Any]:
+    blueprints = await brand_video_blueprint_store.list_brand_video_blueprints(
+        user_id=current_user.user_id,
+        project_id=project_id,
+        brand_profile_id=brand_profile_id,
+    )
+    for blueprint in blueprints:
+        if blueprint.get("status") == "active":
+            return blueprint
+    if blueprints:
+        return blueprints[0]
+    _raise(409, "brand_blueprint_required", "Create a brand video blueprint before generating a branded video")
+
+
+async def _resolve_branded_generation_inputs(
+    *,
+    project_id: str,
+    current_user: CurrentUser,
+    brand_profile_id: str | None,
+    blueprint_id: str | None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if brand_profile_id:
+        brand_profile = await _require_brand_profile_for_project(
+            brand_profile_id=brand_profile_id,
+            project_id=project_id,
+            current_user=current_user,
+        )
+    else:
+        brand_profile = await _resolve_default_brand_profile_for_project(
+            project_id=project_id,
+            current_user=current_user,
+        )
+
+    if blueprint_id:
+        blueprint = await _require_blueprint_for_brand_profile(
+            blueprint_id=blueprint_id,
+            project_id=project_id,
+            brand_profile_id=brand_profile["id"],
+            current_user=current_user,
+        )
+    else:
+        blueprint = await _resolve_default_blueprint_for_brand_profile(
+            project_id=project_id,
+            brand_profile_id=brand_profile["id"],
+            current_user=current_user,
+        )
+    return brand_profile, blueprint
+
+
 def _publish_state_for_final_job(job: VideoTimelineRenderJobResponse) -> tuple[str, list[str]]:
     if job.status == "completed" and job.artifact is not None and not job.stale:
         return "published", []
@@ -808,29 +880,28 @@ async def create_or_refresh_branded_video_timeline_draft(
     return await _timeline_response(timeline)
 
 
-@router.post("/from-content/branded-preview", response_model=BrandedVideoGenerationResponse)
-async def create_branded_video_preview_generation(
-    request: BrandedVideoTimelinePreviewRequest,
+async def _generate_branded_video_preview(
+    *,
+    content_id: str,
+    brand_profile_id: str | None,
+    blueprint_id: str | None,
+    format_preset: str,
+    client_request_id: str | None,
     response: Response,
-    raw_request: Request,
-    current_user: CurrentUser = Depends(require_current_user),
-):
+    raw_request: Request | None,
+    current_user: CurrentUser,
+) -> BrandedVideoGenerationResponse:
     status_service = get_status_service()
     owned_record = await require_owned_content_record(
-        content_id=request.content_id,
+        content_id=content_id,
         current_user=current_user,
         status_service=status_service,
     )
-    brand_profile = await _require_brand_profile_for_project(
-        brand_profile_id=request.brand_profile_id,
+    brand_profile, blueprint = await _resolve_branded_generation_inputs(
         project_id=owned_record.project_id,
         current_user=current_user,
-    )
-    blueprint = await _require_blueprint_for_brand_profile(
-        blueprint_id=request.blueprint_id,
-        project_id=owned_record.project_id,
-        brand_profile_id=brand_profile["id"],
-        current_user=current_user,
+        brand_profile_id=brand_profile_id,
+        blueprint_id=blueprint_id,
     )
     project_assets = status_service.list_project_assets(
         project_id=owned_record.project_id,
@@ -843,14 +914,14 @@ async def create_branded_video_preview_generation(
         brand_profile=brand_profile,
         blueprint=blueprint,
         project_assets=project_assets,
-        format_preset=request.format_preset,
+        format_preset=format_preset,
     )
     try:
         timeline, created = await video_timeline_store.create_or_get_active(
             user_id=current_user.user_id,
             project_id=owned_record.project_id,
-            content_id=request.content_id,
-            format_preset=request.format_preset,
+            content_id=content_id,
+            format_preset=format_preset,
             draft=branded_draft,
         )
         if not created:
@@ -882,7 +953,7 @@ async def create_branded_video_preview_generation(
             draft_revision=int(timeline["draft_revision"]),
             timeline=branded_draft,
             renderer_props=props,
-            client_request_id=request.client_request_id,
+            client_request_id=client_request_id,
         )
     except TimelinePropsError as exc:
         raise HTTPException(
@@ -935,7 +1006,7 @@ async def create_branded_video_preview_generation(
             version=version,
             render_mode="preview",
             current_user=current_user,
-            client_request_id=request.client_request_id,
+            client_request_id=client_request_id,
         )
         preview_job = _job_response(job, raw_request)
 
@@ -952,6 +1023,44 @@ async def create_branded_video_preview_generation(
         preview_job=preview_job,
         readiness=readiness,
         blockers=blockers,
+    )
+
+
+@router.post("/from-content/branded-preview", response_model=BrandedVideoGenerationResponse)
+async def create_branded_video_preview_generation(
+    request: BrandedVideoTimelinePreviewRequest,
+    response: Response,
+    raw_request: Request,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    return await _generate_branded_video_preview(
+        content_id=request.content_id,
+        brand_profile_id=request.brand_profile_id,
+        blueprint_id=request.blueprint_id,
+        format_preset=request.format_preset,
+        client_request_id=request.client_request_id,
+        response=response,
+        raw_request=raw_request,
+        current_user=current_user,
+    )
+
+
+@router.post("/from-content/branded-generate", response_model=BrandedVideoGenerationResponse)
+async def generate_branded_video_from_content(
+    request: BrandedVideoGenerateRequest,
+    response: Response,
+    raw_request: Request,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    return await _generate_branded_video_preview(
+        content_id=request.content_id,
+        brand_profile_id=request.brand_profile_id,
+        blueprint_id=request.blueprint_id,
+        format_preset=request.format_preset,
+        client_request_id=request.client_request_id,
+        response=response,
+        raw_request=raw_request,
+        current_user=current_user,
     )
 
 

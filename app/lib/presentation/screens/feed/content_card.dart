@@ -114,7 +114,8 @@ class ContentCard extends ConsumerWidget {
         item.shortPlatform != null ||
         item.socialPlatforms.isNotEmpty ||
         item.narrativeThread != null ||
-        item.generationReason != null;
+        item.generationReason != null ||
+        item.isContentComplete;
   }
 
   Widget _buildFormatMeta(Color typeColor) {
@@ -144,6 +145,16 @@ class ContentCard extends ConsumerWidget {
           Icons.lightbulb_outline,
           item.generationReason!,
           AppTheme.warningColor,
+        ),
+      );
+    }
+
+    if (item.isContentComplete) {
+      chips.add(
+        _metaChip(
+          Icons.done_all_rounded,
+          'Complete',
+          AppTheme.approveColor,
         ),
       );
     }

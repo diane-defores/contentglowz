@@ -1,10 +1,10 @@
 ---
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
-artifact_version: "1.0.2"
+artifact_version: "1.1.0"
 project: "contentglowz"
 created: "2026-05-11"
-updated: "2026-07-06"
+updated: "2026-07-08"
 status: reviewed
 source_skill: sf-veille
 scope: "project-competitors-and-inspirations"
@@ -19,6 +19,9 @@ evidence:
   - "User-pasted Savvio description on 2026-05-24."
   - "User-pasted competitor URLs on 2026-06-26: https://pixizen.io/fr, https://geniusquiz.co/, https://lifestylo.eu/."
   - "Fresh public-source review on 2026-07-06 for https://vento.so/ and the Chrome Web Store listing."
+  - "Fresh public-source review on 2026-07-07 for https://subscribr.ai/ and the AppSumo product/questions/reviews pages."
+  - "Fresh public-source review on 2026-07-07 for https://play.google.com/store/apps/details?id=com.typeless.mobile."
+  - "Fresh public-source review on 2026-07-08 for https://saaszilla.co/deals/tubeonai/."
 depends_on:
   - "shipflow_data/business/business.md@1.0.0"
 supersedes:
@@ -60,7 +63,10 @@ ContentGlowz est le projet le plus concerné par cette veille: génération, rec
 | [Filmora](https://filmora.wondershare.com/) | Concurrent / inspiration | 9/10 | Référence directe pour l'éditeur vidéo grand public/pro: timeline, AI Copilot, multicam, captions, motion tracking, adjustment layers, templates et export. À benchmarker pour l'UX d'édition et l'assistance IA. |
 | [PixVerse](https://pixverse.ai/en) | Concurrent / inspiration | 9/10 | Référence directe pour la génération vidéo IA: text-to-video, image-to-video, agent guidé, templates, multi-shot, lip sync, audio et workflows courts orientés social. À benchmarker pour la génération et le remix. |
 | [Pixizen](https://pixizen.io/fr) | Concurrent / inspiration | 9/10 | Plateforme AI de création publicitaire et produit: images, vidéos, captions, voix et motion. Très proche des workflows de génération, orchestration et publication de contenus marketing. |
+| [Subscribr](https://subscribr.ai/) + [page AppSumo](https://appsumo.com/products/subscribr/) | Concurrent indirect / inspiration contenu | 8/10 | Référence utile pour l'idéation et l'écriture guidée à partir de signaux qui performent déjà: idées outliers, suivi de concurrents, script en voix de marque, hooks, thumbnails. La page AppSumo ajoute un angle très utile de retours clients, objections, cas d'usage réels et limites produit. |
+| [TubeOnAI](https://saaszilla.co/deals/tubeonai/) | Concurrent / inspiration contenu | 8/10 | Synthèse de vidéos, podcasts et articles avec repurposing vers posts, blogs et newsletters. Très bon benchmark pour transformer des sources longues en sorties éditoriales et en contenus dérivés. |
 | [Vento](https://vento.so/) | Concurrent / inspiration workflow | 8/10 | Très bon benchmark pour l'édition live pendant l'enregistrement: pause, rewind de quelques secondes, re-record sur la même prise, prises multiples depuis un point de reprise, chapitres, annotations auteur, transcription audio, webcam + audio système. À benchmarker pour un mode "retake sans redémarrer". |
+| [Typeless: AI Voice Keyboard](https://play.google.com/store/apps/details?id=com.typeless.mobile) | Concurrent app / inspiration mobile voice UX | 8/10 | Concurrent pertinent pour `winglowz_app`: clavier vocal IA temps réel, édition par la voix, adaptation de ton selon l'app, dictionnaire personnel, 100+ langues et promesse privacy forte. Les reviews Play Store remontent des signaux très utiles: besoin d'un fallback clavier classique, feedback visuel plus clair pendant la dictée, meilleure ponctuation/quotes, emojis/GIFs et corrections manuelles plus fluides. |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration produit | 8/10 | Automatisation d'assets de release: utile pour générer captures, visuels sociaux, carrousels ou démos à partir d'un contenu source. |
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect / inspiration contenu | 8/10 | Pattern "faceless reels" très pertinent pour transformer un article, script ou note en short vidéo. À benchmarker comme concurrent sur les workflows de reels automatisés. |
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration produit | 8/10 | Voix émotionnelle/multilingue: bonne brique pour transformer des contenus en audio ou narration vidéo. |
@@ -99,6 +105,17 @@ Ce qui ressort de Vento n'est pas un éditeur timeline riche type Filmora, mais 
 - le produit reste simple: navigateur, webcam, audio et partage.
 
 Pour ContentGlowz, l'idée la plus différenciante n'est pas "un autre screen recorder", mais un mode de capture assistée qui réduit le coût mental de l'enregistrement avant même de passer dans l'éditeur complet.
+
+## Note ciblée — AppSumo comme source de retour client
+
+Quand une reference produit passe par AppSumo, la page marketplace n'est pas seulement une page de vente:
+
+- les reviews montrent les cas d'usage qui reviennent vraiment en pratique;
+- les questions mettent en evidence les objections, attentes, comparaisons et angles de confusion;
+- les reponses fondateur clarifient souvent le vrai scope du produit, ses limites et sa priorite roadmap;
+- pour ContentGlowz, c'est une bonne source de "voix du client" a confronter a la page officielle du produit.
+
+Subscribr est un bon exemple: la page site vend le workflow "idea -> script -> publish", tandis que la page AppSumo confirme ce que les utilisateurs valorisent concretement (gain de temps, hooks, repurposing blog, workflow YouTube focalise) et ce que le produit ne fait pas encore bien (ameliorer retroactivement les anciennes videos).
 
 - `app`: surface applicative, UX, rapports, visualisation, workflows utilisateur.
 - `lab`: backend, pipelines, données, agents, sources et expérimentation.

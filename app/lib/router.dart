@@ -14,6 +14,7 @@ import 'presentation/screens/feedback/feedback_screen.dart';
 import 'presentation/screens/history/history_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 import 'presentation/screens/settings/integrations_screen.dart';
+import 'presentation/screens/branding/brand_profiles_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 import 'presentation/screens/entry/entry_screen.dart';
 import 'presentation/screens/auth/auth_screen.dart';
@@ -321,6 +322,12 @@ List<RouteBase> buildAppRoutes() {
           name: 'settings',
           pageBuilder: (context, state) =>
               const NoTransitionPage(child: SettingsScreen()),
+        ),
+        GoRoute(
+          path: '/settings/branding',
+          name: 'settings-branding',
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: BrandProfilesScreen()),
         ),
         GoRoute(
           path: '/projects',

@@ -48,6 +48,14 @@
 | Pri | Task | Status |
 |-----|------|--------|
 | 🟢 | Re-audit marketing site SEO, accessibility, and copy after Astro 6 deployment preview is available | 💤 deferred |
+| ✅ | Publier le satellite TOFU `Quel prompt utiliser pour transformer une liste de concurrents en insights produit` pour capter l'intent commande/prompt et pousser vers les skills sans promettre de recherche manuelle | ✅ done |
+| ✅ | Publier le satellite comparatif `Où trouver le vrai feedback utilisateur de vos concurrents` avec angle sources AppSumo / Play Store / Trustpilot / G2 / Capterra et maillage vers le cluster concurrents | ✅ done |
+| ✅ | Publier le satellite BOFU léger `Comment prioriser sa roadmap grâce au feedback des clients de ses concurrents` pour couvrir le passage insight -> décision produit | ✅ done |
+| 🟡 | Publier le satellite mobile `Comment transformer des avis Play Store en idées UX actionnables` pour capter la longue traine app/mobile et exploiter la source Play Store | 📋 todo |
+| 🟡 | Publier le satellite partner `Ce que les pages AppSumo révèlent que les landing pages cachent` pour valoriser la source marketplace comme mine d'objections, scope réel et attentes d'achat | 📋 todo |
+| 🟡 | Publier le satellite UX `Comment repérer les frictions d'onboarding chez vos concurrents` pour isoler un sous-problème fort et mailler vers feedback client + roadmap | 📋 todo |
+| ✅ | Mettre à jour le maillage interne du cluster concurrents/feedback/roadmap avec un ordre de lecture explicite article d'entrée -> article méthode -> article sources -> article priorisation | ✅ done |
+| ✅ | Publier une page dédiée `Templates de prompts pour analyser le feedback des clients de vos concurrents` pour donner des commandes prêtes à coller dans NoSkills selon les cas de veille | ✅ done |
 
 ---
 

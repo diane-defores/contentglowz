@@ -9,6 +9,7 @@ from fastapi import HTTPException, Response
 
 from api.dependencies.auth import CurrentUser
 from api.models.video_timeline import (
+    BrandedVideoGenerateRequest,
     BrandedVideoTimelinePreviewRequest,
     BrandedVideoTimelineFromContentRequest,
     VideoTimelineDraftRequest,
@@ -621,6 +622,124 @@ async def test_create_branded_video_preview_generation_is_idempotent_per_client_
         render_mode="preview",
     )
     assert len(jobs) == 1
+
+
+@pytest.mark.asyncio
+async def test_generate_branded_video_from_content_uses_project_defaults(timeline_context, monkeypatch):
+    ctx = timeline_context
+    asset = _create_project_asset(ctx)
+    monkeypatch.setattr(
+        router,
+        "require_owned_content_record",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                id="content-1",
+                title="Launch faster",
+                project_id="project-1",
+                content_preview="A short summary that should appear inside the branded draft.",
+            )
+        ),
+    )
+
+    async def _list_brand_profiles(*, user_id: str, project_id: str):
+        assert user_id == "user-1"
+        assert project_id == "project-1"
+        return [
+            {
+                "id": "brand-1",
+                "project_id": "project-1",
+                "is_default": True,
+                "primary_colors": ["#FFFFFF", "#111111"],
+                "secondary_colors": ["#FF4F00"],
+                "font_heading": "Space Grotesk",
+                "font_body": "Manrope",
+                "motion_intensity": "medium",
+                "transition_family": "swipe",
+                "caption_style_defaults": {"textColor": "#FFFFFF"},
+                "cta_defaults": {"primaryText": "Try it now"},
+                "intro_module_enabled": True,
+                "outro_module_enabled": True,
+                "tone_keywords": ["clean"],
+            }
+        ]
+
+    async def _list_brand_video_blueprints(*, user_id: str, project_id: str, brand_profile_id: str | None = None):
+        assert user_id == "user-1"
+        assert project_id == "project-1"
+        assert brand_profile_id == "brand-1"
+        return [
+            {
+                "id": "blueprint-1",
+                "project_id": "project-1",
+                "brand_profile_id": "brand-1",
+                "status": "active",
+                "default_archetype": "ugc_ad",
+                "scene_rules_json": {"sceneDurationFrames": 84},
+                "cta_rules_json": {"durationFrames": 36},
+            }
+        ]
+
+    monkeypatch.setattr(router.brand_profile_store, "list_brand_profiles", _list_brand_profiles)
+    monkeypatch.setattr(
+        router.brand_video_blueprint_store,
+        "list_brand_video_blueprints",
+        _list_brand_video_blueprints,
+    )
+
+    response = Response()
+    generation = await router.generate_branded_video_from_content(
+        BrandedVideoGenerateRequest(
+            contentId="content-1",
+            triggerSource="manual_create",
+            clientRequestId="brand-run-defaults-1",
+        ),
+        response,
+        raw_request=None,
+        current_user=ctx.user,
+    )
+
+    assert response.status_code == 201
+    assert generation.readiness == "preview_ready"
+    assert generation.preview_job.status == "completed"
+    assert generation.version.timeline_id == generation.timeline.timeline_id
+    assert any(clip.asset_id == asset.id for clip in generation.timeline.draft.clips if clip.asset_id)
+
+
+@pytest.mark.asyncio
+async def test_generate_branded_video_from_content_requires_brand_setup_when_missing_defaults(
+    timeline_context, monkeypatch
+):
+    ctx = timeline_context
+    monkeypatch.setattr(
+        router,
+        "require_owned_content_record",
+        AsyncMock(
+            return_value=SimpleNamespace(
+                id="content-1",
+                title="Launch faster",
+                project_id="project-1",
+                content_preview="A short summary that should appear inside the branded draft.",
+            )
+        ),
+    )
+
+    async def _list_brand_profiles(*, user_id: str, project_id: str):
+        assert user_id == "user-1"
+        assert project_id == "project-1"
+        return []
+
+    monkeypatch.setattr(router.brand_profile_store, "list_brand_profiles", _list_brand_profiles)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await router.generate_branded_video_from_content(
+            BrandedVideoGenerateRequest(contentId="content-1"),
+            Response(),
+            raw_request=None,
+            current_user=ctx.user,
+        )
+
+    assert exc_info.value.status_code == 409
+    assert exc_info.value.detail["code"] == "brand_setup_required"
 
 
 @pytest.mark.asyncio

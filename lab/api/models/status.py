@@ -229,7 +229,7 @@ class ScheduleContentRequest(BaseModel):
 class CreateScheduleJobRequest(BaseModel):
     """Request to create a new schedule job."""
     project_id: Optional[str] = Field(None, description="Associated project ID")
-    job_type: str = Field(..., description="Job type: newsletter, seo, or article")
+    job_type: str = Field(..., description="Job type: newsletter, seo, article, short, social, or video")
     generator_id: Optional[str] = Field(None, description="Associated generator ID")
     configuration: Dict[str, Any] = Field(default_factory=dict, description="Job configuration")
     schedule: str = Field(..., description="Schedule: daily, weekly, monthly, or custom")

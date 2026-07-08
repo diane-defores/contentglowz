@@ -85,7 +85,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   )
                 : TextButton.icon(
                     onPressed: () => _bulkApprove(contentAsync.value!),
-                    icon: const Icon(Icons.done_all, size: _kActionDoneAllIconSize),
+                    icon: const Icon(
+                      Icons.done_all,
+                      size: _kActionDoneAllIconSize,
+                    ),
                     label: Text(
                       context.tr('All ({count})', {
                         'count': contentAsync.value!.length,
@@ -397,6 +400,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           result,
         ) {
           if (!mounted) return;
+          if (result.openVideoEditor) {
+            _openEditor(item);
+          }
           _showSnackBar(
             result.message,
             _colorForApproveSeverity(result.severity),
@@ -428,8 +434,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   }
 
   void _openEditor(ContentItem item) {
+    if (_usesVideoEditor(item)) {
+      context.push('/editor/${item.id}/video');
+      return;
+    }
     context.push('/editor/${item.id}');
   }
+
+  bool _usesVideoEditor(ContentItem item) =>
+      item.type == ContentType.videoScript ||
+      item.type == ContentType.reel ||
+      item.type == ContentType.short;
 
   void _showSnackBar(
     String message,

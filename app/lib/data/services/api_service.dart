@@ -10,6 +10,7 @@ import '../demo/demo_seed.dart';
 import '../models/affiliate_link.dart';
 import '../models/ai_image_generation.dart';
 import '../models/ai_runtime.dart';
+import '../models/brand_profile.dart';
 import '../models/app_bootstrap.dart';
 import '../models/app_settings.dart';
 import '../models/capture_asset.dart';
@@ -191,6 +192,7 @@ class ApiService {
   static const _publishAccountsCacheKey = 'publish.accounts';
   static const _feedbackAdminCacheKey = 'feedback.admin';
   static const _affiliationsCacheKey = 'affiliations';
+  static const _brandProfilesCacheKey = 'brand_profiles';
   static const _ideasCacheKey = 'ideas';
   static const _dripPlansCacheKey = 'drip.plans';
   static const _searchConsoleStatusCacheKey = 'search_console.status';
@@ -760,6 +762,82 @@ class ApiService {
     return items
         .map((json) => Project.fromJson(json as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<List<BrandProfile>> fetchBrandProfiles({
+    required String projectId,
+  }) async {
+    if (allowDemoData) {
+      return const <BrandProfile>[];
+    }
+
+    final data = await _getCachedData(
+      '/api/brand-profiles',
+      cacheKey: _cacheKeyFor(_brandProfilesCacheKey, {'projectId': projectId}),
+      queryParameters: {'projectId': projectId},
+    );
+    final items = data is List ? data : (_asMap(data)['items'] ?? []);
+    if (items is! List) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Invalid brand profiles response from FastAPI.',
+      );
+    }
+    return items.map((json) => BrandProfile.fromJson(_asMap(json))).toList();
+  }
+
+  Future<BrandProfile> createBrandProfile({
+    required String projectId,
+    required BrandProfileDraft draft,
+  }) async {
+    final payload = _compactMap({
+      'project_id': projectId,
+      ...draft.toCreateJson(),
+    });
+    try {
+      final response = await _dio.post('/api/brand-profiles', data: payload);
+      return BrandProfile.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<BrandProfile> updateBrandProfile({
+    required String brandProfileId,
+    required BrandProfileDraft draft,
+  }) async {
+    final payload = _compactMap(draft.toUpdateJson());
+    try {
+      final response = await _dio.patch(
+        '/api/brand-profiles/$brandProfileId',
+        data: payload,
+      );
+      return BrandProfile.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<BrandProfile> setDefaultBrandProfile({
+    required String brandProfileId,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        '/api/brand-profiles/$brandProfileId',
+        data: {'is_default': true},
+      );
+      return BrandProfile.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<void> deleteBrandProfile({required String brandProfileId}) async {
+    try {
+      await _dio.delete('/api/brand-profiles/$brandProfileId');
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
   }
 
   Future<void> onboardProject(String? sourceUrl, String name) async {
@@ -1594,6 +1672,44 @@ class ApiService {
 
   Future<void> rejectContent(String id) => transitionContent(id, 'rejected');
 
+  Future<ContentItem> completeContent(String id) async {
+    if (allowDemoData) {
+      final current = await fetchContentDetail(id);
+      return current.copyWith(
+        metadata: {
+          ...(current.metadata ?? const <String, dynamic>{}),
+          'content_complete': true,
+          'content_complete_at': DateTime.now().toUtc().toIso8601String(),
+          'video_generation_state': 'ready',
+        },
+      );
+    }
+
+    final idMappings = await _loadIdMappings();
+    final resolvedId = _resolveEntityId(id, idMappings);
+    final payload = {
+      'metadata': {
+        'content_complete': true,
+        'content_complete_at': DateTime.now().toUtc().toIso8601String(),
+        'video_generation_state': 'ready',
+      },
+    };
+
+    try {
+      final response = await _dio.post(
+        '/api/status/content/$resolvedId/complete',
+        data: payload,
+      );
+      final data = _asMap(response.data);
+      final current = await fetchContentDetail(id);
+      return current.copyWith(
+        metadata: data['metadata'] as Map<String, dynamic>? ?? current.metadata,
+      );
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<bool> updateContent(String id, {String? title, String? body}) async {
     if (allowDemoData) {
       return true;
@@ -1781,6 +1897,64 @@ class ApiService {
         }),
       );
       return VideoTimelineResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<BrandedVideoGenerationResponse> generateBrandedVideoFromContent({
+    required String contentId,
+    String formatPreset = 'vertical_9_16',
+    String? brandProfileId,
+    String? blueprintId,
+    String? triggerSource,
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/from-content/branded-generate',
+        data: _compactMap({
+          'content_id': contentId,
+          'brand_profile_id': brandProfileId,
+          'blueprint_id': blueprintId,
+          'format_preset': formatPreset,
+          'trigger_source': triggerSource,
+          'client_request_id': clientRequestId,
+        }),
+      );
+      return BrandedVideoGenerationResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoTimelineSwipePublishResponse> swipePublishVideoTimeline({
+    required String timelineId,
+    required String versionId,
+    String? previewJobId,
+    required String content,
+    required List<Map<String, String>> platforms,
+    String? title,
+    String? scheduledFor,
+    bool publishNow = true,
+    List<String> tags = const [],
+    String? clientRequestId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/$timelineId/versions/$versionId/swipe-publish',
+        data: _compactMap({
+          'preview_job_id': previewJobId,
+          'content': content,
+          'platforms': platforms,
+          'title': title,
+          'scheduled_for': scheduledFor,
+          'publish_now': publishNow,
+          'tags': tags.isEmpty ? null : tags,
+          'client_request_id': clientRequestId,
+        }),
+      );
+      return VideoTimelineSwipePublishResponse.fromJson(_asMap(response.data));
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
@@ -5228,9 +5402,7 @@ class ApiService {
         final convertedDetail = detail.map(
           (key, value) => MapEntry('$key', value),
         );
-        return convertedDetail is Map<String, dynamic>
-            ? convertedDetail
-            : Map<String, dynamic>.from(convertedDetail);
+        return Map<String, dynamic>.from(convertedDetail);
       }
       return null;
     }

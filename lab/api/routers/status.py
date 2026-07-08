@@ -1,5 +1,7 @@
 """Content status management endpoints."""
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 
@@ -633,6 +635,31 @@ async def schedule_content(
         raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
     except InvalidTransitionError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post(
+    "/content/{content_id}/complete",
+    response_model=ContentResponse,
+    summary="Mark content complete for downstream generation",
+    description="Record that the user finished importing material and the item may enter automated generation flows.",
+)
+async def complete_content(
+    content_id: str,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    """Mark a content record as complete without changing its publish state."""
+    svc = get_status_service()
+    record = await require_owned_content_record(content_id, current_user, svc)
+    try:
+        metadata = dict(record.metadata or {})
+        now = datetime.utcnow().isoformat()
+        metadata["content_complete_at"] = now
+        metadata["content_complete"] = True
+        metadata["video_generation_state"] = "ready"
+        updated = svc.update_content(content_id, metadata=metadata)
+        return _record_to_response(updated)
+    except ContentNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Content {content_id} not found")
 
 
 # ─── Migration ─────────────────────────────────────────

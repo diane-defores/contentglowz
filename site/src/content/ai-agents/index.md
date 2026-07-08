@@ -86,6 +86,10 @@ Single structured agent that automatically discovers, filters, and compiles rele
 
 Specialized agent that crawls competitor sites, identifies content gaps, and generates original SEO-optimized articles to fill them.
 
+### [Les skills ShipGlowz de création de contenu](/fr/blog/skills-creation-contenu)
+
+Vue d’ensemble de notre workflow content : veille, repurpose, rédaction, enrichissement, structure H2/H3 et cohérence éditoriale dans un système ShipGlowz exploitable.
+
 ---
 
 ## 🏗️ The 6-Agent SEO System

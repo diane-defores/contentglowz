@@ -116,15 +116,16 @@ class VideoTimelineController extends StateNotifier<VideoTimelineState> {
   Future<void> loadFromContentId() async {
     state = state.copyWith(isLoading: true, clearLastError: true);
     try {
-      final timeline = await _apiService.createOrLoadVideoTimelineFromContent(
+      final generation = await _apiService.generateBrandedVideoFromContent(
         contentId: contentId,
+        triggerSource: 'manual_create',
       );
       state = state.copyWith(
-        timeline: timeline,
-        latestVersion: timeline.latestVersion,
-        selectedClipId: _firstClipId(timeline.draft),
+        timeline: generation.timeline,
+        latestVersion: generation.version,
+        previewJob: generation.previewJob,
+        selectedClipId: _firstClipId(generation.timeline.draft),
         hasUnsavedChanges: false,
-        clearPreviewJob: true,
         clearFinalJob: true,
         isLoading: false,
       );

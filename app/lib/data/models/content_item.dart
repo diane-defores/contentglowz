@@ -175,6 +175,10 @@ class ContentItem {
   String? get reviewActorDisplay =>
       reviewActorLabel ?? reviewActorId ?? reviewedBy;
 
+  bool get isContentComplete =>
+      metadata?['content_complete'] == true ||
+      metadata?['content_complete_at'] != null;
+
   // ── Format-specific metadata helpers ──
 
   /// SEO keyword for blog articles (from angle enrichment)

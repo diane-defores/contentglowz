@@ -20,6 +20,7 @@ import '../data/models/app_bootstrap.dart';
 import '../data/models/app_settings.dart';
 import '../data/models/auth_session.dart';
 import '../data/models/content_item.dart';
+import '../data/models/brand_profile.dart';
 import '../data/models/creator_profile.dart';
 import '../data/models/feedback_entry.dart';
 import '../data/models/email_source.dart';
@@ -1328,6 +1329,128 @@ final activeProjectProvider = Provider<Project?>((ref) {
 final activeProjectIdProvider = Provider<String?>((ref) {
   return ref.watch(activeProjectProvider.select((project) => project?.id));
 });
+
+class BrandProfilesState {
+  const BrandProfilesState({
+    this.items = const <BrandProfile>[],
+    this.message,
+    this.isDegraded = false,
+  });
+
+  final List<BrandProfile> items;
+  final String? message;
+  final bool isDegraded;
+}
+
+final brandProfilesStateProvider = FutureProvider<BrandProfilesState>((
+  ref,
+) async {
+  final accessState = ref.watch(appAccessStateProvider).value;
+  if (accessState?.canUseWorkspaceData != true) {
+    return const BrandProfilesState();
+  }
+
+  final activeProjectId = ref.watch(activeProjectIdProvider);
+  if (activeProjectId == null) {
+    return const BrandProfilesState();
+  }
+
+  final api = ref.watch(apiServiceProvider);
+  try {
+    final profiles = await api.fetchBrandProfiles(projectId: activeProjectId);
+    return BrandProfilesState(items: profiles);
+  } catch (error, stackTrace) {
+    if (!_isNonCriticalReadFailure(error)) {
+      rethrow;
+    }
+    _logDegradedRead(
+      ref,
+      scope: 'brand_profiles.read.degraded',
+      message:
+          'Brand profiles fetch failed; the branding settings view will stay available in degraded mode.',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return BrandProfilesState(message: error.toString(), isDegraded: true);
+  }
+});
+
+final brandProfilesProvider = FutureProvider<List<BrandProfile>>((ref) async {
+  final state = await ref.watch(brandProfilesStateProvider.future);
+  return state.items;
+});
+
+final brandProfileControllerProvider =
+    AsyncNotifierProvider<BrandProfileController, void>(
+      BrandProfileController.new,
+    );
+
+class BrandProfileController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
+
+  Future<void> createBrandProfile({required BrandProfileDraft draft}) async {
+    final projectId = ref.read(activeProjectIdProvider);
+    if (projectId == null) {
+      throw StateError('No active project selected.');
+    }
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.createBrandProfile(projectId: projectId, draft: draft);
+      ref.invalidate(brandProfilesStateProvider);
+      ref.invalidate(brandProfilesProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> updateBrandProfile({
+    required String brandProfileId,
+    required BrandProfileDraft draft,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.updateBrandProfile(
+        brandProfileId: brandProfileId,
+        draft: draft,
+      );
+      ref.invalidate(brandProfilesStateProvider);
+      ref.invalidate(brandProfilesProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> setDefaultBrandProfile(String brandProfileId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.setDefaultBrandProfile(brandProfileId: brandProfileId);
+      ref.invalidate(brandProfilesStateProvider);
+      ref.invalidate(brandProfilesProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+
+  Future<void> deleteBrandProfile(String brandProfileId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final api = ref.read(apiServiceProvider);
+      await api.deleteBrandProfile(brandProfileId: brandProfileId);
+      ref.invalidate(brandProfilesStateProvider);
+      ref.invalidate(brandProfilesProvider);
+    });
+    if (state.hasError) {
+      throw state.error!;
+    }
+  }
+}
 
 class ProjectAssetLibraryState {
   const ProjectAssetLibraryState({
@@ -2833,6 +2956,49 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       );
       final publishTitle = titleOverride ?? item.title;
 
+      if (_usesCanonicalVideoPublishFlow(item)) {
+        final generation = await api.generateBrandedVideoFromContent(
+          contentId: item.id,
+          triggerSource: 'feed_swipe_publish',
+        );
+        final publishResponse = await api.swipePublishVideoTimeline(
+          timelineId: generation.timeline.timelineId,
+          versionId: generation.version.versionId,
+          previewJobId: generation.previewJob.jobId,
+          content: publishBody,
+          platforms: platforms,
+          title: publishTitle,
+          tags: item.tags,
+        );
+        if (publishResponse.state == 'published' ||
+            publishResponse.state == 'scheduled') {
+          await api.approveContent(id);
+          ref.invalidate(contentHistoryProvider);
+          _invalidateContentDetail(id);
+          return ApproveResult(
+            approved: true,
+            published: true,
+            message:
+                '${publishResponse.state == 'scheduled' ? 'Scheduled' : 'Published'} '
+                '"${item.title}" via the branded video pipeline.',
+            severity: ApproveSeverity.success,
+          );
+        }
+
+        state = AsyncData(current);
+        return ApproveResult(
+          approved: false,
+          published: false,
+          message: publishResponse.state == 'final_pending'
+              ? 'Branded video ready for review, but final render is still running. Opening the video editor.'
+              : 'Branded video publish is blocked: ${publishResponse.blockers.join(', ')}. Opening the video editor.',
+          severity: publishResponse.state == 'final_pending'
+              ? ApproveSeverity.info
+              : ApproveSeverity.warning,
+          openVideoEditor: true,
+        );
+      }
+
       await api.approveContent(id);
 
       final response = await api.publishContent(
@@ -2934,6 +3100,11 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
     }
     return body;
   }
+
+  bool _usesCanonicalVideoPublishFlow(ContentItem item) =>
+      item.type == ContentType.videoScript ||
+      item.type == ContentType.reel ||
+      item.type == ContentType.short;
 }
 
 enum ApproveSeverity { success, info, warning, error }
@@ -2943,12 +3114,14 @@ class ApproveResult {
   final bool published;
   final String message;
   final ApproveSeverity severity;
+  final bool openVideoEditor;
 
   const ApproveResult({
     required this.approved,
     required this.published,
     required this.message,
     this.severity = ApproveSeverity.success,
+    this.openVideoEditor = false,
   });
 }
 

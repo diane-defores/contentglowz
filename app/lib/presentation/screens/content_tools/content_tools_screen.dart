@@ -107,6 +107,7 @@ class _ValidationsTab extends ConsumerWidget {
               const SizedBox(height: 12),
               ...articles.map((a) {
                 final article = a as Map<String, dynamic>;
+                final articleId = article['id']?.toString() ?? '';
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
@@ -126,9 +127,17 @@ class _ValidationsTab extends ConsumerWidget {
                       ].where((s) => s.isNotEmpty).join(' · '),
                       style: theme.textTheme.bodySmall,
                     ),
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: theme.colorScheme.onSurfaceVariant,
+                    trailing: TextButton(
+                      onPressed: articleId.isEmpty
+                          ? null
+                          : () async {
+                              await ref
+                                  .read(apiServiceProvider)
+                                  .completeContent(articleId);
+                              ref.invalidate(_validationsProvider);
+                              ref.invalidate(contentHistoryProvider);
+                            },
+                      child: Text(context.tr('Complete')),
                     ),
                   ),
                 );

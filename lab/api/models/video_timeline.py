@@ -213,6 +213,46 @@ class BrandedVideoTimelinePreviewRequest(BaseModel):
     )
 
 
+class BrandedVideoGenerateRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("contentId", "content_id"),
+        serialization_alias="contentId",
+    )
+    brand_profile_id: str | None = Field(
+        default=None,
+        min_length=1,
+        validation_alias=AliasChoices("brandProfileId", "brand_profile_id"),
+        serialization_alias="brandProfileId",
+    )
+    blueprint_id: str | None = Field(
+        default=None,
+        min_length=1,
+        validation_alias=AliasChoices("blueprintId", "blueprint_id"),
+        serialization_alias="blueprintId",
+    )
+    format_preset: FormatPreset = Field(
+        default="vertical_9_16",
+        validation_alias=AliasChoices("formatPreset", "format_preset"),
+        serialization_alias="formatPreset",
+    )
+    trigger_source: str | None = Field(
+        default=None,
+        max_length=120,
+        validation_alias=AliasChoices("triggerSource", "trigger_source"),
+        serialization_alias="triggerSource",
+    )
+    client_request_id: str | None = Field(
+        default=None,
+        max_length=128,
+        validation_alias=AliasChoices("clientRequestId", "client_request_id"),
+        serialization_alias="clientRequestId",
+    )
+
+
 class VideoTimelineDraftRequest(BaseModel):
     base_version_id: str | None = None
     draft_revision: int = Field(..., ge=0)

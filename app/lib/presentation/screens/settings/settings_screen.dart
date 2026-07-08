@@ -15,7 +15,8 @@ import 'settings_widgets.dart';
 
 const double _kSettingsFinalBottomSpacing = AppSpacing.lg + AppSpacing.sm;
 const double _kSettingsMiniLoaderDotSize = AppSpacing.xs + AppSpacing.xxs;
-const double _kSettingsActionRowHeight = AppSpacing.md + AppSpacing.md + AppSpacing.sm;
+const double _kSettingsActionRowHeight =
+    AppSpacing.md + AppSpacing.md + AppSpacing.sm;
 const double _kSettingsStatusAvatarSize =
     AppSpacing.lg + AppSpacing.sm + AppSpacing.xxs;
 const double _kSettingsSmallIconSize = 18.0;
@@ -90,6 +91,24 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => context.push('/ritual'),
               ),
               _TourRow(tour: tour),
+            ],
+          ),
+
+          SizedBox(height: groupGap),
+
+          SettingsGroup(
+            title: 'Branding',
+            caption:
+                'Project-scoped brand profiles that shape automated video generation.',
+            children: [
+              SettingsRow(
+                icon: Icons.palette_outlined,
+                title: 'Brand Profiles',
+                subtitle:
+                    'Create, edit, and choose the active branding rules for this project',
+                iconColor: AppTheme.editColor,
+                onTap: () => context.push('/settings/branding'),
+              ),
             ],
           ),
 
@@ -303,7 +322,10 @@ class _AccountGroup extends ConsumerWidget {
                     ? OutlinedButton.icon(
                         onPressed: () =>
                             ref.read(authSessionProvider.notifier).signOut(),
-                        icon: const Icon(Icons.logout_rounded, size: _kSettingsSmallIconSize),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          size: _kSettingsSmallIconSize,
+                        ),
                         label: Text(context.tr('Sign out')),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(0, _kSettingsActionRowHeight),
@@ -311,7 +333,10 @@ class _AccountGroup extends ConsumerWidget {
                       )
                     : FilledButton.icon(
                         onPressed: () => context.push('/auth'),
-                        icon: const Icon(Icons.login_rounded, size: _kSettingsSmallIconSize),
+                        icon: const Icon(
+                          Icons.login_rounded,
+                          size: _kSettingsSmallIconSize,
+                        ),
                         label: Text(context.tr('Sign in')),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppTheme.approveColor,
@@ -480,10 +505,10 @@ class _IdeaPoolBlock extends ConsumerWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () => context.push('/idea-pool'),
-                    icon: const Icon(
-                      Icons.lightbulb_outline,
-                      size: _kSettingsSmallIconSize,
-                    ),
+                  icon: const Icon(
+                    Icons.lightbulb_outline,
+                    size: _kSettingsSmallIconSize,
+                  ),
                   label: Text(context.tr('View Idea Pool')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.warningColor,
@@ -608,6 +633,18 @@ class _FrequencyBlock extends ConsumerWidget {
               onChanged: settings == null
                   ? null
                   : (v) => update('social_posts_per_day', v),
+            ),
+            const SizedBox(height: 8),
+            _FrequencyRow(
+              icon: Icons.smart_display_outlined,
+              label: 'Branded videos',
+              value: (freq['video_drafts_per_day'] as int?) ?? 0,
+              unit: '/day',
+              max: 10,
+              color: AppTheme.colorForContentType('Video'),
+              onChanged: settings == null
+                  ? null
+                  : (v) => update('video_drafts_per_day', v),
             ),
           ],
         );
