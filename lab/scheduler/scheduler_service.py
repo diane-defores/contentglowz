@@ -10,6 +10,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 from typing import Optional
 
 from status.audit import actor_from_agent
@@ -510,28 +511,29 @@ class SchedulerService:
             return
 
         try:
-            from api.dependencies.auth import CurrentUser
-            from api.routers.video_timelines import _generate_branded_video_preview
-            from fastapi import Response
+            from api.services.branded_video_generation_service import branded_video_generation_service
 
             for item in complete_items:
-                current_user = CurrentUser(user_id=user_id, email=None, bearer_token="system")
-                generation = await _generate_branded_video_preview(
-                    content_id=item.id,
-                    brand_profile_id=None,
-                    blueprint_id=None,
+                current_user = SimpleNamespace(
+                    user_id=user_id,
+                    email=None,
+                    bearer_token="system",
+                )
+                generation = await branded_video_generation_service.ensure_run(
+                    content_record=item,
                     format_preset="vertical_9_16",
-                    client_request_id=f"auto-video:{job['id']}",
-                    response=Response(),
-                    raw_request=None,
                     current_user=current_user,
+                    status_service=svc,
+                    trigger_source=f"auto-video:{job['id']}",
                 )
                 metadata = dict(item.metadata or {})
-                metadata["video_generation_state"] = "generated"
+                metadata["video_generation_state"] = generation.status
+                metadata["video_generation_readiness"] = generation.readiness
                 metadata["video_generation_generated_at"] = datetime.utcnow().isoformat()
-                metadata["video_generation_timeline_id"] = generation.timeline.timeline_id
-                metadata["video_generation_version_id"] = generation.version.version_id
-                metadata["video_generation_preview_job_id"] = generation.preview_job.job_id
+                metadata["video_generation_timeline_id"] = generation.timeline_id
+                metadata["video_generation_version_id"] = generation.version_id
+                metadata["video_generation_preview_job_id"] = generation.preview_job_id
+                metadata["video_generation_final_job_id"] = generation.final_job_id
                 svc.update_content(item.id, metadata=metadata)
                 print(f"✅ Auto-video job {job['id']} generated content {item.id}")
         except ImportError:
@@ -857,11 +859,21 @@ class SchedulerService:
         Reads contentFrequency from user settings and creates/updates/disables
         schedule jobs to match the desired cadence.
         """
-        try:
-            from api.services.user_data_store import UserDataStore
-            store = UserDataStore()
-        except Exception:
-            return  # DB not configured, skip
+        store = None
+        if hasattr(svc, "get_user_settings_raw"):
+            store = svc
+        else:
+            try:
+                from api.services.user_data_store import UserDataStore
+
+                store = UserDataStore()
+            except Exception:
+                try:
+                    from api.services.user_data_store import user_data_store
+
+                    store = user_data_store
+                except Exception:
+                    return  # DB not configured, skip
 
         # For now, reconcile for all users with settings
         # In production, this would iterate over active users

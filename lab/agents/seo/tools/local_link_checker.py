@@ -10,9 +10,27 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 import re
 
-from crewai.tools import tool
+from crewai.tools import tool as crewai_tool
 
 from api.models.project import Project, ProjectSettings
+
+
+def tool(name: str):
+    """Compatibility wrapper for CrewAI tool decorator drift in tests/runtime."""
+
+    if callable(crewai_tool):
+        try:
+            decorator = crewai_tool(name)
+            if callable(decorator):
+                return decorator
+        except TypeError:
+            if getattr(crewai_tool, "__name__", "") == "tool":
+                return crewai_tool
+
+    def _identity(func):
+        return func
+
+    return _identity
 
 
 class LocalLinkChecker:

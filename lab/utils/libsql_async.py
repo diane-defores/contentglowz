@@ -8,6 +8,7 @@ the maintained `libsql` package underneath.
 from __future__ import annotations
 
 import asyncio
+import sqlite3
 from dataclasses import dataclass
 from typing import Any
 
@@ -25,20 +26,41 @@ class Client:
     def __init__(self, url: str, auth_token: str | None = None) -> None:
         self._url = url
         self._auth_token = auth_token or ""
-        self._conn = self._connect()
+        self._conn: Any | None = None
         self._lock: asyncio.Lock | None = None
 
-    def _connect(self) -> libsql.Connection:
+    def _connect(self) -> Any:
+        if self._use_local_sqlite:
+            return sqlite3.connect(
+                self._url,
+                uri=self._url.startswith("file:"),
+                check_same_thread=False,
+            )
         return libsql.connect(
             database=self._url,
             auth_token=self._auth_token,
             _check_same_thread=False,
         )
 
+    def _ensure_connection(self) -> Any:
+        if self._conn is None:
+            self._conn = self._connect()
+        return self._conn
+
     def _ensure_lock(self) -> asyncio.Lock:
         if self._lock is None:
             self._lock = asyncio.Lock()
         return self._lock
+
+    @property
+    def _use_local_sqlite(self) -> bool:
+        return (
+            self._url == ":memory:"
+            or self._url.startswith("file:")
+            or self._url.endswith(".db")
+            or self._url.endswith(".sqlite")
+            or self._url.endswith(".sqlite3")
+        )
 
     @staticmethod
     def _should_reconnect(exc: Exception) -> bool:
@@ -53,9 +75,11 @@ class Client:
 
     def _reconnect(self) -> None:
         try:
-            self._conn.close()
+            if self._conn is not None:
+                self._conn.close()
         except Exception:
             pass
+        self._conn = None
         self._conn = self._connect()
 
     async def execute(
@@ -69,9 +93,10 @@ class Client:
         )
 
         def _run(sql: str, sql_params: list[Any]) -> ResultSet:
-            cursor = self._conn.execute(sql, sql_params)
+            conn = self._ensure_connection()
+            cursor = conn.execute(sql, sql_params)
             try:
-                self._conn.commit()
+                conn.commit()
             except Exception:
                 pass
             try:
@@ -95,7 +120,10 @@ class Client:
 
     async def close(self) -> None:
         async with self._ensure_lock():
-            await asyncio.to_thread(self._conn.close)
+            conn = self._conn
+            self._conn = None
+            if conn is not None:
+                await asyncio.to_thread(conn.close)
 
 
 def create_client(*, url: str, auth_token: str | None = None, **_: Any) -> Client:

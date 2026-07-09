@@ -63,6 +63,28 @@ class _FakeVideoTimelineApiService extends ApiService {
   int finalRenderCalls = 0;
 
   @override
+  Future<BrandedVideoGenerationResponse> generateBrandedVideoFromContent({
+    required String contentId,
+    String formatPreset = 'vertical_9_16',
+    String? brandProfileId,
+    String? blueprintId,
+    String? triggerSource,
+    String? clientRequestId,
+  }) async {
+    final version = timeline.latestVersion ?? _versionFromTimeline(timeline);
+    return BrandedVideoGenerationResponse(
+      timeline: timeline,
+      version: version,
+      previewJob: _renderJob(
+        versionId: version.versionId,
+        playbackUrl: 'https://assets.example.test/preview.mp4?token=old-token',
+      ),
+      readiness: 'ready',
+      blockers: const [],
+    );
+  }
+
+  @override
   Future<VideoTimelineResponse> createOrLoadVideoTimelineFromContent({
     required String contentId,
     String formatPreset = 'vertical_9_16',
@@ -191,5 +213,16 @@ VideoTimelineRenderJob _renderJob({
       fileName: '$renderMode.mp4',
       renderMode: renderMode,
     ),
+  );
+}
+
+VideoTimelineVersion _versionFromTimeline(VideoTimelineResponse timeline) {
+  return VideoTimelineVersion(
+    versionId: timeline.currentVersionId ?? 'version-1',
+    timelineId: timeline.timelineId,
+    versionNumber: timeline.draftRevision,
+    timeline: timeline.draft,
+    rendererProps: const {},
+    createdAt: timeline.updatedAt,
   );
 }

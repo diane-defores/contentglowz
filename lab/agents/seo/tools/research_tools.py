@@ -8,7 +8,7 @@ import os
 import requests
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-from crewai.tools import tool
+from crewai.tools import tool as crewai_tool
 from dotenv import load_dotenv
 
 from agents.seo.tools.dataforseo_provider import (
@@ -19,6 +19,24 @@ from agents.seo.tools.dataforseo_provider import (
 )
 
 load_dotenv()
+
+
+def tool(name: str):
+    """Compatibility wrapper for CrewAI tool decorator drift in tests/runtime."""
+
+    if callable(crewai_tool):
+        try:
+            decorator = crewai_tool(name)
+            if callable(decorator):
+                return decorator
+        except TypeError:
+            if getattr(crewai_tool, "__name__", "") == "tool":
+                return crewai_tool
+
+    def _identity(func):
+        return func
+
+    return _identity
 
 # Re-export provider classes under original names for backward compat
 SERPAnalyzer = DFSSERPAnalyzer

@@ -92,6 +92,25 @@ class _FakeVideoTimelineApiService extends ApiService {
   final List<VideoTimelineDocument> savedVersions = [];
 
   @override
+  Future<BrandedVideoGenerationResponse> generateBrandedVideoFromContent({
+    required String contentId,
+    String formatPreset = 'vertical_9_16',
+    String? brandProfileId,
+    String? blueprintId,
+    String? triggerSource,
+    String? clientRequestId,
+  }) async {
+    final version = timeline.latestVersion ?? _versionFromTimeline(timeline);
+    return BrandedVideoGenerationResponse(
+      timeline: timeline,
+      version: version,
+      previewJob: _renderJob(versionId: version.versionId),
+      readiness: 'ready',
+      blockers: const [],
+    );
+  }
+
+  @override
   Future<VideoTimelineResponse> createOrLoadVideoTimelineFromContent({
     required String contentId,
     String formatPreset = 'vertical_9_16',
@@ -183,5 +202,45 @@ VideoTimelineResponse _timeline() {
     finalStatus: 'missing',
     createdAt: createdAt,
     updatedAt: createdAt,
+  );
+}
+
+VideoTimelineVersion _versionFromTimeline(VideoTimelineResponse timeline) {
+  return VideoTimelineVersion(
+    versionId: timeline.currentVersionId ?? 'version-1',
+    timelineId: timeline.timelineId,
+    versionNumber: timeline.draftRevision,
+    timeline: timeline.draft,
+    rendererProps: const {},
+    createdAt: timeline.updatedAt,
+  );
+}
+
+VideoTimelineRenderJob _renderJob({
+  required String versionId,
+  String renderMode = 'preview',
+  String status = 'completed',
+  String playbackUrl = 'https://assets.example.test/preview.mp4?token=fixture-token',
+}) {
+  final now = DateTime.utc(2026, 5, 14, 16);
+  return VideoTimelineRenderJob(
+    jobId: '$renderMode-job-1',
+    timelineId: 'timeline-1',
+    versionId: versionId,
+    renderMode: renderMode,
+    status: status,
+    progress: 100,
+    createdAt: now,
+    updatedAt: now,
+    artifact: VideoTimelineArtifact(
+      playbackUrl: playbackUrl,
+      artifactExpiresAt: now.add(const Duration(minutes: 15)),
+      retentionExpiresAt: now.add(const Duration(days: 7)),
+      deletionWarningAt: now.add(const Duration(days: 6)),
+      byteSize: 1024,
+      mimeType: 'video/mp4',
+      fileName: '$renderMode.mp4',
+      renderMode: renderMode,
+    ),
   );
 }
