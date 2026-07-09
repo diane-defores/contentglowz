@@ -15,6 +15,9 @@ from api.dependencies.auth import CurrentUser, require_current_user
 from api.dependencies.ownership import require_owned_content_record, require_owned_project_id
 from api.models.video_timeline import (
     BrandedVideoGenerateRequest,
+    BrandedVideoFeedCandidateListResponse,
+    BrandedVideoFeedCandidateRequest,
+    BrandedVideoFeedCandidateResponse,
     BrandedVideoGenerationResponse,
     BrandedVideoTimelinePreviewRequest,
     BrandedVideoTimelineFromContentRequest,
@@ -33,6 +36,7 @@ from api.models.video_timeline import (
     VideoTimelineVersionCreateRequest,
     VideoTimelineVersionResponse,
 )
+from api.services.branded_video_generation_service import branded_video_generation_service
 from api.routers.publish import PublishMediaItem, PublishRequest, publish_content
 from api.services.project_asset_storage import build_project_asset_storage_descriptor
 from api.services.brand_profile_store import brand_profile_store
@@ -521,6 +525,25 @@ def _job_response(job: dict[str, Any], request: Request | None = None) -> VideoT
         stale=bool(job.get("stale")),
         created_at=job["created_at"],
         updated_at=job["updated_at"],
+    )
+
+
+def _feed_candidate_response(candidate: Any) -> BrandedVideoFeedCandidateResponse:
+    return BrandedVideoFeedCandidateResponse(
+        content_id=candidate.content_id,
+        project_id=candidate.project_id,
+        format_preset=candidate.format_preset,
+        readiness=candidate.readiness,
+        status=candidate.status,
+        blockers=list(candidate.blockers),
+        blocker_code=candidate.blocker_code,
+        blocker_summary=candidate.blocker_summary,
+        timeline_id=candidate.timeline_id,
+        version_id=candidate.version_id,
+        preview_job_id=candidate.preview_job_id,
+        final_job_id=candidate.final_job_id,
+        updated_at=_as_datetime(candidate.updated_at),
+        completed_at=_as_datetime(candidate.completed_at) if candidate.completed_at else None,
     )
 
 
@@ -1061,6 +1084,87 @@ async def generate_branded_video_from_content(
         response=response,
         raw_request=raw_request,
         current_user=current_user,
+    )
+
+
+@router.post("/feed-candidates/refresh", response_model=BrandedVideoFeedCandidateListResponse)
+async def refresh_branded_video_feed_candidates(
+    request: BrandedVideoFeedCandidateRequest,
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(request.project_id, current_user)
+    status_service = get_status_service()
+    requested_ids = request.content_ids
+    if requested_ids:
+        owned_records = [
+            await require_owned_content_record(
+                content_id=content_id,
+                current_user=current_user,
+                status_service=status_service,
+            )
+            for content_id in requested_ids[: request.limit]
+        ]
+    else:
+        owned_records = [
+            record
+            for record in status_service.list_content(
+                project_ids=[request.project_id],
+                limit=request.limit,
+                offset=0,
+            )
+            if record.user_id == current_user.user_id
+        ]
+    candidates = []
+    for record in owned_records:
+        candidate = await branded_video_generation_service.ensure_run(
+            content_record=record,
+            current_user=current_user,
+            status_service=status_service,
+            format_preset=request.format_preset,
+            trigger_source=request.trigger_source or "feed_refresh",
+        )
+        metadata = dict(getattr(record, "metadata", {}) or {})
+        metadata.update(
+            {
+                "video_generation_state": candidate.status,
+                "video_generation_readiness": candidate.readiness,
+                "video_generation_blockers": list(candidate.blockers),
+                "video_generation_blocker_code": candidate.blocker_code,
+                "video_generation_blocker_summary": candidate.blocker_summary,
+                "video_generation_timeline_id": candidate.timeline_id,
+                "video_generation_version_id": candidate.version_id,
+                "video_generation_preview_job_id": candidate.preview_job_id,
+                "video_generation_final_job_id": candidate.final_job_id,
+                "video_generation_updated_at": _as_datetime(candidate.updated_at).isoformat(),
+                "video_generation_ready_at": _as_datetime(candidate.completed_at).isoformat()
+                if candidate.completed_at
+                else None,
+            }
+        )
+        try:
+            status_service.update_content(record.id, metadata=metadata)
+        except ContentNotFoundError:
+            pass
+        candidates.append(_feed_candidate_response(candidate))
+    return BrandedVideoFeedCandidateListResponse(items=candidates)
+
+
+@router.get("/feed-candidates", response_model=BrandedVideoFeedCandidateListResponse)
+async def list_branded_video_feed_candidates(
+    project_id: str = Query(..., min_length=1),
+    format_preset: str = Query("vertical_9_16"),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: CurrentUser = Depends(require_current_user),
+):
+    await require_owned_project_id(project_id, current_user)
+    candidates = await branded_video_generation_service.list_candidates(
+        current_user=current_user,
+        project_id=project_id,
+        limit=limit,
+    )
+    filtered = [candidate for candidate in candidates if candidate.format_preset == format_preset]
+    return BrandedVideoFeedCandidateListResponse(
+        items=[_feed_candidate_response(candidate) for candidate in filtered]
     )
 
 

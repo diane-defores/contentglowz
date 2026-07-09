@@ -1,4 +1,4 @@
-import 'package:contentglowz_app/data/models/brand_profile.dart';
+import 'package:app/data/models/brand_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

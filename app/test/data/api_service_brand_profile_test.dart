@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:contentglowz_app/data/models/brand_profile.dart';
-import 'package:contentglowz_app/data/services/api_service.dart';
+import 'package:app/data/models/brand_profile.dart';
+import 'package:app/data/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

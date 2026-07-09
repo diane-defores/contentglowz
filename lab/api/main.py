@@ -233,6 +233,15 @@ async def lifespan(app: FastAPI):
         raise
 
     try:
+        from api.services.branded_video_generation_store import branded_video_generation_store
+        if branded_video_generation_store.db_client:
+            await branded_video_generation_store.ensure_table()
+            print("✅ Branded video generation run table ensured")
+    except Exception as e:
+        print(f"❌ Branded video generation run migration failed: {e}")
+        raise
+
+    try:
         from api.services.brand_profile_store import brand_profile_store
         if brand_profile_store.db_client:
             await brand_profile_store.ensure_tables()

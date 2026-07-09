@@ -1266,7 +1266,17 @@ class ApiService {
       cacheKey: _cacheKeyFor(_pendingContentCacheKey, queryParameters),
       queryParameters: queryParameters,
     );
-    return _parseContentList(data);
+    final items = _parseContentList(data);
+    return _mergePreparedVideoCandidates(
+      items,
+      await _safeRefreshPreparedVideoCandidates(
+        projectId: resolvedProjectId,
+        contentIds: items
+            .where(_usesCanonicalVideoPublishFlow)
+            .map((item) => item.id)
+            .toList(),
+      ),
+    );
   }
 
   Future<List<ContentItem>> seedTestContentBatch({String? projectId}) async {
@@ -1923,6 +1933,37 @@ class ApiService {
         }),
       );
       return BrandedVideoGenerationResponse.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> refreshPreparedVideoCandidates({
+    required String projectId,
+    List<String> contentIds = const <String>[],
+    String formatPreset = 'vertical_9_16',
+    String? triggerSource,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/video-timelines/feed-candidates/refresh',
+        data: _compactMap({
+          'project_id': projectId,
+          'content_ids': contentIds.isEmpty ? null : contentIds,
+          'format_preset': formatPreset,
+          'limit': contentIds.isEmpty ? 20 : contentIds.length,
+          'trigger_source': triggerSource,
+        }),
+      );
+      final payload = _asMap(response.data);
+      final items = payload['items'];
+      if (items is! List) {
+        return const <Map<String, dynamic>>[];
+      }
+      return items
+          .whereType<Map>()
+          .map((entry) => Map<String, dynamic>.from(entry))
+          .toList();
     } on DioException catch (error) {
       throw _mapDioException(error);
     }
@@ -5158,6 +5199,81 @@ class ApiService {
         .map((json) => ContentItem.fromJson(json as Map<String, dynamic>))
         .toList();
   }
+
+  Future<List<Map<String, dynamic>>> _safeRefreshPreparedVideoCandidates({
+    required String? projectId,
+    required List<String> contentIds,
+  }) async {
+    if (projectId == null || contentIds.isEmpty) {
+      return const <Map<String, dynamic>>[];
+    }
+    try {
+      return await refreshPreparedVideoCandidates(
+        projectId: projectId,
+        contentIds: contentIds,
+        triggerSource: 'feed_refresh',
+      );
+    } on ApiException catch (error) {
+      if (!_isTransientVideoCandidateFailure(error)) {
+        rethrow;
+      }
+      return const <Map<String, dynamic>>[];
+    }
+  }
+
+  List<ContentItem> _mergePreparedVideoCandidates(
+    List<ContentItem> items,
+    List<Map<String, dynamic>> candidates,
+  ) {
+    if (items.isEmpty || candidates.isEmpty) {
+      return items;
+    }
+    final byContentId = <String, Map<String, dynamic>>{
+      for (final candidate in candidates)
+        if ((candidate['content_id'] ?? candidate['contentId']) != null)
+          (candidate['content_id'] ?? candidate['contentId']).toString():
+              candidate,
+    };
+    return items.map((item) {
+      final candidate = byContentId[item.id];
+      if (candidate == null) {
+        return item;
+      }
+      final metadata = <String, dynamic>{
+        ...(item.metadata ?? const <String, dynamic>{}),
+        'video_generation_state': candidate['status'],
+        'video_generation_readiness': candidate['readiness'],
+        'video_generation_blockers': candidate['blockers'] is List
+            ? List<String>.from(candidate['blockers'] as List)
+            : const <String>[],
+        'video_generation_blocker_code':
+            candidate['blocker_code'] ?? candidate['blockerCode'],
+        'video_generation_blocker_summary':
+            candidate['blocker_summary'] ?? candidate['blockerSummary'],
+        'video_generation_timeline_id':
+            candidate['timeline_id'] ?? candidate['timelineId'],
+        'video_generation_version_id':
+            candidate['version_id'] ?? candidate['versionId'],
+        'video_generation_preview_job_id':
+            candidate['preview_job_id'] ?? candidate['previewJobId'],
+        'video_generation_final_job_id':
+            candidate['final_job_id'] ?? candidate['finalJobId'],
+        'video_generation_updated_at':
+            candidate['updated_at'] ?? candidate['updatedAt'],
+        'video_generation_ready_at':
+            candidate['completed_at'] ?? candidate['completedAt'],
+      };
+      return item.copyWith(metadata: metadata);
+    }).toList();
+  }
+
+  bool _usesCanonicalVideoPublishFlow(ContentItem item) =>
+      item.type == ContentType.videoScript ||
+      item.type == ContentType.reel ||
+      item.type == ContentType.short;
+
+  bool _isTransientVideoCandidateFailure(ApiException error) =>
+      error.type == ApiErrorType.offline || error.type == ApiErrorType.server;
 
   Map<String, dynamic> _asMap(
     dynamic data, {

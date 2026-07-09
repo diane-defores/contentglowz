@@ -5,8 +5,8 @@ artifact_version: "1.0.0"
 project: "contentglowz"
 created: "2026-07-08"
 created_at: "2026-07-08 00:00:00 UTC"
-updated: "2026-07-08"
-updated_at: "2026-07-08 00:00:00 UTC"
+updated: "2026-07-09"
+updated_at: "2026-07-09 00:00:00 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
@@ -232,12 +232,13 @@ None. The operator direction is explicit: generation should happen before feed d
 |----------|-------|-------|--------|--------|-----------|
 | 2026-07-08 00:00:00 UTC | 100-sg-spec | GPT-5 Codex | Created a dedicated foundation spec for durable ahead-of-time branded-video generation runs and feed readiness projection. | draft | /101-sg-ready ahead-of-time branded video generation runs and feed readiness |
 | 2026-07-08 00:00:00 UTC | 100-sg-spec | GPT-5 Codex | Refined the foundation contract to add complete proof ordering, task-level validation, and bounded execution notes before readiness handoff. | ready | /102-sg-start ahead-of-time branded video generation runs and feed readiness |
+| 2026-07-09 00:00:00 UTC | 102-sg-start | GPT-5 Codex | Implemented durable branded-video generation runs, feed-candidate refresh/list routes, scheduler handoff, and app-side readiness consumption for swipe publish. | implemented | /103-sg-verify ahead-of-time branded video generation runs and feed readiness |
 
 ## Current Chantier Flow
 
 - 100-sg-spec: completed
 - 101-sg-ready: ready
-- 102-sg-start: pending
+- 102-sg-start: implemented
 - 103-sg-verify: pending
 - 104-sg-end: pending
 - 005-sg-ship: pending

@@ -106,27 +106,29 @@ async def test_auto_video_job_consumes_complete_content(monkeypatch):
         )
     ]
 
-    async def _fake_generate_branded_video_preview(
+    async def _fake_ensure_run(
         *,
-        content_id,
-        brand_profile_id,
-        blueprint_id,
-        format_preset,
-        client_request_id,
-        response,
-        raw_request,
+        content_record,
         current_user,
+        status_service,
+        format_preset,
+        trigger_source,
+        brand_profile_id=None,
+        blueprint_id=None,
     ):
-        assert content_id == "content-1"
+        assert content_record.id == "content-1"
         return SimpleNamespace(
-            timeline=SimpleNamespace(timeline_id="timeline-1"),
-            version=SimpleNamespace(version_id="version-1"),
-            preview_job=SimpleNamespace(job_id="preview-1"),
+            status="ready",
+            readiness="ready_to_publish",
+            timeline_id="timeline-1",
+            version_id="version-1",
+            preview_job_id="preview-1",
+            final_job_id="final-1",
         )
 
     monkeypatch.setattr(
-        "api.routers.video_timelines._generate_branded_video_preview",
-        _fake_generate_branded_video_preview,
+        "api.services.branded_video_generation_service.branded_video_generation_service.ensure_run",
+        _fake_ensure_run,
     )
     monkeypatch.setattr("lab.scheduler.scheduler_service.get_status_service", lambda: fake_svc)
 
@@ -143,5 +145,6 @@ async def test_auto_video_job_consumes_complete_content(monkeypatch):
     assert fake_svc.updated
     content_id, updates = fake_svc.updated[0]
     assert content_id == "content-1"
-    assert updates["metadata"]["video_generation_state"] == "generated"
+    assert updates["metadata"]["video_generation_state"] == "ready"
+    assert updates["metadata"]["video_generation_readiness"] == "ready_to_publish"
     assert updates["metadata"]["video_generation_timeline_id"] == "timeline-1"

@@ -39,25 +39,55 @@ void main() {
       expect(item.body, 'Full body text');
       expect(item.summary, 'Preview text only');
     });
+
+    test('exposes prepared video readiness metadata', () {
+      final item = ContentItem.fromJson({
+        'id': 'content-3',
+        'title': 'Ready short',
+        'content_type': 'short',
+        'status': 'pending_review',
+        'content_preview': 'Preview text only',
+        'created_at': '2026-05-02T09:00:00Z',
+        'metadata': {
+          'video_generation_readiness': 'ready_to_publish',
+          'video_generation_timeline_id': 'timeline-1',
+          'video_generation_version_id': 'version-1',
+          'video_generation_preview_job_id': 'preview-1',
+          'video_generation_final_job_id': 'final-1',
+          'video_generation_blocker_summary': 'none',
+          'video_generation_blockers': <String>[],
+        },
+      });
+
+      expect(item.isVideoReadyToPublish, isTrue);
+      expect(item.videoGenerationTimelineId, 'timeline-1');
+      expect(item.videoGenerationVersionId, 'version-1');
+      expect(item.videoGenerationPreviewJobId, 'preview-1');
+      expect(item.videoGenerationFinalJobId, 'final-1');
+      expect(item.videoGenerationBlockers, isEmpty);
+    });
   });
 
   group('ApiService content body cache', () {
-    test('serves cached full body only when the endpoint is unreachable', () async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      final cacheStore = OfflineCacheStore(prefs);
-      await cacheStore.write('user-1', 'content.body.content-1', {
-        'body': 'Cached full body',
-      });
+    test(
+      'serves cached full body only when the endpoint is unreachable',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final cacheStore = OfflineCacheStore(prefs);
+        await cacheStore.write('user-1', 'content.body.content-1', {
+          'body': 'Cached full body',
+        });
 
-      final api = ApiService(
-        baseUrl: 'http://127.0.0.1:9',
-        cacheStore: cacheStore,
-        offlineScope: 'user-1',
-      );
+        final api = ApiService(
+          baseUrl: 'http://127.0.0.1:9',
+          cacheStore: cacheStore,
+          offlineScope: 'user-1',
+        );
 
-      expect(await api.fetchContentBody('content-1'), 'Cached full body');
-    });
+        expect(await api.fetchContentBody('content-1'), 'Cached full body');
+      },
+    );
 
     test('does not serve cached full body after a 403 response', () async {
       SharedPreferences.setMockInitialValues({});

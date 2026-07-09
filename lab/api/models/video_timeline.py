@@ -15,6 +15,7 @@ RenderMode = Literal["preview", "final"]
 RenderJobStatus = Literal["queued", "in_progress", "completed", "failed", "cancelled"]
 TimelineStatus = Literal["missing", "queued", "in_progress", "completed", "failed", "cancelled", "stale"]
 BrandedGenerationReadiness = Literal["preview_ready", "preview_pending", "blocked"]
+BrandedFeedReadiness = Literal["ready_to_publish", "preparing", "blocked", "failed"]
 
 FPS = 30
 MAX_DURATION_FRAMES = 180 * FPS
@@ -351,6 +352,57 @@ class BrandedVideoGenerationResponse(BaseModel):
     preview_job: VideoTimelineRenderJobResponse
     readiness: BrandedGenerationReadiness
     blockers: list[str] = Field(default_factory=list)
+
+
+class BrandedVideoFeedCandidateRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    project_id: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("projectId", "project_id"),
+        serialization_alias="projectId",
+    )
+    content_ids: list[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("contentIds", "content_ids"),
+        serialization_alias="contentIds",
+    )
+    format_preset: FormatPreset = Field(
+        default="vertical_9_16",
+        validation_alias=AliasChoices("formatPreset", "format_preset"),
+        serialization_alias="formatPreset",
+    )
+    limit: int = Field(default=20, ge=1, le=100)
+    trigger_source: str | None = Field(
+        default=None,
+        max_length=120,
+        validation_alias=AliasChoices("triggerSource", "trigger_source"),
+        serialization_alias="triggerSource",
+    )
+
+
+class BrandedVideoFeedCandidateResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    content_id: str = Field(serialization_alias="contentId")
+    project_id: str = Field(serialization_alias="projectId")
+    format_preset: FormatPreset = Field(serialization_alias="formatPreset")
+    readiness: BrandedFeedReadiness
+    status: str
+    blockers: list[str] = Field(default_factory=list)
+    blocker_code: str | None = Field(default=None, serialization_alias="blockerCode")
+    blocker_summary: str | None = Field(default=None, serialization_alias="blockerSummary")
+    timeline_id: str | None = Field(default=None, serialization_alias="timelineId")
+    version_id: str | None = Field(default=None, serialization_alias="versionId")
+    preview_job_id: str | None = Field(default=None, serialization_alias="previewJobId")
+    final_job_id: str | None = Field(default=None, serialization_alias="finalJobId")
+    updated_at: datetime = Field(serialization_alias="updatedAt")
+    completed_at: datetime | None = Field(default=None, serialization_alias="completedAt")
+
+
+class BrandedVideoFeedCandidateListResponse(BaseModel):
+    items: list[BrandedVideoFeedCandidateResponse] = Field(default_factory=list)
 
 
 class VideoTimelinePublishPlatformTarget(BaseModel):

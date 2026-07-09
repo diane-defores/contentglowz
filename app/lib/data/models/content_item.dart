@@ -179,6 +179,34 @@ class ContentItem {
       metadata?['content_complete'] == true ||
       metadata?['content_complete_at'] != null;
 
+  String? get videoGenerationReadiness =>
+      metadata?['video_generation_readiness'] as String? ??
+      metadata?['video_generation_state'] as String?;
+
+  String? get videoGenerationTimelineId =>
+      metadata?['video_generation_timeline_id'] as String?;
+
+  String? get videoGenerationVersionId =>
+      metadata?['video_generation_version_id'] as String?;
+
+  String? get videoGenerationPreviewJobId =>
+      metadata?['video_generation_preview_job_id'] as String?;
+
+  String? get videoGenerationFinalJobId =>
+      metadata?['video_generation_final_job_id'] as String?;
+
+  String? get videoGenerationBlockerSummary =>
+      metadata?['video_generation_blocker_summary'] as String?;
+
+  List<String> get videoGenerationBlockers =>
+      (metadata?['video_generation_blockers'] as List<dynamic>?)
+          ?.map((entry) => entry.toString())
+          .toList() ??
+      const <String>[];
+
+  bool get isVideoReadyToPublish =>
+      videoGenerationReadiness == 'ready_to_publish';
+
   // ── Format-specific metadata helpers ──
 
   /// SEO keyword for blog articles (from angle enrichment)

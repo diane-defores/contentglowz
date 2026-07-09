@@ -1,7 +1,7 @@
-import 'package:contentglowz_app/data/models/app_access_state.dart';
-import 'package:contentglowz_app/data/models/brand_profile.dart';
-import 'package:contentglowz_app/data/services/api_service.dart';
-import 'package:contentglowz_app/providers/providers.dart';
+import 'package:app/data/models/app_access_state.dart';
+import 'package:app/data/models/brand_profile.dart';
+import 'package:app/data/services/api_service.dart';
+import 'package:app/providers/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

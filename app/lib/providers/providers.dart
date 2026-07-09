@@ -2957,14 +2957,74 @@ class PendingContentNotifier extends AsyncNotifier<List<ContentItem>> {
       final publishTitle = titleOverride ?? item.title;
 
       if (_usesCanonicalVideoPublishFlow(item)) {
-        final generation = await api.generateBrandedVideoFromContent(
-          contentId: item.id,
-          triggerSource: 'feed_swipe_publish',
-        );
+        final activeProjectId = ref.read(activeProjectIdProvider);
+        var preparedItem = item;
+        if (!preparedItem.isVideoReadyToPublish ||
+            preparedItem.videoGenerationTimelineId == null ||
+            preparedItem.videoGenerationVersionId == null) {
+          final refreshedCandidates = activeProjectId == null
+              ? const <Map<String, dynamic>>[]
+              : await api.refreshPreparedVideoCandidates(
+                  projectId: activeProjectId,
+                  contentIds: [item.id],
+                  triggerSource: 'feed_swipe_publish',
+                );
+          final refreshed = refreshedCandidates.firstOrNull;
+          if (refreshed != null) {
+            preparedItem = item.copyWith(
+              metadata: {
+                ...(item.metadata ?? const <String, dynamic>{}),
+                'video_generation_state': refreshed['status'],
+                'video_generation_readiness': refreshed['readiness'],
+                'video_generation_blockers': refreshed['blockers'] is List
+                    ? List<String>.from(refreshed['blockers'] as List)
+                    : const <String>[],
+                'video_generation_blocker_code':
+                    refreshed['blocker_code'] ?? refreshed['blockerCode'],
+                'video_generation_blocker_summary':
+                    refreshed['blocker_summary'] ?? refreshed['blockerSummary'],
+                'video_generation_timeline_id':
+                    refreshed['timeline_id'] ?? refreshed['timelineId'],
+                'video_generation_version_id':
+                    refreshed['version_id'] ?? refreshed['versionId'],
+                'video_generation_preview_job_id':
+                    refreshed['preview_job_id'] ?? refreshed['previewJobId'],
+                'video_generation_final_job_id':
+                    refreshed['final_job_id'] ?? refreshed['finalJobId'],
+              },
+            );
+          }
+        }
+        if (!preparedItem.isVideoReadyToPublish ||
+            preparedItem.videoGenerationTimelineId == null ||
+            preparedItem.videoGenerationVersionId == null) {
+          state = AsyncData(current);
+          final readiness = preparedItem.videoGenerationReadiness;
+          final blockerSummary = preparedItem.videoGenerationBlockerSummary;
+          final blockers = preparedItem.videoGenerationBlockers;
+          return ApproveResult(
+            approved: false,
+            published: false,
+            message: switch (readiness) {
+              'preparing' =>
+                'Branded video is still preparing. Refresh the feed in a moment or open the video editor.',
+              'blocked' || 'failed' =>
+                blockerSummary?.trim().isNotEmpty == true
+                    ? 'Branded video is not ready: $blockerSummary. Opening the video editor.'
+                    : 'Branded video is not ready: ${blockers.join(', ')}. Opening the video editor.',
+              _ =>
+                'Branded video is not ready yet. Open the video editor to inspect or retry.',
+            },
+            severity: readiness == 'preparing'
+                ? ApproveSeverity.info
+                : ApproveSeverity.warning,
+            openVideoEditor: true,
+          );
+        }
         final publishResponse = await api.swipePublishVideoTimeline(
-          timelineId: generation.timeline.timelineId,
-          versionId: generation.version.versionId,
-          previewJobId: generation.previewJob.jobId,
+          timelineId: preparedItem.videoGenerationTimelineId!,
+          versionId: preparedItem.videoGenerationVersionId!,
+          previewJobId: preparedItem.videoGenerationPreviewJobId,
           content: publishBody,
           platforms: platforms,
           title: publishTitle,
