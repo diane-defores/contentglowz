@@ -120,7 +120,7 @@ jobs:
             --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: contentglowz-android-apk
           path: app/build/app/outputs/flutter-apk/app-release.apk
