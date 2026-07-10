@@ -206,6 +206,95 @@ void main() {
     );
   });
 
+  testWidgets('FEED-VIDEO-001 ready video card shows publishable state', (
+    tester,
+  ) async {
+    await _pumpFeedScreen(
+      tester,
+      items: [_videoItem(readiness: 'ready_to_publish')],
+    );
+
+    expect(find.text('Ready'), findsWidgets);
+    expect(find.text('Publish preflight'), findsOneWidget);
+    expect(find.byKey(const Key('video-preview-video-1')), findsOneWidget);
+    expect(find.text('Video preview'), findsOneWidget);
+    expect(find.text('Preview ready'), findsOneWidget);
+    expect(
+      find.text(
+        'This video is ready for feed-native publish without opening the editor.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Swipe right to publish'), findsOneWidget);
+    expect(find.text('Publish'), findsWidgets);
+    expect(find.text('Edit video'), findsOneWidget);
+  });
+
+  testWidgets('FEED-VIDEO-002 rendering card does not expose publish swipe', (
+    tester,
+  ) async {
+    await _pumpFeedScreen(tester, items: [_videoItem(readiness: 'preparing')]);
+
+    expect(find.text('Rendering'), findsWidgets);
+    expect(find.byKey(const Key('video-preview-video-1')), findsOneWidget);
+    expect(find.text('Preview pending'), findsOneWidget);
+    expect(
+      find.text(
+        'Background generation is still running. The feed keeps publish disabled until the final asset exists.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Swipe right to publish'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('feed-action-publish')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('video editor screen video-1'), findsNothing);
+    expect(find.text('Rendering'), findsWidgets);
+  });
+
+  testWidgets(
+    'FEED-VIDEO-003 blocked-by-accounts state explains preflight blocker',
+    (tester) async {
+      await _pumpFeedScreen(
+        tester,
+        items: [
+          _videoItem(
+            readiness: 'blocked',
+            blockerSummary: 'Missing publish accounts for instagram, youtube.',
+            blockers: const [
+              'missing accounts: instagram',
+              'missing accounts: youtube',
+            ],
+          ),
+        ],
+      );
+
+      expect(find.text('Blocked'), findsWidgets);
+      expect(
+        find.text(
+          'Blocked before publish. Destinations: instagram, youtube. Missing publish accounts for instagram, youtube.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Blocked'), findsWidgets);
+    },
+  );
+
+  testWidgets('FEED-VIDEO-004 edit route opens /editor/:id/video', (
+    tester,
+  ) async {
+    await _pumpFeedScreen(
+      tester,
+      items: [_videoItem(readiness: 'ready_to_publish')],
+    );
+
+    await tester.tap(find.byKey(const Key('edit-video-video-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('video editor screen video-1'), findsOneWidget);
+  });
+
   testWidgets('empty feed remains usable on a narrow mobile viewport', (
     tester,
   ) async {
@@ -282,6 +371,14 @@ Future<void> _pumpFeedScreen(
         builder: (context, state) =>
             const Scaffold(body: Center(child: Text('editor screen'))),
       ),
+      GoRoute(
+        path: '/editor/:id/video',
+        builder: (context, state) => Scaffold(
+          body: Center(
+            child: Text('video editor screen ${state.pathParameters['id']}'),
+          ),
+        ),
+      ),
     ],
   );
 
@@ -341,4 +438,35 @@ class _TestUserSettingsNotifier extends UserSettingsNotifier {
 
 DripPlan _dripPlan(String id) {
   return DripPlan(id: id, userId: 'user-1', name: 'Plan $id', status: 'active');
+}
+
+ContentItem _videoItem({
+  required String readiness,
+  String? blockerSummary,
+  List<String> blockers = const [],
+}) {
+  return ContentItem(
+    id: 'video-1',
+    title: 'Prepared launch video',
+    body: 'A polished short-form video ready for social distribution.',
+    summary: 'Feed-native preview of the final branded cut.',
+    type: ContentType.short,
+    status: ContentStatus.pending,
+    channels: const [PublishingChannel.instagram, PublishingChannel.youtube],
+    imageUrl: 'https://assets.example.test/video-1-preview.jpg',
+    metadata: {
+      'platform': 'instagram_reels',
+      'duration_seconds': 42,
+      'video_generation_readiness': readiness,
+      'video_generation_timeline_id': readiness == 'ready_to_publish'
+          ? 'timeline-1'
+          : null,
+      'video_generation_version_id': readiness == 'ready_to_publish'
+          ? 'version-1'
+          : null,
+      'video_generation_blocker_summary': blockerSummary,
+      'video_generation_blockers': blockers,
+    },
+    createdAt: DateTime(2026, 7, 8),
+  );
 }

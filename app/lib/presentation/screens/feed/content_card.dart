@@ -18,6 +18,7 @@ class ContentCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final typeColor = AppTheme.colorForContentType(item.typeLabel);
     final palette = AppTheme.paletteOf(context);
+    final isVideoCard = item.isVideoType;
     final syncInfo = ref.watch(
       offlineEntitySyncProvider(offlineEntityKey('content', item.id)),
     );
@@ -45,12 +46,19 @@ class ContentCard extends ConsumerWidget {
             _buildHeader(context, typeColor, syncInfo),
             // Format-specific metadata chips
             if (_hasFormatMeta()) _buildFormatMeta(typeColor),
-            // Image if present
-            if (item.imageUrl != null) _buildImage(context),
+            // Dedicated media preview
+            if (isVideoCard)
+              _buildVideoMediaPreview(context, typeColor)
+            else if (item.imageUrl != null)
+              _buildImage(context),
             // Content preview
-            Expanded(child: _buildBody(context)),
+            if (!isVideoCard)
+              Expanded(child: _buildBody(context)),
             // Format-aware review template
-            _buildReviewTemplate(context, typeColor),
+            if (isVideoCard)
+              _buildVideoReviewCard(context, typeColor)
+            else
+              _buildReviewTemplate(context, typeColor),
             // Footer with channels and timestamp
             _buildFooter(context, typeColor),
           ],
@@ -110,6 +118,9 @@ class ContentCard extends ConsumerWidget {
   }
 
   bool _hasFormatMeta() {
+    if (item.isVideoType) {
+      return false;
+    }
     return item.seoKeyword != null ||
         item.shortPlatform != null ||
         item.socialPlatforms.isNotEmpty ||
@@ -151,11 +162,7 @@ class ContentCard extends ConsumerWidget {
 
     if (item.isContentComplete) {
       chips.add(
-        _metaChip(
-          Icons.done_all_rounded,
-          'Complete',
-          AppTheme.approveColor,
-        ),
+        _metaChip(Icons.done_all_rounded, 'Complete', AppTheme.approveColor),
       );
     }
 
@@ -261,38 +268,178 @@ class ContentCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildVideoMediaPreview(BuildContext context, Color typeColor) {
+    final palette = AppTheme.paletteOf(context);
     final theme = Theme.of(context);
-    final summary = item.summary?.trim();
-    final previewText = summary != null && summary.isNotEmpty
-        ? item.summary!
-        : _truncateBody(item.body);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final status = _videoStatusPresentation(context, item.videoFeedState);
+    final previewImageUrl = item.videoPreviewImageUrl;
+    final previewCaption = item.videoPlaybackUrl != null
+        ? context.tr('Playback ready')
+        : item.isVideoReadyToPublish
+        ? context.tr('Preview ready')
+        : context.tr('Preview pending');
+
+    return Container(
+      key: Key('video-preview-${item.id}'),
+      height: 124,
+      margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: palette.mutedSurface,
+        gradient: previewImageUrl == null
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  status.color.withValues(alpha: 0.24),
+                  palette.mutedSurface,
+                  typeColor.withValues(alpha: 0.12),
+                ],
+              )
+            : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Text(
-            item.title,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Text(
-              previewText,
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 14,
-                height: 1.6,
+          if (previewImageUrl != null)
+            Image.network(
+              previewImageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _buildVideoPreviewFallback(
+                context,
+                theme,
+                status,
               ),
-              overflow: TextOverflow.fade,
+            )
+          else
+            _buildVideoPreviewFallback(context, theme, status),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.08),
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.black.withValues(alpha: 0.55),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12,
+            left: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.42),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.smart_display_rounded, size: 14, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Text(
+                    context.tr('Video preview'),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: TextButton.icon(
+              key: Key('edit-video-${item.id}'),
+              onPressed: onTap,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.black.withValues(alpha: 0.42),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+              icon: const Icon(Icons.edit_rounded, size: 14),
+              label: Text(context.tr('Edit video')),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.42),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              ),
+              child: Icon(
+                item.isVideoReadyToPublish
+                    ? Icons.play_arrow_rounded
+                    : Icons.hourglass_top_rounded,
+                color: Colors.white,
+                size: 34,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 14,
+            right: 14,
+            bottom: 14,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        previewCaption,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        status.label,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.86),
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: status.color.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    status.label,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -300,13 +447,121 @@ class ContentCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildVideoPreviewFallback(
+    BuildContext context,
+    ThemeData theme,
+    _VideoStatusPresentation status,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(status.icon, color: status.color, size: 28),
+          const Spacer(),
+          Text(
+            item.title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w800,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            item.summary?.trim().isNotEmpty == true
+                ? item.summary!.trim()
+                : item.videoPreflightSummary,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.3,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
+    final summary = item.summary?.trim();
+    final previewText = summary != null && summary.isNotEmpty
+        ? item.summary!
+        : _truncateBody(item.body);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxHeight < 44) {
+          return const SizedBox.shrink();
+        }
+        final showPreview = constraints.maxHeight >= 110;
+        final titleLines = constraints.maxHeight < 72 ? 1 : 2;
+        final previewLines = switch (constraints.maxHeight) {
+          < 140 => item.isVideoType ? 1 : 2,
+          < 180 => item.isVideoType ? 2 : 3,
+          _ => item.isVideoType ? 3 : 5,
+        };
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: ClipRect(
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.title,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      height: 1.3,
+                    ),
+                    maxLines: titleLines,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (showPreview) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      previewText,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                      maxLines: previewLines,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildFooter(BuildContext context, Color typeColor) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final showHints = screenWidth > 380;
+    final showHints = screenWidth > 380 && !item.isVideoType;
     final theme = Theme.of(context);
+    final publishHint = item.isVideoType
+        ? _videoFooterHint(context)
+        : context.tr('Publish');
+    final publishHintColor = item.isVideoType && !item.isVideoReadyToPublish
+        ? AppTheme.warningColor.withAlpha(170)
+        : AppTheme.approveColor.withAlpha(150);
+
+    final footerPadding = item.isVideoType
+        ? const EdgeInsets.fromLTRB(20, 10, 20, 10)
+        : const EdgeInsets.fromLTRB(20, 12, 20, 16);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      padding: footerPadding,
       child: Row(
         children: [
           // Channel icons
@@ -356,21 +611,127 @@ class ContentCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    context.tr('Publish'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.approveColor.withAlpha(150),
+                    publishHint,
+                    style: TextStyle(fontSize: 11, color: publishHintColor),
+                  ),
+                  if (item.isVideoReadyToPublish) ...[
+                    const SizedBox(width: 3),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                      color: publishHintColor,
                     ),
-                  ),
-                  const SizedBox(width: 3),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 14,
-                    color: AppTheme.approveColor.withAlpha(150),
-                  ),
+                  ],
                 ],
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoReviewCard(BuildContext context, Color typeColor) {
+    final theme = Theme.of(context);
+    final state = item.videoFeedState;
+    final status = _videoStatusPresentation(context, state);
+    final destinations = _videoDestinationSummary(context);
+    final preflightSummary = _videoPreflightSummary(context, destinations);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: typeColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: typeColor.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: status.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: status.color.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(status.icon, size: 14, color: status.color),
+                    const SizedBox(width: 6),
+                    Text(
+                      status.label,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: status.color,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            status.copy,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            context.tr('Publish preflight'),
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            preflightSummary,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.35,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _reviewTemplateChip(
+                context,
+                _ReviewTemplateStep(Icons.outbound_rounded, destinations),
+                typeColor,
+              ),
+              _reviewTemplateChip(
+                context,
+                _ReviewTemplateStep(
+                  item.isVideoReadyToPublish
+                      ? Icons.swipe_right_alt_rounded
+                      : Icons.pan_tool_alt_outlined,
+                  item.isVideoReadyToPublish
+                      ? context.tr('Swipe right to publish')
+                      : _videoFooterHint(context),
+                ),
+                status.color,
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -582,6 +943,102 @@ class ContentCard extends ConsumerWidget {
       PublishingChannel.youtube => Icons.play_circle_outline,
     };
   }
+
+  String _videoDestinationSummary(BuildContext context) {
+    final channelNames = item.channels.map((channel) => channel.name).toList();
+    if (channelNames.isNotEmpty) {
+      return context.tr('Destinations: {channels}', {
+        'channels': channelNames.join(', '),
+      });
+    }
+    final platformNames = <String>{
+      if (item.shortPlatform != null) item.shortPlatform!,
+      ...item.socialPlatforms,
+    }.toList();
+    if (platformNames.isNotEmpty) {
+      return context.tr('Destinations: {channels}', {
+        'channels': platformNames.join(', '),
+      });
+    }
+    return context.tr('Destinations: to confirm');
+  }
+
+  String _videoPreflightSummary(BuildContext context, String destinations) {
+    final blockerSummary = item.videoGenerationBlockerSummary?.trim();
+    final blockers = item.videoGenerationBlockers;
+    return switch (item.videoFeedState) {
+      'ready' => context.tr(
+        'Publish preflight complete. {destinations}. Swipe right publishes this version.',
+        {'destinations': destinations},
+      ),
+      'rendering' => context.tr(
+        'Render still in progress. {destinations}. Publish stays disabled until the final video is ready.',
+        {'destinations': destinations},
+      ),
+      'blocked' =>
+        context.tr('Blocked before publish. {destinations}. {reason}', {
+          'destinations': destinations,
+          'reason': blockerSummary?.isNotEmpty == true
+              ? blockerSummary!
+              : blockers.isNotEmpty
+              ? blockers.join(', ')
+              : context.tr('Resolve the publish blocker in the video flow.'),
+        }),
+      _ => context.tr(
+        'Needs review before publish. {destinations}. Open the video editor if you want to adjust this cut.',
+        {'destinations': destinations},
+      ),
+    };
+  }
+
+  String _videoFooterHint(BuildContext context) {
+    return switch (item.videoFeedState) {
+      'ready' => context.tr('Publish'),
+      'rendering' => context.tr('Rendering'),
+      'blocked' => context.tr('Blocked'),
+      _ => context.tr('Needs review'),
+    };
+  }
+
+  _VideoStatusPresentation _videoStatusPresentation(
+    BuildContext context,
+    String state,
+  ) {
+    return switch (state) {
+      'ready' => _VideoStatusPresentation(
+        label: context.tr('Ready'),
+        copy: context.tr(
+          'This video is ready for feed-native publish without opening the editor.',
+        ),
+        color: AppTheme.approveColor,
+        icon: Icons.check_circle_rounded,
+      ),
+      'rendering' => _VideoStatusPresentation(
+        label: context.tr('Rendering'),
+        copy: context.tr(
+          'Background generation is still running. The feed keeps publish disabled until the final asset exists.',
+        ),
+        color: AppTheme.warningColor,
+        icon: Icons.autorenew_rounded,
+      ),
+      'blocked' => _VideoStatusPresentation(
+        label: context.tr('Blocked'),
+        copy: context.tr(
+          'A publish blocker is already known, so the card explains it before any swipe.',
+        ),
+        color: AppTheme.rejectColor,
+        icon: Icons.block_rounded,
+      ),
+      _ => _VideoStatusPresentation(
+        label: context.tr('Needs review'),
+        copy: context.tr(
+          'The cut exists but still needs a human check before the feed can promise publish.',
+        ),
+        color: AppTheme.infoColor,
+        icon: Icons.rate_review_outlined,
+      ),
+    };
+  }
 }
 
 class _ReviewTemplate {
@@ -603,4 +1060,18 @@ class _ReviewTemplateStep {
 
   final IconData icon;
   final String label;
+}
+
+class _VideoStatusPresentation {
+  const _VideoStatusPresentation({
+    required this.label,
+    required this.copy,
+    required this.color,
+    required this.icon,
+  });
+
+  final String label;
+  final String copy;
+  final Color color;
+  final IconData icon;
 }

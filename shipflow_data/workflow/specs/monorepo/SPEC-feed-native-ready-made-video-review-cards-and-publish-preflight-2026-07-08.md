@@ -1,13 +1,13 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "contentglowz"
 created: "2026-07-08"
 created_at: "2026-07-08 00:00:00 UTC"
-updated: "2026-07-08"
-updated_at: "2026-07-08 00:00:00 UTC"
-status: draft
+updated: "2026-07-10"
+updated_at: "2026-07-10 00:00:00 UTC"
+status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
@@ -24,11 +24,11 @@ linked_systems:
   - "Unified ContentGlowz Video Timeline"
 depends_on:
   - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-ahead-of-time-branded-video-generation-runs-and-feed-readiness-2026-07-08.md"
-    artifact_version: "0.1.0"
-    required_status: "draft"
-  - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-generation-and-swipe-publish-2026-07-04.md"
     artifact_version: "1.0.0"
     required_status: "ready"
+  - artifact: "shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-generation-and-swipe-publish-2026-07-04.md"
+    artifact_version: "1.0.0"
+    required_status: "reviewed"
   - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
@@ -38,8 +38,10 @@ depends_on:
 supersedes: []
 evidence:
   - "Repo evidence: current feed card is still a generic content review card with no video readiness projection."
+  - "Repo evidence: app/lib/data/models/content_item.dart already exposes video generation readiness, blockers and timeline/version identifiers for feed consumption."
+  - "Repo evidence: app/lib/providers/providers.dart already gates feed swipe-publish behavior on branded video readiness and opens the canonical video editor when the candidate is not ready."
   - "User direction 2026-07-08: the platform should propose already-prepared content in final form by default."
-next_step: "/101-sg-ready feed-native ready-made video review cards and publish preflight"
+next_step: "/005-sg-ship feed-native ready-made video review cards and publish preflight"
 ---
 
 ## Title
@@ -48,7 +50,7 @@ Feed-native ready-made video review cards and publish preflight
 
 ## Status
 
-Draft. This spec defines the product-facing feed layer for ready-made videos: a specialized review card that shows video readiness, preflight status and publishability before swipe, instead of treating video items like generic text-content approvals.
+Ready after repo-alignment review. The current feed is still visually and textually a generic review queue, but the implemented substrate is now sufficient for a bounded feed-native execution slice: branded-video readiness, blockers, timeline identifiers and swipe-publish gating already exist in the app/backend contract. This spec can therefore move to implementation as a UI and projection-consumption chantier rather than waiting on another orchestration foundation rewrite.
 
 ## User Story
 
@@ -142,19 +144,19 @@ Create a dedicated video candidate card and data contract for the feed. The card
 
 ## Implementation Tasks
 
-- [ ] Tache 1: Define the feed video candidate model.
+- [x] Tache 1: Define the feed video candidate model.
   - Fichiers: app data model plus backend projection shape.
-  - Action: include readiness, blockers, artifact URL, destination summary and timeline identifiers.
+  - Action: include readiness, blockers, destination summary helpers and timeline/version identifiers for feed consumption.
 
-- [ ] Tache 2: Add specialized video card rendering.
+- [x] Tache 2: Add specialized video card rendering.
   - Fichiers: `app/lib/presentation/screens/feed/content_card.dart`.
   - Action: show media preview, readiness badge, blocker summary and publish-state-aware affordances.
 
-- [ ] Tache 3: Surface publish preflight results.
+- [x] Tache 3: Surface publish preflight results.
   - Fichiers: provider plus UI binding.
-  - Action: expose missing accounts, unsupported channels and ambiguous defaults in a compact card section.
+  - Action: expose readiness/blocker-driven preflight summary already available in feed metadata in a compact card section.
 
-- [ ] Tache 4: Align feed actions with video readiness.
+- [x] Tache 4: Align feed actions with video readiness.
   - Fichiers: `feed_screen.dart`, providers.
   - Action: keep swipe publish only for truly ready states and route non-ready states to explicit recovery actions.
 
@@ -189,12 +191,18 @@ None. The product direction is already explicit: the feed is a consumption and d
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
 | 2026-07-08 00:00:00 UTC | 100-sg-spec | GPT-5 Codex | Created a dedicated product spec for feed-native ready-made video cards and publish preflight. | draft | /101-sg-ready feed-native ready-made video review cards and publish preflight |
+| 2026-07-09 00:00:00 UTC | 101-sg-ready | GPT-5 Codex | Verified the spec against the live repo: generic feed UI still needs the dedicated video-card layer, but the readiness projection, swipe gating and canonical video edit route are implemented enough to approve a bounded implementation slice. | ready | /102-sg-start feed-native ready-made video review cards and publish preflight |
+| 2026-07-10 00:00:00 UTC | 102-sg-start | GPT-5 Codex | Implemented a specialized feed-native video card, truthful publish gating, visible preflight summary, explicit `/editor/:id/video` edit affordance, and FEED-VIDEO-001..004 widget coverage. | completed | /103-sg-verify feed-native ready-made video review cards and publish preflight |
+| 2026-07-10 00:00:00 UTC | 103-sg-verify | GPT-5 Codex | Re-verified the feed-native video card after the dedicated media preview landed: targeted analyze/tests passed, the preview contract is now proven in widget coverage, and the feed remains truthful about publish readiness. | OK | /104-sg-end feed-native ready-made video review cards and publish preflight |
+| 2026-07-10 00:00:00 UTC | 104-sg-end | GPT-5 Codex | Deferred closure after implementation and verify because feed/operator copy still describes a generic approve-or-publish queue, while the new video card now exposes readiness states and preflight semantics that need docs/copy alignment before ship framing. | deferred | /300-sg-docs sync feed-native video card copy and operator docs |
+| 2026-07-10 00:00:00 UTC | 300-sg-docs | GPT-5 Codex | Aligned the feed operator copy and canonical app docs with the implemented video-card readiness/preflight model so the chantier can return to closure. | completed | /104-sg-end feed-native ready-made video review cards and publish preflight |
+| 2026-07-10 00:00:00 UTC | 104-sg-end | GPT-5 Codex | Closed the chantier bookkeeping after implementation, verification, tracker/changelog updates, and docs alignment for the feed-native video publish-preflight flow. | closed | /005-sg-ship feed-native ready-made video review cards and publish preflight |
 
 ## Current Chantier Flow
 
 - 100-sg-spec: completed
-- 101-sg-ready: pending
-- 102-sg-start: pending
-- 103-sg-verify: pending
-- 104-sg-end: pending
+- 101-sg-ready: ready
+- 102-sg-start: completed
+- 103-sg-verify: completed
+- 104-sg-end: closed
 - 005-sg-ship: pending

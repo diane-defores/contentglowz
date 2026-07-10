@@ -12,6 +12,8 @@ enum PublishingChannel {
   youtube,
 }
 
+enum FeedVideoCardState { ready, rendering, needsReview, blocked }
+
 class ContentItem {
   final String id;
   final String title;
@@ -175,6 +177,11 @@ class ContentItem {
   String? get reviewActorDisplay =>
       reviewActorLabel ?? reviewActorId ?? reviewedBy;
 
+  bool get isVideoType =>
+      type == ContentType.videoScript ||
+      type == ContentType.reel ||
+      type == ContentType.short;
+
   bool get isContentComplete =>
       metadata?['content_complete'] == true ||
       metadata?['content_complete_at'] != null;
@@ -206,6 +213,101 @@ class ContentItem {
 
   bool get isVideoReadyToPublish =>
       videoGenerationReadiness == 'ready_to_publish';
+
+  String? get videoPreviewImageUrl =>
+      metadata?['video_generation_preview_image_url'] as String? ??
+      metadata?['video_generation_thumbnail_url'] as String? ??
+      metadata?['thumbnail_url'] as String? ??
+      imageUrl;
+
+  String? get videoPlaybackUrl =>
+      metadata?['video_generation_preview_playback_url'] as String? ??
+      metadata?['video_generation_final_playback_url'] as String?;
+
+  bool get isVideoContent =>
+      type == ContentType.videoScript ||
+      type == ContentType.reel ||
+      type == ContentType.short;
+
+  FeedVideoCardState? get feedVideoCardState {
+    if (!isVideoContent) return null;
+    if (isVideoReadyToPublish &&
+        videoGenerationTimelineId != null &&
+        videoGenerationVersionId != null) {
+      return FeedVideoCardState.ready;
+    }
+    final readiness = videoGenerationReadiness;
+    if (readiness == 'preparing') {
+      return FeedVideoCardState.rendering;
+    }
+    if (readiness == 'blocked' ||
+        readiness == 'failed' ||
+        (videoGenerationBlockerSummary?.trim().isNotEmpty ?? false) ||
+        videoGenerationBlockers.isNotEmpty) {
+      return FeedVideoCardState.blocked;
+    }
+    return FeedVideoCardState.needsReview;
+  }
+
+  String get feedVideoStateLabel => switch (feedVideoCardState) {
+    FeedVideoCardState.ready => 'Ready',
+    FeedVideoCardState.rendering => 'Rendering',
+    FeedVideoCardState.needsReview => 'Needs review',
+    FeedVideoCardState.blocked => 'Blocked',
+    null => '',
+  };
+
+  String get videoDestinationSummary => channels.isEmpty
+      ? 'No destinations selected yet'
+      : channels.map(_publishingChannelLabel).join(', ');
+
+  String get videoPreflightSummary {
+    if (!isVideoContent) return '';
+    final blockerSummary = videoGenerationBlockerSummary?.trim();
+    if (blockerSummary != null && blockerSummary.isNotEmpty) {
+      return blockerSummary;
+    }
+    if (videoGenerationBlockers.isNotEmpty) {
+      return videoGenerationBlockers.map(_humanizeVideoBlocker).join(', ');
+    }
+    return switch (feedVideoCardState) {
+      FeedVideoCardState.ready =>
+        'Backend readiness and publish prerequisites are satisfied.',
+      FeedVideoCardState.rendering =>
+        'Background generation is still running. Publish remains disabled until the final asset is ready.',
+      FeedVideoCardState.needsReview =>
+        'Feed readiness data is incomplete. Review the video before publishing.',
+      FeedVideoCardState.blocked =>
+        'Publishing is blocked until the listed prerequisites are resolved.',
+      null => '',
+    };
+  }
+
+  List<String> get videoPreflightFlags {
+    if (!isVideoContent) return const <String>[];
+    final flags = <String>[
+      if (channels.isEmpty) 'No publishing destinations selected yet',
+    ];
+    if ((videoGenerationBlockerSummary?.trim().isNotEmpty ?? false)) {
+      flags.add(videoGenerationBlockerSummary!.trim());
+    } else if (videoGenerationBlockers.isNotEmpty) {
+      flags.addAll(videoGenerationBlockers.map(_humanizeVideoBlocker));
+    } else if (feedVideoCardState == FeedVideoCardState.needsReview) {
+      flags.add('Feed readiness data is incomplete');
+    }
+    return flags;
+  }
+
+  String get videoFeedState {
+    final readiness = videoGenerationReadiness;
+    return switch (readiness) {
+      'ready_to_publish' => 'ready',
+      'preparing' || 'rendering' || 'queued' => 'rendering',
+      'blocked' || 'failed' => 'blocked',
+      'needs_review' || 'review_required' => 'needs_review',
+      _ => 'needs_review',
+    };
+  }
 
   // ── Format-specific metadata helpers ──
 
@@ -371,5 +473,29 @@ class ContentItem {
     ContentStatus.rejected => 'rejected',
     ContentStatus.published => 'published',
     ContentStatus.editing => 'in_progress',
+  };
+
+  static String _publishingChannelLabel(PublishingChannel channel) =>
+      switch (channel) {
+        PublishingChannel.wordpress => 'WordPress',
+        PublishingChannel.ghost => 'Ghost',
+        PublishingChannel.twitter => 'X',
+        PublishingChannel.linkedin => 'LinkedIn',
+        PublishingChannel.instagram => 'Instagram',
+        PublishingChannel.tiktok => 'TikTok',
+        PublishingChannel.youtube => 'YouTube',
+      };
+
+  static String _humanizeVideoBlocker(String blocker) => switch (blocker) {
+    'brand_setup_required' => 'Brand setup required',
+    'brand_blueprint_required' => 'Brand video blueprint required',
+    'content_completion_required' => 'Complete the content body first',
+    'publish_prerequisites_required' => 'Publish prerequisites are missing',
+    'preview_render_failed' => 'Preview render failed',
+    'final_render_failed' => 'Final render failed',
+    'final_artifact_unavailable' => 'Final video artifact unavailable',
+    'video_content_required' => 'Only video content can be prepared',
+    'generation_failed' => 'Video generation failed',
+    _ => blocker.replaceAll('_', ' '),
   };
 }

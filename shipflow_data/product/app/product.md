@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "app"
 created: "2026-04-26"
-updated: "2026-05-04"
+updated: "2026-07-10"
 status: "reviewed"
 source_skill: sf-docs
 scope: product
@@ -54,7 +54,7 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 - runs content workflows (feed, ideas, angles, editor, personas, scheduling, drip plans, affiliation/content domains);
 - exposes `Project Intelligence V1` for project-scoped source ingestion, recommendations, and Idea Pool conversion;
 - exposes `Video Timeline V1` for backend-orchestrated preview/final render preparation from existing content items;
-- prepares video-compatible feed items ahead of swipe time through durable branded-video generation runs with feed-facing readiness states (`ready_to_publish`, `preparing`, `blocked`, `failed`);
+- prepares video-compatible feed items ahead of swipe time through durable branded-video generation runs with feed-facing readiness states (`ready_to_publish`, `preparing`, `needs_review`, `blocked`, `failed`) and compact publish-preflight summaries on the card;
 - captures local Android screenshots and screen recordings for creator reference assets;
 - supports production-adjacent resilience through degraded mode (cached reads + queued writes + replay + sync state)
 - exposes diagnostics and observability (`/uptime`, `/performance`, `/analytics`, `/activity`) so operators understand backend and queue health;
@@ -68,10 +68,10 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 5. if API is unavailable, supported actions are queued and replayed when connectivity returns.
 
 ## Product boundaries (what is currently documented and delivered)
-- **In scope:** AI-first content assembly, optional review/edit, publish approval flows, project configuration, content status, offline continuity, and workflow surfaces.
+- **In scope:** AI-first content assembly, optional edit, feed-native publish preflight, truthful publish flows, project configuration, content status, offline continuity, and workflow surfaces.
 - **Project Intelligence V1 scope:** active-project intelligence status, source management, evidence ingestion, recommendations, and Idea Pool conversion, with backend constraints on upload types and sizes.
 - **Video Timeline V1 scope:** timeline editing plus preview/final render orchestration through backend contracts, without direct Flutter-to-worker calls.
-- **Ahead-of-time branded video scope:** the feed can request safe refreshes of branded-video candidates and consume compact readiness states instead of assuming swipe-time generation.
+- **Ahead-of-time branded video scope:** the feed can request safe refreshes of branded-video candidates, consume compact readiness states, surface preflight blockers directly on the card, and keep the video editor as an explicit optional branch instead of the default path.
 - **Android-only V1 scope:** local device screenshot and screen-recording capture with Android consent, app-scoped storage, preview, discard, and share/export.
 - **Partially in scope / not finished:** end-to-end external publish execution by channel.
   - Route and UX for publish actions exists in some paths, but full channel-account linking and feedback loop are not fully closed yet.
@@ -91,4 +91,4 @@ next_step: "/sf-docs audit shipflow_data/product/app/product.md"
 
 ## Business-facing constraints to keep synchronized
 - The app depends on consistent workspace/project semantics from backend contracts.
-- Any change to onboarding, publish behavior, or offline coverage changes this product promise and must trigger docs updates for user-facing claims.
+- Any change to onboarding, feed publish semantics, video readiness states, or offline coverage changes this product promise and must trigger docs updates for user-facing claims.

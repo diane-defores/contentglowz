@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: app
 created: "2026-04-26"
-updated: "2026-05-10"
+updated: "2026-07-10"
 status: reviewed
 source_skill: sf-docs
 scope: architecture
@@ -77,7 +77,7 @@ The app is structured as a **single Flutter client boundary** with backend data 
 ### 2.1 Presentation layer (`lib/presentation`)
 - Route shell and protected layout in `screens/app_shell.dart`.
 - Route graph in `lib/router.dart`.
-- Screen modules for workflows: feed/review, onboarding, projects, settings, drip, content tools, research/seo/analytics, uptime.
+- Screen modules for workflows: feed/publish-preflight, onboarding, projects, settings, drip, content tools, research/seo/analytics, uptime.
 - Settings integrations include a minimal email-source panel for per-user IMAP connection, validation, sender preview, and ingestion to the active project's Idea Pool.
 - Product-specific workflow surfaces also include:
   - `Project Intelligence V1` for project-scoped evidence ingestion and recommendations
@@ -115,6 +115,11 @@ The app is structured as a **single Flutter client boundary** with backend data 
   - backend creates or loads one active timeline for the content item and format preset
   - preview/final renders are requested through `lab`, never directly through the Remotion worker
   - signed playback URLs are ephemeral response data and must not be displayed or persisted with query tokens
+- Feed-native branded-video cards consume backend readiness truth:
+  - card states distinguish `ready_to_publish`, `preparing`, `needs_review`, `blocked`, and `failed`
+  - swipe/publish affordances stay disabled unless readiness is publishable
+  - publish preflight blockers are surfaced on-card before a publish attempt
+  - opening `/editor/:id/video` is an explicit recovery or refinement action, not the default publish path
 - Android local capture remains local-first:
   - screenshot PNG and recording MP4 are stored in app-scoped storage
   - every session requires fresh MediaProjection consent

@@ -13,14 +13,15 @@ const List<InAppTourStep> kInAppTourSteps = [
   InAppTourStep(
     id: 'feed',
     routePath: '/feed',
-    title: 'Feed — your review queue',
+    title: 'Feed — your publish-ready queue',
     description:
-        'This is where you review every piece of AI-generated content. '
+        'This is where you check what is ready to publish, what is still preparing, and what is blocked. '
         'You can swipe the card or use the three round buttons at the bottom: '
         'the left button skips the item, the middle one opens the editor, '
-        'and the right one approves or publishes it. '
+        'and the right one publishes only when the card is truly ready. '
+        'Video cards also summarize publish preflight blockers before you try to post. '
         'The red badge on the Feed icon shows how many items are waiting for review.',
-    hint: 'Look for the 3 round buttons at the bottom — they are your main actions.',
+    hint: 'Ready cards can be published directly; blocked cards explain what is missing first.',
   ),
   InAppTourStep(
     id: 'calendar',
@@ -180,7 +181,7 @@ const List<InAppTourStep> kInAppTourSteps = [
     description:
         'You have seen the essentials. A few reminders to get started well: '
         '1) configure your personas and weekly ritual in Settings, '
-        '2) let the AI generate, then review items in the Feed, '
+        '2) let the AI generate, then publish ready items or fix blockers from the Feed, '
         '3) track the impact in Analytics. '
         'To relaunch this tour, open Settings and use the guided app tour option.',
   ),

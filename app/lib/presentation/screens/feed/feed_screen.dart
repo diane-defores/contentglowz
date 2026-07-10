@@ -44,6 +44,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     with SingleTickerProviderStateMixin {
   final CardSwiperController _swiperController = CardSwiperController();
   String? _swipeOverlay;
+  int _activeCardIndex = 0;
   late AnimationController _overlayAnimation;
 
   @override
@@ -138,6 +139,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   }
 
   Widget _buildSwiper(List<ContentItem> items) {
+    final activeItem = _currentItem(items);
+    final canPublishCurrent =
+        activeItem != null && _canPublishFromFeed(activeItem);
     return Stack(
       children: [
         Padding(
@@ -156,11 +160,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             onSwipe: (prevIndex, currentIndex, direction) =>
                 _onSwipe(items, prevIndex, direction),
             onSwipeDirectionChange: (horizontalDirection, verticalDirection) {
+              final currentItem = _currentItem(items);
               setState(() {
                 if (verticalDirection == CardSwiperDirection.top) {
                   _swipeOverlay = 'edit';
                 } else if (horizontalDirection == CardSwiperDirection.right) {
-                  _swipeOverlay = 'approve';
+                  _swipeOverlay =
+                      currentItem != null && _canPublishFromFeed(currentItem)
+                      ? 'approve'
+                      : 'wait';
                 } else if (horizontalDirection == CardSwiperDirection.left) {
                   _swipeOverlay = 'reject';
                 } else {
@@ -185,7 +193,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           bottom: _kFeedDeckBottomActionOffset,
           left: 0,
           right: 0,
-          child: _buildActionButtons(),
+          child: _buildActionButtons(
+            canPublishCurrent: canPublishCurrent,
+            publishLabel: _publishActionLabel(activeItem),
+          ),
         ),
       ],
     );
@@ -196,6 +207,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       'approve' => ('PUBLISH', AppTheme.approveColor, Icons.check_circle),
       'reject' => ('SKIP', AppTheme.rejectColor, Icons.cancel),
       'edit' => ('EDIT', AppTheme.editColor, Icons.edit),
+      'wait' => ('WAIT', AppTheme.warningColor, Icons.hourglass_top_rounded),
       _ => (
         '',
         Theme.of(context).colorScheme.surface.withValues(alpha: 0),
@@ -249,17 +261,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons({
+    required bool canPublishCurrent,
+    required String publishLabel,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _actionButton(
+          key: const Key('feed-action-skip'),
           icon: Icons.close_rounded,
           color: AppTheme.rejectColor,
           label: 'Skip',
           onTap: () => _swiperController.swipe(CardSwiperDirection.left),
         ),
         _actionButton(
+          key: const Key('feed-action-edit'),
           icon: Icons.edit_rounded,
           color: AppTheme.editColor,
           label: 'Edit',
@@ -267,30 +284,41 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           large: true,
         ),
         _actionButton(
+          key: const Key('feed-action-publish'),
           icon: Icons.check_rounded,
-          color: AppTheme.approveColor,
-          label: 'Publish',
-          onTap: () => _swiperController.swipe(CardSwiperDirection.right),
+          color: canPublishCurrent
+              ? AppTheme.approveColor
+              : AppTheme.warningColor,
+          label: publishLabel,
+          onTap: canPublishCurrent
+              ? () => _swiperController.swipe(CardSwiperDirection.right)
+              : null,
         ),
       ],
     );
   }
 
   Widget _actionButton({
+    Key? key,
     required IconData icon,
     required Color color,
     required String label,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     bool large = false,
   }) {
     final size = large ? _kFeedActionButtonLarge : _kFeedActionButtonMin;
+    final isEnabled = onTap != null;
     return Column(
+      key: key,
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: color.withAlpha(30),
+          color: color.withAlpha(isEnabled ? 30 : 18),
           shape: CircleBorder(
-            side: BorderSide(color: color.withAlpha(150), width: 2),
+            side: BorderSide(
+              color: color.withAlpha(isEnabled ? 150 : 90),
+              width: 2,
+            ),
           ),
           child: InkWell(
             onTap: onTap,
@@ -301,7 +329,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
               height: size,
               child: Icon(
                 icon,
-                color: color,
+                color: color.withAlpha(isEnabled ? 255 : 150),
                 size: large
                     ? _kFeedActionIconSizeLarge
                     : _kFeedActionIconSizeSmall,
@@ -313,7 +341,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         Text(
           context.tr(label),
           style: TextStyle(
-            color: color.withAlpha(180),
+            color: color.withAlpha(isEnabled ? 180 : 130),
             fontSize: AppText.xs,
             fontWeight: FontWeight.w500,
           ),
@@ -395,6 +423,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     switch (direction) {
       case CardSwiperDirection.right:
+        if (!_canPublishFromFeed(item)) {
+          _showSnackBar(
+            _publishBlockedMessage(item),
+            _colorForBlockedPublish(item),
+            includeCopyAction: item.videoGenerationBlockers.isNotEmpty,
+            diagnosticScope: 'feed.swipe_publish_blocked',
+          );
+          return false;
+        }
         // Approve & publish
         ref.read(pendingContentProvider.notifier).approve(item.id).then((
           result,
@@ -412,6 +449,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
             diagnosticScope: 'feed.swipe_approve',
           );
         });
+        setState(() {
+          _activeCardIndex = math.min(prevIndex, math.max(items.length - 2, 0));
+        });
         return true;
 
       case CardSwiperDirection.left:
@@ -421,6 +461,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           context.tr('Skipped: {title}', {'title': item.title}),
           AppTheme.rejectColor,
         );
+        setState(() {
+          _activeCardIndex = math.min(prevIndex, math.max(items.length - 2, 0));
+        });
         return true;
 
       case CardSwiperDirection.top:
@@ -441,10 +484,55 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     context.push('/editor/${item.id}');
   }
 
-  bool _usesVideoEditor(ContentItem item) =>
-      item.type == ContentType.videoScript ||
-      item.type == ContentType.reel ||
-      item.type == ContentType.short;
+  bool _usesVideoEditor(ContentItem item) => item.isVideoType;
+
+  ContentItem? _currentItem(List<ContentItem> items) {
+    if (items.isEmpty) return null;
+    final index = _activeCardIndex.clamp(0, items.length - 1);
+    return items[index];
+  }
+
+  bool _canPublishFromFeed(ContentItem item) {
+    if (!item.isVideoType) return true;
+    return item.isVideoReadyToPublish &&
+        item.videoGenerationTimelineId != null &&
+        item.videoGenerationVersionId != null;
+  }
+
+  String _publishActionLabel(ContentItem? item) {
+    if (item == null || !item.isVideoType) {
+      return context.tr('Publish');
+    }
+    return switch (item.videoFeedState) {
+      'ready' => context.tr('Publish'),
+      'rendering' => context.tr('Rendering'),
+      'blocked' => context.tr('Blocked'),
+      _ => context.tr('Needs review'),
+    };
+  }
+
+  Color _colorForBlockedPublish(ContentItem item) {
+    return switch (item.videoFeedState) {
+      'rendering' => AppTheme.infoColor,
+      'blocked' => AppTheme.rejectColor,
+      _ => AppTheme.warningColor,
+    };
+  }
+
+  String _publishBlockedMessage(ContentItem item) {
+    final blockerSummary = item.videoGenerationBlockerSummary?.trim();
+    final blockers = item.videoGenerationBlockers;
+    return switch (item.videoFeedState) {
+      'rendering' =>
+        'Video render is still in progress. Publish will unlock when the final asset is ready.',
+      'blocked' =>
+        blockerSummary?.isNotEmpty == true
+            ? 'Publish blocked: $blockerSummary'
+            : 'Publish blocked: ${blockers.join(', ')}',
+      _ =>
+        'This video still needs review before the feed can publish it. Use Edit video to inspect the timeline.',
+    };
+  }
 
   void _showSnackBar(
     String message,
