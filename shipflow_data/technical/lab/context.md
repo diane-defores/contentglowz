@@ -20,7 +20,7 @@ linked_systems:
   - OpenRouter
   - Exa
   - Firecrawl
-  - Mem0
+  - Project Intelligence generation context
   - SendGrid
   - Render
   - PM2
@@ -58,7 +58,7 @@ It combines:
 
 - REST + WebSocket endpoints in `api/`
 - AI pipelines and tool integrations in `agents/`
-- memory and retrieval hooks in `memory/`
+- Project Intelligence generation context in `api/services/project_generation_context.py`
 - persistent scheduling/status orchestration in `scheduler/`, `status/`, and `api/services/`
 - support utilities in `utils/`
 - behavioral contracts and test coverage in `tests/`
@@ -88,6 +88,12 @@ It combines:
 - AI runtime:
   - runtime services are provided lazily and guarded by mode/credential checks (`api/services/ai_runtime_service.py`)
   - BYOK and platform modes are enforced per request, route and provider.
+
+- Generation context:
+  - relational Project Intelligence rows are canonical for project knowledge
+  - newsletter and psychology generation receive bounded, tenant-scoped context from `api/services/project_generation_context.py`
+  - context logs and generation signals are created by `ProjectIntelligenceStore.ensure_tables()`
+  - no separate runtime project-memory package is installed; `chromadb` may remain only as a CrewAI transitive residual
 
 - Background execution:
   - `scheduler/scheduler_service.py` dispatches due jobs and updates job status transitions

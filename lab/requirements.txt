@@ -31,13 +31,10 @@ networkx>=3.0.0,<4.0
 matplotlib>=3.8.0,<4.0
 python-louvain>=0.16,<1.0  # Community detection for topical mesh analysis
 
-# Memory Layer
-# Mem0/Chroma stay outside the default runtime because the current line carries
-# unresolved advisories and the backend already degrades gracefully without it.
-# Install `requirements-memory.txt` only in an isolated or explicitly optional
-# environment that needs the semantic memory feature set.
-# Note: `chromadb` still lands transitively via `crewai`; keep it treated as a
-# monitored residual until the upstream CrewAI graph drops or fixes it.
+# Project Intelligence generation context is relational and Turso/libSQL-backed.
+# No project-memory package is installed here. `chromadb` may still land
+# transitively via `crewai`; treat it as a monitored CrewAI residual, not as
+# ContentGlowz project-memory storage.
 
 # Email & Templates
 jinja2>=3.1.6,<4.0

@@ -61,7 +61,7 @@ Use the global CrewAI note for current source links and release behavior:
 | Model gateway | OpenRouter via LiteLLM/CrewAI | credentials | Keys are resolved per request; never record values. |
 | Tool wrappers | `@tool` functions under `agents/**/tools/**` and `agents/shared/tools/**` | mixed | Treat web fetch, email, publishing, storage, and MCP-style tools as high risk. |
 | Structured outputs | `output_pydantic` in SEO crew tasks | no | Version-sensitive CrewAI behavior; keep regression coverage. |
-| Memory | Mem0 dependency present, CrewAI memory research exists | potential user data | Do not enable persistent memory without an explicit retention/tenancy contract. |
+| Memory | Project Intelligence context is injected before CrewAI runs; `chromadb` may remain transitively via CrewAI | potential user data | Do not enable CrewAI persistent memory. Keep project context canonical in Project Intelligence relational rows. |
 | Observability | Sentry/logging plus optional CrewAI tracing if configured | potential sensitive data | Redact prompts, tool inputs, user content, and provider errors. |
 
 ## Runtime And Integration Notes

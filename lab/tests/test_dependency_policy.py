@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APPROVED_PYDANTIC_AI_IMPORTS = {
     Path("api/services/pydantic_ai_runtime.py"),
 }
+APPROVED_CHROMADB_IMPORTS: set[Path] = set()
 
 
 def _python_files() -> list[Path]:
@@ -54,3 +55,54 @@ def test_runtime_install_paths_use_lockfile():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "pip install -r requirements.lock" in render_yaml
     assert "pip install -r requirements.lock" in readme
+
+
+def test_mem0_runtime_imports_and_requirements_are_removed():
+    violations: list[str] = []
+    for path in _python_files():
+        rel = path.relative_to(ROOT)
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(rel))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [node.module or ""]
+            else:
+                continue
+            if any(name == "mem0" or name.startswith("mem0.") or name == "memory" or name.startswith("memory.") for name in names):
+                violations.append(str(rel))
+
+    requirement_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in ROOT.glob("requirements*.txt")
+        if path.name != "requirements-memory.txt"
+    )
+    lock_text = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+
+    assert violations == []
+    assert "mem0ai" not in requirement_text.lower()
+    assert "mem0ai" not in lock_text.lower()
+    assert not (ROOT / "requirements-memory.txt").exists()
+
+
+def test_chromadb_is_only_crewai_transitive_residual_and_not_project_memory_runtime():
+    violations: list[str] = []
+    for path in _python_files():
+        rel = path.relative_to(ROOT)
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(rel))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [node.module or ""]
+            else:
+                continue
+            if any(name == "chromadb" or name.startswith("chromadb.") for name in names):
+                if rel not in APPROVED_CHROMADB_IMPORTS:
+                    violations.append(str(rel))
+
+    lock_lines = (ROOT / "requirements.lock").read_text(encoding="utf-8").splitlines()
+    chroma_line = next((idx for idx, line in enumerate(lock_lines) if line.startswith("chromadb==")), None)
+    assert violations == []
+    assert chroma_line is not None
+    assert any("via crewai" in line for line in lock_lines[chroma_line : chroma_line + 12])

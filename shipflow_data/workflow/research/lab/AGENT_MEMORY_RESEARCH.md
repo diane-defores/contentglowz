@@ -2,6 +2,12 @@
 
 > Research conducted 2026-02-03 to evaluate frameworks for building agents that learn about projects and create tailored, cohesive content.
 
+> 2026-07-11 implementation note: this research is historical. Active
+> ContentGlowz project generation context is now Project Intelligence relational
+> context (`lab/api/services/project_generation_context.py`), not a separate
+> project-memory package. Do not use the setup snippets below as install
+> instructions.
+
 ## The Problem
 
 Current CrewAI setup runs agents as **stateless, task-based workflows**. Each run starts fresh without knowledge of:

@@ -32,7 +32,7 @@ def _load_context_tools_module():
     sys.modules["crewai.tools"] = fake_tools
 
     spec = importlib.util.spec_from_file_location(
-        "contentglowz_newsletter_context_tools_migrated",
+        "contentglowz_newsletter_context_tools",
         _MEMORY_TOOLS_PATH,
     )
     assert spec is not None and spec.loader is not None
@@ -41,7 +41,7 @@ def _load_context_tools_module():
     return module
 
 
-def test_memory_tools_require_bound_project_scope_and_do_not_fallback_global():
+def test_newsletter_context_tools_require_bound_project_scope_and_do_not_fallback_global():
     module = _load_context_tools_module()
     module.clear_project_context_tool_scope()
 
@@ -50,7 +50,7 @@ def test_memory_tools_require_bound_project_scope_and_do_not_fallback_global():
     assert "missing project scope" in module.recall_past_newsletters().lower()
 
 
-def test_memory_tools_use_prebuilt_project_intelligence_context():
+def test_newsletter_context_tools_use_prebuilt_project_intelligence_context():
     module = _load_context_tools_module()
     module.set_project_context_tool_scope(
         user_id="user-1",
@@ -60,3 +60,6 @@ def test_memory_tools_use_prebuilt_project_intelligence_context():
 
     assert "Audience: founders" in module.recall_brand_voice()
     assert "Project Intelligence" in module.recall_project_context("audience")
+
+    module.clear_project_context_tool_scope()
+

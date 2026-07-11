@@ -15,10 +15,26 @@ This root README is now an entrypoint, not the canonical technical source of tru
 ## Quick Start
 
 1. `pip install -r requirements.lock`
-2. Optional memory features only: `pip install -r requirements-memory.txt`
-3. `doppler setup`
-4. `doppler run -- uvicorn api.main:app --reload --port 8000`
-5. `curl http://localhost:8000/health`
+2. `doppler setup`
+3. `doppler run -- uvicorn api.main:app --reload --port 8000`
+4. `curl http://localhost:8000/health`
+
+## Project Intelligence Generation Context
+
+Newsletter and psychology generation use the relational Project Intelligence
+generation context. Startup calls `ProjectIntelligenceStore.ensure_tables()`,
+which idempotently creates the source/document/chunk/fact/recommendation tables
+plus generation context logs and generation signals.
+
+There is no optional project-memory install path. `chromadb` may still appear in
+`requirements.lock` as a CrewAI transitive residual; it is not used by
+ContentGlowz project memory.
+
+Useful local checks:
+
+- `pytest lab/tests/test_project_generation_context_builder.py lab/tests/test_project_generation_context_store.py`
+- `pytest lab/tests/test_newsletter_generation_context.py lab/tests/test_psychology_generation_context.py`
+- `rg -n "mem0ai|from memory|import memory|get_memory_service|chromadb" lab --glob "*.py"`
 
 ## Rule
 

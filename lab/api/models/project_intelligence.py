@@ -33,6 +33,14 @@ FactCategory = Literal[
     "open_question",
 ]
 
+GenerationContextItemType = Literal[
+    "fact",
+    "source_excerpt",
+    "past_generation",
+    "recommendation",
+    "empty_notice",
+]
+
 
 class ProjectIntelligenceEvidenceRef(ProjectIntelligenceModel):
     source_id: str = Field(serialization_alias="sourceId")
@@ -150,6 +158,108 @@ class ProjectIntelligenceRecommendation(ProjectIntelligenceModel):
     evidence_ids: list[str] = Field(default_factory=list, serialization_alias="evidenceIds")
     evidence: list[ProjectIntelligenceEvidenceRef] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime = Field(serialization_alias="createdAt")
+    updated_at: datetime = Field(serialization_alias="updatedAt")
+
+
+class ProjectGenerationContextBudget(ProjectIntelligenceModel):
+    max_tokens: int = Field(default=6000, serialization_alias="maxTokens")
+    required_fact_tokens: int = Field(default=2000, serialization_alias="requiredFactTokens")
+    excerpt_tokens: int = Field(default=2500, serialization_alias="excerptTokens")
+    past_generation_tokens: int = Field(default=1000, serialization_alias="pastGenerationTokens")
+    reserved_tokens: int = Field(default=500, serialization_alias="reservedTokens")
+
+
+class ProjectGenerationContextRequest(ProjectIntelligenceModel):
+    user_id: str = Field(serialization_alias="userId")
+    project_id: str = Field(serialization_alias="projectId")
+    generation_type: str = Field(serialization_alias="generationType")
+    route_id: str = Field(serialization_alias="routeId")
+    content_type: str | None = Field(default=None, serialization_alias="contentType")
+    content_record_id: str | None = Field(default=None, serialization_alias="contentRecordId")
+    query: str | None = None
+    title: str | None = None
+    topics: list[str] = Field(default_factory=list)
+    max_tokens: int = Field(default=6000, serialization_alias="maxTokens")
+
+
+class ProjectGenerationContextProvenanceRef(ProjectIntelligenceModel):
+    user_id: str = Field(serialization_alias="userId")
+    project_id: str = Field(serialization_alias="projectId")
+    item_type: GenerationContextItemType = Field(serialization_alias="itemType")
+    item_id: str = Field(serialization_alias="itemId")
+    source_id: str | None = Field(default=None, serialization_alias="sourceId")
+    document_id: str | None = Field(default=None, serialization_alias="documentId")
+    chunk_id: str | None = Field(default=None, serialization_alias="chunkId")
+    fact_id: str | None = Field(default=None, serialization_alias="factId")
+    generation_signal_id: str | None = Field(default=None, serialization_alias="generationSignalId")
+    category: str | None = None
+    score: float | None = None
+    selected_reason: str = Field(serialization_alias="selectedReason")
+    source_removed_at: datetime | None = Field(default=None, serialization_alias="sourceRemovedAt")
+
+
+class ProjectGenerationContextItem(ProjectIntelligenceModel):
+    id: str
+    item_type: GenerationContextItemType = Field(serialization_alias="itemType")
+    title: str
+    text: str
+    token_estimate: int = Field(serialization_alias="tokenEstimate")
+    priority: int = 3
+    category: str | None = None
+    selected_reason: str = Field(serialization_alias="selectedReason")
+    provenance: ProjectGenerationContextProvenanceRef
+
+
+class ProjectGenerationContextResult(ProjectIntelligenceModel):
+    user_id: str = Field(serialization_alias="userId")
+    project_id: str = Field(serialization_alias="projectId")
+    generation_type: str = Field(serialization_alias="generationType")
+    context_log_id: str | None = Field(default=None, serialization_alias="contextLogId")
+    degraded: bool = False
+    empty_reason: str | None = Field(default=None, serialization_alias="emptyReason")
+    items: list[ProjectGenerationContextItem] = Field(default_factory=list)
+    provenance: list[ProjectGenerationContextProvenanceRef] = Field(default_factory=list)
+    budget: ProjectGenerationContextBudget = Field(default_factory=ProjectGenerationContextBudget)
+    token_estimate: int = Field(default=0, serialization_alias="tokenEstimate")
+    truncated_counts: dict[str, int] = Field(default_factory=dict, serialization_alias="truncatedCounts")
+    exclusions: list[dict[str, Any]] = Field(default_factory=list)
+    prompt_text: str = Field(default="", serialization_alias="promptText")
+
+
+class ProjectGenerationContextLog(ProjectIntelligenceModel):
+    id: str
+    user_id: str = Field(serialization_alias="userId")
+    project_id: str = Field(serialization_alias="projectId")
+    generation_type: str = Field(serialization_alias="generationType")
+    route_id: str = Field(serialization_alias="routeId")
+    content_record_id: str | None = Field(default=None, serialization_alias="contentRecordId")
+    items: list[dict[str, Any]] = Field(default_factory=list)
+    provenance: list[dict[str, Any]] = Field(default_factory=list)
+    exclusions: list[dict[str, Any]] = Field(default_factory=list)
+    prompt_hash: str = Field(serialization_alias="promptHash")
+    token_estimate: int = Field(serialization_alias="tokenEstimate")
+    degraded: bool = False
+    empty_reason: str | None = Field(default=None, serialization_alias="emptyReason")
+    created_at: datetime = Field(serialization_alias="createdAt")
+
+
+class ProjectGenerationSignal(ProjectIntelligenceModel):
+    id: str
+    user_id: str = Field(serialization_alias="userId")
+    project_id: str = Field(serialization_alias="projectId")
+    generation_type: str = Field(serialization_alias="generationType")
+    content_type: str = Field(serialization_alias="contentType")
+    content_record_id: str | None = Field(default=None, serialization_alias="contentRecordId")
+    title: str
+    topics: list[str] = Field(default_factory=list)
+    summary: str | None = None
+    body_hash: str | None = Field(default=None, serialization_alias="bodyHash")
+    body_char_count: int = Field(default=0, serialization_alias="bodyCharCount")
+    context_log_id: str | None = Field(default=None, serialization_alias="contextLogId")
+    source_idea_ids: list[str] = Field(default_factory=list, serialization_alias="sourceIdeaIds")
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    invalidated_at: datetime | None = Field(default=None, serialization_alias="invalidatedAt")
     created_at: datetime = Field(serialization_alias="createdAt")
     updated_at: datetime = Field(serialization_alias="updatedAt")
 

@@ -14,6 +14,7 @@ from crewai import Agent, Task, Crew, Process
 from dotenv import load_dotenv
 import os
 import re
+import asyncio
 from datetime import datetime
 
 from agents.newsletter.newsletter_agent import (
@@ -37,18 +38,15 @@ from status.audit import actor_from_agent
 if is_imap_backend():
     from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
 
-# Conditional memory import (graceful degradation)
+# Project Intelligence context tools expose only prebuilt scoped context.
 try:
-    from memory import get_memory_service
     from agents.newsletter.tools.memory_tools import (
-        clear_memory_tool_scope,
-        set_memory_tool_scope,
+        clear_project_context_tool_scope,
+        set_project_context_tool_scope,
     )
-    MEMORY_AVAILABLE = True
 except ImportError:
-    MEMORY_AVAILABLE = False
-    set_memory_tool_scope = None
-    clear_memory_tool_scope = None
+    set_project_context_tool_scope = None
+    clear_project_context_tool_scope = None
 
 # Conditional status tracking (graceful degradation)
 try:
@@ -100,6 +98,7 @@ class NewsletterCrew:
         competitor_emails: Optional[List[str]] = None,
         user_id: Optional[str] = None,
         project_id: Optional[str] = None,
+        generation_context: Any | None = None,
     ) -> Dict[str, Any]:
         """
         Generate a complete newsletter through multi-agent workflow.
@@ -153,77 +152,21 @@ class NewsletterCrew:
         if competitor_emails:
             all_competitors.extend(competitor_emails)
 
-        # STAGE 0: Memory Context Loading
-        memory_context = ""
-        if MEMORY_AVAILABLE:
-            try:
-                print("\n🧠 STAGE 0: Loading Project Memory")
-                print("-" * 40)
-                memory = get_memory_service()
-
-                sections = []
-
-                # Load brand voice
-                if user_id:
-                    brand_ctx = memory.load_project_context(
-                        "brand voice writing style tone guidelines",
-                        user_id=user_id,
-                        project_id=project_id,
-                        limit=10,
-                    )
-                else:
-                    brand_ctx = memory.load_context("brand voice writing style tone guidelines")
-                if brand_ctx:
-                    sections.append(brand_ctx)
-                    print("  ✓ Brand voice loaded")
-
-                # Load past newsletters for deduplication
-                if user_id:
-                    past_ctx = memory.load_project_context(
-                        "past newsletter generation topics covered",
-                        user_id=user_id,
-                        project_id=project_id,
-                        limit=10,
-                    )
-                else:
-                    past_ctx = memory.load_context(
-                        "past newsletter generation topics covered",
-                        agent_id="newsletter",
-                        limit=10,
-                    )
-                if past_ctx:
-                    sections.append(past_ctx)
-                    print("  ✓ Past newsletters loaded")
-
-                # Load content inventory
-                if user_id:
-                    inventory_ctx = memory.load_project_context(
-                        "published content articles inventory",
-                        user_id=user_id,
-                        project_id=project_id,
-                        limit=15,
-                    )
-                else:
-                    inventory_ctx = memory.load_context(
-                        "published content articles inventory",
-                        limit=15,
-                    )
-                if inventory_ctx:
-                    sections.append(inventory_ctx)
-                    print("  ✓ Content inventory loaded")
-
-                if sections:
-                    memory_context = (
-                        "\n\n--- PROJECT MEMORY CONTEXT ---\n"
-                        + "\n\n".join(sections)
-                        + "\n--- END MEMORY CONTEXT ---\n"
-                    )
-                    print(f"  Total memory sections loaded: {len(sections)}")
-                else:
-                    print("  No memories found (brain may need seeding)")
-            except Exception as e:
-                print(f"  ⚠ Memory loading failed (non-critical): {e}")
-                memory_context = ""
+        # STAGE 0: Project Intelligence Context Loading
+        print("\n🧠 STAGE 0: Loading Project Intelligence Context")
+        print("-" * 40)
+        context_result = generation_context or self._build_generation_context_sync(
+            user_id=user_id,
+            project_id=project_id,
+            config=config,
+            content_record_id=status_record_id,
+        )
+        memory_context = getattr(context_result, "prompt_text", "")
+        context_log_id = getattr(context_result, "context_log_id", None)
+        if getattr(context_result, "empty_reason", None):
+            print(f"  Explicit empty context: {context_result.empty_reason}")
+        else:
+            print(f"  Project Intelligence items loaded: {len(getattr(context_result, 'items', []) or [])}")
 
         # STAGE 1: Research
         print("\n📧 STAGE 1: Email & Content Research")
@@ -298,8 +241,12 @@ class NewsletterCrew:
 
         print("\n🚀 Running newsletter generation pipeline...")
         newsletter_actor = actor_from_agent("newsletter")
-        if set_memory_tool_scope is not None:
-            set_memory_tool_scope(user_id=user_id, project_id=project_id)
+        if set_project_context_tool_scope is not None:
+            set_project_context_tool_scope(
+                user_id=user_id,
+                project_id=project_id,
+                context_prompt=memory_context,
+            )
         try:
             crew_output = crew.kickoff()
         except Exception as e:
@@ -313,8 +260,8 @@ class NewsletterCrew:
                     print(f"⚠ Status tracking failed transition error: {se}")
             raise
         finally:
-            if clear_memory_tool_scope is not None:
-                clear_memory_tool_scope()
+            if clear_project_context_tool_scope is not None:
+                clear_project_context_tool_scope()
 
         # Parse results
         results["stages"]["research"] = research_task.output.raw if research_task.output else None
@@ -341,36 +288,14 @@ class NewsletterCrew:
 
         results["draft"] = draft.model_dump()
 
-        # Store generation record in memory
-        if MEMORY_AVAILABLE:
-            try:
-                memory = get_memory_service()
-                topics_covered = config.topics
-                if user_id:
-                    memory.store_generation_scoped(
-                        content_type="newsletter",
-                        title=draft.subject_line,
-                        user_id=user_id,
-                        project_id=project_id,
-                        topics=topics_covered,
-                        summary=(
-                            f"Newsletter '{config.name}' with {draft.word_count} words, "
-                            f"{len(draft.sections)} sections. "
-                            f"Topics: {', '.join(topics_covered)}."
-                        ),
-                    )
-                else:
-                    memory.store_generation(
-                        content_type="newsletter",
-                        title=draft.subject_line,
-                        topics=topics_covered,
-                        summary=f"Newsletter '{config.name}' with {draft.word_count} words, "
-                                f"{len(draft.sections)} sections. "
-                                f"Topics: {', '.join(topics_covered)}.",
-                    )
-                print("🧠 Generation record stored in memory")
-            except Exception as e:
-                print(f"⚠ Failed to store generation record (non-critical): {e}")
+        self._record_generation_signal_sync(
+            user_id=user_id,
+            project_id=project_id,
+            draft=draft,
+            config=config,
+            context_log_id=context_log_id,
+            content_record_id=status_record_id,
+        )
 
         # STAGE 3: Archive processed emails (IMAP only)
         if is_imap_backend() and email_uids:
@@ -398,6 +323,8 @@ class NewsletterCrew:
                 status_svc.transition(status_record_id, "generated", newsletter_actor)
                 status_svc.transition(status_record_id, "pending_review", newsletter_actor)
                 results["status_record_id"] = status_record_id
+                if context_log_id:
+                    results["project_generation_context_log_id"] = context_log_id
                 print(f"📊 Status tracking: marked as pending_review")
             except Exception as e:
                 print(f"⚠ Status tracking completion failed (non-critical): {e}")
@@ -411,6 +338,94 @@ class NewsletterCrew:
         print("=" * 60)
 
         return results
+
+    def _build_generation_context_sync(
+        self,
+        *,
+        user_id: str | None,
+        project_id: str | None,
+        config: NewsletterConfig,
+        content_record_id: str | None,
+    ) -> Any:
+        if not user_id or not project_id:
+            from api.models.project_intelligence import ProjectGenerationContextResult
+
+            return ProjectGenerationContextResult(
+                userId=user_id or "anonymous",
+                projectId=project_id or "no-project",
+                generationType="newsletter",
+                contextLogId=None,
+                degraded=False,
+                emptyReason="empty_project_context",
+                items=[],
+                provenance=[],
+                promptText=(
+                    "--- PROJECT INTELLIGENCE CONTEXT ---\n"
+                    "empty_context: empty_project_context\n"
+                    "--- END PROJECT INTELLIGENCE CONTEXT ---"
+                ),
+            )
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            from api.services.project_intelligence_service import project_intelligence_service
+
+            return asyncio.run(
+                project_intelligence_service.build_generation_context(
+                    user_id=user_id,
+                    project_id=project_id,
+                    generation_type="newsletter",
+                    route_id="newsletter.generate",
+                    content_type="newsletter",
+                    content_record_id=content_record_id,
+                    query=" ".join(config.topics),
+                    title=config.name,
+                    topics=config.topics,
+                )
+            )
+        raise RuntimeError("generation_context_unavailable")
+
+    def _record_generation_signal_sync(
+        self,
+        *,
+        user_id: str | None,
+        project_id: str | None,
+        draft: NewsletterDraft,
+        config: NewsletterConfig,
+        context_log_id: str | None,
+        content_record_id: str | None,
+    ) -> None:
+        if not user_id or not project_id:
+            return
+        try:
+            asyncio.get_running_loop()
+            return
+        except RuntimeError:
+            pass
+        try:
+            from api.services.project_intelligence_service import project_intelligence_service
+
+            asyncio.run(
+                project_intelligence_service.record_generation_signal(
+                    user_id=user_id,
+                    project_id=project_id,
+                    generation_type="newsletter",
+                    content_type="newsletter",
+                    title=draft.subject_line,
+                    content_record_id=content_record_id,
+                    topics=config.topics,
+                    summary=(
+                        f"Newsletter '{config.name}' with {draft.word_count} words, "
+                        f"{len(draft.sections)} sections. Topics: {', '.join(config.topics)}."
+                    ),
+                    body=draft.plain_text,
+                    context_log_id=context_log_id,
+                    metadata={"source": "newsletter_crew"},
+                )
+            )
+            print("🧠 Generation signal stored in Project Intelligence")
+        except Exception as exc:
+            raise RuntimeError("generation_context_signal_write_failed") from exc
 
     def _extract_subject(self, content: str) -> str:
         """Extract subject line from generated content."""

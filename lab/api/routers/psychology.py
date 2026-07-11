@@ -9,6 +9,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from api.dependencies.auth import CurrentUser, require_current_user
 from api.services.job_store import job_store
 from api.services.ai_runtime_service import AIRuntimeServiceError, ai_runtime_service
+from api.services.project_generation_context import ProjectGenerationContextStoreError
+from api.services.project_intelligence_service import project_intelligence_service
 from api.services.user_llm_service import (
     DEFAULT_OPENROUTER_MODEL,
     NEWSLETTER_OPENROUTER_MODEL,
@@ -17,6 +19,7 @@ from api.services.user_llm_service import (
     user_llm_service,
 )
 from status.audit import actor_from_agent
+from status import get_status_service
 from api.models.psychology import (
     NarrativeSynthesisRequest,
     NarrativeSynthesisResult,
@@ -378,7 +381,6 @@ async def _run_pipeline_task(
 ):
     """Background task: dispatch to the appropriate content pipeline."""
     try:
-        from status import get_status_service
         svc = get_status_service()
 
         fmt = request.target_format
@@ -392,6 +394,18 @@ async def _run_pipeline_task(
         angle = request.angle_data
         voice = request.creator_voice or {}
         body = ""
+        context_result = await project_intelligence_service.build_generation_context(
+            user_id=user_id,
+            project_id=request.project_id,
+            generation_type=fmt,
+            route_id=route_id,
+            content_type=_FORMAT_MAP.get(fmt, (fmt, fmt))[0],
+            content_record_id=content_record_id,
+            query=angle.get("title", ""),
+            title=angle.get("title", ""),
+            topics=angle.get("topics", []),
+        )
+        project_context_prompt = context_result.prompt_text
         llm_model = (
             NEWSLETTER_OPENROUTER_MODEL
             if fmt == "newsletter"
@@ -404,20 +418,6 @@ async def _run_pipeline_task(
                 route=route_id,
             )
 
-            # Load project memory context to avoid duplicate topics
-            existing_content_context = ""
-            try:
-                from memory.memory_service import get_memory_service
-                mem = get_memory_service()
-                existing_content_context = mem.load_project_context(
-                    query=angle.get("title", ""),
-                    user_id=user_id,
-                    project_id=request.project_id,
-                    limit=10,
-                )
-            except Exception:
-                pass  # Memory service is optional
-
             if fmt == "article":
                 from agents.seo.seo_crew import SEOContentCrew
                 crew = SEOContentCrew(
@@ -426,8 +426,8 @@ async def _run_pipeline_task(
                     include_firecrawl_tools=resolution.has_optional_provider("firecrawl"),
                 )
                 brand_voice_str = json.dumps(voice) if voice else None
-                if existing_content_context and brand_voice_str:
-                    brand_voice_str += f"\n\n{existing_content_context}"
+                if project_context_prompt:
+                    brand_voice_str = (brand_voice_str or "") + f"\n\n{project_context_prompt}"
                 result = crew.generate_content(
                     target_keyword=request.seo_keyword or angle.get("title", ""),
                     brand_voice=brand_voice_str,
@@ -454,6 +454,7 @@ async def _run_pipeline_task(
                     ),
                     user_id=user_id,
                     project_id=request.project_id,
+                    generation_context=context_result,
                 )
                 draft = result.get("draft", {})
                 body = draft.get("plain_text") or draft.get("html_content") or str(result)
@@ -461,9 +462,11 @@ async def _run_pipeline_task(
             elif fmt == "short":
                 from agents.short.short_crew import ShortContentCrew
                 crew = ShortContentCrew(llm_model=llm)
+                voice_with_context = dict(voice)
+                voice_with_context["project_generation_context"] = project_context_prompt
                 result = crew.generate_short(
                     angle=angle,
-                    creator_voice=voice,
+                    creator_voice=voice_with_context,
                     project_id=request.project_id,
                     create_content_record=False,
                 )
@@ -472,9 +475,11 @@ async def _run_pipeline_task(
             elif fmt == "social_post":
                 from agents.social.social_crew import SocialPostCrew
                 crew = SocialPostCrew(llm_model=llm)
+                voice_with_context = dict(voice)
+                voice_with_context["project_generation_context"] = project_context_prompt
                 result = crew.generate_social_post(
                     angle=angle,
-                    creator_voice=voice,
+                    creator_voice=voice_with_context,
                     project_id=request.project_id,
                     create_content_record=False,
                 )
@@ -498,22 +503,23 @@ async def _run_pipeline_task(
             except Exception:
                 pass
 
-        # Memory integration: record generation for semantic dedup (scoped)
-        try:
-            from memory.memory_service import get_memory_service
-            mem = get_memory_service()
-            mem.store_generation_scoped(
-                content_type=fmt,
-                title=request.angle_data.get("title", ""),
-                user_id=user_id,
-                project_id=request.project_id,
-                topics=request.angle_data.get("topics", []),
-                summary=body[:200] if body else "",
-                seo_keyword=request.seo_keyword,
-                source=request.angle_data.get("source"),
-            )
-        except Exception:
-            pass  # Memory service is optional
+        await project_intelligence_service.record_generation_signal(
+            user_id=user_id,
+            project_id=request.project_id,
+            generation_type=fmt,
+            content_type=_FORMAT_MAP.get(fmt, (fmt, fmt))[0],
+            title=request.angle_data.get("title", ""),
+            content_record_id=content_record_id,
+            topics=request.angle_data.get("topics", []),
+            summary=body[:240] if body else "",
+            body=body,
+            context_log_id=context_result.context_log_id,
+            source_idea_ids=source_idea_ids,
+            metadata={
+                "seoKeyword": request.seo_keyword,
+                "source": request.angle_data.get("source"),
+            },
+        )
 
         await job_store.update(
             task_id,
@@ -528,6 +534,25 @@ async def _run_pipeline_task(
             error=None,
         )
 
+    except ProjectGenerationContextStoreError as e:
+        await job_store.update(
+            task_id,
+            status="failed",
+            progress=100,
+            message="Pipeline content generation failed.",
+            error=e.code,
+            result={"content_record_id": content_record_id},
+        )
+        try:
+            svc = get_status_service()
+            svc.transition(
+                content_record_id,
+                "failed",
+                _pipeline_actor_for_format(request.target_format),
+                reason=e.code,
+            )
+        except Exception:
+            pass
     except Exception as e:
         await job_store.update(
             task_id,
@@ -539,7 +564,6 @@ async def _run_pipeline_task(
         )
         # Try to mark the content record as failed
         try:
-            from status import get_status_service
             svc = get_status_service()
             svc.transition(
                 content_record_id,

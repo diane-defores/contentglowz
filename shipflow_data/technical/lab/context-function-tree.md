@@ -100,8 +100,8 @@ next_step: /sf-docs audit shipflow_data/technical/lab/context-function-tree.md
 
 - `status/`
   - status records, lifecycle transitions, audit trail, and runbook-like history
-- `memory/`
-  - memory service/config used for semantic continuity
+- `api/services/project_generation_context.py`
+  - deterministic Project Intelligence generation context builder and retrieval boundary
 - `utils/`
   - libsql compatibility helpers, helpers, reporting, llm adapters
 - `scheduler/`
