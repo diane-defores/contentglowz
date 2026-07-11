@@ -152,10 +152,10 @@
   - lab/README.md:17 et lab/CLAUDE.md:48 expliquent l’install
     optionnelle.
 
-  - shipflow_data/workflow/reports/lab/optional-
+  - shipglowz_data/workflow/reports/lab/optional-
     integrations.md:26 documente la stratégie d’isolation.
 
-  - shipflow_data/workflow/TASKS.md:7 marque la revue
+  - shipglowz_data/workflow/TASKS.md:7 marque la revue
     d’exposition comme faite et laisse le suivi upstream.
 
   Vérifs:
@@ -181,10 +181,10 @@
 
   Next spec en attente côté top tracker:
 
-  1. shipflow_data/workflow/TASKS.md:9 lab: ajouter
+  1. shipglowz_data/workflow/TASKS.md:9 lab: ajouter
      l’automation Dependabot pour pip et github-actions
 
-  2. shipflow_data/workflow/TASKS.md:4 worker: traiter le uuid
+  2. shipglowz_data/workflow/TASKS.md:4 worker: traiter le uuid
      transitif via @google-cloud/storage / gaxios
 
   Si tu veux, j’enchaîne sur le lab Dependabot.
