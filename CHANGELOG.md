@@ -5,6 +5,7 @@
 
 ### Changed
 - Project generation context now uses scoped Project Intelligence data with deterministic relational retrieval, bounded context budgets, provenance, and generation signals for newsletter and psychology flows.
+- Branded video generation now persists ahead-of-time runs, reuses equivalent active runs idempotently, and exposes scheduler-backed feed readiness states before swipe/publish.
 
 ### Removed
 - Removed the Mem0 project-memory runtime and its dedicated dependency/setup artifacts. ChromaDB remains only as a CrewAI transitive dependency and is not used by project memory.

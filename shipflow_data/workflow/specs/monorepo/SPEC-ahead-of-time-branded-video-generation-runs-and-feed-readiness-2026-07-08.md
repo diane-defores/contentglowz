@@ -233,12 +233,14 @@ None. The operator direction is explicit: generation should happen before feed d
 | 2026-07-08 00:00:00 UTC | 100-sg-spec | GPT-5 Codex | Created a dedicated foundation spec for durable ahead-of-time branded-video generation runs and feed readiness projection. | draft | /101-sg-ready ahead-of-time branded video generation runs and feed readiness |
 | 2026-07-08 00:00:00 UTC | 100-sg-spec | GPT-5 Codex | Refined the foundation contract to add complete proof ordering, task-level validation, and bounded execution notes before readiness handoff. | ready | /102-sg-start ahead-of-time branded video generation runs and feed readiness |
 | 2026-07-09 00:00:00 UTC | 102-sg-start | GPT-5 Codex | Implemented durable branded-video generation runs, feed-candidate refresh/list routes, scheduler handoff, and app-side readiness consumption for swipe publish. | implemented | /103-sg-verify ahead-of-time branded video generation runs and feed readiness |
+| 2026-07-11 20:27:48 UTC | 103-sg-verify | GPT-5 Codex | Verified durable persistence, scoped ownership, idempotent reuse, state transitions, capacity waiting, scheduler handoff, feed refresh/list projection, and Flutter readiness consumption. Backend targeted tests: 23 passed; Flutter targeted tests: 22 passed; Dart analyze and Python imports passed. | verified | /104-sg-end ahead-of-time branded video generation runs and feed readiness |
+| 2026-07-11 20:35:00 UTC | 104-sg-end | gpt-5.5 | Closed bookkeeping after successful substrate verification; hosted/production proof remains explicitly outside this spec. | closed | /005-sg-ship ahead-of-time branded video generation runs and feed readiness |
 
 ## Current Chantier Flow
 
 - 100-sg-spec: completed
 - 101-sg-ready: ready
 - 102-sg-start: implemented
-- 103-sg-verify: pending
-- 104-sg-end: pending
+- 103-sg-verify: verified
+- 104-sg-end: closed
 - 005-sg-ship: pending

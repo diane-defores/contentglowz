@@ -74,6 +74,7 @@ Spec source: `shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-
 - [ ] Add a canonical brand-to-video system: one brand profile should drive templates, scene sequencing, motion rules, transitions, typography, overlays, CTA blocks, caption style, and export defaults.
 - [ ] Add a dedicated branding editor surface so users can tune brand kits, template rules, animation language, and reusable video systems separately from one-off timeline edits.
 - [x] Review product/docs promise alignment because current docs still frame ContentGlowz as human-in-the-loop and not fully automated; update canonical product language if this AI-first direction is adopted.
+- [x] Persist ahead-of-time branded-video generation runs and expose feed readiness states (`ready_to_publish`, `preparing`, `blocked`) with scheduler handoff and idempotent reuse; targeted backend and Flutter verification passed 2026-07-11.
 
 #### P0 — editor core and trust
 
