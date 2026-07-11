@@ -26,7 +26,12 @@ def test_assemble_branded_timeline_draft_uses_assets_and_brand_rules():
         "id": "blueprint-1",
         "default_archetype": "ugc_ad",
         "scene_rules_json": {"sceneDurationFrames": 72},
-        "cta_rules_json": {"uppercase": True},
+        "layout_rules_json": {"assetFit": "contain", "titleAlign": "right", "titleFontSize": 180},
+        "motion_rules_json": {"transitionFamily": "fade", "titleIntensity": "low"},
+        "caption_rules_json": {"titleColor": "#00FF00"},
+        "cta_rules_json": {"uppercase": True, "backgroundColor": "#000000"},
+        "audio_rules_json": {"enabled": True, "musicAssetId": "music-1", "volume": 2},
+        "export_rules_json": {"codec": "h265"},
     }
     assets = [
         SimpleNamespace(
@@ -58,6 +63,22 @@ def test_assemble_branded_timeline_draft_uses_assets_and_brand_rules():
     assert any(clip["role"] == "hook_title" for clip in draft["clips"])
     assert any(clip["role"] == "cta" and clip["text"] == "Start now" for clip in draft["clips"])
     assert draft["duration_frames"] >= 100
+    scene = next(clip for clip in draft["clips"] if clip["role"] == "scene")
+    title = next(clip for clip in draft["clips"] if clip["role"] == "hook_title")
+    cta = next(clip for clip in draft["clips"] if clip["role"] == "cta")
+    assert scene["style"]["fit"] == "contain"
+    assert scene["style"]["transition_family"] == "fade"
+    assert title["style"]["align"] == "right"
+    assert title["style"]["font_size"] == 140
+    assert title["style"]["color"] == "#00FF00"
+    assert cta["style"]["background_color"] == "#000000"
+    assert draft["audio"] == {
+        "enabled": True,
+        "music_asset_id": "music-1",
+        "volume": 1,
+        "ducking": "none",
+    }
+    assert draft["render_policy"]["codec"] == "h265"
 
 
 def test_assemble_branded_timeline_draft_falls_back_without_assets():

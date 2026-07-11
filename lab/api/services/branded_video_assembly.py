@@ -66,7 +66,12 @@ def assemble_branded_timeline_draft(
     current_start = 0
     scene_duration = _scene_duration_for_motion(motion_intensity)
     scene_rules = blueprint.get("scene_rules_json") or {}
+    layout_rules = blueprint.get("layout_rules_json") or {}
+    motion_rules = blueprint.get("motion_rules_json") or {}
+    caption_rules = blueprint.get("caption_rules_json") or {}
     cta_rules = blueprint.get("cta_rules_json") or {}
+    audio_rules = blueprint.get("audio_rules_json") or {}
+    export_rules = blueprint.get("export_rules_json") or {}
 
     if visual_assets:
         for index, asset in enumerate(visual_assets):
@@ -84,8 +89,10 @@ def assemble_branded_timeline_draft(
                     "asset_id": getattr(asset, "id"),
                     "role": "scene",
                     "style": {
-                        "transition_family": transition_family,
-                        "motion_intensity": motion_intensity,
+                        "transition_family": motion_rules.get("transitionFamily", transition_family),
+                        "motion_intensity": motion_rules.get("intensity", motion_intensity),
+                        "fit": layout_rules.get("assetFit", "cover"),
+                        "position": layout_rules.get("assetPosition", "center"),
                     },
                     "metadata": {
                         "brand_profile_id": brand_profile["id"],
@@ -108,6 +115,7 @@ def assemble_branded_timeline_draft(
                 "style": {
                     "color": primary[0] if primary else "#111111",
                     "accent_color": accent_color,
+                    "background_variant": layout_rules.get("backgroundVariant", "solid"),
                 },
                 "metadata": {
                     "brand_profile_id": brand_profile["id"],
@@ -127,12 +135,13 @@ def assemble_branded_timeline_draft(
             "text": title,
             "role": "hook_title",
             "style": {
-                "align": "center",
+                "align": layout_rules.get("titleAlign", "center"),
                 "font_family": brand_profile.get("font_heading") or "Instrument Serif",
-                "font_size": 76,
-                "color": title_color,
+                "font_size": _bounded_number(layout_rules.get("titleFontSize"), 76, minimum=24, maximum=140),
+                "color": caption_rules.get("titleColor", title_color),
                 "accent_color": accent_color,
-                "motion_intensity": motion_intensity,
+                "motion_intensity": motion_rules.get("titleIntensity", motion_intensity),
+                "text_transform": caption_rules.get("titleTransform", "none"),
             },
             "metadata": {
                 "brand_profile_id": brand_profile["id"],
@@ -155,11 +164,13 @@ def assemble_branded_timeline_draft(
                 "text": preview_text,
                 "role": "support_copy",
                 "style": {
-                    "align": "left",
+                    "align": layout_rules.get("bodyAlign", "left"),
                     "font_family": brand_profile.get("font_body") or "Manrope",
-                    "font_size": 42,
-                    "color": caption_defaults.get("textColor", title_color),
-                    "background_color": caption_defaults.get("backgroundColor"),
+                    "font_size": _bounded_number(layout_rules.get("bodyFontSize"), 42, minimum=18, maximum=96),
+                    "color": caption_rules.get("bodyColor", caption_defaults.get("textColor", title_color)),
+                    "background_color": caption_rules.get("bodyBackgroundColor", caption_defaults.get("backgroundColor")),
+                    "line_height": caption_rules.get("lineHeight", 1.2),
+                    "text_transform": caption_rules.get("bodyTransform", "none"),
                     "tone_keywords": list(brand_profile.get("tone_keywords") or []),
                 },
                 "metadata": {
@@ -181,11 +192,13 @@ def assemble_branded_timeline_draft(
                 "text": cta_text,
                 "role": "cta",
                 "style": {
-                    "align": "center",
+                    "align": layout_rules.get("ctaAlign", "center"),
                     "font_family": brand_profile.get("font_heading") or brand_profile.get("font_body") or "Manrope",
-                    "font_size": 58,
-                    "color": accent_color,
+                    "font_size": _bounded_number(layout_rules.get("ctaFontSize"), 58, minimum=20, maximum=110),
+                    "color": caption_rules.get("ctaColor", accent_color),
                     "uppercase": bool(cta_rules.get("uppercase", True)),
+                    "background_color": cta_rules.get("backgroundColor", caption_rules.get("ctaBackgroundColor")),
+                    "motion_intensity": motion_rules.get("ctaIntensity", motion_intensity),
                 },
                 "metadata": {
                     "brand_profile_id": brand_profile["id"],
@@ -208,6 +221,17 @@ def assemble_branded_timeline_draft(
         "duration_frames": final_duration,
         "tracks": tracks,
         "clips": clips,
+        "audio": {
+            "enabled": bool(audio_rules.get("enabled", False)),
+            "music_asset_id": audio_rules.get("musicAssetId"),
+            "volume": _bounded_number(audio_rules.get("volume"), 1.0, minimum=0, maximum=1),
+            "ducking": audio_rules.get("ducking", "none"),
+        },
+        "render_policy": {
+            "resolution": export_rules.get("resolution", format_preset),
+            "codec": export_rules.get("codec", "h264"),
+            "container": export_rules.get("container", "mp4"),
+        },
     }
 
 
@@ -247,6 +271,16 @@ def _scene_duration_for_motion(motion_intensity: str) -> int:
     if motion_intensity == "low":
         return 105
     return DEFAULT_SCENE_FRAMES
+
+
+def _bounded_number(value: Any, fallback: int | float, *, minimum: int | float, maximum: int | float) -> int | float:
+    """Keep user-authored blueprint numbers safe for the canonical renderer."""
+    if isinstance(value, bool):
+        return fallback
+    try:
+        return max(minimum, min(maximum, value))
+    except (TypeError, ValueError):
+        return fallback
 
 
 def _cta_text(brand_profile: dict[str, Any], cta_rules: dict[str, Any]) -> str | None:
