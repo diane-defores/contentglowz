@@ -41,8 +41,8 @@ dependencies:
 
 devDependencies:
   '@remotion/eslint-config-flat':
-    specifier: 4.0.482
-    version: 4.0.482(eslint@9.39.5)(typescript@5.7.3)
+    specifier: 4.0.488
+    version: 4.0.488(eslint@9.39.5)(typescript@5.7.3)
   '@types/express':
     specifier: 5.0.1
     version: 5.0.1
@@ -743,8 +743,8 @@ packages:
     dev: false
     optional: true
 
-  /@remotion/eslint-config-flat@4.0.482(eslint@9.39.5)(typescript@5.7.3):
-    resolution: {integrity: sha512-rJsqXthZSpJ+bZ82IZzgNDq5ZGaZkgOOZ6OBMS4Ku6ZWyaQHBHn6yaG6B50oZVjej99Fkc5KgFY1UbaLVlyfCg==}
+  /@remotion/eslint-config-flat@4.0.488(eslint@9.39.5)(typescript@5.7.3):
+    resolution: {integrity: sha512-wzazHiLvqg9awxGPCdHk9A0D6QvVv2Sej1Mxly25oKa5K65P6pTl4X6mjLRbS04+7gvNzkxY5ViHSzTt+P94Lg==}
     peerDependencies:
       eslint: '>=9'
     dependencies:
@@ -1575,8 +1575,8 @@ packages:
       concat-map: 0.0.1
     dev: true
 
-  /brace-expansion@2.1.1:
-    resolution: {integrity: sha512-WR1cURNjuvBLMZBMbqM0UoE+WAfdUcEV1ccD8PVBVOI+Z3ND4+SZbN8RsfT2bMuG1qwz5RFvPukSZm5fF2D5eA==}
+  /brace-expansion@2.1.2:
+    resolution: {integrity: sha512-w5JZcKgdhDOgOwm8H+KgbosopHMuGcl6qbulwjtz3SM7I7P3yW1eAjzMPLrIE+NQ9vjgANKHWeMHnrT0OXW1oA==}
     dependencies:
       balanced-match: 1.0.2
     dev: true
@@ -2721,7 +2721,7 @@ packages:
     resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
-      brace-expansion: 2.1.1
+      brace-expansion: 2.1.2
     dev: true
 
   /minimist@1.2.6:
