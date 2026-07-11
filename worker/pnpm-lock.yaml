@@ -44,8 +44,8 @@ devDependencies:
     specifier: 4.0.482
     version: 4.0.482(eslint@9.39.5)(typescript@5.7.3)
   '@types/express':
-    specifier: 5.0.1
-    version: 5.0.1
+    specifier: 5.0.6
+    version: 5.0.6
   '@types/node':
     specifier: ^26.0.0
     version: 26.1.1
@@ -1108,8 +1108,8 @@ packages:
   /@types/estree@1.0.9:
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
-  /@types/express-serve-static-core@5.1.1:
-    resolution: {integrity: sha512-v4zIMr/cX7/d2BpAEX3KNKL/JrT1s43s96lLvvdTmza1oEvDudCqK9aF/djc/SWgy8Yh0h30TZx5VpzqFCxk5A==}
+  /@types/express-serve-static-core@5.1.2:
+    resolution: {integrity: sha512-d3KvEXBSo/lOAMc2u6fkyDHBvetBHeqD7wm/AcXfLpSOQwlmG9D/aQ0SFswVjv05p7ullQS7Mjohj6/VdbZuTg==}
     dependencies:
       '@types/node': 26.1.1
       '@types/qs': 6.15.1
@@ -1117,11 +1117,11 @@ packages:
       '@types/send': 1.2.1
     dev: true
 
-  /@types/express@5.0.1:
-    resolution: {integrity: sha512-UZUw8vjpWFXuDnjFTh7/5c2TWDlQqeXHi6hcN7F2XSVT5P+WmUnnbFS3KA6Jnc6IsEqI2qCVu2bK0R0J4A8ZQQ==}
+  /@types/express@5.0.6:
+    resolution: {integrity: sha512-sKYVuV7Sv9fbPIt/442koC7+IIwK5olP1KWeD88e/idgoJqDm3JV/YUiPwkoKK92ylff2MGxSz1CSjsXelx0YA==}
     dependencies:
       '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 5.1.1
+      '@types/express-serve-static-core': 5.1.2
       '@types/serve-static': 2.2.0
     dev: true
 
