@@ -49,6 +49,7 @@ next_step: /sf-docs audit CLAUDE.md
 
 ```bash
 pip install -r requirements.lock
+pip install -r requirements-memory.txt  # optional semantic memory features only
 doppler run -- uvicorn api.main:app --reload --port 8000
 curl http://localhost:8000/health
 ```

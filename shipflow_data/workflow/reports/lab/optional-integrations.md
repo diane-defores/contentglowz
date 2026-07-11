@@ -23,6 +23,18 @@ Strategy:
 - Prefer replacing STORM-style article research with the existing CrewAI/PydanticAI typed research flow over reintroducing the dependency.
 - If a true STORM flow is required, run it as a separate offline research worker with a dedicated lockfile and no shared process with the core API.
 
+## Semantic Memory
+
+`mem0ai` and its local `chromadb` path are intentionally excluded from the default runtime. Current upstream releases still carry unresolved advisories, while the backend already handles memory as an optional capability. `chromadb` may still appear transitively through `crewai`, but there is no direct application import path for it outside the optional memory stack.
+
+Strategy:
+
+- Do not add `mem0ai` back to `requirements.txt` or `requirements.lock` until upstream fixes land and are re-audited.
+- Install `lab/requirements-memory.txt` only in isolated or explicitly optional environments that need semantic memory.
+- Keep API and agent flows resilient when memory is absent; missing memory should degrade to reduced context, not startup failure.
+- If memory becomes product-critical, move it into a separate worker/service with its own lockfile and failure boundary instead of sharing the core API runtime.
+- Track the residual `chromadb` vulnerability as a `crewai` transitive; do not add direct `chromadb` imports or config coupling on the core API path.
+
 ## Operational Rule
 
 Optional integration workers may depend on packages that are incompatible with the core API only when they are isolated by process, lockfile, deployment unit, secrets, and failure envelope.

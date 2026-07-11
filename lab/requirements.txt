@@ -32,7 +32,12 @@ matplotlib>=3.8.0,<4.0
 python-louvain>=0.16,<1.0  # Community detection for topical mesh analysis
 
 # Memory Layer
-mem0ai>=0.1.0,<1.0
+# Mem0/Chroma stay outside the default runtime because the current line carries
+# unresolved advisories and the backend already degrades gracefully without it.
+# Install `requirements-memory.txt` only in an isolated or explicitly optional
+# environment that needs the semantic memory feature set.
+# Note: `chromadb` still lands transitively via `crewai`; keep it treated as a
+# monitored residual until the upstream CrewAI graph drops or fixes it.
 
 # Email & Templates
 jinja2>=3.1.6,<4.0
@@ -56,7 +61,7 @@ python-dotenv>=1.0.0,<2.0
 pyyaml>=6.0.0,<7.0
 pandas>=2.0.0,<3.0  # Required by advertools
 libsql>=0.1.11,<1.0
-cryptography>=46.0.5,<48
+cryptography>=48.0.1,<49
 
 # Google Analytics (Psychology Engine)
 google-analytics-data>=0.18.0,<1.0

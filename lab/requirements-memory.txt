@@ -1,0 +1,5 @@
+# Optional semantic memory stack
+#
+# Keep this out of the default FastAPI runtime until upstream Mem0/Chroma fixes
+# are available. The application code already treats memory as optional.
+mem0ai>=0.1.0,<1.0

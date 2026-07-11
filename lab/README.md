@@ -15,9 +15,10 @@ This root README is now an entrypoint, not the canonical technical source of tru
 ## Quick Start
 
 1. `pip install -r requirements.lock`
-2. `doppler setup`
-3. `doppler run -- uvicorn api.main:app --reload --port 8000`
-4. `curl http://localhost:8000/health`
+2. Optional memory features only: `pip install -r requirements-memory.txt`
+3. `doppler setup`
+4. `doppler run -- uvicorn api.main:app --reload --port 8000`
+5. `curl http://localhost:8000/health`
 
 ## Rule
 
