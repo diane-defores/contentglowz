@@ -502,6 +502,7 @@ None blocking. The user explicitly chose relational Project Intelligence as cano
 | 2026-07-11 13:02:35 UTC | 102-sg-start | gpt-5.5 high | Implemented Project Intelligence generation context schema, builder, newsletter and psychology consumer migration, Mem0 runtime removal, docs/dependency policy updates, and focused local proof. | implemented | /103-sg-verify Sober Project Memory Generation Context Migration |
 | 2026-07-11 15:00:00 UTC | 103-sg-verify | direct execution | Re-ran focused migration/regression proof, scheduler test, full-suite collection, compile/hygiene checks, runtime Mem0 scan, dependency/lock audit, and imports. The scheduler test passes from repository root; migration scope is proven. Full suite reaches execution but retains unrelated blueprint/timeline failures outside this chantier. | verified | /104-sg-end Sober Project Memory Generation Context Migration |
 | 2026-07-11 15:12:00 UTC | 104-sg-end | gpt-5.5 | Closed chantier bookkeeping after verified migration, documented residual unrelated full-suite failures, and prepared changelog framing without claiming a clean global suite or ship status. | closed | /005-sg-ship Sober Project Memory Generation Context Migration |
+| 2026-07-11 18:55:00 UTC | 005-sg-ship | gpt-5.5 | Shipped the verified memory migration already present on main together with the worker dependency/toolchain hardening; push completed as commit `2834b3d`. | shipped | /405-sg-prod if hosted proof is required |
 
 ## Current Chantier Flow
 
@@ -510,6 +511,6 @@ None blocking. The user explicitly chose relational Project Intelligence as cano
 102-sg-start: implemented
 103-sg-verify: verified
 104-sg-end: closed
-005-sg-ship: not started
+005-sg-ship: shipped
 
-Next command: `/005-sg-ship Sober Project Memory Generation Context Migration`
+Next command: `/405-sg-prod` if hosted proof is required
