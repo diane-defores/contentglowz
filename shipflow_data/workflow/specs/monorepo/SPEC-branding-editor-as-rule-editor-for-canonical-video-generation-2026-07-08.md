@@ -270,12 +270,14 @@ None. The user direction is explicit: first expose brand profiles as reusable ru
 | 2026-07-08 16:55:12 UTC | 102-sg-start | GPT-5 Codex | Implemented the app-side brand profile model/API wrappers, Settings entrypoint, dedicated branding screen, routing, and targeted regression tests for the first bounded slice. | implemented | /103-sg-verify brand profiles and branding rules editor |
 | 2026-07-08 17:05:05 UTC | 103-sg-verify | GPT-5 Codex | Verified the implemented brand profile slice with model/service/provider tests and Flutter analyze, but the preview-through-generation contract remains unwired and the changed UI files still show unresolved design-system drift findings. | partial | /102-sg-start brand profiles preview-through-generation and token cleanup |
 | 2026-07-08 20:51:49 UTC | 102-sg-start | GPT-5 Codex | Implemented the branding preview entrypoint from Settings, routed preview impact through canonical branded generation, and added regression coverage for the editor handoff and content-complete filtering. | implemented | /103-sg-verify brand profiles preview-through-generation and token cleanup |
+| 2026-07-11 19:05:00 UTC | 103-sg-verify | GPT-5 Codex | Verified brand profile models/API, project-scoped provider state, Settings entrypoint, editor, default protection, canonical preview handoff, targeted Flutter/backend tests, Flutter analyze, and design-token drift. | verified | /104-sg-end branding editor and canonical branded generation |
+| 2026-07-11 19:12:00 UTC | 104-sg-end | gpt-5.5 | Closed the verified brand-profile editor and canonical preview slice with hosted/device proof explicitly remaining. | closed | /005-sg-ship branding editor and canonical branded generation |
 
 ## Current Chantier Flow
 
 - 100-sg-spec: completed
 - 101-sg-ready: ready
 - 102-sg-start: implemented
-- 103-sg-verify: pending
-- 104-sg-end: pending
+- 103-sg-verify: verified
+- 104-sg-end: closed
 - 005-sg-ship: pending

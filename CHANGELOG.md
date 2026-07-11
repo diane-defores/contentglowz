@@ -1,5 +1,8 @@
 ## [2026-07-11]
 
+### Added
+- Brand profiles can now be managed from Settings with project-scoped state, persistent default selection, protected default-profile deletion, and canonical branded-generation preview handoff.
+
 ### Changed
 - Project generation context now uses scoped Project Intelligence data with deterministic relational retrieval, bounded context budgets, provenance, and generation signals for newsletter and psychology flows.
 

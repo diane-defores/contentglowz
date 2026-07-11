@@ -84,7 +84,7 @@ Spec source: `shipflow_data/workflow/specs/monorepo/SPEC-ai-first-branded-video-
 - [ ] Introduce reusable adjustment layers and clip-level effect stacks.
 - [ ] Add property animation with keyframes plus easing/graph editing for transform, opacity, scale, rotation, crop, blur, and volume.
 - [ ] Create reusable templates and presets for video formats, titles, lower thirds, intros/outros, caption styles, and project-scoped brand kits.
-- [ ] Add a lightweight branding editor MVP for fonts, colors, logo treatments, caption style, intro/outro modules, transition family, and motion intensity.
+- [x] Add a lightweight branding editor MVP for fonts, colors, logo treatments, caption style, intro/outro modules, transition family, and motion intensity. Brand-profile editor and canonical preview are verified; hosted/device proof remains.
 
 #### P1 — transcript, audio, and creator automation
 
