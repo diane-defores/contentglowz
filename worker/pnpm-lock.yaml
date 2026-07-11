@@ -33,8 +33,8 @@ dependencies:
     specifier: 19.2.7
     version: 19.2.7(react@19.2.7)
   remotion:
-    specifier: 4.0.482
-    version: 4.0.482(react-dom@19.2.7)(react@19.2.7)
+    specifier: 4.0.488
+    version: 4.0.488(react-dom@19.2.7)(react@19.2.7)
   zod:
     specifier: 4.3.6
     version: 4.3.6
@@ -3032,6 +3032,16 @@ packages:
 
   /remotion@4.0.482(react-dom@19.2.7)(react@19.2.7):
     resolution: {integrity: sha512-FfKxdxL9fW9UnY/WS9RLitevoDCf+fa5WZaNz4/CHhrXF1nc3SV+6GBp7td+dwvN1+UnP9t5DheIGvvoxL22NQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+    dev: false
+
+  /remotion@4.0.488(react-dom@19.2.7)(react@19.2.7):
+    resolution: {integrity: sha512-V+2GQChZQkrBWrT2+bqpvu9Q/8mAri08vdZEdWsl5hy5j8/3z2DAr+Fw81K4RHmLKgKbZY21AJv7hUD+DKOdhA==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
