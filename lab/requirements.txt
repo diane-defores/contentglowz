@@ -54,7 +54,7 @@ composio-crewai>=0.2.0,<1.0
 textstat>=0.7.0,<1.0
 
 # Utilities
-python-dotenv>=1.0.0,<2.0
+python-dotenv>=1.2.2,<2.0
 pyyaml>=6.0.0,<7.0
 pandas>=2.0.0,<3.0  # Required by advertools
 libsql>=0.1.11,<1.0
