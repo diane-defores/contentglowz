@@ -21,6 +21,7 @@ from api.models.video_timeline import (
     VideoTimelineSwipePublishRequest,
     VideoTimelineVersionCreateRequest,
 )
+from api.routers import status as status_router
 from api.routers import video_timelines as router
 from api.services.branded_video_generation_store import BrandedVideoGenerationRunStore
 from api.services.video_renderer_adapter import (
@@ -838,6 +839,115 @@ async def test_refresh_branded_video_feed_candidates_returns_ready_to_publish_ca
     assert candidate.timeline_id is not None
     assert candidate.version_id is not None
     assert candidate.final_job_id is not None
+
+
+@pytest.mark.asyncio
+async def test_completed_content_branded_feed_preview_and_publish_share_one_canonical_run(
+    timeline_context, monkeypatch
+):
+    """Prove the operator journey without calling an external publisher."""
+    ctx = timeline_context
+    _create_project_asset(ctx)
+    content = ctx.status_service.create_content(
+        title="Launch faster",
+        content_type="video_script",
+        source_robot="manual",
+        status="approved",
+        project_id="project-1",
+        user_id="user-1",
+        content_preview="A complete script ready for its branded video.",
+        tags=["youtube"],
+    )
+
+    async def _owned_content(content_id, current_user, status_service):
+        assert content_id == content.id
+        assert current_user.user_id == "user-1"
+        return status_service.get_content(content_id)
+
+    monkeypatch.setattr(status_router, "get_status_service", lambda: ctx.status_service)
+    monkeypatch.setattr(status_router, "require_owned_content_record", _owned_content)
+    completed = await status_router.complete_content(content.id, current_user=ctx.user)
+    assert completed.metadata["content_complete"] is True
+
+    monkeypatch.setattr(router, "require_owned_content_record", _owned_content)
+
+    async def _profiles(*, user_id: str, project_id: str):
+        return [
+            {
+                "id": "brand-1",
+                "project_id": project_id,
+                "is_default": True,
+                "primary_colors": ["#FFFFFF", "#111111"],
+                "secondary_colors": ["#FF4F00"],
+                "font_heading": "Space Grotesk",
+                "font_body": "Manrope",
+                "motion_intensity": "medium",
+                "transition_family": "swipe",
+                "caption_style_defaults": {"textColor": "#FFFFFF"},
+                "cta_defaults": {"primaryText": "Try it now"},
+                "intro_module_enabled": True,
+                "outro_module_enabled": True,
+                "tone_keywords": ["clean"],
+            }
+        ]
+
+    async def _blueprints(*, user_id: str, project_id: str, brand_profile_id: str | None = None):
+        return [
+            {
+                "id": "blueprint-1",
+                "project_id": project_id,
+                "brand_profile_id": brand_profile_id,
+                "status": "active",
+                "default_archetype": "ugc_ad",
+                "scene_rules_json": {"sceneDurationFrames": 84},
+                "cta_rules_json": {"durationFrames": 36},
+            }
+        ]
+
+    monkeypatch.setattr(router.brand_profile_store, "list_brand_profiles", _profiles)
+    monkeypatch.setattr(router.brand_video_blueprint_store, "list_brand_video_blueprints", _blueprints)
+    monkeypatch.setattr(
+        "api.services.branded_video_generation_service.user_data_store.list_publish_accounts",
+        AsyncMock(return_value=[{"id": "acct-1", "platform": "youtube", "status": "active"}]),
+    )
+
+    candidates = await router.refresh_branded_video_feed_candidates(
+        BrandedVideoFeedCandidateRequest(projectId="project-1", contentIds=[content.id]),
+        current_user=ctx.user,
+    )
+    candidate = candidates.items[0]
+    assert candidate.readiness == "ready_to_publish"
+    assert candidate.timeline_id and candidate.version_id
+    assert candidate.preview_job_id and candidate.final_job_id
+
+    version = await ctx.store.get_version(version_id=candidate.version_id, user_id=ctx.user.user_id)
+    assert version["approved_preview_job_id"] == candidate.preview_job_id
+
+    async def _fake_publish(request, current_user):
+        assert request.content_record_id == content.id
+        assert request.media[0].type == "video"
+        return SimpleNamespace(
+            status="published",
+            model_dump=lambda mode="json": {"success": True, "status": "published", "post_id": "test-post-1"},
+        )
+
+    monkeypatch.setattr(router, "publish_content", _fake_publish)
+    published = await router.swipe_publish_video_timeline(
+        candidate.timeline_id,
+        candidate.version_id,
+        VideoTimelineSwipePublishRequest(
+            preview_job_id=candidate.preview_job_id,
+            content="Launch faster with AI video",
+            platforms=[{"platform": "youtube", "account_id": "acct-1"}],
+            title=content.title,
+            client_request_id="single-journey-publish-1",
+        ),
+        raw_request=None,
+        current_user=ctx.user,
+    )
+    assert published.state == "published"
+    assert published.final_job is not None and published.final_job.status == "completed"
+    assert published.publish_result["post_id"] == "test-post-1"
 
 
 @pytest.mark.asyncio
