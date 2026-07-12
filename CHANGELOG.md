@@ -1,3 +1,8 @@
+## [2026-07-12]
+
+### Added
+- Weekly Dependabot monitoring for backend Python dependencies, with a documented review and lockfile validation policy.
+
 ## [2026-07-11]
 
 ### Added

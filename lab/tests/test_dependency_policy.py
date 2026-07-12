@@ -57,6 +57,13 @@ def test_runtime_install_paths_use_lockfile():
     assert "pip install -r requirements.lock" in readme
 
 
+def test_dependabot_tracks_lab_python_dependencies():
+    dependabot = (ROOT.parent / ".github/dependabot.yml").read_text(encoding="utf-8")
+    assert 'package-ecosystem: "pip"' in dependabot
+    assert 'directory: "/lab"' in dependabot
+    assert 'prefix: "deps(lab)"' in dependabot
+
+
 def test_mem0_runtime_imports_and_requirements_are_removed():
     violations: list[str] = []
     for path in _python_files():
