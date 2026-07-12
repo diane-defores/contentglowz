@@ -3,7 +3,7 @@ module.exports = {
     name: "contentglowz_lab",
     cwd: "/home/claude/contentglowz/lab",
     script: "bash",
-    args: ["-lc", "export PORT=3002 && flox activate -- bash -lc 'doppler run --project contentflow_app --config prd -- python main.py'"],
+    args: ["-lc", "export PORT=3002 && flox activate -- bash -lc 'export LD_LIBRARY_PATH=\"$(dirname \"$(gcc -print-file-name=libstdc++.so.6)\")\" && doppler run --project contentflow_app --config prd -- .venv/bin/python main.py'"],
     env: {
       PORT: 3002
     },
