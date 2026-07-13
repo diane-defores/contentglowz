@@ -5,7 +5,7 @@ locale: "fr"
 publishDate: "2026-02-02"
 updatedDate: "2026-07-13"
 tags: ["newsletter", "ai automation", "crewai", "imap", "email marketing", "content automation"]
-heroImage: "/blog/newsletter-robot-hero.jpg"
+heroImage: "/og-default.jpg"
 featured: true
 ---
 
