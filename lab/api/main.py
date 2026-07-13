@@ -447,7 +447,7 @@ app.add_middleware(
     ],
     allow_origin_regex=(
         r"https://("
-        r"contentglowz[a-z0-9-]*\.(vercel\.app|railway\.app|render\.com)"
+        r"contentglowz[a-z0-9-]*\.(vercel\.app|railway\.app)"
         r"|([a-z0-9-]+\.)*contentglowz\.com"
         r")$"
     ),

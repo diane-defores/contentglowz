@@ -44,7 +44,6 @@ evidence:
   - status/service.py
   - status/db.py
   - requirements.txt
-  - render.yaml
   - ecosystem.config.cjs
   - .env.example
 depends_on:

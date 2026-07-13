@@ -86,7 +86,7 @@ All notable changes to ContentGlowz are documented here.
 - **Bootstrap selection tests** — added targeted coverage for `/api/bootstrap` selection rules and default-project response mapping.
 - **Status lifecycle migration** — added `api/migrations/004_status_lifecycle.sql` to bootstrap lifecycle tables (content records, changes, bodies/edits, templates, drip plans, schedule jobs) in Turso/libsql.
 - **Structured audit actors** — added `status/audit.py` to canonicalize `actor_type/id/label/metadata` across lifecycle transitions and edits.
-- **Render deployment blueprint** — added `render.yaml` with Turso-first persistence env vars for the FastAPI backend.
+- **Legacy hosted-backend blueprint** — added a Turso-first persistence environment contract for the FastAPI backend.
 - **Drip scheduling windows** — added optional cadence fields `publish_time_start` and `publish_time_end` to support random publication slots within a daily range.
 
 ### Changed

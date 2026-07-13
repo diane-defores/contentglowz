@@ -116,5 +116,5 @@ next_step: /sf-docs audit shipglowz_data/technical/lab/context-function-tree.md
 
 ## Deployment and scripts
 
-- `render.yaml`, `ecosystem.config.cjs`, `run_seo_tools.sh`, `main.py`
+- `ecosystem.config.cjs`, `run_seo_tools.sh`, `main.py`
 - command entry for local / production launch and compatibility shim for heavy native dependencies

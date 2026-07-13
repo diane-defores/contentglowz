@@ -50,10 +50,8 @@ def test_pydantic_ai_requirement_uses_supported_v1_floor():
     assert (ROOT / "api/services/pydantic_ai_runtime.py").is_file()
 
 
-def test_runtime_install_paths_use_lockfile():
-    render_yaml = (ROOT / "render.yaml").read_text(encoding="utf-8")
+def test_runtime_install_documentation_uses_lockfile():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "pip install -r requirements.lock" in render_yaml
     assert "pip install -r requirements.lock" in readme
 
 

@@ -22,7 +22,6 @@ linked_systems:
   - Firecrawl
   - Project Intelligence generation context
   - SendGrid
-  - Render
   - PM2
   - Doppler
 evidence:
@@ -37,7 +36,6 @@ evidence:
   - api/services/crypto.py
   - status/db.py
   - requirements.txt
-  - render.yaml
   - ecosystem.config.cjs
   - main.py
   - run_seo_tools.sh

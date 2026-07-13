@@ -66,7 +66,7 @@ Preserve the durable backend contracts that were previously documented in `lab/R
 - `SENTRY_TRACES_SAMPLE_RATE` defaults to `0.0`.
 - `/health` exposes only redacted Sentry status: configured state, environment, release, and dist.
 - CORS and authentication middleware are configured for Flutter, site, and dashboard clients.
-- `render.yaml` and `ecosystem.config.cjs` describe hosted/manual runtime setups.
+- `ecosystem.config.cjs` describes the documented manual runtime setup; the hosted deployment provider is intentionally not asserted here.
 
 ## Production API Domain Migration
 

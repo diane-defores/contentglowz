@@ -102,7 +102,7 @@ Ce document mappe les surfaces de contenu/contrat de `lab` utiles aux équipes p
 ## 5. Entrées de build, scripts et déploiement
 
 - Runtime : `main.py`, `run_seo_deployment.py`, `run_seo_tools.sh`.
-- Déploiement : `render.yaml`, `ecosystem.config.cjs`, scripts de setup.
+- Déploiement : `ecosystem.config.cjs`, scripts de setup.
 - Secrets/ops : configuration via `requirements.txt` + environnement (Doppler / variables), et scripts de synchronisation.
 
 ## 6. Relations inter-repo

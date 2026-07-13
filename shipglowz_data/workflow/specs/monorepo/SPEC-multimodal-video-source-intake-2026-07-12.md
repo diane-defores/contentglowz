@@ -487,7 +487,9 @@ None.
 | 2026-07-13 09:27:36 UTC | 102-sg-start | GPT-5 Codex | Implemented the provider-neutral intake domain, S3 reference adapter, durable asset locators, secure multipart validation, text/link sources, revisioned readiness and generation handoff, Flutter UX, tests and docs | Implemented locally; automated proof complete | /103-sg-verify Multimodal Video Source Intake |
 | 2026-07-13 09:27:36 UTC | 103-sg-verify | GPT-5 Codex | Ran full backend and Flutter suites, static analysis, checklist parser, diff hygiene and design-token drift review; classified inherited editor drift separately | Partial: 429 backend and 165 Flutter tests pass; 4 hosted/provider/device scenarios remain | /005-sg-ship Multimodal Video Source Intake |
 | 2026-07-13 09:29:27 UTC | 005-sg-ship | GPT-5 Codex | Published the complete local implementation and its partial verification record to create the hosted validation target | Shipped for hosted proof; formal closure remains deferred | /405-sg-prod ContentGlowz |
-| 2026-07-13 09:34:41 UTC | 405-sg-prod | GPT-5 Codex | Correlated commit 9b62d80 with GitHub/Vercel/Blacksmith and live health evidence; collected the complete Android CI log and checked the API/app endpoints | Partial: Blacksmith checks pass, but Vercel skipped both builds and Render still serves d5fb4d0 | Re-enable or trigger matching app/API deployments, then rerun /405-sg-prod ContentGlowz |
+| 2026-07-13 09:34:41 UTC | 405-sg-prod | GPT-5 Codex | Correlated commit 9b62d80 with GitHub/Vercel/Blacksmith and live health evidence; collected the complete Android CI log and checked the API/app endpoints | Partial: Blacksmith checks pass, Vercel skipped both builds, and the live API still serves d5fb4d0 | Identify and trigger the matching API deployment, then rerun /405-sg-prod ContentGlowz |
+| 2026-07-13 09:41:19 UTC | 002-sg-maintain | GPT-5 Codex | Removed the stale deployment-provider blueprint, active CORS allowance and related technical documentation after the operator clarified that the provider is not used | Verified locally; historical public articles intentionally left for an editorial decision | /005-sg-ship Remove stale provider references |
+| 2026-07-13 09:41:19 UTC | 005-sg-ship | GPT-5 Codex | Published the verified operational cleanup and corrected deployment trace wording | Shipped; no hosted behavior claim | Choose whether to remove or rewrite historical public provider references |
 
 ## Current Chantier Flow
 
@@ -497,5 +499,7 @@ None.
 - `103-sg-verify`: partial; automated checks pass, while real S3, deployed web CORS, authenticated device and hosted mixed-flow proof remain intentionally `NOT_RUN`.
 - `104-sg-end`: deferred; formal closure requires the hosted/provider/device proof.
 - `005-sg-ship`: shipped for hosted proof; this does not close the four external verification gaps.
-- `405-sg-prod`: partial; Android CI is green for `9b62d80`, while Vercel skipped the app/site builds and `api.contentglowz.com` still reports `d5fb4d0`.
-- Prochaine commande: re-enable or trigger matching app/API deployments, then `/405-sg-prod ContentGlowz`; only after that run `/107-sg-test` and `/108-sg-browser` against the confirmed targets.
+- `405-sg-prod`: partial; Android CI is green for `9b62d80`, Vercel skipped the app/site builds, and `api.contentglowz.com` still reports `d5fb4d0`; the API deployment provider is not documented.
+- `002-sg-maintain`: done; obsolete operational provider configuration and terminology removed.
+- `005-sg-ship`: shipped the maintenance cleanup; public historical provider references remain outside this bounded change.
+- Prochaine commande: choose whether to remove or rewrite the historical public provider references; independently, identify and trigger matching app/API deployments before rerunning `/405-sg-prod ContentGlowz`.
