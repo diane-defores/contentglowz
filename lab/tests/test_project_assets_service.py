@@ -422,3 +422,82 @@ def test_select_project_asset_rejects_provider_temporary_asset_for_video_version
         )
 
     assert _usage_count(status_service) == 0
+
+
+def test_video_source_usage_unlink_retains_canonical_asset(status_service):
+    content = _create_content(status_service)
+    asset = _create_project_asset(status_service, content=content)
+    status_service.ensure_video_source_folder_usage_target(
+        project_id="project-1", user_id="user-1", folder_id="folder-1"
+    )
+    status_service.select_project_asset(
+        project_id="project-1",
+        user_id="user-1",
+        asset_id=asset.id,
+        target_type="video_source_folder",
+        target_id="folder-1",
+        usage_action="attach_video_source",
+        metadata={"source_id": "source-1"},
+    )
+
+    changed = status_service.unlink_project_asset_usage(
+        project_id="project-1",
+        user_id="user-1",
+        asset_id=asset.id,
+        target_type="video_source_folder",
+        target_id="folder-1",
+        source_id="source-1",
+    )
+
+    assert changed == 1
+    assert status_service.get_project_asset_usage(
+        project_id="project-1", user_id="user-1", asset_id=asset.id
+    ) == []
+    retained = status_service.get_project_asset_detail(
+        project_id="project-1", user_id="user-1", asset_id=asset.id
+    )
+    assert retained.status != "tombstoned"
+
+
+def test_video_source_unlink_removes_original_and_derived_usages_only(status_service):
+    content = _create_content(status_service)
+    original = _create_project_asset(status_service, content=content)
+    derived = status_service.create_project_asset(
+        project_id="project-1",
+        user_id="user-1",
+        media_kind="thumbnail",
+        source="manual_upload",
+        mime_type="image/webp",
+        storage_uri="bunny://zone/preview.webp",
+        source_asset_id=original.id,
+    )
+    status_service.ensure_video_source_folder_usage_target(
+        project_id="project-1", user_id="user-1", folder_id="folder-1"
+    )
+    for asset_id, role in ((original.id, "original"), (derived.id, "preview")):
+        status_service.select_project_asset(
+            project_id="project-1",
+            user_id="user-1",
+            asset_id=asset_id,
+            target_type="video_source_folder",
+            target_id="folder-1",
+            usage_action="attach_video_source",
+            metadata={"source_id": "source-1", "derived_role": role},
+        )
+
+    changed = status_service.unlink_video_source_usages(
+        project_id="project-1",
+        user_id="user-1",
+        folder_id="folder-1",
+        source_id="source-1",
+    )
+
+    assert changed == 2
+    for asset in (original, derived):
+        assert status_service.get_project_asset_usage(
+            project_id="project-1", user_id="user-1", asset_id=asset.id
+        ) == []
+        retained = status_service.get_project_asset_detail(
+            project_id="project-1", user_id="user-1", asset_id=asset.id
+        )
+        assert retained.status != "tombstoned"

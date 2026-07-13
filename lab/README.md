@@ -6,11 +6,11 @@ This root README is now an entrypoint, not the canonical technical source of tru
 
 ## Canonical Docs
 
-- Technical index: `shipflow_data/technical/lab/README.md`
-- Architecture: `shipflow_data/technical/lab/architecture.md`
-- Context: `shipflow_data/technical/lab/context.md`
-- Workflow backlog: `shipflow_data/workflow/lab/TASKS.md`
-- QA log: `shipflow_data/workflow/qa/TEST_LOG.md`
+- Technical index: `shipglowz_data/technical/lab/README.md`
+- Architecture: `shipglowz_data/technical/lab/architecture.md`
+- Context: `shipglowz_data/technical/lab/context.md`
+- Workflow backlog: `shipglowz_data/workflow/lab/TASKS.md`
+- QA log: `shipglowz_data/workflow/qa/TEST_LOG.md`
 
 ## Quick Start
 
@@ -19,6 +19,23 @@ This root README is now an entrypoint, not the canonical technical source of tru
 3. `doppler run -- uvicorn api.main:app --reload --port 8000`
 4. `curl http://localhost:8000/health`
 
+## Project Intelligence Generation Context
+
+Newsletter and psychology generation use the relational Project Intelligence
+generation context. Startup calls `ProjectIntelligenceStore.ensure_tables()`,
+which idempotently creates the source/document/chunk/fact/recommendation tables
+plus generation context logs and generation signals.
+
+There is no optional project-memory install path. `chromadb` may still appear in
+`requirements.lock` as a CrewAI transitive residual; it is not used by
+ContentGlowz project memory.
+
+Useful local checks:
+
+- `pytest lab/tests/test_project_generation_context_builder.py lab/tests/test_project_generation_context_store.py`
+- `pytest lab/tests/test_newsletter_generation_context.py lab/tests/test_psychology_generation_context.py`
+- `rg -n "mem0ai|from memory|import memory|get_memory_service|chromadb" lab --glob "*.py"`
+
 ## Rule
 
-If a local `lab/*` doc and a `shipflow_data/*` doc disagree, treat `shipflow_data/*` as canonical and reduce the local file instead of expanding it.
+If a local `lab/*` doc and a `shipglowz_data/*` doc disagree, treat `shipglowz_data/*` as canonical and reduce the local file instead of expanding it.

@@ -154,6 +154,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               : null,
         ),
         IconButton(
+          icon: const Icon(Icons.video_library_rounded),
+          tooltip: context.tr('Prepare video sources'),
+          onPressed: canOpenAssetLibrary
+              ? () => context.push('/editor/${item.id}/video/sources')
+              : null,
+        ),
+        IconButton(
           icon: const Icon(Icons.video_settings_rounded),
           tooltip: 'Video timeline',
           onPressed: () => context.push('/editor/${item.id}/video'),

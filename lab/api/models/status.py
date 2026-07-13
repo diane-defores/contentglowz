@@ -288,6 +288,7 @@ class ProjectAssetResponse(BaseModel):
     mime_type: Optional[str] = None
     file_name: Optional[str] = None
     storage_uri: Optional[str] = None
+    storage_locator: Optional[Dict[str, Any]] = None
     storage_descriptor: Dict[str, Any] = Field(default_factory=dict)
     status: str
     metadata: Dict[str, Any]

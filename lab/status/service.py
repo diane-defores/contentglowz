@@ -41,6 +41,7 @@ from status.schemas import (
     ProjectAssetRecord,
     ProjectAssetSource,
     ProjectAssetUsageRecord,
+    StorageLocator,
     StatusChange,
     WorkDomainRecord,
     VALID_TRANSITIONS,
@@ -70,6 +71,7 @@ PROJECT_ASSET_MUTATION_ACTION_TARGETS: Dict[str, set[str]] = {
     "select_for_video_version": {"video_version"},
     "use_in_remotion_render": {"video_version"},
     "publish_media": {"content", "video_version"},
+    "attach_video_source": {"video_source_folder"},
 }
 PROJECT_ASSET_READ_ACTIONS = {"preview_only", "historical_only"}
 PROJECT_ASSET_SUPPORTED_ACTIONS = set(PROJECT_ASSET_MUTATION_ACTION_TARGETS) | PROJECT_ASSET_READ_ACTIONS
@@ -872,6 +874,7 @@ class StatusService:
         mime_type: Optional[str] = None,
         file_name: Optional[str] = None,
         storage_uri: Optional[str] = None,
+        storage_locator: Optional[StorageLocator] = None,
         source_asset_id: Optional[str] = None,
         content_asset_id: Optional[str] = None,
         status: str = ProjectAssetLifecycleStatus.ACTIVE.value,
@@ -880,6 +883,8 @@ class StatusService:
         ProjectAssetMediaKind(media_kind)
         ProjectAssetSource(source)
         ProjectAssetLifecycleStatus(status)
+        if storage_locator is not None and not isinstance(storage_locator, StorageLocator):
+            storage_locator = StorageLocator.model_validate(storage_locator)
 
         now = datetime.utcnow().isoformat()
         asset_id = str(uuid.uuid4())
@@ -887,9 +892,11 @@ class StatusService:
             """
             INSERT INTO project_assets (
                 id, project_id, user_id, source_asset_id, content_asset_id,
-                media_kind, source, mime_type, file_name, storage_uri, status,
+                media_kind, source, mime_type, file_name, storage_uri,
+                storage_provider, storage_namespace, storage_object_key,
+                storage_version, storage_checksum_sha256, status,
                 metadata, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 asset_id,
@@ -902,6 +909,11 @@ class StatusService:
                 mime_type,
                 file_name,
                 storage_uri,
+                storage_locator.provider if storage_locator else None,
+                storage_locator.namespace if storage_locator else None,
+                storage_locator.object_key if storage_locator else None,
+                storage_locator.version if storage_locator else None,
+                storage_locator.checksum_sha256 if storage_locator else None,
                 status,
                 json.dumps(metadata or {}),
                 now,
@@ -939,6 +951,112 @@ class StatusService:
             (asset_id, project_id, user_id),
         ).fetchall()
         return [self._row_to_project_asset_usage(row) for row in rows]
+
+    def ensure_video_source_folder_usage_target(
+        self, *, project_id: str, user_id: str, folder_id: str
+    ) -> None:
+        """Register a scoped projection target for the cross-store intake folder."""
+        now = datetime.utcnow().isoformat()
+        self._conn.execute(
+            """
+            INSERT INTO project_asset_usage_targets (
+                target_type,target_id,project_id,user_id,created_at,updated_at
+            ) VALUES ('video_source_folder',?,?,?,?,?)
+            ON CONFLICT(target_type,target_id,project_id,user_id)
+            DO UPDATE SET updated_at=excluded.updated_at
+            """,
+            (folder_id, project_id, user_id, now, now),
+        )
+        self._conn.commit()
+
+    def unlink_project_asset_usage(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        asset_id: str,
+        target_type: str,
+        target_id: str,
+        source_id: str | None = None,
+    ) -> int:
+        """Soft-delete only matching usage links; the canonical asset is retained."""
+        self.get_project_asset_detail(project_id=project_id, user_id=user_id, asset_id=asset_id)
+        rows = self._conn.execute(
+            """
+            SELECT id,metadata FROM project_asset_usages
+            WHERE asset_id=? AND project_id=? AND user_id=? AND target_type=? AND target_id=?
+              AND deleted_at IS NULL
+            """,
+            (asset_id, project_id, user_id, target_type, target_id),
+        ).fetchall()
+        usage_ids: list[str] = []
+        for row in rows:
+            metadata = json.loads(row["metadata"] or "{}")
+            if source_id is None or metadata.get("source_id") == source_id:
+                usage_ids.append(row["id"])
+        if not usage_ids:
+            return 0
+        now = datetime.utcnow().isoformat()
+        placeholders = ",".join("?" for _ in usage_ids)
+        self._conn.execute(
+            f"UPDATE project_asset_usages SET deleted_at=?,updated_at=? WHERE id IN ({placeholders})",
+            (now, now, *usage_ids),
+        )
+        self._record_project_asset_event(
+            asset_id=asset_id,
+            project_id=project_id,
+            user_id=user_id,
+            event_type="usage_unlinked",
+            target_type=target_type,
+            target_id=target_id,
+            metadata={"source_id": source_id, "usage_count": len(usage_ids)},
+        )
+        self._conn.commit()
+        return len(usage_ids)
+
+    def unlink_video_source_usages(
+        self,
+        *,
+        project_id: str,
+        user_id: str,
+        folder_id: str,
+        source_id: str,
+    ) -> int:
+        """Soft-delete every original/derived usage owned by one intake source."""
+        rows = self._conn.execute(
+            """
+            SELECT id,asset_id,metadata FROM project_asset_usages
+            WHERE project_id=? AND user_id=? AND target_type='video_source_folder'
+              AND target_id=? AND deleted_at IS NULL
+            """,
+            (project_id, user_id, folder_id),
+        ).fetchall()
+        matches = [
+            row
+            for row in rows
+            if json.loads(row["metadata"] or "{}").get("source_id") == source_id
+        ]
+        if not matches:
+            return 0
+        now = datetime.utcnow().isoformat()
+        usage_ids = [row["id"] for row in matches]
+        placeholders = ",".join("?" for _ in usage_ids)
+        self._conn.execute(
+            f"UPDATE project_asset_usages SET deleted_at=?,updated_at=? WHERE id IN ({placeholders})",
+            (now, now, *usage_ids),
+        )
+        for row in matches:
+            self._record_project_asset_event(
+                asset_id=row["asset_id"],
+                project_id=project_id,
+                user_id=user_id,
+                event_type="usage_unlinked",
+                target_type="video_source_folder",
+                target_id=folder_id,
+                metadata={"source_id": source_id},
+            )
+        self._conn.commit()
+        return len(matches)
 
     def get_project_asset_events(
         self,
@@ -2093,6 +2211,7 @@ class StatusService:
 
         descriptor = build_project_asset_storage_descriptor(
             storage_uri=asset.storage_uri,
+            storage_locator=asset.storage_locator,
             status=asset.status,
             media_kind=asset.media_kind,
             mime_type=asset.mime_type,
@@ -2144,6 +2263,20 @@ class StatusService:
             ).fetchone()
             if not row:
                 raise ContentNotFoundError(f"Video version target {target_id} not found")
+            return
+
+        if target_type == "video_source_folder":
+            row = self._conn.execute(
+                """
+                SELECT target_id FROM project_asset_usage_targets
+                WHERE target_type='video_source_folder' AND target_id=?
+                  AND project_id=? AND user_id=?
+                LIMIT 1
+                """,
+                (target_id, project_id, user_id),
+            ).fetchone()
+            if not row:
+                raise ContentNotFoundError(f"Video source folder target {target_id} not found")
             return
 
         raise ProjectAssetEligibilityError(f"Unsupported target_type '{target_type}'")
@@ -2355,6 +2488,16 @@ class StatusService:
         )
 
     def _row_to_project_asset(self, row: sqlite3.Row) -> ProjectAssetRecord:
+        row_keys = set(row.keys())
+        storage_locator = None
+        if "storage_provider" in row_keys and row["storage_provider"]:
+            storage_locator = StorageLocator(
+                provider=row["storage_provider"],
+                namespace=row["storage_namespace"],
+                object_key=row["storage_object_key"],
+                version=row["storage_version"],
+                checksum_sha256=row["storage_checksum_sha256"],
+            )
         return ProjectAssetRecord(
             id=row["id"],
             project_id=row["project_id"],
@@ -2366,6 +2509,7 @@ class StatusService:
             mime_type=row["mime_type"],
             file_name=row["file_name"],
             storage_uri=row["storage_uri"],
+            storage_locator=storage_locator,
             status=row["status"],
             metadata=json.loads(row["metadata"]) if row["metadata"] else {},
             created_at=datetime.fromisoformat(row["created_at"]),

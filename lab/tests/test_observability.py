@@ -47,6 +47,7 @@ def test_init_sentry_uses_lab_defaults(monkeypatch):
         "traces_sample_rate": 0.0,
         "send_default_pii": False,
         "debug": False,
+        "before_send": observability._before_send,
         "environment": "production",
         "release": "abc123",
     }

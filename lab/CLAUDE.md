@@ -15,8 +15,8 @@ security_impact: yes
 docs_impact: yes
 evidence:
   - README.md
-  - shipflow_data/technical/lab/README.md
-  - shipflow_data/technical/lab/architecture.md
+  - shipglowz_data/technical/lab/README.md
+  - shipglowz_data/technical/lab/architecture.md
 depends_on: []
 supersedes: []
 linked_systems:
@@ -40,15 +40,16 @@ next_step: /sf-docs audit CLAUDE.md
 
 ## Canonical References
 
-- `shipflow_data/technical/lab/README.md`
-- `shipflow_data/technical/lab/context.md`
-- `shipflow_data/technical/lab/architecture.md`
-- `shipflow_data/technical/lab/guidelines.md`
+- `shipglowz_data/technical/lab/README.md`
+- `shipglowz_data/technical/lab/context.md`
+- `shipglowz_data/technical/lab/architecture.md`
+- `shipglowz_data/technical/lab/guidelines.md`
 
 ## Common Commands
 
 ```bash
 pip install -r requirements.lock
+pip install -r requirements-memory.txt  # optional semantic memory features only
 doppler run -- uvicorn api.main:app --reload --port 8000
 curl http://localhost:8000/health
 ```
@@ -57,7 +58,7 @@ curl http://localhost:8000/health
 
 - Preserve authenticated contracts consumed by `app`.
 - Keep Turso/libSQL schema changes explicit and documented.
-- Update canonical `shipflow_data` docs when backend behavior changes.
+- Update canonical `shipglowz_data` docs when backend behavior changes.
 
 ## Forbidden Paths
 

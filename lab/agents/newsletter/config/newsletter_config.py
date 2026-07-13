@@ -8,10 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Email backend selection: "imap" (free, direct) or "composio" (paid, managed)
-EMAIL_BACKEND = os.getenv("NEWSLETTER_EMAIL_BACKEND", "imap")
-
-# IMAP configuration (for EMAIL_BACKEND="imap")
+# IMAP configuration
 IMAP_DEFAULTS: Dict[str, Any] = {
     "host": os.getenv("NEWSLETTER_IMAP_HOST", "imap.gmail.com"),
     "email": os.getenv("NEWSLETTER_IMAP_EMAIL"),
@@ -92,7 +89,6 @@ def validate_config(
     )
     checks = {
         "sendgrid_configured": bool(os.getenv("SENDGRID_API_KEY")),
-        "composio_configured": bool(os.getenv("COMPOSIO_API_KEY")),
         "exa_configured": resolved_exa,
         "openrouter_configured": resolved_openrouter,
         "imap_configured": bool(
@@ -101,22 +97,6 @@ def validate_config(
     }
 
     return checks
-
-
-def get_email_backend() -> str:
-    """
-    Get the configured email backend.
-
-    Returns:
-        "imap" or "composio"
-    """
-    return EMAIL_BACKEND
-
-
-def is_imap_backend() -> bool:
-    """Check if IMAP backend is configured."""
-    return EMAIL_BACKEND == "imap"
-
 
 def get_imap_config() -> Dict[str, Any]:
     """

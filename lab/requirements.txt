@@ -20,7 +20,7 @@ litellm>=1.83.14,<3.0  # Keep floor above known proxy/security advisory ranges.
 exa-py>=1.0.0,<2.0
 firecrawl-py>=0.0.1,<2.0
 beautifulsoup4>=4.12.0,<5.0
-requests>=2.33.0,<3.0
+requests>=2.34.2,<3.0
 svix>=1.28.0,<2.0
 
 # SEO & Research Tools
@@ -31,16 +31,15 @@ networkx>=3.0.0,<4.0
 matplotlib>=3.8.0,<4.0
 python-louvain>=0.16,<1.0  # Community detection for topical mesh analysis
 
-# Memory Layer
-mem0ai>=0.1.0,<1.0
+# Project Intelligence generation context is relational and Turso/libSQL-backed.
+# No project-memory package is installed here. `chromadb` may still land
+# transitively via `crewai`; treat it as a monitored CrewAI residual, not as
+# ContentGlowz project-memory storage.
 
 # Email & Templates
 jinja2>=3.1.6,<4.0
 sendgrid>=6.11.0,<7.0
 imap-tools>=1.0.0,<2.0  # IMAP email fetching for newsletter ingestion
-
-# Composio - AI Agent Integration (Gmail, Slack, etc.)
-composio-crewai>=0.2.0,<1.0
 
 # Instagram Reels
 # instagrapi is excluded from the default runtime install because current
@@ -52,16 +51,18 @@ composio-crewai>=0.2.0,<1.0
 textstat>=0.7.0,<1.0
 
 # Utilities
-python-dotenv>=1.0.0,<2.0
+python-dotenv>=1.2.2,<2.0
 pyyaml>=6.0.0,<7.0
 pandas>=2.0.0,<3.0  # Required by advertools
 libsql>=0.1.11,<1.0
-cryptography>=46.0.5,<48
+cryptography>=48.0.1,<49
+boto3>=1.43.45,<2.0  # Canonical S3 object-storage adapter; server credential chain only.
+pillow>=12.3.0,<13.0  # Decode and re-encode image sources without EXIF/GPS metadata.
 
 # Google Analytics (Psychology Engine)
-google-analytics-data>=0.18.0,<1.0
+google-analytics-data>=0.23.0,<1.0
 
 # Google Indexing API + Search Console (publishing pipeline)
-google-api-python-client>=2.100.0,<3.0
+google-api-python-client>=2.198.0,<3.0
 google-auth>=2.23.0,<3.0
 google-cloud-storage>=2.14.0,<3.0

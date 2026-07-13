@@ -41,6 +41,7 @@ import 'presentation/screens/idea_pool/idea_pool_screen.dart';
 import 'presentation/screens/work_domains/work_domains_screen.dart';
 import 'presentation/screens/drip/drip_screen.dart';
 import 'presentation/screens/editor/video_timeline_screen.dart';
+import 'presentation/screens/editor/video_source_intake_screen.dart';
 import 'presentation/screens/project_intelligence/project_intelligence_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -77,6 +78,9 @@ RouteSettings? _sentryRouteSettings(RouteSettings? settings) {
 }
 
 String _sanitizeSentryRouteName(String routeName) {
+  if (RegExp(r'^/editor/[^/]+/video/sources$').hasMatch(routeName)) {
+    return '/editor/:id/video/sources';
+  }
   if (RegExp(r'^/editor/[^/]+/video$').hasMatch(routeName)) {
     return '/editor/:id/video';
   }
@@ -354,6 +358,13 @@ List<RouteBase> buildAppRoutes() {
       name: 'onboarding',
       pageBuilder: (context, state) =>
           const MaterialPage(child: OnboardingScreen()),
+    ),
+    GoRoute(
+      path: '/editor/:id/video/sources',
+      name: 'editor-video-sources',
+      pageBuilder: (context, state) => MaterialPage(
+        child: VideoSourceIntakeScreen(contentId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/editor/:id/video',

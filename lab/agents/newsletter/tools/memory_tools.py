@@ -1,163 +1,72 @@
 """
-Memory Tools - CrewAI @tool functions for accessing the project brain.
+Project Intelligence context tools for newsletter agents.
 
-Provides newsletter agents with access to persistent memory for:
-- Recalling past newsletters (deduplication)
-- Loading brand voice guidelines
-- Searching project context
-
-All tools use lazy imports with graceful degradation — if Mem0 isn't
-installed, they return "Memory unavailable" instead of crashing.
+The newsletter crew receives a prebuilt, tenant-scoped Project Intelligence
+context package before CrewAI starts. These tools expose only that bound context
+to agents; they never read an external memory provider and never fall back to
+global memory.
 """
 
 from crewai.tools import tool
 
-# Lazy import flag — checked on first tool call
-_memory_checked = False
-_memory_service = None
+
 _runtime_user_id: str | None = None
 _runtime_project_id: str | None = None
+_runtime_context_prompt: str | None = None
 
 
-def set_memory_tool_scope(*, user_id: str | None, project_id: str | None) -> None:
-    """Bind request scope for newsletter memory tools."""
-    global _runtime_user_id, _runtime_project_id
+def set_project_context_tool_scope(
+    *,
+    user_id: str | None,
+    project_id: str | None,
+    context_prompt: str | None,
+) -> None:
+    global _runtime_user_id, _runtime_project_id, _runtime_context_prompt
     _runtime_user_id = user_id
     _runtime_project_id = project_id
+    _runtime_context_prompt = context_prompt
 
 
-def clear_memory_tool_scope() -> None:
-    """Clear request scope after a newsletter run."""
-    set_memory_tool_scope(user_id=None, project_id=None)
+def clear_project_context_tool_scope() -> None:
+    set_project_context_tool_scope(user_id=None, project_id=None, context_prompt=None)
 
 
-def _get_memory():
-    """Lazy-load memory service with graceful fallback."""
-    global _memory_checked, _memory_service
-    if not _memory_checked:
-        _memory_checked = True
-        try:
-            from memory import get_memory_service
-            _memory_service = get_memory_service()
-        except (ImportError, Exception) as e:
-            print(f"Memory tools: Memory unavailable ({e})")
-            _memory_service = None
-    return _memory_service
+def _bound_context_or_message() -> str:
+    if not _runtime_user_id or not _runtime_project_id:
+        return "Project Intelligence context unavailable: missing project scope."
+    if not _runtime_context_prompt:
+        return "Project Intelligence context is explicitly empty for this project."
+    return _runtime_context_prompt
 
 
 @tool
 def recall_project_context(query: str) -> str:
-    """Search the project brain for relevant context about a topic.
-
-    Use this to recall what you know about a specific topic, past decisions,
-    content strategy, or any project knowledge before starting work.
-
-    Args:
-        query: Natural language search query (e.g. "AI agent trends",
-               "content strategy for newsletters")
-
-    Returns:
-        Relevant project memories formatted as context, or a message
-        if memory is unavailable.
-    """
-    memory = _get_memory()
-    if memory is None:
-        return "Memory unavailable — proceeding without project context."
-
-    try:
-        if _runtime_user_id:
-            context = memory.load_project_context(
-                query,
-                user_id=_runtime_user_id,
-                project_id=_runtime_project_id,
-                limit=10,
-            )
-        else:
-            context = memory.load_context(query, limit=10)
-        if not context:
-            return f"No memories found for: {query}"
+    """Return the prebuilt Project Intelligence context for this project scope."""
+    context = _bound_context_or_message()
+    if "missing project scope" in context.lower():
         return context
-    except Exception as e:
-        return f"Memory search failed: {e}"
+    return f"Project Intelligence context for query '{query}':\n{context}"
 
 
 @tool
 def recall_past_newsletters(limit: int = 10) -> str:
-    """Recall past newsletter topics to avoid duplication.
-
-    Use this before planning newsletter content to see what topics
-    were already covered in previous newsletters.
-
-    Args:
-        limit: Maximum number of past newsletters to recall (default 10)
-
-    Returns:
-        Summary of past newsletter topics and dates, or a message
-        if memory is unavailable.
-    """
-    memory = _get_memory()
-    if memory is None:
-        return "Memory unavailable — no past newsletter history accessible."
-
-    try:
-        if _runtime_user_id:
-            scoped = memory.load_project_context(
-                "past newsletter generation topics covered",
-                user_id=_runtime_user_id,
-                project_id=_runtime_project_id,
-                limit=limit,
-            )
-            if not scoped:
-                return "No past newsletters found in memory — this may be the first run."
-            return scoped
-
-        entries = memory.search(
-            "past newsletter generation topics covered",
-            limit=limit,
-            agent_id="newsletter",
-        )
-        if not entries:
-            return "No past newsletters found in memory — this may be the first run."
-
-        lines = [f"=== Past Newsletters ({len(entries)} found) ==="]
-        for i, entry in enumerate(entries, 1):
-            lines.append(f"\n[{i}] {entry.memory}")
-        lines.append("\n=== End Past Newsletters ===")
-        return "\n".join(lines)
-    except Exception as e:
-        return f"Memory search failed: {e}"
+    """Return past-generation signals included in the prebuilt context."""
+    context = _bound_context_or_message()
+    if "missing project scope" in context.lower():
+        return context
+    return f"Project Intelligence past-generation context (limit {limit}):\n{context}"
 
 
 @tool
 def recall_brand_voice() -> str:
-    """Recall brand voice guidelines and writing style from memory.
-
-    Use this before writing content to ensure consistent tone, style,
-    and terminology across all newsletters.
-
-    Returns:
-        Brand voice guidelines and style notes, or a message
-        if memory is unavailable.
-    """
-    memory = _get_memory()
-    if memory is None:
-        return "Memory unavailable — using default writing style."
-
-    try:
-        if _runtime_user_id:
-            context = memory.load_project_context(
-                "brand voice writing style tone guidelines",
-                user_id=_runtime_user_id,
-                project_id=_runtime_project_id,
-                limit=10,
-            )
-        else:
-            context = memory.load_context(
-                "brand voice writing style tone guidelines",
-                limit=10,
-            )
-        if not context:
-            return "No brand voice guidelines found in memory — using default style."
+    """Return brand, voice, audience, and style context from Project Intelligence."""
+    context = _bound_context_or_message()
+    if "missing project scope" in context.lower():
         return context
-    except Exception as e:
-        return f"Memory search failed: {e}"
+    return f"Project Intelligence brand/context guidance:\n{context}"
+
+
+# Backward-compatible names for callers during this migration; these only bind
+# prebuilt Project Intelligence context.
+set_memory_tool_scope = set_project_context_tool_scope
+clear_memory_tool_scope = clear_project_context_tool_scope

@@ -43,11 +43,13 @@ def _asset_to_response(asset) -> ProjectAssetResponse:
     payload = asset.model_dump()
     payload["storage_descriptor"] = build_project_asset_storage_descriptor(
         storage_uri=payload.get("storage_uri"),
+        storage_locator=getattr(asset, "storage_locator", None),
         status=payload["status"],
         media_kind=payload["media_kind"],
         mime_type=payload.get("mime_type"),
     )
     payload["storage_uri"] = None
+    payload["storage_locator"] = None
     return ProjectAssetResponse(**payload)
 
 

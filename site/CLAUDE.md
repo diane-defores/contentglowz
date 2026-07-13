@@ -14,13 +14,13 @@ risk_level: medium
 security_impact: low
 docs_impact: yes
 depends_on:
-  - shipflow_data/business/business.md
-  - shipflow_data/branding/branding.md
-  - shipflow_data/technical/site/guidelines.md
+  - shipglowz_data/business/business.md
+  - shipglowz_data/branding/branding.md
+  - shipglowz_data/technical/site/guidelines.md
 evidence:
   - README.md
-  - shipflow_data/technical/site/README.md
-  - shipflow_data/editorial/site/README.md
+  - shipglowz_data/technical/site/README.md
+  - shipglowz_data/editorial/site/README.md
 supersedes: []
 next_review: "2026-09-29"
 next_step: /sf-docs audit CLAUDE.md
@@ -34,10 +34,10 @@ next_step: /sf-docs audit CLAUDE.md
 
 ## Canonical References
 
-- `shipflow_data/technical/site/README.md`
-- `shipflow_data/technical/site/architecture.md`
-- `shipflow_data/editorial/site/README.md`
-- `shipflow_data/workflow/site/TASKS.md`
+- `shipglowz_data/technical/site/README.md`
+- `shipglowz_data/technical/site/architecture.md`
+- `shipglowz_data/editorial/site/README.md`
+- `shipglowz_data/workflow/site/TASKS.md`
 
 ## Common Commands
 
@@ -52,4 +52,4 @@ npm run preview
 
 - Keep public messaging grounded in what this repo actually renders.
 - Keep French copy in informal address with proper accents.
-- Update canonical `shipflow_data` docs when routing, content schema, handoff, or public claims change.
+- Update canonical `shipglowz_data` docs when routing, content schema, handoff, or public claims change.

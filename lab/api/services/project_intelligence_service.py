@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from api.services.ai_runtime_service import AIRuntimeServiceError, ai_runtime_service
+from api.services.project_generation_context import (
+    ProjectGenerationContextBuilder,
+    ProjectGenerationContextStoreError,
+)
 from api.services.project_intelligence_processor import (
     MAX_CONNECTOR_ITEMS,
     build_chunks,
@@ -50,6 +54,7 @@ class UploadPayload:
 class ProjectIntelligenceService:
     def __init__(self, store: ProjectIntelligenceStore | None = None) -> None:
         self.store = store or project_intelligence_store
+        self._generation_context_builder = ProjectGenerationContextBuilder(store=self.store)
 
     async def get_status(self, *, user_id: str, project_id: str) -> dict[str, Any]:
         sources = await self.store.list_sources(user_id=user_id, project_id=project_id, limit=500)
@@ -89,6 +94,70 @@ class ProjectIntelligenceService:
 
     async def list_recommendations(self, *, user_id: str, project_id: str) -> list[dict[str, Any]]:
         return await self.store.list_recommendations(user_id=user_id, project_id=project_id, limit=500)
+
+    async def build_generation_context(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        generation_type: str,
+        route_id: str,
+        content_type: str | None = None,
+        content_record_id: str | None = None,
+        query: str | None = None,
+        title: str | None = None,
+        topics: list[str] | None = None,
+        max_tokens: int = 6000,
+    ):
+        if not project_id:
+            raise ProjectGenerationContextStoreError("generation_context_missing_project")
+        return await self._generation_context_builder.build(
+            user_id=user_id,
+            project_id=project_id,
+            generation_type=generation_type,
+            route_id=route_id,
+            content_type=content_type,
+            content_record_id=content_record_id,
+            query=query,
+            title=title,
+            topics=topics or [],
+            max_tokens=max_tokens,
+        )
+
+    async def record_generation_signal(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        generation_type: str,
+        content_type: str,
+        title: str,
+        content_record_id: str | None = None,
+        topics: list[str] | None = None,
+        summary: str | None = None,
+        body: str | None = None,
+        context_log_id: str | None = None,
+        source_idea_ids: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        if not project_id:
+            raise ProjectGenerationContextStoreError("generation_context_missing_project")
+        body_text = body or ""
+        return await self.store.write_generation_signal(
+            user_id=user_id,
+            project_id=project_id,
+            generation_type=generation_type,
+            content_type=content_type,
+            title=title,
+            content_record_id=content_record_id,
+            topics=topics or [],
+            summary=(summary or body_text[:240])[:500],
+            body_hash=hashlib.sha256(body_text.encode("utf-8")).hexdigest() if body_text else None,
+            body_char_count=len(body_text),
+            context_log_id=context_log_id,
+            source_idea_ids=source_idea_ids or [],
+            metadata=metadata or {},
+        )
 
     async def ingest_uploads(
         self,

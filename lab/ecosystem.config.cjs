@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
-    name: "lab",
+    name: "contentglowz_lab",
     cwd: "/home/claude/contentglowz/lab",
     script: "bash",
-    args: ["-lc", "export PORT=3002 && flox activate -- bash -lc 'source ./venv/bin/activate && env PORT=3002 python3 main.py'"],
+    args: ["-lc", "export PORT=3002 && flox activate -- bash -lc 'export LD_LIBRARY_PATH=\"$(dirname \"$(gcc -print-file-name=libstdc++.so.6)\")\" && export GIT_SHA=\"$(git -C /home/claude/contentglowz rev-parse HEAD)\" && doppler run --project contentglowz_app --config prd -- .venv/bin/python main.py'"],
     env: {
       PORT: 3002
     },

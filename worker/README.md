@@ -6,9 +6,9 @@ This local README is now an entrypoint, not the canonical technical source of tr
 
 ## Canonical Docs
 
-- Technical index: `shipflow_data/technical/worker/README.md`
-- Architecture: `shipflow_data/technical/worker/architecture.md`
-- Runtime and API: `shipflow_data/technical/worker/runtime-and-render-api.md`
+- Technical index: `shipglowz_data/technical/worker/README.md`
+- Architecture: `shipglowz_data/technical/worker/architecture.md`
+- Runtime and API: `shipglowz_data/technical/worker/runtime-and-render-api.md`
 
 ## Common Commands
 
@@ -20,4 +20,4 @@ This local README is now an entrypoint, not the canonical technical source of tr
 
 ## Rule
 
-If a local `worker/*` doc and a `shipflow_data/*` doc disagree, treat `shipflow_data/*` as canonical.
+If a local `worker/*` doc and a `shipglowz_data/*` doc disagree, treat `shipglowz_data/*` as canonical.
