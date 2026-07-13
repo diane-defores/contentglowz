@@ -60,7 +60,7 @@ boto3>=1.43.45,<2.0  # Canonical S3 object-storage adapter; server credential ch
 pillow>=12.3.0,<13.0  # Decode and re-encode image sources without EXIF/GPS metadata.
 
 # Google Analytics (Psychology Engine)
-google-analytics-data>=0.18.0,<1.0
+google-analytics-data>=0.23.0,<1.0
 
 # Google Indexing API + Search Console (publishing pipeline)
 google-api-python-client>=2.100.0,<3.0
