@@ -168,7 +168,6 @@ anyio==4.14.1 \
     --hash=sha256:8d648a3544c1a700e3ff78615cd679e4c5c3f149904287e73687b2596963629e
     # via
     #   anthropic
-    #   composio-client
     #   google-genai
     #   groq
     #   httpx
@@ -327,7 +326,9 @@ blis==1.3.3 \
 boto3==1.43.45 \
     --hash=sha256:65e0ae541a9948ac41b706d5c7165d96ebf155812562b6518b862be027ee7347 \
     --hash=sha256:bb076647526c491ce75cab896543afcda5b81c97d3f8e8da08a033fc1ddb7429
-    # via pydantic-ai-slim
+    # via
+    #   -r requirements.txt
+    #   pydantic-ai-slim
 botocore==1.43.45 \
     --hash=sha256:a04871d814124e65daf429fb99640def23b8c4d3edc6438603b31f11116d7a67 \
     --hash=sha256:a2da80ff3caa2873769b9a32ae5f1fb18b3571ab63a981896639955611ca01e6
@@ -608,18 +609,6 @@ cohere==7.0.5 \
     --hash=sha256:7fc682bb5c408402fc5ce59322bfa3f6aae27bde1ecc2450b0a25370040707ed \
     --hash=sha256:fd98f82be28c969da7625adddede0bb85f8f84de399daf3a98c40c0e7b93e104
     # via pydantic-ai-slim
-composio==0.17.1 \
-    --hash=sha256:3af198770b85aace1c27d21abec4d3ecd7905b5ef0cc426d5f036d12eba37933 \
-    --hash=sha256:72345e2859637a6f39539efd139a04aa6df89bde127d216229e5ad5dd68d5c66
-    # via composio-crewai
-composio-client==1.41.0 \
-    --hash=sha256:18344f1b9209c56c25258c87c9a2f0423553690c94a4e62fb933072f76b37cd1 \
-    --hash=sha256:5b37205123b38a4568d6a75c4227d38929b8f9526adc8d0810281733e547d8a6
-    # via composio
-composio-crewai==0.15.0 \
-    --hash=sha256:4b30dc3e9c314d9441cb585d432f8a1c33eaa5f8e1c229da377557913032c520 \
-    --hash=sha256:7681d89bf67cd3424a6a66dcb20558cc6b67b9af7effa37309497cd91209bf13
-    # via -r requirements.txt
 confection==1.3.3 \
     --hash=sha256:b9fef9ee84b237ef4611ec3eb5797b70e13063e6310ad9f15536373f5e313c82 \
     --hash=sha256:f0f6810d567ff73993fe74d218ca5e1ffb6a44fb03f391257fc5d033546cbfaa
@@ -708,9 +697,7 @@ contourpy==1.3.3 \
 crewai==1.6.1 \
     --hash=sha256:8cec403ab89183bda28b830c722b6bc22457a2151a6aa46f07730e6fe7ab2723 \
     --hash=sha256:b7d73a8a333abf71b30ab20c54086004cd0c016dfd86bba9c035ad5eb31e22a7
-    # via
-    #   -r requirements.txt
-    #   composio-crewai
+    # via -r requirements.txt
 cryptography==48.0.1 \
     --hash=sha256:08a597acce1ff37f347400087776599e2348a3a8bc53b44120e463cd274efe4a \
     --hash=sha256:09f73a725d582cef64b91281a322cd798d14a33b2b6f2b7ad9531dc336d84c02 \
@@ -878,7 +865,6 @@ distro==1.9.0 \
     --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
     # via
     #   anthropic
-    #   composio-client
     #   google-genai
     #   groq
     #   openai
@@ -1708,7 +1694,6 @@ httpx==0.28.1 \
     #   anthropic
     #   chromadb
     #   cohere
-    #   composio-client
     #   exa-py
     #   fastapi
     #   fastapi-cloud-cli
@@ -1950,10 +1935,6 @@ json-repair==0.25.2 \
     --hash=sha256:161a56d7e6bbfd4cad3a614087e3e0dbd0e10d402dd20dc7db418432428cb32b \
     --hash=sha256:51d67295c3184b6c41a3572689661c6128cef6cfc9fb04db63130709adfc5bf0
     # via crewai
-json-schema-to-pydantic==0.4.11 \
-    --hash=sha256:35448ed711a28dd33396b095c8492939b4925aa30eb31942e9b8e08d04279465 \
-    --hash=sha256:da2ccc39d070ee03dbcf0517d16720e3e33f7aa8d61257ace09af8c51bd46348
-    # via composio
 json5==0.15.0 \
     --hash=sha256:56636a30c0e8a4665fe2179c0212f32eae3796dea89ea6f649b9436ecdb39618 \
     --hash=sha256:7424d1f1eb1d56da6e3d70643f53619862b4ce81440bdb8ecfd6f875e5ba4a71
@@ -2889,7 +2870,6 @@ openai==2.45.0 \
     --hash=sha256:5df105f5f8c9b711fcb9d06d2d3888cebc82506db216484c14a4e53cdf651777
     # via
     #   -r requirements.txt
-    #   composio
     #   crewai
     #   exa-py
     #   instructor
@@ -3236,6 +3216,7 @@ pillow==12.3.0 \
     --hash=sha256:fe3cca2e4e8a592be0f269a1ca4835c25199d9f3ce815c8491048f785b0a0198 \
     --hash=sha256:ffd0c5368496f41b0944be820fcb7a838aa6e623d250b01acf2643939c3f99d7
     # via
+    #   -r requirements.txt
     #   matplotlib
     #   pdfplumber
 platformdirs==4.10.0 \
@@ -3761,8 +3742,6 @@ pydantic[email]==2.13.4 \
     #   anthropic
     #   chromadb
     #   cohere
-    #   composio
-    #   composio-client
     #   crewai
     #   exa-py
     #   fastapi
@@ -3773,7 +3752,6 @@ pydantic[email]==2.13.4 \
     #   google-genai
     #   groq
     #   instructor
-    #   json-schema-to-pydantic
     #   litellm
     #   mcp
     #   mistralai
@@ -4017,9 +3995,6 @@ pyproject-hooks==1.2.0 \
     --hash=sha256:1e859bd5c40fae9448642dd871adf459e5e2084186e8d2c2a79a824c970da1f8 \
     --hash=sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913
     # via build
-pysher==1.0.8 \
-    --hash=sha256:7849c56032b208e49df67d7bd8d49029a69042ab0bb45b2ed59fa08f11ac5988
-    # via composio
 python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
     --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
@@ -4294,7 +4269,6 @@ requests==2.34.2 \
     #   opentelemetry-exporter-otlp-proto-http
     #   posthog
     #   pydantic-ai-slim
-    #   pysher
     #   requests-file
     #   requests-oauthlib
     #   serpapi
@@ -4663,7 +4637,6 @@ sniffio==1.3.1 \
     --hash=sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc
     # via
     #   anthropic
-    #   composio-client
     #   google-genai
     #   groq
     #   openai
@@ -5057,8 +5030,6 @@ typing-extensions==4.16.0 \
     #   beautifulsoup4
     #   chromadb
     #   cohere
-    #   composio
-    #   composio-client
     #   exa-py
     #   exceptiongroup
     #   fastapi
@@ -5338,9 +5309,7 @@ weasel==1.0.0 \
 websocket-client==1.9.0 \
     --hash=sha256:9e813624b6eb619999a97dc7958469217c3176312b3a16a4bd1bc7e08a46ec98 \
     --hash=sha256:af248a825037ef591efbf6ed20cc5faa03d3b47b9e5a2230a529eeee1c1fc3ef
-    # via
-    #   kubernetes
-    #   pysher
+    # via kubernetes
 websockets==16.1 \
     --hash=sha256:00d50c0a27098fcb7ab47b3d99a1b1159b534dbcd959fbf05113ebc37e5f927b \
     --hash=sha256:0352f5b38b40e857b6428d468fa21dbb4dd4a567d933c26d9831b4efe1b92f43 \

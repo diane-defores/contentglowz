@@ -4,7 +4,7 @@ Newsletter Crew - Multi-agent workflow for newsletter generation.
 Pipeline: Research → Curate → Write → Review → Draft/Send → Archive
 
 Uses:
-- IMAP (free) or Composio (managed) for Gmail integration
+- IMAP for Gmail integration
 - Exa AI for content research
 - SendGrid for mass delivery
 """
@@ -29,14 +29,9 @@ from agents.newsletter.schemas.newsletter_schemas import (
 )
 from agents.newsletter.config.newsletter_config import (
     get_newsletter_config,
-    EMAIL_BACKEND,
-    is_imap_backend,
 )
+from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
 from status.audit import actor_from_agent
-
-# Import archiving tools if using IMAP backend
-if is_imap_backend():
-    from agents.newsletter.tools.imap_tools import IMAPNewsletterReader
 
 # Project Intelligence context tools expose only prebuilt scoped context.
 try:
@@ -77,17 +72,16 @@ class NewsletterCrew:
 
         Args:
             llm_model: LLM model for all agents
-            use_gmail: Enable Gmail integration via Composio
+            use_gmail: Enable Gmail integration via IMAP
         """
         config = get_newsletter_config()
         self.llm_model = llm_model or config["llm_model"]
         self.use_gmail = use_gmail
-        self.email_backend = EMAIL_BACKEND
         self.track_status = track_status
 
         # Initialize agents
         print("Initializing Newsletter Crew...")
-        print(f"Email backend: {self.email_backend}")
+        print("Email backend: imap")
         self.research_agent = NewsletterResearchAgent(self.llm_model)
         self.writer_agent = NewsletterWriterAgent(self.llm_model)
         print("✅ Newsletter agents initialized")
@@ -297,8 +291,8 @@ class NewsletterCrew:
             content_record_id=status_record_id,
         )
 
-        # STAGE 3: Archive processed emails (IMAP only)
-        if is_imap_backend() and email_uids:
+        # STAGE 3: Archive processed emails
+        if email_uids:
             print("\n📁 STAGE 3: Archiving Processed Emails")
             print("-" * 40)
             archived_count = self._archive_processed_emails(email_uids)
@@ -333,7 +327,7 @@ class NewsletterCrew:
         print("✅ NEWSLETTER GENERATION COMPLETE")
         print(f"Word count: {draft.word_count}")
         print(f"Read time: ~{draft.estimated_read_time} min")
-        if is_imap_backend() and email_uids:
+        if email_uids:
             print(f"Emails archived: {results.get('archived_count', 0)}")
         print("=" * 60)
 

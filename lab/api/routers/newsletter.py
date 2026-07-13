@@ -39,13 +39,13 @@ def _dependency_error_email_backend_missing(*, include_email_insights: bool) -> 
         status_code=503,
         detail={
             "code": "newsletter_email_backend_missing",
-            "message": "Email insights require IMAP or Composio to be configured.",
+            "message": "Email insights require IMAP to be configured.",
             "kind": "dependency",
             "route": "newsletter.generate",
             "retryable": False,
             "details": {
                 "includeEmailInsights": include_email_insights,
-                "requiredAnyOf": ["imap", "composio"],
+                "required": ["imap"],
             },
         },
     )
@@ -165,13 +165,13 @@ async def generate_newsletter(
     Generate a newsletter synchronously.
 
     This endpoint:
-    1. Reads recent emails via Composio Gmail integration
+    1. Reads recent emails via IMAP
     2. Analyzes competitor newsletters
     3. Researches trending topics via Exa AI
     4. Generates newsletter content
 
     Requires:
-    - Composio Gmail authentication: `composio add gmail`
+    - Gmail IMAP credentials
     - EXA_API_KEY environment variable
     """
     route_id = "newsletter.generate"
@@ -190,9 +190,7 @@ async def generate_newsletter(
         openrouter_configured=True,
         exa_configured=True,
     )
-    email_backend_ready = bool(
-        checks.get("imap_configured") or checks.get("composio_configured")
-    )
+    email_backend_ready = bool(checks.get("imap_configured"))
     if request.include_email_insights and not email_backend_ready:
         raise _dependency_error_email_backend_missing(
             include_email_insights=request.include_email_insights
@@ -220,7 +218,7 @@ async def generate_newsletter(
         raise HTTPException(
             status_code=500,
             detail=f"Newsletter agents not available: {str(e)}. "
-                   f"Install with: pip install composio-crewai"
+                   f"Install with: pip install -r requirements.lock"
         )
     except Exception as e:
         raise HTTPException(
@@ -268,9 +266,7 @@ async def generate_newsletter_async(
         openrouter_configured=True,
         exa_configured=True,
     )
-    email_backend_ready = bool(
-        checks.get("imap_configured") or checks.get("composio_configured")
-    )
+    email_backend_ready = bool(checks.get("imap_configured"))
     if request.include_email_insights and not email_backend_ready:
         raise _dependency_error_email_backend_missing(
             include_email_insights=request.include_email_insights
@@ -416,7 +412,7 @@ async def check_config(
     )
     llm_configured = bool(openrouter_ready and exa_ready)
     if include_email_insights:
-        server_ready = bool(checks.get("imap_configured") or checks.get("composio_configured"))
+        server_ready = bool(checks.get("imap_configured"))
     else:
         server_ready = True
 
@@ -427,7 +423,7 @@ async def check_config(
         "server_ready": server_ready,
         "checks": checks,
         "instructions": {
-            "composio": "Run: composio add gmail",
+            "imap": "Set NEWSLETTER_IMAP_EMAIL and NEWSLETTER_IMAP_PASSWORD",
             "exa": "Set EXA_API_KEY in environment",
             "sendgrid": "Set SENDGRID_API_KEY for sending",
         }
