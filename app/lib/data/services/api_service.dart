@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:crypto/crypto.dart';
 
 import '../../core/app_diagnostics.dart';
 import '../../core/project_onboarding_validation.dart';
@@ -30,6 +31,7 @@ import '../models/project_intelligence.dart';
 import '../models/ritual.dart';
 import '../models/search_console.dart';
 import '../models/video_timeline.dart';
+import '../models/video_source_intake.dart';
 import 'offline_storage_service.dart';
 
 enum ApiErrorType { unauthorized, offline, server, invalidResponse, unknown }
@@ -155,7 +157,10 @@ class ApiService {
               'requestId': error.requestOptions.extra['requestId'],
               'statusCode': error.response?.statusCode,
               'durationMs': _requestDurationMs(error.requestOptions),
-              'responseBody': _stringifyResponseData(error.response?.data),
+              'responseBody': _safeDiagnosticResponseBody(
+                error.requestOptions,
+                error.response?.data,
+              ),
               'responseHeaders': _flattenHeaders(error.response?.headers),
             },
           );
@@ -3796,6 +3801,423 @@ class ApiService {
     return ProjectIntelligenceStatus.fromJson(_asMap(data));
   }
 
+  // ─── Multimodal video source intake ───────────────────
+
+  String _videoSourceFolderPath(String projectId, String contentId) =>
+      '/api/projects/$projectId/contents/$contentId/video-sources';
+
+  VideoSourceFolder _videoSourceFolderFromData(Object? data) {
+    final payload = _asMap(data);
+    final nested = payload['folder'];
+    return VideoSourceFolder.fromJson(
+      nested is Map ? Map<String, dynamic>.from(nested) : payload,
+    );
+  }
+
+  Future<VideoSourceFolder> openVideoSourceFolder({
+    required String projectId,
+    required String contentId,
+  }) async {
+    if (allowDemoData) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'Video source intake is unavailable in demo mode.',
+      );
+    }
+    final idMappings = await _loadIdMappings();
+    final resolvedProjectId = _resolveEntityId(projectId, idMappings);
+    final resolvedContentId = _resolveEntityId(contentId, idMappings);
+    try {
+      final response = await _dio.post(
+        '${_videoSourceFolderPath(resolvedProjectId, resolvedContentId)}/folder',
+        data: {'projectId': resolvedProjectId, 'contentId': resolvedContentId},
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceFolder> addVideoSourceText({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required int revision,
+    required String text,
+    required String idempotencyKey,
+    String? label,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.post(
+        '$base/folder/$folderId/text',
+        data: _compactMap({
+          'expectedRevision': revision,
+          'idempotencyKey': idempotencyKey,
+          'text': text,
+        }),
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceFolder> addVideoSourceLink({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required int revision,
+    required String url,
+    required String idempotencyKey,
+    String? label,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.post(
+        '$base/folder/$folderId/link',
+        data: _compactMap({
+          'expectedRevision': revision,
+          'idempotencyKey': idempotencyKey,
+          'url': url,
+        }),
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceFolder> uploadVideoSourceFile({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required int revision,
+    required VideoSourceUploadFile file,
+    String? replaceSourceId,
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final repeatableFile = await _repeatableVideoSourceFile(file);
+      final digest = await sha256
+          .bind(await _videoSourceReadStream(repeatableFile))
+          .first;
+      final uploadIdempotencyKey =
+          'video-source-upload-${sha256.convert(utf8.encode('$folderId:$revision:${digest.toString()}:${replaceSourceId ?? ''}'))}';
+      final sessionResponse = await _dio.post(
+        '$base/folder/$folderId/uploads',
+        data: _compactMap({
+          'sourceType': _videoSourceTypeForMime(repeatableFile.mimeType),
+          'fileName': repeatableFile.fileName,
+          'mimeType': repeatableFile.mimeType,
+          'byteSize': repeatableFile.sizeBytes,
+          'checksumSha256': digest.toString(),
+          'expectedRevision': revision,
+          'idempotencyKey': uploadIdempotencyKey,
+          'replaceSourceId': replaceSourceId,
+        }),
+      );
+      final session = VideoSourceUploadSession.fromJson(
+        _asMap(sessionResponse.data),
+      );
+      if (session.transport == VideoSourceUploadTransport.proxy) {
+        final multipart = await _multipartForVideoSource(repeatableFile);
+        final uploadResponse = await _dio.post(
+          '$base/folder/$folderId/uploads/${session.sessionId}/content',
+          data: FormData.fromMap({'file': multipart}),
+          onSendProgress: onProgress,
+        );
+        return _videoSourceFolderFromData(uploadResponse.data);
+      }
+      final receipts = await _uploadVideoSourceParts(
+        base: base,
+        folderId: folderId,
+        session: session,
+        file: repeatableFile,
+        onProgress: onProgress,
+      );
+      final completeResponse = await _dio.post(
+        '$base/folder/$folderId/uploads/${session.sessionId}/complete',
+        data: {'parts': receipts},
+      );
+      return _videoSourceFolderFromData(completeResponse.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _uploadVideoSourceParts({
+    required String base,
+    required String folderId,
+    required VideoSourceUploadSession session,
+    required VideoSourceUploadFile file,
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    if (session.parts.isEmpty) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'The multipart upload has no part instructions.',
+      );
+    }
+    final uploadDio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 20),
+        sendTimeout: const Duration(minutes: 10),
+        receiveTimeout: const Duration(minutes: 2),
+        followRedirects: false,
+      ),
+    );
+    final receipts = <Map<String, dynamic>>[];
+    final builder = BytesBuilder(copy: false);
+    var partIndex = 0;
+    var sentTotal = 0;
+    try {
+      await for (final chunk in await _videoSourceReadStream(file)) {
+        var offset = 0;
+        while (offset < chunk.length) {
+          if (partIndex >= session.parts.length) {
+            throw const ApiException(
+              ApiErrorType.invalidResponse,
+              'The selected file exceeds its upload instructions.',
+            );
+          }
+          final instruction = session.parts[partIndex];
+          final remaining = instruction.sizeBytes - builder.length;
+          final available = chunk.length - offset;
+          final take = remaining < available ? remaining : available;
+          builder.add(chunk.sublist(offset, offset + take));
+          offset += take;
+          if (builder.length != instruction.sizeBytes) continue;
+          final bytes = builder.takeBytes();
+          final checksum = sha256.convert(bytes).toString();
+          final signResponse = await _dio.post(
+            '$base/folder/$folderId/uploads/${session.sessionId}/parts/${instruction.partNumber}/sign',
+            data: {
+              'partNumber': instruction.partNumber,
+              'checksumSha256': checksum,
+              'sizeBytes': bytes.length,
+            },
+          );
+          final signed = VideoSourceUploadPart.fromJson(
+            _asMap(signResponse.data),
+          );
+          final uploadUrl = signed.uploadUrl;
+          if (signed.partNumber != instruction.partNumber ||
+              signed.sizeBytes != bytes.length ||
+              uploadUrl == null ||
+              uploadUrl.isEmpty) {
+            throw const ApiException(
+              ApiErrorType.invalidResponse,
+              'The signed multipart instruction is invalid.',
+            );
+          }
+          final response = await uploadDio.putUri(
+            Uri.parse(uploadUrl),
+            data: Stream<List<int>>.value(bytes),
+            options: Options(
+              contentType: file.mimeType,
+              headers: {
+                ...signed.headers,
+                Headers.contentLengthHeader: bytes.length,
+              },
+            ),
+          );
+          final etag = response.headers.value('etag');
+          if (etag == null || etag.trim().isEmpty) {
+            throw const ApiException(
+              ApiErrorType.invalidResponse,
+              'The storage service did not return a part receipt.',
+            );
+          }
+          receipts.add({
+            'partNumber': instruction.partNumber,
+            'etag': etag,
+            'checksumSha256': checksum,
+            'sizeBytes': bytes.length,
+          });
+          sentTotal += bytes.length;
+          onProgress?.call(sentTotal, file.sizeBytes);
+          partIndex++;
+        }
+      }
+    } finally {
+      uploadDio.close(force: true);
+    }
+    if (builder.length != 0 ||
+        partIndex != session.parts.length ||
+        sentTotal != file.sizeBytes) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'The selected file does not match its upload instructions.',
+      );
+    }
+    return receipts;
+  }
+
+  Future<MultipartFile> _multipartForVideoSource(
+    VideoSourceUploadFile file,
+  ) async {
+    final bytes = file.bytes;
+    if (bytes != null) {
+      return MultipartFile.fromBytes(bytes, filename: file.fileName);
+    }
+    final path = file.path;
+    if (path != null && path.isNotEmpty) {
+      return MultipartFile.fromFile(path, filename: file.fileName);
+    }
+    final stream = file.readStream;
+    if (stream != null) {
+      return MultipartFile.fromStream(
+        () => stream,
+        file.sizeBytes,
+        filename: file.fileName,
+      );
+    }
+    throw const ApiException(
+      ApiErrorType.invalidResponse,
+      'The selected file cannot be read on this platform.',
+    );
+  }
+
+  Future<VideoSourceUploadFile> _repeatableVideoSourceFile(
+    VideoSourceUploadFile file,
+  ) async {
+    if (file.bytes != null || (file.path?.isNotEmpty ?? false)) return file;
+    final source = file.readStream;
+    if (source == null || file.sizeBytes > 10 * 1024 * 1024) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'The selected file cannot be read safely on this platform.',
+      );
+    }
+    final builder = BytesBuilder(copy: false);
+    await for (final chunk in source) {
+      builder.add(chunk);
+      if (builder.length > file.sizeBytes ||
+          builder.length > 10 * 1024 * 1024) {
+        throw const ApiException(
+          ApiErrorType.invalidResponse,
+          'The selected file exceeds its declared size.',
+        );
+      }
+    }
+    final bytes = builder.takeBytes();
+    if (bytes.length != file.sizeBytes) {
+      throw const ApiException(
+        ApiErrorType.invalidResponse,
+        'The selected file is incomplete.',
+      );
+    }
+    return VideoSourceUploadFile(
+      clientFileId: file.clientFileId,
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+      bytes: bytes,
+    );
+  }
+
+  Future<Stream<List<int>>> _videoSourceReadStream(
+    VideoSourceUploadFile file,
+  ) async {
+    final bytes = file.bytes;
+    if (bytes != null) return Stream<List<int>>.value(bytes);
+    final path = file.path;
+    if (path != null && path.isNotEmpty) {
+      return (await MultipartFile.fromFile(path)).finalize();
+    }
+    final stream = file.readStream;
+    if (stream != null) return stream;
+    throw const ApiException(
+      ApiErrorType.invalidResponse,
+      'The selected file cannot be read on this platform.',
+    );
+  }
+
+  String _videoSourceTypeForMime(String mimeType) {
+    if (mimeType.startsWith('image/')) return 'binary_image';
+    if (mimeType.startsWith('video/')) return 'binary_video';
+    if (mimeType.startsWith('audio/')) return 'binary_audio';
+    throw const ApiException(
+      ApiErrorType.invalidResponse,
+      'This file type is not supported.',
+    );
+  }
+
+  Future<VideoSourceFolder> removeVideoSource({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required String sourceId,
+    required int revision,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.delete(
+        '$base/folder/$folderId/sources/$sourceId',
+        data: {'revision': revision},
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceFolder> retryVideoSource({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required String sourceId,
+    required int revision,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.post(
+        '$base/folder/$folderId/sources/$sourceId/retry',
+        data: {'revision': revision},
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceFolder> markVideoSourcesReady({
+    required String projectId,
+    required String contentId,
+    required String folderId,
+    required int revision,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.post(
+        '$base/folder/$folderId/ready',
+        data: {'revision': revision},
+      );
+      return _videoSourceFolderFromData(response.data);
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
+  Future<VideoSourceGenerateResult> generateVideoFromSources({
+    required String projectId,
+    required String contentId,
+    required VideoSourceGenerateCommand command,
+  }) async {
+    final base = _videoSourceFolderPath(projectId, contentId);
+    try {
+      final response = await _dio.post(
+        '$base/folder/${command.folderId}/generate',
+        data: command.toJson(),
+      );
+      return VideoSourceGenerateResult.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    }
+  }
+
   Future<ProjectIntelligenceUploadResult> uploadProjectIntelligenceFiles({
     required String projectId,
     required List<ProjectIntelligenceUploadFile> files,
@@ -5595,6 +6017,13 @@ class ApiService {
     } catch (_) {
       return data.toString();
     }
+  }
+
+  String _safeDiagnosticResponseBody(RequestOptions options, Object? data) {
+    if (options.path.contains('/video-sources')) {
+      return '[REDACTED_VIDEO_SOURCE_INTAKE_RESPONSE]';
+    }
+    return _stringifyResponseData(data);
   }
 
   ContentItem? _demoContentById(String id) {

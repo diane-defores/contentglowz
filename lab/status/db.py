@@ -20,6 +20,9 @@ MIGRATION_PATH = (
 VIDEO_TIMELINE_MIGRATION_PATH = (
     Path(__file__).resolve().parent.parent / "api" / "migrations" / "005_video_timelines.sql"
 )
+VIDEO_SOURCE_INTAKE_MIGRATION_PATH = (
+    Path(__file__).resolve().parent.parent / "api" / "migrations" / "007_video_source_intake.sql"
+)
 
 
 def get_connection(db_path: Optional[str] = None) -> Connection:
@@ -42,6 +45,8 @@ def init_db(conn: Connection) -> None:
     conn.executescript(MIGRATION_PATH.read_text(encoding="utf-8"))
     if VIDEO_TIMELINE_MIGRATION_PATH.exists():
         conn.executescript(VIDEO_TIMELINE_MIGRATION_PATH.read_text(encoding="utf-8"))
+    if VIDEO_SOURCE_INTAKE_MIGRATION_PATH.exists():
+        conn.executescript(VIDEO_SOURCE_INTAKE_MIGRATION_PATH.read_text(encoding="utf-8"))
     conn.commit()
     _run_migrations(conn)
 
@@ -65,6 +70,11 @@ def _run_migrations(conn: Connection) -> None:
         "ALTER TABLE content_edits ADD COLUMN actor_id TEXT",
         "ALTER TABLE content_edits ADD COLUMN actor_label TEXT",
         "ALTER TABLE content_edits ADD COLUMN actor_metadata TEXT",
+        "ALTER TABLE project_assets ADD COLUMN storage_provider TEXT",
+        "ALTER TABLE project_assets ADD COLUMN storage_namespace TEXT",
+        "ALTER TABLE project_assets ADD COLUMN storage_object_key TEXT",
+        "ALTER TABLE project_assets ADD COLUMN storage_version TEXT",
+        "ALTER TABLE project_assets ADD COLUMN storage_checksum_sha256 TEXT",
         """
         CREATE TABLE IF NOT EXISTS content_assets (
             id TEXT PRIMARY KEY,
@@ -100,6 +110,11 @@ def _run_migrations(conn: Connection) -> None:
             mime_type TEXT,
             file_name TEXT,
             storage_uri TEXT,
+            storage_provider TEXT,
+            storage_namespace TEXT,
+            storage_object_key TEXT,
+            storage_version TEXT,
+            storage_checksum_sha256 TEXT,
             status TEXT NOT NULL DEFAULT 'active',
             metadata TEXT NOT NULL DEFAULT '{}',
             created_at TEXT NOT NULL,
@@ -123,6 +138,17 @@ def _run_migrations(conn: Connection) -> None:
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             deleted_at TEXT
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS project_asset_usage_targets (
+            target_type TEXT NOT NULL,
+            target_id TEXT NOT NULL,
+            project_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (target_type, target_id, project_id, user_id)
         )
         """,
         """
@@ -302,6 +328,7 @@ def _run_migrations(conn: Connection) -> None:
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_project_assets_content_asset ON project_assets(content_asset_id) WHERE content_asset_id IS NOT NULL",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_usages_asset ON project_asset_usages(asset_id)",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_usages_target ON project_asset_usages(project_id, target_type, target_id)",
+        "CREATE INDEX IF NOT EXISTS idx_project_asset_usage_targets_owner ON project_asset_usage_targets(project_id, user_id, target_type)",
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_project_asset_usages_primary ON project_asset_usages(project_id, target_type, target_id, placement) WHERE is_primary = 1 AND deleted_at IS NULL",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_events_asset ON project_asset_events(asset_id, created_at)",
         "CREATE INDEX IF NOT EXISTS idx_project_asset_events_project ON project_asset_events(project_id, created_at)",

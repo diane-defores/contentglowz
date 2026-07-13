@@ -1,11 +1,11 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 status: reviewed
 project: lab
 created: "2026-04-26"
-updated: "2026-05-10"
+updated: "2026-07-13"
 source_skill: sf-docs
 scope: architecture
 owner: "Diane"
@@ -27,6 +27,7 @@ external_dependencies:
 linked_systems:
   - FastAPI
   - Turso/libsql
+  - Amazon S3
   - Clerk
   - CrewAI
   - PydanticAI
@@ -81,6 +82,10 @@ Client surfaces
               │     ├─ credentials
               │     ├─ jobs/status
               │     └─ feedback
+              ├─ video source intake
+              │     ├─ revisioned folder/source state in Turso/libSQL
+              │     ├─ private canonical media in Amazon S3
+              │     └─ provider-neutral storage and preview ports
               ├─ agent/runtime services
               │     ├─ AI runtime selector
               │     └─ provider secret handling
@@ -117,6 +122,27 @@ Client surfaces
 - **Persistence layer**
   - User/project/security-critical state is persisted to Turso (`libsql`).
   - Status lifecycle uses local adapters with migration-safe schema bootstrapping.
+  - Binary video-source originals are private, versioned S3 objects. Domain rows persist only a provider-neutral locator (`provider`, `namespace`, opaque object key, version, checksum), never a durable URL.
+  - Upload-session provider state remains backend-only. Multipart URLs are signed per part only after the backend validates its expected number and size and binds its SHA-256 checksum.
+
+## Video source intake boundary
+
+- `Sources prêtes` records the exact ready revision and never dispatches generation.
+- `Générer la vidéo` records the same readiness boundary, then emits one idempotent ids-only handoff. Generation, editing and rendering execute outside this intake surface.
+- Images, MP4 video and supported audio enter a quarantine namespace, are decoded/inspected, stripped of private metadata, then written to the canonical `assets` namespace. Persistence failures trigger deletion compensation.
+- Validated images also produce a bounded WebP thumbnail as a distinct derived asset/usage in S3. Video and audio use safe technical-metadata fallbacks until dedicated internal thumbnail/waveform generators are enabled; preview failure never rewrites or invalidates the original.
+- Text is normalized and hashed through Project Intelligence primitives. Public links are revalidated on every redirect to prevent SSRF and only bounded, safe metadata is stored.
+- Removing or replacing a source soft-deletes only its `video_source_folder` usage. The canonical asset remains governed by Unified Project Asset Library retention and other usages.
+- `ObjectStorageProvider`, `MediaDeliveryProvider` and `MediaPreviewProvider` isolate provider-specific behavior. S3 is the only enabled canonical provider in V1.
+- Bunny Optimizer or Stream may later implement preview delivery after latency/cost evidence demonstrates value. Bunny is disabled for this flow today: no source duplication and no Bunny credential is required.
+
+### S3 operational requirements
+
+- Private bucket with S3 Block Public Access enabled and Object Ownership set to bucket-owner-enforced.
+- Versioning and default encryption enabled (`AES256` by default, optional KMS key).
+- Runtime IAM role limited to the configured prefix and required multipart/read/delete/version operations; no credentials in Flutter.
+- Lifecycle rules abort incomplete multipart uploads and expire quarantine objects after the agreed repair window, while canonical retention follows asset-library policy.
+- CORS allows only trusted app origins and `PUT`, and exposes `ETag` plus `x-amz-checksum-sha256`; it must not make objects public.
 
 - **Background processing**
   - In-process scheduler (`scheduler/scheduler_service.py`) executes periodic jobs and updates state transitions.

@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "app"
 created: "2026-04-26"
-updated: "2026-07-10"
+updated: "2026-07-13"
 status: "reviewed"
 source_skill: sf-docs
 scope: product
@@ -54,6 +54,7 @@ next_step: "/sf-docs audit shipglowz_data/product/app/product.md"
 - runs content workflows (feed, ideas, angles, editor, personas, scheduling, drip plans, affiliation/content domains);
 - exposes `Project Intelligence V1` for project-scoped source ingestion, recommendations, and Idea Pool conversion;
 - exposes `Video Timeline V1` for backend-orchestrated preview/final render preparation from existing content items;
+- exposes a pre-generation source library where creators can add image, video, audio, text and public-link sources, resolve individual failures, and deliberately choose between saving `Sources prêtes` or starting `Générer la vidéo`;
 - prepares video-compatible feed items ahead of swipe time through durable branded-video generation runs with feed-facing readiness states (`ready_to_publish`, `preparing`, `needs_review`, `blocked`, `failed`) and compact publish-preflight summaries on the card;
 - captures local Android screenshots and screen recordings for creator reference assets;
 - supports production-adjacent resilience through degraded mode (cached reads + queued writes + replay + sync state)
@@ -71,6 +72,7 @@ next_step: "/sf-docs audit shipglowz_data/product/app/product.md"
 - **In scope:** AI-first content assembly, optional edit, feed-native publish preflight, truthful publish flows, project configuration, content status, offline continuity, and workflow surfaces.
 - **Project Intelligence V1 scope:** active-project intelligence status, source management, evidence ingestion, recommendations, and Idea Pool conversion, with backend constraints on upload types and sizes.
 - **Video Timeline V1 scope:** timeline editing plus preview/final render orchestration through backend contracts, without direct Flutter-to-worker calls.
+- **Video Source Intake V1 scope:** collecting and validating project-scoped sources, saving an exact ready revision, and optionally handing that revision to generation. Video generation execution, editing, rendering and publication remain separate stages.
 - **Ahead-of-time branded video scope:** the feed can request safe refreshes of branded-video candidates, consume compact readiness states, surface preflight blockers directly on the card, and keep the video editor as an explicit optional branch instead of the default path.
 - **Android-only V1 scope:** local device screenshot and screen-recording capture with Android consent, app-scoped storage, preview, discard, and share/export.
 - **Partially in scope / not finished:** end-to-end external publish execution by channel.

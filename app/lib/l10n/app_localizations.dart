@@ -1852,6 +1852,96 @@ class AppLocalizations {
     '{count} queued actions need manual review.':
         '{count} actions en file nécessitent une revue manuelle.',
     '{index} of {count}': '{index} sur {count}',
+    'Prepare video sources': 'Préparer les sources vidéo',
+    'Select a project before preparing video sources.':
+        'Sélectionnez un projet avant de préparer les sources vidéo.',
+    'Could not open the source folder':
+        'Impossible d’ouvrir le dossier de sources',
+    'Build your source folder': 'Constituez votre dossier de sources',
+    'Gather the material first. Save it for later or request generation when everything is ready.':
+        'Rassemblez d’abord vos éléments. Conservez-les pour plus tard ou demandez la génération quand tout est prêt.',
+    '“Sources ready” stores this revision without generating. “Generate video” sends this revision once to the video workflow.':
+        '« Sources prêtes » conserve cette version sans générer. « Générer la vidéo » transmet cette version une seule fois au flux vidéo.',
+    'Collecting': 'Collecte en cours',
+    'Ready': 'Prêt',
+    'Add sources': 'Ajouter des sources',
+    'Video, image, audio, pasted text or a public link.':
+        'Vidéo, image, audio, texte collé ou lien public.',
+    'Media files': 'Fichiers média',
+    'Pasted text': 'Texte collé',
+    'Public link': 'Lien public',
+    'Uploading media sources': 'Téléversement des sources média',
+    'Uploading {count} file(s)': 'Téléversement de {count} fichier(s)',
+    'Source library': 'Bibliothèque de sources',
+    'Files': 'Fichiers',
+    'Links': 'Liens',
+    'No sources match this filter.': 'Aucune source ne correspond à ce filtre.',
+    'Add your first source to prepare the video.':
+        'Ajoutez votre première source pour préparer la vidéo.',
+    'Source actions': 'Actions de la source',
+    'Replace': 'Remplacer',
+    'Validation pending': 'Validation en attente',
+    'Processing': 'Traitement en cours',
+    'Preview unavailable': 'Aperçu indisponible',
+    'Needs attention': 'À corriger',
+    'Replacement pending': 'Remplacement en cours',
+    'Recovery required': 'Récupération nécessaire',
+    'Replaced': 'Remplacée',
+    'Removed': 'Retirée',
+    'Safe metadata pending': 'Métadonnées sûres en attente',
+    '{count} characters': '{count} caractères',
+    'Remove this source?': 'Retirer cette source ?',
+    'The source leaves this folder. A reusable project asset is not deleted from other content.':
+        'La source quitte ce dossier. Un asset de projet réutilisable n’est pas supprimé des autres contenus.',
+    'Sources ready': 'Sources prêtes',
+    'Generate video': 'Générer la vidéo',
+    '1 source must be fixed before continuing.':
+        '1 source doit être corrigée avant de continuer.',
+    '{count} sources must be fixed before continuing.':
+        '{count} sources doivent être corrigées avant de continuer.',
+    'Add pasted text': 'Ajouter du texte collé',
+    'Source text': 'Texte source',
+    'Add text': 'Ajouter le texte',
+    'Add public link': 'Ajouter un lien public',
+    'Public HTTP(S) link': 'Lien HTTP(S) public',
+    'Add link': 'Ajouter le lien',
+    'Files added to the source folder.':
+        'Fichiers ajoutés au dossier de sources.',
+    'Text added to the source folder.': 'Texte ajouté au dossier de sources.',
+    'Link added to the source folder.': 'Lien ajouté au dossier de sources.',
+    'Source retry started.': 'Nouvelle tentative lancée.',
+    'Source replaced.': 'Source remplacée.',
+    'Sources saved as ready. No video was generated.':
+        'Sources conservées comme prêtes. Aucune vidéo n’a été générée.',
+    'Video generation request accepted.':
+        'La demande de génération vidéo a été acceptée.',
+    'Text must contain between 1 and 100,000 characters.':
+        'Le texte doit contenir entre 1 et 100 000 caractères.',
+    'Enter a valid public HTTP(S) link.':
+        'Saisissez un lien HTTP(S) public valide.',
+    'The source folder needs an internet connection. Retry when the workspace is online.':
+        'Le dossier de sources nécessite une connexion. Réessayez lorsque l’espace de travail est en ligne.',
+    'The source folder changed. Refresh it before trying again.':
+        'Le dossier de sources a changé. Actualisez-le avant de réessayer.',
+    'This link cannot be used safely.':
+        'Ce lien ne peut pas être utilisé en toute sécurité.',
+    'This file exceeds the supported size.':
+        'Ce fichier dépasse la taille prise en charge.',
+    'This file type is not supported.':
+        'Ce type de fichier n’est pas pris en charge.',
+    'Correct the blocked sources before continuing.':
+        'Corrigez les sources bloquées avant de continuer.',
+    'The sources remain ready, but generation could not be queued. Retry safely.':
+        'Les sources restent prêtes, mais la génération n’a pas pu être mise en file. Vous pouvez réessayer sans risque de doublon.',
+    'The source action could not be completed. Retry safely.':
+        'L’action sur la source n’a pas abouti. Vous pouvez réessayer sans risque.',
+    '{count} file(s) could not be added. Retry from the source library.':
+        '{count} fichier(s) n’ont pas pu être ajoutés. Réessayez depuis la bibliothèque de sources.',
+    'Prepare your next video from its sources':
+        'Préparez votre prochaine vidéo à partir de ses sources',
+    'Open a content item, gather videos, images, audio, text and links, then choose whether to save the sources or generate the video.':
+        'Ouvrez un contenu, rassemblez vidéos, images, audio, texte et liens, puis choisissez de conserver les sources ou de générer la vidéo.',
+    'Choose content': 'Choisir un contenu',
   };
 
   static const Map<String, Map<String, String>> _localizedValues =

@@ -25,6 +25,10 @@ dependencies:
   # HTTP client
   dio: ^5.9.2
 
+  # Guided multimodal source intake
+  file_picker: 11.0.2
+  crypto: ^3.0.7
+
   # Markdown rendering
   flutter_markdown: ^0.7.7+1
 

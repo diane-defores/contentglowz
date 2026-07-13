@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: app
 created: "2026-04-26"
-updated: "2026-07-10"
+updated: "2026-07-13"
 status: reviewed
 source_skill: sf-docs
 scope: architecture
@@ -115,6 +115,14 @@ The app is structured as a **single Flutter client boundary** with backend data 
   - backend creates or loads one active timeline for the content item and format preset
   - preview/final renders are requested through `lab`, never directly through the Remotion worker
   - signed playback URLs are ephemeral response data and must not be displayed or persisted with query tokens
+- `Video Source Intake V1` is online-only and project/content scoped:
+  - accepts images, MP4 video, supported audio, pasted text and public links before generation
+  - computes file SHA-256 locally, then follows opaque proxy or checksum-bound multipart instructions from FastAPI
+  - never receives an S3 bucket, object key, provider upload id or cloud credential
+  - guards responses by project, content and folder revision so a stale request cannot populate another active project
+  - `Sources prêtes` saves the exact source revision without starting a job
+  - `Générer la vidéo` is the only intake action that creates the idempotent generation handoff
+  - binary retry is represented as replacement; the previous source is superseded only after its replacement is ready
 - Feed-native branded-video cards consume backend readiness truth:
   - card states distinguish `ready_to_publish`, `preparing`, `needs_review`, `blocked`, and `failed`
   - swipe/publish affordances stay disabled unless readiness is publishable
@@ -178,6 +186,7 @@ Notes:
 ### 4.4 Explicitly blocked while offline
 - publish operations
 - binary/audio uploads
+- multimodal video-source intake and readiness/generation handoff
 - destructive deletes
 - complex server-first jobs (queue/execute/tick/import-like operations)
 - Project Intelligence file uploads
