@@ -19,8 +19,7 @@ const { content } = Astro.props;
           {content.rotatingWords.map((word, index) => (
             <span class:list={['word', { active: index === 0 }]} aria-hidden="true">{word}</span>
           ))}
-        </span>
-        .<br/>{content.titleSuffix}
+        </span>{'.'}<br/>{content.titleSuffix}
       </h1>
       <p class="hero-subtitle">{content.subtitle}</p>
       <div class="hero-cta">
