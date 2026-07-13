@@ -29,3 +29,4 @@
 🟠 [lab] task: Executer le smoke manuel avec de vrais credentials OpenRouter, Exa et Firecrawl en modes BYOK et platform, puis lancer verify/end/ship | status: in_progress | area: dual-mode-ai-runtime | spec: shipglowz_data/workflow/specs/lab/SPEC-dual-mode-ai-runtime-all-providers.md
 🟡 [lab] task: Re-auditer `lab/requirements-memory.txt` et le transitive `chromadb` de `crewai` quand un correctif upstream existe, puis decider reintroduction ou worker dedie | status: todo | area: deps-memory-upstream-watch
 🟢 [lab] task: Ajouter une automation Dependabot pour `pip` et documenter la politique de revue des mises a jour backend | status: done | area: deps-automation
+🟢 [lab] task: Composio retire du runtime et du backend newsletter; IMAP devient le seul chemin email | status: done | area: deps-composio-removal

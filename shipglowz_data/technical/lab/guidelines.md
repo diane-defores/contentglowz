@@ -79,4 +79,4 @@ Backend/API conventions for `lab`.
 - Regenerate `requirements.lock` and `requirements-dev.lock` together on Python 3.12 whenever an accepted update changes resolution. Do not merge a manifest-only update when the resolved lockfiles would remain stale.
 - Review release notes and resolver changes for FastAPI, Pydantic/PydanticAI, CrewAI/LiteLLM, auth, storage, database, and cryptography dependencies before accepting an update.
 - Require `tests/test_dependency_policy.py`, the relevant targeted tests, and `python3 -m pip_audit -r requirements.lock --no-deps --disable-pip` to pass before merge. Run the full backend suite for framework, resolver, or transitive graph changes.
-- Keep optional or conflicting integrations isolated. In particular, do not reintroduce Mem0 into the default runtime or treat CrewAI's transitive ChromaDB dependency as project-memory storage without a dedicated review.
+- Keep optional or conflicting integrations isolated. In particular, do not reintroduce Mem0 or Composio into the default runtime, and do not treat CrewAI's transitive ChromaDB dependency as project-memory storage, without a dedicated review.

@@ -93,7 +93,6 @@ async def test_newsletter_check_config_distinguishes_user_key_from_server_tools(
     def fake_validate_config(*, openrouter_configured=None, exa_configured=None):
         return {
             "sendgrid_configured": True,
-            "composio_configured": True,
             "exa_configured": bool(exa_configured),
             "openrouter_configured": bool(openrouter_configured),
             "imap_configured": True,

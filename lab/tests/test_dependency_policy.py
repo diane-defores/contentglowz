@@ -90,6 +90,32 @@ def test_mem0_runtime_imports_and_requirements_are_removed():
     assert not (ROOT / "requirements-memory.txt").exists()
 
 
+def test_composio_runtime_imports_and_requirements_are_removed():
+    violations: list[str] = []
+    for path in _python_files():
+        rel = path.relative_to(ROOT)
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(rel))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                names = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                names = [node.module or ""]
+            else:
+                continue
+            if any(name == "composio" or name.startswith("composio_") for name in names):
+                violations.append(str(rel))
+
+    requirement_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in ROOT.glob("requirements*.txt")
+    )
+    lock_text = (ROOT / "requirements.lock").read_text(encoding="utf-8")
+
+    assert violations == []
+    assert "composio" not in requirement_text.lower()
+    assert "composio" not in lock_text.lower()
+
+
 def test_chromadb_is_only_crewai_transitive_residual_and_not_project_memory_runtime():
     violations: list[str] = []
     for path in _python_files():

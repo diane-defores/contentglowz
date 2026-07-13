@@ -2,6 +2,13 @@
 
 ContentGlowz Lab keeps the default FastAPI/AI runtime install focused on the core dependency graph in `requirements.lock`.
 
+## Composio
+
+- Removed from the default runtime on 2026-07-13.
+- The former newsletter adapter used the legacy `ComposioToolSet` / `Action` API.
+- The current `composio-crewai` provider line is not compatible with ContentGlowz's CrewAI 1.6 runtime.
+- Newsletter email intake uses direct IMAP. Reintroducing a managed email integration requires a dedicated compatibility, authentication, tenant-scoping, and product-value review.
+
 ## Reels / Instagram
 
 `instagrapi` is intentionally excluded from the default runtime. Current releases pin `pydantic` and/or `requests` versions that conflict with the core AI stack and the requests security floor.

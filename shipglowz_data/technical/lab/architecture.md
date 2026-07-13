@@ -160,7 +160,7 @@ Client surfaces
 
 - **Email and productivity integrations**
   - SendGrid for outbound mail.
-  - IMAP / Gmail-based newsletter intake paths in newsletter tools.
+  - IMAP is the sole Gmail/newsletter intake path; no managed email-integration SDK is part of the runtime.
   - Per-user email source settings store non-secret IMAP metadata in `UserSettings.robotSettings.emailSource` and the app password in encrypted `UserProviderCredential`.
   - Saving an email source creates/updates a managed `ingest_newsletters` scheduler job. The job runs every 6 hours, reads the configured folder with the user's IMAP credentials, creates `newsletter_inbox` ideas for the configured project, and moves processed emails to the archive folder when IMAP supports it.
 
