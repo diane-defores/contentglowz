@@ -176,6 +176,16 @@ class ProjectAssetLifecycleStatus(str, Enum):
     TOMBSTONED = "tombstoned"
 
 
+class StorageLocator(BaseModel):
+    """Durable provider-neutral object identity; never a delivery URL."""
+
+    provider: str = Field(..., min_length=1, max_length=32)
+    namespace: str = Field(..., min_length=1, max_length=255)
+    object_key: str = Field(..., min_length=1, max_length=1024)
+    version: Optional[str] = Field(default=None, max_length=512)
+    checksum_sha256: str = Field(..., pattern=r"^[a-fA-F0-9]{64}$")
+
+
 class AssetCredentialSource(str, Enum):
     USER_BYOK = "user_byok"
     PLATFORM = "platform"
@@ -205,6 +215,7 @@ class ProjectAssetRecord(BaseModel):
     mime_type: Optional[str] = None
     file_name: Optional[str] = None
     storage_uri: Optional[str] = None
+    storage_locator: Optional[StorageLocator] = None
     status: ProjectAssetLifecycleStatus = ProjectAssetLifecycleStatus.ACTIVE
     metadata: Dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.utcnow)

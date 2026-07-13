@@ -2,7 +2,7 @@
 Newsletter Agent - CrewAI agent for newsletter curation and writing.
 
 Capabilities:
-- Read emails via IMAP (free) or Composio Gmail (managed)
+- Read emails via IMAP
 - Research trending topics via Exa AI
 - Write newsletter content
 - Create Gmail drafts for review
@@ -16,9 +16,10 @@ from agents.newsletter.tools.content_tools import (
     research_newsletter_topics,
     find_related_articles,
 )
-from agents.newsletter.config.newsletter_config import (
-    NEWSLETTER_DEFAULTS,
-    EMAIL_BACKEND,
+from agents.newsletter.config.newsletter_config import NEWSLETTER_DEFAULTS
+from agents.newsletter.tools.imap_tools import (
+    read_recent_newsletters,
+    read_competitor_newsletters,
 )
 
 # Conditional import for memory tools (graceful degradation)
@@ -32,31 +33,11 @@ try:
 except ImportError:
     MEMORY_AVAILABLE = False
 
-# Conditional import based on email backend configuration
-if EMAIL_BACKEND == "imap":
-    from agents.newsletter.tools.imap_tools import (
-        read_recent_newsletters,
-        read_competitor_newsletters,
-        archive_processed_newsletter,
-    )
-    # IMAP doesn't need additional Gmail tools
-    def get_gmail_tools():
-        return []
-else:
-    from agents.newsletter.tools.gmail_tools import (
-        get_gmail_tools,
-        read_recent_newsletters,
-        read_competitor_newsletters,
-    )
-    # Composio doesn't have archive tool
-    archive_processed_newsletter = None
-
-
 class NewsletterAgent:
     """
     Newsletter curation and writing agent.
 
-    Uses Composio for Gmail access and Exa AI for content research.
+    Uses IMAP for Gmail access and Exa AI for content research.
     """
 
     def __init__(
@@ -69,7 +50,7 @@ class NewsletterAgent:
 
         Args:
             llm_model: LLM model to use (default from config)
-            use_gmail: Whether to enable Gmail tools via Composio
+            use_gmail: Whether to enable Gmail insight tools
         """
         self.llm_model = llm_model or NEWSLETTER_DEFAULTS["llm_model"]
         self.use_gmail = use_gmail
@@ -83,11 +64,6 @@ class NewsletterAgent:
         ]
 
         if self.use_gmail:
-            # Add Composio Gmail tools
-            gmail_tools = get_gmail_tools()
-            tools.extend(gmail_tools)
-
-            # Add custom wrapped tools
             tools.extend([
                 read_recent_newsletters,
                 read_competitor_newsletters,
@@ -132,7 +108,6 @@ class NewsletterResearchAgent:
             research_newsletter_topics,
             find_related_articles,
         ]
-        tools.extend(get_gmail_tools())
 
         # Add memory tools if available
         if MEMORY_AVAILABLE:

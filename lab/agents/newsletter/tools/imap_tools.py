@@ -1,7 +1,7 @@
 """
 IMAP Tools - Direct IMAP integration for reading newsletter emails.
 
-Alternative to Composio Gmail - free, no external dependencies.
+Uses direct IMAP access with no managed integration dependency.
 
 Usage:
     1. Create Gmail App Password (Security → 2-Step Verification → App Passwords)
@@ -44,7 +44,7 @@ class IMAPNewsletterReader:
     """
     Direct IMAP client for Gmail newsletter reading.
 
-    Free alternative to Composio - same functionality without external dependencies.
+    Direct IMAP client with no external integration service.
     """
 
     def __init__(
@@ -365,7 +365,7 @@ def _get_reader() -> IMAPNewsletterReader:
 @tool
 def read_recent_newsletters(days: int = 7, max_emails: int = 20) -> str:
     """
-    Read recent newsletter emails via IMAP (free, no Composio required).
+    Read recent newsletter emails via IMAP.
 
     Args:
         days: Number of days back to search

@@ -1,11 +1,11 @@
 module.exports = {
   apps: [{
-    name: "app",
+    name: "contentglowz_app",
     cwd: "/home/claude/contentglowz/app",
     script: "bash",
-    args: ["-lc", "export PORT=3011 && flox activate -- bash -lc 'env PORT=3011 CLERK_PUBLISHABLE_KEY=\"$CLERK_PUBLISHABLE_KEY\" ./pm2-web.sh'"],
+    args: ["-lc", "export PORT=3023 && flox activate -- bash -lc 'env PORT=3023 CLERK_PUBLISHABLE_KEY=\"$CLERK_PUBLISHABLE_KEY\" ./pm2-web.sh'"],
     env: {
-      PORT: 3011,
+      PORT: 3023,
       CLERK_PUBLISHABLE_KEY: "a remplacer"
     },
     autorestart: true,

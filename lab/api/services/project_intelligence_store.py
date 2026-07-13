@@ -234,6 +234,69 @@ class ProjectIntelligenceStore:
         await self.db_client.execute(
             "CREATE INDEX IF NOT EXISTS idx_pi_dup_scope ON ProjectIntelligenceDuplicate (userId, projectId, createdAt DESC)"
         )
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ProjectGenerationContextLog (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                generationType TEXT NOT NULL,
+                routeId TEXT NOT NULL,
+                contentRecordId TEXT,
+                requestJson TEXT,
+                budgetJson TEXT,
+                itemsJson TEXT,
+                provenanceJson TEXT,
+                exclusionsJson TEXT,
+                promptHash TEXT NOT NULL,
+                promptCharCount INTEGER NOT NULL DEFAULT 0,
+                tokenEstimate INTEGER NOT NULL DEFAULT 0,
+                degraded INTEGER NOT NULL DEFAULT 0,
+                emptyReason TEXT,
+                createdAt TEXT NOT NULL
+            )
+            """
+        )
+        await self.db_client.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pgc_log_scope ON ProjectGenerationContextLog (userId, projectId, generationType, createdAt DESC)"
+        )
+        await self.db_client.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pgc_log_content ON ProjectGenerationContextLog (userId, projectId, contentRecordId)"
+        )
+        await self.db_client.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ProjectGenerationSignal (
+                id TEXT PRIMARY KEY NOT NULL,
+                userId TEXT NOT NULL,
+                projectId TEXT NOT NULL,
+                generationType TEXT NOT NULL,
+                contentType TEXT NOT NULL,
+                contentRecordId TEXT,
+                title TEXT NOT NULL,
+                topicsJson TEXT,
+                summary TEXT,
+                bodyHash TEXT,
+                bodyCharCount INTEGER NOT NULL DEFAULT 0,
+                contextLogId TEXT,
+                sourceId TEXT,
+                sourceIdeaIdsJson TEXT,
+                metadataJson TEXT,
+                invalidatedAt TEXT,
+                removedAt TEXT,
+                createdAt TEXT NOT NULL,
+                updatedAt TEXT NOT NULL
+            )
+            """
+        )
+        await self.db_client.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pgs_scope ON ProjectGenerationSignal (userId, projectId, generationType, createdAt DESC)"
+        )
+        await self.db_client.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pgs_content ON ProjectGenerationSignal (userId, projectId, contentRecordId)"
+        )
+        await self.db_client.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pgs_source ON ProjectGenerationSignal (userId, projectId, sourceId, removedAt, invalidatedAt)"
+        )
 
     def _job_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
         return {
@@ -358,6 +421,50 @@ class ProjectIntelligenceStore:
             "similarity": float(row[6] or 0),
             "reason": row[7],
             "createdAt": _ts(row[8]),
+        }
+
+    def _context_log_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "generationType": row[3],
+            "routeId": row[4],
+            "contentRecordId": row[5],
+            "request": _json_load(row[6], {}),
+            "budget": _json_load(row[7], {}),
+            "items": _json_load(row[8], []),
+            "provenance": _json_load(row[9], []),
+            "exclusions": _json_load(row[10], []),
+            "promptHash": row[11],
+            "promptCharCount": int(row[12] or 0),
+            "tokenEstimate": int(row[13] or 0),
+            "degraded": bool(row[14]),
+            "emptyReason": row[15],
+            "createdAt": _ts(row[16]),
+        }
+
+    def _generation_signal_from_row(self, row: tuple[Any, ...]) -> dict[str, Any]:
+        return {
+            "id": row[0],
+            "userId": row[1],
+            "projectId": row[2],
+            "generationType": row[3],
+            "contentType": row[4],
+            "contentRecordId": row[5],
+            "title": row[6],
+            "topics": _json_load(row[7], []),
+            "summary": row[8],
+            "bodyHash": row[9],
+            "bodyCharCount": int(row[10] or 0),
+            "contextLogId": row[11],
+            "sourceId": row[12],
+            "sourceIdeaIds": _json_load(row[13], []),
+            "metadata": _json_load(row[14], {}),
+            "invalidatedAt": _ts(row[15]) if row[15] else None,
+            "removedAt": _ts(row[16]) if row[16] else None,
+            "createdAt": _ts(row[17]),
+            "updatedAt": _ts(row[18]),
         }
 
     async def create_job(
@@ -625,6 +732,45 @@ class ProjectIntelligenceStore:
             """,
             [now, now, user_id, project_id, user_id, project_id, f"%{source_id}%", f"%{source_id}%"],
         )
+        doc_rs = await self.db_client.execute(
+            """
+            SELECT id
+            FROM ProjectIntelligenceDocument
+            WHERE sourceId = ? AND userId = ? AND projectId = ?
+            """,
+            [source_id, user_id, project_id],
+        )
+        evidence_ids = [source_id] + [str(row[0]) for row in doc_rs.rows]
+        for evidence_id in evidence_ids:
+            await self.db_client.execute(
+                """
+                UPDATE ProjectGenerationSignal
+                SET invalidatedAt = COALESCE(invalidatedAt, ?), updatedAt = ?
+                WHERE userId = ? AND projectId = ? AND invalidatedAt IS NULL
+                  AND (
+                    sourceId = ?
+                    OR metadataJson LIKE ?
+                    OR contextLogId IN (
+                        SELECT id
+                        FROM ProjectGenerationContextLog
+                        WHERE userId = ? AND projectId = ?
+                          AND (itemsJson LIKE ? OR provenanceJson LIKE ?)
+                    )
+                  )
+                """,
+                [
+                    now,
+                    now,
+                    user_id,
+                    project_id,
+                    evidence_id,
+                    f"%{evidence_id}%",
+                    user_id,
+                    project_id,
+                    f"%{evidence_id}%",
+                    f"%{evidence_id}%",
+                ],
+            )
         return True
 
     async def create_document(
@@ -1087,6 +1233,294 @@ class ProjectIntelligenceStore:
             [user_id, project_id, limit],
         )
         return [self._duplicate_from_row(row) for row in rs.rows]
+
+    async def list_generation_context_facts(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        limit: int = 120,
+    ) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT f.id, f.sourceId, f.documentId, f.chunkId, f.userId, f.projectId, f.category, f.subject,
+                   f.statement, f.confidence, f.priority, f.evidenceSnippet, f.metadataJson, f.removedAt,
+                   f.createdAt, f.updatedAt
+            FROM ProjectIntelligenceFact f
+            JOIN ProjectIntelligenceSource s
+              ON s.id = f.sourceId AND s.userId = f.userId AND s.projectId = f.projectId
+            JOIN ProjectIntelligenceDocument d
+              ON d.id = f.documentId AND d.userId = f.userId AND d.projectId = f.projectId
+            WHERE f.userId = ? AND f.projectId = ?
+              AND f.removedAt IS NULL
+              AND s.removedAt IS NULL
+              AND d.removedAt IS NULL
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM ProjectIntelligenceDuplicate dup
+                  JOIN ProjectIntelligenceDocument dd
+                    ON dd.id = dup.documentId AND dd.userId = dup.userId AND dd.projectId = dup.projectId
+                  JOIN ProjectIntelligenceSource ds
+                    ON ds.id = dd.sourceId AND ds.userId = dd.userId AND ds.projectId = dd.projectId
+                  JOIN ProjectIntelligenceDocument cd
+                    ON cd.id = dup.canonicalDocumentId AND cd.userId = dup.userId AND cd.projectId = dup.projectId
+                  JOIN ProjectIntelligenceSource cs
+                    ON cs.id = cd.sourceId AND cs.userId = cd.userId AND cs.projectId = cd.projectId
+                  WHERE dup.userId = f.userId AND dup.projectId = f.projectId
+                    AND (dup.documentId = f.documentId OR dup.canonicalDocumentId = f.documentId)
+                    AND (dd.removedAt IS NOT NULL OR ds.removedAt IS NOT NULL OR cd.removedAt IS NOT NULL OR cs.removedAt IS NOT NULL)
+              )
+            ORDER BY f.priority ASC, f.confidence DESC, f.updatedAt DESC, f.category ASC,
+                     f.sourceId ASC, f.documentId ASC, COALESCE(f.chunkId, '') ASC, f.id ASC
+            LIMIT ?
+            """,
+            [user_id, project_id, limit],
+        )
+        return [self._fact_from_row(row) for row in rs.rows]
+
+    async def list_generation_context_chunks(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        query: str | None = None,
+        limit: int = 80,
+    ) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT c.id, c.documentId, c.sourceId, c.userId, c.projectId, c.orderIndex, c.startOffset,
+                   c.endOffset, c.text, c.contentHash, c.removedAt, c.createdAt
+            FROM ProjectIntelligenceChunk c
+            JOIN ProjectIntelligenceSource s
+              ON s.id = c.sourceId AND s.userId = c.userId AND s.projectId = c.projectId
+            JOIN ProjectIntelligenceDocument d
+              ON d.id = c.documentId AND d.userId = c.userId AND d.projectId = c.projectId
+            WHERE c.userId = ? AND c.projectId = ?
+              AND c.removedAt IS NULL
+              AND s.removedAt IS NULL
+              AND d.removedAt IS NULL
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM ProjectIntelligenceDuplicate dup
+                  JOIN ProjectIntelligenceDocument dd
+                    ON dd.id = dup.documentId AND dd.userId = dup.userId AND dd.projectId = dup.projectId
+                  JOIN ProjectIntelligenceSource ds
+                    ON ds.id = dd.sourceId AND ds.userId = dd.userId AND ds.projectId = dd.projectId
+                  JOIN ProjectIntelligenceDocument cd
+                    ON cd.id = dup.canonicalDocumentId AND cd.userId = dup.userId AND cd.projectId = dup.projectId
+                  JOIN ProjectIntelligenceSource cs
+                    ON cs.id = cd.sourceId AND cs.userId = cd.userId AND cs.projectId = cd.projectId
+                  WHERE dup.userId = c.userId AND dup.projectId = c.projectId
+                    AND (dup.documentId = c.documentId OR dup.canonicalDocumentId = c.documentId)
+                    AND (dd.removedAt IS NOT NULL OR ds.removedAt IS NOT NULL OR cd.removedAt IS NOT NULL OR cs.removedAt IS NOT NULL)
+              )
+            ORDER BY c.createdAt DESC, c.sourceId ASC, c.documentId ASC, c.orderIndex ASC, c.id ASC
+            LIMIT ?
+            """,
+            [user_id, project_id, limit],
+        )
+        terms = [term.lower() for term in str(query or "").split() if len(term) > 2]
+        rows = [self._chunk_from_row(row) for row in rs.rows]
+        for row in rows:
+            text = str(row.get("text") or "").lower()
+            row["retrievalScore"] = sum(1 for term in terms if term in text)
+        return sorted(
+            rows,
+            key=lambda item: (
+                -int(item.get("retrievalScore") or 0),
+                str(item.get("sourceId") or ""),
+                str(item.get("documentId") or ""),
+                int(item.get("orderIndex") or 0),
+                str(item.get("id") or ""),
+            ),
+        )
+
+    async def write_generation_context_log(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        generation_type: str,
+        route_id: str,
+        content_record_id: str | None,
+        request: dict[str, Any],
+        budget: dict[str, Any],
+        items: list[dict[str, Any]],
+        provenance: list[dict[str, Any]],
+        exclusions: list[dict[str, Any]],
+        prompt_hash: str,
+        prompt_char_count: int,
+        token_estimate: int,
+        degraded: bool,
+        empty_reason: str | None,
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        log_id = str(uuid.uuid4())
+        now = _now_iso()
+        await self.db_client.execute(
+            """
+            INSERT INTO ProjectGenerationContextLog (
+                id, userId, projectId, generationType, routeId, contentRecordId,
+                requestJson, budgetJson, itemsJson, provenanceJson, exclusionsJson,
+                promptHash, promptCharCount, tokenEstimate, degraded, emptyReason, createdAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                log_id,
+                user_id,
+                project_id,
+                generation_type,
+                route_id,
+                content_record_id,
+                _json_dump(request),
+                _json_dump(budget),
+                _json_dump(items),
+                _json_dump(provenance),
+                _json_dump(exclusions),
+                prompt_hash,
+                int(prompt_char_count),
+                int(token_estimate),
+                1 if degraded else 0,
+                empty_reason,
+                now,
+            ],
+        )
+        log = await self.get_generation_context_log(user_id=user_id, project_id=project_id, log_id=log_id)
+        if not log:
+            raise RuntimeError("Failed to create generation context log")
+        return log
+
+    async def get_generation_context_log(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        log_id: str,
+    ) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT id, userId, projectId, generationType, routeId, contentRecordId,
+                   requestJson, budgetJson, itemsJson, provenanceJson, exclusionsJson,
+                   promptHash, promptCharCount, tokenEstimate, degraded, emptyReason, createdAt
+            FROM ProjectGenerationContextLog
+            WHERE id = ? AND userId = ? AND projectId = ?
+            LIMIT 1
+            """,
+            [log_id, user_id, project_id],
+        )
+        if not rs.rows:
+            return None
+        return self._context_log_from_row(rs.rows[0])
+
+    async def write_generation_signal(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        generation_type: str,
+        content_type: str,
+        title: str,
+        content_record_id: str | None,
+        topics: list[str] | None,
+        summary: str | None,
+        body_hash: str | None,
+        body_char_count: int,
+        context_log_id: str | None,
+        source_idea_ids: list[str] | None,
+        metadata: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        self._ensure_connected()
+        signal_id = str(uuid.uuid4())
+        now = _now_iso()
+        source_id = str((metadata or {}).get("sourceId") or "") or None
+        await self.db_client.execute(
+            """
+            INSERT INTO ProjectGenerationSignal (
+                id, userId, projectId, generationType, contentType, contentRecordId, title,
+                topicsJson, summary, bodyHash, bodyCharCount, contextLogId, sourceId,
+                sourceIdeaIdsJson, metadataJson, invalidatedAt, removedAt, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?)
+            """,
+            [
+                signal_id,
+                user_id,
+                project_id,
+                generation_type,
+                content_type,
+                content_record_id,
+                title,
+                _json_dump(topics or []),
+                summary,
+                body_hash,
+                int(body_char_count),
+                context_log_id,
+                source_id,
+                _json_dump(source_idea_ids or []),
+                _json_dump(metadata or {}),
+                now,
+                now,
+            ],
+        )
+        signal = await self.get_generation_signal(user_id=user_id, project_id=project_id, signal_id=signal_id)
+        if not signal:
+            raise RuntimeError("Failed to create generation signal")
+        return signal
+
+    async def get_generation_signal(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        signal_id: str,
+    ) -> dict[str, Any] | None:
+        self._ensure_connected()
+        rs = await self.db_client.execute(
+            """
+            SELECT id, userId, projectId, generationType, contentType, contentRecordId, title,
+                   topicsJson, summary, bodyHash, bodyCharCount, contextLogId, sourceId,
+                   sourceIdeaIdsJson, metadataJson, invalidatedAt, removedAt, createdAt, updatedAt
+            FROM ProjectGenerationSignal
+            WHERE id = ? AND userId = ? AND projectId = ?
+            LIMIT 1
+            """,
+            [signal_id, user_id, project_id],
+        )
+        if not rs.rows:
+            return None
+        return self._generation_signal_from_row(rs.rows[0])
+
+    async def list_generation_signals(
+        self,
+        *,
+        user_id: str,
+        project_id: str,
+        generation_type: str | None = None,
+        limit: int = 50,
+    ) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        type_where = " AND generationType = ?" if generation_type else ""
+        params: list[Any] = [user_id, project_id]
+        if generation_type:
+            params.append(generation_type)
+        params.append(limit)
+        rs = await self.db_client.execute(
+            f"""
+            SELECT id, userId, projectId, generationType, contentType, contentRecordId, title,
+                   topicsJson, summary, bodyHash, bodyCharCount, contextLogId, sourceId,
+                   sourceIdeaIdsJson, metadataJson, invalidatedAt, removedAt, createdAt, updatedAt
+            FROM ProjectGenerationSignal
+            WHERE userId = ? AND projectId = ?
+              AND invalidatedAt IS NULL
+              AND removedAt IS NULL{type_where}
+            ORDER BY createdAt DESC, id ASC
+            LIMIT ?
+            """,
+            params,
+        )
+        return [self._generation_signal_from_row(row) for row in rs.rows]
 
 
 project_intelligence_store = ProjectIntelligenceStore()

@@ -16,6 +16,15 @@ logger = logging.getLogger(__name__)
 _INITIALIZED = False
 
 
+def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+    """Drop expected Uvicorn shutdown noise while preserving real failures."""
+    exceptions = event.get("exception", {}).get("values", [])
+    shutdown_types = {"KeyboardInterrupt", "CancelledError"}
+    if any(item.get("type") in shutdown_types for item in exceptions):
+        return None
+    return event
+
+
 def init_sentry() -> bool:
     """Initialize Sentry when SENTRY_DSN is configured."""
     global _INITIALIZED
@@ -40,6 +49,7 @@ def init_sentry() -> bool:
         ),
         "send_default_pii": _env_bool("SENTRY_SEND_DEFAULT_PII", default=False),
         "debug": _env_bool("SENTRY_DEBUG", default=False),
+        "before_send": _before_send,
     }
 
     environment = _first_env_str("SENTRY_ENVIRONMENT", "ENVIRONMENT")

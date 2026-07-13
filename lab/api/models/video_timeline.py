@@ -86,6 +86,8 @@ class VideoTimelineDocument(BaseModel):
     duration_frames: int | None = Field(default=None, gt=0, le=MAX_DURATION_FRAMES)
     tracks: list[VideoTimelineTrack] = Field(default_factory=list)
     clips: list[VideoTimelineClip] = Field(default_factory=list)
+    audio: dict[str, Any] = Field(default_factory=dict)
+    render_policy: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_timeline(self) -> "VideoTimelineDocument":

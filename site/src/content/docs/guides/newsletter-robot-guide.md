@@ -23,9 +23,7 @@ python --version  # 3.11+
 cd ~/contentglowz
 pip install -r requirements.txt
 
-# Choisir backend email (voir section Configuration)
-# Option A: IMAP (gratuit, recommandé)
-# Option B: Composio Gmail (payant)
+# Configurer l'accès IMAP (voir section Configuration)
 
 # Vérification
 curl http://localhost:8000/newsletter/config/check
@@ -33,14 +31,9 @@ curl http://localhost:8000/newsletter/config/check
 
 ## Configuration
 
-### Backend Email (IMAP vs Composio)
+### Accès aux emails
 
-Le robot supporte deux backends pour la lecture des emails :
-
-| Backend | Coût | Setup | Avantages |
-|---------|------|-------|-----------|
-| **IMAP** (défaut) | Gratuit | App Password | Pas de dépendance externe, accès manuel conservé |
-| **Composio** | Payant | OAuth | Interface unifiée avec autres outils |
+Le robot lit les emails directement via IMAP avec un mot de passe d'application Gmail.
 
 ### Variables d'Environnement
 
@@ -51,19 +44,11 @@ Le robot supporte deux backends pour la lecture des emails :
 OPENROUTER_API_KEY=sk-or-...        # LLM provider
 EXA_API_KEY=...                      # Recherche web
 
-# --- Email Backend (choisir un) ---
-
-# Option A: IMAP (gratuit, recommandé)
-NEWSLETTER_EMAIL_BACKEND=imap
+# --- Accès aux emails ---
 NEWSLETTER_IMAP_EMAIL=your-newsletters@gmail.com
 NEWSLETTER_IMAP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # Gmail App Password
 NEWSLETTER_IMAP_FOLDER=Newsletters            # Optionnel
 NEWSLETTER_IMAP_ARCHIVE=CONTENTGLOWZ_DONE # Optionnel
-
-# Option B: Composio (payant)
-NEWSLETTER_EMAIL_BACKEND=composio
-COMPOSIO_API_KEY=...
-# + composio add gmail
 
 # --- Envoi (optionnel) ---
 SENDGRID_API_KEY=SG...
@@ -124,12 +109,11 @@ agents/newsletter/
 ├── newsletter_crew.py       # Orchestrateur + archivage
 ├── tools/
 │   ├── imap_tools.py        # IMAP direct (gratuit)
-│   ├── gmail_tools.py       # Composio Gmail (payant)
 │   └── content_tools.py     # Exa AI research
 ├── schemas/
 │   └── newsletter_schemas.py # Pydantic models
 └── config/
-    └── newsletter_config.py  # Configuration + backend switch
+    └── newsletter_config.py  # Configuration newsletter et IMAP
 ```
 
 ### Les 3 Agents
@@ -138,7 +122,7 @@ agents/newsletter/
 |-------|------|-------|
 | **Research** | Lit emails, analyse tendances | Gmail, Exa AI |
 | **Writer** | Rédige contenu | LLM uniquement |
-| **Coordinator** | Finalise output | Gmail drafts, SendGrid |
+| **Coordinator** | Finalise output | Archivage IMAP, SendGrid |
 
 ## Utilisation
 
@@ -175,15 +159,6 @@ curl -X POST http://localhost:8000/newsletter/generate/async \
 curl http://localhost:8000/newsletter/status/{job_id}
 ```
 
-### Via Claude Code (MCP)
-
-Avec Composio configuré dans vos MCP servers :
-
-```
-"Read my newsletter emails from the last week and summarize the main trends"
-"Generate a newsletter about AI and SEO based on my recent emails"
-```
-
 ## Email Tools
 
 ### IMAP Tools (Backend par défaut)
@@ -217,32 +192,6 @@ from agents.newsletter.tools.imap_tools import (
     read_competitor_newsletters,  # Lit concurrents spécifiques
     archive_processed_newsletter, # Archive un email
     archive_multiple_newsletters, # Archive plusieurs emails
-)
-```
-
-### Composio Gmail Tools (Alternative payante)
-
-```python
-from composio_crewai import Action
-
-# Lecture
-Action.GMAIL_FETCH_EMAILS      # Emails récents
-Action.GMAIL_GET_EMAIL         # Email spécifique
-Action.GMAIL_SEARCH_EMAILS     # Recherche Gmail syntax
-
-# Écriture
-Action.GMAIL_CREATE_EMAIL_DRAFT
-Action.GMAIL_SEND_EMAIL
-```
-
-```python
-from agents.newsletter.tools.gmail_tools import GmailReader
-
-reader = GmailReader()
-newsletters = reader.fetch_newsletter_emails(
-    labels=["Newsletter"],
-    max_results=20,
-    days_back=7
 )
 ```
 
@@ -338,17 +287,6 @@ export NEWSLETTER_IMAP_PASSWORD="xxxx-xxxx-xxxx-xxxx"
 2. Vérifier que 2FA est activé sur le compte Gmail
 3. Vérifier que IMAP est activé : Gmail Settings → Forwarding and POP/IMAP → Enable IMAP
 
-### Erreur : "Gmail not authenticated" (Composio)
-
-```bash
-# Ré-authentifier
-composio remove gmail
-composio add gmail
-
-# Vérifier
-composio list
-```
-
 ### Erreur : "No newsletters found"
 
 ```python
@@ -358,11 +296,6 @@ reader.fetch_newsletters(
     days_back=30     # Étendre la période
 )
 
-# Composio: Retirer le filtre label
-reader.fetch_newsletter_emails(
-    labels=None,
-    days_back=30
-)
 ```
 
 ### Erreur : "Folder not found" (IMAP)
@@ -398,5 +331,4 @@ for email in emails:
 - [Guide Plateforme](/docs/platform/newsletter-robot) - Vue d'ensemble marketing et cas d'usage
 - [Architecture Multi-Agents](/docs/agents/newsletter-agents) - Comment les agents IA collaborent
 - [Annonce IMAP Gratuit](/blog/newsletter-robot-imap-gratuit) - Nouvelle intégration sans frais
-- [Composio Documentation](https://docs.composio.dev)
 - [CrewAI Documentation](https://docs.crewai.com)

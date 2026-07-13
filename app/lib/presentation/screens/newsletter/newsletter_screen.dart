@@ -307,7 +307,6 @@ class _NewsletterScreenState extends ConsumerState<NewsletterScreen> {
   String _checkLabel(String key) => switch (key) {
     'openrouter_configured' => 'OpenRouter',
     'sendgrid_configured' => 'SendGrid',
-    'composio_configured' => 'Composio Gmail',
     'exa_configured' => 'Exa',
     'imap_configured' => 'IMAP inbox access',
     _ => key,

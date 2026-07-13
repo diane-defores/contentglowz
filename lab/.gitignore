@@ -91,6 +91,6 @@ logs/
 # Doppler
 .doppler/
 
-# ShipFlow injected dev tools
-shipflow-*.js
-**/shipflow-*.js
+# ShipGlowz injected dev tools
+shipglowz-*.js
+**/shipglowz-*.js

@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from lab.scheduler.scheduler_service import SchedulerService
+from scheduler.scheduler_service import SchedulerService
 
 
 class _FakeStatusService:
@@ -61,7 +61,7 @@ class _FakeStatusService:
 @pytest.mark.asyncio
 async def test_reconcile_frequency_creates_auto_video_job(monkeypatch):
     fake_svc = _FakeStatusService()
-    monkeypatch.setattr("lab.scheduler.scheduler_service.get_status_service", lambda: fake_svc)
+    monkeypatch.setattr("scheduler.scheduler_service.get_status_service", lambda: fake_svc)
     monkeypatch.setattr("api.services.user_data_store.UserDataStore", lambda: fake_svc)
 
     scheduler = SchedulerService()
@@ -130,7 +130,7 @@ async def test_auto_video_job_consumes_complete_content(monkeypatch):
         "api.services.branded_video_generation_service.branded_video_generation_service.ensure_run",
         _fake_ensure_run,
     )
-    monkeypatch.setattr("lab.scheduler.scheduler_service.get_status_service", lambda: fake_svc)
+    monkeypatch.setattr("scheduler.scheduler_service.get_status_service", lambda: fake_svc)
 
     scheduler = SchedulerService()
     await scheduler._run_auto_video_job(

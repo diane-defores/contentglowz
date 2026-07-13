@@ -1,23 +1,37 @@
 """Storage descriptor helpers for project asset API responses.
 
 These helpers only classify and redact persisted metadata. They do not upload,
-delete, sign, or verify remote Bunny objects.
+delete, sign, or verify remote objects.
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 from urllib.parse import urlsplit, urlunsplit
+
+if TYPE_CHECKING:
+    from status.schemas import StorageLocator
 
 
 def build_project_asset_storage_descriptor(
     *,
     storage_uri: Optional[str],
+    storage_locator: Optional["StorageLocator"] = None,
     status: str,
     media_kind: str,
     mime_type: Optional[str],
 ) -> Dict[str, Any]:
     """Return a client-safe storage descriptor for a project asset."""
+
+    if storage_locator is not None:
+        return _descriptor(
+            state=f"durable_{storage_locator.provider}",
+            provider=storage_locator.provider,
+            media_kind=media_kind,
+            mime_type=mime_type,
+            render_safe=True,
+            refresh_required=False,
+        )
 
     if status == "local_only":
         return _descriptor(
@@ -94,11 +108,13 @@ def _descriptor(
     media_kind: str,
     mime_type: Optional[str],
     redacted_uri: Optional[str] = None,
+    provider: Optional[str] = None,
     render_safe: bool,
     refresh_required: bool,
 ) -> Dict[str, Any]:
     return {
         "state": state,
+        "provider": provider,
         "media_kind": media_kind,
         "mime_type": mime_type,
         "redacted_uri": redacted_uri,
