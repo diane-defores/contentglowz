@@ -2,7 +2,7 @@
 
 IMPORTANT: Uses lazy imports to avoid loading heavy ML dependencies
 (torch, spacy) at startup. This allows FastAPI to bind to port quickly
-and pass Render's health check.
+and pass the server health check.
 """
 
 from functools import lru_cache
