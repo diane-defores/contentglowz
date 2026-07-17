@@ -438,8 +438,10 @@ app.add_middleware(
         "http://localhost:3000",      # Next.js dev
         "http://localhost:3001",      # Alternative port
         "http://localhost:3050",      # Flutter web dev/PM2
+        "http://localhost:3023",      # Flutter web PM2/devserver
         "http://127.0.0.1:3000",      # Alternative localhost
         "http://127.0.0.1:3050",      # Flutter web dev/PM2
+        "http://127.0.0.1:3023",      # Flutter web PM2/devserver
         "https://www.contentglowz.com",
         "https://contentglowz.com",
         "https://app.contentglowz.com",
