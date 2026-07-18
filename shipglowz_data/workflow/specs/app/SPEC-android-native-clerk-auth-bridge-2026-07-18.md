@@ -284,6 +284,7 @@ None. Les paramètres opérateur matériels sont déterminés : Android natif Ko
 | 2026-07-18 | 102-sg-start | GPT-5 Codex | Implemented the Kotlin Clerk API-only bridge, Android configuration, Dart integration, unit coverage, diagnostics-safe documentation and manual device checklist. | implemented | 103-sg-verify |
 | 2026-07-18 | 103-sg-verify | GPT-5 Codex | Standard verification: Flutter analyzer, focused Android bridge tests, app-access regression, and diff hygiene pass; Android Gradle/device OAuth, Clerk redirect dashboard, and web runtime proof remain unavailable here. | partial | 104-sg-end |
 | 2026-07-18 | 104-sg-end | GPT-5 Codex | Closure bookkeeping prepared with evidence-based changelog and checklist; product closure deferred until required native/provider/device and web proof exists. | deferred | 005-sg-ship |
+| 2026-07-18 | 109-sg-auth-debug + 106-sg-fix | GPT-5 Codex | Diagnosed the release-only Clerk initialization timeout from redacted device diagnostics and added the missing main-manifest INTERNET permission. | fix-attempted; release/device retest remains required | Build a release APK and retest Google return-to-app. |
 
 # Current Chantier Flow
 
