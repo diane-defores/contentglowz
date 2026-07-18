@@ -1,4 +1,4 @@
-name: ContentGlowz Android Checks and Manual APK
+name: ContentGlowz Android Checks
 
 on:
   push:

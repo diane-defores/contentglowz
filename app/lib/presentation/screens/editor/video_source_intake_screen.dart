@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../data/models/video_source_intake.dart';
 import '../../../l10n/app_localizations.dart';
@@ -138,6 +139,7 @@ class _VideoSourceIntakeScreenState
                 ? () => _pickDeviceMedia(controller)
                 : null,
             onText: () => _showTextSheet(controller),
+            onScript: () => _pasteScript(controller),
             onLink: () => _showLinkSheet(controller),
           ),
           if (state.isUploading) ...[
@@ -274,6 +276,21 @@ class _VideoSourceIntakeScreenState
       textController.dispose();
       labelController.dispose();
     }
+  }
+
+  Future<void> _pasteScript(VideoSourceIntakeController controller) async {
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    final script = clipboard?.text?.trim() ?? '';
+    if (script.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('The clipboard does not contain any text.')),
+        ),
+      );
+      return;
+    }
+    await controller.addText(text: script, label: 'Script de la vidéo');
   }
 
   Future<void> _showLinkSheet(VideoSourceIntakeController controller) async {
@@ -435,6 +452,7 @@ class _AddSourcePanel extends StatelessWidget {
     required this.onFiles,
     this.onDeviceMedia,
     required this.onText,
+    required this.onScript,
     required this.onLink,
   });
 
@@ -442,6 +460,7 @@ class _AddSourcePanel extends StatelessWidget {
   final VoidCallback onFiles;
   final VoidCallback? onDeviceMedia;
   final VoidCallback onText;
+  final VoidCallback onScript;
   final VoidCallback onLink;
 
   @override
@@ -480,6 +499,11 @@ class _AddSourcePanel extends StatelessWidget {
               onPressed: busy ? null : onText,
               icon: const Icon(Icons.notes_rounded),
               label: Text(context.tr('Pasted text')),
+            ),
+            OutlinedButton.icon(
+              onPressed: busy ? null : onScript,
+              icon: const Icon(Icons.content_paste_rounded),
+              label: Text(context.tr('Paste video script')),
             ),
             OutlinedButton.icon(
               onPressed: busy ? null : onLink,

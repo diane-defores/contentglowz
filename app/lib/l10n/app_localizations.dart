@@ -1874,6 +1874,9 @@ class AppLocalizations {
     'Select one or several videos, images or audio files at once. You can also add pasted text or a public link.':
         'Sélectionnez une ou plusieurs vidéos, images ou fichiers audio à la fois. Vous pouvez aussi ajouter du texte collé ou un lien public.',
     'Pasted text': 'Texte collé',
+    'Paste video script': 'Coller le script de la vidéo',
+    'The clipboard does not contain any text.':
+        'Le presse-papier ne contient aucun texte.',
     'Public link': 'Lien public',
     'Uploading media sources': 'Téléversement des sources média',
     'Uploading {count} file(s)': 'Téléversement de {count} fichier(s)',
