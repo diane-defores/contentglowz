@@ -29,6 +29,15 @@ const MIME_TYPES = {
   '.wasm': 'application/wasm',
 };
 
+const NO_CACHE_FILES = new Set([
+  'index.html',
+  'main.dart.js',
+  'flutter.js',
+  'flutter_service_worker.js',
+  'version.json',
+  'manifest.json',
+]);
+
 const server = http.createServer((req, res) => {
   // CORS for API proxy
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -51,9 +60,10 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath);
     const mime = MIME_TYPES[ext] || 'application/octet-stream';
 
-    // Cache static assets (JS/CSS/fonts), no-cache for HTML
-    const cacheControl = ext === '.html'
-      ? 'no-cache'
+    // Flutter boot files retain stable names across builds, so they must not
+    // be immutable or browsers can keep running an obsolete application.
+    const cacheControl = NO_CACHE_FILES.has(path.basename(filePath))
+      ? 'no-cache, no-store, must-revalidate'
       : 'public, max-age=31536000, immutable';
 
     res.writeHead(200, {

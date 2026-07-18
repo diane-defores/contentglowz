@@ -191,6 +191,8 @@ class AppLocalizations {
     'Curate ideas before generation': 'Trier les idées avant génération',
     'Dark': 'Sombre',
     'Delete': 'Supprimer',
+    'Delete from this device?': 'Supprimer de cet appareil ?',
+    'Delete from device': 'Supprimer de l’appareil',
     'Degraded mode diagnostics copied.':
         'Le diagnostic du mode dégradé a été copié.',
     'Degraded mode is active. Backend-dependent screens stay limited until FastAPI recovers.':
@@ -1868,6 +1870,9 @@ class AppLocalizations {
     'Video, image, audio, pasted text or a public link.':
         'Vidéo, image, audio, texte collé ou lien public.',
     'Media files': 'Fichiers média',
+    'Select media': 'Sélectionner des médias',
+    'Select one or several videos, images or audio files at once. You can also add pasted text or a public link.':
+        'Sélectionnez une ou plusieurs vidéos, images ou fichiers audio à la fois. Vous pouvez aussi ajouter du texte collé ou un lien public.',
     'Pasted text': 'Texte collé',
     'Public link': 'Lien public',
     'Uploading media sources': 'Téléversement des sources média',
@@ -1894,6 +1899,13 @@ class AppLocalizations {
     'The source leaves this folder. A reusable project asset is not deleted from other content.':
         'La source quitte ce dossier. Un asset de projet réutilisable n’est pas supprimé des autres contenus.',
     'Sources ready': 'Sources prêtes',
+    'Select photos and videos': 'Sélectionner des photos et vidéos',
+    'Stored safely on ContentGlowz':
+        'Stocké en toute sécurité sur ContentGlowz',
+    'This copy is stored safely in ContentGlowz. Android will ask you for final confirmation before it is deleted from this device.':
+        'Cette copie est stockée en toute sécurité dans ContentGlowz. Android vous demandera une confirmation finale avant de la supprimer de cet appareil.',
+    'You can delete this phone copy. Android will ask for final confirmation.':
+        'Vous pouvez supprimer cette copie du téléphone. Android demandera une confirmation finale.',
     'Generate video': 'Générer la vidéo',
     '1 source must be fixed before continuing.':
         '1 source doit être corrigée avant de continuer.',

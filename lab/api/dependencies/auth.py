@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
@@ -23,11 +25,36 @@ class CurrentUser(BaseModel):
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
+_DEV_BYPASS_USER_ID = "devserver-local-user"
+_DEV_BYPASS_EMAIL = "devserver@contentglowz.local"
+_DEV_BYPASS_TOKEN = "devserver-auth-bypass"
+
+
+def _dev_auth_bypass_enabled() -> bool:
+    """Return whether the explicit, development-only auth bypass is enabled."""
+    return (
+        os.getenv("CONTENTGLOWZ_RUNTIME_ENV", "").strip().lower() == "dev"
+        and os.getenv("CONTENTGLOWZ_DEV_AUTH_BYPASS", "").strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+
+
+def _dev_bypass_user() -> CurrentUser:
+    """Provide the deterministic local user used by the devserver only."""
+    return CurrentUser(
+        user_id=_DEV_BYPASS_USER_ID,
+        email=_DEV_BYPASS_EMAIL,
+        bearer_token=_DEV_BYPASS_TOKEN,
+    )
+
 
 def get_optional_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> CurrentUser | None:
     """Return the current Clerk user when a bearer token is present, else None."""
+    if _dev_auth_bypass_enabled():
+        return _dev_bypass_user()
+
     if credentials is None:
         return None
     if credentials.scheme.lower() != "bearer":

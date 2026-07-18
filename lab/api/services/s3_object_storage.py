@@ -112,6 +112,33 @@ class S3ObjectStorageProvider:
     def __repr__(self) -> str:
         return "S3ObjectStorageProvider(provider='s3', bucket=<redacted>, key_prefix=<redacted>)"
 
+    def presign_private_read(self, *, locator: StorageLocator, expires_in: int = 120) -> str:
+        """Return a short-lived read URL for an already-authorized private object."""
+        if locator.provider != self.provider_name or expires_in < 30 or expires_in > 300:
+            raise ObjectStorageError(
+                code="invalid_read_request",
+                message="Private media delivery request is invalid.",
+            )
+        try:
+            return str(
+                self._client.generate_presigned_url(
+                    "get_object",
+                    Params={
+                        "Bucket": self._bucket,
+                        "Key": locator.object_key,
+                        "VersionId": locator.version,
+                    },
+                    ExpiresIn=expires_in,
+                    HttpMethod="GET",
+                )
+            )
+        except Exception as exc:
+            raise ObjectStorageError(
+                code="preview_delivery_unavailable",
+                message="Private media preview is temporarily unavailable.",
+                retryable=True,
+            ) from exc
+
     def create_upload_session(
         self,
         *,

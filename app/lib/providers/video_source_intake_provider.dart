@@ -8,7 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../data/models/video_source_intake.dart';
+import '../data/services/android_media_library.dart';
 import '../data/services/api_service.dart';
+import '../data/services/video_source_device_media_store.dart';
+import '../core/shared_preferences_provider.dart';
 import 'providers.dart';
 
 class VideoSourceIntakeKey {
@@ -35,6 +38,8 @@ class VideoSourceIntakeState {
     this.isMutating = false,
     this.isMarkingReady = false,
     this.isGenerating = false,
+    this.isDeletingDeviceMedia = false,
+    this.deletableSourceIds = const <String>{},
     this.uploadProgress = const <String, double>{},
     this.lastError,
     this.notice,
@@ -46,12 +51,19 @@ class VideoSourceIntakeState {
   final bool isMutating;
   final bool isMarkingReady;
   final bool isGenerating;
+  final bool isDeletingDeviceMedia;
+  final Set<String> deletableSourceIds;
   final Map<String, double> uploadProgress;
   final String? lastError;
   final String? notice;
 
   bool get isBusy =>
-      isLoading || isUploading || isMutating || isMarkingReady || isGenerating;
+      isLoading ||
+      isUploading ||
+      isMutating ||
+      isMarkingReady ||
+      isGenerating ||
+      isDeletingDeviceMedia;
   bool get canFinalize => folder?.canFinalize == true && !isBusy;
   int get blockingSourceCount => folder?.blockingSourceCount ?? 0;
 
@@ -63,6 +75,8 @@ class VideoSourceIntakeState {
     bool? isMutating,
     bool? isMarkingReady,
     bool? isGenerating,
+    bool? isDeletingDeviceMedia,
+    Set<String>? deletableSourceIds,
     Map<String, double>? uploadProgress,
     String? lastError,
     bool clearLastError = false,
@@ -76,6 +90,9 @@ class VideoSourceIntakeState {
       isMutating: isMutating ?? this.isMutating,
       isMarkingReady: isMarkingReady ?? this.isMarkingReady,
       isGenerating: isGenerating ?? this.isGenerating,
+      isDeletingDeviceMedia:
+          isDeletingDeviceMedia ?? this.isDeletingDeviceMedia,
+      deletableSourceIds: deletableSourceIds ?? this.deletableSourceIds,
       uploadProgress: uploadProgress ?? this.uploadProgress,
       lastError: clearLastError ? null : (lastError ?? this.lastError),
       notice: clearNotice ? null : (notice ?? this.notice),
@@ -131,6 +148,18 @@ final videoSourceFilePickerProvider = Provider<VideoSourceFilePicker>((ref) {
   return FilePickerVideoSourceFilePicker();
 });
 
+final androidMediaLibraryProvider = Provider<AndroidMediaLibrary>((ref) {
+  return AndroidMediaLibrary();
+});
+
+final videoSourceDeviceMediaStoreProvider =
+    Provider<VideoSourceDeviceMediaStore>((ref) {
+      return VideoSourceDeviceMediaStore(
+        preferences: ref.watch(sharedPrefsProvider),
+        mediaLibrary: ref.watch(androidMediaLibraryProvider),
+      );
+    });
+
 final videoSourceIntakeProvider = StateNotifierProvider.autoDispose
     .family<
       VideoSourceIntakeController,
@@ -139,6 +168,7 @@ final videoSourceIntakeProvider = StateNotifierProvider.autoDispose
     >((ref, key) {
       return VideoSourceIntakeController(
         apiService: ref.watch(apiServiceProvider),
+        deviceMediaStore: ref.watch(videoSourceDeviceMediaStoreProvider),
         key: key,
       );
     });
@@ -147,14 +177,17 @@ class VideoSourceIntakeController
     extends StateNotifier<VideoSourceIntakeState> {
   VideoSourceIntakeController({
     required ApiService apiService,
+    required VideoSourceDeviceMediaStore deviceMediaStore,
     required this.key,
     bool autoLoad = true,
   }) : _apiService = apiService,
+       _deviceMediaStore = deviceMediaStore,
        super(VideoSourceIntakeState(isLoading: autoLoad)) {
     if (autoLoad) unawaited(load());
   }
 
   final ApiService _apiService;
+  final VideoSourceDeviceMediaStore _deviceMediaStore;
   final VideoSourceIntakeKey key;
   final Map<int, String> _generationKeys = <int, String>{};
   final Map<String, String> _mutationKeys = <String, String>{};
@@ -172,7 +205,15 @@ class VideoSourceIntakeController
         contentId: key.contentId,
       );
       if (!_isCurrent(epoch)) return;
-      _setState(state.copyWith(folder: folder, isLoading: false));
+      final deletableSourceIds = await _deletableSourceIds(folder);
+      if (!_isCurrent(epoch)) return;
+      _setState(
+        state.copyWith(
+          folder: folder,
+          isLoading: false,
+          deletableSourceIds: deletableSourceIds,
+        ),
+      );
     } catch (error) {
       if (!_isCurrent(epoch)) return;
       _setState(
@@ -205,6 +246,9 @@ class VideoSourceIntakeController
     for (final file in files) {
       if (!_isCurrent(epoch)) return;
       try {
+        final previousSourceIds = currentFolder.sources
+            .map((source) => source.id)
+            .toSet();
         currentFolder = await _apiService.uploadVideoSourceFile(
           projectId: key.projectId,
           contentId: key.contentId,
@@ -219,9 +263,21 @@ class VideoSourceIntakeController
           },
         );
         if (!_isCurrent(epoch)) return;
+        await _storeDeviceMediaMappingIfReady(
+          file: file,
+          previousSourceIds: previousSourceIds,
+          folder: currentFolder,
+        );
+        if (!_isCurrent(epoch)) return;
         final next = Map<String, double>.from(state.uploadProgress);
         next[file.clientFileId] = 1;
-        _setState(state.copyWith(folder: currentFolder, uploadProgress: next));
+        _setState(
+          state.copyWith(
+            folder: currentFolder,
+            uploadProgress: next,
+            deletableSourceIds: await _deletableSourceIds(currentFolder),
+          ),
+        );
       } catch (_) {
         failures++;
       }
@@ -298,17 +354,80 @@ class VideoSourceIntakeController
   }
 
   Future<void> removeSource(String sourceId) async {
-    await _mutate(
-      action: 'remove',
-      run: (folder) => _apiService.removeVideoSource(
+    final folder = state.folder;
+    if (folder == null || state.isBusy) return;
+    final epoch = _contextEpoch;
+    _setState(
+      state.copyWith(isMutating: true, clearLastError: true, clearNotice: true),
+    );
+    try {
+      final updated = await _apiService.removeVideoSource(
         projectId: key.projectId,
         contentId: key.contentId,
         folderId: folder.id,
         sourceId: sourceId,
         revision: folder.revision,
+      );
+      if (!_isCurrent(epoch)) return;
+      await _deviceMediaStore.remove(sourceId);
+      if (!_isCurrent(epoch)) return;
+      _setState(
+        state.copyWith(
+          folder: updated,
+          isMutating: false,
+          deletableSourceIds: await _deletableSourceIds(updated),
+          notice: 'Source removed.',
+        ),
+      );
+    } catch (error) {
+      if (!_isCurrent(epoch)) return;
+      _setState(
+        state.copyWith(
+          isMutating: false,
+          lastError: _friendlyError(error, action: 'remove'),
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteFromDevice(VideoSource source) async {
+    if (source.status != VideoSourceStatus.ready ||
+        !state.deletableSourceIds.contains(source.id) ||
+        state.isBusy ||
+        state.isDeletingDeviceMedia) {
+      return;
+    }
+    final epoch = _contextEpoch;
+    _setState(
+      state.copyWith(
+        isDeletingDeviceMedia: true,
+        clearLastError: true,
+        clearNotice: true,
       ),
-      notice: 'Source removed.',
     );
+    try {
+      final deleted = await _deviceMediaStore.deleteFromDevice(source.id);
+      if (!_isCurrent(epoch)) return;
+      final nextIds = Set<String>.from(state.deletableSourceIds);
+      if (deleted) nextIds.remove(source.id);
+      _setState(
+        state.copyWith(
+          isDeletingDeviceMedia: false,
+          deletableSourceIds: nextIds,
+          notice: deleted
+              ? 'Media deleted from this device.'
+              : 'Device deletion was cancelled.',
+        ),
+      );
+    } catch (_) {
+      if (!_isCurrent(epoch)) return;
+      _setState(
+        state.copyWith(
+          isDeletingDeviceMedia: false,
+          lastError: 'The media could not be deleted from this device.',
+        ),
+      );
+    }
   }
 
   Future<void> retrySource(String sourceId) async {
@@ -341,6 +460,9 @@ class VideoSourceIntakeController
       ),
     );
     try {
+      final previousSourceIds = folder.sources
+          .map((source) => source.id)
+          .toSet();
       final updated = await _apiService.uploadVideoSourceFile(
         projectId: key.projectId,
         contentId: key.contentId,
@@ -360,11 +482,19 @@ class VideoSourceIntakeController
         },
       );
       if (!_isCurrent(epoch)) return;
+      await _deviceMediaStore.remove(sourceId);
+      await _storeDeviceMediaMappingIfReady(
+        file: file,
+        previousSourceIds: previousSourceIds,
+        folder: updated,
+      );
+      if (!_isCurrent(epoch)) return;
       _setState(
         state.copyWith(
           folder: updated,
           isUploading: false,
           uploadProgress: const <String, double>{},
+          deletableSourceIds: await _deletableSourceIds(updated),
           notice: 'Source replaced.',
         ),
       );
@@ -503,6 +633,33 @@ class VideoSourceIntakeController
     );
   }
 
+  Future<void> _storeDeviceMediaMappingIfReady({
+    required VideoSourceUploadFile file,
+    required Set<String> previousSourceIds,
+    required VideoSourceFolder folder,
+  }) async {
+    final contentUri = file.deviceMediaUri;
+    if (contentUri == null || contentUri.isEmpty) return;
+    for (final source in folder.activeSources) {
+      if (!previousSourceIds.contains(source.id) &&
+          source.status == VideoSourceStatus.ready) {
+        await _deviceMediaStore.save(
+          sourceId: source.id,
+          contentUri: contentUri,
+        );
+        return;
+      }
+    }
+  }
+
+  Future<Set<String>> _deletableSourceIds(VideoSourceFolder folder) {
+    return _deviceMediaStore.sourceIdsWithMappings(
+      folder.activeSources
+          .where((source) => source.status == VideoSourceStatus.ready)
+          .map((source) => source.id),
+    );
+  }
+
   void clearMessages() {
     _setState(state.copyWith(clearLastError: true, clearNotice: true));
   }
@@ -516,7 +673,9 @@ class VideoSourceIntakeController
         isMutating: false,
         isMarkingReady: false,
         isGenerating: false,
+        isDeletingDeviceMedia: false,
         uploadProgress: const <String, double>{},
+        deletableSourceIds: const <String>{},
         clearFolder: true,
         clearLastError: true,
         clearNotice: true,

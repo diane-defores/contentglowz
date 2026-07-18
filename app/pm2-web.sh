@@ -11,10 +11,11 @@ if [[ -n "${EXPECTED_FLUTTER_VERSION}" && -n "${INSTALLED_FLUTTER_VERSION}" && "
   echo "WARNING: .flutter-version expects ${EXPECTED_FLUTTER_VERSION}, but local flutter is ${INSTALLED_FLUTTER_VERSION}." >&2
 fi
 
-API_BASE_URL_VALUE="${API_BASE_URL:-https://api.contentglowz.com}"
+API_BASE_URL_VALUE="${CONTENTGLOWZ_DEVSERVER_API_BASE_URL:-${API_BASE_URL:-https://api.contentglowz.com}}"
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
-APP_SITE_URL_VALUE="${APP_SITE_URL:-https://contentglowz.com}"
-APP_WEB_URL_VALUE="${APP_WEB_URL:-https://app.contentglowz.com}"
+DEV_AUTH_BYPASS_VALUE="${CONTENTGLOWZ_DEV_AUTH_BYPASS:-false}"
+APP_SITE_URL_VALUE="${CONTENTGLOWZ_DEVSERVER_SITE_URL:-${APP_SITE_URL:-https://contentglowz.com}}"
+APP_WEB_URL_VALUE="${CONTENTGLOWZ_DEVSERVER_APP_WEB_URL:-${APP_WEB_URL:-https://app.contentglowz.com}}"
 BUILD_COMMIT_SHA_VALUE="${BUILD_COMMIT_SHA:-${VERCEL_GIT_COMMIT_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)}}"
 BUILD_ID_VALUE="${BUILD_ID:-${GITHUB_RUN_ID:-${VERCEL_GIT_COMMIT_SHA:-$BUILD_COMMIT_SHA_VALUE}}}"
 BUILD_ENVIRONMENT_VALUE="${BUILD_ENVIRONMENT:-${VERCEL_ENV:-local}}"
@@ -30,7 +31,16 @@ SENTRY_SEND_DEFAULT_PII_VALUE="${SENTRY_SEND_DEFAULT_PII:-false}"
 SENTRY_DEBUG_VALUE="${SENTRY_DEBUG:-false}"
 PORT_VALUE="${PORT:-3050}"
 
-if [[ -z "${CLERK_PUBLISHABLE_KEY_VALUE}" ]]; then
+if [[ "${DEV_AUTH_BYPASS_VALUE}" == "true" && "${BUILD_ENVIRONMENT_VALUE}" == "production" ]]; then
+  echo "ERROR: CONTENTGLOWZ_DEV_AUTH_BYPASS cannot be enabled for a production build." >&2
+  exit 1
+fi
+
+if [[ "${DEV_AUTH_BYPASS_VALUE}" == "true" ]]; then
+  CLERK_PUBLISHABLE_KEY_VALUE=""
+fi
+
+if [[ -z "${CLERK_PUBLISHABLE_KEY_VALUE}" && "${DEV_AUTH_BYPASS_VALUE}" != "true" ]]; then
   echo "ERROR: CLERK_PUBLISHABLE_KEY is required to build the Flutter web app." >&2
   echo "Run through Doppler or export CLERK_PUBLISHABLE_KEY before starting PM2." >&2
   exit 1
@@ -40,6 +50,7 @@ flutter pub get
 flutter build web --release \
   --dart-define=API_BASE_URL="${API_BASE_URL_VALUE}" \
   --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY_VALUE}" \
+  --dart-define=CONTENTGLOWZ_DEV_AUTH_BYPASS="${DEV_AUTH_BYPASS_VALUE}" \
   --dart-define=APP_SITE_URL="${APP_SITE_URL_VALUE}" \
   --dart-define=APP_WEB_URL="${APP_WEB_URL_VALUE}" \
   --dart-define=BUILD_COMMIT_SHA="${BUILD_COMMIT_SHA_VALUE}" \

@@ -354,13 +354,13 @@ class VideoSourceIntakeService:
             ready_at=folder["ready_at"],
             enqueue_status=folder["enqueue_status"],
             generation_request_id=folder["generation_request_id"],
-            sources=[self._source_response(source) for source in sources],
+            sources=[await self._source_response(source) for source in sources],
             created_at=folder["created_at"],
             updated_at=folder["updated_at"],
         )
 
     @staticmethod
-    def _source_response(source: dict[str, Any]) -> VideoSourceResponse:
+    async def _source_response(source: dict[str, Any]) -> VideoSourceResponse:
         error = None
         if source.get("error_code"):
             error = SourceErrorResponse(
@@ -368,6 +368,20 @@ class VideoSourceIntakeService:
                 message="This source needs attention before the folder can be ready.",
                 retryable=bool(source.get("retryable")),
             )
+        preview_url = None
+        if source["source_type"] == "binary_image":
+            try:
+                from api.services.video_source_media_service import get_video_source_media_service
+
+                preview_url = await asyncio.to_thread(
+                    get_video_source_media_service().issue_preview_url,
+                    project_id=source["project_id"],
+                    user_id=source["user_id"],
+                    source=source,
+                )
+            except Exception:
+                # A preview is optional. The source remains usable if its short-lived URL cannot be issued.
+                preview_url = None
         return VideoSourceResponse(
             id=source["id"],
             folder_id=source["folder_id"],
@@ -381,6 +395,7 @@ class VideoSourceIntakeService:
             text_preview=source.get("text_preview"),
             link_hostname=source.get("link_hostname"),
             safe_metadata=source.get("safe_metadata") or {},
+            preview_url=preview_url,
             error=error,
             error_code=source.get("error_code"),
             replacement_of_source_id=source.get("replacement_of_source_id"),

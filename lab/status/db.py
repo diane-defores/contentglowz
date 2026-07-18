@@ -304,7 +304,11 @@ def _run_migrations(conn: Connection) -> None:
             pass
         except Exception as exc:
             message = str(exc).lower()
-            if "duplicate column" in message or "already exists" in message:
+            if (
+                "duplicate column" in message
+                or "already exists" in message
+                or "no such table" in message
+            ):
                 continue
             raise
 

@@ -7,6 +7,7 @@ import '../../../data/models/video_source_intake.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../../providers/video_source_intake_provider.dart';
+import '../../../data/services/video_source_device_media_store.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_theme_tokens.dart';
 import '../../widgets/app_error_view.dart';
@@ -55,6 +56,7 @@ class _VideoSourceIntakeScreenState
     final intakeKey = VideoSourceIntakeKey(projectId, widget.contentId);
     final state = ref.watch(videoSourceIntakeProvider(intakeKey));
     final controller = ref.read(videoSourceIntakeProvider(intakeKey).notifier);
+    final deviceMediaStore = ref.watch(videoSourceDeviceMediaStoreProvider);
 
     ref.listen(videoSourceIntakeProvider(intakeKey), (previous, next) {
       if (!mounted) return;
@@ -80,6 +82,7 @@ class _VideoSourceIntakeScreenState
         state: state,
         controller: controller,
         intakeKey: intakeKey,
+        deviceMediaStore: deviceMediaStore,
       ),
       bottomNavigationBar: state.folder == null
           ? null
@@ -96,6 +99,7 @@ class _VideoSourceIntakeScreenState
     required VideoSourceIntakeState state,
     required VideoSourceIntakeController controller,
     required VideoSourceIntakeKey intakeKey,
+    required VideoSourceDeviceMediaStore deviceMediaStore,
   }) {
     if (state.isLoading && state.folder == null) {
       return const Center(child: CircularProgressIndicator());
@@ -130,6 +134,9 @@ class _VideoSourceIntakeScreenState
           _AddSourcePanel(
             busy: state.isBusy,
             onFiles: () => _pickFiles(controller),
+            onDeviceMedia: deviceMediaStore.isAndroidMediaLibraryAvailable
+                ? () => _pickDeviceMedia(controller)
+                : null,
             onText: () => _showTextSheet(controller),
             onLink: () => _showLinkSheet(controller),
           ),
@@ -168,6 +175,13 @@ class _VideoSourceIntakeScreenState
                       ? () => _pickReplacement(controller, source.id)
                       : null,
                   onRemove: () => _confirmRemove(controller, source),
+                  canDeleteFromDevice:
+                      deviceMediaStore.isAndroidMediaLibraryAvailable &&
+                      source.status == VideoSourceStatus.ready &&
+                      state.deletableSourceIds.contains(source.id),
+                  isDeletingFromDevice: state.isDeletingDeviceMedia,
+                  onDeleteFromDevice: () =>
+                      _confirmDeviceDeletion(controller, source),
                 ),
               ),
             ),
@@ -199,6 +213,29 @@ class _VideoSourceIntakeScreenState
         .pickMediaFiles();
     if (files.isEmpty) return;
     await controller.addFiles(files);
+  }
+
+  Future<void> _pickDeviceMedia(VideoSourceIntakeController controller) async {
+    final selected = await ref
+        .read(androidMediaLibraryProvider)
+        .pickPhotoAndVideoFiles();
+    if (selected.isEmpty) return;
+
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    await controller.addFiles(
+      selected.indexed
+          .map(
+            (entry) => VideoSourceUploadFile(
+              clientFileId: 'device-media-$timestamp-${entry.$1}',
+              fileName: entry.$2.fileName,
+              mimeType: entry.$2.mimeType,
+              sizeBytes: entry.$2.sizeBytes,
+              path: entry.$2.cachePath,
+              deviceMediaUri: entry.$2.contentUri,
+            ),
+          )
+          .toList(growable: false),
+    );
   }
 
   Future<void> _pickReplacement(
@@ -293,6 +330,34 @@ class _VideoSourceIntakeScreenState
     );
     if (confirmed == true) await controller.removeSource(source.id);
   }
+
+  Future<void> _confirmDeviceDeletion(
+    VideoSourceIntakeController controller,
+    VideoSource source,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.tr('Delete from this device?')),
+        content: Text(
+          context.tr(
+            'This copy is stored safely in ContentGlowz. Android will ask you for final confirmation before it is deleted from this device.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.tr('Cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(context.tr('Delete from device')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await controller.deleteFromDevice(source);
+  }
 }
 
 class _IntakeHeader extends StatelessWidget {
@@ -368,12 +433,14 @@ class _AddSourcePanel extends StatelessWidget {
   const _AddSourcePanel({
     required this.busy,
     required this.onFiles,
+    this.onDeviceMedia,
     required this.onText,
     required this.onLink,
   });
 
   final bool busy;
   final VoidCallback onFiles;
+  final VoidCallback? onDeviceMedia;
   final VoidCallback onText;
   final VoidCallback onLink;
 
@@ -386,7 +453,9 @@ class _AddSourcePanel extends StatelessWidget {
         Text(context.tr('Add sources'), style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          context.tr('Video, image, audio, pasted text or a public link.'),
+          context.tr(
+            'Select one or several videos, images or audio files at once. You can also add pasted text or a public link.',
+          ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -399,8 +468,14 @@ class _AddSourcePanel extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: busy ? null : onFiles,
               icon: const Icon(Icons.attach_file_rounded),
-              label: Text(context.tr('Media files')),
+              label: Text(context.tr('Select media')),
             ),
+            if (onDeviceMedia != null)
+              OutlinedButton.icon(
+                onPressed: busy ? null : onDeviceMedia,
+                icon: const Icon(Icons.photo_library_outlined),
+                label: Text(context.tr('Select photos and videos')),
+              ),
             OutlinedButton.icon(
               onPressed: busy ? null : onText,
               icon: const Icon(Icons.notes_rounded),
@@ -501,6 +576,9 @@ class _SourceCard extends StatelessWidget {
     required this.busy,
     required this.onReplace,
     required this.onRemove,
+    required this.canDeleteFromDevice,
+    required this.isDeletingFromDevice,
+    required this.onDeleteFromDevice,
     this.onRetry,
   });
 
@@ -509,6 +587,9 @@ class _SourceCard extends StatelessWidget {
   final VoidCallback? onRetry;
   final VoidCallback? onReplace;
   final VoidCallback onRemove;
+  final bool canDeleteFromDevice;
+  final bool isDeletingFromDevice;
+  final VoidCallback onDeleteFromDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -516,75 +597,118 @@ class _SourceCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: AppSpacing.card(context),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SourcePreview(source: source),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    source.displayName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SourcePreview(source: source),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        source.displayName,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        _metadataLabel(context, source),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _StatusChip(
+                        label: context.tr(source.status.labelKey),
+                        icon: source.status.icon,
+                        color: source.status.color(theme),
+                      ),
+                      if (source.status.canRetry && onRetry != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        TextButton.icon(
+                          onPressed: busy ? null : onRetry,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: Text(context.tr('Retry')),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    _metadataLabel(context, source),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _StatusChip(
-                    label: context.tr(source.status.labelKey),
-                    icon: source.status.icon,
-                    color: source.status.color(theme),
-                  ),
-                  if (source.status.canRetry && onRetry != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    TextButton.icon(
-                      onPressed: busy ? null : onRetry,
-                      icon: const Icon(Icons.refresh_rounded),
-                      label: Text(context.tr('Retry')),
+                ),
+                PopupMenuButton<_SourceMenuAction>(
+                  enabled: !busy,
+                  tooltip: context.tr('Source actions'),
+                  onSelected: (action) {
+                    switch (action) {
+                      case _SourceMenuAction.retry:
+                        onRetry?.call();
+                      case _SourceMenuAction.replace:
+                        onReplace?.call();
+                      case _SourceMenuAction.remove:
+                        onRemove();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    if (source.status.canRetry && onRetry != null)
+                      PopupMenuItem(
+                        value: _SourceMenuAction.retry,
+                        child: Text(context.tr('Retry')),
+                      ),
+                    if (onReplace != null)
+                      PopupMenuItem(
+                        value: _SourceMenuAction.replace,
+                        child: Text(context.tr('Replace')),
+                      ),
+                    PopupMenuItem(
+                      value: _SourceMenuAction.remove,
+                      child: Text(context.tr('Remove source')),
                     ),
                   ],
-                ],
-              ),
-            ),
-            PopupMenuButton<_SourceMenuAction>(
-              enabled: !busy,
-              tooltip: context.tr('Source actions'),
-              onSelected: (action) {
-                switch (action) {
-                  case _SourceMenuAction.retry:
-                    onRetry?.call();
-                  case _SourceMenuAction.replace:
-                    onReplace?.call();
-                  case _SourceMenuAction.remove:
-                    onRemove();
-                }
-              },
-              itemBuilder: (context) => [
-                if (source.status.canRetry && onRetry != null)
-                  PopupMenuItem(
-                    value: _SourceMenuAction.retry,
-                    child: Text(context.tr('Retry')),
-                  ),
-                if (onReplace != null)
-                  PopupMenuItem(
-                    value: _SourceMenuAction.replace,
-                    child: Text(context.tr('Replace')),
-                  ),
-                PopupMenuItem(
-                  value: _SourceMenuAction.remove,
-                  child: Text(context.tr('Remove source')),
                 ),
               ],
             ),
+            if (canDeleteFromDevice) ...[
+              const SizedBox(height: AppSpacing.md),
+              Semantics(
+                container: true,
+                label: context.tr('Stored safely on ContentGlowz'),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadii.md),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.tr('Stored safely on ContentGlowz'),
+                        style: theme.textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        context.tr(
+                          'You can delete this phone copy. Android will ask for final confirmation.',
+                        ),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: busy ? null : onDeleteFromDevice,
+                        icon: isDeletingFromDevice
+                            ? const _ButtonProgress()
+                            : const Icon(Icons.delete_outline_rounded),
+                        label: Text(context.tr('Delete from device')),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -606,7 +730,7 @@ class _SourcePreview extends StatelessWidget {
         color: theme.colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: previewUrl != null && source.type == VideoSourceType.binaryImage
+      child: previewUrl != null && source.type.isBinary
           ? Image.network(
               previewUrl,
               width: AppThemeTokens.spacing6 * 2,

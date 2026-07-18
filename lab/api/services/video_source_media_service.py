@@ -397,6 +397,27 @@ class VideoSourceMediaService:
             max_probe_bytes=10 * MIB,
         )
 
+    def issue_preview_url(
+        self, *, project_id: str, user_id: str, source: dict[str, Any]
+    ) -> str | None:
+        """Issue an ephemeral URL only for the derived preview owned by this source."""
+        preview_asset_id = (source.get("safe_metadata") or {}).get("preview_asset_id")
+        if not isinstance(preview_asset_id, str) or not source.get("asset_id"):
+            return None
+        if not isinstance(self.storage, S3ObjectStorageProvider):
+            return None
+        asset = get_status_service().get_project_asset_detail(
+            project_id=project_id, user_id=user_id, asset_id=preview_asset_id
+        )
+        if (
+            asset.media_kind != "thumbnail"
+            or asset.source_asset_id != source["asset_id"]
+            or asset.storage_locator is None
+        ):
+            return None
+        locator = StorageLocator.model_validate(asset.storage_locator.model_dump())
+        return self.storage.presign_private_read(locator=locator)
+
     async def create_upload_session(
         self,
         *,

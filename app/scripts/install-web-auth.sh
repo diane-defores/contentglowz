@@ -7,6 +7,7 @@ BUILD_DIR="${1:-$ROOT_DIR/build/web}"
 SOURCE_DIR="$ROOT_DIR/web_auth"
 
 CLERK_PUBLISHABLE_KEY_VALUE="${CLERK_PUBLISHABLE_KEY:-}"
+DEV_AUTH_BYPASS_VALUE="${CONTENTGLOWZ_DEV_AUTH_BYPASS:-false}"
 APP_WEB_URL_VALUE="${APP_WEB_URL:-https://app.contentglowz.com}"
 BUILD_COMMIT_SHA_VALUE="${BUILD_COMMIT_SHA:-${VERCEL_GIT_COMMIT_SHA:-unknown}}"
 BUILD_ID_VALUE="${BUILD_ID:-${GITHUB_RUN_ID:-${VERCEL_GIT_COMMIT_SHA:-$BUILD_COMMIT_SHA_VALUE}}}"
@@ -18,6 +19,12 @@ BUILD_AT_PARIS_VALUE="${BUILD_AT_PARIS:-$(TZ=Europe/Paris date -d "$BUILD_AT_UTC
 if [[ ! -d "$BUILD_DIR" ]]; then
   echo "ERROR: build directory does not exist: $BUILD_DIR" >&2
   exit 1
+fi
+
+if [[ "$DEV_AUTH_BYPASS_VALUE" == "true" ]]; then
+  rm -rf "$BUILD_DIR/sign-in" "$BUILD_DIR/sign-up" "$BUILD_DIR/sso-callback"
+  rm -f "$BUILD_DIR/clerk-auth.css" "$BUILD_DIR/clerk-runtime.js"
+  exit 0
 fi
 
 if [[ -z "$CLERK_PUBLISHABLE_KEY_VALUE" ]]; then

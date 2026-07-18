@@ -16,6 +16,11 @@ class AppConfig {
     defaultValue: '',
   );
 
+  static const devAuthBypass = bool.fromEnvironment(
+    'CONTENTGLOWZ_DEV_AUTH_BYPASS',
+    defaultValue: false,
+  );
+
   static const siteUrl = String.fromEnvironment(
     'APP_SITE_URL',
     defaultValue: canonicalSiteUrl,

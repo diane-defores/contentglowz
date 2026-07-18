@@ -77,12 +77,27 @@ class Connection:
     """Tiny sqlite.Connection-like adapter over libsql."""
 
     def __init__(self, database: str, auth_token: str | None = None) -> None:
-        self._conn = libsql.connect(
-            database=database,
-            auth_token=auth_token or "",
+        self._database = database
+        self._auth_token = auth_token or ""
+        self._conn = self._open_connection()
+        self.row_factory = None
+
+    def _open_connection(self) -> Any:
+        return libsql.connect(
+            database=self._database,
+            auth_token=self._auth_token,
             _check_same_thread=False,
         )
-        self.row_factory = None
+
+    def _execute_raw(self, statement: str, params: list[Any]) -> Any:
+        try:
+            return self._conn.execute(statement, params)
+        except Exception as exc:
+            if "stream not found" not in str(exc).lower():
+                raise
+            self._conn.close()
+            self._conn = self._open_connection()
+            return self._conn.execute(statement, params)
 
     def execute(
         self,
@@ -91,21 +106,20 @@ class Connection:
     ) -> Cursor:
         statement, sql_params = inline_null_params(statement, list(params or []))
         try:
-            cursor = self._conn.execute(statement, sql_params)
+            cursor = self._execute_raw(statement, sql_params)
         except Exception as exc:
             if not _should_retry_with_inline_nulls(exc, sql_params):
                 raise
             retry_statement, retry_params = inline_null_params(statement, sql_params)
-            cursor = self._conn.execute(retry_statement, retry_params)
+            cursor = self._execute_raw(retry_statement, retry_params)
         return Cursor(cursor)
 
     def executescript(self, script: str) -> None:
         for statement in _split_statements(script):
-            self._conn.execute(statement)
+            self._execute_raw(statement, [])
 
     def commit(self) -> None:
-        # libsql autocommits each statement; keep sqlite-compatible API surface.
-        return None
+        self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()

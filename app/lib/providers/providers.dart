@@ -474,6 +474,21 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       message: 'Restoring stored session.',
     );
     final prefs = ref.read(sharedPrefsProvider);
+    if (AppConfig.devAuthBypass) {
+      _clearLegacyAuthPrefs();
+      state = const AuthSession(
+        status: AuthStatus.authenticated,
+        bearerToken: 'devserver-auth-bypass',
+        email: 'devserver@contentglowz.local',
+      );
+      diagnostics.info(
+        scope: 'auth.restore',
+        message: 'Started development auth-bypass session.',
+      );
+      _invalidateAuthenticatedState();
+      return;
+    }
+
     if (prefs.getBool(_demoModeKey) == true) {
       state = AuthSession(
         status: AuthStatus.demo,
@@ -735,6 +750,16 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
   }
 
   void signOut() {
+    if (AppConfig.devAuthBypass) {
+      ref
+          .read(appDiagnosticsProvider)
+          .info(
+            scope: 'auth.sign_out',
+            message: 'Ignored sign-out in development auth-bypass mode.',
+          );
+      return;
+    }
+
     ref
         .read(appDiagnosticsProvider)
         .info(scope: 'auth.sign_out', message: 'Sign-out requested.');

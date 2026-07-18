@@ -305,6 +305,7 @@ class VideoSourceUploadFile {
     this.bytes,
     this.path,
     this.readStream,
+    this.deviceMediaUri,
   });
 
   final String clientFileId;
@@ -314,6 +315,9 @@ class VideoSourceUploadFile {
   final Uint8List? bytes;
   final String? path;
   final Stream<List<int>>? readStream;
+
+  /// Android MediaStore URI retained locally only for explicit deletion.
+  final String? deviceMediaUri;
 
   Map<String, dynamic> toSessionJson() => {
     'clientFileId': clientFileId,
