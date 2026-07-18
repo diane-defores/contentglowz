@@ -23,6 +23,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isSubmitting = false;
   String? _error;
 
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +50,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       appBar: AppBar(title: Text(context.tr('Authentication'))),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppTheme.authScreenMaxWidth),
+          constraints: const BoxConstraints(
+            maxWidth: AppTheme.authScreenMaxWidth,
+          ),
           child: SingleChildScrollView(
             padding: AppSpacing.card(context),
             child: Container(
@@ -122,7 +127,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          context.tr('Use the web sign-in flow'),
+          context.tr(
+            _isAndroid ? 'Sign in with Google' : 'Native sign-in unavailable',
+          ),
           style: theme.textTheme.headlineSmall?.copyWith(
             color: theme.colorScheme.onSurface,
             fontWeight: FontWeight.bold,
@@ -131,7 +138,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
-            'The Clerk Flutter beta SDK has been removed from the production path. For now, sign in through the dedicated web Google flow instead of the old embedded Flutter flow.',
+            _isAndroid
+                ? 'Continue with Google to sign in securely in the Android app. The browser-based ClerkJS sign-in page is not used on Android.'
+                : 'Native Clerk authentication is currently available only on Android. Use the web app on this platform.',
           ),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
@@ -150,22 +159,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: _isSubmitting ? null : _openAppWebSignIn,
-            child: Text(context.tr('Continue with Google')),
+            onPressed: _isSubmitting || !_isAndroid ? null : _signInWithGoogle,
+            child: _isSubmitting
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: AppSpacing.md,
+                        height: AppSpacing.md,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.sm),
+                      Text('Opening Google…'),
+                    ],
+                  )
+                : Text(context.tr('Continue with Google')),
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: _isSubmitting ? null : _openAppWebEntry,
-            child: Text(context.tr('Open App Entry')),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
         Text(
           context.tr(
-            'Once Clerk ships a stable Flutter SDK, the archived beta branch can be revisited. Until then, production auth stays on the official ClerkJS web path.',
+            _isAndroid
+                ? 'Google authentication remains inside the installed Android application. If it cannot start, the diagnostic below identifies the native configuration issue.'
+                : 'Open the web app to use the ClerkJS sign-in flow.',
           ),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
@@ -270,6 +288,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _error = null;
+      _isSubmitting = true;
+    });
+
+    try {
+      await ref.read(authSessionProvider.notifier).signInWithGoogle();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.toString();
+      });
     } finally {
       if (mounted) {
         setState(() {

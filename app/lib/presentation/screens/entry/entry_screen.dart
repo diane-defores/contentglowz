@@ -27,10 +27,14 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
+  bool _isGoogleSignInInProgress = false;
+
   bool get _isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   Future<void> _signInWithGoogle() async {
+    if (_isGoogleSignInInProgress) return;
+    setState(() => _isGoogleSignInInProgress = true);
     try {
       await ref.read(authSessionProvider.notifier).signInWithGoogle();
     } catch (_) {
@@ -40,6 +44,10 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           content: Text('Google sign-in did not complete. Please try again.'),
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleSignInInProgress = false);
+      }
     }
   }
 
@@ -143,6 +151,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             'The app is restoring your Clerk session and deciding whether to open auth, onboarding, or your workspace.',
         icon: Icons.sync_rounded,
         accent: AppTheme.editColor,
+        showProgress: true,
         primaryLabel: 'Please wait',
         onPrimary: null,
       );
@@ -160,6 +169,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             : 'The app is validating your session and loading your workspace from FastAPI.',
         icon: Icons.sync_rounded,
         accent: AppTheme.editColor,
+        showProgress: true,
         primaryLabel: 'Please wait',
         onPrimary: null,
         secondaryLabel: 'Sign out',
@@ -267,8 +277,15 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           : 'You are not signed in yet. Sign-in is currently available on the web app.',
       icon: Icons.lock_outline_rounded,
       accent: AppTheme.warningColor,
-      primaryLabel: kIsWeb || _isAndroid ? 'Continue with Google' : 'Sign In',
-      onPrimary: kIsWeb
+      showProgress: _isGoogleSignInInProgress,
+      primaryLabel: _isGoogleSignInInProgress
+          ? 'Opening Google…'
+          : kIsWeb || _isAndroid
+          ? 'Continue with Google'
+          : 'Sign In',
+      onPrimary: _isGoogleSignInInProgress
+          ? null
+          : kIsWeb
           ? _openWebsiteSignIn
           : _isAndroid
           ? _signInWithGoogle
@@ -345,6 +362,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     required String description,
     required IconData icon,
     required Color accent,
+    bool showProgress = false,
     required String primaryLabel,
     required VoidCallback? onPrimary,
     String? secondaryLabel,
@@ -404,13 +422,21 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     compact ? AppRadii.lg : AppRadii.xl,
                   ),
                 ),
-                child: Icon(
-                  icon,
-                  color: accent,
-                  size: compact
-                      ? _entryIconSizeCompact
-                      : _entryIconSizeExpanded,
-                ),
+                child: showProgress
+                    ? Padding(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        child: CircularProgressIndicator(
+                          color: accent,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        color: accent,
+                        size: compact
+                            ? _entryIconSizeCompact
+                            : _entryIconSizeExpanded,
+                      ),
               ),
             ],
           ),

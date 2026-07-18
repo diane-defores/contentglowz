@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: app
 created: "2026-04-25"
-updated: "2026-04-26"
+updated: "2026-07-18"
 status: reviewed
 source_skill: sf-docs
 scope: guidelines
@@ -98,6 +98,15 @@ This document describes conventions for working in `app`, the Flutter user-facin
 - Never hide failure states behind generic toasts; show actionable state in-context.
 - Use explicit labels on retry/pause/dependency waits.
 - Keep loading states concise and specific.
+- Every user-triggered asynchronous action must acknowledge the tap immediately:
+  disable duplicate submission, show an animated progress indicator, and replace
+  the action label with the current step (for example, `Opening Google…`).
+- Every page or card waiting on remote/session state must show an animated
+  loading state. When progress is measurable (upload, generation, import), use
+  a determinate progress indicator; otherwise use an indeterminate indicator
+  with a clear status label.
+- Never leave an indefinite loading state without a timeout, error/retry path,
+  or diagnostics-safe explanation of what is still being checked.
 
 ## Testing Requirements
 

@@ -8,8 +8,9 @@ class ContentGlowzApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val key = BuildConfig.CLERK_PUBLISHABLE_KEY.trim()
-        if (key.isNotEmpty()) {
-            Clerk.initialize(this, publishableKey = key)
+        check(key.isNotEmpty()) {
+            "CLERK_PUBLISHABLE_KEY is missing from this Android build."
         }
+        Clerk.initialize(this, publishableKey = key)
     }
 }

@@ -13,7 +13,7 @@ val clerkPublishableKey = providers.environmentVariable("CLERK_PUBLISHABLE_KEY")
     .get()
 val contentGlowzAuthEnabled = providers.gradleProperty("contentglowzAuthEnabled")
     .map { it.toBoolean() }
-    .orElse(false)
+    .orElse(true)
     .get()
 
 if (contentGlowzAuthEnabled && clerkPublishableKey.isBlank()) {
