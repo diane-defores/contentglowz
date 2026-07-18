@@ -177,7 +177,7 @@ class VideoSourceIntakeController
     extends StateNotifier<VideoSourceIntakeState> {
   VideoSourceIntakeController({
     required ApiService apiService,
-    required VideoSourceDeviceMediaStore deviceMediaStore,
+    VideoSourceDeviceMediaStore? deviceMediaStore,
     required this.key,
     bool autoLoad = true,
   }) : _apiService = apiService,
@@ -187,7 +187,7 @@ class VideoSourceIntakeController
   }
 
   final ApiService _apiService;
-  final VideoSourceDeviceMediaStore _deviceMediaStore;
+  final VideoSourceDeviceMediaStore? _deviceMediaStore;
   final VideoSourceIntakeKey key;
   final Map<int, String> _generationKeys = <int, String>{};
   final Map<String, String> _mutationKeys = <String, String>{};
@@ -369,7 +369,7 @@ class VideoSourceIntakeController
         revision: folder.revision,
       );
       if (!_isCurrent(epoch)) return;
-      await _deviceMediaStore.remove(sourceId);
+      await _deviceMediaStore?.remove(sourceId);
       if (!_isCurrent(epoch)) return;
       _setState(
         state.copyWith(
@@ -406,7 +406,8 @@ class VideoSourceIntakeController
       ),
     );
     try {
-      final deleted = await _deviceMediaStore.deleteFromDevice(source.id);
+      final deleted =
+          await _deviceMediaStore?.deleteFromDevice(source.id) ?? false;
       if (!_isCurrent(epoch)) return;
       final nextIds = Set<String>.from(state.deletableSourceIds);
       if (deleted) nextIds.remove(source.id);
@@ -482,7 +483,7 @@ class VideoSourceIntakeController
         },
       );
       if (!_isCurrent(epoch)) return;
-      await _deviceMediaStore.remove(sourceId);
+      await _deviceMediaStore?.remove(sourceId);
       await _storeDeviceMediaMappingIfReady(
         file: file,
         previousSourceIds: previousSourceIds,
@@ -643,7 +644,7 @@ class VideoSourceIntakeController
     for (final source in folder.activeSources) {
       if (!previousSourceIds.contains(source.id) &&
           source.status == VideoSourceStatus.ready) {
-        await _deviceMediaStore.save(
+        await _deviceMediaStore?.save(
           sourceId: source.id,
           contentUri: contentUri,
         );
@@ -653,7 +654,9 @@ class VideoSourceIntakeController
   }
 
   Future<Set<String>> _deletableSourceIds(VideoSourceFolder folder) {
-    return _deviceMediaStore.sourceIdsWithMappings(
+    final deviceMediaStore = _deviceMediaStore;
+    if (deviceMediaStore == null) return Future.value(const <String>{});
+    return deviceMediaStore.sourceIdsWithMappings(
       folder.activeSources
           .where((source) => source.status == VideoSourceStatus.ready)
           .map((source) => source.id),

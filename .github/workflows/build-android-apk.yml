@@ -1,0 +1,71 @@
+name: Build ContentGlowz Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git branch or tag to build
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: app
+  FLUTTER_VERSION_FILE: app/.fvmrc
+  API_BASE_URL: ${{ vars.API_BASE_URL || 'https://api.contentglowz.com' }}
+  APP_SITE_URL: ${{ vars.APP_SITE_URL || 'https://contentglowz.com' }}
+  APP_WEB_URL: ${{ vars.APP_WEB_URL || 'https://app.contentglowz.com' }}
+  CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'github-actions' }}
+  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.0' }}
+  SENTRY_SEND_DEFAULT_PII: ${{ vars.SENTRY_SEND_DEFAULT_PII || 'false' }}
+  SENTRY_DEBUG: ${{ vars.SENTRY_DEBUG || 'false' }}
+
+jobs:
+  build-apk:
+    name: Build release APK
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: ${{ env.FLUTTER_VERSION_FILE }}
+          cache: true
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: flutter pub get
+      - name: Build APK
+        working-directory: ${{ env.APP_DIR }}
+        run: >-
+          flutter build apk --release
+          --dart-define=API_BASE_URL="${API_BASE_URL}"
+          --dart-define=CLERK_PUBLISHABLE_KEY="${CLERK_PUBLISHABLE_KEY}"
+          --dart-define=APP_SITE_URL="${APP_SITE_URL}"
+          --dart-define=APP_WEB_URL="${APP_WEB_URL}"
+          --dart-define=BUILD_COMMIT_SHA="${GITHUB_SHA}"
+          --dart-define=BUILD_ENVIRONMENT="github-actions"
+          --dart-define=BUILD_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          --dart-define=SENTRY_DSN="${SENTRY_DSN}"
+          --dart-define=SENTRY_ENVIRONMENT="${SENTRY_ENVIRONMENT}"
+          --dart-define=SENTRY_DIST="${GITHUB_RUN_ID}"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="${SENTRY_TRACES_SAMPLE_RATE}"
+          --dart-define=SENTRY_SEND_DEFAULT_PII="${SENTRY_SEND_DEFAULT_PII}"
+          --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: contentglowz-android-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7

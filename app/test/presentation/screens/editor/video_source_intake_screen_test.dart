@@ -178,8 +178,7 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.ensureVisible(deleteButton);
-      await tester.tap(deleteButton);
+      tester.widget<OutlinedButton>(deleteButton).onPressed!.call();
       await tester.pumpAndSettle();
       expect(find.text('Supprimer de cet appareil ?'), findsOneWidget);
       expect(
