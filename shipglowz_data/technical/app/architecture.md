@@ -101,7 +101,8 @@ The app is structured as a **single Flutter client boundary** with backend data 
   - `offline_cache_v1`
   - `offline_queue_v1`
   - `offline_id_mappings_v1`
-- Clerk auth service implementations are split by target environment (web bridge + stub).
+- Clerk auth service implementations are split by target environment: ClerkJS
+  web bridge, Kotlin-owned Clerk Android bridge, and a signed-out stub.
 
 ### 2.5 Product feature contracts
 - `Project Intelligence V1` is active-project scoped and supports:
@@ -140,7 +141,8 @@ The app is structured as a **single Flutter client boundary** with backend data 
 
 ## 3) Auth architecture: Flutter + Clerk + FastAPI
 
-1. Flutter app restores session from Clerk bridge on startup (when configured).
+1. Flutter app restores session from ClerkJS on web or from the Kotlin Clerk
+   Android bridge on Android (when configured).
 2. Auth state (`AuthSession`) decides whether session is demo, signed out, or authenticated.
 3. Authenticated state triggers backend access resolve in `AppAccessNotifier`:
    - `GET /api/health`-like check
@@ -154,6 +156,10 @@ The app is structured as a **single Flutter client boundary** with backend data 
 Notes:
 - Native password auth methods are present in type definitions but are intentionally not production enabled (web path is canonical).
 - `CLERK_PUBLISHABLE_KEY` must be present for normal auth-enabled builds.
+- Android Clerk initializes in `ContentGlowzApplication`; `MainActivity` passes
+  only the strict `com.contentglowz.app://callback` callback into Clerk and
+  exposes session operations through a MethodChannel. JWTs stay in memory and
+  FastAPI remains the authorization authority.
 - Settings > Integrations lets an authenticated user connect an IMAP email source by choosing the mailbox folder and processed folder. The app saves the active project with the integration; backend scheduling then checks the folder every 6 hours, so the app does not expose a manual "send emails to Idea Pool" action.
 
 ## 4) Offline architecture and queue model

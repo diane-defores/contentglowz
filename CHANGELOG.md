@@ -26,3 +26,10 @@
 ### Changed
 - Feed publish actions now stay truthful for video items: swipe/publish remains disabled until backend readiness is `ready_to_publish`, while rendering and blocked states explain why publish is unavailable.
 - Operator and canonical app docs now describe the feed as a publish-ready video decision surface instead of a generic approve-or-publish review queue.
+## [2026-07-18]
+
+### Added
+- Added an Android-native Clerk authentication bridge for Flutter, including native callback handling, in-memory bearer handoff, and Google sign-in entry flow.
+
+### Changed
+- Kept the existing ClerkJS web authentication flow unchanged; Android provider/device validation remains pending.

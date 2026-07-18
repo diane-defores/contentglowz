@@ -27,6 +27,22 @@ class EntryScreen extends ConsumerStatefulWidget {
 }
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
+  bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      await ref.read(authSessionProvider.notifier).signInWithGoogle();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Google sign-in did not complete. Please try again.'),
+        ),
+      );
+    }
+  }
+
   Future<void> _openWebsiteSignIn() async {
     final url = kIsWeb
         ? Uri.parse('${Uri.base.origin}/sign-in')
@@ -98,7 +114,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 vertical: AppSpacing.lg,
               ),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: AppTheme.entryScreenMaxWidth),
+                constraints: const BoxConstraints(
+                  maxWidth: AppTheme.entryScreenMaxWidth,
+                ),
                 child: stateCard,
               ),
             ),
@@ -244,11 +262,17 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       title: 'Sign in to access your workspace',
       description: kIsWeb
           ? 'You are not signed in yet. Continue with Google on the dedicated app-domain Clerk page. Workspace creation and onboarding are only available after authentication.'
-          : 'You are not signed in yet. The Flutter beta auth path has been archived, so use the dedicated web sign-in flow instead.',
+          : _isAndroid
+          ? 'You are not signed in yet. Continue with Google to sign in securely with the native Android flow.'
+          : 'You are not signed in yet. Sign-in is currently available on the web app.',
       icon: Icons.lock_outline_rounded,
       accent: AppTheme.warningColor,
-      primaryLabel: kIsWeb ? 'Continue with Google' : 'Sign In',
-      onPrimary: kIsWeb ? _openWebsiteSignIn : () => context.go('/auth'),
+      primaryLabel: kIsWeb || _isAndroid ? 'Continue with Google' : 'Sign In',
+      onPrimary: kIsWeb
+          ? _openWebsiteSignIn
+          : _isAndroid
+          ? _signInWithGoogle
+          : () => context.go('/auth'),
       secondaryLabel: 'Open Interactive Demo',
       onSecondary: () {
         ref.read(authSessionProvider.notifier).signInDemo();
@@ -368,7 +392,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                 ),
               ),
               Container(
-                width: compact ? _entryStateButtonHeightCompact : _entryStateButtonHeightExpanded,
+                width: compact
+                    ? _entryStateButtonHeightCompact
+                    : _entryStateButtonHeightExpanded,
                 height: compact
                     ? _entryStateButtonHeightCompact
                     : _entryStateButtonHeightExpanded,
@@ -378,11 +404,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                     compact ? AppRadii.lg : AppRadii.xl,
                   ),
                 ),
-                  child: Icon(
-                    icon,
-                    color: accent,
-                    size: compact ? _entryIconSizeCompact : _entryIconSizeExpanded,
-                  ),
+                child: Icon(
+                  icon,
+                  color: accent,
+                  size: compact
+                      ? _entryIconSizeCompact
+                      : _entryIconSizeExpanded,
+                ),
               ),
             ],
           ),

@@ -535,7 +535,6 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
       diagnostics.info(
         scope: 'auth.restore',
         message: 'Restored authenticated Clerk session.',
-        context: {'email': restored.email ?? 'none'},
       );
       _invalidateAuthenticatedState();
     } catch (error, stackTrace) {
@@ -631,6 +630,37 @@ class AuthSessionNotifier extends StateNotifier<AuthSession> {
         error: error,
         stackTrace: stackTrace,
         context: {'email': email},
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    final diagnostics = ref.read(appDiagnosticsProvider);
+    final service = ref.read(clerkAuthServiceProvider);
+    if (service == null) {
+      diagnostics.warning(
+        scope: 'auth.google_sign_in',
+        message: 'Google sign-in requested without Clerk configuration.',
+      );
+      throw StateError('Clerk is not configured. Set CLERK_PUBLISHABLE_KEY.');
+    }
+
+    diagnostics.info(
+      scope: 'auth.google_sign_in',
+      message: 'Starting native Google sign-in.',
+    );
+    try {
+      final result = await service.signInWithGoogle();
+      setAuthenticatedSession(result.bearerToken, email: result.email);
+    } catch (error, stackTrace) {
+      diagnostics.warning(
+        scope: 'auth.google_sign_in',
+        message: error is ClerkAuthException && error.isCancelled
+            ? 'Native Google sign-in was cancelled.'
+            : 'Native Google sign-in failed.',
+        error: error,
+        stackTrace: stackTrace,
       );
       rethrow;
     }

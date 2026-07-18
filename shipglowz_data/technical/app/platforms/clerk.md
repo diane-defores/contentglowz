@@ -38,13 +38,13 @@ next_step: "/sf-docs technical audit app"
 
 ## Purpose
 
-Document how Contentglowz App uses Clerk for web authentication. This is the
+Document how Contentglowz App uses Clerk on web and Android. This is the
 project-local auth contract. Use the global Clerk note for current Clerk source
 links and SDK behavior.
 
 ## Usage Summary
 
-- Provider role: web session authority for authenticated Flutter app access.
+- Provider role: session authority for authenticated Flutter app access.
 - Environments used: local validation, Vercel preview, Vercel production.
 - Validation surface: ClerkJS route runtime, Flutter session restore, FastAPI
   bearer-token calls, SPA/auth rewrites.
@@ -61,6 +61,9 @@ links and SDK behavior.
 | Auth routes | `/sign-in`, `/sign-up`, `/sso-callback` | no | Must be routed to dedicated HTML pages, not the Flutter SPA entry. |
 | Runtime bridge | `window.contentglowzClerkBridge` | no | Dart web auth service calls this bridge. |
 | Token path | `clerk.session.getToken()` -> FastAPI bearer token | sensitive runtime value | Never log or store raw tokens in docs. |
+| Android SDK | `com.clerk:clerk-android-api:1.0.36` | no | API-only; Flutter retains UI. |
+| Android key | `CLERK_PUBLISHABLE_KEY` | key only | Environment or ignored Gradle property; never commit its value. |
+| Android callback | `com.contentglowz.app://callback` | no | Allowlist in Clerk and strict Android intent filter; never retain callback parameters. |
 
 ## Runtime And Integration Notes
 
@@ -74,6 +77,14 @@ links and SDK behavior.
   `/sso-callback` before the catch-all SPA rewrite.
 - Password auth through the old Flutter beta SDK is intentionally disabled on
   web production; use the dedicated ClerkJS auth routes.
+- Android initializes Clerk once in `ContentGlowzApplication`. Its Kotlin
+  MethodChannel owns Google Credential Manager, session restore, fresh token
+  retrieval, sign-out, and callback handling; `clerk_auth_service_android.dart`
+  only transports the active token in memory to Flutter.
+- Google native configuration is external: enable Clerk Native API, configure
+  the Android package and debug/release SHA-1 in Google Cloud, and enable the
+  matching custom credentials in Clerk. Record neither keys nor fingerprints
+  in this repository.
 
 ## Invariants
 
@@ -82,7 +93,10 @@ links and SDK behavior.
 - The app must handle missing/expired Clerk sessions without exposing token
   values or silently losing queued user work.
 - Flutter must obtain user identity and bearer tokens through the ClerkJS bridge,
-  not by reintroducing the removed Clerk Flutter beta web path.
+  not by reintroducing the removed Clerk Flutter beta web path. Android instead
+  obtains its token from Clerk Android and never shares a web session.
+- Android callbacks are handled only once by `MainActivity` for the exact
+  callback scheme/host; invalid or replayed callbacks cannot authenticate Dart.
 - FastAPI remains the data authority; Clerk is only the session identity layer.
 
 ## Failure Modes
@@ -119,6 +133,12 @@ For hosted validation, use the Vercel preview/production URL and verify:
 - Session restore survives page refresh.
 - `/api/bootstrap` loads with the Clerk bearer token and does not bounce back to
   the entry/auth screen.
+
+For Android, build with `-PcontentglowzAuthEnabled=true` and the key supplied
+through CI/environment, then prove Google sign-in, cancellation, restart,
+sign-out and FastAPI bootstrap on a configured physical device. Roll back by
+shipping a build with the Android action disabled; never fall back to a token
+or code in a browser URL.
 
 ## Reader Checklist
 

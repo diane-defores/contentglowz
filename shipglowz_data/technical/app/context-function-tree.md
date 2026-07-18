@@ -112,8 +112,15 @@ next_step: "/sf-docs update shipglowz_data/technical/app/context-function-tree.m
 - `offline_storage_service.dart`
   - `OfflineCacheStore`, `OfflineQueueStore`, `OfflineIdMappingStore`
   - cache store read/write/rewrite semantics by scope.
-- `clerk_auth_service.dart`, `clerk_auth_service_web.dart`, `clerk_auth_service_stub.dart`
-  - web bridge integration and fallbacks.
+- `clerk_auth_service.dart`, `clerk_auth_service_web.dart`, `clerk_auth_service_android.dart`, `clerk_auth_service_stub.dart`
+  - target-selected ClerkJS web bridge, Kotlin Android bridge, and signed-out fallback.
+
+## `android/app/src/main/kotlin/com/contentglowz/contentglowz_app`
+- `ContentGlowzApplication`
+  - initializes Clerk Android once when a build-injected publishable key exists.
+- `MainActivity` + `auth/ClerkAuthChannel`
+  - keeps capture/media channels, routes strict auth callbacks once, and exposes
+    initialize, Google sign-in, restore, fresh token and sign-out to Flutter.
 - `feedback_service.dart`, `feedback_local_store.dart`
   - feedback submit/list/review orchestration with local draft memory.
 - `notification_service.dart`

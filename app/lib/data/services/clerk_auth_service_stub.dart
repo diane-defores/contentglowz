@@ -12,6 +12,15 @@ class ClerkAuthResult {
   });
 }
 
+class ClerkAuthException implements Exception {
+  const ClerkAuthException(this.code, this.message);
+  final String code;
+  final String message;
+  bool get isCancelled => code == 'cancelled';
+  @override
+  String toString() => message;
+}
+
 class ClerkAuthService {
   ClerkAuthService({
     required this.publishableKey,
@@ -28,6 +37,13 @@ class ClerkAuthService {
     throw StateError(
       'Clerk Flutter beta auth has been removed from production. '
       'Use the web Google flow or the legacy branch if you need the old SDK.',
+    );
+  }
+
+  Future<ClerkAuthResult> signInWithGoogle() async {
+    throw const ClerkAuthException(
+      'unsupported_platform',
+      'Native Google sign-in is available only on Android.',
     );
   }
 

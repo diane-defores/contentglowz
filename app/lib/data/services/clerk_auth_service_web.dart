@@ -15,6 +15,15 @@ class ClerkAuthResult {
   });
 }
 
+class ClerkAuthException implements Exception {
+  const ClerkAuthException(this.code, this.message);
+  final String code;
+  final String message;
+  bool get isCancelled => code == 'cancelled';
+  @override
+  String toString() => message;
+}
+
 class ClerkAuthService {
   ClerkAuthService({
     required this.publishableKey,
@@ -31,6 +40,13 @@ class ClerkAuthService {
     throw StateError(
       'Password auth through the Flutter beta SDK has been removed from web production. '
       'Use the dedicated ClerkJS sign-in route instead.',
+    );
+  }
+
+  Future<ClerkAuthResult> signInWithGoogle() async {
+    throw const ClerkAuthException(
+      'web_redirect_required',
+      'Use the dedicated ClerkJS sign-in route on web.',
     );
   }
 
@@ -57,8 +73,7 @@ class ClerkAuthService {
     final bridge = await _loadBridge();
     final signedIn = (await _promiseToFuture<JSBoolean>(
       bridge.callMethodVarArgs('isSignedIn'.toJS, <JSAny?>[]),
-    ))
-        .toDart;
+    )).toDart;
     if (!signedIn) {
       return null;
     }
@@ -120,9 +135,7 @@ class ClerkAuthService {
 
   Future<T> _promiseToFuture<T extends JSAny?>(JSAny? promise) {
     if (promise == null) {
-      return Future<T>.error(
-        StateError('ClerkJS bridge returned no value.'),
-      );
+      return Future<T>.error(StateError('ClerkJS bridge returned no value.'));
     }
     return (promise as JSPromise<T>).toDart;
   }

@@ -1,0 +1,153 @@
+package com.contentglowz.app.auth
+
+import android.net.Uri
+import com.clerk.api.Clerk
+import com.clerk.api.network.serialization.ClerkResult
+import com.clerk.api.signin.SignIn
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+/** A narrow Flutter boundary: Clerk session state remains native and tokens are never logged. */
+class ClerkAuthChannel(messenger: BinaryMessenger) : MethodChannel.MethodCallHandler {
+    private val channel = MethodChannel(messenger, CHANNEL_NAME)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var activeAuthentication: Job? = null
+    private var lastCallback: String? = null
+
+    init {
+        channel.setMethodCallHandler(this)
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        when (call.method) {
+            "initialize" -> launch(result) { initializedPayload() }
+            "restoreSession" -> launch(result) { sessionPayloadOrNull() }
+            "getFreshToken" -> launch(result) { freshTokenOrNull() }
+            "signOut" -> launch(result) { signOut(); mapOf("signedOut" to true) }
+            "signInWithGoogle" -> signInWithGoogle(result)
+            else -> result.notImplemented()
+        }
+    }
+
+    fun handleCallback(uri: Uri?) {
+        if (!isAllowedCallback(uri)) return
+        // Do not retain or print query parameters; replayed callbacks are ignored.
+        val fingerprint = "${uri?.scheme}://${uri?.host}${uri?.path.orEmpty()}"
+        if (fingerprint == lastCallback) return
+        lastCallback = fingerprint
+        scope.launch {
+            awaitReady() ?: return@launch
+            Clerk.auth.handle(uri)
+        }
+    }
+
+    fun dispose() {
+        activeAuthentication?.cancel()
+        activeAuthentication = null
+        scope.cancel()
+        channel.setMethodCallHandler(null)
+    }
+
+    private fun signInWithGoogle(result: MethodChannel.Result) {
+        if (activeAuthentication?.isActive == true) {
+            result.error("auth_in_progress", "A native authentication operation is already active.", null)
+            return
+        }
+        activeAuthentication = scope.launch {
+            try {
+                requireReady()
+                when (val outcome = SignIn.authenticateWithGoogleOneTap(transferable = true)) {
+                    is ClerkResult.Success -> result.success(requireSessionPayload())
+                    is ClerkResult.Failure -> result.error(
+                        errorCode(outcome.throwable),
+                        "Native Google sign-in did not complete.",
+                        null,
+                    )
+                }
+            } catch (error: Throwable) {
+                result.error(errorCode(error), "Native Google sign-in did not complete.", null)
+            } finally {
+                activeAuthentication = null
+            }
+        }
+    }
+
+    private fun launch(result: MethodChannel.Result, block: suspend () -> Any?) {
+        scope.launch {
+            try {
+                result.success(block())
+            } catch (error: Throwable) {
+                result.error(errorCode(error), "Native Clerk operation failed.", null)
+            }
+        }
+    }
+
+    private suspend fun initializedPayload(): Map<String, Boolean> {
+        requireReady()
+        return mapOf("ready" to true)
+    }
+
+    private suspend fun sessionPayloadOrNull(): Map<String, String?>? {
+        requireReady()
+        if (Clerk.session == null) return null
+        return requireSessionPayload()
+    }
+
+    private suspend fun requireSessionPayload(): Map<String, String?> {
+        val token = freshTokenOrNull() ?: throw IllegalStateException("No active Clerk token.")
+        val user = Clerk.user ?: throw IllegalStateException("No active Clerk user.")
+        return mapOf(
+            "bearerToken" to token,
+            "userId" to user.id,
+            "email" to user.primaryEmailAddress?.emailAddress,
+        )
+    }
+
+    private suspend fun freshTokenOrNull(): String? {
+        requireReady()
+        return when (val outcome = Clerk.auth.getToken()) {
+            is ClerkResult.Success -> outcome.value.takeIf { it.isNotBlank() }
+            is ClerkResult.Failure -> null
+        }
+    }
+
+    private suspend fun signOut() {
+        requireReady()
+        when (val outcome = Clerk.auth.signOut()) {
+            is ClerkResult.Success -> Unit
+            is ClerkResult.Failure -> throw IllegalStateException("Native sign-out did not complete.")
+        }
+    }
+
+    private suspend fun requireReady() {
+        awaitReady() ?: throw IllegalStateException("Clerk Android is not ready.")
+    }
+
+    private suspend fun awaitReady(): Boolean =
+        withTimeoutOrNull(INITIALIZATION_TIMEOUT_MS) { Clerk.isInitialized.first { it } } != null
+
+    private fun isAllowedCallback(uri: Uri?): Boolean =
+        uri?.scheme == CALLBACK_SCHEME && uri.host == CALLBACK_HOST && uri.path.isNullOrEmpty()
+
+    private fun errorCode(error: Throwable?): String = when {
+        error?.javaClass?.simpleName?.contains("Cancellation", ignoreCase = true) == true -> "cancelled"
+        error?.javaClass?.simpleName?.contains("Credential", ignoreCase = true) == true -> "credential_error"
+        else -> "native_auth_error"
+    }
+
+    companion object {
+        const val CHANNEL_NAME = "com.contentglowz.app/clerk_auth"
+        private const val CALLBACK_SCHEME = "com.contentglowz.app"
+        private const val CALLBACK_HOST = "callback"
+        private const val INITIALIZATION_TIMEOUT_MS = 15_000L
+    }
+}

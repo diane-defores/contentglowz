@@ -5,6 +5,22 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val clerkPublishableKey = providers.environmentVariable("CLERK_PUBLISHABLE_KEY")
+    .orElse(providers.gradleProperty("CLERK_PUBLISHABLE_KEY"))
+    .orElse("")
+    .get()
+val contentGlowzAuthEnabled = providers.gradleProperty("contentglowzAuthEnabled")
+    .map { it.toBoolean() }
+    .orElse(false)
+    .get()
+
+if (contentGlowzAuthEnabled && clerkPublishableKey.isBlank()) {
+    throw GradleException(
+        "CLERK_PUBLISHABLE_KEY is required for auth-enabled Android builds. " +
+            "Provide it through the environment or an ignored Gradle property.",
+    )
+}
+
 android {
     namespace = "com.contentglowz.app"
     compileSdk = flutter.compileSdkVersion
@@ -24,10 +40,19 @@ android {
         applicationId = "com.contentglowz.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Clerk Android requires API 24. Keep Flutter's higher value when it changes.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    defaultConfig {
+        buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkPublishableKey\"")
     }
 
     buildTypes {
@@ -37,6 +62,11 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    // API-only: Flutter owns the UI; Clerk owns native session persistence.
+    implementation("com.clerk:clerk-android-api:1.0.36")
 }
 
 flutter {
