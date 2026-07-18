@@ -24,6 +24,10 @@ env:
   SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.0' }}
   SENTRY_SEND_DEFAULT_PII: ${{ vars.SENTRY_SEND_DEFAULT_PII || 'false' }}
   SENTRY_DEBUG: ${{ vars.SENTRY_DEBUG || 'false' }}
+  ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+  ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+  ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
 jobs:
   build-apk:
@@ -46,6 +50,15 @@ jobs:
       - name: Install dependencies
         working-directory: ${{ env.APP_DIR }}
         run: flutter pub get
+      - name: Configure stable Android signing
+        working-directory: ${{ env.APP_DIR }}/android
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "ANDROID_KEYSTORE_BASE64 is missing"; exit 1; }
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || { echo "ANDROID_KEYSTORE_PASSWORD is missing"; exit 1; }
+          test -n "$ANDROID_KEY_ALIAS" || { echo "ANDROID_KEY_ALIAS is missing"; exit 1; }
+          test -n "$ANDROID_KEY_PASSWORD" || { echo "ANDROID_KEY_PASSWORD is missing"; exit 1; }
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > contentglowz-release.keystore
+          echo "ANDROID_KEYSTORE_PATH=$PWD/contentglowz-release.keystore" >> "$GITHUB_ENV"
       - name: Build APK
         working-directory: ${{ env.APP_DIR }}
         run: >-
@@ -63,6 +76,9 @@ jobs:
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="${SENTRY_TRACES_SAMPLE_RATE}"
           --dart-define=SENTRY_SEND_DEFAULT_PII="${SENTRY_SEND_DEFAULT_PII}"
           --dart-define=SENTRY_DEBUG="${SENTRY_DEBUG}"
+      - name: Print APK signing fingerprint
+        working-directory: ${{ env.APP_DIR }}
+        run: apksigner verify --print-certs build/app/outputs/flutter-apk/app-release.apk | grep -E 'Signer #1 certificate SHA-256 digest:'
       - uses: actions/upload-artifact@v7
         with:
           name: contentglowz-android-apk

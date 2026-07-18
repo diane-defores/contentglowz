@@ -15,6 +15,10 @@ val contentGlowzAuthEnabled = providers.gradleProperty("contentglowzAuthEnabled"
     .map { it.toBoolean() }
     .orElse(true)
     .get()
+val releaseKeystorePath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orElse("").get()
+val releaseKeystorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orElse("").get()
+val releaseKeyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orElse("").get()
+val releaseKeyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orElse("").get()
 
 if (contentGlowzAuthEnabled && clerkPublishableKey.isBlank()) {
     throw GradleException(
@@ -60,11 +64,26 @@ android {
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkPublishableKey\"")
     }
 
+    signingConfigs {
+        create("contentglowsRelease") {
+            if (releaseKeystorePath.isBlank() || releaseKeystorePassword.isBlank() ||
+                releaseKeyAlias.isBlank() || releaseKeyPassword.isBlank()
+            ) {
+                throw GradleException(
+                    "Stable release signing is required. Configure ANDROID_KEYSTORE_PATH, " +
+                        "ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD.",
+                )
+            }
+            storeFile = file(releaseKeystorePath)
+            storePassword = releaseKeystorePassword
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("contentglowsRelease")
         }
     }
 }

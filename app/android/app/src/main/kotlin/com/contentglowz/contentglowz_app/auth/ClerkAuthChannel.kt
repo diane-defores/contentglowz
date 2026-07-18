@@ -69,12 +69,16 @@ class ClerkAuthChannel(messenger: BinaryMessenger) : MethodChannel.MethodCallHan
                     is ClerkResult.Success -> result.success(requireSessionPayload())
                     is ClerkResult.Failure -> result.error(
                         errorCode(outcome.throwable),
-                        "Native Google sign-in did not complete.",
+                        errorMessage(outcome.throwable, "Native Google sign-in did not complete."),
                         null,
                     )
                 }
             } catch (error: Throwable) {
-                result.error(errorCode(error), "Native Google sign-in did not complete.", null)
+                result.error(
+                    errorCode(error),
+                    errorMessage(error, "Native Google sign-in did not complete."),
+                    null,
+                )
             } finally {
                 activeAuthentication = null
             }
@@ -129,7 +133,7 @@ class ClerkAuthChannel(messenger: BinaryMessenger) : MethodChannel.MethodCallHan
     }
 
     private suspend fun requireReady() {
-        awaitReady() ?: throw IllegalStateException("Clerk Android is not ready.")
+        if (!awaitReady()) throw ClerkNotReadyException()
     }
 
     private suspend fun awaitReady(): Boolean =
@@ -139,10 +143,19 @@ class ClerkAuthChannel(messenger: BinaryMessenger) : MethodChannel.MethodCallHan
         uri?.scheme == CALLBACK_SCHEME && uri.host == CALLBACK_HOST && uri.path.isNullOrEmpty()
 
     private fun errorCode(error: Throwable?): String = when {
+        error is ClerkNotReadyException -> "clerk_not_ready"
         error?.javaClass?.simpleName?.contains("Cancellation", ignoreCase = true) == true -> "cancelled"
         error?.javaClass?.simpleName?.contains("Credential", ignoreCase = true) == true -> "credential_error"
         else -> "native_auth_error"
     }
+
+    private fun errorMessage(error: Throwable?, fallback: String): String = when {
+        error is ClerkNotReadyException ->
+            "Clerk native initialization did not complete. Verify that Clerk Native API is enabled and that this APK has network access, then retry."
+        else -> fallback
+    }
+
+    private class ClerkNotReadyException : IllegalStateException()
 
     companion object {
         const val CHANNEL_NAME = "com.contentglowz.app/clerk_auth"
