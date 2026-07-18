@@ -49,6 +49,13 @@ android {
         buildConfig = true
     }
 
+    packaging {
+        resources {
+            // Duplicated by Clerk's OkHttp stack and jspecify; unused by Android at runtime.
+            excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        }
+    }
+
     defaultConfig {
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkPublishableKey\"")
     }
